@@ -1,0 +1,48 @@
+You are an experienced full-stack developer and software architect. Your task is to design and implement a web and mobile application called "Contestio," a platform for live fishing competitions. The application has three main interfaces: Public Portal (for spectators and teams), Admin Panel (for organizers), and Referee Interface (for referees in the field). 
+
+Requirements:
+
+1. **Public Portal (Spectators & Teams)**
+   - Main Page: Show all competitions as interactive cards with logo, name, date, status (Registration Open / Live / Finished).
+   - Archive / Hall of Fame: Past results, galleries, and statistics.
+   - Competition Registration Button: For organizers to create new competitions.
+   - Competition Detail Page: 
+     - Live Overview: Active only during competitions.
+       - Interactive Map: Show sectors and team positions.
+       - Catch Timeline: Real-time feed of latest catches with photo, team name, weight, time.
+       - Leaderboard: Auto-calculated after each catch, showing Rank, Team, Sector, Position, Total Weight, Number of Fish.
+       - Sector Stats: Ranking per sector.
+       - Special Contests: Results like "Biggest Carp/Scale Fish".
+       - Detailed Stats: Graphs of number of fish >10/15/20/25/30 kg, average weight.
+     - Teams: List of approved teams, team profile with members, sponsors, current ranking, complete catch history.
+     - Prizes & Sponsors: Display prizes and sponsor logos.
+     - Rules & Info: Competition rules.
+     - Team Registration: Active only before competition, form for teams to register.
+
+2. **Admin Panel (Organizers)**
+   - List of competitions created by the organizer.
+   - Team Management: Approve/reject teams, assign sector & position.
+   - Referee Management: Create referees with access, assign sectors.
+   - Sponsor & Prize Management: Upload sponsor logos, set prize info.
+
+3. **Referee Interface (Mobile-Optimized)**
+   - Login and select assigned sector.
+   - Enter catches: weight in grams, carp type (Scaly / Mirror), upload photo.
+   - Confirmation screen before submission.
+
+Technical Requirements:
+- Frontend: Modern, responsive (React or Next.js), interactive maps and live data feed.
+- Backend: Node.js/Express or Python/Django, RESTful API or GraphQL.
+- Database: PostgreSQL or MongoDB for structured competition, team, and catch data.
+- Real-Time Updates: Use WebSockets (Socket.io) or Firebase for live leaderboard and catch timeline.
+- Authentication: JWT or OAuth2 for organizers and referees.
+- File Uploads: Store photos securely (AWS S3 or Firebase Storage).
+- Deployment: Containerized with Docker, deployable on cloud (AWS/GCP/Heroku).
+- Code should be modular, maintainable, and follow best practices for scalability.
+- Include sample seed data for competitions, teams, and catches for testing.
+
+Deliverables:
+- Full-stack web application code, organized in modules.
+- Database schema and seed scripts.
+- Example of real-time leaderboard updating automatically.
+- Mobile-friendly referee interface with catch submission workflow.
