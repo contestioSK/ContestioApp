@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import express, { type Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
@@ -321,15 +321,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Serve uploaded files
-  app.use('/uploads', (req, res, next) => {
-    const filePath = path.join(process.cwd(), 'uploads', req.path);
-    if (fs.existsSync(filePath)) {
-      res.sendFile(filePath);
-    } else {
-      res.status(404).json({ message: "File not found" });
-    }
-  });
+  // Dev-only role management endpoint for testing
+  if (process.env.NODE_ENV === 'development') {
+    app.post('/api/dev/promote-role', isAuthenticated, async (req: any, res) => {
+      try {
+        const userId = req.user.claims.sub;
+        const { role } = req.body;
+        
+        if (!['organizer', 'referee', 'public'].includes(role)) {
+          return res.status(400).json({ message: "Invalid role. Must be 'organizer', 'referee', or 'public'" });
+        }
+        
+        // Update the user's role in the database
+        await storage.upsertUser({
+          id: userId,
+          email: req.user.claims.email,
+          firstName: req.user.claims.first_name,
+          lastName: req.user.claims.last_name,
+          profileImageUrl: req.user.claims.profile_image_url,
+          role: role,
+        });
+        
+        res.json({ message: `Successfully promoted user to ${role}`, userId, newRole: role });
+      } catch (error) {
+        console.error("Error promoting user role:", error);
+        res.status(500).json({ message: "Failed to promote user role" });
+      }
+    });
+  }
+
+  // Serve uploaded files securely
+  app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
   return httpServer;
 }
