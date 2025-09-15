@@ -71,18 +71,51 @@ export class DatabaseStorage implements IStorage {
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {
-    const [user] = await db
+    // First, check if a user with this ID already exists
+    if (userData.id) {
+      const existingById = await this.getUser(userData.id);
+      if (existingById) {
+        // Update existing user by ID
+        const [updatedUser] = await db
+          .update(users)
+          .set({
+            ...userData,
+            updatedAt: new Date(),
+          })
+          .where(eq(users.id, userData.id))
+          .returning();
+        return updatedUser;
+      }
+    }
+
+    // If no user by ID, check if there's a user with this email
+    if (userData.email) {
+      const [existingByEmail] = await db
+        .select()
+        .from(users)
+        .where(eq(users.email, userData.email));
+
+      if (existingByEmail) {
+        // Update the existing user with the new ID and data
+        // This handles the case where OIDC sub changed but email stayed the same
+        const [updatedUser] = await db
+          .update(users)
+          .set({
+            ...userData,
+            updatedAt: new Date(),
+          })
+          .where(eq(users.email, userData.email!))
+          .returning();
+        return updatedUser;
+      }
+    }
+
+    // No existing user found, create a new one
+    const [newUser] = await db
       .insert(users)
       .values(userData)
-      .onConflictDoUpdate({
-        target: users.id,
-        set: {
-          ...userData,
-          updatedAt: new Date(),
-        },
-      })
       .returning();
-    return user;
+    return newUser;
   }
 
   // Competition operations
