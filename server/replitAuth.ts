@@ -24,21 +24,43 @@ const getOidcConfig = memoize(
 
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
+  
+  // Use MemoryStore in development if DATABASE_URL is missing
+  if (!process.env.DATABASE_URL && process.env.NODE_ENV === 'development') {
+    console.log('[SESSION] Using MemoryStore for development (DATABASE_URL not found)');
+    return session({
+      secret: process.env.SESSION_SECRET!,
+      store: new session.MemoryStore(),
+      proxy: true,
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        httpOnly: true,
+        secure: 'auto',
+        sameSite: 'lax',
+        maxAge: sessionTtl,
+      },
+    });
+  }
+  
   const pgStore = connectPg(session);
   const sessionStore = new pgStore({
     conString: process.env.DATABASE_URL,
-    createTableIfMissing: false,
+    createTableIfMissing: true,
     ttl: sessionTtl,
     tableName: "sessions",
+    errorLog: console.error,
   });
   return session({
     secret: process.env.SESSION_SECRET!,
     store: sessionStore,
+    proxy: true,
     resave: false,
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: true,
+      secure: 'auto',
+      sameSite: 'lax',
       maxAge: sessionTtl,
     },
   });

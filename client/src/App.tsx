@@ -10,23 +10,26 @@ import Home from "@/pages/home";
 import CompetitionDetail from "@/pages/competition-detail";
 import AdminPanel from "@/pages/admin-panel";
 import RefereeInterface from "@/pages/referee-interface";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isLoading } = useAuth();
 
   return (
     <Switch>
-      {isLoading || !isAuthenticated ? (
-        <Route path="/" component={Landing} />
-      ) : (
-        <>
-          <Route path="/" component={Home} />
-          <Route path="/competition/:id" component={CompetitionDetail} />
-          <Route path="/admin" component={AdminPanel} />
-          <Route path="/referee" component={RefereeInterface} />
-        </>
-      )}
-      <Route component={NotFound} />
+      <Route path="/" component={Home} />
+      <Route path="/competition/:id" component={CompetitionDetail} />
+      <Route path="/admin">
+        <ProtectedRoute roles={["organizer"]}>
+          <AdminPanel />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/referee">
+        <ProtectedRoute roles={["referee", "organizer"]}>
+          <RefereeInterface />
+        </ProtectedRoute>
+      </Route>
+      {!isLoading && <Route component={NotFound} />}
     </Switch>
   );
 }
