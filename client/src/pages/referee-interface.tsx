@@ -72,6 +72,12 @@ export default function RefereeInterface() {
     enabled: isAuthenticated && !!selectedCompetition,
   });
 
+  // Get referee assignment for the current user and selected competition
+  const { data: refereeAssignment } = useQuery<Referee>({
+    queryKey: ["/api/competitions", selectedCompetition, "referees", user?.id],
+    enabled: isAuthenticated && !!selectedCompetition && user?.role === 'referee',
+  });
+
   const submitCatchMutation = useMutation({
     mutationFn: async (data: CatchSubmissionForm & { photo?: File }) => {
       const formData = new FormData();
@@ -79,7 +85,7 @@ export default function RefereeInterface() {
       formData.append('competitionId', data.competitionId);
       formData.append('weight', (data.weight / 1000).toString()); // Convert grams to kg
       formData.append('fishType', data.fishType);
-      formData.append('sector', 'A'); // This should come from referee assignment
+      // Note: sector is now set server-side from referee assignment for security
       
       if (data.photo) {
         formData.append('photo', data.photo);
@@ -164,7 +170,7 @@ export default function RefereeInterface() {
               <div>
                 <CardTitle className="font-semibold">Referee Interface</CardTitle>
                 <p className="text-sm text-primary-foreground/80">
-                  {user?.firstName} {user?.lastName} - Sector A
+                  {user?.firstName} {user?.lastName} - Sector {refereeAssignment?.assignedSector || 'Unassigned'}
                 </p>
               </div>
               <Button 
