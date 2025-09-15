@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import NavigationHeader from "@/components/navigation-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,15 +12,90 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import { Edit, Eye, Users, UserCheck, UserX } from "lucide-react";
+import { Edit, Eye, Users, UserCheck, UserX, Plus, Trophy } from "lucide-react";
 import type { Competition, Team, TeamMember } from "@shared/schema";
+
+// Competition creation form schema
+const competitionSchema = z.object({
+  name: z.string().min(1, "Competition name is required").max(255, "Name too long"),
+  description: z.string().optional(),
+  location: z.string().min(1, "Location is required").max(255, "Location too long"),
+  startDate: z.string().min(1, "Start date is required"),
+  endDate: z.string().min(1, "End date is required"),
+  prizePool: z.string().optional(),
+  registrationFee: z.string().optional(),
+  maxTeams: z.string().optional(),
+});
+
+type CompetitionForm = z.infer<typeof competitionSchema>;
 
 export default function AdminPanel() {
   const { toast } = useToast();
   const { user, isAuthenticated, isLoading } = useAuth();
   const [selectedCompetition, setSelectedCompetition] = useState<string>("");
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+
+  // Competition creation form
+  const form = useForm<CompetitionForm>({
+    resolver: zodResolver(competitionSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+      location: "",
+      startDate: "",
+      endDate: "",
+      prizePool: "",
+      registrationFee: "",
+      maxTeams: "",
+    },
+  });
+
+  // Competition creation mutation
+  const createCompetitionMutation = useMutation({
+    mutationFn: async (data: CompetitionForm) => {
+      const competitionData = {
+        ...data,
+        prizePool: data.prizePool ? parseFloat(data.prizePool) : undefined,
+        registrationFee: data.registrationFee ? parseFloat(data.registrationFee) : undefined,
+        maxTeams: data.maxTeams ? parseInt(data.maxTeams) : undefined,
+        startDate: new Date(data.startDate).toISOString(),
+        endDate: new Date(data.endDate).toISOString(),
+      };
+      return apiRequest("POST", "/api/competitions", competitionData);
+    },
+    onSuccess: async (response) => {
+      const newCompetition = await response.json();
+      toast({
+        title: "Competition created successfully!",
+        description: "Your new competition is now available for team registration.",
+      });
+      setIsCreateDialogOpen(false);
+      form.reset();
+      // Invalidate competitions query to refresh the list
+      queryClient.invalidateQueries({ queryKey: ["/api/competitions"] });
+      // Auto-select the new competition
+      if (newCompetition?.id) {
+        setSelectedCompetition(newCompetition.id);
+      }
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to create competition",
+        description: error.message || "Please check your data and try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const onSubmitCompetition = (data: CompetitionForm) => {
+    createCompetitionMutation.mutate(data);
+  };
 
   // Redirect if not authenticated or not organizer
   useEffect(() => {
@@ -138,24 +216,226 @@ export default function AdminPanel() {
 
           {/* Competition Selector */}
           <div className="p-6 border-b border-border">
-            <div className="flex items-center space-x-4">
-              <label className="text-sm font-medium text-foreground">Select Competition:</label>
-              <Select value={selectedCompetition} onValueChange={setSelectedCompetition}>
-                <SelectTrigger className="w-64" data-testid="select-competition">
-                  <SelectValue placeholder="Choose a competition" />
-                </SelectTrigger>
-                <SelectContent>
-                  {competitions?.map((competition: Competition) => (
-                    <SelectItem key={competition.id} value={competition.id}>
-                      {competition.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <label className="text-sm font-medium text-foreground">Select Competition:</label>
+                <Select value={selectedCompetition} onValueChange={setSelectedCompetition}>
+                  <SelectTrigger className="w-64" data-testid="select-competition">
+                    <SelectValue placeholder="Choose a competition" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {competitions?.map((competition: Competition) => (
+                      <SelectItem key={competition.id} value={competition.id}>
+                        {competition.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* Create Competition Button */}
+              <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="bg-primary text-primary-foreground hover:bg-primary/90" data-testid="button-create-competition">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create Competition
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Create New Competition</DialogTitle>
+                  </DialogHeader>
+                  
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmitCompetition)} className="space-y-6">
+                      {/* Basic Information */}
+                      <div className="space-y-4">
+                        <h3 className="font-medium text-foreground">Basic Information</h3>
+                        
+                        <FormField
+                          control={form.control}
+                          name="name"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Competition Name</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Enter competition name" {...field} data-testid="input-competition-name" />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="description"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Description (Optional)</FormLabel>
+                              <FormControl>
+                                <Textarea placeholder="Brief description of the competition" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="location"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Location</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Competition location" {...field} data-testid="input-competition-location" />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      {/* Dates */}
+                      <div className="space-y-4">
+                        <h3 className="font-medium text-foreground">Schedule</h3>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="startDate"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Start Date</FormLabel>
+                                <FormControl>
+                                  <Input type="datetime-local" {...field} data-testid="input-start-date" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="endDate"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>End Date</FormLabel>
+                                <FormControl>
+                                  <Input type="datetime-local" {...field} data-testid="input-end-date" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Competition Details */}
+                      <div className="space-y-4">
+                        <h3 className="font-medium text-foreground">Competition Details</h3>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="prizePool"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Prize Pool ($)</FormLabel>
+                                <FormControl>
+                                  <Input type="number" placeholder="0.00" step="0.01" {...field} data-testid="input-prize-pool" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="registrationFee"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Registration Fee ($)</FormLabel>
+                                <FormControl>
+                                  <Input type="number" placeholder="0.00" step="0.01" {...field} data-testid="input-registration-fee" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="maxTeams"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Max Teams</FormLabel>
+                                <FormControl>
+                                  <Input type="number" placeholder="Unlimited" {...field} data-testid="input-max-teams" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Submit Button */}
+                      <div className="flex justify-end space-x-2">
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          onClick={() => setIsCreateDialogOpen(false)}
+                          data-testid="button-cancel-competition"
+                        >
+                          Cancel
+                        </Button>
+                        <Button 
+                          type="submit" 
+                          disabled={createCompetitionMutation.isPending}
+                          data-testid="button-submit-competition"
+                        >
+                          {createCompetitionMutation.isPending ? "Creating..." : "Create Competition"}
+                        </Button>
+                      </div>
+                    </form>
+                  </Form>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
 
-          {selectedCompetition && (
+          {/* Empty State or Competition Management */}
+          {competitionsLoading ? (
+            <div className="p-6">
+              <div className="space-y-4">
+                <Skeleton className="h-8 w-1/3" />
+                <Skeleton className="h-32 w-full" />
+              </div>
+            </div>
+          ) : !selectedCompetition ? (
+            <div className="text-center py-12">
+              <Trophy className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium text-foreground mb-2">
+                {competitions?.length === 0 ? "No competitions yet" : "Select a competition"}
+              </h3>
+              <p className="text-muted-foreground mb-6">
+                {competitions?.length === 0 
+                  ? "Create your first competition to start managing teams and events." 
+                  : "Choose a competition from the dropdown above to manage its details."
+                }
+              </p>
+              {competitions?.length === 0 && (
+                <Button 
+                  onClick={() => setIsCreateDialogOpen(true)}
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                  data-testid="button-create-first-competition"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create First Competition
+                </Button>
+              )}
+            </div>
+          ) : (
             <Tabs defaultValue="teams" className="w-full">
               
               {/* Tab Navigation */}

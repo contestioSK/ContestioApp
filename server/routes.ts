@@ -227,6 +227,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get referee assignment for current user and competition
+  app.get('/api/competitions/:id/referees/:userId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      // Only allow referees to get their own assignment or organizers to get any assignment
+      if (user?.role !== 'referee' && user?.role !== 'organizer') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      // Referees can only get their own assignment
+      if (user?.role === 'referee' && userId !== req.params.userId) {
+        return res.status(403).json({ message: "Referees can only view their own assignment" });
+      }
+
+      const referee = await storage.getRefereeByUserAndCompetition(req.params.userId, req.params.id);
+      if (!referee) {
+        return res.status(404).json({ message: "Referee assignment not found" });
+      }
+      
+      res.json(referee);
+    } catch (error) {
+      console.error("Error fetching referee assignment:", error);
+      res.status(500).json({ message: "Failed to fetch referee assignment" });
+    }
+  });
+
   // Catch routes
   app.get('/api/competitions/:id/catches', async (req, res) => {
     try {
@@ -259,11 +287,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         photoUrl = `/uploads/${req.file.filename}`;
       }
 
+      // Use server-side referee assignment for sector (security measure)
       const catchData = insertCatchSchema.parse({
         ...req.body,
         refereeId: referee.id,
         photoUrl,
         weight: parseFloat(req.body.weight),
+        sector: referee.assignedSector, // Always use referee's assigned sector
       });
       
       const newCatch = await storage.createCatch(catchData);

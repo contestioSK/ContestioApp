@@ -1,23 +1,102 @@
 import { useParams } from "wouter";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import NavigationHeader from "@/components/navigation-header";
 import LiveLeaderboard from "@/components/live-leaderboard";
 import CatchTimeline from "@/components/catch-timeline";
 import CompetitionMap from "@/components/competition-map";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { useWebSocket } from "@/hooks/useWebSocket";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { Users, UserPlus, Trash2 } from "lucide-react";
 import type { Competition, Team, Catch } from "@shared/schema";
+
+// Team registration form schema
+const teamRegistrationSchema = z.object({
+  name: z.string().min(1, "Team name is required").max(100, "Team name too long"),
+  description: z.string().optional(),
+  members: z.array(z.object({
+    name: z.string().min(1, "Member name is required"),
+    role: z.enum(["captain", "member"]),
+    email: z.string().email("Valid email required").optional(),
+    phone: z.string().optional(),
+  })).min(1, "At least one team member is required").max(6, "Maximum 6 members allowed"),
+});
+
+type TeamRegistrationForm = z.infer<typeof teamRegistrationSchema>;
 
 export default function CompetitionDetail() {
   const { id } = useParams();
   const { toast } = useToast();
-  const { isAuthenticated, isLoading } = useAuth();
+  const [isRegistrationDialogOpen, setIsRegistrationDialogOpen] = useState(false);
+  const { isAuthenticated, isLoading, user } = useAuth();
+
+  // Team registration form
+  const form = useForm<TeamRegistrationForm>({
+    resolver: zodResolver(teamRegistrationSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+      members: [
+        { name: user?.firstName + " " + user?.lastName || "", role: "captain", email: user?.email || "", phone: "" }
+      ],
+    },
+  });
+
+  // Team registration mutation
+  const registerTeamMutation = useMutation({
+    mutationFn: async (data: TeamRegistrationForm) => {
+      return apiRequest("POST", `/api/competitions/${id}/teams`, data);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Team registered successfully!",
+        description: "Your team registration is pending approval by the organizer.",
+      });
+      setIsRegistrationDialogOpen(false);
+      form.reset();
+      // Invalidate teams query to refresh the list
+      queryClient.invalidateQueries({ queryKey: ["/api/competitions", id, "teams"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Registration failed",
+        description: error.message || "Failed to register team. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const addMember = () => {
+    const currentMembers = form.getValues("members");
+    if (currentMembers.length < 6) {
+      form.setValue("members", [...currentMembers, { name: "", role: "member", email: "", phone: "" }]);
+    }
+  };
+
+  const removeMember = (index: number) => {
+    const currentMembers = form.getValues("members");
+    if (currentMembers.length > 1) {
+      form.setValue("members", currentMembers.filter((_, i) => i !== index));
+    }
+  };
+
+  const onSubmitRegistration = (data: TeamRegistrationForm) => {
+    registerTeamMutation.mutate(data);
+  };
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -142,6 +221,175 @@ export default function CompetitionDetail() {
               <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">
                 {competition.description}
               </p>
+            )}
+            
+            {/* Team Registration Button */}
+            {competition.status === 'registration' && (
+              <div className="mt-6">
+                <Dialog open={isRegistrationDialogOpen} onOpenChange={setIsRegistrationDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90" data-testid="button-register-team">
+                      <Users className="w-4 h-4 mr-2" />
+                      Register Your Team
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>Register Team for {competition.name}</DialogTitle>
+                    </DialogHeader>
+                    
+                    <Form {...form}>
+                      <form onSubmit={form.handleSubmit(onSubmitRegistration)} className="space-y-6">
+                        {/* Team Name */}
+                        <FormField
+                          control={form.control}
+                          name="name"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Team Name</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Enter your team name" {...field} data-testid="input-team-name" />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Team Description */}
+                        <FormField
+                          control={form.control}
+                          name="description"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Team Description (Optional)</FormLabel>
+                              <FormControl>
+                                <Textarea placeholder="Brief description of your team" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Team Members */}
+                        <div>
+                          <div className="flex items-center justify-between mb-4">
+                            <FormLabel>Team Members</FormLabel>
+                            <Button 
+                              type="button" 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={addMember}
+                              disabled={form.watch("members").length >= 6}
+                              data-testid="button-add-member"
+                            >
+                              <UserPlus className="w-4 h-4 mr-2" />
+                              Add Member
+                            </Button>
+                          </div>
+
+                          {form.watch("members").map((member, index) => (
+                            <div key={index} className="space-y-4 p-4 border border-border rounded-lg mb-4">
+                              <div className="flex items-center justify-between">
+                                <h4 className="font-medium">
+                                  {index === 0 ? "Team Captain" : `Member ${index + 1}`}
+                                </h4>
+                                {index > 0 && (
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => removeMember(index)}
+                                    data-testid={`button-remove-member-${index}`}
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                )}
+                              </div>
+                              
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <FormField
+                                  control={form.control}
+                                  name={`members.${index}.name`}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Full Name</FormLabel>
+                                      <FormControl>
+                                        <Input placeholder="Member name" {...field} data-testid={`input-member-name-${index}`} />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                
+                                <FormField
+                                  control={form.control}
+                                  name={`members.${index}.email`}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Email (Optional)</FormLabel>
+                                      <FormControl>
+                                        <Input type="email" placeholder="member@email.com" {...field} data-testid={`input-member-email-${index}`} />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
+                              
+                              <FormField
+                                control={form.control}
+                                name={`members.${index}.phone`}
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Phone (Optional)</FormLabel>
+                                    <FormControl>
+                                      <Input placeholder="Phone number" {...field} data-testid={`input-member-phone-${index}`} />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Registration Info */}
+                        <div className="bg-muted/20 p-4 rounded-lg">
+                          <h4 className="font-medium mb-2">Registration Information</h4>
+                          <div className="space-y-1 text-sm text-muted-foreground">
+                            {competition.registrationFee && (
+                              <p>Registration Fee: ${parseFloat(competition.registrationFee)}</p>
+                            )}
+                            {competition.maxTeams && (
+                              <p>Maximum Teams: {competition.maxTeams}</p>
+                            )}
+                            <p>Your team registration will be pending approval by the organizer.</p>
+                          </div>
+                        </div>
+
+                        {/* Submit Button */}
+                        <div className="flex justify-end space-x-2">
+                          <Button 
+                            type="button" 
+                            variant="outline" 
+                            onClick={() => setIsRegistrationDialogOpen(false)}
+                            data-testid="button-cancel-registration"
+                          >
+                            Cancel
+                          </Button>
+                          <Button 
+                            type="submit" 
+                            disabled={registerTeamMutation.isPending}
+                            data-testid="button-submit-registration"
+                          >
+                            {registerTeamMutation.isPending ? "Registering..." : "Register Team"}
+                          </Button>
+                        </div>
+                      </form>
+                    </Form>
+                  </DialogContent>
+                </Dialog>
+              </div>
             )}
           </div>
           
