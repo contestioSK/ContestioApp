@@ -1,0 +1,280 @@
+import {
+  users,
+  competitions,
+  teams,
+  teamMembers,
+  referees,
+  catches,
+  sponsors,
+  type User,
+  type UpsertUser,
+  type Competition,
+  type InsertCompetition,
+  type Team,
+  type InsertTeam,
+  type TeamMember,
+  type InsertTeamMember,
+  type Referee,
+  type InsertReferee,
+  type Catch,
+  type InsertCatch,
+  type Sponsor,
+  type InsertSponsor,
+} from "@shared/schema";
+import { db } from "./db";
+import { eq, desc, and, sql } from "drizzle-orm";
+
+export interface IStorage {
+  // User operations (required for Replit Auth)
+  getUser(id: string): Promise<User | undefined>;
+  upsertUser(user: UpsertUser): Promise<User>;
+  
+  // Competition operations
+  getCompetitions(): Promise<Competition[]>;
+  getCompetition(id: string): Promise<Competition | undefined>;
+  createCompetition(competition: InsertCompetition): Promise<Competition>;
+  updateCompetitionStatus(id: string, status: string): Promise<void>;
+  
+  // Team operations
+  getTeamsByCompetition(competitionId: string): Promise<(Team & { members: TeamMember[] })[]>;
+  getTeam(id: string): Promise<Team | undefined>;
+  createTeam(team: InsertTeam): Promise<Team>;
+  updateTeamStatus(id: string, status: string, sector?: string): Promise<void>;
+  updateTeamStats(teamId: string): Promise<void>;
+  
+  // Team member operations
+  addTeamMember(member: InsertTeamMember): Promise<TeamMember>;
+  
+  // Referee operations
+  getRefereesByCompetition(competitionId: string): Promise<Referee[]>;
+  getRefereeByUserAndCompetition(userId: string, competitionId: string): Promise<Referee | undefined>;
+  createReferee(referee: InsertReferee): Promise<Referee>;
+  
+  // Catch operations
+  getCatchesByCompetition(competitionId: string): Promise<(Catch & { team: Team; referee: Referee })[]>;
+  getCatchesByTeam(teamId: string): Promise<Catch[]>;
+  createCatch(catch_: InsertCatch): Promise<Catch>;
+  
+  // Sponsor operations
+  getSponsorsByCompetition(competitionId: string): Promise<Sponsor[]>;
+  createSponsor(sponsor: InsertSponsor): Promise<Sponsor>;
+  
+  // Leaderboard operations
+  getLeaderboard(competitionId: string): Promise<(Team & { members: TeamMember[] })[]>;
+}
+
+export class DatabaseStorage implements IStorage {
+  // User operations
+  async getUser(id: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(userData)
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return user;
+  }
+
+  // Competition operations
+  async getCompetitions(): Promise<Competition[]> {
+    return await db.select().from(competitions).orderBy(desc(competitions.startDate));
+  }
+
+  async getCompetition(id: string): Promise<Competition | undefined> {
+    const [competition] = await db.select().from(competitions).where(eq(competitions.id, id));
+    return competition;
+  }
+
+  async createCompetition(competition: InsertCompetition): Promise<Competition> {
+    const [newCompetition] = await db
+      .insert(competitions)
+      .values(competition)
+      .returning();
+    return newCompetition;
+  }
+
+  async updateCompetitionStatus(id: string, status: string): Promise<void> {
+    await db
+      .update(competitions)
+      .set({ status, updatedAt: new Date() })
+      .where(eq(competitions.id, id));
+  }
+
+  // Team operations
+  async getTeamsByCompetition(competitionId: string): Promise<(Team & { members: TeamMember[] })[]> {
+    const teamsWithMembers = await db
+      .select()
+      .from(teams)
+      .leftJoin(teamMembers, eq(teams.id, teamMembers.teamId))
+      .where(eq(teams.competitionId, competitionId))
+      .orderBy(desc(teams.totalWeight));
+
+    // Group members by team
+    const teamMap = new Map<string, Team & { members: TeamMember[] }>();
+    
+    for (const row of teamsWithMembers) {
+      const team = row.teams;
+      const member = row.team_members;
+      
+      if (!teamMap.has(team.id)) {
+        teamMap.set(team.id, { ...team, members: [] });
+      }
+      
+      if (member) {
+        teamMap.get(team.id)!.members.push(member);
+      }
+    }
+    
+    return Array.from(teamMap.values());
+  }
+
+  async getTeam(id: string): Promise<Team | undefined> {
+    const [team] = await db.select().from(teams).where(eq(teams.id, id));
+    return team;
+  }
+
+  async createTeam(team: InsertTeam): Promise<Team> {
+    const [newTeam] = await db
+      .insert(teams)
+      .values(team)
+      .returning();
+    return newTeam;
+  }
+
+  async updateTeamStatus(id: string, status: string, sector?: string): Promise<void> {
+    const updateData: any = { status, updatedAt: new Date() };
+    if (sector) {
+      updateData.sector = sector;
+    }
+    
+    await db
+      .update(teams)
+      .set(updateData)
+      .where(eq(teams.id, id));
+  }
+
+  async updateTeamStats(teamId: string): Promise<void> {
+    const stats = await db
+      .select({
+        totalWeight: sql<number>`COALESCE(SUM(${catches.weight}), 0)`,
+        fishCount: sql<number>`COALESCE(COUNT(*), 0)`,
+      })
+      .from(catches)
+      .where(eq(catches.teamId, teamId));
+
+    const { totalWeight, fishCount } = stats[0];
+
+    await db
+      .update(teams)
+      .set({
+        totalWeight: totalWeight.toString(),
+        fishCount,
+        updatedAt: new Date(),
+      })
+      .where(eq(teams.id, teamId));
+  }
+
+  // Team member operations
+  async addTeamMember(member: InsertTeamMember): Promise<TeamMember> {
+    const [newMember] = await db
+      .insert(teamMembers)
+      .values(member)
+      .returning();
+    return newMember;
+  }
+
+  // Referee operations
+  async getRefereesByCompetition(competitionId: string): Promise<Referee[]> {
+    return await db
+      .select()
+      .from(referees)
+      .where(eq(referees.competitionId, competitionId));
+  }
+
+  async getRefereeByUserAndCompetition(userId: string, competitionId: string): Promise<Referee | undefined> {
+    const [referee] = await db
+      .select()
+      .from(referees)
+      .where(
+        and(
+          eq(referees.userId, userId),
+          eq(referees.competitionId, competitionId)
+        )
+      );
+    return referee;
+  }
+
+  async createReferee(referee: InsertReferee): Promise<Referee> {
+    const [newReferee] = await db
+      .insert(referees)
+      .values(referee)
+      .returning();
+    return newReferee;
+  }
+
+  // Catch operations
+  async getCatchesByCompetition(competitionId: string): Promise<(Catch & { team: Team; referee: Referee })[]> {
+    const catchesWithDetails = await db
+      .select()
+      .from(catches)
+      .leftJoin(teams, eq(catches.teamId, teams.id))
+      .leftJoin(referees, eq(catches.refereeId, referees.id))
+      .where(eq(catches.competitionId, competitionId))
+      .orderBy(desc(catches.submittedAt));
+
+    return catchesWithDetails.map(row => ({
+      ...row.catches,
+      team: row.teams!,
+      referee: row.referees!,
+    }));
+  }
+
+  async getCatchesByTeam(teamId: string): Promise<Catch[]> {
+    return await db
+      .select()
+      .from(catches)
+      .where(eq(catches.teamId, teamId))
+      .orderBy(desc(catches.submittedAt));
+  }
+
+  async createCatch(catch_: InsertCatch): Promise<Catch> {
+    const [newCatch] = await db
+      .insert(catches)
+      .values(catch_)
+      .returning();
+    return newCatch;
+  }
+
+  // Sponsor operations
+  async getSponsorsByCompetition(competitionId: string): Promise<Sponsor[]> {
+    return await db
+      .select()
+      .from(sponsors)
+      .where(eq(sponsors.competitionId, competitionId));
+  }
+
+  async createSponsor(sponsor: InsertSponsor): Promise<Sponsor> {
+    const [newSponsor] = await db
+      .insert(sponsors)
+      .values(sponsor)
+      .returning();
+    return newSponsor;
+  }
+
+  // Leaderboard operations
+  async getLeaderboard(competitionId: string): Promise<(Team & { members: TeamMember[] })[]> {
+    return this.getTeamsByCompetition(competitionId);
+  }
+}
+
+export const storage = new DatabaseStorage();
