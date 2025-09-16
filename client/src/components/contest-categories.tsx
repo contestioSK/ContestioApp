@@ -61,7 +61,7 @@ export function ContestCategories({ contests }: ContestCategoriesProps) {
       icon: UserPlus,
       route: "/categories/registration-open",
       gradient: "from-primary to-primary/80",
-      bgPattern: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
+      bgPattern: "https://images.unsplash.com/photo-1580623557890-2e7e88b73b31?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
       badge: "🔥 Aktívne",
       badgeVariant: "default" as const
     },
@@ -72,7 +72,7 @@ export function ContestCategories({ contests }: ContestCategoriesProps) {
       icon: Calendar,
       route: "/categories/upcoming",
       gradient: "from-secondary to-secondary/80",
-      bgPattern: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
+      bgPattern: "https://images.unsplash.com/photo-1606189934846-8b4b0c7ad8e9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
       badge: "📅 Nadchádzajúce",
       badgeVariant: "secondary" as const
     },
@@ -83,7 +83,7 @@ export function ContestCategories({ contests }: ContestCategoriesProps) {
       icon: Eye,
       route: "/categories/live",
       gradient: "from-red-500 to-red-600",
-      bgPattern: "https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
+      bgPattern: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
       badge: "🔴 Live",
       badgeVariant: "destructive" as const
     },
@@ -94,7 +94,7 @@ export function ContestCategories({ contests }: ContestCategoriesProps) {
       icon: Trophy,
       route: "/categories/finished",
       gradient: "from-accent to-accent/80",
-      bgPattern: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
+      bgPattern: "https://images.unsplash.com/photo-1522540621023-50aa8a89a32e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
       badge: "🏆 Ukončené",
       badgeVariant: "outline" as const
     }
