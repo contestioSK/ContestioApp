@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -38,6 +39,7 @@ const competitionRegistrationFormSchema = z.object({
   contactEmail: z.string().email("Neplatný email").max(255),
   contactPhone: z.string().max(50).optional(),
   organizationName: z.string().max(255).optional(),
+  hasSectors: z.boolean().default(false),
   sectorPlaces: z.array(z.object({
     sectorName: z.string().min(1, "Názov sektoru je povinný"),
     places: z.array(z.string().min(1, "Názov miesta je povinný")).min(1, "Sektor musí mať aspoň jedno miesto")
@@ -58,13 +60,16 @@ export default function RegisterCompetition() {
       location: "",
       startDate: new Date().toISOString().slice(0, 16),
       endDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
-      prizePool: "",
+      firstPlacePrize: "",
+      secondPlacePrize: "",
+      thirdPlacePrize: "",
       registrationFee: "",
       maxTeams: "",
       contactName: "",
       contactEmail: "",
       contactPhone: "",
       organizationName: "",
+      hasSectors: false,
       sectorPlaces: [
         { sectorName: "Sektor A", places: ["Miesto 1", "Miesto 2", "Miesto 3"] },
         { sectorName: "Sektor B", places: ["Miesto 1", "Miesto 2"] }
@@ -81,13 +86,16 @@ export default function RegisterCompetition() {
         location: data.location,
         startDate: new Date(data.startDate),
         endDate: new Date(data.endDate),
-        prizePool: data.prizePool || null,
+        firstPlacePrize: data.firstPlacePrize || null,
+        secondPlacePrize: data.secondPlacePrize || null,
+        thirdPlacePrize: data.thirdPlacePrize || null,
         registrationFee: data.registrationFee || null,
         maxTeams: data.maxTeams ? parseInt(data.maxTeams) : null,
         contactName: data.contactName,
         contactEmail: data.contactEmail,
         contactPhone: data.contactPhone || null,
         organizationName: data.organizationName || null,
+        hasSectors: data.hasSectors,
         sectorPlaces: data.sectorPlaces,
       };
       
@@ -418,6 +426,31 @@ export default function RegisterCompetition() {
                       Pridať sektor
                     </Button>
                   </div>
+                  
+                  {/* Sector Toggle */}
+                  <FormField
+                    control={form.control}
+                    name="hasSectors"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center justify-between rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-base font-medium">
+                            Súťaž je rozdelená do sektorov
+                          </FormLabel>
+                          <FormDescription>
+                            Aktivujte túto možnosť, ak sa súťaž bude konať v geograficky rozdelených sektoroch
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            data-testid="switch-has-sectors"
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
                   
                   <FormDescription>
                     Definujte sektory a miesta pre súťaž. Každý sektor môže mať viacero miest kde sa tímy môžu umiestniť.
