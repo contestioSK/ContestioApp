@@ -663,7 +663,9 @@ export default function AdminPanel() {
                                   { id: "most-fish-caught", label: "Najväčší počet ulovených rýb" },
                                   { id: "best-5-fish", label: "Top 5 rýb" },
                                   { id: "daily-big-fish", label: "Najväčší úlovok dňa" },
-                                  { id: "first-fish-over-weight", label: "Prvá ryba nad 20 kg / 25 kg / 30 kg" },
+                                  { id: "first-fish-over-15kg", label: "Prvá ryba nad 15 kg" },
+                                  { id: "first-fish-over-20kg", label: "Prvá ryba nad 20 kg" },
+                                  { id: "first-fish-over-25kg", label: "Prvá ryba nad 25 kg" },
                                 ].map((item) => (
                                   <div
                                     key={item.id}

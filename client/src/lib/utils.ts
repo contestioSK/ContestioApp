@@ -48,7 +48,9 @@ export function getSideCompetitionLabel(id: string): string {
     "most-fish-caught": "Najväčší počet ulovených rýb",
     "best-5-fish": "Top 5 rýb",
     "daily-big-fish": "Najväčší úlovok dňa",
-    "first-fish-over-weight": "Prvá ryba nad 20 kg / 25 kg / 30 kg",
+    "first-fish-over-15kg": "Prvá ryba nad 15 kg",
+    "first-fish-over-20kg": "Prvá ryba nad 20 kg",
+    "first-fish-over-25kg": "Prvá ryba nad 25 kg",
   };
   
   return sideCompetitionLabels[id] || id;
