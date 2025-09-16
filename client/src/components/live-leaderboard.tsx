@@ -10,9 +10,10 @@ import { formatSectorPlace, getSectorLetter } from "@/lib/utils";
 interface LiveLeaderboardProps {
   teams: (Team & { members: TeamMember[] })[];
   isLoading: boolean;
+  competitionId: string;
 }
 
-export default function LiveLeaderboard({ teams, isLoading }: LiveLeaderboardProps) {
+export default function LiveLeaderboard({ teams, isLoading, competitionId }: LiveLeaderboardProps) {
   if (isLoading) {
     return (
       <Card>
@@ -67,6 +68,14 @@ export default function LiveLeaderboard({ teams, isLoading }: LiveLeaderboardPro
     if (!sectorPlace) return null;
     
     const sectorLetter = getSectorLetter(team);
+    if (!sectorLetter || !competitionId) {
+      return (
+        <Badge className={`text-sm font-medium bg-muted/50`}>
+          {sectorPlace}
+        </Badge>
+      );
+    }
+    
     const colors = {
       'A': 'bg-primary/10 text-primary',
       'B': 'bg-secondary/10 text-secondary',
@@ -74,9 +83,11 @@ export default function LiveLeaderboard({ teams, isLoading }: LiveLeaderboardPro
     };
     
     return (
-      <Badge className={`text-sm font-medium ${colors[sectorLetter as keyof typeof colors] || 'bg-muted/50'}`}>
-        {sectorPlace}
-      </Badge>
+      <Link href={`/competition/${competitionId}/sector/${sectorLetter}`} data-testid={`link-leaderboard-sector-${team.id}`}>
+        <Badge className={`text-sm font-medium cursor-pointer hover:bg-primary/20 transition-colors ${colors[sectorLetter as keyof typeof colors] || 'bg-muted/50'}`}>
+          {sectorPlace}
+        </Badge>
+      </Link>
     );
   };
 
