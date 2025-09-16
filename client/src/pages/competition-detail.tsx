@@ -519,23 +519,6 @@ export default function CompetitionDetail() {
                           );
                         })()}
 
-                        {/* Lightest Catch */}
-                        {(() => {
-                          const lightestCatch = catches.reduce((min: any, current: any) => 
-                            parseFloat(current.weight) < parseFloat(min.weight) ? current : min
-                          );
-                          return (
-                            <div className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-950/20 rounded-lg" data-testid="special-contest-lightest">
-                              <div>
-                                <div className="font-medium text-foreground">Najľahší úlovok</div>
-                                <div className="text-sm text-muted-foreground">{lightestCatch.team?.name}</div>
-                              </div>
-                              <div className="text-right">
-                                <div className="font-mono font-bold text-purple-600 dark:text-purple-400">{lightestCatch.weight} kg</div>
-                              </div>
-                            </div>
-                          );
-                        })()}
 
                         {/* Heaviest Fish by Sector */}
                         {['A', 'B', 'C'].map(sector => {
@@ -557,39 +540,6 @@ export default function CompetitionDetail() {
                           );
                         })}
 
-                        {/* Fastest Catch (first 30 minutes) */}
-                        {(() => {
-                          if (!competition?.startDate) return null;
-                          const competitionStart = new Date(competition.startDate);
-                          
-                          const fastCatches = catches.filter((c: any) => {
-                            const catchTime = new Date(c.submittedAt);
-                            const timeDiff = (catchTime.getTime() - competitionStart.getTime()) / (1000 * 60); // minutes
-                            return timeDiff <= 30;
-                          });
-                          
-                          if (fastCatches.length === 0) return null;
-                          
-                          const fastestCatch = fastCatches.reduce((fastest: any, current: any) => {
-                            const currentTime = new Date(current.submittedAt).getTime();
-                            const fastestTime = new Date(fastest.submittedAt).getTime();
-                            return currentTime < fastestTime ? current : fastest;
-                          });
-                          
-                          const timeDiff = Math.round((new Date(fastestCatch.submittedAt).getTime() - competitionStart.getTime()) / (1000 * 60));
-                          
-                          return (
-                            <div className="flex items-center justify-between p-3 bg-red-50 dark:bg-red-950/20 rounded-lg" data-testid="special-contest-fastest">
-                              <div>
-                                <div className="font-medium text-foreground">Najrýchlejší úlovok</div>
-                                <div className="text-sm text-muted-foreground">{fastestCatch.team?.name} - {timeDiff} min</div>
-                              </div>
-                              <div className="text-right">
-                                <div className="font-mono font-bold text-red-600 dark:text-red-400">{fastestCatch.weight} kg</div>
-                              </div>
-                            </div>
-                          );
-                        })()}
                       </>
                     ) : (
                       <div className="text-center py-4 text-muted-foreground">
