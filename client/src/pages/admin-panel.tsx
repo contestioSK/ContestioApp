@@ -28,7 +28,9 @@ const competitionSchema = z.object({
   location: z.string().min(1, "Miesto je povinné").max(255, "Miesto je príliš dlhé"),
   startDate: z.string().min(1, "Dátum začiatku je povinný"),
   endDate: z.string().min(1, "Dátum konca je povinný"),
-  prizePool: z.string().optional(),
+  firstPlacePrize: z.string().optional(),
+  secondPlacePrize: z.string().optional(),
+  thirdPlacePrize: z.string().optional(),
   registrationFee: z.string().optional(),
   maxTeams: z.string().optional(),
   sectorPlaces: z.array(z.object({
@@ -58,7 +60,9 @@ export default function AdminPanel() {
       location: "",
       startDate: "",
       endDate: "",
-      prizePool: "",
+      firstPlacePrize: "",
+      secondPlacePrize: "",
+      thirdPlacePrize: "",
       registrationFee: "",
       maxTeams: "",
       sectorPlaces: [
@@ -73,7 +77,9 @@ export default function AdminPanel() {
     mutationFn: async (data: CompetitionForm) => {
       const competitionData = {
         ...data,
-        prizePool: data.prizePool || undefined, // Keep as string for decimal type
+        firstPlacePrize: data.firstPlacePrize || undefined, // Keep as string for decimal type
+        secondPlacePrize: data.secondPlacePrize || undefined, // Keep as string for decimal type
+        thirdPlacePrize: data.thirdPlacePrize || undefined, // Keep as string for decimal type
         registrationFee: data.registrationFee || undefined, // Keep as string for decimal type
         maxTeams: data.maxTeams ? parseInt(data.maxTeams) : undefined,
         startDate: new Date(data.startDate), // Send Date object, not ISO string
@@ -428,12 +434,40 @@ export default function AdminPanel() {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <FormField
                             control={form.control}
-                            name="prizePool"
+                            name="firstPlacePrize"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Výhra (€)</FormLabel>
+                                <FormLabel>Výhry: 1. miesto (€)</FormLabel>
                                 <FormControl>
-                                  <Input type="number" placeholder="0.00" step="0.01" {...field} data-testid="input-prize-pool" />
+                                  <Input type="number" placeholder="0.00" step="0.01" {...field} data-testid="input-first-place-prize" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="secondPlacePrize"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>2. miesto (€)</FormLabel>
+                                <FormControl>
+                                  <Input type="number" placeholder="0.00" step="0.01" {...field} data-testid="input-second-place-prize" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="thirdPlacePrize"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>3. miesto (€)</FormLabel>
+                                <FormControl>
+                                  <Input type="number" placeholder="0.00" step="0.01" {...field} data-testid="input-third-place-prize" />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>

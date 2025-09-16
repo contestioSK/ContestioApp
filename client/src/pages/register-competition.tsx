@@ -29,7 +29,9 @@ const competitionRegistrationFormSchema = z.object({
   location: z.string().min(1, "Miesto je povinné").max(255, "Miesto je príliš dlhé"),
   startDate: z.string().min(1, "Dátum začiatku je povinný"),
   endDate: z.string().min(1, "Dátum konca je povinný"),
-  prizePool: z.string().optional(),
+  firstPlacePrize: z.string().optional(),
+  secondPlacePrize: z.string().optional(),
+  thirdPlacePrize: z.string().optional(),
   registrationFee: z.string().optional(),
   maxTeams: z.string().optional(),
   contactName: z.string().min(1, "Meno kontaktnej osoby je povinné").max(255),
@@ -267,12 +269,40 @@ export default function RegisterCompetition() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <FormField
                       control={form.control}
-                      name="prizePool"
+                      name="firstPlacePrize"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Rozpočet na ceny (€)</FormLabel>
+                          <FormLabel>Výhry: 1. miesto (€)</FormLabel>
                           <FormControl>
-                            <Input placeholder="500.00" {...field} data-testid="input-prize-pool" />
+                            <Input type="number" placeholder="500.00" step="0.01" {...field} data-testid="input-first-place-prize" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="secondPlacePrize"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>2. miesto (€)</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="300.00" step="0.01" {...field} data-testid="input-second-place-prize" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="thirdPlacePrize"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>3. miesto (€)</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="200.00" step="0.01" {...field} data-testid="input-third-place-prize" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
