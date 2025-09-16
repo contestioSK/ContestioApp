@@ -11,19 +11,21 @@ interface CatchTimelineProps {
 
 export default function CatchTimeline({ catches, isLoading }: CatchTimelineProps) {
   const formatTimeAgo = (date: string | Date | null) => {
-    if (!date) return 'Unknown time';
+    if (!date) return 'Neznámy čas';
     const now = new Date();
     const catchTime = date instanceof Date ? date : new Date(date);
     const diffInMinutes = Math.floor((now.getTime() - catchTime.getTime()) / (1000 * 60));
     
-    if (diffInMinutes < 1) return 'Just now';
-    if (diffInMinutes < 60) return `${diffInMinutes} min ago`;
+    if (diffInMinutes < 1) return 'Práve teraz';
+    if (diffInMinutes < 60) return `${diffInMinutes} min. dozadu`;
     
     const diffInHours = Math.floor(diffInMinutes / 60);
-    if (diffInHours < 24) return `${diffInHours}h ago`;
+    if (diffInHours < 24) return `${diffInHours} hod. dozadu`;
     
     const diffInDays = Math.floor(diffInHours / 24);
-    return `${diffInDays}d ago`;
+    if (diffInDays === 1) return '1 deň dozadu';
+    if (diffInDays <= 4) return `${diffInDays} dni dozadu`;
+    return `${diffInDays} dní dozadu`;
   };
 
   const getSectorBadge = (sector: string) => {
@@ -35,21 +37,21 @@ export default function CatchTimeline({ catches, isLoading }: CatchTimelineProps
     
     return (
       <Badge className={`text-xs font-medium ${colors[sector as keyof typeof colors] || 'bg-muted/50'}`}>
-        Sector {sector}
+        Sektor {sector}
       </Badge>
     );
   };
 
   const getFishTypeDisplay = (fishType: string) => {
-    return fishType === 'scaly' ? 'Scaly Carp' : 'Mirror Carp';
+    return fishType === 'scaly' ? 'Šupinový kapor' : 'Zrkadlový kapor';
   };
 
   if (isLoading) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Live Catches</CardTitle>
-          <p className="text-sm text-muted-foreground">Latest submissions from referees</p>
+          <CardTitle>Živé úlovky</CardTitle>
+          <p className="text-sm text-muted-foreground">Najnovšie príspevky rozhodcov</p>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -85,18 +87,18 @@ export default function CatchTimeline({ catches, isLoading }: CatchTimelineProps
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <Clock className="w-5 h-5" />
-          <span>Live Catches</span>
+          <span>Živé úlovky</span>
         </CardTitle>
-        <p className="text-sm text-muted-foreground">Latest submissions from referees</p>
+        <p className="text-sm text-muted-foreground">Najnovšie príspevky rozhodcov</p>
       </CardHeader>
       
       <CardContent className="p-0">
         {sortedCatches.length === 0 ? (
           <div className="text-center py-12 px-6">
             <Clock className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-muted-foreground text-lg">No catches submitted yet</p>
+            <p className="text-muted-foreground text-lg">Zatiaľ žiadne úlovky</p>
             <p className="text-sm text-muted-foreground mt-2">
-              Catches will appear here as they are submitted by referees
+              Úlovky sa tu zobrazia, keď ich rozhodcovia odošlú
             </p>
           </div>
         ) : (
@@ -113,13 +115,13 @@ export default function CatchTimeline({ catches, isLoading }: CatchTimelineProps
                     {catch_.photoUrl ? (
                       <img 
                         src={catch_.photoUrl} 
-                        alt="Catch photo" 
+                        alt="Fotka úlovku" 
                         className="w-12 h-12 rounded-lg object-cover"
                         data-testid={`catch-photo-${catch_.id}`}
                       />
                     ) : (
                       <div className="text-xs text-muted-foreground text-center">
-                        No<br />Photo
+                        Žiadna<br />fotka
                       </div>
                     )}
                   </div>
@@ -127,7 +129,7 @@ export default function CatchTimeline({ catches, isLoading }: CatchTimelineProps
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
                       <div className="font-medium text-foreground text-sm" data-testid={`catch-team-${catch_.id}`}>
-                        {catch_.team?.name || 'Unknown Team'}
+                        {catch_.team?.name || 'Neznámy tím'}
                       </div>
                       <div className="text-xs text-muted-foreground" data-testid={`catch-time-${catch_.id}`}>
                         {formatTimeAgo(catch_.submittedAt!)}
@@ -148,7 +150,7 @@ export default function CatchTimeline({ catches, isLoading }: CatchTimelineProps
                       
                       {catch_.isVerified && (
                         <Badge className="bg-secondary/10 text-secondary text-xs">
-                          Verified
+                          Overený
                         </Badge>
                       )}
                     </div>
@@ -159,7 +161,7 @@ export default function CatchTimeline({ catches, isLoading }: CatchTimelineProps
             
             {sortedCatches.length > 20 && (
               <div className="p-4 text-center text-sm text-muted-foreground">
-                Showing latest 20 catches
+                Zobrazuje posledných 20 úlovkov
               </div>
             )}
           </div>
