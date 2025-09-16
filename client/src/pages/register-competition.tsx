@@ -370,12 +370,15 @@ export default function RegisterCompetition() {
                         </FormDescription>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {[
-                            { id: "biggest-fish", label: getSideCompetitionLabel("biggest-fish") },
-                            { id: "most-fish", label: getSideCompetitionLabel("most-fish") },
-                            { id: "youth-category", label: getSideCompetitionLabel("youth-category") },
-                            { id: "women-category", label: getSideCompetitionLabel("women-category") },
-                            { id: "team-spirit", label: getSideCompetitionLabel("team-spirit") },
-                            { id: "early-bird", label: getSideCompetitionLabel("early-bird") },
+                            { id: "big-fish-overall", label: getSideCompetitionLabel("big-fish-overall") },
+                            { id: "big-common-carp", label: getSideCompetitionLabel("big-common-carp") },
+                            { id: "big-mirror-carp", label: getSideCompetitionLabel("big-mirror-carp") },
+                            { id: "first-catch", label: getSideCompetitionLabel("first-catch") },
+                            { id: "last-catch", label: getSideCompetitionLabel("last-catch") },
+                            { id: "most-fish-caught", label: getSideCompetitionLabel("most-fish-caught") },
+                            { id: "best-5-fish", label: getSideCompetitionLabel("best-5-fish") },
+                            { id: "daily-big-fish", label: getSideCompetitionLabel("daily-big-fish") },
+                            { id: "first-fish-over-weight", label: getSideCompetitionLabel("first-fish-over-weight") },
                           ].map((item) => (
                             <FormField
                               key={item.id}
