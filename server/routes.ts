@@ -160,21 +160,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/competitions/:id/teams', async (req, res) => {
+  app.post('/api/competitions/:id/teams', upload.fields([
+    { name: 'teamPhoto', maxCount: 1 },
+    { name: 'memberPhoto_0', maxCount: 1 },
+    { name: 'memberPhoto_1', maxCount: 1 },
+    { name: 'memberPhoto_2', maxCount: 1 },
+    { name: 'memberPhoto_3', maxCount: 1 },
+    { name: 'memberPhoto_4', maxCount: 1 },
+    { name: 'memberPhoto_5', maxCount: 1 },
+  ]), async (req: any, res) => {
     try {
+      // Handle team photo upload
+      let teamPhotoUrl = null;
+      if (req.files && req.files.teamPhoto && req.files.teamPhoto[0]) {
+        teamPhotoUrl = `/uploads/${req.files.teamPhoto[0].filename}`;
+      }
+
       const teamData = insertTeamSchema.parse({
         ...req.body,
         competitionId: req.params.id,
+        photoUrl: teamPhotoUrl,
       });
       
       const team = await storage.createTeam(teamData);
       
       // Add team members
       if (req.body.members && Array.isArray(req.body.members)) {
-        for (const memberData of req.body.members) {
+        for (let index = 0; index < req.body.members.length; index++) {
+          const memberData = req.body.members[index];
+          
+          // Handle member photo upload
+          let memberPhotoUrl = null;
+          if (req.files && req.files[`memberPhoto_${index}`] && req.files[`memberPhoto_${index}`][0]) {
+            memberPhotoUrl = `/uploads/${req.files[`memberPhoto_${index}`][0].filename}`;
+          }
+          
           const member = insertTeamMemberSchema.parse({
             ...memberData,
             teamId: team.id,
+            photoUrl: memberPhotoUrl,
           });
           await storage.addTeamMember(member);
         }
