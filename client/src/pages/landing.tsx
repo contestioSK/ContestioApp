@@ -67,13 +67,8 @@ function HeroRotatingBackground({ images, intervalMs = 6000 }: { images: string[
   useEffect(() => {
     if (!imagesLoaded || prefersReducedMotion) return;
 
-    console.log('Starting image rotation with', images.length, 'images');
     const interval = setInterval(() => {
-      setActiveIndex(prev => {
-        const newIndex = (prev + 1) % images.length;
-        console.log('Rotating to image', newIndex);
-        return newIndex;
-      });
+      setActiveIndex(prev => (prev + 1) % images.length);
     }, intervalMs);
 
     return () => clearInterval(interval);
@@ -90,20 +85,20 @@ function HeroRotatingBackground({ images, intervalMs = 6000 }: { images: string[
             prefersReducedMotion 
               ? 'transition-none' 
               : 'transition-opacity duration-1000 ease-in-out'
-          } ${index === activeIndex ? 'opacity-20' : 'opacity-0'}`}
+          } ${index === activeIndex ? 'opacity-40' : 'opacity-0'}`}
         />
       ))}
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20"></div>
+      <div className="absolute inset-0 bg-gradient-to-r from-primary/40 to-secondary/40"></div>
     </div>
   );
 }
 
 export default function Landing() {
-  // Carp fishing hero images
+  // Carp fishing hero images - distinctly different scenes
   const heroImages = [
-    "https://images.unsplash.com/photo-1580623557890-2e7e88b73b31?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
-    "https://images.unsplash.com/photo-1606189934846-8b4b0c7ad8e9?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
-    "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
+    "https://images.unsplash.com/photo-1580623557890-2e7e88b73b31?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80", // Close-up carp
+    "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80", // Lake sunset fishing
+    "https://images.unsplash.com/photo-1522540621023-50aa8a89a32e?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"  // Angler by water
   ];
 
   // Sample contests data to showcase different categories
