@@ -19,12 +19,12 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/competition/:id" component={CompetitionDetail} />
-      <Route path="/admin">
+      <Route path="/admin-panel">
         <ProtectedRoute roles={["organizer"]}>
           <AdminPanel />
         </ProtectedRoute>
       </Route>
-      <Route path="/referee">
+      <Route path="/referee-interface">
         <ProtectedRoute roles={["referee", "organizer"]}>
           <RefereeInterface />
         </ProtectedRoute>

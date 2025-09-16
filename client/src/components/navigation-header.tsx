@@ -26,10 +26,10 @@ export default function NavigationHeader() {
         setLocation('/');
         break;
       case 'organizer':
-        setLocation('/admin');
+        setLocation('/admin-panel');
         break;
       case 'referee':
-        setLocation('/referee');
+        setLocation('/referee-interface');
         break;
     }
   };
@@ -97,7 +97,7 @@ export default function NavigationHeader() {
             {user?.role === 'organizer' && (
               <Button 
                 className="bg-accent text-accent-foreground hover:bg-accent/90"
-                onClick={() => setLocation('/admin')}
+                onClick={() => setLocation('/admin-panel')}
                 data-testid="button-admin-panel"
               >
                 Admin Panel
