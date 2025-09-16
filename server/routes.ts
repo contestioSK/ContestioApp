@@ -399,11 +399,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           teamId: team.id,
           competitionId: competition.id,
           refereeId: referee.id,
-          weight: weight,
+          weight: parseFloat(weight),
           fishType: fishType,
           sector: team.sector,
           submittedAt: randomTime.toISOString(),
-          status: 'confirmed'
+          isVerified: true
         });
         
         catchIndex++;
@@ -490,24 +490,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
           weights: { over20: 0, over15: 0, over10: 0 }
         };
 
-        // Insert catches one by one
+        // Insert catches one by one with validation
         for (const catchInfo of catchData) {
           try {
-            const newCatch = await storage.createCatch(catchInfo);
+            // Validate catch data using schema
+            const validatedCatch = insertCatchSchema.parse(catchInfo);
+            const newCatch = await storage.createCatch(validatedCatch);
             await storage.updateTeamStats(catchInfo.teamId);
             
             results.inserted++;
             results.byTeam[catchInfo.teamId] = (results.byTeam[catchInfo.teamId] || 0) + 1;
             results.bySector[catchInfo.sector] = (results.bySector[catchInfo.sector] || 0) + 1;
             
-            const weight = parseFloat(catchInfo.weight);
+            const weight = catchInfo.weight;
             if (weight >= 20) results.weights.over20++;
             else if (weight >= 15) results.weights.over15++;
             else if (weight >= 10) results.weights.over10++;
 
             // Broadcast the new catch
             broadcast({
-              type: 'catchSubmitted',
+              type: 'new_catch',
               catch: newCatch,
               competitionId
             });
