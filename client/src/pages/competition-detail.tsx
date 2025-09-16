@@ -519,33 +519,6 @@ export default function CompetitionDetail() {
                           );
                         })()}
 
-
-                        {/* Heaviest Fish by Sector */}
-                        {['A', 'B', 'C'].map(sector => {
-                          const sectorCatches = catches.filter((c: any) => c.sector === sector);
-                          if (sectorCatches.length === 0) return null;
-                          const heaviestInSector = sectorCatches.reduce((max: any, current: any) => 
-                            parseFloat(current.weight) > parseFloat(max.weight) ? current : max
-                          );
-                          return (
-                            <div key={sector} className="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-950/20 rounded-lg" data-testid={`special-contest-heaviest-sector-${sector}`}>
-                              <div>
-                                <div className="font-medium text-foreground">
-                                  <Link href={`/competition/${id}/sector/${sector}`} data-testid={`link-heaviest-sector-${sector}`}>
-                                    <span className="hover:text-primary cursor-pointer transition-colors">
-                                      Najťažší Sektor {sector}
-                                    </span>
-                                  </Link>
-                                </div>
-                                <div className="text-sm text-muted-foreground">{heaviestInSector.team?.name}</div>
-                              </div>
-                              <div className="text-right">
-                                <div className="font-mono font-bold text-orange-600 dark:text-orange-400">{heaviestInSector.weight} kg</div>
-                              </div>
-                            </div>
-                          );
-                        })}
-
                       </>
                     ) : (
                       <div className="text-center py-4 text-muted-foreground">
