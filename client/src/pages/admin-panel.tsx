@@ -650,7 +650,7 @@ export default function AdminPanel() {
                         <FormField
                           control={form.control}
                           name="sideCompetitions"
-                          render={() => (
+                          render={({ field }) => (
                             <FormItem>
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 {[
@@ -661,38 +661,26 @@ export default function AdminPanel() {
                                   { id: "team-spirit", label: "Najlepší tímový duch" },
                                   { id: "early-bird", label: "Ranná úlovka" },
                                 ].map((item) => (
-                                  <FormField
+                                  <div
                                     key={item.id}
-                                    control={form.control}
-                                    name="sideCompetitions"
-                                    render={({ field }) => {
-                                      return (
-                                        <FormItem
-                                          key={item.id}
-                                          className="flex flex-row items-start space-x-3 space-y-0"
-                                        >
-                                          <FormControl>
-                                            <Checkbox
-                                              checked={field.value?.includes(item.id)}
-                                              onCheckedChange={(checked) => {
-                                                return checked
-                                                  ? field.onChange([...field.value, item.id])
-                                                  : field.onChange(
-                                                      field.value?.filter(
-                                                        (value) => value !== item.id
-                                                      )
-                                                    )
-                                              }}
-                                              data-testid={`checkbox-side-competition-${item.id}`}
-                                            />
-                                          </FormControl>
-                                          <FormLabel className="text-sm font-normal cursor-pointer">
-                                            {item.label}
-                                          </FormLabel>
-                                        </FormItem>
-                                      )
-                                    }}
-                                  />
+                                    className="flex flex-row items-start space-x-3 space-y-0"
+                                  >
+                                    <Checkbox
+                                      checked={field.value?.includes(item.id) || false}
+                                      onCheckedChange={(checked) => {
+                                        const currentValue = field.value || [];
+                                        if (checked) {
+                                          field.onChange([...currentValue, item.id]);
+                                        } else {
+                                          field.onChange(currentValue.filter((value) => value !== item.id));
+                                        }
+                                      }}
+                                      data-testid={`checkbox-side-competition-${item.id}`}
+                                    />
+                                    <label className="text-sm font-normal cursor-pointer" htmlFor={item.id}>
+                                      {item.label}
+                                    </label>
+                                  </div>
                                 ))}
                               </div>
                               <FormMessage />
