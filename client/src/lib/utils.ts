@@ -40,12 +40,15 @@ export function getSectorLetter(team: { sectorName?: string | null; placeName?: 
 // Side competitions mapping utility
 export function getSideCompetitionLabel(id: string): string {
   const sideCompetitionLabels: Record<string, string> = {
-    "biggest-fish": "Najväčšia ryba",
-    "most-fish": "Najviac rýb", 
-    "youth-category": "Mládežnícka kategória",
-    "women-category": "Ženská kategória",
-    "team-spirit": "Najlepší tímový duch",
-    "early-bird": "Ranná úlovka",
+    "big-fish-overall": "Najväčší úlovok súťaže",
+    "big-common-carp": "Najväčší šupináč",
+    "big-mirror-carp": "Najväčší lysec",
+    "first-catch": "Prvá ryba súťaže",
+    "last-catch": "Posledná ryba súťaže",
+    "most-fish-caught": "Najväčší počet ulovených rýb",
+    "best-5-fish": "Top 5 rýb",
+    "daily-big-fish": "Najväčší úlovok dňa",
+    "first-fish-over-weight": "Prvá ryba nad 20 kg / 25 kg / 30 kg",
   };
   
   return sideCompetitionLabels[id] || id;
