@@ -142,6 +142,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get team details and their catches
+  app.get('/api/teams/:id', async (req, res) => {
+    try {
+      const team = await storage.getTeam(req.params.id);
+      if (!team) {
+        return res.status(404).json({ message: "Team not found" });
+      }
+
+      const catches = await storage.getCatchesByTeam(req.params.id);
+      res.json({ ...team, catches });
+    } catch (error) {
+      console.error("Error fetching team details:", error);
+      res.status(500).json({ message: "Failed to fetch team details" });
+    }
+  });
+
   app.post('/api/competitions/:id/teams', async (req, res) => {
     try {
       const teamData = insertTeamSchema.parse({
