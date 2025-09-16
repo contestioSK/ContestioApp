@@ -386,6 +386,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Sector statistics route
+  app.get('/api/competitions/:id/sectors/:sector/statistics', async (req, res) => {
+    try {
+      const { id: competitionId, sector } = req.params;
+      const statistics = await storage.getSectorStatistics(competitionId, sector);
+      res.json(statistics);
+    } catch (error) {
+      console.error("Error fetching sector statistics:", error);
+      res.status(500).json({ message: "Failed to fetch sector statistics" });
+    }
+  });
+
   // Sponsor routes
   app.get('/api/competitions/:id/sponsors', async (req, res) => {
     try {
