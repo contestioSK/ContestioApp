@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Users, Trophy, Fish, MapPin } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Team, TeamMember, Catch } from "@shared/schema";
+import { formatSectorPlace, getSectorLetter } from "@/lib/utils";
 
 type TeamWithDetails = Team & {
   members?: TeamMember[];
@@ -83,9 +84,11 @@ export default function TeamDetail() {
     );
   }
 
-  const getSectorBadge = (sector: string | null) => {
-    if (!sector) return null;
+  const getSectorBadge = (team: Team) => {
+    const sectorPlace = formatSectorPlace(team);
+    if (!sectorPlace) return null;
     
+    const sectorLetter = getSectorLetter(team);
     const colors = {
       'A': 'bg-primary/10 text-primary border-primary',
       'B': 'bg-secondary/10 text-secondary border-secondary',
@@ -93,8 +96,8 @@ export default function TeamDetail() {
     };
     
     return (
-      <Badge className={`text-sm font-medium ${colors[sector as keyof typeof colors] || 'bg-muted/50'}`}>
-        Sektor {sector}
+      <Badge className={`text-sm font-medium ${colors[sectorLetter as keyof typeof colors] || 'bg-muted/50'}`}>
+        {sectorPlace}
       </Badge>
     );
   };
@@ -156,7 +159,7 @@ export default function TeamDetail() {
                 {teamData.name}
               </h1>
               <div className="flex items-center space-x-3">
-                {getSectorBadge(teamData.sector)}
+                {getSectorBadge(teamData)}
                 {getStatusBadge(teamData.status)}
               </div>
             </div>
@@ -309,7 +312,11 @@ export default function TeamDetail() {
                               </span>
                             </td>
                             <td className="p-3 text-center">
-                              {getSectorBadge(catch_.sector)}
+                              {(formatSectorPlace(teamData) || (catch_.sector && `Sektor ${catch_.sector}`)) && (
+                                <Badge className="text-sm font-medium bg-muted/50">
+                                  {formatSectorPlace(teamData) || `Sektor ${catch_.sector}`}
+                                </Badge>
+                              )}
                             </td>
                             <td className="p-3 text-center">
                               {catch_.photoUrl ? (

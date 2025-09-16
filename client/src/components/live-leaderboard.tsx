@@ -5,6 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { RotateCcw, ArrowRight } from "lucide-react";
 import { Link } from "wouter";
 import type { Team, TeamMember } from "@shared/schema";
+import { formatSectorPlace, getSectorLetter } from "@/lib/utils";
 
 interface LiveLeaderboardProps {
   teams: (Team & { members: TeamMember[] })[];
@@ -61,9 +62,11 @@ export default function LiveLeaderboard({ teams, isLoading }: LiveLeaderboardPro
     );
   };
 
-  const getSectorBadge = (sector: string | null) => {
-    if (!sector) return null;
+  const getSectorBadge = (team: Team) => {
+    const sectorPlace = formatSectorPlace(team);
+    if (!sectorPlace) return null;
     
+    const sectorLetter = getSectorLetter(team);
     const colors = {
       'A': 'bg-primary/10 text-primary',
       'B': 'bg-secondary/10 text-secondary',
@@ -71,8 +74,8 @@ export default function LiveLeaderboard({ teams, isLoading }: LiveLeaderboardPro
     };
     
     return (
-      <Badge className={`text-sm font-medium ${colors[sector as keyof typeof colors] || 'bg-muted/50'}`}>
-        {sector}
+      <Badge className={`text-sm font-medium ${colors[sectorLetter as keyof typeof colors] || 'bg-muted/50'}`}>
+        {sectorPlace}
       </Badge>
     );
   };
@@ -126,7 +129,7 @@ export default function LiveLeaderboard({ teams, isLoading }: LiveLeaderboardPro
                         </div>
                       </td>
                       <td className="p-4">
-                        {getSectorBadge(team.sector)}
+                        {getSectorBadge(team)}
                       </td>
                       <td className="p-4 text-right">
                         <div className="font-mono font-bold text-foreground" data-testid={`text-weight-${team.id}`}>

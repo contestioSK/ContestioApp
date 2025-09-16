@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Plus, Minus, RotateCcw } from "lucide-react";
 import type { Team, TeamMember } from "@shared/schema";
+import { formatSectorPlace, getSectorLetter } from "@/lib/utils";
 
 interface CompetitionMapProps {
   competitionId: string;
@@ -15,13 +16,14 @@ export default function CompetitionMap({ competitionId, teams }: CompetitionMapP
     return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
   };
 
-  // Group teams by sector
+  // Group teams by sector letter (for visual positioning)
   const teamsBySector = teams.reduce((acc, team) => {
-    if (team.sector && team.status === 'approved') {
-      if (!acc[team.sector]) {
-        acc[team.sector] = [];
+    const sectorLetter = getSectorLetter(team);
+    if (sectorLetter && team.status === 'approved') {
+      if (!acc[sectorLetter]) {
+        acc[sectorLetter] = [];
       }
-      acc[team.sector].push(team);
+      acc[sectorLetter].push(team);
     }
     return acc;
   }, {} as Record<string, (Team & { members: TeamMember[] })[]>);
@@ -100,11 +102,16 @@ export default function CompetitionMap({ competitionId, teams }: CompetitionMapP
                     </div>
                     <div className="space-y-1">
                       {sectorTeams.map((team) => (
-                        <div key={team.id} className="flex justify-between text-xs">
-                          <span className="text-foreground">{team.name}</span>
-                          <span className="font-mono text-accent">
-                            {parseFloat(team.totalWeight || '0').toFixed(1)} kg
-                          </span>
+                        <div key={team.id} className="text-xs">
+                          <div className="flex justify-between">
+                            <span className="text-foreground font-medium">{team.name}</span>
+                            <span className="font-mono text-accent">
+                              {parseFloat(team.totalWeight || '0').toFixed(1)} kg
+                            </span>
+                          </div>
+                          <div className="text-muted-foreground text-xs">
+                            {formatSectorPlace(team) || `Sektor ${team.sector}`}
+                          </div>
                         </div>
                       ))}
                     </div>
