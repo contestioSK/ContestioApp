@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Link } from "wouter";
 import { ArrowLeft, Fish, Calendar, Weight, Clock, User, Camera } from "lucide-react";
 import type { Catch, Team, Referee, Competition } from "@shared/schema";
@@ -156,95 +157,100 @@ export default function CompetitionCatches() {
             </Card>
           )}
 
-          {/* Catches Grid */}
+          {/* Catches Table */}
           {filteredCatches.length > 0 ? (
-            <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-              {filteredCatches.map((catch_) => (
-                <Card key={catch_.id} className="overflow-hidden hover:shadow-lg transition-shadow" data-testid={`card-catch-${catch_.id}`}>
-                  
-                  {/* Photo */}
-                  {catch_.photoUrl && (
-                    <div className="aspect-video relative overflow-hidden">
-                      <img 
-                        src={catch_.photoUrl} 
-                        alt="Úlovok" 
-                        className="w-full h-full object-cover"
-                        data-testid={`img-catch-photo-${catch_.id}`}
-                      />
-                      <div className="absolute top-2 right-2">
+            <Card className="overflow-hidden">
+              <Table data-testid="table-catches">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[100px]">Hmotnosť</TableHead>
+                    <TableHead>Druh</TableHead>
+                    <TableHead>Tím</TableHead>
+                    <TableHead>Sektor</TableHead>
+                    <TableHead>Čas úlovku</TableHead>
+                    <TableHead>Fotografia</TableHead>
+                    <TableHead>Stav</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredCatches.map((catch_) => (
+                    <TableRow key={catch_.id} className="hover:bg-muted/50" data-testid={`row-catch-${catch_.id}`}>
+                      <TableCell className="font-medium text-primary">
+                        <div className="flex items-center gap-1">
+                          <Weight className="w-4 h-4" />
+                          <span data-testid={`text-catch-weight-${catch_.id}`}>
+                            {catch_.weight} kg
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" data-testid={`badge-fish-type-${catch_.id}`}>
+                          {getFishTypeLabel(catch_.fishType)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {catch_.team ? (
+                          <Link href={`/team/${catch_.team.id}`} data-testid={`link-catch-team-${catch_.id}`}>
+                            <span className="font-medium hover:text-primary cursor-pointer transition-colors">
+                              {catch_.team.name}
+                            </span>
+                          </Link>
+                        ) : (
+                          <span className="text-muted-foreground">Neznámy tím</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
                         <Link href={`/competition/${id}/sector/${catch_.sector}`} data-testid={`link-catch-sector-${catch_.id}`}>
                           <Badge className={`${getSectorBadgeColor(catch_.sector)} font-mono hover:opacity-80 cursor-pointer transition-opacity`}>
                             Sektor {catch_.sector}
                           </Badge>
                         </Link>
-                      </div>
-                    </div>
-                  )}
-
-                  <CardContent className="p-4">
-                    
-                    {/* Weight and Fish Type */}
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <Weight className="w-5 h-5 text-primary" />
-                        <span className="text-2xl font-bold text-primary" data-testid={`text-catch-weight-${catch_.id}`}>
-                          {catch_.weight} kg
-                        </span>
-                      </div>
-                      <Badge variant="secondary" data-testid={`badge-fish-type-${catch_.id}`}>
-                        {getFishTypeLabel(catch_.fishType)}
-                      </Badge>
-                    </div>
-
-                    {/* Team Info */}
-                    <div className="flex items-center gap-2 mb-2">
-                      <User className="w-4 h-4 text-muted-foreground" />
-                      {catch_.team ? (
-                        <Link href={`/team/${catch_.team.id}`} data-testid={`link-catch-team-${catch_.id}`}>
-                          <span className="font-medium hover:text-primary cursor-pointer transition-colors">
-                            {catch_.team.name}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1 text-sm">
+                          <Clock className="w-3 h-3" />
+                          <span data-testid={`text-catch-time-${catch_.id}`}>
+                            {(() => {
+                              const submittedDate = catch_.submittedAt ? new Date(catch_.submittedAt) : null;
+                              if (!submittedDate || isNaN(submittedDate.getTime())) {
+                                return 'Neznámy čas';
+                              }
+                              return format(submittedDate, 'HH:mm:ss, d.M.yyyy', { locale: sk });
+                            })()}
                           </span>
-                        </Link>
-                      ) : (
-                        <span className="font-medium text-muted-foreground">Neznámy tím</span>
-                      )}
-                    </div>
-
-                    {/* Timestamp */}
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Clock className="w-4 h-4" />
-                      <span data-testid={`text-catch-time-${catch_.id}`}>
-                        {(() => {
-                          const submittedDate = catch_.submittedAt ? new Date(catch_.submittedAt) : null;
-                          if (!submittedDate || isNaN(submittedDate.getTime())) {
-                            return 'Neznámy čas';
-                          }
-                          return format(submittedDate, 'HH:mm:ss, d. MMMM yyyy', { locale: sk });
-                        })()}
-                      </span>
-                    </div>
-
-                    {/* Verification Status */}
-                    <div className="mt-3 flex items-center justify-between">
-                      <Badge 
-                        variant={catch_.isVerified ? "default" : "secondary"}
-                        data-testid={`badge-verification-${catch_.id}`}
-                      >
-                        {catch_.isVerified ? "Overený" : "Čaká na overenie"}
-                      </Badge>
-                      
-                      {!catch_.photoUrl && (
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Camera className="w-3 h-3" />
-                          <span>Bez fotografie</span>
                         </div>
-                      )}
-                    </div>
-
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                      </TableCell>
+                      <TableCell>
+                        {catch_.photoUrl ? (
+                          <div className="flex items-center gap-1">
+                            <img 
+                              src={catch_.photoUrl} 
+                              alt="Úlovok" 
+                              className="w-8 h-8 rounded object-cover"
+                              data-testid={`img-catch-photo-${catch_.id}`}
+                            />
+                            <Camera className="w-4 h-4 text-green-500" />
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1 text-muted-foreground">
+                            <Camera className="w-4 h-4" />
+                            <span className="text-xs">Bez fotografie</span>
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Badge 
+                          variant={catch_.isVerified ? "default" : "secondary"}
+                          data-testid={`badge-verification-${catch_.id}`}
+                        >
+                          {catch_.isVerified ? "Overený" : "Čaká na overenie"}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Card>
           ) : (
             <Card>
               <CardContent className="py-12 text-center">
