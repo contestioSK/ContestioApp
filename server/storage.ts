@@ -62,6 +62,15 @@ export interface IStorage {
   
   // Leaderboard operations
   getLeaderboard(competitionId: string): Promise<(Team & { members: TeamMember[] })[]>;
+  
+  // Sector statistics
+  getSectorStatistics(competitionId: string, sector: string): Promise<{
+    teams: (Team & { members: TeamMember[] })[];
+    biggestFish: Catch | null;
+    biggestScalyCarp: Catch | null;
+    biggestMirrorCarp: Catch | null;
+    averageWeight: number;
+  }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -337,6 +346,67 @@ export class DatabaseStorage implements IStorage {
   // Leaderboard operations
   async getLeaderboard(competitionId: string): Promise<(Team & { members: TeamMember[] })[]> {
     return this.getTeamsByCompetition(competitionId);
+  }
+
+  // Sector statistics operations
+  async getSectorStatistics(competitionId: string, sector: string): Promise<{
+    teams: (Team & { members: TeamMember[] })[];
+    biggestFish: Catch | null;
+    biggestScalyCarp: Catch | null;
+    biggestMirrorCarp: Catch | null;
+    averageWeight: number;
+  }> {
+    // Normalize sector parameter - extract single letter if full name provided
+    const sectorCode = sector.match(/[A-Z]/)?.[0] || sector.toUpperCase();
+    const fullSectorName = `Sektor ${sectorCode}`;
+
+    // Get teams in this sector - match by both legacy sector and new sectorName
+    const allTeams = await this.getTeamsByCompetition(competitionId);
+    const sectorTeams = allTeams.filter(team => 
+      team.sector === sectorCode || team.sectorName === fullSectorName
+    );
+
+    // Get all verified catches for this sector
+    const sectorCatches = await db
+      .select()
+      .from(catches)
+      .where(and(
+        eq(catches.competitionId, competitionId),
+        eq(catches.sector, sectorCode),
+        eq(catches.isVerified, true)
+      ))
+      .orderBy(desc(catches.weight));
+
+    if (sectorCatches.length === 0) {
+      return {
+        teams: sectorTeams,
+        biggestFish: null,
+        biggestScalyCarp: null,
+        biggestMirrorCarp: null,
+        averageWeight: 0,
+      };
+    }
+
+    // Find biggest fish overall
+    const biggestFish = sectorCatches[0] || null;
+
+    // Find biggest scaly carp 
+    const biggestScalyCarp = sectorCatches.find(catch_ => catch_.fishType === 'scaly') || null;
+
+    // Find biggest mirror carp
+    const biggestMirrorCarp = sectorCatches.find(catch_ => catch_.fishType === 'mirror') || null;
+
+    // Calculate average weight with proper numeric handling
+    const totalWeight = sectorCatches.reduce((sum, catch_) => sum + Number(catch_.weight), 0);
+    const averageWeight = Number((totalWeight / sectorCatches.length).toFixed(2));
+
+    return {
+      teams: sectorTeams,
+      biggestFish,
+      biggestScalyCarp,
+      biggestMirrorCarp,
+      averageWeight,
+    };
   }
 }
 
