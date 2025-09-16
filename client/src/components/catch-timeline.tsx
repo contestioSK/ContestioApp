@@ -106,8 +106,8 @@ export default function CatchTimeline({ catches, isLoading, competitionId }: Cat
             </p>
           </div>
         ) : (
-          <div className="max-h-96 overflow-y-auto">
-            {sortedCatches.slice(0, 20).map((catch_) => (
+          <div className="max-h-[600px] overflow-y-auto">
+            {sortedCatches.slice(0, 50).map((catch_) => (
               <div 
                 key={catch_.id} 
                 className="p-4 border-b border-border hover:bg-muted/20 transition-colors"
@@ -163,9 +163,9 @@ export default function CatchTimeline({ catches, isLoading, competitionId }: Cat
               </div>
             ))}
             
-            {sortedCatches.length > 20 && (
+            {sortedCatches.length > 50 && (
               <div className="p-4 text-center text-sm text-muted-foreground">
-                Zobrazuje posledných 20 úlovkov
+                Zobrazuje posledných 50 úlovkov
               </div>
             )}
           </div>
