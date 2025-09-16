@@ -106,7 +106,7 @@ export default function CatchTimeline({ catches, isLoading, competitionId }: Cat
             </p>
           </div>
         ) : (
-          <div className="overflow-y-auto">
+          <div className="h-[900px] overflow-y-auto">
             {sortedCatches.map((catch_) => (
               <div 
                 key={catch_.id} 
