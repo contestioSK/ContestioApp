@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Fish, Users, Trophy, MapPin, PlusCircle } from "lucide-react";
 import { ContestCategories } from "@/components/contest-categories";
-import heroImage from "@assets/360_F_381579894_CiNFCkD3dVWVjOm5WzxGeYlD9B1Go1sr_1758061127573.jpg";
+import heroImage from "@assets/Carp_Fishing_1600x500_crop_center_6bc11ee9-9096-425e-8946-560290a33987_2016x630_1758061236097.webp";
 export default function Landing() {
 
   // Sample contests data to showcase different categories
@@ -99,7 +99,7 @@ export default function Landing() {
         <div className="absolute inset-0 z-0">
           <img 
             src={heroImage} 
-            alt="Carp fishing sunset by the lake with fishing tent" 
+            alt="Carp angler casting at sunset with dramatic sky reflection" 
             className="w-full h-full object-cover opacity-40" 
           />
           <div className="absolute inset-0 bg-gradient-to-r from-primary/40 to-secondary/40"></div>
