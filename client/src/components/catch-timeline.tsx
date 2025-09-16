@@ -43,7 +43,7 @@ export default function CatchTimeline({ catches, isLoading }: CatchTimelineProps
   };
 
   const getFishTypeDisplay = (fishType: string) => {
-    return fishType === 'scaly' ? 'Šupinový kapor' : 'Zrkadlový kapor';
+    return fishType === 'scaly' ? 'Šupináč' : 'Zrkadlový kapor';
   };
 
   if (isLoading) {
