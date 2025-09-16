@@ -128,7 +128,7 @@ export default function AdminPanel() {
     },
     onSuccess: () => {
       toast({
-        title: "Úspěch",
+        title: "Úspech",
         description: "Stav tímu bol úspešne aktualizovaný",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/competitions", selectedCompetition, "teams"] });

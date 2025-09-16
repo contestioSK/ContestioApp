@@ -18,9 +18,9 @@ import { z } from "zod";
 import type { Competition, Team, Referee, Catch } from "@shared/schema";
 
 const catchSubmissionSchema = z.object({
-  teamId: z.string().min(1, "Please select a team"),
-  weight: z.number().min(0.1, "Weight must be at least 0.1 kg"),
-  fishType: z.enum(["scaly", "mirror"], { required_error: "Please select fish type" }),
+  teamId: z.string().min(1, "Prosím vyberte tím"),
+  weight: z.number().min(0.1, "Váha musí byť najmenej 0,1 kg"),
+  fishType: z.enum(["scaly", "mirror"], { required_error: "Prosím vyberte typ ryby" }),
   competitionId: z.string().min(1),
 });
 
@@ -36,8 +36,8 @@ export default function RefereeInterface() {
   useEffect(() => {
     if (!isLoading && (!isAuthenticated || user?.role !== 'referee')) {
       toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
+        title: "Neautorizovaný",
+        description: "Ste odhlásený. Prihlasujem znovu...",
         variant: "destructive",
       });
       setTimeout(() => {
@@ -106,8 +106,8 @@ export default function RefereeInterface() {
     },
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Catch submitted successfully",
+        title: "Úspech",
+        description: "Záber bol úspešne odoslaný",
       });
       form.reset();
       setSelectedPhoto(null);
@@ -116,8 +116,8 @@ export default function RefereeInterface() {
     onError: (error) => {
       if (isUnauthorizedError(error)) {
         toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
+          title: "Neautorizovaný",
+          description: "Ste odhlásený. Prihlasujem znovu...",
           variant: "destructive",
         });
         setTimeout(() => {
@@ -126,8 +126,8 @@ export default function RefereeInterface() {
         return;
       }
       toast({
-        title: "Error",
-        description: "Failed to submit catch",
+        title: "Chyba",
+        description: "Nepodarilo sa odoslať záber",
         variant: "destructive",
       });
     },
@@ -168,9 +168,9 @@ export default function RefereeInterface() {
           <CardHeader className="bg-primary text-primary-foreground">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="font-semibold">Referee Interface</CardTitle>
+                <CardTitle className="font-semibold">Rozhranie rozhodcu</CardTitle>
                 <p className="text-sm text-primary-foreground/80">
-                  {user?.firstName} {user?.lastName} - Sector {refereeAssignment?.assignedSector || 'Unassigned'}
+                  {user?.firstName} {user?.lastName} - Sektor {refereeAssignment?.assignedSector || 'Nepridelený'}
                 </p>
               </div>
               <Button 
@@ -189,17 +189,17 @@ export default function RefereeInterface() {
           <CardContent className="p-6">
             {activeCompetitions.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-muted-foreground text-lg">No active competitions assigned</p>
+                <p className="text-muted-foreground text-lg">Žiadne aktívne súťaže nie sú pridelené</p>
               </div>
             ) : (
               <>
                 <div className="mb-6">
                   <Label className="text-sm font-medium text-foreground mb-2 block">
-                    Select Competition
+                    Vybrať súťaž
                   </Label>
                   <Select value={selectedCompetition} onValueChange={setSelectedCompetition}>
                     <SelectTrigger data-testid="select-competition">
-                      <SelectValue placeholder="Choose competition" />
+                      <SelectValue placeholder="Vyberte súťaž" />
                     </SelectTrigger>
                     <SelectContent>
                       {activeCompetitions.map((competition: Competition) => (
@@ -214,8 +214,8 @@ export default function RefereeInterface() {
                 {selectedCompetition && (
                   <>
                     <div className="text-center mb-6">
-                      <h3 className="text-lg font-semibold text-foreground mb-2">Submit New Catch</h3>
-                      <p className="text-sm text-muted-foreground">Enter catch details and upload photo</p>
+                      <h3 className="text-lg font-semibold text-foreground mb-2">Odoslať nový záber</h3>
+                      <p className="text-sm text-muted-foreground">Zadajte detaily záberu a nahrajte fotku</p>
                     </div>
                     
                     <Form {...form}>
@@ -227,11 +227,11 @@ export default function RefereeInterface() {
                           name="teamId"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Select Team</FormLabel>
+                              <FormLabel>Vybrať tím</FormLabel>
                               <FormControl>
                                 <Select onValueChange={field.onChange} value={field.value}>
                                   <SelectTrigger data-testid="select-team">
-                                    <SelectValue placeholder="Choose team" />
+                                    <SelectValue placeholder="Vyberte tím" />
                                   </SelectTrigger>
                                   <SelectContent>
                                     {teams?.filter((team: Team) => team.status === 'approved').map((team: Team) => (
@@ -253,7 +253,7 @@ export default function RefereeInterface() {
                           name="weight"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Weight (grams)</FormLabel>
+                              <FormLabel>Váha (gramy)</FormLabel>
                               <FormControl>
                                 <div className="relative">
                                   <Input 
@@ -280,7 +280,7 @@ export default function RefereeInterface() {
                           name="fishType"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Fish Type</FormLabel>
+                              <FormLabel>Typ ryby</FormLabel>
                               <FormControl>
                                 <div className="grid grid-cols-2 gap-2">
                                   <Button
@@ -290,7 +290,7 @@ export default function RefereeInterface() {
                                     onClick={() => field.onChange("scaly")}
                                     data-testid="button-scaly-carp"
                                   >
-                                    Scaly Carp
+                                    Šupinatý kapor
                                   </Button>
                                   <Button
                                     type="button"
@@ -299,7 +299,7 @@ export default function RefereeInterface() {
                                     onClick={() => field.onChange("mirror")}
                                     data-testid="button-mirror-carp"
                                   >
-                                    Mirror Carp
+                                    Zrkadlový kapor
                                   </Button>
                                 </div>
                               </FormControl>
@@ -310,7 +310,7 @@ export default function RefereeInterface() {
                         
                         {/* Photo Upload */}
                         <div>
-                          <Label className="block text-sm font-medium text-foreground mb-2">Fish Photo</Label>
+                          <Label className="block text-sm font-medium text-foreground mb-2">Fotka ryby</Label>
                           <div 
                             className="border-2 border-dashed border-border rounded-lg p-4 text-center cursor-pointer hover:bg-muted/10"
                             onClick={() => document.getElementById('photo-input')?.click()}
@@ -326,12 +326,12 @@ export default function RefereeInterface() {
                             {selectedPhoto ? (
                               <div className="space-y-2">
                                 <Check className="mx-auto h-6 w-6 text-secondary" />
-                                <div className="text-sm text-foreground">Photo selected: {selectedPhoto.name}</div>
+                                <div className="text-sm text-foreground">Fotka vybraná: {selectedPhoto.name}</div>
                               </div>
                             ) : (
                               <div className="space-y-2">
                                 <Camera className="mx-auto h-6 w-6 text-muted-foreground" />
-                                <div className="text-sm text-muted-foreground">Tap to take photo</div>
+                                <div className="text-sm text-muted-foreground">Kliknite pre vytvorenie fotky</div>
                               </div>
                             )}
                           </div>
@@ -344,7 +344,7 @@ export default function RefereeInterface() {
                           disabled={submitCatchMutation.isPending}
                           data-testid="button-submit-catch"
                         >
-                          {submitCatchMutation.isPending ? "Submitting..." : "Submit Catch"}
+                          {submitCatchMutation.isPending ? "Odosíla sa..." : "Odoslať záber"}
                         </Button>
                         
                       </form>
@@ -358,7 +358,7 @@ export default function RefereeInterface() {
           {/* Recent Submissions */}
           {selectedCompetition && recentCatches && (
             <div className="border-t border-border p-4">
-              <h4 className="font-medium text-foreground mb-3">Recent Submissions</h4>
+              <h4 className="font-medium text-foreground mb-3">Posledné odosílania</h4>
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {recentCatches.slice(0, 5).map((catch_: Catch & { team: Team }) => (
                   <div key={catch_.id} className="flex items-center justify-between text-sm" data-testid={`catch-${catch_.id}`}>
@@ -367,13 +367,13 @@ export default function RefereeInterface() {
                     </span>
                     <Badge className="bg-secondary text-secondary-foreground">
                       <Check className="w-3 h-3 mr-1" />
-                      Confirmed
+                      Potvrdený
                     </Badge>
                   </div>
                 ))}
                 {recentCatches.length === 0 && (
                   <div className="text-center py-4 text-muted-foreground">
-                    No catches submitted yet
+                    Zatiaľ žiadne zábery neboli odoslané
                   </div>
                 )}
               </div>
