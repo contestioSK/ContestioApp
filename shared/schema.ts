@@ -188,6 +188,9 @@ export const insertCompetitionSchema = createInsertSchema(competitions).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  startDate: z.string().or(z.date()).transform((val) => new Date(val)),
+  endDate: z.string().or(z.date()).transform((val) => new Date(val)),
 });
 
 export const insertTeamSchema = createInsertSchema(teams).omit({
