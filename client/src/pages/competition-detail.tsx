@@ -458,6 +458,138 @@ export default function CompetitionDetail() {
                             </div>
                           ) : null;
                         })()}
+
+                        {/* Biggest Scaly Carp */}
+                        {(() => {
+                          const scalyCatches = catches.filter((c: any) => c.fishType === 'scaly');
+                          if (scalyCatches.length === 0) return null;
+                          const biggestScaly = scalyCatches.reduce((max: any, current: any) => 
+                            parseFloat(current.weight) > parseFloat(max.weight) ? current : max
+                          );
+                          return (
+                            <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-950/20 rounded-lg" data-testid="special-contest-biggest-scaly">
+                              <div>
+                                <div className="font-medium text-foreground">Najväčší Šupináč</div>
+                                <div className="text-sm text-muted-foreground">{biggestScaly.team?.name}</div>
+                              </div>
+                              <div className="text-right">
+                                <div className="font-mono font-bold text-green-600 dark:text-green-400">{biggestScaly.weight} kg</div>
+                              </div>
+                            </div>
+                          );
+                        })()}
+
+                        {/* Biggest Mirror Carp */}
+                        {(() => {
+                          const mirrorCatches = catches.filter((c: any) => c.fishType === 'mirror');
+                          if (mirrorCatches.length === 0) return null;
+                          const biggestMirror = mirrorCatches.reduce((max: any, current: any) => 
+                            parseFloat(current.weight) > parseFloat(max.weight) ? current : max
+                          );
+                          return (
+                            <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg" data-testid="special-contest-biggest-mirror">
+                              <div>
+                                <div className="font-medium text-foreground">Najväčší Lysec</div>
+                                <div className="text-sm text-muted-foreground">{biggestMirror.team?.name}</div>
+                              </div>
+                              <div className="text-right">
+                                <div className="font-mono font-bold text-blue-600 dark:text-blue-400">{biggestMirror.weight} kg</div>
+                              </div>
+                            </div>
+                          );
+                        })()}
+
+                        {/* First Fish of Competition */}
+                        {(() => {
+                          const firstCatch = catches.reduce((earliest: any, current: any) => {
+                            const currentTime = new Date(current.submittedAt).getTime();
+                            const earliestTime = new Date(earliest.submittedAt).getTime();
+                            return currentTime < earliestTime ? current : earliest;
+                          });
+                          return (
+                            <div className="flex items-center justify-between p-3 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg" data-testid="special-contest-first-fish">
+                              <div>
+                                <div className="font-medium text-foreground">Prvá ryba súťaže</div>
+                                <div className="text-sm text-muted-foreground">{firstCatch.team?.name}</div>
+                              </div>
+                              <div className="text-right">
+                                <div className="font-mono font-bold text-yellow-600 dark:text-yellow-400">{firstCatch.weight} kg</div>
+                              </div>
+                            </div>
+                          );
+                        })()}
+
+                        {/* Lightest Catch */}
+                        {(() => {
+                          const lightestCatch = catches.reduce((min: any, current: any) => 
+                            parseFloat(current.weight) < parseFloat(min.weight) ? current : min
+                          );
+                          return (
+                            <div className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-950/20 rounded-lg" data-testid="special-contest-lightest">
+                              <div>
+                                <div className="font-medium text-foreground">Najľahší úlovok</div>
+                                <div className="text-sm text-muted-foreground">{lightestCatch.team?.name}</div>
+                              </div>
+                              <div className="text-right">
+                                <div className="font-mono font-bold text-purple-600 dark:text-purple-400">{lightestCatch.weight} kg</div>
+                              </div>
+                            </div>
+                          );
+                        })()}
+
+                        {/* Heaviest Fish by Sector */}
+                        {['A', 'B', 'C'].map(sector => {
+                          const sectorCatches = catches.filter((c: any) => c.sector === sector);
+                          if (sectorCatches.length === 0) return null;
+                          const heaviestInSector = sectorCatches.reduce((max: any, current: any) => 
+                            parseFloat(current.weight) > parseFloat(max.weight) ? current : max
+                          );
+                          return (
+                            <div key={sector} className="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-950/20 rounded-lg" data-testid={`special-contest-heaviest-sector-${sector}`}>
+                              <div>
+                                <div className="font-medium text-foreground">Najťažší Sektor {sector}</div>
+                                <div className="text-sm text-muted-foreground">{heaviestInSector.team?.name}</div>
+                              </div>
+                              <div className="text-right">
+                                <div className="font-mono font-bold text-orange-600 dark:text-orange-400">{heaviestInSector.weight} kg</div>
+                              </div>
+                            </div>
+                          );
+                        })}
+
+                        {/* Fastest Catch (first 30 minutes) */}
+                        {(() => {
+                          if (!competition?.startDate) return null;
+                          const competitionStart = new Date(competition.startDate);
+                          
+                          const fastCatches = catches.filter((c: any) => {
+                            const catchTime = new Date(c.submittedAt);
+                            const timeDiff = (catchTime.getTime() - competitionStart.getTime()) / (1000 * 60); // minutes
+                            return timeDiff <= 30;
+                          });
+                          
+                          if (fastCatches.length === 0) return null;
+                          
+                          const fastestCatch = fastCatches.reduce((fastest: any, current: any) => {
+                            const currentTime = new Date(current.submittedAt).getTime();
+                            const fastestTime = new Date(fastest.submittedAt).getTime();
+                            return currentTime < fastestTime ? current : fastest;
+                          });
+                          
+                          const timeDiff = Math.round((new Date(fastestCatch.submittedAt).getTime() - competitionStart.getTime()) / (1000 * 60));
+                          
+                          return (
+                            <div className="flex items-center justify-between p-3 bg-red-50 dark:bg-red-950/20 rounded-lg" data-testid="special-contest-fastest">
+                              <div>
+                                <div className="font-medium text-foreground">Najrýchlejší úlovok</div>
+                                <div className="text-sm text-muted-foreground">{fastestCatch.team?.name} - {timeDiff} min</div>
+                              </div>
+                              <div className="text-right">
+                                <div className="font-mono font-bold text-red-600 dark:text-red-400">{fastestCatch.weight} kg</div>
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </>
                     ) : (
                       <div className="text-center py-4 text-muted-foreground">
