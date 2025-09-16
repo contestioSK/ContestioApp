@@ -2,8 +2,67 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Fish, Users, Trophy, MapPin, PlusCircle } from "lucide-react";
+import { ContestCategories } from "@/components/contest-categories";
 
 export default function Landing() {
+  // Sample contests data to showcase different categories
+  const sampleContests = [
+    {
+      id: "1",
+      name: "Lake Michigan Championship",
+      description: "Prestížny turnaj na jednom z najväčších jazier v Severnej Amerike. Súťaž je otvorená pre všetky kategórie rybárov.",
+      status: "live" as const,
+      startDate: new Date().toISOString(),
+      endDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+      location: "Michigan, USA"
+    },
+    {
+      id: "2", 
+      name: "Rocky Mountain Trophy Hunt",
+      description: "Horská súťaž v nádhernom prostredí Rocky Mountains. Registrácia je stále otvorená pre všetky tímy.",
+      status: "registration" as const,
+      startDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+      endDate: new Date(Date.now() + 16 * 24 * 60 * 60 * 1000).toISOString(),
+      location: "Colorado, USA"
+    },
+    {
+      id: "3",
+      name: "Atlantic Coast Masters", 
+      description: "Završený turnaj na atlantickom pobreží s vysokou účasťou profesionálnych rybárov z celého sveta.",
+      status: "finished" as const,
+      startDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+      endDate: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
+      location: "North Carolina, USA"
+    },
+    {
+      id: "4",
+      name: "European Carp Masters",
+      description: "Európska súťaž zameraná na chytanie kaprov. Registrácia je uzavretá, súťaž sa blíži.",
+      status: "registration" as const,
+      startDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+      endDate: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toISOString(),
+      location: "Maďarsko"
+    },
+    {
+      id: "5",
+      name: "Northern Pike Challenge",
+      description: "Špecializovaná súťaž na chytanie štík v severských jazerách s bohatými cenami.",
+      status: "registration" as const,
+      startDate: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString(),
+      endDate: new Date(Date.now() + 23 * 24 * 60 * 60 * 1000).toISOString(),
+      location: "Fínsko"
+    },
+    {
+      id: "6",
+      name: "Mediterranean Bass Tournament",
+      description: "Ukončený turnaj na Stredozemnom mori s účasťou najlepších európskych rybárov.",
+      status: "finished" as const,
+      startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+      endDate: new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString(),
+      location: "Španielsko"
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation Header */}
@@ -102,148 +161,8 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Sample Competitions Grid */}
-      <section className="py-16 bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-2">Ukážkové súťaže</h2>
-            <p className="text-muted-foreground">Živé a nadchádzajúce rybárske turnaje</p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Sample Competition Cards */}
-            <Card className="hover:shadow-lg transition-shadow" data-testid="card-competition-1">
-              <div className="relative">
-                <img 
-                  src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400" 
-                  alt="Rybárske člny počas súťaže na pokojnom jazere" 
-                  className="w-full h-48 object-cover rounded-t-lg" 
-                />
-                <Badge className="absolute top-3 left-3 bg-secondary text-secondary-foreground">
-                  <span className="w-2 h-2 bg-secondary-foreground rounded-full mr-2 animate-pulse"></span>
-                  ŽIVO
-                </Badge>
-              </div>
-              
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-3">
-                  <h3 className="text-lg font-semibold text-foreground">Lake Michigan Championship</h3>
-                  <div className="flex items-center space-x-1 text-xs text-muted-foreground">
-                    <Users className="w-3 h-3" />
-                    <span>24 tímov</span>
-                  </div>
-                </div>
-                
-                <div className="flex items-center text-sm text-muted-foreground mb-4">
-                  <MapPin className="w-4 h-4 mr-2" />
-                  <span>Michigan, USA</span>
-                </div>
-                
-                <div className="space-y-2 mb-4">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Aktuálny líder:</span>
-                    <span className="font-medium text-foreground">Team Northwind</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Celková hmotnosť:</span>
-                    <span className="font-mono font-medium text-foreground">127.45 kg</span>
-                  </div>
-                </div>
-                
-                <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90" data-testid="button-watch-live">
-                  Sledovať naživo
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="hover:shadow-lg transition-shadow" data-testid="card-competition-2">
-              <div className="relative">
-                <img 
-                  src="https://images.unsplash.com/photo-1559827260-dc66d52bef19?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400" 
-                  alt="Rybárske vybavenie a box s nástrahami pri príprave pri svitaní" 
-                  className="w-full h-48 object-cover rounded-t-lg" 
-                />
-                <Badge className="absolute top-3 left-3 bg-accent text-accent-foreground">
-                  REGISTRÁCIA OTVORENÁ
-                </Badge>
-              </div>
-              
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-3">
-                  <h3 className="text-lg font-semibold text-foreground">Rocky Mountain Trophy Hunt</h3>
-                  <div className="flex items-center space-x-1 text-xs text-muted-foreground">
-                    <Users className="w-3 h-3" />
-                    <span>16/32 tímov</span>
-                  </div>
-                </div>
-                
-                <div className="flex items-center text-sm text-muted-foreground mb-4">
-                  <MapPin className="w-4 h-4 mr-2" />
-                  <span>Colorado, USA</span>
-                </div>
-                
-                <div className="space-y-2 mb-4">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Výhra:</span>
-                    <span className="font-medium text-foreground">$25,000</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Štartovné na tím:</span>
-                    <span className="font-medium text-foreground">$450/tím</span>
-                  </div>
-                </div>
-                
-                <Button className="w-full bg-accent text-accent-foreground hover:bg-accent/90" data-testid="button-register-team">
-                  Registrovať tím
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="hover:shadow-lg transition-shadow" data-testid="card-competition-3">
-              <div className="relative">
-                <img 
-                  src="https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400" 
-                  alt="Úspešný rybár držíaci veľkú rybu so západom slnka v pozadí" 
-                  className="w-full h-48 object-cover rounded-t-lg" 
-                />
-                <Badge className="absolute top-3 left-3 bg-muted text-muted-foreground">
-                  UKONČENÁ
-                </Badge>
-              </div>
-              
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-3">
-                  <h3 className="text-lg font-semibold text-foreground">Atlantic Coast Masters</h3>
-                  <div className="flex items-center space-x-1 text-xs text-muted-foreground">
-                    <Trophy className="w-3 h-3 text-accent" />
-                    <span>Ukončená</span>
-                  </div>
-                </div>
-                
-                <div className="flex items-center text-sm text-muted-foreground mb-4">
-                  <MapPin className="w-4 h-4 mr-2" />
-                  <span>Maine, USA</span>
-                </div>
-                
-                <div className="space-y-2 mb-4">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Víťaz:</span>
-                    <span className="font-medium text-foreground">Team Tidewater</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Víťazná hmotnosť:</span>
-                    <span className="font-mono font-medium text-foreground">89.32 kg</span>
-                  </div>
-                </div>
-                
-                <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90" data-testid="button-view-results">
-                  Zobraziť výsledky
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
+      {/* Contest Categories */}
+      <ContestCategories contests={sampleContests} />
 
       {/* Footer */}
       <footer className="bg-primary text-primary-foreground py-12">
