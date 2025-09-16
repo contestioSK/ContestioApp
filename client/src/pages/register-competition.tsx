@@ -378,7 +378,9 @@ export default function RegisterCompetition() {
                             { id: "most-fish-caught", label: getSideCompetitionLabel("most-fish-caught") },
                             { id: "best-5-fish", label: getSideCompetitionLabel("best-5-fish") },
                             { id: "daily-big-fish", label: getSideCompetitionLabel("daily-big-fish") },
-                            { id: "first-fish-over-weight", label: getSideCompetitionLabel("first-fish-over-weight") },
+                            { id: "first-fish-over-15kg", label: getSideCompetitionLabel("first-fish-over-15kg") },
+                            { id: "first-fish-over-20kg", label: getSideCompetitionLabel("first-fish-over-20kg") },
+                            { id: "first-fish-over-25kg", label: getSideCompetitionLabel("first-fish-over-25kg") },
                           ].map((item) => (
                             <FormField
                               key={item.id}
