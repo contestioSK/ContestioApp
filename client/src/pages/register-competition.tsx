@@ -19,7 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { insertCompetitionRegistrationSchema, type InsertCompetitionRegistration } from "@shared/schema";
-import { Plus, Trash2, ArrowLeft, Award } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, Award, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { getSideCompetitionLabel } from "@/lib/utils";
@@ -507,15 +507,17 @@ export default function RegisterCompetition() {
                 <div className="space-y-6">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-medium text-foreground">Konfigurácia sektorov a miest</h3>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={addSector}
-                      data-testid="button-add-sector"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Pridať sektor
-                    </Button>
+                    {form.watch("hasSectors") && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={addSector}
+                        data-testid="button-add-sector"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Pridať sektor
+                      </Button>
+                    )}
                   </div>
                   
                   {/* Sector Toggle */}
@@ -543,11 +545,13 @@ export default function RegisterCompetition() {
                     )}
                   />
                   
-                  <FormDescription>
-                    Definujte sektory a miesta pre súťaž. Každý sektor môže mať viacero miest kde sa tímy môžu umiestniť.
-                  </FormDescription>
+                  {form.watch("hasSectors") && (
+                    <>
+                      <FormDescription>
+                        Definujte sektory a miesta pre súťaž. Každý sektor môže mať viacero miest kde sa tímy môžu umiestniť.
+                      </FormDescription>
 
-                  {sectorPlaces.map((sector, sectorIndex) => (
+                      {sectorPlaces.map((sector, sectorIndex) => (
                     <Card key={sectorIndex} className="p-4">
                       <div className="space-y-4">
                         <div className="flex items-center gap-4">
@@ -607,7 +611,16 @@ export default function RegisterCompetition() {
                         </div>
                       </div>
                     </Card>
-                  ))}
+                      ))}
+
+                      {(!sectorPlaces || sectorPlaces.length === 0) && (
+                        <div className="text-center py-4 text-muted-foreground">
+                          <MapPin className="mx-auto h-8 w-8 mb-2 text-muted-foreground" />
+                          <p>Žiadne sektory nie sú definované. Kliknite na "Pridať sektor" pre začatie.</p>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
 
                 {/* Submit Button */}
