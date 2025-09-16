@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import { Edit, Eye, Users, UserCheck, UserX, Plus, Trophy } from "lucide-react";
+import { Edit, Eye, Users, UserCheck, UserX, Plus, Trophy, Trash2, MapPin } from "lucide-react";
 import type { Competition, Team, TeamMember } from "@shared/schema";
 
 // Competition creation form schema
@@ -31,6 +31,10 @@ const competitionSchema = z.object({
   prizePool: z.string().optional(),
   registrationFee: z.string().optional(),
   maxTeams: z.string().optional(),
+  sectorPlaces: z.array(z.object({
+    sectorName: z.string().min(1, "Názov sektoru je povinný"),
+    places: z.array(z.string().min(1, "Názov miesta je povinný")).min(1, "Sektor musí mať aspoň jedno miesto")
+  })).min(1, "Súťaž musí mať aspoň jeden sektor"),
 });
 
 type CompetitionForm = z.infer<typeof competitionSchema>;
@@ -53,6 +57,10 @@ export default function AdminPanel() {
       prizePool: "",
       registrationFee: "",
       maxTeams: "",
+      sectorPlaces: [
+        { sectorName: "Sektor A", places: ["Place 1", "Place 2", "Place 3"] },
+        { sectorName: "Sektor B", places: ["Place 1", "Place 2"] }
+      ],
     },
   });
 
@@ -66,6 +74,7 @@ export default function AdminPanel() {
         maxTeams: data.maxTeams ? parseInt(data.maxTeams) : undefined,
         startDate: new Date(data.startDate), // Send Date object, not ISO string
         endDate: new Date(data.endDate), // Send Date object, not ISO string
+        sectorPlaces: data.sectorPlaces || undefined, // Include sector places configuration
       };
       return apiRequest("POST", "/api/competitions", competitionData);
     },
@@ -377,6 +386,134 @@ export default function AdminPanel() {
                             )}
                           />
                         </div>
+                      </div>
+
+                      {/* Sector Places Configuration */}
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-medium text-foreground">Konfigurácia sektorov a miest</h3>
+                          <Button 
+                            type="button" 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => {
+                              const currentSectors = form.getValues("sectorPlaces") || [];
+                              form.setValue("sectorPlaces", [...currentSectors, { sectorName: "", places: [""] }]);
+                            }}
+                            data-testid="button-add-sector"
+                          >
+                            <MapPin className="w-4 h-4 mr-2" />
+                            Pridať sektor
+                          </Button>
+                        </div>
+
+                        <div className="space-y-4">
+                          {(form.watch("sectorPlaces") || []).map((sector, sectorIndex) => (
+                            <div key={sectorIndex} className="p-4 border border-border rounded-lg space-y-3">
+                              <div className="flex items-center space-x-2">
+                                <div className="flex-1">
+                                  <FormField
+                                    control={form.control}
+                                    name={`sectorPlaces.${sectorIndex}.sectorName`}
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Názov sektoru</FormLabel>
+                                        <FormControl>
+                                          <Input placeholder="napr. Sektor A" {...field} data-testid={`input-sector-name-${sectorIndex}`} />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                </div>
+                                <Button 
+                                  type="button" 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => {
+                                    const currentSectors = form.getValues("sectorPlaces") || [];
+                                    const updatedSectors = currentSectors.filter((_, i) => i !== sectorIndex);
+                                    form.setValue("sectorPlaces", updatedSectors);
+                                  }}
+                                  data-testid={`button-remove-sector-${sectorIndex}`}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <FormLabel>Miesta v sektore</FormLabel>
+                                  <Button 
+                                    type="button" 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => {
+                                      const currentSectors = form.getValues("sectorPlaces") || [];
+                                      const updatedSectors = [...currentSectors];
+                                      updatedSectors[sectorIndex] = {
+                                        ...updatedSectors[sectorIndex],
+                                        places: [...updatedSectors[sectorIndex].places, ""]
+                                      };
+                                      form.setValue("sectorPlaces", updatedSectors);
+                                    }}
+                                    data-testid={`button-add-place-${sectorIndex}`}
+                                  >
+                                    <Plus className="w-4 h-4 mr-1" />
+                                    Pridať miesto
+                                  </Button>
+                                </div>
+                                
+                                <div className="space-y-2">
+                                  {sector.places?.map((place, placeIndex) => (
+                                    <div key={placeIndex} className="flex items-center space-x-2">
+                                      <div className="flex-1">
+                                        <FormField
+                                          control={form.control}
+                                          name={`sectorPlaces.${sectorIndex}.places.${placeIndex}`}
+                                          render={({ field }) => (
+                                            <FormItem>
+                                              <FormControl>
+                                                <Input placeholder={`Place ${placeIndex + 1}`} {...field} data-testid={`input-place-${sectorIndex}-${placeIndex}`} />
+                                              </FormControl>
+                                              <FormMessage />
+                                            </FormItem>
+                                          )}
+                                        />
+                                      </div>
+                                      {sector.places.length > 1 && (
+                                        <Button 
+                                          type="button" 
+                                          variant="outline" 
+                                          size="sm"
+                                          onClick={() => {
+                                            const currentSectors = form.getValues("sectorPlaces") || [];
+                                            const updatedSectors = [...currentSectors];
+                                            updatedSectors[sectorIndex] = {
+                                              ...updatedSectors[sectorIndex],
+                                              places: updatedSectors[sectorIndex].places.filter((_, i) => i !== placeIndex)
+                                            };
+                                            form.setValue("sectorPlaces", updatedSectors);
+                                          }}
+                                          data-testid={`button-remove-place-${sectorIndex}-${placeIndex}`}
+                                        >
+                                          <Trash2 className="w-4 h-4" />
+                                        </Button>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {(!form.watch("sectorPlaces") || form.watch("sectorPlaces")?.length === 0) && (
+                          <div className="text-center py-4 text-muted-foreground">
+                            <MapPin className="mx-auto h-8 w-8 mb-2 text-muted-foreground" />
+                            <p>Žiadne sektory nie sú definované. Kliknite na "Pridať sektor" pre začatie.</p>
+                          </div>
+                        )}
                       </div>
 
                       {/* Submit Button */}
