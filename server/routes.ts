@@ -359,6 +359,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Helper function to generate realistic catch data
+  function generateRealisticCatches(count: number, teams: any[], referees: any[], competition: any) {
+    const catches = [];
+    const fishTypes = ['scaly', 'mirror'];
+    const currentTime = new Date();
+    const competitionStart = competition.startDate ? new Date(competition.startDate) : new Date(currentTime.getTime() - 6 * 60 * 60 * 1000);
+    const competitionEnd = competition.endDate ? new Date(competition.endDate) : new Date(currentTime.getTime() + 2 * 60 * 60 * 1000);
+    
+    // Weight distribution as specified by architect
+    const weightRanges = [
+      { min: 20, max: 27, count: 5 }, // Trophy fish 20-27kg
+      { min: 15, max: 20, count: 10 }, // Large fish 15-20kg
+      { min: 10, max: 15, count: 15 }, // Medium fish 10-15kg
+      { min: 3, max: 10, count: 10 },  // Smaller fish 3-10kg
+    ];
+    
+    let catchIndex = 0;
+    
+    for (const range of weightRanges) {
+      for (let i = 0; i < range.count && catchIndex < count; i++) {
+        // Generate weight within range
+        const weight = (Math.random() * (range.max - range.min) + range.min).toFixed(2);
+        
+        // Round-robin team assignment
+        const team = teams[catchIndex % teams.length];
+        
+        // Find referee for this team's sector
+        const referee = referees.find(r => r.assignedSector === team.sector) || referees[0];
+        
+        // Random fish type (65% scaly, 35% mirror)
+        const fishType = Math.random() < 0.65 ? 'scaly' : 'mirror';
+        
+        // Random time within competition period
+        const timeRange = competitionEnd.getTime() - competitionStart.getTime();
+        const randomTime = new Date(competitionStart.getTime() + Math.random() * timeRange);
+        
+        catches.push({
+          teamId: team.id,
+          competitionId: competition.id,
+          refereeId: referee.id,
+          weight: weight,
+          fishType: fishType,
+          sector: team.sector,
+          submittedAt: randomTime.toISOString(),
+          status: 'confirmed'
+        });
+        
+        catchIndex++;
+      }
+    }
+    
+    // Shuffle the catches to make timing more realistic
+    for (let i = catches.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [catches[i], catches[j]] = [catches[j], catches[i]];
+    }
+    
+    return catches;
+  }
+
   // Dev-only role management endpoint for testing
   if (process.env.NODE_ENV === 'development') {
     app.post('/api/dev/promote-role', isAuthenticated, async (req: any, res) => {
@@ -384,6 +444,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } catch (error) {
         console.error("Error promoting user role:", error);
         res.status(500).json({ message: "Failed to promote user role" });
+      }
+    });
+
+    // Dev-only endpoint to seed realistic catch data
+    app.post('/api/dev/seed-catches', isAuthenticated, async (req: any, res) => {
+      try {
+        const userId = req.user.claims.sub;
+        const user = await storage.getUser(userId);
+        
+        if (user?.role !== 'organizer') {
+          return res.status(403).json({ message: "Only organizers can seed catch data" });
+        }
+
+        const { competitionId, count = 40 } = req.body;
+        
+        if (!competitionId) {
+          return res.status(400).json({ message: "competitionId is required" });
+        }
+
+        // Get competition, teams, and referees
+        const competition = await storage.getCompetition(competitionId);
+        if (!competition) {
+          return res.status(404).json({ message: "Competition not found" });
+        }
+
+        const teams = await storage.getTeamsByCompetition(competitionId);
+        const referees = await storage.getRefereesByCompetition(competitionId);
+
+        if (teams.length === 0) {
+          return res.status(400).json({ message: "No teams found for this competition" });
+        }
+
+        if (referees.length === 0) {
+          return res.status(400).json({ message: "No referees found for this competition" });
+        }
+
+        // Generate realistic catch data
+        const catchData = generateRealisticCatches(count, teams, referees, competition);
+        
+        const results = {
+          inserted: 0,
+          byTeam: {} as Record<string, number>,
+          bySector: {} as Record<string, number>,
+          weights: { over20: 0, over15: 0, over10: 0 }
+        };
+
+        // Insert catches one by one
+        for (const catchInfo of catchData) {
+          try {
+            const newCatch = await storage.createCatch(catchInfo);
+            await storage.updateTeamStats(catchInfo.teamId);
+            
+            results.inserted++;
+            results.byTeam[catchInfo.teamId] = (results.byTeam[catchInfo.teamId] || 0) + 1;
+            results.bySector[catchInfo.sector] = (results.bySector[catchInfo.sector] || 0) + 1;
+            
+            const weight = parseFloat(catchInfo.weight);
+            if (weight >= 20) results.weights.over20++;
+            else if (weight >= 15) results.weights.over15++;
+            else if (weight >= 10) results.weights.over10++;
+
+            // Broadcast the new catch
+            broadcast({
+              type: 'catchSubmitted',
+              catch: newCatch,
+              competitionId
+            });
+          } catch (error) {
+            console.error("Error creating catch:", error);
+          }
+        }
+
+        res.json({
+          message: `Successfully seeded ${results.inserted} catches`,
+          ...results
+        });
+      } catch (error) {
+        console.error("Error seeding catches:", error);
+        res.status(500).json({ message: "Failed to seed catches" });
       }
     });
   }
