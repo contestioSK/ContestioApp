@@ -2,7 +2,8 @@ import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Users, MapPin, Trophy, Share } from "lucide-react";
+import { Users, MapPin, Trophy, Share, Award } from "lucide-react";
+import { getSideCompetitionLabels } from "@/lib/utils";
 import type { Competition } from "@shared/schema";
 
 interface CompetitionCardProps {
@@ -167,11 +168,11 @@ export default function CompetitionCard({ competition }: CompetitionCardProps) {
           
           {competition.status === 'registration' && (
             <>
-              {competition.prizePool && (
+              {competition.firstPlacePrize && (
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Výhra:</span>
                   <span className="font-medium text-foreground">
-                    ${parseFloat(competition.prizePool).toLocaleString()}
+                    €{parseFloat(competition.firstPlacePrize).toLocaleString()}
                   </span>
                 </div>
               )}
@@ -179,7 +180,7 @@ export default function CompetitionCard({ competition }: CompetitionCardProps) {
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Registračný poplatok:</span>
                   <span className="font-medium text-foreground">
-                    ${parseFloat(competition.registrationFee)}/tím
+                    €{parseFloat(competition.registrationFee)}/tím
                   </span>
                 </div>
               )}
@@ -201,6 +202,37 @@ export default function CompetitionCard({ competition }: CompetitionCardProps) {
                 </span>
               </div>
             </>
+          )}
+          
+          {/* Side Competitions */}
+          {competition.sideCompetitions && competition.sideCompetitions.length > 0 && (
+            <div className="mt-3">
+              <div className="flex items-center gap-1 mb-2">
+                <Award className="w-3 h-3 text-muted-foreground" />
+                <span className="text-xs font-medium text-muted-foreground">Špeciálne súťaže</span>
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {getSideCompetitionLabels(competition.sideCompetitions).slice(0, 2).map((label, index) => (
+                  <Badge 
+                    key={index} 
+                    variant="outline" 
+                    className="bg-muted/10 text-foreground border-muted text-xs px-1 py-0"
+                    data-testid={`badge-card-side-competition-${index}`}
+                  >
+                    {label}
+                  </Badge>
+                ))}
+                {competition.sideCompetitions.length > 2 && (
+                  <Badge 
+                    variant="outline" 
+                    className="bg-muted/10 text-muted-foreground border-muted text-xs px-1 py-0"
+                    data-testid="badge-card-more-competitions"
+                  >
+                    +{competition.sideCompetitions.length - 2} ďalších
+                  </Badge>
+                )}
+              </div>
+            </div>
           )}
         </div>
         

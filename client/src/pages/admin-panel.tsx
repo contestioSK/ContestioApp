@@ -20,7 +20,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import { Edit, Eye, Users, UserCheck, UserX, Plus, Trophy, Trash2, MapPin, CheckCircle, XCircle, Clock, Calendar, Mail, Phone, Building2, FileText } from "lucide-react";
+import { Edit, Eye, Users, UserCheck, UserX, Plus, Trophy, Trash2, MapPin, CheckCircle, XCircle, Clock, Calendar, Mail, Phone, Building2, FileText, Award } from "lucide-react";
+import { getSideCompetitionLabels } from "@/lib/utils";
 import type { Competition, Team, TeamMember, CompetitionRegistration } from "@shared/schema";
 
 // Competition creation form schema
@@ -1012,7 +1013,7 @@ export default function AdminPanel() {
                                 <span>•</span>
                                 <span>Max {registration.maxTeams} tímov</span>
                                 <span>•</span>
-                                <span>{registration.entryFee}€ poplatok</span>
+                                <span>{registration.registrationFee}€ poplatok</span>
                               </div>
                             </div>
                             <div className="ml-4">
@@ -1026,16 +1027,41 @@ export default function AdminPanel() {
                             </div>
                           )}
 
-                          <div className="mb-4">
-                            <h4 className="text-sm font-medium text-foreground mb-2">Sektory:</h4>
-                            <div className="flex flex-wrap gap-2">
-                              {JSON.parse(registration.sectors).map((sector: any, index: number) => (
-                                <div key={index} className="bg-secondary px-2 py-1 rounded text-xs">
-                                  Sektor {sector.letter}: {sector.places} miest
-                                </div>
-                              ))}
+                          {/* Side Competitions */}
+                          {registration.sideCompetitions && registration.sideCompetitions.length > 0 && (
+                            <div className="mb-4">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Award className="w-4 h-4 text-muted-foreground" />
+                                <h4 className="text-sm font-medium text-foreground">Špeciálne súťaže:</h4>
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                {getSideCompetitionLabels(registration.sideCompetitions).map((label, index) => (
+                                  <Badge 
+                                    key={index} 
+                                    variant="outline" 
+                                    className="bg-muted/20 text-foreground border-muted text-xs"
+                                    data-testid={`badge-registration-side-competition-${index}`}
+                                  >
+                                    {label}
+                                  </Badge>
+                                ))}
+                              </div>
                             </div>
-                          </div>
+                          )}
+
+                          {/* Sector Places */}
+                          {registration.sectorPlaces && registration.sectorPlaces.length > 0 && (
+                            <div className="mb-4">
+                              <h4 className="text-sm font-medium text-foreground mb-2">Sektory a miesta:</h4>
+                              <div className="flex flex-wrap gap-2">
+                                {registration.sectorPlaces.map((sector: any, index: number) => (
+                                  <div key={index} className="bg-secondary px-2 py-1 rounded text-xs">
+                                    {sector.sectorName}: {sector.places.length} miest
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
 
                           {registration.status === 'submitted' && (
                             <div className="flex space-x-2 pt-4 border-t border-border">

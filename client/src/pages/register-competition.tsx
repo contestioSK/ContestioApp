@@ -19,7 +19,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { insertCompetitionRegistrationSchema, type InsertCompetitionRegistration } from "@shared/schema";
-import { Plus, Trash2, ArrowLeft } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, Award } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { getSideCompetitionLabel } from "@/lib/utils";
 import { useState } from "react";
 import { z } from "zod";
 
@@ -44,6 +47,7 @@ const competitionRegistrationFormSchema = z.object({
     sectorName: z.string().min(1, "Názov sektoru je povinný"),
     places: z.array(z.string().min(1, "Názov miesta je povinný")).min(1, "Sektor musí mať aspoň jedno miesto")
   })).min(1, "Súťaž musí mať aspoň jeden sektor"),
+  sideCompetitions: z.array(z.string()).optional().default([]),
 });
 
 type CompetitionRegistrationForm = z.infer<typeof competitionRegistrationFormSchema>;
@@ -74,6 +78,7 @@ export default function RegisterCompetition() {
         { sectorName: "Sektor A", places: ["Miesto 1", "Miesto 2", "Miesto 3"] },
         { sectorName: "Sektor B", places: ["Miesto 1", "Miesto 2"] }
       ],
+      sideCompetitions: [],
     },
   });
 
@@ -97,6 +102,7 @@ export default function RegisterCompetition() {
         organizationName: data.organizationName || null,
         hasSectors: data.hasSectors,
         sectorPlaces: data.sectorPlaces,
+        sideCompetitions: data.sideCompetitions || [],
       };
       
       return apiRequest("POST", "/api/competition-registrations", registrationData);
@@ -345,6 +351,86 @@ export default function RegisterCompetition() {
                       )}
                     />
                   </div>
+                </div>
+
+                {/* Side Competitions */}
+                <div className="space-y-6">
+                  <div className="flex items-center gap-2">
+                    <Award className="w-5 h-5 text-muted-foreground" />
+                    <h3 className="text-lg font-medium text-foreground">Špeciálne súťaže</h3>
+                  </div>
+                  
+                  <FormField
+                    control={form.control}
+                    name="sideCompetitions"
+                    render={() => (
+                      <FormItem>
+                        <FormDescription>
+                          Vyberte špeciálne súťaže, ktoré budú súčasťou hlavnej súťaže
+                        </FormDescription>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {[
+                            { id: "biggest-fish", label: getSideCompetitionLabel("biggest-fish") },
+                            { id: "most-fish", label: getSideCompetitionLabel("most-fish") },
+                            { id: "youth-category", label: getSideCompetitionLabel("youth-category") },
+                            { id: "women-category", label: getSideCompetitionLabel("women-category") },
+                            { id: "team-spirit", label: getSideCompetitionLabel("team-spirit") },
+                            { id: "early-bird", label: getSideCompetitionLabel("early-bird") },
+                          ].map((item) => (
+                            <FormField
+                              key={item.id}
+                              control={form.control}
+                              name="sideCompetitions"
+                              render={({ field }) => {
+                                return (
+                                  <FormItem
+                                    key={item.id}
+                                    className="flex flex-row items-start space-x-3 space-y-0"
+                                  >
+                                    <FormControl>
+                                      <Checkbox
+                                        checked={field.value?.includes(item.id)}
+                                        onCheckedChange={(checked) => {
+                                          const currentValue = field.value || [];
+                                          return checked
+                                            ? field.onChange([...currentValue, item.id])
+                                            : field.onChange(currentValue.filter((value) => value !== item.id));
+                                        }}
+                                        data-testid={`checkbox-side-competition-${item.id}`}
+                                      />
+                                    </FormControl>
+                                    <FormLabel className="text-sm font-normal cursor-pointer">
+                                      {item.label}
+                                    </FormLabel>
+                                  </FormItem>
+                                );
+                              }}
+                            />
+                          ))}
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  {/* Show selected side competitions as badges */}
+                  {form.watch("sideCompetitions")?.length > 0 && (
+                    <div>
+                      <FormLabel className="text-sm font-medium">Vybrané špeciálne súťaže:</FormLabel>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {form.watch("sideCompetitions").map((id: string, index: number) => (
+                          <Badge 
+                            key={id} 
+                            variant="outline" 
+                            className="bg-muted/20 text-foreground border-muted"
+                            data-testid={`badge-selected-side-competition-${index}`}
+                          >
+                            {getSideCompetitionLabel(id)}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Contact Information */}
