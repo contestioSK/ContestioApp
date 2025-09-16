@@ -16,8 +16,8 @@ export default function Home() {
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
+        title: "Nepovolený prístup",
+        description: "Ste odhlásený. Prihlasujeme vás znovu...",
         variant: "destructive",
       });
       setTimeout(() => {
@@ -35,8 +35,8 @@ export default function Home() {
   useEffect(() => {
     if (error && isUnauthorizedError(error)) {
       toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
+        title: "Nepovolený prístup",
+        description: "Ste odhlásený. Prihlasujeme vás znovu...",
         variant: "destructive",
       });
       setTimeout(() => {
@@ -58,7 +58,7 @@ export default function Home() {
         <div className="absolute inset-0 z-0">
           <img 
             src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80" 
-            alt="Serene lake with fishing boats at dawn" 
+            alt="Pokojné jazero s rybárskymi člnmi za svitania" 
             className="w-full h-full object-cover opacity-20" 
           />
           <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20"></div>
@@ -67,10 +67,10 @@ export default function Home() {
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6">
-              Live Fishing <span className="text-primary">Competitions</span>
+              Rybárske <span className="text-primary">Súťaže</span> Naživo
             </h1>
             <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-              Follow real-time catches, leaderboards, and team performances in competitive fishing tournaments around the world.
+              Sledujte úlovky v reálnom čase, rebríčky a výkony tímov v súťažných rybárskych turnajoch po celom svete.
             </p>
             
             {/* Live Stats Banner */}
@@ -79,21 +79,21 @@ export default function Home() {
                 <div className="text-2xl font-bold text-primary" data-testid="text-live-competitions">
                   {competitions?.filter((c: Competition) => c.status === 'live').length || 0}
                 </div>
-                <div className="text-sm text-muted-foreground">Live Now</div>
+                <div className="text-sm text-muted-foreground">Práve teraz</div>
               </div>
               <div className="w-px h-8 bg-border"></div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-secondary" data-testid="text-total-competitions">
                   {competitions?.length || 0}
                 </div>
-                <div className="text-sm text-muted-foreground">Total Competitions</div>
+                <div className="text-sm text-muted-foreground">Celkom súťaží</div>
               </div>
               <div className="w-px h-8 bg-border"></div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-accent" data-testid="text-registration-open">
                   {competitions?.filter((c: Competition) => c.status === 'registration').length || 0}
                 </div>
-                <div className="text-sm text-muted-foreground">Registration Open</div>
+                <div className="text-sm text-muted-foreground">Registrácia otvorená</div>
               </div>
             </div>
           </div>
@@ -105,8 +105,8 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-8">
             <div>
-              <h2 className="text-3xl font-bold text-foreground mb-2">Active Competitions</h2>
-              <p className="text-muted-foreground">Live and upcoming fishing tournaments</p>
+              <h2 className="text-3xl font-bold text-foreground mb-2">Aktívne súťaže</h2>
+              <p className="text-muted-foreground">Živé a nadchádzajúce rybárske turnaje</p>
             </div>
           </div>
           
@@ -129,7 +129,7 @@ export default function Home() {
             </div>
           ) : competitions?.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-muted-foreground text-lg">No competitions available</p>
+              <p className="text-muted-foreground text-lg">Žiadne súťaže nie sú dostupné</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
