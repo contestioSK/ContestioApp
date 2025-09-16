@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Users, Plus, Trash2, Fish } from "lucide-react";
+import { Users, Plus, Trash2, Fish, Camera, User, X } from "lucide-react";
 import { Link } from "wouter";
 
 // Team registration form schema
@@ -31,12 +31,21 @@ type TeamRegistrationForm = z.infer<typeof teamRegistrationSchema>;
 
 export default function RegisterTeam() {
   const { toast } = useToast();
+  const [memberPhotos, setMemberPhotos] = useState<{ [key: number]: File | null }>({});
 
-  // Fetch available competitions for registration
-  const { data: competitions = [], isLoading: competitionsLoading } = useQuery({
-    queryKey: ["/api/competitions", "available"],
+  // Fetch all competitions and filter for those available for registration
+  const { data: allCompetitions = [], isLoading: competitionsLoading } = useQuery({
+    queryKey: ["/api/competitions"],
     staleTime: 60000,
   });
+
+  // Filter competitions that are open for registration
+  const availableCompetitions = Array.isArray(allCompetitions) 
+    ? allCompetitions.filter((competition: any) => 
+        competition.status === 'registration' || 
+        (competition.startDate && new Date(competition.startDate) > new Date())
+      )
+    : [];
 
   const form = useForm<TeamRegistrationForm>({
     resolver: zodResolver(teamRegistrationSchema),
@@ -50,29 +59,7 @@ export default function RegisterTeam() {
     },
   });
 
-  const registerTeamMutation = useMutation({
-    mutationFn: async (data: TeamRegistrationForm) => {
-      return apiRequest("POST", `/api/competitions/${data.competitionId}/teams`, {
-        name: data.name,
-        description: data.description,
-        members: data.members,
-      });
-    },
-    onSuccess: () => {
-      toast({
-        title: "Tím bol úspešne zaregistrovaný!",
-        description: "Registrácia vášho tímu čaká na schválenie organizátorom.",
-      });
-      form.reset();
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Registrácia zlyhala",
-        description: error.message || "Nepodarilo sa zaregistrovať tím. Prosím skúste znovu.",
-        variant: "destructive",
-      });
-    },
-  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const addMember = () => {
     const currentMembers = form.getValues("members");
@@ -81,15 +68,91 @@ export default function RegisterTeam() {
     }
   };
 
+  const handlePhotoSelect = (index: number, file: File | null) => {
+    setMemberPhotos(prev => ({
+      ...prev,
+      [index]: file
+    }));
+  };
+
+  const removePhoto = (index: number) => {
+    setMemberPhotos(prev => {
+      const updated = { ...prev };
+      delete updated[index];
+      return updated;
+    });
+  };
+
   const removeMember = (index: number) => {
     const currentMembers = form.getValues("members");
     if (currentMembers.length > 1) {
       form.setValue("members", currentMembers.filter((_, i) => i !== index));
+      // Also remove the photo for this member and shift the remaining photos
+      setMemberPhotos(prev => {
+        const updated = { ...prev };
+        delete updated[index];
+        // Shift photos for members after the removed one
+        for (let i = index + 1; i < currentMembers.length; i++) {
+          if (updated[i]) {
+            updated[i - 1] = updated[i];
+            delete updated[i];
+          }
+        }
+        return updated;
+      });
     }
   };
 
-  const onSubmit = (data: TeamRegistrationForm) => {
-    registerTeamMutation.mutate(data);
+  const onSubmit = async (data: TeamRegistrationForm) => {
+    // Create FormData to handle file uploads
+    const formData = new FormData();
+    formData.append('competitionId', data.competitionId);
+    formData.append('name', data.name);
+    if (data.description) {
+      formData.append('description', data.description);
+    }
+    
+    // Add members data
+    data.members.forEach((member, index) => {
+      formData.append(`members[${index}][name]`, member.name);
+      formData.append(`members[${index}][role]`, member.role);
+      if (member.email) formData.append(`members[${index}][email]`, member.email);
+      if (member.phone) formData.append(`members[${index}][phone]`, member.phone);
+      
+      // Add photo if exists
+      if (memberPhotos[index]) {
+        formData.append(`memberPhoto_${index}`, memberPhotos[index]);
+      }
+    });
+
+    setIsSubmitting(true);
+    
+    try {
+      const response = await fetch(`/api/competitions/${data.competitionId}/teams`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Registration failed');
+      }
+
+      toast({
+        title: "Tím bol úspešne zaregistrovaný!",
+        description: "Registrácia vášho tímu čaká na schválenie organizátorom.",
+      });
+      form.reset();
+      setMemberPhotos({});
+    } catch (error: any) {
+      toast({
+        title: "Registrácia zlyhala",
+        description: error.message || "Nepodarilo sa zaregistrovať tím. Prosím skúste znovu.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -145,10 +208,10 @@ export default function RegisterTeam() {
                         <SelectContent>
                           {competitionsLoading ? (
                             <SelectItem value="loading" disabled>Načítavam súťaže...</SelectItem>
-                          ) : !Array.isArray(competitions) || competitions.length === 0 ? (
+                          ) : availableCompetitions.length === 0 ? (
                             <SelectItem value="empty" disabled>Žiadne dostupné súťaže</SelectItem>
                           ) : (
-                            (competitions as any[]).map((competition: any) => (
+                            availableCompetitions.map((competition: any) => (
                               <SelectItem key={competition.id} value={competition.id}>
                                 {competition.name}
                               </SelectItem>
@@ -277,6 +340,61 @@ export default function RegisterTeam() {
                           />
                         </div>
 
+                        {/* Member Photo Upload */}
+                        <div className="mt-4">
+                          <FormLabel>Fotka člena (voliteľná)</FormLabel>
+                          <div className="mt-2">
+                            {memberPhotos[index] ? (
+                              <div className="flex items-center justify-between p-4 border-2 border-dashed border-muted rounded-lg bg-muted/10">
+                                <div className="flex items-center space-x-3">
+                                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                                    <User className="w-6 h-6 text-primary" />
+                                  </div>
+                                  <div>
+                                    <p className="text-sm font-medium text-foreground">{memberPhotos[index]!.name}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {Math.round(memberPhotos[index]!.size / 1024)} KB
+                                    </p>
+                                  </div>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => removePhoto(index)}
+                                  data-testid={`button-remove-photo-${index}`}
+                                >
+                                  <X className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            ) : (
+                              <label
+                                htmlFor={`photo-input-${index}`}
+                                className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-muted rounded-lg cursor-pointer hover:border-primary/50 transition-colors bg-muted/10 hover:bg-muted/20"
+                                data-testid={`label-photo-upload-${index}`}
+                              >
+                                <input
+                                  id={`photo-input-${index}`}
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0] || null;
+                                    handlePhotoSelect(index, file);
+                                  }}
+                                  data-testid={`input-photo-${index}`}
+                                />
+                                <Camera className="w-8 h-8 text-muted-foreground mb-2" />
+                                <p className="text-sm text-muted-foreground text-center">
+                                  Kliknite pre výber fotky
+                                  <br />
+                                  <span className="text-xs">JPG, PNG, GIF (max 5MB)</span>
+                                </p>
+                              </label>
+                            )}
+                          </div>
+                        </div>
+
                         {form.watch("members").length > 1 && (
                           <div className="mt-4 flex justify-end">
                             <Button 
@@ -300,10 +418,10 @@ export default function RegisterTeam() {
                   <Button 
                     type="submit" 
                     className="flex-1" 
-                    disabled={registerTeamMutation.isPending}
+                    disabled={isSubmitting}
                     data-testid="button-submit-team"
                   >
-                    {registerTeamMutation.isPending ? "Registrujem..." : "Registrovať tím"}
+                    {isSubmitting ? "Registrujem..." : "Registrovať tím"}
                   </Button>
                   <Button type="button" variant="outline" asChild>
                     <Link href="/" data-testid="button-cancel">Zrušiť</Link>
