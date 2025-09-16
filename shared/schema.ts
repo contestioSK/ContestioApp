@@ -52,6 +52,7 @@ export const competitions = pgTable("competitions", {
   maxTeams: integer("max_teams"),
   organizerId: varchar("organizer_id").notNull().references(() => users.id),
   imageUrl: varchar("image_url"),
+  sectorPlaces: jsonb("sector_places").$type<Array<{ sectorName: string; places: string[] }>>(), // Array of {sectorName: string, places: string[]}
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -62,7 +63,9 @@ export const teams = pgTable("teams", {
   name: varchar("name", { length: 255 }).notNull(),
   competitionId: uuid("competition_id").notNull().references(() => competitions.id),
   status: varchar("status").notNull().default("pending"), // "pending", "approved", "rejected"
-  sector: varchar("sector"), // "A", "B", "C", etc.
+  sector: varchar("sector"), // "A", "B", "C", etc. - kept for backward compatibility
+  sectorName: varchar("sector_name"), // "Sektor A", "Sektor B", etc.
+  placeName: varchar("place_name"), // "Place 1", "Place 2", etc.
   position: integer("position"),
   totalWeight: decimal("total_weight", { precision: 10, scale: 3 }).default("0"),
   fishCount: integer("fish_count").default(0),
@@ -191,6 +194,10 @@ export const insertCompetitionSchema = createInsertSchema(competitions).omit({
 }).extend({
   startDate: z.string().or(z.date()).transform((val) => new Date(val)),
   endDate: z.string().or(z.date()).transform((val) => new Date(val)),
+  sectorPlaces: z.array(z.object({
+    sectorName: z.string().min(1, "Názov sektoru je povinný"),
+    places: z.array(z.string().min(1, "Názov miesta je povinný")).min(1, "Sektor musí mať aspoň jedno miesto")
+  })).optional(),
 });
 
 export const insertTeamSchema = createInsertSchema(teams).omit({
@@ -199,6 +206,20 @@ export const insertTeamSchema = createInsertSchema(teams).omit({
   updatedAt: true,
   totalWeight: true,
   fishCount: true,
+}).extend({
+  sectorName: z.string().optional(),
+  placeName: z.string().optional(),
+}).refine((data) => {
+  // If sectorName is provided, placeName must also be provided
+  if (data.sectorName && !data.placeName) {
+    return false;
+  }
+  if (data.placeName && !data.sectorName) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Ak je definovaný sektor, musí byť definované aj miesto"
 });
 
 export const insertTeamMemberSchema = createInsertSchema(teamMembers).omit({
