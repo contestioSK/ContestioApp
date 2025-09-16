@@ -33,7 +33,7 @@ export const users = pgTable("users", {
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
-  role: varchar("role").notNull().default("public"), // "public", "organizer", "referee"
+  role: varchar("role").notNull().default("public"), // "public", "organizer", "referee", "admin"
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -55,6 +55,36 @@ export const competitions = pgTable("competitions", {
   sectorPlaces: jsonb("sector_places").$type<Array<{ sectorName: string; places: string[] }>>(), // Array of {sectorName: string, places: string[]}
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Competition registrations table (for public registration requests)
+export const competitionRegistrations = pgTable("competition_registrations", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  location: varchar("location", { length: 255 }).notNull(),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date").notNull(),
+  prizePool: decimal("prize_pool", { precision: 10, scale: 2 }),
+  registrationFee: decimal("registration_fee", { precision: 10, scale: 2 }),
+  maxTeams: integer("max_teams"),
+  sectorPlaces: jsonb("sector_places").$type<Array<{ sectorName: string; places: string[] }>>(),
+  
+  // Contact information
+  contactName: varchar("contact_name", { length: 255 }).notNull(),
+  contactEmail: varchar("contact_email", { length: 255 }).notNull(),
+  contactPhone: varchar("contact_phone", { length: 50 }),
+  organizationName: varchar("organization_name", { length: 255 }),
+  
+  // Registration status
+  status: varchar("status").notNull().default("submitted"), // "submitted", "approved", "declined"
+  
+  // Timestamps
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  
+  // Reference to created competition (set when approved)
+  approvedCompetitionId: uuid("approved_competition_id").references(() => competitions.id),
 });
 
 // Teams table
@@ -136,6 +166,13 @@ export const competitionsRelations = relations(competitions, ({ one, many }) => 
   sponsors: many(sponsors),
 }));
 
+export const competitionRegistrationsRelations = relations(competitionRegistrations, ({ one }) => ({
+  approvedCompetition: one(competitions, {
+    fields: [competitionRegistrations.approvedCompetitionId],
+    references: [competitions.id],
+  }),
+}));
+
 export const teamsRelations = relations(teams, ({ one, many }) => ({
   competition: one(competitions, {
     fields: [teams.competitionId],
@@ -191,6 +228,21 @@ export const insertCompetitionSchema = createInsertSchema(competitions).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  startDate: z.string().or(z.date()).transform((val) => new Date(val)),
+  endDate: z.string().or(z.date()).transform((val) => new Date(val)),
+  sectorPlaces: z.array(z.object({
+    sectorName: z.string().min(1, "Názov sektoru je povinný"),
+    places: z.array(z.string().min(1, "Názov miesta je povinný")).min(1, "Sektor musí mať aspoň jedno miesto")
+  })).optional(),
+});
+
+export const insertCompetitionRegistrationSchema = createInsertSchema(competitionRegistrations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  status: true,
+  approvedCompetitionId: true,
 }).extend({
   startDate: z.string().or(z.date()).transform((val) => new Date(val)),
   endDate: z.string().or(z.date()).transform((val) => new Date(val)),
@@ -307,3 +359,5 @@ export type InsertCatch = z.infer<typeof insertCatchSchema>;
 export type Sponsor = typeof sponsors.$inferSelect;
 export type InsertSponsor = z.infer<typeof insertSponsorSchema>;
 export type UpdateTeamStatus = z.infer<typeof updateTeamStatusSchema>;
+export type CompetitionRegistration = typeof competitionRegistrations.$inferSelect;
+export type InsertCompetitionRegistration = z.infer<typeof insertCompetitionRegistrationSchema>;

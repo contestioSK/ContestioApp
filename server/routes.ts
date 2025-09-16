@@ -5,6 +5,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import {
   insertCompetitionSchema,
+  insertCompetitionRegistrationSchema,
   insertTeamSchema,
   insertTeamMemberSchema,
   insertRefereeSchema,
@@ -115,8 +116,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      if (user?.role !== 'organizer') {
-        return res.status(403).json({ message: "Only organizers can create competitions" });
+      if (user?.role !== 'organizer' && user?.role !== 'admin') {
+        return res.status(403).json({ message: "Only organizers and admins can create competitions" });
       }
 
       const competitionData = insertCompetitionSchema.parse({
@@ -428,6 +429,112 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error creating sponsor:", error);
       res.status(500).json({ message: "Failed to create sponsor" });
+    }
+  });
+
+  // Helper function for admin role check
+  function isAdmin(user: any): boolean {
+    return user && user.role === 'admin';
+  }
+
+  // Competition registration routes
+  app.post('/api/competition-registrations', async (req, res) => {
+    try {
+      const registrationData = insertCompetitionRegistrationSchema.parse(req.body);
+      
+      const registration = await storage.createCompetitionRegistration(registrationData);
+      res.status(201).json(registration);
+    } catch (error: any) {
+      console.error("Error creating competition registration:", error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ 
+          message: "Invalid registration data", 
+          details: error.errors 
+        });
+      }
+      res.status(500).json({ message: "Failed to create competition registration" });
+    }
+  });
+
+  app.get('/api/competition-registrations', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!isAdmin(user)) {
+        return res.status(403).json({ message: "Only admins can view competition registrations" });
+      }
+
+      const status = req.query.status as string | undefined;
+      const registrations = await storage.getCompetitionRegistrations(status);
+      res.json(registrations);
+    } catch (error) {
+      console.error("Error fetching competition registrations:", error);
+      res.status(500).json({ message: "Failed to fetch competition registrations" });
+    }
+  });
+
+  app.get('/api/competition-registrations/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!isAdmin(user)) {
+        return res.status(403).json({ message: "Only admins can view competition registrations" });
+      }
+
+      const registration = await storage.getCompetitionRegistration(req.params.id);
+      if (!registration) {
+        return res.status(404).json({ message: "Competition registration not found" });
+      }
+      
+      res.json(registration);
+    } catch (error) {
+      console.error("Error fetching competition registration:", error);
+      res.status(500).json({ message: "Failed to fetch competition registration" });
+    }
+  });
+
+  app.patch('/api/competition-registrations/:id/approve', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!isAdmin(user)) {
+        return res.status(403).json({ message: "Only admins can approve competition registrations" });
+      }
+
+      const result = await storage.approveCompetitionRegistration(req.params.id, userId);
+      
+      res.json({
+        message: "Competition registration approved and competition created",
+        registration: result.registration,
+        competition: result.competition
+      });
+    } catch (error: any) {
+      console.error("Error approving competition registration:", error);
+      res.status(400).json({ message: error.message || "Failed to approve competition registration" });
+    }
+  });
+
+  app.patch('/api/competition-registrations/:id/decline', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!isAdmin(user)) {
+        return res.status(403).json({ message: "Only admins can decline competition registrations" });
+      }
+
+      const registration = await storage.declineCompetitionRegistration(req.params.id);
+      
+      res.json({
+        message: "Competition registration declined",
+        registration
+      });
+    } catch (error: any) {
+      console.error("Error declining competition registration:", error);
+      res.status(400).json({ message: error.message || "Failed to decline competition registration" });
     }
   });
 

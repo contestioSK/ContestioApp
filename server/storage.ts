@@ -1,6 +1,7 @@
 import {
   users,
   competitions,
+  competitionRegistrations,
   teams,
   teamMembers,
   referees,
@@ -10,6 +11,8 @@ import {
   type UpsertUser,
   type Competition,
   type InsertCompetition,
+  type CompetitionRegistration,
+  type InsertCompetitionRegistration,
   type Team,
   type InsertTeam,
   type TeamMember,
@@ -34,6 +37,13 @@ export interface IStorage {
   getCompetition(id: string): Promise<Competition | undefined>;
   createCompetition(competition: InsertCompetition): Promise<Competition>;
   updateCompetitionStatus(id: string, status: string): Promise<void>;
+  
+  // Competition registration operations
+  getCompetitionRegistrations(status?: string): Promise<CompetitionRegistration[]>;
+  getCompetitionRegistration(id: string): Promise<CompetitionRegistration | undefined>;
+  createCompetitionRegistration(registration: InsertCompetitionRegistration): Promise<CompetitionRegistration>;
+  approveCompetitionRegistration(id: string, approverUserId: string): Promise<{ registration: CompetitionRegistration; competition: Competition }>;
+  declineCompetitionRegistration(id: string): Promise<CompetitionRegistration>;
   
   // Team operations
   getTeamsByCompetition(competitionId: string): Promise<(Team & { members: TeamMember[] })[]>;
@@ -151,6 +161,88 @@ export class DatabaseStorage implements IStorage {
       .update(competitions)
       .set({ status, updatedAt: new Date() })
       .where(eq(competitions.id, id));
+  }
+
+  // Competition registration operations
+  async getCompetitionRegistrations(status?: string): Promise<CompetitionRegistration[]> {
+    if (status) {
+      return await db.select().from(competitionRegistrations)
+        .where(eq(competitionRegistrations.status, status))
+        .orderBy(desc(competitionRegistrations.createdAt));
+    }
+    return await db.select().from(competitionRegistrations)
+      .orderBy(desc(competitionRegistrations.createdAt));
+  }
+
+  async getCompetitionRegistration(id: string): Promise<CompetitionRegistration | undefined> {
+    const [registration] = await db.select().from(competitionRegistrations)
+      .where(eq(competitionRegistrations.id, id));
+    return registration;
+  }
+
+  async createCompetitionRegistration(registration: InsertCompetitionRegistration): Promise<CompetitionRegistration> {
+    const [newRegistration] = await db
+      .insert(competitionRegistrations)
+      .values(registration)
+      .returning();
+    return newRegistration;
+  }
+
+  async approveCompetitionRegistration(id: string, approverUserId: string): Promise<{ registration: CompetitionRegistration; competition: Competition }> {
+    const registration = await this.getCompetitionRegistration(id);
+    if (!registration) {
+      throw new Error("Registration not found");
+    }
+    if (registration.status !== "submitted") {
+      throw new Error("Only submitted registrations can be approved");
+    }
+
+    // Create competition from registration
+    const competitionData: InsertCompetition = {
+      name: registration.name,
+      description: registration.description,
+      location: registration.location,
+      startDate: registration.startDate,
+      endDate: registration.endDate,
+      prizePool: registration.prizePool,
+      registrationFee: registration.registrationFee,
+      maxTeams: registration.maxTeams,
+      sectorPlaces: registration.sectorPlaces || undefined,
+      organizerId: approverUserId,
+    };
+
+    const newCompetition = await this.createCompetition(competitionData);
+
+    // Update registration status and link to created competition
+    const [updatedRegistration] = await db
+      .update(competitionRegistrations)
+      .set({ 
+        status: "approved", 
+        approvedCompetitionId: newCompetition.id,
+        updatedAt: new Date() 
+      })
+      .where(eq(competitionRegistrations.id, id))
+      .returning();
+
+    return { registration: updatedRegistration, competition: newCompetition };
+  }
+
+  async declineCompetitionRegistration(id: string): Promise<CompetitionRegistration> {
+    const registration = await this.getCompetitionRegistration(id);
+    if (!registration) {
+      throw new Error("Registration not found");
+    }
+    if (registration.status !== "submitted") {
+      throw new Error("Only submitted registrations can be declined");
+    }
+
+    const [updatedRegistration] = await db
+      .update(competitionRegistrations)
+      .set({ status: "declined", updatedAt: new Date() })
+      .where(eq(competitionRegistrations.id, id))
+      .returning();
+
+    return updatedRegistration;
   }
 
   // Team operations

@@ -2,13 +2,17 @@ import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import NavigationHeader from "@/components/navigation-header";
 import CompetitionCard from "@/components/competition-card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { PlusCircle } from "lucide-react";
 import type { Competition } from "@shared/schema";
 
 export default function Home() {
+  const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
 
@@ -95,6 +99,22 @@ export default function Home() {
                 </div>
                 <div className="text-sm text-muted-foreground">Registrácia otvorená</div>
               </div>
+            </div>
+            
+            {/* Register Competition Button */}
+            <div className="mt-8">
+              <Button
+                onClick={() => setLocation("/register-competition")}
+                size="lg"
+                className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground font-semibold px-8 py-3 rounded-full shadow-lg transition-all duration-300 hover:shadow-xl transform hover:scale-105"
+                data-testid="button-register-competition"
+              >
+                <PlusCircle className="w-5 h-5 mr-2" />
+                Zaregistrujte svoju súťaž
+              </Button>
+              <p className="text-sm text-muted-foreground mt-3 max-w-md mx-auto">
+                Chcete organizovať vlastnú rybársku súťaž? Zaregistrujte ju u nás a spravujte ju profesionálne.
+              </p>
             </div>
           </div>
         </div>
