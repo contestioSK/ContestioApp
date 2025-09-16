@@ -17,11 +17,11 @@ import RegisterCompetition from "@/pages/register-competition";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 function Router() {
-  const { isLoading } = useAuth();
+  const { isLoading, user } = useAuth();
 
   return (
     <Switch>
-      <Route path="/" component={Home} />
+      <Route path="/" component={user ? Home : Landing} />
       <Route path="/register-competition" component={RegisterCompetition} />
       <Route path="/competition/:id" component={CompetitionDetail} />
       <Route path="/competition/:id/catches" component={CompetitionCatches} />
