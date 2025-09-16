@@ -18,6 +18,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -431,7 +432,15 @@ export default function CompetitionDetail() {
             </div>
           </div>
           
-          <div className="grid lg:grid-cols-3 gap-8">
+          {/* Tabs Container */}
+          <Tabs defaultValue="overview" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="overview" data-testid="tab-overview">Prehľad</TabsTrigger>
+              <TabsTrigger value="rules" data-testid="tab-rules">Pravidlá</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="overview" className="mt-6">
+              <div className="grid lg:grid-cols-3 gap-8">
             
             {/* Left Column: Interactive Map & Leaderboard */}
             <div className="lg:col-span-2 space-y-6">
@@ -572,6 +581,32 @@ export default function CompetitionDetail() {
               
             </div>
           </div>
+            </TabsContent>
+            
+            <TabsContent value="rules" className="mt-6">
+              <div className="max-w-4xl mx-auto">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Pravidlá súťaže</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {competition.rules ? (
+                      <div 
+                        className="prose dark:prose-invert max-w-none whitespace-pre-wrap"
+                        data-testid="competition-rules-content"
+                      >
+                        {competition.rules}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-muted-foreground" data-testid="no-rules-message">
+                        <p>Pre túto súťaž nie sú zadefinované žiadne pravidlá.</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </section>
     </div>

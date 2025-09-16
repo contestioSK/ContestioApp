@@ -28,7 +28,8 @@ import type { Competition, Team, TeamMember, CompetitionRegistration } from "@sh
 // Competition creation form schema
 const competitionSchema = z.object({
   name: z.string().min(1, "Názov súťaže je povinný").max(255, "Názov je príliš dlhý"),
-  description: z.string().optional(),
+  description: z.string().max(500, "Popis môže mať maximálne 500 znakov").optional(),
+  rules: z.string().optional(),
   location: z.string().min(1, "Miesto je povinné").max(255, "Miesto je príliš dlhé"),
   startDate: z.string().min(1, "Dátum začiatku je povinný"),
   endDate: z.string().min(1, "Dátum konca je povinný"),
@@ -64,6 +65,7 @@ export default function AdminPanel() {
     defaultValues: {
       name: "",
       description: "",
+      rules: "",
       location: "",
       startDate: "",
       endDate: "",
@@ -381,10 +383,40 @@ export default function AdminPanel() {
                           name="description"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Popis (voliteľné)</FormLabel>
+                              <FormLabel>Krátky popis súťaže</FormLabel>
                               <FormControl>
-                                <Textarea placeholder="Krátky popis súťaže" {...field} />
+                                <Textarea 
+                                  placeholder="Stručný popis súťaže, ktorý sa zobrazí v prehľade (max. 500 znakov)" 
+                                  maxLength={500}
+                                  {...field} 
+                                  data-testid="input-competition-description" 
+                                />
                               </FormControl>
+                              <FormDescription>
+                                Tento popis sa zobrazí na verejnej stránke súťaže. {form.watch("description")?.length || 0}/500 znakov
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="rules"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Pravidlá súťaže (voliteľné)</FormLabel>
+                              <FormControl>
+                                <Textarea 
+                                  placeholder="Úplné pravidlá a nariadenia súťaže (podporuje zalomenia riadkov)"
+                                  className="min-h-[150px]"
+                                  {...field} 
+                                  data-testid="input-competition-rules" 
+                                />
+                              </FormControl>
+                              <FormDescription>
+                                Pravidlá budú zobrazené na samostatnej záložke "Pravidlá" v detaile súťaže
+                              </FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}
