@@ -2,9 +2,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { RotateCcw, ArrowRight } from "lucide-react";
+import { RotateCcw, ArrowRight, Trophy } from "lucide-react";
 import { Link } from "wouter";
-import type { Team, TeamMember } from "@shared/schema";
+import { useQuery } from "@tanstack/react-query";
+import type { Team, TeamMember, Competition } from "@shared/schema";
 import { formatSectorPlace, getSectorLetter } from "@/lib/utils";
 
 interface LiveLeaderboardProps {
@@ -14,7 +15,41 @@ interface LiveLeaderboardProps {
 }
 
 export default function LiveLeaderboard({ teams, isLoading, competitionId }: LiveLeaderboardProps) {
-  if (isLoading) {
+  // Fetch competition data to get scoring type
+  const { data: competition, isLoading: competitionLoading } = useQuery<Competition>({
+    queryKey: ["/api/competitions", competitionId],
+    queryFn: async () => {
+      const response = await fetch(`/api/competitions/${competitionId}`);
+      if (!response.ok) throw new Error('Failed to fetch competition');
+      return response.json();
+    },
+  });
+
+  const getScoringTypeLabel = (scoringType: string | undefined) => {
+    switch (scoringType) {
+      case "avg3": return "Priemerná hmotnosť top 3 rýb";
+      case "avg5": return "Priemerná hmotnosť top 5 rýb";
+      case "total":
+      default: return "Celková hmotnosť";
+    }
+  };
+
+  const getScoringTypeBadge = (scoringType: string | undefined) => {
+    const variants = {
+      "avg3": "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+      "avg5": "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+      "total": "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
+    };
+    const variant = variants[scoringType as keyof typeof variants] || variants.total;
+    
+    return (
+      <Badge className={`${variant} text-xs font-medium`} data-testid="badge-scoring-type">
+        <Trophy className="w-3 h-3 mr-1" />
+        {getScoringTypeLabel(scoringType)}
+      </Badge>
+    );
+  };
+  if (isLoading || competitionLoading) {
     return (
       <Card>
         <CardHeader>
@@ -95,7 +130,10 @@ export default function LiveLeaderboard({ teams, isLoading, competitionId }: Liv
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle>Rebríček naživo</CardTitle>
+          <div className="flex flex-col space-y-2">
+            <CardTitle>Rebríček naživo</CardTitle>
+            {competition && getScoringTypeBadge(competition.scoringType)}
+          </div>
           <div className="flex items-center space-x-2 text-sm text-muted-foreground">
             <RotateCcw className="w-4 h-4" />
             <span>Automaticky aktualizované</span>
@@ -116,7 +154,9 @@ export default function LiveLeaderboard({ teams, isLoading, competitionId }: Liv
                   <th className="text-left p-4 text-sm font-medium text-muted-foreground">Poradie</th>
                   <th className="text-left p-4 text-sm font-medium text-muted-foreground">Tím</th>
                   <th className="text-left p-4 text-sm font-medium text-muted-foreground">Sektor</th>
-                  <th className="text-right p-4 text-sm font-medium text-muted-foreground">Celková hmotnosť</th>
+                  <th className="text-right p-4 text-sm font-medium text-muted-foreground">
+                    {getScoringTypeLabel(competition?.scoringType)}
+                  </th>
                   <th className="text-right p-4 text-sm font-medium text-muted-foreground">Počet rýb</th>
                 </tr>
               </thead>
