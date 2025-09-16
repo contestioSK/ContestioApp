@@ -97,8 +97,8 @@ export default function Landing() {
       <section className="relative py-12 lg:py-20">
         <div className="absolute inset-0 z-0">
           <img 
-            src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80" 
-            alt="Carp fishing lake" 
+            src="https://images.unsplash.com/photo-1559827260-dc66d52bef19?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80" 
+            alt="Angler fishing on lake shore" 
             className="w-full h-full object-cover opacity-40" 
           />
           <div className="absolute inset-0 bg-gradient-to-r from-primary/40 to-secondary/40"></div>
