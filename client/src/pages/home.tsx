@@ -113,7 +113,7 @@ export default function Home() {
                 Zaregistrujte svoju súťaž
               </Button>
               <p className="text-sm text-muted-foreground mt-3 max-w-md mx-auto">
-                Chcete organizovať vlastnú rybársku súťaž? Zaregistrujte ju u nás a spravujte ju profesionálne.
+                Chystáte rybársku súťaž? Zverte ju Contestiu – registrácie, výsledky aj štatistiky zvládnete na pár klikov. Spustite ju ešte dnes
               </p>
             </div>
           </div>
