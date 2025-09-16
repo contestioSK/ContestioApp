@@ -1,4 +1,4 @@
-import { useParams } from "wouter";
+import { useParams, Link } from "wouter";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -402,7 +402,7 @@ export default function CompetitionDetail() {
               <CompetitionMap competitionId={id!} teams={(teams || []).map(team => ({ ...team, members: team.members || [] }))} />
               
               {/* Live Leaderboard */}
-              <LiveLeaderboard teams={(teams || []).map(team => ({ ...team, members: team.members || [] }))} isLoading={teamsLoading} />
+              <LiveLeaderboard teams={(teams || []).map(team => ({ ...team, members: team.members || [] }))} isLoading={teamsLoading} competitionId={id!} />
               
             </div>
             
@@ -530,7 +530,13 @@ export default function CompetitionDetail() {
                           return (
                             <div key={sector} className="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-950/20 rounded-lg" data-testid={`special-contest-heaviest-sector-${sector}`}>
                               <div>
-                                <div className="font-medium text-foreground">Najťažší Sektor {sector}</div>
+                                <div className="font-medium text-foreground">
+                                  <Link href={`/competition/${id}/sector/${sector}`} data-testid={`link-heaviest-sector-${sector}`}>
+                                    <span className="hover:text-primary cursor-pointer transition-colors">
+                                      Najťažší Sektor {sector}
+                                    </span>
+                                  </Link>
+                                </div>
                                 <div className="text-sm text-muted-foreground">{heaviestInSector.team?.name}</div>
                               </div>
                               <div className="text-right">
