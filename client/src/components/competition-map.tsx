@@ -1,3 +1,4 @@
+import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -89,7 +90,9 @@ export default function CompetitionMap({ competitionId, teams }: CompetitionMapP
                 >
                   {/* Sector Label */}
                   <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-white px-2 py-1 rounded text-xs font-medium shadow-sm whitespace-nowrap">
-                    <div className="text-foreground">Sektor {sector}</div>
+                    <Link href={`/competition/${competitionId}/sector/${sector}`} data-testid={`link-sector-${sector}`}>
+                      <div className="text-foreground hover:text-primary cursor-pointer transition-colors">Sektor {sector}</div>
+                    </Link>
                     <div className="text-muted-foreground text-xs">
                       {sectorTeams.length} tím{sectorTeams.length === 1 ? '' : sectorTeams.length < 5 ? 'y' : 'ov'}
                     </div>
@@ -127,7 +130,9 @@ export default function CompetitionMap({ competitionId, teams }: CompetitionMapP
                   data-testid={`sector-marker-${sector}-empty`}
                 >
                   <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-white px-2 py-1 rounded text-xs font-medium shadow-sm">
-                    <div className="text-muted-foreground">Sektor {sector}</div>
+                    <Link href={`/competition/${competitionId}/sector/${sector}`} data-testid={`link-sector-${sector}-empty`}>
+                      <div className="text-muted-foreground hover:text-primary cursor-pointer transition-colors">Sektor {sector}</div>
+                    </Link>
                     <div className="text-muted-foreground text-xs">Prázdny</div>
                   </div>
                 </div>

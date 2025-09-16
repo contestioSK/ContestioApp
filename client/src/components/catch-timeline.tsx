@@ -1,3 +1,4 @@
+import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -7,9 +8,10 @@ import type { Catch, Team, Referee } from "@shared/schema";
 interface CatchTimelineProps {
   catches: (Catch & { team: Team; referee: Referee })[];
   isLoading: boolean;
+  competitionId: string;
 }
 
-export default function CatchTimeline({ catches, isLoading }: CatchTimelineProps) {
+export default function CatchTimeline({ catches, isLoading, competitionId }: CatchTimelineProps) {
   const formatTimeAgo = (date: string | Date | null) => {
     if (!date) return 'Neznámy čas';
     const now = new Date();
@@ -36,9 +38,11 @@ export default function CatchTimeline({ catches, isLoading }: CatchTimelineProps
     };
     
     return (
-      <Badge className={`text-xs font-medium ${colors[sector as keyof typeof colors] || 'bg-muted/50'}`}>
-        Sektor {sector}
-      </Badge>
+      <Link href={`/competition/${competitionId}/sector/${sector}`} data-testid={`link-catch-sector-${sector}`}>
+        <Badge className={`text-xs font-medium cursor-pointer hover:bg-primary/20 transition-colors ${colors[sector as keyof typeof colors] || 'bg-muted/50'}`}>
+          Sektor {sector}
+        </Badge>
+      </Link>
     );
   };
 
