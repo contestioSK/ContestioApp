@@ -213,6 +213,19 @@ export default function CompetitionDetail() {
             <div className="mb-4">
               {getStatusBadge(competition.status)}
             </div>
+            
+            {/* Competition Logo */}
+            {competition.imageUrl && (
+              <div className="mb-6">
+                <img 
+                  src={competition.imageUrl} 
+                  alt={`Logo súťaže ${competition.name}`}
+                  className="w-24 h-24 object-cover rounded-lg border-2 border-muted mx-auto"
+                  data-testid="img-competition-logo"
+                />
+              </div>
+            )}
+            
             <h1 className="text-3xl font-bold text-foreground mb-2" data-testid="text-competition-name">
               {competition.name}
             </h1>

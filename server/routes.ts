@@ -462,9 +462,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 
   // Competition registration routes
-  app.post('/api/competition-registrations', async (req, res) => {
+  app.post('/api/competition-registrations', upload.single('competitionLogo'), async (req: any, res) => {
     try {
-      const registrationData = insertCompetitionRegistrationSchema.parse(req.body);
+      // Handle competition logo upload
+      let imageUrl = null;
+      if (req.file) {
+        imageUrl = `/uploads/${req.file.filename}`;
+      }
+
+      // Parse complex fields
+      let sectorPlaces = [];
+      let sideCompetitions = [];
+      
+      if (req.body.sectorPlaces) {
+        try {
+          sectorPlaces = JSON.parse(req.body.sectorPlaces);
+        } catch (e) {
+          console.error('Error parsing sectorPlaces:', e);
+        }
+      }
+      
+      if (req.body.sideCompetitions) {
+        try {
+          sideCompetitions = JSON.parse(req.body.sideCompetitions);
+        } catch (e) {
+          console.error('Error parsing sideCompetitions:', e);
+        }
+      }
+
+      const registrationData = insertCompetitionRegistrationSchema.parse({
+        ...req.body,
+        imageUrl,
+        startDate: new Date(req.body.startDate),
+        endDate: new Date(req.body.endDate),
+        maxTeams: req.body.maxTeams ? parseInt(req.body.maxTeams) : null,
+        hasSectors: req.body.hasSectors === 'true',
+        sectorPlaces,
+        sideCompetitions,
+      });
       
       const registration = await storage.createCompetitionRegistration(registrationData);
       res.status(201).json(registration);

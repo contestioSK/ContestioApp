@@ -87,6 +87,7 @@ export const competitionRegistrations = pgTable("competition_registrations", {
   contactEmail: varchar("contact_email", { length: 255 }).notNull(),
   contactPhone: varchar("contact_phone", { length: 50 }),
   organizationName: varchar("organization_name", { length: 255 }),
+  imageUrl: varchar("image_url"), // Competition logo/image
   
   // Registration status
   status: varchar("status").notNull().default("submitted"), // "submitted", "approved", "declined"
@@ -111,6 +112,7 @@ export const teams = pgTable("teams", {
   position: integer("position"),
   totalWeight: decimal("total_weight", { precision: 10, scale: 3 }).default("0"),
   fishCount: integer("fish_count").default(0),
+  photoUrl: varchar("photo_url"), // Team logo/photo
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

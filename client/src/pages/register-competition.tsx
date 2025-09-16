@@ -19,7 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { insertCompetitionRegistrationSchema, type InsertCompetitionRegistration } from "@shared/schema";
-import { Plus, Trash2, ArrowLeft, Award, MapPin, Trophy } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, Award, MapPin, Trophy, Camera, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -58,6 +58,7 @@ type CompetitionRegistrationForm = z.infer<typeof competitionRegistrationFormSch
 export default function RegisterCompetition() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const [competitionLogo, setCompetitionLogo] = useState<File | null>(null);
 
   const form = useForm<CompetitionRegistrationForm>({
     resolver: zodResolver(competitionRegistrationFormSchema),
@@ -87,51 +88,78 @@ export default function RegisterCompetition() {
     },
   });
 
-  const createRegistrationMutation = useMutation({
-    mutationFn: async (data: CompetitionRegistrationForm) => {
-      // Transform form data to match API schema
-      const registrationData: InsertCompetitionRegistration = {
-        name: data.name,
-        description: data.description || null,
-        rules: data.rules || null,
-        location: data.location,
-        startDate: new Date(data.startDate),
-        endDate: new Date(data.endDate),
-        firstPlacePrize: data.firstPlacePrize || null,
-        secondPlacePrize: data.secondPlacePrize || null,
-        thirdPlacePrize: data.thirdPlacePrize || null,
-        registrationFee: data.registrationFee || null,
-        maxTeams: data.maxTeams ? parseInt(data.maxTeams) : null,
-        contactName: data.contactName,
-        contactEmail: data.contactEmail,
-        contactPhone: data.contactPhone || null,
-        organizationName: data.organizationName || null,
-        hasSectors: data.hasSectors,
-        sectorPlaces: data.sectorPlaces,
-        sideCompetitions: data.sideCompetitions || [],
-      };
-      
-      return apiRequest("POST", "/api/competition-registrations", registrationData);
-    },
-    onSuccess: async () => {
+  const handleLogoSelect = (file: File | null) => {
+    setCompetitionLogo(file);
+  };
+
+  const removeLogo = () => {
+    setCompetitionLogo(null);
+  };
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const onSubmit = async (data: CompetitionRegistrationForm) => {
+    // Create FormData to handle file uploads
+    const formData = new FormData();
+    
+    // Add logo if exists
+    if (competitionLogo) {
+      formData.append('competitionLogo', competitionLogo);
+    }
+
+    // Transform and add form data
+    formData.append('name', data.name);
+    if (data.description) formData.append('description', data.description);
+    if (data.rules) formData.append('rules', data.rules);
+    formData.append('location', data.location);
+    formData.append('startDate', new Date(data.startDate).toISOString());
+    formData.append('endDate', new Date(data.endDate).toISOString());
+    if (data.firstPlacePrize) formData.append('firstPlacePrize', data.firstPlacePrize);
+    if (data.secondPlacePrize) formData.append('secondPlacePrize', data.secondPlacePrize);
+    if (data.thirdPlacePrize) formData.append('thirdPlacePrize', data.thirdPlacePrize);
+    if (data.registrationFee) formData.append('registrationFee', data.registrationFee);
+    if (data.maxTeams) formData.append('maxTeams', data.maxTeams);
+    formData.append('contactName', data.contactName);
+    formData.append('contactEmail', data.contactEmail);
+    if (data.contactPhone) formData.append('contactPhone', data.contactPhone);
+    if (data.organizationName) formData.append('organizationName', data.organizationName);
+    formData.append('hasSectors', data.hasSectors.toString());
+    formData.append('sectorPlaces', JSON.stringify(data.sectorPlaces));
+    formData.append('sideCompetitions', JSON.stringify(data.sideCompetitions || []));
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('/api/competition-registrations', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Registration failed');
+      }
+
       toast({
         title: "Registrácia úspešne odoslaná!",
         description: "Vaša žiadosť o registráciu súťaže bola odoslaná na schválenie administrátorom.",
       });
       setLocation("/");
-    },
-    onError: (error: any) => {
+    } catch (error: any) {
       toast({
         title: "Nepodarilo sa odoslať registráciu",
-        description: error.message || "Prosím skontrolujte údaje a skúste znovu.",
+        description: error.message || "Prosím skúste znovu.",
         variant: "destructive",
       });
-    },
-  });
-
-  const onSubmit = (data: CompetitionRegistrationForm) => {
-    createRegistrationMutation.mutate(data);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  // Remove useMutation since we handle submission directly
+  // const createRegistrationMutation = useMutation({
+  //   mutationFn: onSubmit,
+  // });
 
   const [sectorPlaces, setSectorPlaces] = useState(form.watch("sectorPlaces") || []);
 
@@ -280,6 +308,66 @@ export default function RegisterCompetition() {
                       </FormItem>
                     )}
                   />
+
+                  {/* Competition Logo Upload */}
+                  <div>
+                    <FormLabel>Logo súťaže (voliteľné)</FormLabel>
+                    <div className="mt-2">
+                      {competitionLogo ? (
+                        <div className="flex items-center justify-between p-4 border-2 border-dashed border-muted rounded-lg bg-muted/10">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center">
+                              <Trophy className="w-8 h-8 text-primary" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-foreground">{competitionLogo.name}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {Math.round(competitionLogo.size / 1024)} KB
+                              </p>
+                            </div>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={removeLogo}
+                            data-testid="button-remove-competition-logo"
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <label
+                          htmlFor="competition-logo-input"
+                          className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-muted rounded-lg cursor-pointer hover:border-primary/50 transition-colors bg-muted/10 hover:bg-muted/20"
+                          data-testid="label-competition-logo-upload"
+                        >
+                          <input
+                            id="competition-logo-input"
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0] || null;
+                              handleLogoSelect(file);
+                            }}
+                            data-testid="input-competition-logo"
+                          />
+                          <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center mb-3">
+                            <Trophy className="w-8 h-8 text-primary" />
+                          </div>
+                          <p className="text-sm font-medium text-foreground mb-1">
+                            Pridať logo súťaže
+                          </p>
+                          <p className="text-xs text-muted-foreground text-center">
+                            Kliknite pre výber súboru
+                            <br />
+                            <span className="text-xs">JPG, PNG, GIF (max 5MB)</span>
+                          </p>
+                        </label>
+                      )}
+                    </div>
+                  </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
@@ -713,11 +801,11 @@ export default function RegisterCompetition() {
                 <div className="pt-6">
                   <Button 
                     type="submit" 
-                    disabled={createRegistrationMutation.isPending}
+                    disabled={isSubmitting}
                     className="w-full md:w-auto"
                     data-testid="button-submit-registration"
                   >
-                    {createRegistrationMutation.isPending ? "Odosiela sa..." : "Odoslať registráciu"}
+                    {isSubmitting ? "Odosiela sa..." : "Odoslať registráciu"}
                   </Button>
                 </div>
               </form>
