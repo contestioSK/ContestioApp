@@ -188,7 +188,7 @@ export default function Landing() {
                     <span className="font-medium text-foreground">$25,000</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Registračný poplatok:</span>
+                    <span className="text-muted-foreground">Štartovné na tím:</span>
                     <span className="font-medium text-foreground">$450/tím</span>
                   </div>
                 </div>
