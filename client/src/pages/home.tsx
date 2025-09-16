@@ -74,7 +74,7 @@ export default function Home() {
               Rybárske <span className="text-primary">Súťaže</span> Naživo
             </h1>
             <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-              Sledujte úlovky v reálnom čase, rebríčky a výkony tímov v súťažných rybárskych turnajoch po celom svete.
+              Organizujte rybárske súťaže jednoducho a profesionálne
             </p>
             
             {/* Live Stats Banner */}
