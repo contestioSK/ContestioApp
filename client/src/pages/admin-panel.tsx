@@ -444,6 +444,54 @@ export default function AdminPanel() {
                       <div className="space-y-4">
                         <h3 className="font-medium text-foreground">Detaily súťaže</h3>
                         
+                        {/* Scoring Type */}
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-2">
+                            <Trophy className="w-5 h-5 text-muted-foreground" />
+                            <h4 className="text-sm font-medium text-foreground">Typ hodnotenia súťaže</h4>
+                          </div>
+                          
+                          <FormField
+                            control={form.control}
+                            name="scoringType"
+                            render={({ field }) => (
+                              <FormItem className="space-y-3">
+                                <FormDescription>
+                                  Vyberte ako sa bude hodnotiť výsledok tímov v súťaži
+                                </FormDescription>
+                                <FormControl>
+                                  <RadioGroup
+                                    onValueChange={field.onChange}
+                                    value={field.value}
+                                    className="flex flex-col space-y-2"
+                                    data-testid="radio-group-scoring-type"
+                                  >
+                                    <div className="flex items-center space-x-2">
+                                      <RadioGroupItem value="total" id="admin-total" data-testid="radio-scoring-total" />
+                                      <FormLabel htmlFor="admin-total" className="font-normal">
+                                        Celková hmotnosť všetkých rýb
+                                      </FormLabel>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                      <RadioGroupItem value="avg3" id="admin-avg3" data-testid="radio-scoring-avg3" />
+                                      <FormLabel htmlFor="admin-avg3" className="font-normal">
+                                        Priemerná hmotnosť 3 najväčších rýb
+                                      </FormLabel>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                      <RadioGroupItem value="avg5" id="admin-avg5" data-testid="radio-scoring-avg5" />
+                                      <FormLabel htmlFor="admin-avg5" className="font-normal">
+                                        Priemerná hmotnosť 5 najväčších rýb
+                                      </FormLabel>
+                                    </div>
+                                  </RadioGroup>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <FormField
                             control={form.control}
@@ -698,54 +746,6 @@ export default function AdminPanel() {
                             </FormItem>
                           )}
                         />
-
-                        {/* Scoring Type */}
-                        <div className="space-y-4">
-                          <div className="flex items-center gap-2">
-                            <Trophy className="w-5 h-5 text-muted-foreground" />
-                            <h4 className="text-sm font-medium text-foreground">Typ hodnotenia súťaže</h4>
-                          </div>
-                          
-                          <FormField
-                            control={form.control}
-                            name="scoringType"
-                            render={({ field }) => (
-                              <FormItem className="space-y-3">
-                                <FormDescription>
-                                  Vyberte ako sa bude hodnotiť výsledok tímov v súťaži
-                                </FormDescription>
-                                <FormControl>
-                                  <RadioGroup
-                                    onValueChange={field.onChange}
-                                    value={field.value}
-                                    className="flex flex-col space-y-2"
-                                    data-testid="radio-group-scoring-type"
-                                  >
-                                    <div className="flex items-center space-x-2">
-                                      <RadioGroupItem value="total" id="admin-total" data-testid="radio-scoring-total" />
-                                      <FormLabel htmlFor="admin-total" className="font-normal">
-                                        Celková hmotnosť všetkých rýb
-                                      </FormLabel>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                      <RadioGroupItem value="avg3" id="admin-avg3" data-testid="radio-scoring-avg3" />
-                                      <FormLabel htmlFor="admin-avg3" className="font-normal">
-                                        Priemerná hmotnosť 3 najväčších rýb
-                                      </FormLabel>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                      <RadioGroupItem value="avg5" id="admin-avg5" data-testid="radio-scoring-avg5" />
-                                      <FormLabel htmlFor="admin-avg5" className="font-normal">
-                                        Priemerná hmotnosť 5 najväčších rýb
-                                      </FormLabel>
-                                    </div>
-                                  </RadioGroup>
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
 
                         {/* Sectors Toggle */}
                         <FormField
