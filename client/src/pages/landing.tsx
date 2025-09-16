@@ -3,8 +3,97 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Fish, Users, Trophy, MapPin, PlusCircle } from "lucide-react";
 import { ContestCategories } from "@/components/contest-categories";
+import { useState, useEffect } from "react";
+
+// Hero rotating background component
+function HeroRotatingBackground({ images, intervalMs = 6000 }: { images: string[], intervalMs?: number }) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
+
+  // Preload images
+  useEffect(() => {
+    let loadedCount = 0;
+    let errorCount = 0;
+    
+    const checkComplete = () => {
+      if (loadedCount + errorCount === images.length) {
+        setImagesLoaded(true);
+      }
+    };
+
+    const imagePromises = images.map(src => {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          loadedCount++;
+          checkComplete();
+          resolve(true);
+        };
+        img.onerror = () => {
+          errorCount++;
+          checkComplete();
+          resolve(false);
+        };
+        img.src = src;
+      });
+    });
+    
+    // Fallback timeout to start rotation even if images are slow
+    const fallbackTimeout = setTimeout(() => {
+      if (!imagesLoaded) {
+        setImagesLoaded(true);
+      }
+    }, 5000);
+    
+    Promise.all(imagePromises).then(() => {
+      clearTimeout(fallbackTimeout);
+    });
+
+    return () => clearTimeout(fallbackTimeout);
+  }, [images, imagesLoaded]);
+
+  // Rotation logic
+  useEffect(() => {
+    if (!imagesLoaded) return;
+    
+    // Check for reduced motion preference
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    const interval = setInterval(() => {
+      setActiveIndex(prev => (prev + 1) % images.length);
+    }, intervalMs);
+
+    return () => clearInterval(interval);
+  }, [images.length, intervalMs, imagesLoaded]);
+
+  return (
+    <div className="absolute inset-0 z-0">
+      {images.map((src, index) => (
+        <img
+          key={src}
+          src={src}
+          alt={`Carp fishing background ${index + 1}`}
+          className={`absolute inset-0 w-full h-full object-cover will-change-opacity ${
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches 
+              ? 'transition-none' 
+              : 'transition-opacity duration-1000 ease-in-out'
+          } ${index === activeIndex ? 'opacity-20' : 'opacity-0'}`}
+        />
+      ))}
+      <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20"></div>
+    </div>
+  );
+}
 
 export default function Landing() {
+  // Carp fishing hero images
+  const heroImages = [
+    "https://images.unsplash.com/photo-1580623557890-2e7e88b73b31?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
+    "https://images.unsplash.com/photo-1606189934846-8b4b0c7ad8e9?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
+    "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
+  ];
+
   // Sample contests data to showcase different categories
   const sampleContests = [
     {
@@ -95,14 +184,7 @@ export default function Landing() {
 
       {/* Hero Section */}
       <section className="relative py-12 lg:py-20">
-        <div className="absolute inset-0 z-0">
-          <img 
-            src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80" 
-            alt="Pokojné jazero s rybárskymi člnmi za svitania" 
-            className="w-full h-full object-cover opacity-20" 
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20"></div>
-        </div>
+        <HeroRotatingBackground images={heroImages} />
         
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
