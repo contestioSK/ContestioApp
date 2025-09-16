@@ -36,3 +36,26 @@ export function getSectorLetter(team: { sectorName?: string | null; placeName?: 
   // Fall back to legacy sector
   return team.sector || null;
 }
+
+// Side competitions mapping utility
+export function getSideCompetitionLabel(id: string): string {
+  const sideCompetitionLabels: Record<string, string> = {
+    "biggest-fish": "Najväčšia ryba",
+    "most-fish": "Najviac rýb", 
+    "youth-category": "Mládežnícka kategória",
+    "women-category": "Ženská kategória",
+    "team-spirit": "Najlepší tímový duch",
+    "early-bird": "Ranná úlovka",
+  };
+  
+  return sideCompetitionLabels[id] || id;
+}
+
+// Get all side competition labels for an array of IDs
+export function getSideCompetitionLabels(sideCompetitions: string[] | undefined | null): string[] {
+  if (!sideCompetitions || !Array.isArray(sideCompetitions)) {
+    return [];
+  }
+  
+  return sideCompetitions.map(id => getSideCompetitionLabel(id));
+}
