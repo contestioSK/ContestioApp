@@ -21,7 +21,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { Edit, Eye, Users, UserCheck, UserX, Plus, Trophy, Trash2, MapPin, CheckCircle, XCircle, Clock, Calendar, Mail, Phone, Building2, FileText, Award } from "lucide-react";
-import { getSideCompetitionLabels } from "@/lib/utils";
+import { getSideCompetitionLabels, getSideCompetitionLabel } from "@/lib/utils";
 import type { Competition, Team, TeamMember, CompetitionRegistration } from "@shared/schema";
 
 // Competition creation form schema
@@ -655,17 +655,17 @@ export default function AdminPanel() {
                             <FormItem>
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 {[
-                                  { id: "big-fish-overall", label: "Najväčší úlovok súťaže" },
-                                  { id: "big-common-carp", label: "Najväčší šupináč" },
-                                  { id: "big-mirror-carp", label: "Najväčší lysec" },
-                                  { id: "first-catch", label: "Prvá ryba súťaže" },
-                                  { id: "last-catch", label: "Posledná ryba súťaže" },
-                                  { id: "most-fish-caught", label: "Najväčší počet ulovených rýb" },
-                                  { id: "best-5-fish", label: "Top 5 rýb" },
-                                  { id: "daily-big-fish", label: "Najväčší úlovok dňa" },
-                                  { id: "first-fish-over-15kg", label: "Prvá ryba nad 15 kg" },
-                                  { id: "first-fish-over-20kg", label: "Prvá ryba nad 20 kg" },
-                                  { id: "first-fish-over-25kg", label: "Prvá ryba nad 25 kg" },
+                                  { id: "big-fish-overall", label: getSideCompetitionLabel("big-fish-overall") },
+                                  { id: "big-common-carp", label: getSideCompetitionLabel("big-common-carp") },
+                                  { id: "big-mirror-carp", label: getSideCompetitionLabel("big-mirror-carp") },
+                                  { id: "first-catch", label: getSideCompetitionLabel("first-catch") },
+                                  { id: "last-catch", label: getSideCompetitionLabel("last-catch") },
+                                  { id: "most-fish-caught", label: getSideCompetitionLabel("most-fish-caught") },
+                                  { id: "best-5-fish", label: getSideCompetitionLabel("best-5-fish") },
+                                  { id: "daily-big-fish", label: getSideCompetitionLabel("daily-big-fish") },
+                                  { id: "first-fish-over-15kg", label: getSideCompetitionLabel("first-fish-over-15kg") },
+                                  { id: "first-fish-over-20kg", label: getSideCompetitionLabel("first-fish-over-20kg") },
+                                  { id: "first-fish-over-25kg", label: getSideCompetitionLabel("first-fish-over-25kg") },
                                 ].map((item) => (
                                   <div
                                     key={item.id}
