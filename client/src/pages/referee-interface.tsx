@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -171,7 +172,17 @@ export default function RefereeInterface() {
               <div>
                 <CardTitle className="font-semibold">Rozhranie rozhodcu</CardTitle>
                 <p className="text-sm text-primary-foreground/80">
-                  {user?.firstName} {user?.lastName} - Sektor {refereeAssignment?.assignedSector || 'Nepridelený'}
+                  {user?.firstName} {user?.lastName} - {
+                    refereeAssignment?.assignedSector && selectedCompetition ? (
+                      <Link href={`/competition/${selectedCompetition}/sector/${refereeAssignment.assignedSector}`} data-testid="link-referee-sector">
+                        <span className="underline hover:text-primary-foreground cursor-pointer transition-colors">
+                          Sektor {refereeAssignment.assignedSector}
+                        </span>
+                      </Link>
+                    ) : (
+                      `Sektor ${refereeAssignment?.assignedSector || 'Nepridelený'}`
+                    )
+                  }
                 </p>
               </div>
               <Button 
