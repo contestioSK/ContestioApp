@@ -19,9 +19,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { insertCompetitionRegistrationSchema, type InsertCompetitionRegistration } from "@shared/schema";
-import { Plus, Trash2, ArrowLeft, Award, MapPin } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, Award, MapPin, Trophy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { getSideCompetitionLabel } from "@/lib/utils";
 import { useState } from "react";
 import { z } from "zod";
@@ -48,6 +49,7 @@ const competitionRegistrationFormSchema = z.object({
     places: z.array(z.string().min(1, "Názov miesta je povinný")).min(1, "Sektor musí mať aspoň jedno miesto")
   })).min(1, "Súťaž musí mať aspoň jeden sektor"),
   sideCompetitions: z.array(z.string()).optional().default([]),
+  scoringType: z.enum(["total", "avg3", "avg5"]).default("total"),
 });
 
 type CompetitionRegistrationForm = z.infer<typeof competitionRegistrationFormSchema>;
@@ -79,6 +81,7 @@ export default function RegisterCompetition() {
         { sectorName: "Sektor B", places: ["Miesto 1", "Miesto 2"] }
       ],
       sideCompetitions: [],
+      scoringType: "total",
     },
   });
 
@@ -437,6 +440,54 @@ export default function RegisterCompetition() {
                       </div>
                     </div>
                   )}
+                </div>
+
+                {/* Scoring Type */}
+                <div className="space-y-6">
+                  <div className="flex items-center gap-2">
+                    <Trophy className="w-5 h-5 text-muted-foreground" />
+                    <h3 className="text-lg font-medium text-foreground">Typ hodnotenia súťaže</h3>
+                  </div>
+                  
+                  <FormField
+                    control={form.control}
+                    name="scoringType"
+                    render={({ field }) => (
+                      <FormItem className="space-y-3">
+                        <FormDescription>
+                          Vyberte ako sa bude hodnotiť výsledok tímov v súťaži
+                        </FormDescription>
+                        <FormControl>
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            value={field.value}
+                            className="flex flex-col space-y-2"
+                            data-testid="radio-group-scoring-type"
+                          >
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="total" id="total" data-testid="radio-scoring-total" />
+                              <FormLabel htmlFor="total" className="font-normal">
+                                Celková hmotnosť všetkých rýb
+                              </FormLabel>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="avg3" id="avg3" data-testid="radio-scoring-avg3" />
+                              <FormLabel htmlFor="avg3" className="font-normal">
+                                Priemerná hmotnosť 3 najväčších rýb
+                              </FormLabel>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="avg5" id="avg5" data-testid="radio-scoring-avg5" />
+                              <FormLabel htmlFor="avg5" className="font-normal">
+                                Priemerná hmotnosť 5 najväčších rýb
+                              </FormLabel>
+                            </div>
+                          </RadioGroup>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
 
                 {/* Contact Information */}
