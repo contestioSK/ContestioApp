@@ -23,11 +23,11 @@ import type { Competition, Team, TeamMember } from "@shared/schema";
 
 // Competition creation form schema
 const competitionSchema = z.object({
-  name: z.string().min(1, "Competition name is required").max(255, "Name too long"),
+  name: z.string().min(1, "Názov súťaže je povinný").max(255, "Názov je príliš dlhý"),
   description: z.string().optional(),
-  location: z.string().min(1, "Location is required").max(255, "Location too long"),
-  startDate: z.string().min(1, "Start date is required"),
-  endDate: z.string().min(1, "End date is required"),
+  location: z.string().min(1, "Miesto je povinné").max(255, "Miesto je príliš dlhé"),
+  startDate: z.string().min(1, "Dátum začiatku je povinný"),
+  endDate: z.string().min(1, "Dátum konca je povinný"),
   prizePool: z.string().optional(),
   registrationFee: z.string().optional(),
   maxTeams: z.string().optional(),
@@ -72,8 +72,8 @@ export default function AdminPanel() {
     onSuccess: async (response) => {
       const newCompetition = await response.json();
       toast({
-        title: "Competition created successfully!",
-        description: "Your new competition is now available for team registration.",
+        title: "Súťaž bola úspešne vytvorená!",
+        description: "Vaša nová súťaž je teraz dostupná pre registráciu tímov.",
       });
       setIsCreateDialogOpen(false);
       form.reset();
@@ -86,8 +86,8 @@ export default function AdminPanel() {
     },
     onError: (error: any) => {
       toast({
-        title: "Failed to create competition",
-        description: error.message || "Please check your data and try again.",
+        title: "Nepodarilo sa vytvoriť súťaž",
+        description: error.message || "Prosím skontrolujte údaje a skúste znovu.",
         variant: "destructive",
       });
     },
@@ -101,8 +101,8 @@ export default function AdminPanel() {
   useEffect(() => {
     if (!isLoading && (!isAuthenticated || user?.role !== 'organizer')) {
       toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
+        title: "Neautorizovaný",
+        description: "Ste odhlásený. Prihlasujem znovu...",
         variant: "destructive",
       });
       setTimeout(() => {
@@ -128,16 +128,16 @@ export default function AdminPanel() {
     },
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Team status updated successfully",
+        title: "Úspěch",
+        description: "Stav tímu bol úspešne aktualizovaný",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/competitions", selectedCompetition, "teams"] });
     },
     onError: (error) => {
       if (isUnauthorizedError(error)) {
         toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
+          title: "Neautorizovaný",
+          description: "Ste odhlásený. Prihlasujem znovu...",
           variant: "destructive",
         });
         setTimeout(() => {
@@ -146,8 +146,8 @@ export default function AdminPanel() {
         return;
       }
       toast({
-        title: "Error",
-        description: "Failed to update team status",
+        title: "Chyba",
+        description: "Nepodarilo sa aktualizovať stav tímu",
         variant: "destructive",
       });
     },
@@ -156,8 +156,8 @@ export default function AdminPanel() {
   useEffect(() => {
     if (error && isUnauthorizedError(error)) {
       toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
+        title: "Neautorizovaný",
+        description: "Ste odhlásený. Prihlasujem znovu...",
         variant: "destructive",
       });
       setTimeout(() => {
@@ -181,11 +181,11 @@ export default function AdminPanel() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'approved':
-        return <Badge className="bg-secondary text-secondary-foreground">Approved</Badge>;
+        return <Badge className="bg-secondary text-secondary-foreground">Schválený</Badge>;
       case 'pending':
-        return <Badge className="bg-accent text-accent-foreground">Pending</Badge>;
+        return <Badge className="bg-accent text-accent-foreground">Čaká sa na schválenie</Badge>;
       case 'rejected':
-        return <Badge className="bg-destructive text-destructive-foreground">Rejected</Badge>;
+        return <Badge className="bg-destructive text-destructive-foreground">Zamietnutý</Badge>;
       default:
         return <Badge>{status}</Badge>;
     }
@@ -202,13 +202,13 @@ export default function AdminPanel() {
           <div className="bg-gradient-to-r from-primary to-secondary text-white p-6">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-xl font-bold">Admin Panel</h1>
-                <p className="text-white/80">Competition Management</p>
+                <h1 className="text-xl font-bold">Admin panel</h1>
+                <p className="text-white/80">Správa súťaží</p>
               </div>
               <div className="flex items-center space-x-3">
-                <span className="text-sm text-white/80">Organizer Dashboard</span>
+                <span className="text-sm text-white/80">Panel organizátora</span>
                 <Button variant="outline" className="border-white/20 hover:bg-white/20 text-white">
-                  Export Data
+                  Exportovať údaje
                 </Button>
               </div>
             </div>
@@ -218,10 +218,10 @@ export default function AdminPanel() {
           <div className="p-6 border-b border-border">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <label className="text-sm font-medium text-foreground">Select Competition:</label>
+                <label className="text-sm font-medium text-foreground">Vybrať súťaž:</label>
                 <Select value={selectedCompetition} onValueChange={setSelectedCompetition}>
                   <SelectTrigger className="w-64" data-testid="select-competition">
-                    <SelectValue placeholder="Choose a competition" />
+                    <SelectValue placeholder="Vyberte súťaž" />
                   </SelectTrigger>
                   <SelectContent>
                     {competitions?.map((competition: Competition) => (
@@ -238,28 +238,28 @@ export default function AdminPanel() {
                 <DialogTrigger asChild>
                   <Button className="bg-primary text-primary-foreground hover:bg-primary/90" data-testid="button-create-competition">
                     <Plus className="w-4 h-4 mr-2" />
-                    Create Competition
+                    Vytvoriť súťaž
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
-                    <DialogTitle>Create New Competition</DialogTitle>
+                    <DialogTitle>Vytvoriť novú súťaž</DialogTitle>
                   </DialogHeader>
                   
                   <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmitCompetition)} className="space-y-6">
                       {/* Basic Information */}
                       <div className="space-y-4">
-                        <h3 className="font-medium text-foreground">Basic Information</h3>
+                        <h3 className="font-medium text-foreground">Základné informácie</h3>
                         
                         <FormField
                           control={form.control}
                           name="name"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Competition Name</FormLabel>
+                              <FormLabel>Názov súťaže</FormLabel>
                               <FormControl>
-                                <Input placeholder="Enter competition name" {...field} data-testid="input-competition-name" />
+                                <Input placeholder="Zadajte názov súťaže" {...field} data-testid="input-competition-name" />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -271,9 +271,9 @@ export default function AdminPanel() {
                           name="description"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Description (Optional)</FormLabel>
+                              <FormLabel>Popis (voliteľné)</FormLabel>
                               <FormControl>
-                                <Textarea placeholder="Brief description of the competition" {...field} />
+                                <Textarea placeholder="Krátky popis súťaže" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -285,9 +285,9 @@ export default function AdminPanel() {
                           name="location"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Location</FormLabel>
+                              <FormLabel>Miesto</FormLabel>
                               <FormControl>
-                                <Input placeholder="Competition location" {...field} data-testid="input-competition-location" />
+                                <Input placeholder="Miesto konania súťaže" {...field} data-testid="input-competition-location" />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -297,7 +297,7 @@ export default function AdminPanel() {
 
                       {/* Dates */}
                       <div className="space-y-4">
-                        <h3 className="font-medium text-foreground">Schedule</h3>
+                        <h3 className="font-medium text-foreground">Rozvrh</h3>
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <FormField
@@ -305,7 +305,7 @@ export default function AdminPanel() {
                             name="startDate"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Start Date</FormLabel>
+                                <FormLabel>Dátum začiatku</FormLabel>
                                 <FormControl>
                                   <Input type="datetime-local" {...field} data-testid="input-start-date" />
                                 </FormControl>
@@ -319,7 +319,7 @@ export default function AdminPanel() {
                             name="endDate"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>End Date</FormLabel>
+                                <FormLabel>Dátum konca</FormLabel>
                                 <FormControl>
                                   <Input type="datetime-local" {...field} data-testid="input-end-date" />
                                 </FormControl>
@@ -332,7 +332,7 @@ export default function AdminPanel() {
 
                       {/* Competition Details */}
                       <div className="space-y-4">
-                        <h3 className="font-medium text-foreground">Competition Details</h3>
+                        <h3 className="font-medium text-foreground">Detaily súťaže</h3>
                         
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <FormField
@@ -340,7 +340,7 @@ export default function AdminPanel() {
                             name="prizePool"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Prize Pool ($)</FormLabel>
+                                <FormLabel>Výhra (€)</FormLabel>
                                 <FormControl>
                                   <Input type="number" placeholder="0.00" step="0.01" {...field} data-testid="input-prize-pool" />
                                 </FormControl>
@@ -354,7 +354,7 @@ export default function AdminPanel() {
                             name="registrationFee"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Registration Fee ($)</FormLabel>
+                                <FormLabel>Registračný poplatok (€)</FormLabel>
                                 <FormControl>
                                   <Input type="number" placeholder="0.00" step="0.01" {...field} data-testid="input-registration-fee" />
                                 </FormControl>
@@ -368,9 +368,9 @@ export default function AdminPanel() {
                             name="maxTeams"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Max Teams</FormLabel>
+                                <FormLabel>Maximálny počet tímov</FormLabel>
                                 <FormControl>
-                                  <Input type="number" placeholder="Unlimited" {...field} data-testid="input-max-teams" />
+                                  <Input type="number" placeholder="Neobmedzene" {...field} data-testid="input-max-teams" />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -387,14 +387,14 @@ export default function AdminPanel() {
                           onClick={() => setIsCreateDialogOpen(false)}
                           data-testid="button-cancel-competition"
                         >
-                          Cancel
+                          Zrušiť
                         </Button>
                         <Button 
                           type="submit" 
                           disabled={createCompetitionMutation.isPending}
                           data-testid="button-submit-competition"
                         >
-                          {createCompetitionMutation.isPending ? "Creating..." : "Create Competition"}
+                          {createCompetitionMutation.isPending ? "Vytvára sa..." : "Vytvoriť súťaž"}
                         </Button>
                       </div>
                     </form>
@@ -416,12 +416,12 @@ export default function AdminPanel() {
             <div className="text-center py-12">
               <Trophy className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-medium text-foreground mb-2">
-                {competitions?.length === 0 ? "No competitions yet" : "Select a competition"}
+                {competitions?.length === 0 ? "Zatiaľ žiadne súťaže" : "Vyberte súťaž"}
               </h3>
               <p className="text-muted-foreground mb-6">
                 {competitions?.length === 0 
-                  ? "Create your first competition to start managing teams and events." 
-                  : "Choose a competition from the dropdown above to manage its details."
+                  ? "Vytvorte svoju prvú súťaž a začnite spravovať tímy a udalosti." 
+                  : "Vyberte súťaž z rozbaľovacieho menu vyššie pre správu jej detailov."
                 }
               </p>
               {competitions?.length === 0 && (
@@ -431,7 +431,7 @@ export default function AdminPanel() {
                   data-testid="button-create-first-competition"
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Create First Competition
+                  Vytvoriť prvú súťaž
                 </Button>
               )}
             </div>
@@ -442,16 +442,16 @@ export default function AdminPanel() {
               <div className="border-b border-border">
                 <TabsList className="flex space-x-8 px-6 bg-transparent">
                   <TabsTrigger value="teams" className="py-4 border-b-2 border-primary text-primary font-medium text-sm">
-                    Teams
+                    Tímy
                   </TabsTrigger>
                   <TabsTrigger value="referees" className="py-4 text-muted-foreground hover:text-foreground font-medium text-sm">
-                    Referees
+                    Rozhodcovia
                   </TabsTrigger>
                   <TabsTrigger value="sponsors" className="py-4 text-muted-foreground hover:text-foreground font-medium text-sm">
-                    Sponsors
+                    Sponzori
                   </TabsTrigger>
                   <TabsTrigger value="settings" className="py-4 text-muted-foreground hover:text-foreground font-medium text-sm">
-                    Settings
+                    Nastavenia
                   </TabsTrigger>
                 </TabsList>
               </div>
@@ -460,8 +460,8 @@ export default function AdminPanel() {
               <TabsContent value="teams" className="p-6">
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h2 className="text-lg font-semibold text-foreground">Team Management</h2>
-                    <p className="text-muted-foreground">Approve registrations and assign sectors</p>
+                    <h2 className="text-lg font-semibold text-foreground">Správa tímov</h2>
+                    <p className="text-muted-foreground">Schválte registrácie a pridelte sektory</p>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Select defaultValue="all">
@@ -469,10 +469,10 @@ export default function AdminPanel() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Teams</SelectItem>
-                        <SelectItem value="pending">Pending Approval</SelectItem>
-                        <SelectItem value="approved">Approved</SelectItem>
-                        <SelectItem value="rejected">Rejected</SelectItem>
+                        <SelectItem value="all">Všetky tímy</SelectItem>
+                        <SelectItem value="pending">Čaká na schválenie</SelectItem>
+                        <SelectItem value="approved">Schválené</SelectItem>
+                        <SelectItem value="rejected">Zamietnuté</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -494,18 +494,18 @@ export default function AdminPanel() {
                 ) : teams?.length === 0 ? (
                   <div className="text-center py-12">
                     <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground text-lg">No teams registered yet</p>
+                    <p className="text-muted-foreground text-lg">Zatiaľ žiadne tímy nie sú zaregistrované</p>
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead className="bg-muted/20">
                         <tr>
-                          <th className="text-left p-4 text-sm font-medium text-muted-foreground">Team Name</th>
-                          <th className="text-left p-4 text-sm font-medium text-muted-foreground">Members</th>
-                          <th className="text-left p-4 text-sm font-medium text-muted-foreground">Status</th>
-                          <th className="text-left p-4 text-sm font-medium text-muted-foreground">Sector</th>
-                          <th className="text-right p-4 text-sm font-medium text-muted-foreground">Actions</th>
+                          <th className="text-left p-4 text-sm font-medium text-muted-foreground">Názov tímu</th>
+                          <th className="text-left p-4 text-sm font-medium text-muted-foreground">Členovia</th>
+                          <th className="text-left p-4 text-sm font-medium text-muted-foreground">Stav</th>
+                          <th className="text-left p-4 text-sm font-medium text-muted-foreground">Sektor</th>
+                          <th className="text-right p-4 text-sm font-medium text-muted-foreground">Akcie</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -514,7 +514,7 @@ export default function AdminPanel() {
                             <td className="p-4">
                               <div className="font-medium text-foreground">{team.name}</div>
                               <div className="text-sm text-muted-foreground">
-                                Registered {new Date(team.createdAt!).toLocaleDateString()}
+                                Zaregistrovaný {new Date(team.createdAt!).toLocaleDateString()}
                               </div>
                             </td>
                             <td className="p-4">
@@ -522,7 +522,7 @@ export default function AdminPanel() {
                                 {team.members.map(m => m.name).join(', ')}
                               </div>
                               <div className="text-xs text-muted-foreground">
-                                {team.members.length} member{team.members.length !== 1 ? 's' : ''}
+                                {team.members.length} člen{team.members.length === 1 ? '' : team.members.length < 5 ? 'ovia' : 'ov'}
                               </div>
                             </td>
                             <td className="p-4">
@@ -535,16 +535,16 @@ export default function AdminPanel() {
                                   onValueChange={(sector) => handleApproveTeam(team.id, sector)}
                                 >
                                   <SelectTrigger className="w-24">
-                                    <SelectValue placeholder="Assign" />
+                                    <SelectValue placeholder="Prideliť" />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    <SelectItem value="A">Sector A</SelectItem>
-                                    <SelectItem value="B">Sector B</SelectItem>
-                                    <SelectItem value="C">Sector C</SelectItem>
+                                    <SelectItem value="A">Sektor A</SelectItem>
+                                    <SelectItem value="B">Sektor B</SelectItem>
+                                    <SelectItem value="C">Sektor C</SelectItem>
                                   </SelectContent>
                                 </Select>
                               ) : (
-                                <span className="text-muted-foreground text-sm">Not assigned</span>
+                                <span className="text-muted-foreground text-sm">Neprideliť</span>
                               )}
                             </td>
                             <td className="p-4 text-right">
@@ -559,7 +559,7 @@ export default function AdminPanel() {
                                       data-testid={`button-approve-${team.id}`}
                                     >
                                       <UserCheck className="w-4 h-4 mr-1" />
-                                      Approve
+                                      Schváliť
                                     </Button>
                                     <Button
                                       size="sm"
@@ -569,7 +569,7 @@ export default function AdminPanel() {
                                       data-testid={`button-reject-${team.id}`}
                                     >
                                       <UserX className="w-4 h-4 mr-1" />
-                                      Reject
+                                      Zamietnuť
                                     </Button>
                                   </>
                                 ) : (
@@ -595,19 +595,19 @@ export default function AdminPanel() {
               {/* Other tabs would be implemented similarly */}
               <TabsContent value="referees" className="p-6">
                 <div className="text-center py-12">
-                  <p className="text-muted-foreground">Referee management coming soon</p>
+                  <p className="text-muted-foreground">Správa rozhodcov príde skôr</p>
                 </div>
               </TabsContent>
 
               <TabsContent value="sponsors" className="p-6">
                 <div className="text-center py-12">
-                  <p className="text-muted-foreground">Sponsor management coming soon</p>
+                  <p className="text-muted-foreground">Správa sponzorov príde skôr</p>
                 </div>
               </TabsContent>
 
               <TabsContent value="settings" className="p-6">
                 <div className="text-center py-12">
-                  <p className="text-muted-foreground">Competition settings coming soon</p>
+                  <p className="text-muted-foreground">Nastavenia súťaže príde skôr</p>
                 </div>
               </TabsContent>
 
@@ -616,7 +616,7 @@ export default function AdminPanel() {
 
           {!selectedCompetition && (
             <div className="p-12 text-center">
-              <p className="text-muted-foreground text-lg">Please select a competition to manage</p>
+              <p className="text-muted-foreground text-lg">Prosím vyberte súťaž na správu</p>
             </div>
           )}
 
