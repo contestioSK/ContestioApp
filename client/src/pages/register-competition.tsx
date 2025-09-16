@@ -30,7 +30,8 @@ import { z } from "zod";
 // Form-specific schema that uses strings for dates and handles null values
 const competitionRegistrationFormSchema = z.object({
   name: z.string().min(1, "Názov súťaže je povinný").max(255, "Názov je príliš dlhý"),
-  description: z.string().optional(),
+  description: z.string().max(500, "Popis môže mať maximálne 500 znakov").optional(),
+  rules: z.string().optional(),
   location: z.string().min(1, "Miesto je povinné").max(255, "Miesto je príliš dlhé"),
   startDate: z.string().min(1, "Dátum začiatku je povinný"),
   endDate: z.string().min(1, "Dátum konca je povinný"),
@@ -63,6 +64,7 @@ export default function RegisterCompetition() {
     defaultValues: {
       name: "",
       description: "",
+      rules: "",
       location: "",
       startDate: new Date().toISOString().slice(0, 16),
       endDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
@@ -91,6 +93,7 @@ export default function RegisterCompetition() {
       const registrationData: InsertCompetitionRegistration = {
         name: data.name,
         description: data.description || null,
+        rules: data.rules || null,
         location: data.location,
         startDate: new Date(data.startDate),
         endDate: new Date(data.endDate),
@@ -239,10 +242,40 @@ export default function RegisterCompetition() {
                     name="description"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Popis (voliteľné)</FormLabel>
+                        <FormLabel>Krátky popis súťaže</FormLabel>
                         <FormControl>
-                          <Textarea placeholder="Stručný popis súťaže, pravidlá, atď." {...field} data-testid="input-competition-description" />
+                          <Textarea 
+                            placeholder="Stručný popis súťaže, ktorý sa zobrazí v prehľade (max. 500 znakov)" 
+                            maxLength={500}
+                            {...field} 
+                            data-testid="input-competition-description" 
+                          />
                         </FormControl>
+                        <FormDescription>
+                          Tento popis sa zobrazí na verejnej stránke súťaže. {form.watch("description")?.length || 0}/500 znakov
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="rules"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Pravidlá súťaže (voliteľné)</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Úplné pravidlá a nariadenia súťaže (podporuje zalomenia riadkov)"
+                            className="min-h-[150px]"
+                            {...field} 
+                            data-testid="input-competition-rules" 
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Pravidlá budú zobrazené na samostatnej záložke "Pravidlá" v detaile súťaže
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
