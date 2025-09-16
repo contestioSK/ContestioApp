@@ -57,6 +57,7 @@ export const competitions = pgTable("competitions", {
   sectorPlaces: jsonb("sector_places").$type<Array<{ sectorName: string; places: string[] }>>(), // Array of {sectorName: string, places: string[]}
   sideCompetitions: jsonb("side_competitions").$type<string[]>().default([]), // Array of side competition names
   hasSectors: boolean("has_sectors").notNull().default(false), // Whether competition is divided into sectors
+  scoringType: varchar("scoring_type").notNull().default("total"), // "total", "avg3", "avg5"
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -77,6 +78,7 @@ export const competitionRegistrations = pgTable("competition_registrations", {
   sectorPlaces: jsonb("sector_places").$type<Array<{ sectorName: string; places: string[] }>>(),
   sideCompetitions: jsonb("side_competitions").$type<string[]>().default([]), // Array of side competition names
   hasSectors: boolean("has_sectors").notNull().default(false), // Whether competition is divided into sectors
+  scoringType: varchar("scoring_type").notNull().default("total"), // "total", "avg3", "avg5"
   
   // Contact information
   contactName: varchar("contact_name", { length: 255 }).notNull(),
