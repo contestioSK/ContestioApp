@@ -12,11 +12,11 @@ export default function NavigationHeader() {
   const getRoleDisplayName = (role: string) => {
     switch (role) {
       case 'organizer':
-        return 'Organizer Panel';
+        return 'Panel organizátora';
       case 'referee':
-        return 'Referee Interface';
+        return 'Rozhranie rozhodcu';
       default:
-        return 'Public View';
+        return 'Verejné zobrazenie';
     }
   };
 
@@ -46,7 +46,7 @@ export default function NavigationHeader() {
             </Link>
             <div className="hidden md:flex items-center space-x-1 bg-muted/20 rounded-full px-3 py-1">
               <span className="w-2 h-2 bg-secondary rounded-full animate-pulse"></span>
-              <span className="text-sm font-medium text-secondary">Live Competitions</span>
+              <span className="text-sm font-medium text-secondary">Živé súťaže</span>
             </div>
           </div>
           
@@ -59,13 +59,13 @@ export default function NavigationHeader() {
               }`}
               data-testid="nav-competitions"
             >
-              Competitions
+              Súťaže
             </Link>
             <a href="#archive" className="text-muted-foreground hover:text-primary transition-colors">
-              Archive
+              Archív
             </a>
             <a href="#about" className="text-muted-foreground hover:text-primary transition-colors">
-              About
+              O nás
             </a>
           </nav>
           
@@ -82,12 +82,12 @@ export default function NavigationHeader() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="public">Public View</SelectItem>
+                    <SelectItem value="public">Verejné zobrazenie</SelectItem>
                     {user.role === 'organizer' && (
-                      <SelectItem value="organizer">Organizer Panel</SelectItem>
+                      <SelectItem value="organizer">Panel organizátora</SelectItem>
                     )}
                     {user.role === 'referee' && (
-                      <SelectItem value="referee">Referee Interface</SelectItem>
+                      <SelectItem value="referee">Rozhranie rozhodcu</SelectItem>
                     )}
                   </SelectContent>
                 </Select>
@@ -100,7 +100,7 @@ export default function NavigationHeader() {
                 onClick={() => setLocation('/admin-panel')}
                 data-testid="button-admin-panel"
               >
-                Admin Panel
+                Admin panel
               </Button>
             )}
             
@@ -109,7 +109,7 @@ export default function NavigationHeader() {
                 {user?.profileImageUrl && (
                   <img 
                     src={user.profileImageUrl} 
-                    alt="Profile" 
+                    alt="Profil" 
                     className="w-8 h-8 rounded-full object-cover"
                     data-testid="img-profile"
                   />
@@ -119,7 +119,7 @@ export default function NavigationHeader() {
                   onClick={() => window.location.href = '/api/logout'}
                   data-testid="button-logout"
                 >
-                  Sign Out
+                  Odhlásiť sa
                 </Button>
               </div>
             ) : (
@@ -128,7 +128,7 @@ export default function NavigationHeader() {
                 className="bg-accent text-accent-foreground hover:bg-accent/90"
                 data-testid="button-login"
               >
-                Sign In
+                Prihlásiť sa
               </Button>
             )}
             
