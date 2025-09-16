@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 function HeroRotatingBackground({ images, intervalMs = 6000 }: { images: string[], intervalMs?: number }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [imagesLoaded, setImagesLoaded] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
   // Preload images
   useEffect(() => {
@@ -52,20 +53,31 @@ function HeroRotatingBackground({ images, intervalMs = 6000 }: { images: string[
     return () => clearTimeout(fallbackTimeout);
   }, [images, imagesLoaded]);
 
+  // Check for reduced motion preference
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+    
+    const handleChange = () => setPrefersReducedMotion(mediaQuery.matches);
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
   // Rotation logic
   useEffect(() => {
-    if (!imagesLoaded) return;
-    
-    // Check for reduced motion preference
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) return;
+    if (!imagesLoaded || prefersReducedMotion) return;
 
+    console.log('Starting image rotation with', images.length, 'images');
     const interval = setInterval(() => {
-      setActiveIndex(prev => (prev + 1) % images.length);
+      setActiveIndex(prev => {
+        const newIndex = (prev + 1) % images.length;
+        console.log('Rotating to image', newIndex);
+        return newIndex;
+      });
     }, intervalMs);
 
     return () => clearInterval(interval);
-  }, [images.length, intervalMs, imagesLoaded]);
+  }, [images.length, intervalMs, imagesLoaded, prefersReducedMotion]);
 
   return (
     <div className="absolute inset-0 z-0">
@@ -75,7 +87,7 @@ function HeroRotatingBackground({ images, intervalMs = 6000 }: { images: string[
           src={src}
           alt={`Carp fishing background ${index + 1}`}
           className={`absolute inset-0 w-full h-full object-cover will-change-opacity ${
-            window.matchMedia('(prefers-reduced-motion: reduce)').matches 
+            prefersReducedMotion 
               ? 'transition-none' 
               : 'transition-opacity duration-1000 ease-in-out'
           } ${index === activeIndex ? 'opacity-20' : 'opacity-0'}`}
