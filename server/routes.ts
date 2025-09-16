@@ -10,6 +10,7 @@ import {
   insertRefereeSchema,
   insertCatchSchema,
   insertSponsorSchema,
+  createTeamStatusValidationSchema,
 } from "@shared/schema";
 import multer from "multer";
 import path from "path";
@@ -194,9 +195,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Only organizers can update team status" });
       }
 
-      const { status, sector } = req.body;
-      await storage.updateTeamStatus(req.params.id, status, sector);
-      res.json({ message: "Team status updated" });
+      // Get the team to find which competition it belongs to
+      const team = await storage.getTeam(req.params.id);
+      if (!team) {
+        return res.status(404).json({ message: "Team not found" });
+      }
+
+      // Get the competition to validate sector places
+      const competition = await storage.getCompetition(team.competitionId);
+      if (!competition) {
+        return res.status(404).json({ message: "Competition not found" });
+      }
+
+      // Validate the request data using competition-specific schema
+      const validationSchema = createTeamStatusValidationSchema(competition);
+      const validationResult = validationSchema.safeParse(req.body);
+      
+      if (!validationResult.success) {
+        const errorMessage = validationResult.error.errors[0]?.message || "Invalid request data";
+        return res.status(400).json({ 
+          message: errorMessage,
+          errors: validationResult.error.errors 
+        });
+      }
+
+      const { status, sector, sectorName, placeName } = validationResult.data;
+
+      // Check uniqueness if sector place assignment is being made and status is approved
+      if (status === "approved" && sectorName && placeName) {
+        const isAvailable = await storage.checkSectorPlaceAvailability(
+          team.competitionId,
+          sectorName,
+          placeName,
+          req.params.id // Exclude current team from check
+        );
+
+        if (!isAvailable) {
+          return res.status(409).json({ 
+            message: `Miesto "${placeName}" v sektore "${sectorName}" je už obsadené iným tímom`,
+            conflictType: "sector_place_taken"
+          });
+        }
+      }
+
+      // Update team status
+      await storage.updateTeamStatus(req.params.id, status, sector, sectorName, placeName);
+      res.json({ message: "Team status updated successfully" });
     } catch (error) {
       console.error("Error updating team status:", error);
       res.status(500).json({ message: "Failed to update team status" });

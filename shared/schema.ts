@@ -242,6 +242,55 @@ export const insertSponsorSchema = createInsertSchema(sponsors).omit({
   createdAt: true,
 });
 
+// Team status update schema
+export const updateTeamStatusSchema = z.object({
+  status: z.enum(["pending", "approved", "rejected"], {
+    required_error: "Status je povinný",
+    invalid_type_error: "Neplatný status"
+  }),
+  sector: z.string().optional(), // Legacy field for backward compatibility
+  sectorName: z.string().optional(),
+  placeName: z.string().optional(),
+}).refine((data) => {
+  // If sectorName is provided, placeName must also be provided
+  if (data.sectorName && !data.placeName) {
+    return false;
+  }
+  if (data.placeName && !data.sectorName) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Ak je definovaný sektor, musí byť definované aj miesto"
+});
+
+// Function to create validation schema with competition-specific sector places
+export function createTeamStatusValidationSchema(competition: Competition) {
+  return updateTeamStatusSchema.refine((data) => {
+    // Skip validation if no sector assignment is being made
+    if (!data.sectorName || !data.placeName) {
+      return true;
+    }
+
+    // If competition has no sectorPlaces configuration, allow any assignment
+    if (!competition.sectorPlaces || !Array.isArray(competition.sectorPlaces)) {
+      return true;
+    }
+
+    // Find the sector in competition configuration
+    const sector = competition.sectorPlaces.find(s => s.sectorName === data.sectorName);
+    if (!sector) {
+      return false;
+    }
+
+    // Check if the place exists in this sector
+    return sector.places.includes(data.placeName);
+  }, {
+    message: "Zadaný sektor alebo miesto neexistuje v konfigurácii súťaže",
+    path: ["sectorName"]
+  });
+}
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -257,3 +306,4 @@ export type Catch = typeof catches.$inferSelect;
 export type InsertCatch = z.infer<typeof insertCatchSchema>;
 export type Sponsor = typeof sponsors.$inferSelect;
 export type InsertSponsor = z.infer<typeof insertSponsorSchema>;
+export type UpdateTeamStatus = z.infer<typeof updateTeamStatusSchema>;
