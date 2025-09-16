@@ -290,7 +290,7 @@ export default function RefereeInterface() {
                                     onClick={() => field.onChange("scaly")}
                                     data-testid="button-scaly-carp"
                                   >
-                                    Šupinatý kapor
+                                    Šupináč
                                   </Button>
                                   <Button
                                     type="button"
