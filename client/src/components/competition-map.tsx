@@ -50,10 +50,10 @@ export default function CompetitionMap({ competitionId, teams }: CompetitionMapP
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center space-x-2">
             <MapPin className="w-5 h-5" />
-            <span>Competition Map</span>
+            <span>Mapa súťaže</span>
           </CardTitle>
           <div className="flex items-center space-x-2">
-            <span className="text-sm text-muted-foreground">Last updated:</span>
+            <span className="text-sm text-muted-foreground">Posledná aktualizácia:</span>
             <span className="text-sm font-medium text-foreground" data-testid="map-last-update">
               {formatLastUpdate()}
             </span>
@@ -70,7 +70,7 @@ export default function CompetitionMap({ competitionId, teams }: CompetitionMapP
           {/* Background lake image */}
           <img 
             src="https://images.unsplash.com/photo-1439066615861-d1af74d74000?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=600" 
-            alt="Aerial view of lake with fishing sectors marked" 
+            alt="Letecký pohľad na jazero s označenými rybárskymi sektormi" 
             className="w-full h-full object-cover opacity-60"
           />
           
@@ -87,23 +87,23 @@ export default function CompetitionMap({ competitionId, teams }: CompetitionMapP
                 >
                   {/* Sector Label */}
                   <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-white px-2 py-1 rounded text-xs font-medium shadow-sm whitespace-nowrap">
-                    <div className="text-foreground">Sector {sector}</div>
+                    <div className="text-foreground">Sektor {sector}</div>
                     <div className="text-muted-foreground text-xs">
-                      {sectorTeams.length} team{sectorTeams.length !== 1 ? 's' : ''}
+                      {sectorTeams.length} tím{sectorTeams.length === 1 ? '' : sectorTeams.length < 5 ? 'y' : 'ov'}
                     </div>
                   </div>
                   
                   {/* Team tooltip on hover */}
                   <div className="absolute top-6 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-lg p-2 opacity-0 hover:opacity-100 transition-opacity z-10 min-w-48">
                     <div className="text-xs font-medium text-foreground mb-1">
-                      Sector {sector} Teams:
+                      Tímy sektora {sector}:
                     </div>
                     <div className="space-y-1">
                       {sectorTeams.map((team) => (
                         <div key={team.id} className="flex justify-between text-xs">
                           <span className="text-foreground">{team.name}</span>
                           <span className="font-mono text-accent">
-                            {parseFloat(team.totalWeight || '0').toFixed(1)}kg
+                            {parseFloat(team.totalWeight || '0').toFixed(1)} kg
                           </span>
                         </div>
                       ))}
@@ -120,8 +120,8 @@ export default function CompetitionMap({ competitionId, teams }: CompetitionMapP
                   data-testid={`sector-marker-${sector}-empty`}
                 >
                   <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-white px-2 py-1 rounded text-xs font-medium shadow-sm">
-                    <div className="text-muted-foreground">Sector {sector}</div>
-                    <div className="text-muted-foreground text-xs">Empty</div>
+                    <div className="text-muted-foreground">Sektor {sector}</div>
+                    <div className="text-muted-foreground text-xs">Prázdny</div>
                   </div>
                 </div>
               ))}
@@ -140,7 +140,7 @@ export default function CompetitionMap({ competitionId, teams }: CompetitionMapP
           
           {/* Legend */}
           <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm rounded-lg p-2 space-y-1">
-            <div className="text-xs font-medium text-foreground">Sectors:</div>
+            <div className="text-xs font-medium text-foreground">Sektory:</div>
             <div className="flex space-x-2">
               <div className="flex items-center space-x-1">
                 <div className="w-2 h-2 bg-primary rounded-full"></div>
@@ -170,21 +170,21 @@ export default function CompetitionMap({ competitionId, teams }: CompetitionMapP
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-2">
                     <div className={`w-3 h-3 rounded-full ${getSectorColor(sector)}`}></div>
-                    <span className="font-medium text-foreground">Sector {sector}</span>
+                    <span className="font-medium text-foreground">Sektor {sector}</span>
                   </div>
                   <Badge variant="outline" className="text-xs">
-                    {sectorTeams.length} teams
+                    {sectorTeams.length} tím{sectorTeams.length === 1 ? '' : sectorTeams.length < 5 ? 'y' : 'ov'}
                   </Badge>
                 </div>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Total Weight:</span>
+                    <span className="text-muted-foreground">Celková hmotnosť:</span>
                     <span className="font-mono font-medium text-foreground">
                       {totalWeight.toFixed(2)} kg
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Total Fish:</span>
+                    <span className="text-muted-foreground">Počet rýb:</span>
                     <span className="font-mono font-medium text-foreground">
                       {totalFish}
                     </span>
