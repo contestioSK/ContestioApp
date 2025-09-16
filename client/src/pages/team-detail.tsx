@@ -89,6 +89,14 @@ export default function TeamDetail() {
     if (!sectorPlace) return null;
     
     const sectorLetter = getSectorLetter(team);
+    if (!sectorLetter || !team.competitionId) {
+      return (
+        <Badge className={`text-sm font-medium bg-muted/50`}>
+          {sectorPlace}
+        </Badge>
+      );
+    }
+    
     const colors = {
       'A': 'bg-primary/10 text-primary border-primary',
       'B': 'bg-secondary/10 text-secondary border-secondary',
@@ -96,9 +104,11 @@ export default function TeamDetail() {
     };
     
     return (
-      <Badge className={`text-sm font-medium ${colors[sectorLetter as keyof typeof colors] || 'bg-muted/50'}`}>
-        {sectorPlace}
-      </Badge>
+      <Link href={`/competition/${team.competitionId}/sector/${sectorLetter}`} data-testid={`link-team-sector-${sectorLetter}`}>
+        <Badge className={`text-sm font-medium cursor-pointer hover:bg-primary/20 transition-colors ${colors[sectorLetter as keyof typeof colors] || 'bg-muted/50'}`}>
+          {sectorPlace}
+        </Badge>
+      </Link>
     );
   };
 
@@ -313,9 +323,26 @@ export default function TeamDetail() {
                             </td>
                             <td className="p-3 text-center">
                               {(formatSectorPlace(teamData) || (catch_.sector && `Sektor ${catch_.sector}`)) && (
-                                <Badge className="text-sm font-medium bg-muted/50">
-                                  {formatSectorPlace(teamData) || `Sektor ${catch_.sector}`}
-                                </Badge>
+                                (() => {
+                                  const sectorLetter = getSectorLetter(teamData);
+                                  const displayText = formatSectorPlace(teamData) || `Sektor ${catch_.sector}`;
+                                  
+                                  if (sectorLetter && teamData.competitionId) {
+                                    return (
+                                      <Link href={`/competition/${teamData.competitionId}/sector/${sectorLetter}`} data-testid={`link-catch-sector-${index}`}>
+                                        <Badge className="text-sm font-medium bg-muted/50 cursor-pointer hover:bg-primary/20 transition-colors">
+                                          {displayText}
+                                        </Badge>
+                                      </Link>
+                                    );
+                                  } else {
+                                    return (
+                                      <Badge className="text-sm font-medium bg-muted/50">
+                                        {displayText}
+                                      </Badge>
+                                    );
+                                  }
+                                })()
                               )}
                             </td>
                             <td className="p-3 text-center">
