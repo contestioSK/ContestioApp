@@ -19,6 +19,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { Edit, Eye, Users, UserCheck, UserX, Plus, Trophy, Trash2, MapPin, CheckCircle, XCircle, Clock, Calendar, Mail, Phone, Building2, FileText, Award } from "lucide-react";
 import { getSideCompetitionLabels, getSideCompetitionLabel } from "@/lib/utils";
@@ -42,6 +43,7 @@ const competitionSchema = z.object({
   })).min(1, "Súťaž musí mať aspoň jeden sektor"),
   sideCompetitions: z.array(z.string()).optional().default([]),
   hasSectors: z.boolean().optional().default(false),
+  scoringType: z.enum(["total", "avg3", "avg5"]).default("total"),
 });
 
 type CompetitionForm = z.infer<typeof competitionSchema>;
@@ -76,6 +78,7 @@ export default function AdminPanel() {
       ],
       sideCompetitions: [],
       hasSectors: false,
+      scoringType: "total",
     },
   });
 
@@ -94,6 +97,7 @@ export default function AdminPanel() {
         sectorPlaces: data.sectorPlaces || undefined, // Include sector places configuration
         sideCompetitions: data.sideCompetitions || [],
         hasSectors: data.hasSectors || false,
+        scoringType: data.scoringType || "total",
       };
       return apiRequest("POST", "/api/competitions", competitionData);
     },
@@ -694,6 +698,54 @@ export default function AdminPanel() {
                             </FormItem>
                           )}
                         />
+
+                        {/* Scoring Type */}
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-2">
+                            <Trophy className="w-5 h-5 text-muted-foreground" />
+                            <h4 className="text-sm font-medium text-foreground">Typ hodnotenia súťaže</h4>
+                          </div>
+                          
+                          <FormField
+                            control={form.control}
+                            name="scoringType"
+                            render={({ field }) => (
+                              <FormItem className="space-y-3">
+                                <FormDescription>
+                                  Vyberte ako sa bude hodnotiť výsledok tímov v súťaži
+                                </FormDescription>
+                                <FormControl>
+                                  <RadioGroup
+                                    onValueChange={field.onChange}
+                                    value={field.value}
+                                    className="flex flex-col space-y-2"
+                                    data-testid="radio-group-scoring-type"
+                                  >
+                                    <div className="flex items-center space-x-2">
+                                      <RadioGroupItem value="total" id="admin-total" data-testid="radio-scoring-total" />
+                                      <FormLabel htmlFor="admin-total" className="font-normal">
+                                        Celková hmotnosť všetkých rýb
+                                      </FormLabel>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                      <RadioGroupItem value="avg3" id="admin-avg3" data-testid="radio-scoring-avg3" />
+                                      <FormLabel htmlFor="admin-avg3" className="font-normal">
+                                        Priemerná hmotnosť 3 najväčších rýb
+                                      </FormLabel>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                      <RadioGroupItem value="avg5" id="admin-avg5" data-testid="radio-scoring-avg5" />
+                                      <FormLabel htmlFor="admin-avg5" className="font-normal">
+                                        Priemerná hmotnosť 5 najväčších rýb
+                                      </FormLabel>
+                                    </div>
+                                  </RadioGroup>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
 
                         {/* Sectors Toggle */}
                         <FormField
