@@ -13,10 +13,12 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { Edit, Eye, Users, UserCheck, UserX, Plus, Trophy, Trash2, MapPin, CheckCircle, XCircle, Clock, Calendar, Mail, Phone, Building2, FileText } from "lucide-react";
 import type { Competition, Team, TeamMember, CompetitionRegistration } from "@shared/schema";
@@ -37,6 +39,8 @@ const competitionSchema = z.object({
     sectorName: z.string().min(1, "Názov sektoru je povinný"),
     places: z.array(z.string().min(1, "Názov miesta je povinný")).min(1, "Sektor musí mať aspoň jedno miesto")
   })).min(1, "Súťaž musí mať aspoň jeden sektor"),
+  sideCompetitions: z.array(z.string()).optional().default([]),
+  hasSectors: z.boolean().optional().default(false),
 });
 
 type CompetitionForm = z.infer<typeof competitionSchema>;
@@ -69,6 +73,8 @@ export default function AdminPanel() {
         { sectorName: "Sektor A", places: ["Place 1", "Place 2", "Place 3"] },
         { sectorName: "Sektor B", places: ["Place 1", "Place 2"] }
       ],
+      sideCompetitions: [],
+      hasSectors: false,
     },
   });
 
@@ -85,6 +91,8 @@ export default function AdminPanel() {
         startDate: new Date(data.startDate), // Send Date object, not ISO string
         endDate: new Date(data.endDate), // Send Date object, not ISO string
         sectorPlaces: data.sectorPlaces || undefined, // Include sector places configuration
+        sideCompetitions: data.sideCompetitions || [],
+        hasSectors: data.hasSectors || false,
       };
       return apiRequest("POST", "/api/competitions", competitionData);
     },
@@ -630,6 +638,92 @@ export default function AdminPanel() {
                             <p>Žiadne sektory nie sú definované. Kliknite na "Pridať sektor" pre začatie.</p>
                           </div>
                         )}
+                      </div>
+
+                      {/* Optional Side Competitions */}
+                      <div className="space-y-4">
+                        <h3 className="font-medium text-foreground">Voliteľné vedľajšie súťaže</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Vyberte dodatočné súťaže, ktoré sa budú konať spolu s hlavnou súťažou:
+                        </p>
+                        
+                        <FormField
+                          control={form.control}
+                          name="sideCompetitions"
+                          render={() => (
+                            <FormItem>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                {[
+                                  { id: "biggest-fish", label: "Najväčšia ryba" },
+                                  { id: "most-fish", label: "Najviac rýb" },
+                                  { id: "youth-category", label: "Mládežnícka kategória" },
+                                  { id: "women-category", label: "Ženská kategória" },
+                                  { id: "team-spirit", label: "Najlepší tímový duch" },
+                                  { id: "early-bird", label: "Ranná úlovka" },
+                                ].map((item) => (
+                                  <FormField
+                                    key={item.id}
+                                    control={form.control}
+                                    name="sideCompetitions"
+                                    render={({ field }) => {
+                                      return (
+                                        <FormItem
+                                          key={item.id}
+                                          className="flex flex-row items-start space-x-3 space-y-0"
+                                        >
+                                          <FormControl>
+                                            <Checkbox
+                                              checked={field.value?.includes(item.id)}
+                                              onCheckedChange={(checked) => {
+                                                return checked
+                                                  ? field.onChange([...field.value, item.id])
+                                                  : field.onChange(
+                                                      field.value?.filter(
+                                                        (value) => value !== item.id
+                                                      )
+                                                    )
+                                              }}
+                                              data-testid={`checkbox-side-competition-${item.id}`}
+                                            />
+                                          </FormControl>
+                                          <FormLabel className="text-sm font-normal cursor-pointer">
+                                            {item.label}
+                                          </FormLabel>
+                                        </FormItem>
+                                      )
+                                    }}
+                                  />
+                                ))}
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Sectors Toggle */}
+                        <FormField
+                          control={form.control}
+                          name="hasSectors"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                              <div className="space-y-0.5">
+                                <FormLabel className="text-base">
+                                  Rozdeliť súťaž na sektory
+                                </FormLabel>
+                                <FormDescription>
+                                  Súťaž bude rozdelená na geografické sektory s oddelenými výsledkami
+                                </FormDescription>
+                              </div>
+                              <FormControl>
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                  data-testid="switch-has-sectors"
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
                       </div>
 
                       {/* Submit Button */}
