@@ -299,7 +299,7 @@ export default function RefereeInterface() {
                                     onClick={() => field.onChange("mirror")}
                                     data-testid="button-mirror-carp"
                                   >
-                                    Zrkadlový kapor
+                                    Lysec
                                   </Button>
                                 </div>
                               </FormControl>
