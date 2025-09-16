@@ -384,7 +384,7 @@ export default function CompetitionDetail() {
                           <h4 className="font-medium mb-2">Informácie o registrácii</h4>
                           <div className="space-y-1 text-sm text-muted-foreground">
                             {competition.registrationFee && (
-                              <p>Registračný poplatok: ${parseFloat(competition.registrationFee)}</p>
+                              <p>Štartovné na tím: ${parseFloat(competition.registrationFee)}</p>
                             )}
                             {competition.maxTeams && (
                               <p>Maximálny počet tímov: {competition.maxTeams}</p>

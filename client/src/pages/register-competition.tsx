@@ -412,7 +412,7 @@ export default function RegisterCompetition() {
                       name="registrationFee"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Registračný poplatok (€)</FormLabel>
+                          <FormLabel>Štartovné na tím (€)</FormLabel>
                           <FormControl>
                             <Input placeholder="25.00" {...field} data-testid="input-registration-fee" />
                           </FormControl>

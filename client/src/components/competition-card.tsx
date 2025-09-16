@@ -178,7 +178,7 @@ export default function CompetitionCard({ competition }: CompetitionCardProps) {
               )}
               {competition.registrationFee && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Registračný poplatok:</span>
+                  <span className="text-muted-foreground">Štartovné na tím:</span>
                   <span className="font-medium text-foreground">
                     €{parseFloat(competition.registrationFee)}/tím
                   </span>

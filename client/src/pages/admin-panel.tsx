@@ -572,7 +572,7 @@ export default function AdminPanel() {
                             name="registrationFee"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Registračný poplatok (€)</FormLabel>
+                                <FormLabel>Štartovné na tím (€)</FormLabel>
                                 <FormControl>
                                   <Input type="number" placeholder="0.00" step="0.01" {...field} data-testid="input-registration-fee" />
                                 </FormControl>
