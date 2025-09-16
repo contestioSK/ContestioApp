@@ -8,6 +8,7 @@ import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
 import Home from "@/pages/home";
 import CompetitionDetail from "@/pages/competition-detail";
+import CompetitionCatches from "@/pages/competition-catches";
 import TeamDetail from "@/pages/team-detail";
 import SectorDetail from "@/pages/sector-detail";
 import AdminPanel from "@/pages/admin-panel";
@@ -21,6 +22,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/competition/:id" component={CompetitionDetail} />
+      <Route path="/competition/:id/catches" component={CompetitionCatches} />
       <Route path="/competition/:competitionId/sector/:sector" component={SectorDetail} />
       <Route path="/team/:teamId" component={TeamDetail} />
       <Route path="/admin-panel">

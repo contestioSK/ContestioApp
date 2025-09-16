@@ -21,7 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Users, UserPlus, Trash2 } from "lucide-react";
+import { Users, UserPlus, Trash2, Fish } from "lucide-react";
 import type { Competition, Team, Catch } from "@shared/schema";
 
 // Team registration form schema
@@ -223,9 +223,11 @@ export default function CompetitionDetail() {
               </p>
             )}
             
-            {/* Team Registration Button */}
-            {competition.status === 'registration' && (
-              <div className="mt-6">
+            {/* Action Buttons */}
+            <div className="mt-6 flex flex-wrap justify-center gap-4">
+              
+              {/* Team Registration Button */}
+              {competition.status === 'registration' && (
                 <Dialog open={isRegistrationDialogOpen} onOpenChange={setIsRegistrationDialogOpen}>
                   <DialogTrigger asChild>
                     <Button size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90" data-testid="button-register-team">
@@ -389,8 +391,21 @@ export default function CompetitionDetail() {
                     </Form>
                   </DialogContent>
                 </Dialog>
-              </div>
-            )}
+              )}
+              
+              {/* View All Catches Button */}
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="hover:bg-primary/10"
+                onClick={() => window.location.href = `/competition/${id}/catches`}
+                data-testid="button-view-all-catches"
+              >
+                <Fish className="w-4 h-4 mr-2" />
+                Zobraziť všetky úlovky
+              </Button>
+              
+            </div>
           </div>
           
           <div className="grid lg:grid-cols-3 gap-8">
