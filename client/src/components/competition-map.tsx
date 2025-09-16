@@ -101,7 +101,11 @@ export default function CompetitionMap({ competitionId, teams }: CompetitionMapP
                   {/* Team tooltip on hover */}
                   <div className="absolute top-6 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-lg p-2 opacity-0 hover:opacity-100 transition-opacity z-10 min-w-48">
                     <div className="text-xs font-medium text-foreground mb-1">
-                      Tímy sektora {sector}:
+                      <Link href={`/competition/${competitionId}/sector/${sector}`} data-testid={`link-tooltip-sector-${sector}`}>
+                        <span className="hover:text-primary cursor-pointer transition-colors">
+                          Tímy sektora {sector}:
+                        </span>
+                      </Link>
                     </div>
                     <div className="space-y-1">
                       {sectorTeams.map((team) => (
@@ -113,7 +117,11 @@ export default function CompetitionMap({ competitionId, teams }: CompetitionMapP
                             </span>
                           </div>
                           <div className="text-muted-foreground text-xs">
-                            {formatSectorPlace(team) || `Sektor ${team.sector}`}
+                            <Link href={`/competition/${competitionId}/sector/${getSectorLetter(team)}`} data-testid={`link-team-sector-tooltip-${team.id}`}>
+                              <span className="hover:text-primary cursor-pointer transition-colors">
+                                {formatSectorPlace(team) || `Sektor ${team.sector}`}
+                              </span>
+                            </Link>
                           </div>
                         </div>
                       ))}
