@@ -16,13 +16,13 @@ export default function CompetitionCard({ competition }: CompetitionCardProps) {
         return (
           <Badge className="bg-secondary text-secondary-foreground">
             <span className="w-2 h-2 bg-secondary-foreground rounded-full mr-2 animate-pulse"></span>
-            LIVE
+            ŽIVO
           </Badge>
         );
       case 'registration':
-        return <Badge className="bg-accent text-accent-foreground">REGISTRATION OPEN</Badge>;
+        return <Badge className="bg-accent text-accent-foreground">REGISTRÁCIA OTVORENÁ</Badge>;
       case 'finished':
-        return <Badge className="bg-muted text-muted-foreground">FINISHED</Badge>;
+        return <Badge className="bg-muted text-muted-foreground">UKONČENÁ</Badge>;
       default:
         return <Badge>{status.toUpperCase()}</Badge>;
     }
@@ -38,7 +38,7 @@ export default function CompetitionCard({ competition }: CompetitionCardProps) {
             data-testid={`button-watch-live-${competition.id}`}
           >
             <Link href={`/competition/${competition.id}`}>
-              Watch Live
+              Sledovať naživo
             </Link>
           </Button>
         );
@@ -50,7 +50,7 @@ export default function CompetitionCard({ competition }: CompetitionCardProps) {
             data-testid={`button-register-${competition.id}`}
           >
             <Link href={`/competition/${competition.id}`}>
-              Register Team
+              Registrovať tím
             </Link>
           </Button>
         );
@@ -62,7 +62,7 @@ export default function CompetitionCard({ competition }: CompetitionCardProps) {
             data-testid={`button-view-results-${competition.id}`}
           >
             <Link href={`/competition/${competition.id}`}>
-              View Results
+              Zobraziť výsledky
             </Link>
           </Button>
         );
@@ -74,7 +74,7 @@ export default function CompetitionCard({ competition }: CompetitionCardProps) {
             data-testid={`button-view-${competition.id}`}
           >
             <Link href={`/competition/${competition.id}`}>
-              View Details
+              Zobraziť detaily
             </Link>
           </Button>
         );
@@ -84,7 +84,7 @@ export default function CompetitionCard({ competition }: CompetitionCardProps) {
   const formatDate = (date: string | Date | null) => {
     if (!date) return '';
     const dateObj = date instanceof Date ? date : new Date(date);
-    return dateObj.toLocaleDateString('en-US', {
+    return dateObj.toLocaleDateString('sk-SK', {
       month: 'short',
       day: 'numeric',
       year: 'numeric'
@@ -109,7 +109,7 @@ export default function CompetitionCard({ competition }: CompetitionCardProps) {
       <div className="relative">
         <img 
           src={competition.imageUrl || getCompetitionImage(competition.status)} 
-          alt={`${competition.name} competition`}
+          alt={`Súťaž ${competition.name}`}
           className="w-full h-48 object-cover rounded-t-lg" 
         />
         <div className="absolute top-3 left-3">
@@ -118,14 +118,14 @@ export default function CompetitionCard({ competition }: CompetitionCardProps) {
         {competition.status === 'live' && (
           <div className="absolute top-3 right-3">
             <span className="bg-black/50 text-white px-2 py-1 rounded text-sm font-mono">
-              Live Now
+              Práve teraz naživo
             </span>
           </div>
         )}
         {competition.status === 'registration' && (
           <div className="absolute top-3 right-3">
             <span className="bg-black/50 text-white px-2 py-1 rounded text-sm">
-              Starts {formatDate(competition.startDate)}
+              Začína {formatDate(competition.startDate)}
             </span>
           </div>
         )}
@@ -139,7 +139,7 @@ export default function CompetitionCard({ competition }: CompetitionCardProps) {
           <div className="flex items-center space-x-1 text-xs text-muted-foreground">
             <Users className="w-3 h-3" />
             <span data-testid={`text-max-teams-${competition.id}`}>
-              {competition.maxTeams ? `Max ${competition.maxTeams}` : 'Open'}
+              {competition.maxTeams ? `Maximálne ${competition.maxTeams}` : 'Otvorené'}
             </span>
           </div>
         </div>
@@ -153,11 +153,11 @@ export default function CompetitionCard({ competition }: CompetitionCardProps) {
           {competition.status === 'live' && (
             <>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Status:</span>
-                <span className="font-medium text-foreground">Live Competition</span>
+                <span className="text-muted-foreground">Stav:</span>
+                <span className="font-medium text-foreground">Živá súťaž</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Ends:</span>
+                <span className="text-muted-foreground">Končí:</span>
                 <span className="font-mono font-medium text-foreground">
                   {formatDate(competition.endDate)}
                 </span>
@@ -169,7 +169,7 @@ export default function CompetitionCard({ competition }: CompetitionCardProps) {
             <>
               {competition.prizePool && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Prize Pool:</span>
+                  <span className="text-muted-foreground">Výhra:</span>
                   <span className="font-medium text-foreground">
                     ${parseFloat(competition.prizePool).toLocaleString()}
                   </span>
@@ -177,9 +177,9 @@ export default function CompetitionCard({ competition }: CompetitionCardProps) {
               )}
               {competition.registrationFee && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Registration Fee:</span>
+                  <span className="text-muted-foreground">Registračný poplatok:</span>
                   <span className="font-medium text-foreground">
-                    ${parseFloat(competition.registrationFee)}/team
+                    ${parseFloat(competition.registrationFee)}/tím
                   </span>
                 </div>
               )}
@@ -189,15 +189,15 @@ export default function CompetitionCard({ competition }: CompetitionCardProps) {
           {competition.status === 'finished' && (
             <>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Completed:</span>
+                <span className="text-muted-foreground">Ukončená:</span>
                 <span className="font-medium text-foreground">
                   {formatDate(competition.endDate)}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Duration:</span>
+                <span className="text-muted-foreground">Trvanie:</span>
                 <span className="font-mono font-medium text-foreground">
-                  {Math.ceil((new Date(competition.endDate).getTime() - new Date(competition.startDate).getTime()) / (1000 * 60 * 60 * 24))} days
+                  {Math.ceil((new Date(competition.endDate).getTime() - new Date(competition.startDate).getTime()) / (1000 * 60 * 60 * 24))} dní
                 </span>
               </div>
             </>

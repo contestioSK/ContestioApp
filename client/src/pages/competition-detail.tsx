@@ -26,14 +26,14 @@ import type { Competition, Team, Catch } from "@shared/schema";
 
 // Team registration form schema
 const teamRegistrationSchema = z.object({
-  name: z.string().min(1, "Team name is required").max(100, "Team name too long"),
+  name: z.string().min(1, "Názov tímu je povinný").max(100, "Názov tímu je príliš dlhý"),
   description: z.string().optional(),
   members: z.array(z.object({
-    name: z.string().min(1, "Member name is required"),
+    name: z.string().min(1, "Meno člena je povinné"),
     role: z.enum(["captain", "member"]),
-    email: z.string().email("Valid email required").optional(),
+    email: z.string().email("Zadajte platný e-mail").optional(),
     phone: z.string().optional(),
-  })).min(1, "At least one team member is required").max(6, "Maximum 6 members allowed"),
+  })).min(1, "Aspoň jeden člen tímu je povinný").max(6, "Maximálne 6 členov je povolených"),
 });
 
 type TeamRegistrationForm = z.infer<typeof teamRegistrationSchema>;
@@ -63,8 +63,8 @@ export default function CompetitionDetail() {
     },
     onSuccess: () => {
       toast({
-        title: "Team registered successfully!",
-        description: "Your team registration is pending approval by the organizer.",
+        title: "Tím bol úspešne zaregistrovaný!",
+        description: "Registrácia vášho tímu čaká na schválenie organizátorom.",
       });
       setIsRegistrationDialogOpen(false);
       form.reset();
@@ -73,8 +73,8 @@ export default function CompetitionDetail() {
     },
     onError: (error: any) => {
       toast({
-        title: "Registration failed",
-        description: error.message || "Failed to register team. Please try again.",
+        title: "Registrácia zlyhala",
+        description: error.message || "Nepodarilo sa zaregistrovať tím. Prosím skúste znovu.",
         variant: "destructive",
       });
     },
@@ -102,8 +102,8 @@ export default function CompetitionDetail() {
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
+        title: "Neautorizovaný",
+        description: "Ste odhlásený. Prihlasujem znovu...",
         variant: "destructive",
       });
       setTimeout(() => {
@@ -139,8 +139,8 @@ export default function CompetitionDetail() {
   useEffect(() => {
     if (error && isUnauthorizedError(error)) {
       toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
+        title: "Neautorizovaný",
+        description: "Ste odhlásený. Prihlasujem znovu...",
         variant: "destructive",
       });
       setTimeout(() => {
@@ -174,8 +174,8 @@ export default function CompetitionDetail() {
         <NavigationHeader />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-foreground mb-4">Competition Not Found</h1>
-            <p className="text-muted-foreground">The competition you're looking for doesn't exist.</p>
+            <h1 className="text-2xl font-bold text-foreground mb-4">Súťaž nebola nájdená</h1>
+            <p className="text-muted-foreground">Súťaž, ktorú hľadáte, neexistuje.</p>
           </div>
         </div>
       </div>
@@ -188,13 +188,13 @@ export default function CompetitionDetail() {
         return (
           <Badge className="bg-secondary text-secondary-foreground">
             <span className="w-2 h-2 bg-secondary-foreground rounded-full mr-2 animate-pulse"></span>
-            LIVE
+            ŽIVO
           </Badge>
         );
       case 'registration':
-        return <Badge className="bg-accent text-accent-foreground">REGISTRATION OPEN</Badge>;
+        return <Badge className="bg-accent text-accent-foreground">REGISTRÁCIA OTVORENÁ</Badge>;
       case 'finished':
-        return <Badge className="bg-muted text-muted-foreground">FINISHED</Badge>;
+        return <Badge className="bg-muted text-muted-foreground">UKONČENÁ</Badge>;
       default:
         return <Badge>{status.toUpperCase()}</Badge>;
     }
@@ -230,12 +230,12 @@ export default function CompetitionDetail() {
                   <DialogTrigger asChild>
                     <Button size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90" data-testid="button-register-team">
                       <Users className="w-4 h-4 mr-2" />
-                      Register Your Team
+                      Registrovať váš tím
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
-                      <DialogTitle>Register Team for {competition.name}</DialogTitle>
+                      <DialogTitle>Registrovať tím pre {competition.name}</DialogTitle>
                     </DialogHeader>
                     
                     <Form {...form}>
@@ -246,9 +246,9 @@ export default function CompetitionDetail() {
                           name="name"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Team Name</FormLabel>
+                              <FormLabel>Názov tímu</FormLabel>
                               <FormControl>
-                                <Input placeholder="Enter your team name" {...field} data-testid="input-team-name" />
+                                <Input placeholder="Zadajte názov vášho tímu" {...field} data-testid="input-team-name" />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -261,9 +261,9 @@ export default function CompetitionDetail() {
                           name="description"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Team Description (Optional)</FormLabel>
+                              <FormLabel>Popis tímu (voliteľné)</FormLabel>
                               <FormControl>
-                                <Textarea placeholder="Brief description of your team" {...field} />
+                                <Textarea placeholder="Krátky popis vášho tímu" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -273,7 +273,7 @@ export default function CompetitionDetail() {
                         {/* Team Members */}
                         <div>
                           <div className="flex items-center justify-between mb-4">
-                            <FormLabel>Team Members</FormLabel>
+                            <FormLabel>Členovia tímu</FormLabel>
                             <Button 
                               type="button" 
                               variant="outline" 
@@ -283,7 +283,7 @@ export default function CompetitionDetail() {
                               data-testid="button-add-member"
                             >
                               <UserPlus className="w-4 h-4 mr-2" />
-                              Add Member
+                              Pridať člena
                             </Button>
                           </div>
 
@@ -291,7 +291,7 @@ export default function CompetitionDetail() {
                             <div key={index} className="space-y-4 p-4 border border-border rounded-lg mb-4">
                               <div className="flex items-center justify-between">
                                 <h4 className="font-medium">
-                                  {index === 0 ? "Team Captain" : `Member ${index + 1}`}
+                                  {index === 0 ? "Kapitán tímu" : `Člen ${index + 1}`}
                                 </h4>
                                 {index > 0 && (
                                   <Button
@@ -312,9 +312,9 @@ export default function CompetitionDetail() {
                                   name={`members.${index}.name`}
                                   render={({ field }) => (
                                     <FormItem>
-                                      <FormLabel>Full Name</FormLabel>
+                                      <FormLabel>Celé meno</FormLabel>
                                       <FormControl>
-                                        <Input placeholder="Member name" {...field} data-testid={`input-member-name-${index}`} />
+                                        <Input placeholder="Meno člena" {...field} data-testid={`input-member-name-${index}`} />
                                       </FormControl>
                                       <FormMessage />
                                     </FormItem>
@@ -326,9 +326,9 @@ export default function CompetitionDetail() {
                                   name={`members.${index}.email`}
                                   render={({ field }) => (
                                     <FormItem>
-                                      <FormLabel>Email (Optional)</FormLabel>
+                                      <FormLabel>Email (voliteľné)</FormLabel>
                                       <FormControl>
-                                        <Input type="email" placeholder="member@email.com" {...field} data-testid={`input-member-email-${index}`} />
+                                        <Input type="email" placeholder="clen@email.com" {...field} data-testid={`input-member-email-${index}`} />
                                       </FormControl>
                                       <FormMessage />
                                     </FormItem>
@@ -341,9 +341,9 @@ export default function CompetitionDetail() {
                                 name={`members.${index}.phone`}
                                 render={({ field }) => (
                                   <FormItem>
-                                    <FormLabel>Phone (Optional)</FormLabel>
+                                    <FormLabel>Telefón (voliteľné)</FormLabel>
                                     <FormControl>
-                                      <Input placeholder="Phone number" {...field} data-testid={`input-member-phone-${index}`} />
+                                      <Input placeholder="Telefónne číslo" {...field} data-testid={`input-member-phone-${index}`} />
                                     </FormControl>
                                     <FormMessage />
                                   </FormItem>
@@ -355,15 +355,15 @@ export default function CompetitionDetail() {
 
                         {/* Registration Info */}
                         <div className="bg-muted/20 p-4 rounded-lg">
-                          <h4 className="font-medium mb-2">Registration Information</h4>
+                          <h4 className="font-medium mb-2">Informácie o registrácii</h4>
                           <div className="space-y-1 text-sm text-muted-foreground">
                             {competition.registrationFee && (
-                              <p>Registration Fee: ${parseFloat(competition.registrationFee)}</p>
+                              <p>Registračný poplatok: ${parseFloat(competition.registrationFee)}</p>
                             )}
                             {competition.maxTeams && (
-                              <p>Maximum Teams: {competition.maxTeams}</p>
+                              <p>Maximálny počet tímov: {competition.maxTeams}</p>
                             )}
-                            <p>Your team registration will be pending approval by the organizer.</p>
+                            <p>Registrácia vášho tímu bude čakať na schválenie organizátorom.</p>
                           </div>
                         </div>
 
@@ -375,14 +375,14 @@ export default function CompetitionDetail() {
                             onClick={() => setIsRegistrationDialogOpen(false)}
                             data-testid="button-cancel-registration"
                           >
-                            Cancel
+                            Zrušiť
                           </Button>
                           <Button 
                             type="submit" 
                             disabled={registerTeamMutation.isPending}
                             data-testid="button-submit-registration"
                           >
-                            {registerTeamMutation.isPending ? "Registering..." : "Register Team"}
+                            {registerTeamMutation.isPending ? "Registrujem..." : "Registrovať tím"}
                           </Button>
                         </div>
                       </form>
@@ -412,7 +412,7 @@ export default function CompetitionDetail() {
               {/* Special Contests */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Special Contests</CardTitle>
+                  <CardTitle>Špeciálne súťaže</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
@@ -426,7 +426,7 @@ export default function CompetitionDetail() {
                           return (
                             <div className="flex items-center justify-between p-3 bg-accent/5 rounded-lg" data-testid="special-contest-biggest">
                               <div>
-                                <div className="font-medium text-foreground">Biggest Catch</div>
+                                <div className="font-medium text-foreground">Najväčší úlovok</div>
                                 <div className="text-sm text-muted-foreground">{biggestCatch.team?.name}</div>
                               </div>
                               <div className="text-right">
@@ -449,7 +449,7 @@ export default function CompetitionDetail() {
                           return mostFishTeam.team ? (
                             <div className="flex items-center justify-between p-3 bg-secondary/5 rounded-lg" data-testid="special-contest-most-fish">
                               <div>
-                                <div className="font-medium text-foreground">Most Fish</div>
+                                <div className="font-medium text-foreground">Najviac rýb</div>
                                 <div className="text-sm text-muted-foreground">{mostFishTeam.team.name}</div>
                               </div>
                               <div className="text-right">
@@ -461,7 +461,7 @@ export default function CompetitionDetail() {
                       </>
                     ) : (
                       <div className="text-center py-4 text-muted-foreground">
-                        No catches yet
+                        Zatiaľ žiadne úlovky
                       </div>
                     )}
                   </div>
@@ -469,7 +469,7 @@ export default function CompetitionDetail() {
               </Card>
               
               {/* Live Catch Timeline */}
-              <CatchTimeline catches={(catches || []).map(c => ({ ...c, team: c.team || { id: '', name: 'Unknown Team', status: '', createdAt: null, updatedAt: null, competitionId: '', sector: null, position: null, totalWeight: null, fishCount: null }, referee: c.referee || { id: '', userId: '', competitionId: '', assignedSector: '', isActive: true, createdAt: null } }))} isLoading={catchesLoading} />
+              <CatchTimeline catches={(catches || []).map(c => ({ ...c, team: c.team || { id: '', name: 'Neznámy tím', status: '', createdAt: null, updatedAt: null, competitionId: '', sector: null, position: null, totalWeight: null, fishCount: null }, referee: c.referee || { id: '', userId: '', competitionId: '', assignedSector: '', isActive: true, createdAt: null } }))} isLoading={catchesLoading} />
               
             </div>
           </div>
