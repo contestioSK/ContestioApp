@@ -16,6 +16,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import type { Competition, Team, Referee, Catch } from "@shared/schema";
+import { formatSectorPlace } from "@/lib/utils";
 
 const catchSubmissionSchema = z.object({
   teamId: z.string().min(1, "Prosím vyberte tím"),
@@ -236,7 +237,7 @@ export default function RefereeInterface() {
                                   <SelectContent>
                                     {teams?.filter((team: Team) => team.status === 'approved').map((team: Team) => (
                                       <SelectItem key={team.id} value={team.id}>
-                                        {team.name} - {team.sector}
+                                        {team.name} - {formatSectorPlace(team) || `Sektor ${team.sector}`}
                                       </SelectItem>
                                     ))}
                                   </SelectContent>
