@@ -126,14 +126,30 @@ export default function AdminPanel() {
     enabled: isAuthenticated && user?.role === 'organizer',
   });
 
+  const { data: selectedCompetitionData } = useQuery<Competition>({
+    queryKey: ["/api/competitions", selectedCompetition],
+    enabled: isAuthenticated && !!selectedCompetition,
+  });
+
   const { data: teams, isLoading: teamsLoading } = useQuery<(Team & { members: TeamMember[] })[]>({
     queryKey: ["/api/competitions", selectedCompetition, "teams"],
     enabled: isAuthenticated && !!selectedCompetition,
   });
 
   const updateTeamStatusMutation = useMutation({
-    mutationFn: async ({ teamId, status, sector }: { teamId: string; status: string; sector?: string }) => {
-      await apiRequest("PATCH", `/api/teams/${teamId}/status`, { status, sector });
+    mutationFn: async ({ teamId, status, sectorName, placeName, sector }: { 
+      teamId: string; 
+      status: string; 
+      sectorName?: string; 
+      placeName?: string;
+      sector?: string; // Keep for backward compatibility
+    }) => {
+      await apiRequest("PATCH", `/api/teams/${teamId}/status`, { 
+        status, 
+        sectorName, 
+        placeName,
+        sector: sector || sectorName?.split(' ')[1] // Fallback: extract letter from "Sektor A"
+      });
     },
     onSuccess: () => {
       toast({
@@ -179,8 +195,14 @@ export default function AdminPanel() {
     return <div className="min-h-screen bg-background" />;
   }
 
-  const handleApproveTeam = (teamId: string, sector: string) => {
-    updateTeamStatusMutation.mutate({ teamId, status: 'approved', sector });
+  const handleApproveTeam = (teamId: string, sectorName: string, placeName: string) => {
+    updateTeamStatusMutation.mutate({ 
+      teamId, 
+      status: 'approved', 
+      sectorName, 
+      placeName,
+      sector: sectorName?.split(' ')[1] // Extract letter for backward compatibility
+    });
   };
 
   const handleRejectTeam = (teamId: string) => {
@@ -668,16 +690,27 @@ export default function AdminPanel() {
                             <td className="p-4">
                               {team.status === 'approved' ? (
                                 <Select 
-                                  value={team.sector || ''} 
-                                  onValueChange={(sector) => handleApproveTeam(team.id, sector)}
+                                  value={team.sectorName && team.placeName ? `${team.sectorName}|${team.placeName}` : ''} 
+                                  onValueChange={(value) => {
+                                    const [sectorName, placeName] = value.split('|');
+                                    handleApproveTeam(team.id, sectorName, placeName);
+                                  }}
                                 >
-                                  <SelectTrigger className="w-24">
-                                    <SelectValue placeholder="Prideliť" />
+                                  <SelectTrigger className="w-32">
+                                    <SelectValue placeholder="Prideliť miesto" />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    <SelectItem value="A">Sektor A</SelectItem>
-                                    <SelectItem value="B">Sektor B</SelectItem>
-                                    <SelectItem value="C">Sektor C</SelectItem>
+                                    {selectedCompetitionData?.sectorPlaces?.map((sector) => 
+                                      sector.places.map((place) => (
+                                        <SelectItem key={`${sector.sectorName}|${place}`} value={`${sector.sectorName}|${place}`}>
+                                          {sector.sectorName} - {place}
+                                        </SelectItem>
+                                      ))
+                                    ) || [
+                                      <SelectItem key="A|Place 1" value="Sektor A|Place 1">Sektor A - Place 1</SelectItem>,
+                                      <SelectItem key="B|Place 1" value="Sektor B|Place 1">Sektor B - Place 1</SelectItem>,
+                                      <SelectItem key="C|Place 1" value="Sektor C|Place 1">Sektor C - Place 1</SelectItem>
+                                    ]}
                                   </SelectContent>
                                 </Select>
                               ) : (
@@ -691,7 +724,13 @@ export default function AdminPanel() {
                                     <Button
                                       size="sm"
                                       className="bg-secondary text-secondary-foreground hover:bg-secondary/90"
-                                      onClick={() => handleApproveTeam(team.id, 'A')}
+                                      onClick={() => {
+                                        // Use first available sector place as default
+                                        const firstSector = selectedCompetitionData?.sectorPlaces?.[0];
+                                        const defaultSectorName = firstSector?.sectorName || 'Sektor A';
+                                        const defaultPlaceName = firstSector?.places?.[0] || 'Place 1';
+                                        handleApproveTeam(team.id, defaultSectorName, defaultPlaceName);
+                                      }}
                                       disabled={updateTeamStatusMutation.isPending}
                                       data-testid={`button-approve-${team.id}`}
                                     >

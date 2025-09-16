@@ -22,7 +22,7 @@ import {
   type InsertSponsor,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, sql } from "drizzle-orm";
+import { eq, desc, and, sql, ne } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (required for Replit Auth)
@@ -39,8 +39,9 @@ export interface IStorage {
   getTeamsByCompetition(competitionId: string): Promise<(Team & { members: TeamMember[] })[]>;
   getTeam(id: string): Promise<Team | undefined>;
   createTeam(team: InsertTeam): Promise<Team>;
-  updateTeamStatus(id: string, status: string, sector?: string): Promise<void>;
+  updateTeamStatus(id: string, status: string, sector?: string, sectorName?: string, placeName?: string): Promise<void>;
   updateTeamStats(teamId: string): Promise<void>;
+  checkSectorPlaceAvailability(competitionId: string, sectorName: string, placeName: string, excludeTeamId?: string): Promise<boolean>;
   
   // Team member operations
   addTeamMember(member: InsertTeamMember): Promise<TeamMember>;
@@ -184,10 +185,19 @@ export class DatabaseStorage implements IStorage {
     return newTeam;
   }
 
-  async updateTeamStatus(id: string, status: string, sector?: string): Promise<void> {
+  async updateTeamStatus(id: string, status: string, sector?: string, sectorName?: string, placeName?: string): Promise<void> {
     const updateData: any = { status, updatedAt: new Date() };
-    if (sector) {
+    
+    // Set sector fields - prioritize new sectorName/placeName over legacy sector
+    if (sectorName) {
+      updateData.sectorName = sectorName;
+      updateData.sector = sector || sectorName.split(' ')[1]; // Extract letter for backward compatibility
+    } else if (sector) {
       updateData.sector = sector;
+    }
+    
+    if (placeName) {
+      updateData.placeName = placeName;
     }
     
     await db
@@ -215,6 +225,26 @@ export class DatabaseStorage implements IStorage {
         updatedAt: new Date(),
       })
       .where(eq(teams.id, teamId));
+  }
+
+  async checkSectorPlaceAvailability(competitionId: string, sectorName: string, placeName: string, excludeTeamId?: string): Promise<boolean> {
+    const whereConditions = [
+      eq(teams.competitionId, competitionId),
+      eq(teams.status, "approved"),
+      eq(teams.sectorName, sectorName),
+      eq(teams.placeName, placeName)
+    ];
+
+    if (excludeTeamId) {
+      whereConditions.push(ne(teams.id, excludeTeamId));
+    }
+
+    const existingTeams = await db
+      .select({ id: teams.id })
+      .from(teams)
+      .where(and(...whereConditions));
+
+    return existingTeams.length === 0;
   }
 
   // Team member operations
