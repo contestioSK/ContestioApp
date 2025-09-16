@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Fish, Users, Trophy, MapPin } from "lucide-react";
+import { Fish, Users, Trophy, MapPin, PlusCircle } from "lucide-react";
 
 export default function Landing() {
   return (
@@ -72,14 +72,32 @@ export default function Landing() {
               </div>
             </div>
 
-            <Button 
-              size="lg"
-              onClick={() => window.location.href = '/api/login'}
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
-              data-testid="button-get-started"
-            >
-              Začať
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Button 
+                size="lg"
+                onClick={() => window.location.href = '/api/login'}
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
+                data-testid="button-get-started"
+              >
+                Začať
+              </Button>
+              
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={() => window.location.href = '/register-competition'}
+                className="border-2 border-secondary text-secondary hover:bg-secondary hover:text-secondary-foreground font-semibold"
+                data-testid="button-register-competition-landing"
+              >
+                <PlusCircle className="w-5 h-5 mr-2" />
+                Zaregistrovať súťaž
+              </Button>
+            </div>
+            
+            <p className="text-sm text-muted-foreground mt-4 max-w-2xl mx-auto">
+              <strong>Organizujete rybársku súťaž?</strong> Zaregistrujte ju u nás a využite profesionálne nástroje 
+              pre sledovanie úlovkov, rebríčky a správu tímov v reálnom čase.
+            </p>
           </div>
         </div>
       </section>

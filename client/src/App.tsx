@@ -13,6 +13,7 @@ import TeamDetail from "@/pages/team-detail";
 import SectorDetail from "@/pages/sector-detail";
 import AdminPanel from "@/pages/admin-panel";
 import RefereeInterface from "@/pages/referee-interface";
+import RegisterCompetition from "@/pages/register-competition";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 function Router() {
@@ -21,6 +22,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/register-competition" component={RegisterCompetition} />
       <Route path="/competition/:id" component={CompetitionDetail} />
       <Route path="/competition/:id/catches" component={CompetitionCatches} />
       <Route path="/competition/:competitionId/sector/:sector" component={SectorDetail} />

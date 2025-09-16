@@ -18,8 +18,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import { Edit, Eye, Users, UserCheck, UserX, Plus, Trophy, Trash2, MapPin } from "lucide-react";
-import type { Competition, Team, TeamMember } from "@shared/schema";
+import { Edit, Eye, Users, UserCheck, UserX, Plus, Trophy, Trash2, MapPin, CheckCircle, XCircle, Clock, Calendar, Mail, Phone, Building2, FileText } from "lucide-react";
+import type { Competition, Team, TeamMember, CompetitionRegistration } from "@shared/schema";
 
 // Competition creation form schema
 const competitionSchema = z.object({
@@ -42,6 +42,10 @@ type CompetitionForm = z.infer<typeof competitionSchema>;
 export default function AdminPanel() {
   const { toast } = useToast();
   const { user, isAuthenticated, isLoading } = useAuth();
+  
+  // Check if user is admin or organizer
+  const isAdmin = user?.role === 'admin';
+  const isOrganizer = user?.role === 'organizer';
   const [selectedCompetition, setSelectedCompetition] = useState<string>("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
@@ -106,9 +110,9 @@ export default function AdminPanel() {
     createCompetitionMutation.mutate(data);
   };
 
-  // Redirect if not authenticated or not organizer
+  // Redirect if not authenticated or not admin/organizer
   useEffect(() => {
-    if (!isLoading && (!isAuthenticated || user?.role !== 'organizer')) {
+    if (!isLoading && (!isAuthenticated || (user?.role !== 'organizer' && user?.role !== 'admin'))) {
       toast({
         title: "Neautorizovaný",
         description: "Ste odhlásený. Prihlasujem znovu...",
@@ -123,7 +127,19 @@ export default function AdminPanel() {
 
   const { data: competitions, isLoading: competitionsLoading, error } = useQuery<Competition[]>({
     queryKey: ["/api/competitions"],
-    enabled: isAuthenticated && user?.role === 'organizer',
+    enabled: isAuthenticated && (isAdmin || isOrganizer),
+  });
+
+  // Competition registrations queries (admin only)
+  const { data: registrations, isLoading: registrationsLoading } = useQuery<CompetitionRegistration[]>({
+    queryKey: ["/api/competition-registrations"],
+    enabled: isAuthenticated && isAdmin,
+  });
+
+  const { data: submittedRegistrations } = useQuery<CompetitionRegistration[]>({
+    queryKey: ["/api/competition-registrations", { status: "submitted" }],
+    queryFn: () => apiRequest("GET", "/api/competition-registrations?status=submitted").then(res => res.json()),
+    enabled: isAuthenticated && isAdmin,
   });
 
   const { data: selectedCompetitionData } = useQuery<Competition>({
@@ -173,6 +189,50 @@ export default function AdminPanel() {
       toast({
         title: "Chyba",
         description: "Nepodarilo sa aktualizovať stav tímu",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Competition registration mutations (admin only)
+  const approveRegistrationMutation = useMutation({
+    mutationFn: async (registrationId: string) => {
+      return apiRequest("PATCH", `/api/competition-registrations/${registrationId}/approve`, {});
+    },
+    onSuccess: () => {
+      toast({
+        title: "Registrácia schválená!",
+        description: "Súťaž bola vytvorená a je dostupná pre registráciu tímov.",
+      });
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ["/api/competition-registrations"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/competitions"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Nepodarilo sa schváliť registráciu",
+        description: error.message || "Skúste to znovu.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const declineRegistrationMutation = useMutation({
+    mutationFn: async (registrationId: string) => {
+      return apiRequest("PATCH", `/api/competition-registrations/${registrationId}/decline`, {});
+    },
+    onSuccess: () => {
+      toast({
+        title: "Registrácia zamietnutá",
+        description: "Registrácia súťaže bola zamietnutá.",
+      });
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ["/api/competition-registrations"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Nepodarilo sa zamietnuť registráciu",
+        description: error.message || "Skúste to znovu.",
         variant: "destructive",
       });
     },
@@ -609,6 +669,11 @@ export default function AdminPanel() {
                   <TabsTrigger value="sponsors" className="py-4 text-muted-foreground hover:text-foreground font-medium text-sm">
                     Sponzori
                   </TabsTrigger>
+                  {isAdmin && (
+                    <TabsTrigger value="registrations" className="py-4 text-muted-foreground hover:text-foreground font-medium text-sm">
+                      Registrácie
+                    </TabsTrigger>
+                  )}
                   <TabsTrigger value="settings" className="py-4 text-muted-foreground hover:text-foreground font-medium text-sm">
                     Nastavenia
                   </TabsTrigger>
@@ -780,6 +845,121 @@ export default function AdminPanel() {
                   <p className="text-muted-foreground">Správa sponzorov príde skôr</p>
                 </div>
               </TabsContent>
+
+              {/* Competition Registrations Tab (Admin Only) */}
+              {isAdmin && (
+                <TabsContent value="registrations" className="p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h2 className="text-lg font-semibold text-foreground">Registrácie súťaží</h2>
+                      <p className="text-muted-foreground">Schváľte alebo zamietnite žiadosti o nové súťaže</p>
+                    </div>
+                    <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                      {submittedRegistrations?.length || 0} čaká na schválenie
+                    </div>
+                  </div>
+
+                  {registrationsLoading ? (
+                    <div className="space-y-4">
+                      {[...Array(3)].map((_, i) => (
+                        <div key={i} className="p-6 border border-border rounded-lg">
+                          <Skeleton className="h-5 w-64 mb-2" />
+                          <Skeleton className="h-4 w-32 mb-4" />
+                          <Skeleton className="h-16 w-full mb-4" />
+                          <div className="flex space-x-2">
+                            <Skeleton className="h-8 w-20" />
+                            <Skeleton className="h-8 w-24" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : registrations?.length === 0 ? (
+                    <div className="text-center py-12">
+                      <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                      <h3 className="text-lg font-medium text-foreground mb-2">Žiadne registrácie</h3>
+                      <p className="text-muted-foreground">Zatiaľ neboli odoslané žiadne žiadosti o registráciu súťaže.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      {registrations?.map((registration) => (
+                        <div key={registration.id} className="p-6 border border-border rounded-lg bg-card">
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex-1">
+                              <h3 className="text-lg font-semibold text-foreground mb-1" data-testid={`text-competition-name-${registration.id}`}>
+                                {registration.name}
+                              </h3>
+                              <p className="text-sm text-muted-foreground mb-2">
+                                {new Date(registration.startDate).toLocaleDateString('sk-SK')} - {new Date(registration.endDate).toLocaleDateString('sk-SK')}
+                              </p>
+                              <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                                <span>{registration.location}</span>
+                                <span>•</span>
+                                <span>Max {registration.maxTeams} tímov</span>
+                                <span>•</span>
+                                <span>{registration.entryFee}€ poplatok</span>
+                              </div>
+                            </div>
+                            <div className="ml-4">
+                              {getStatusBadge(registration.status)}
+                            </div>
+                          </div>
+
+                          {registration.description && (
+                            <div className="mb-4">
+                              <p className="text-sm text-muted-foreground leading-relaxed">{registration.description}</p>
+                            </div>
+                          )}
+
+                          <div className="mb-4">
+                            <h4 className="text-sm font-medium text-foreground mb-2">Sektory:</h4>
+                            <div className="flex flex-wrap gap-2">
+                              {JSON.parse(registration.sectors).map((sector: any, index: number) => (
+                                <div key={index} className="bg-secondary px-2 py-1 rounded text-xs">
+                                  Sektor {sector.letter}: {sector.places} miest
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {registration.status === 'submitted' && (
+                            <div className="flex space-x-2 pt-4 border-t border-border">
+                              <Button
+                                size="sm"
+                                onClick={() => approveRegistrationMutation.mutate(registration.id)}
+                                disabled={approveRegistrationMutation.isPending}
+                                className="bg-green-600 hover:bg-green-700 text-white"
+                                data-testid={`button-approve-${registration.id}`}
+                              >
+                                {approveRegistrationMutation.isPending ? (
+                                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                                ) : (
+                                  <CheckCircle className="w-4 h-4 mr-2" />
+                                )}
+                                Schváliť
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => declineRegistrationMutation.mutate(registration.id)}
+                                disabled={declineRegistrationMutation.isPending}
+                                className="border-red-300 text-red-600 hover:bg-red-50"
+                                data-testid={`button-decline-${registration.id}`}
+                              >
+                                {declineRegistrationMutation.isPending ? (
+                                  <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin mr-2" />
+                                ) : (
+                                  <XCircle className="w-4 h-4 mr-2" />
+                                )}
+                                Zamietnuť
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </TabsContent>
+              )}
 
               <TabsContent value="settings" className="p-6">
                 <div className="text-center py-12">
