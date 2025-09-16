@@ -151,7 +151,7 @@ export class DatabaseStorage implements IStorage {
   async createCompetition(competition: InsertCompetition): Promise<Competition> {
     const [newCompetition] = await db
       .insert(competitions)
-      .values(competition)
+      .values(competition as typeof competitions.$inferInsert)
       .returning();
     return newCompetition;
   }
@@ -183,7 +183,7 @@ export class DatabaseStorage implements IStorage {
   async createCompetitionRegistration(registration: InsertCompetitionRegistration): Promise<CompetitionRegistration> {
     const [newRegistration] = await db
       .insert(competitionRegistrations)
-      .values(registration)
+      .values(registration as typeof competitionRegistrations.$inferInsert)
       .returning();
     return newRegistration;
   }
@@ -210,6 +210,9 @@ export class DatabaseStorage implements IStorage {
       registrationFee: registration.registrationFee,
       maxTeams: registration.maxTeams,
       sectorPlaces: registration.sectorPlaces || undefined,
+      sideCompetitions: registration.sideCompetitions || [],
+      hasSectors: registration.hasSectors || false,
+      scoringType: registration.scoringType || "total",
       organizerId: approverUserId,
     };
 
@@ -310,20 +313,62 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateTeamStats(teamId: string): Promise<void> {
+    // First, get the team and its competition to determine scoring type
+    const [team] = await db
+      .select({ competitionId: teams.competitionId })
+      .from(teams)
+      .where(eq(teams.id, teamId));
+    
+    if (!team) return;
+
+    const [competition] = await db
+      .select({ scoringType: competitions.scoringType })
+      .from(competitions)
+      .where(eq(competitions.id, team.competitionId));
+
+    if (!competition) return;
+
+    const scoringType = competition.scoringType || "total";
+
+    // Get basic stats (always needed) - only count verified catches
     const stats = await db
       .select({
-        totalWeight: sql<number>`COALESCE(SUM(${catches.weight}), 0)`,
+        totalWeight: sql<number>`COALESCE(SUM(CAST(${catches.weight} AS DECIMAL)), 0)`,
         fishCount: sql<number>`COALESCE(COUNT(*), 0)`,
       })
       .from(catches)
-      .where(eq(catches.teamId, teamId));
+      .where(and(eq(catches.teamId, teamId), eq(catches.isVerified, true)));
 
     const { totalWeight, fishCount } = stats[0];
 
+    // Calculate score based on scoring type
+    let score = totalWeight; // Default to total weight
+
+    if (scoringType === "avg3" || scoringType === "avg5") {
+      // Get top N catches ordered by weight (descending) - only verified catches
+      const topN = scoringType === "avg3" ? 3 : 5;
+      
+      const topCatches = await db
+        .select({ weight: catches.weight })
+        .from(catches)
+        .where(and(eq(catches.teamId, teamId), eq(catches.isVerified, true)))
+        .orderBy(sql`CAST(${catches.weight} AS DECIMAL) DESC`)
+        .limit(topN);
+
+      if (topCatches.length > 0) {
+        const totalTopWeight = topCatches.reduce((sum, catch_) => sum + parseFloat(catch_.weight), 0);
+        // Always divide by the fixed N for fairness (teams with fewer catches get lower averages)
+        score = totalTopWeight / topN;
+      } else {
+        score = 0;
+      }
+    }
+
+    // Store the calculated score in totalWeight field for sorting purposes
     await db
       .update(teams)
       .set({
-        totalWeight: totalWeight.toString(),
+        totalWeight: score.toString(), // Store calculated score (not necessarily total weight)
         fishCount,
         updatedAt: new Date(),
       })

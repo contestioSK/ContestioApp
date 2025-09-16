@@ -357,7 +357,7 @@ export function createTeamStatusValidationSchema(competition: Competition) {
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 export type Competition = typeof competitions.$inferSelect;
-export type InsertCompetition = z.infer<typeof insertCompetitionSchema>;
+export type InsertCompetition = typeof competitions.$inferInsert;
 export type Team = typeof teams.$inferSelect;
 export type InsertTeam = z.infer<typeof insertTeamSchema>;
 export type TeamMember = typeof teamMembers.$inferSelect;
@@ -370,4 +370,4 @@ export type Sponsor = typeof sponsors.$inferSelect;
 export type InsertSponsor = z.infer<typeof insertSponsorSchema>;
 export type UpdateTeamStatus = z.infer<typeof updateTeamStatusSchema>;
 export type CompetitionRegistration = typeof competitionRegistrations.$inferSelect;
-export type InsertCompetitionRegistration = z.infer<typeof insertCompetitionRegistrationSchema>;
+export type InsertCompetitionRegistration = typeof competitionRegistrations.$inferInsert;
