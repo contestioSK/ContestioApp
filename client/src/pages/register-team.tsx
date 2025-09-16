@@ -32,6 +32,7 @@ type TeamRegistrationForm = z.infer<typeof teamRegistrationSchema>;
 export default function RegisterTeam() {
   const { toast } = useToast();
   const [memberPhotos, setMemberPhotos] = useState<{ [key: number]: File | null }>({});
+  const [teamPhoto, setTeamPhoto] = useState<File | null>(null);
 
   // Fetch all competitions and filter for those available for registration
   const { data: allCompetitions = [], isLoading: competitionsLoading } = useQuery({
@@ -83,6 +84,14 @@ export default function RegisterTeam() {
     });
   };
 
+  const handleTeamPhotoSelect = (file: File | null) => {
+    setTeamPhoto(file);
+  };
+
+  const removeTeamPhoto = () => {
+    setTeamPhoto(null);
+  };
+
   const removeMember = (index: number) => {
     const currentMembers = form.getValues("members");
     if (currentMembers.length > 1) {
@@ -110,6 +119,11 @@ export default function RegisterTeam() {
     formData.append('name', data.name);
     if (data.description) {
       formData.append('description', data.description);
+    }
+    
+    // Add team photo if exists
+    if (teamPhoto) {
+      formData.append('teamPhoto', teamPhoto);
     }
     
     // Add members data
@@ -144,6 +158,7 @@ export default function RegisterTeam() {
       });
       form.reset();
       setMemberPhotos({});
+      setTeamPhoto(null);
     } catch (error: any) {
       toast({
         title: "Registrácia zlyhala",
@@ -253,6 +268,66 @@ export default function RegisterTeam() {
                     </FormItem>
                   )}
                 />
+
+                {/* Team Photo/Logo Upload */}
+                <div>
+                  <FormLabel>Logo/Fotka tímu (voliteľná)</FormLabel>
+                  <div className="mt-2">
+                    {teamPhoto ? (
+                      <div className="flex items-center justify-between p-4 border-2 border-dashed border-muted rounded-lg bg-muted/10">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center">
+                            <Users className="w-8 h-8 text-primary" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-foreground">{teamPhoto.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {Math.round(teamPhoto.size / 1024)} KB
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={removeTeamPhoto}
+                          data-testid="button-remove-team-photo"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <label
+                        htmlFor="team-photo-input"
+                        className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-muted rounded-lg cursor-pointer hover:border-primary/50 transition-colors bg-muted/10 hover:bg-muted/20"
+                        data-testid="label-team-photo-upload"
+                      >
+                        <input
+                          id="team-photo-input"
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0] || null;
+                            handleTeamPhotoSelect(file);
+                          }}
+                          data-testid="input-team-photo"
+                        />
+                        <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center mb-3">
+                          <Users className="w-8 h-8 text-primary" />
+                        </div>
+                        <p className="text-sm font-medium text-foreground mb-1">
+                          Pridať logo alebo fotku tímu
+                        </p>
+                        <p className="text-xs text-muted-foreground text-center">
+                          Kliknite pre výber súboru
+                          <br />
+                          <span className="text-xs">JPG, PNG, GIF (max 5MB)</span>
+                        </p>
+                      </label>
+                    )}
+                  </div>
+                </div>
 
                 {/* Team Members */}
                 <div>
