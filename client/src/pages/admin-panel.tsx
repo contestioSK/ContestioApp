@@ -61,11 +61,11 @@ export default function AdminPanel() {
     mutationFn: async (data: CompetitionForm) => {
       const competitionData = {
         ...data,
-        prizePool: data.prizePool ? parseFloat(data.prizePool) : undefined,
-        registrationFee: data.registrationFee ? parseFloat(data.registrationFee) : undefined,
+        prizePool: data.prizePool || undefined, // Keep as string for decimal type
+        registrationFee: data.registrationFee || undefined, // Keep as string for decimal type
         maxTeams: data.maxTeams ? parseInt(data.maxTeams) : undefined,
-        startDate: new Date(data.startDate).toISOString(),
-        endDate: new Date(data.endDate).toISOString(),
+        startDate: new Date(data.startDate), // Send Date object, not ISO string
+        endDate: new Date(data.endDate), // Send Date object, not ISO string
       };
       return apiRequest("POST", "/api/competitions", competitionData);
     },
