@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RotateCcw, ArrowRight } from "lucide-react";
+import { Link } from "wouter";
 import type { Team, TeamMember } from "@shared/schema";
 
 interface LiveLeaderboardProps {
@@ -107,40 +108,41 @@ export default function LiveLeaderboard({ teams, isLoading }: LiveLeaderboardPro
               </thead>
               <tbody>
                 {sortedTeams.map((team, index) => (
-                  <tr 
-                    key={team.id} 
-                    className="border-b border-border hover:bg-muted/20 transition-colors"
-                    data-testid={`row-leaderboard-${team.id}`}
-                  >
-                    <td className="p-4">
-                      {getRankBadge(index + 1)}
-                    </td>
-                    <td className="p-4">
-                      <div className="font-medium text-foreground" data-testid={`text-team-name-${team.id}`}>
-                        {team.name}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {team.members.slice(0, 2).map(m => m.name).join(', ')}
-                        {team.members.length > 2 && ` +${team.members.length - 2} ďalších`}
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      {getSectorBadge(team.sector)}
-                    </td>
-                    <td className="p-4 text-right">
-                      <div className="font-mono font-bold text-foreground" data-testid={`text-weight-${team.id}`}>
-                        {parseFloat(team.totalWeight || '0').toFixed(2)} kg
-                      </div>
-                      {index === 0 && parseFloat(team.totalWeight || '0') > 0 && (
-                        <div className="text-xs text-secondary">Vedú</div>
-                      )}
-                    </td>
-                    <td className="p-4 text-right">
-                      <span className="font-mono font-medium text-foreground" data-testid={`text-fish-count-${team.id}`}>
-                        {team.fishCount || 0}
-                      </span>
-                    </td>
-                  </tr>
+                  <Link href={`/team/${team.id}`} key={team.id}>
+                    <tr 
+                      className="border-b border-border hover:bg-muted/20 transition-colors cursor-pointer group"
+                      data-testid={`row-leaderboard-${team.id}`}
+                    >
+                      <td className="p-4">
+                        {getRankBadge(index + 1)}
+                      </td>
+                      <td className="p-4">
+                        <div className="font-medium text-foreground group-hover:text-primary transition-colors" data-testid={`text-team-name-${team.id}`}>
+                          {team.name}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {team.members.slice(0, 2).map(m => m.name).join(', ')}
+                          {team.members.length > 2 && ` +${team.members.length - 2} ďalších`}
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        {getSectorBadge(team.sector)}
+                      </td>
+                      <td className="p-4 text-right">
+                        <div className="font-mono font-bold text-foreground" data-testid={`text-weight-${team.id}`}>
+                          {parseFloat(team.totalWeight || '0').toFixed(2)} kg
+                        </div>
+                        {index === 0 && parseFloat(team.totalWeight || '0') > 0 && (
+                          <div className="text-xs text-secondary">Vedú</div>
+                        )}
+                      </td>
+                      <td className="p-4 text-right">
+                        <span className="font-mono font-medium text-foreground" data-testid={`text-fish-count-${team.id}`}>
+                          {team.fishCount || 0}
+                        </span>
+                      </td>
+                    </tr>
+                  </Link>
                 ))}
               </tbody>
             </table>
