@@ -190,21 +190,55 @@ export default function TeamDetail() {
               </CardHeader>
               <CardContent className="space-y-4">
                 
+                {/* Team Photo/Logo */}
+                {teamData.photoUrl && (
+                  <div className="mb-4">
+                    <h4 className="font-medium text-foreground mb-2">Logo tímu:</h4>
+                    <div className="flex justify-center">
+                      <img 
+                        src={teamData.photoUrl} 
+                        alt={`Logo tímu ${teamData.name}`}
+                        className="w-32 h-32 object-cover rounded-lg border-2 border-muted"
+                        data-testid="img-team-logo"
+                      />
+                    </div>
+                  </div>
+                )}
+
                 <div>
                   <h4 className="font-medium text-foreground mb-2">Členovia tímu:</h4>
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {teamData.members?.map((member: any, index: number) => (
                       <div 
                         key={index} 
-                        className="flex items-center justify-between p-2 bg-muted/20 rounded-lg"
+                        className="flex items-center space-x-3 p-3 bg-muted/20 rounded-lg"
                         data-testid={`member-${index}`}
                       >
-                        <div>
+                        {/* Member Photo */}
+                        <div className="flex-shrink-0">
+                          {member.photoUrl ? (
+                            <img 
+                              src={member.photoUrl} 
+                              alt={`Fotka ${member.name}`}
+                              className="w-12 h-12 object-cover rounded-full border-2 border-muted"
+                              data-testid={`img-member-${index}`}
+                            />
+                          ) : (
+                            <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center">
+                              <Users className="w-6 h-6 text-muted-foreground" />
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Member Info */}
+                        <div className="flex-1">
                           <div className="font-medium text-foreground">{member.name}</div>
                           {member.email && (
                             <div className="text-xs text-muted-foreground">{member.email}</div>
                           )}
                         </div>
+                        
+                        {/* Role Badge */}
                         {member.role === 'captain' && (
                           <Badge variant="secondary" className="text-xs">Kapitán</Badge>
                         )}
