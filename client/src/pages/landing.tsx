@@ -1,10 +1,20 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Fish, Users, Trophy, MapPin, PlusCircle } from "lucide-react";
+import { Fish, Users, Trophy, MapPin, PlusCircle, Menu, X } from "lucide-react";
 import { ContestCategories } from "@/components/contest-categories";
+import { Link, useLocation } from "wouter";
+import { useState } from "react";
 import heroImage from "@assets/Carp_Fishing_1600x500_crop_center_6bc11ee9-9096-425e-8946-560290a33987_2016x630_1758061236097.webp";
 export default function Landing() {
+  const [location] = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Navigation items
+  const navItems = [
+    { href: "/register-competition", label: "Zaregistrovať súťaž", icon: Trophy },
+    { href: "/register-team", label: "Zaregistrovať tím", icon: Users },
+  ];
 
   // Sample contests data to showcase different categories
   const sampleContests = [
@@ -71,26 +81,107 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <Fish className="text-primary text-2xl" />
-                <h1 className="text-xl font-bold text-primary">Contestio</h1>
-              </div>
+              <Link href="/">
+                <div className="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition-opacity">
+                  <Fish className="text-primary text-2xl" />
+                  <h1 className="text-xl font-bold text-primary">Contestio</h1>
+                </div>
+              </Link>
               <div className="hidden md:flex items-center space-x-1 bg-muted/20 rounded-full px-3 py-1">
                 <span className="w-2 h-2 bg-secondary rounded-full animate-pulse"></span>
                 <span className="text-sm font-medium text-secondary">Súťaže naživo</span>
               </div>
             </div>
             
-            <div className="flex items-center space-x-3">
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-1">
+              {navItems.map((item) => {
+                const isActive = location === item.href;
+                const IconComponent = item.icon;
+                
+                return (
+                  <Link key={item.href} href={item.href}>
+                    <div className={`
+                      flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer
+                      ${isActive 
+                        ? 'bg-primary text-primary-foreground shadow-sm' 
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                      }
+                    `} data-testid={`nav-${item.href.slice(1)}`}>
+                      <IconComponent className="w-4 h-4" />
+                      <span>{item.label}</span>
+                    </div>
+                  </Link>
+                );
+              })}
+              
+              <div className="w-px h-6 bg-border mx-2"></div>
+              
               <Button 
                 onClick={() => window.location.href = '/api/login'}
-                className="bg-accent text-accent-foreground hover:bg-accent/90"
+                className="bg-accent text-accent-foreground hover:bg-accent/90 transition-colors"
                 data-testid="button-login"
               >
                 Prihlásiť sa
               </Button>
             </div>
+
+            {/* Mobile Menu Button */}
+            <div className="md:hidden">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                data-testid="button-mobile-menu"
+              >
+                {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </Button>
+            </div>
           </div>
+
+          {/* Mobile Navigation Menu */}
+          {isMobileMenuOpen && (
+            <div className="md:hidden border-t border-border bg-white">
+              <div className="px-4 py-3 space-y-2">
+                {navItems.map((item) => {
+                  const isActive = location === item.href;
+                  const IconComponent = item.icon;
+                  
+                  return (
+                    <Link key={item.href} href={item.href}>
+                      <div 
+                        className={`
+                          flex items-center space-x-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer
+                          ${isActive 
+                            ? 'bg-primary text-primary-foreground shadow-sm' 
+                            : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                          }
+                        `}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        data-testid={`mobile-nav-${item.href.slice(1)}`}
+                      >
+                        <IconComponent className="w-5 h-5" />
+                        <span>{item.label}</span>
+                      </div>
+                    </Link>
+                  );
+                })}
+                
+                <div className="border-t border-border my-2"></div>
+                
+                <Button 
+                  onClick={() => {
+                    window.location.href = '/api/login';
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full bg-accent text-accent-foreground hover:bg-accent/90 transition-colors"
+                  data-testid="mobile-button-login"
+                >
+                  Prihlásiť sa
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </header>
 

@@ -14,6 +14,7 @@ import SectorDetail from "@/pages/sector-detail";
 import AdminPanel from "@/pages/admin-panel";
 import RefereeInterface from "@/pages/referee-interface";
 import RegisterCompetition from "@/pages/register-competition";
+import RegisterTeam from "@/pages/register-team";
 import RegistrationOpenPage from "@/pages/registration-open";
 import UpcomingPage from "@/pages/upcoming";
 import LivePage from "@/pages/live";
@@ -27,6 +28,7 @@ function Router() {
     <Switch>
       <Route path="/" component={user ? Home : Landing} />
       <Route path="/register-competition" component={RegisterCompetition} />
+      <Route path="/register-team" component={RegisterTeam} />
       <Route path="/categories/registration-open" component={RegistrationOpenPage} />
       <Route path="/categories/upcoming" component={UpcomingPage} />
       <Route path="/categories/live" component={LivePage} />
