@@ -43,6 +43,7 @@ export const competitions = pgTable("competitions", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description"),
+  rules: text("rules"),
   location: varchar("location", { length: 255 }).notNull(),
   status: varchar("status").notNull().default("registration"), // "registration", "live", "finished"
   startDate: timestamp("start_date").notNull(),
@@ -67,6 +68,7 @@ export const competitionRegistrations = pgTable("competition_registrations", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description"),
+  rules: text("rules"),
   location: varchar("location", { length: 255 }).notNull(),
   startDate: timestamp("start_date").notNull(),
   endDate: timestamp("end_date").notNull(),
@@ -241,6 +243,8 @@ export const insertCompetitionSchema = createInsertSchema(competitions).omit({
 }).extend({
   startDate: z.string().or(z.date()).transform((val) => new Date(val)),
   endDate: z.string().or(z.date()).transform((val) => new Date(val)),
+  description: z.string().max(500, "Popis môže mať maximálne 500 znakov").optional(),
+  rules: z.string().optional(),
   sectorPlaces: z.array(z.object({
     sectorName: z.string().min(1, "Názov sektoru je povinný"),
     places: z.array(z.string().min(1, "Názov miesta je povinný")).min(1, "Sektor musí mať aspoň jedno miesto")
@@ -256,6 +260,8 @@ export const insertCompetitionRegistrationSchema = createInsertSchema(competitio
 }).extend({
   startDate: z.string().or(z.date()).transform((val) => new Date(val)),
   endDate: z.string().or(z.date()).transform((val) => new Date(val)),
+  description: z.string().max(500, "Popis môže mať maximálne 500 znakov").optional(),
+  rules: z.string().optional(),
   sectorPlaces: z.array(z.object({
     sectorName: z.string().min(1, "Názov sektoru je povinný"),
     places: z.array(z.string().min(1, "Názov miesta je povinný")).min(1, "Sektor musí mať aspoň jedno miesto")
