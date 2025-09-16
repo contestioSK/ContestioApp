@@ -9,6 +9,7 @@ import Landing from "@/pages/landing";
 import Home from "@/pages/home";
 import CompetitionDetail from "@/pages/competition-detail";
 import TeamDetail from "@/pages/team-detail";
+import SectorDetail from "@/pages/sector-detail";
 import AdminPanel from "@/pages/admin-panel";
 import RefereeInterface from "@/pages/referee-interface";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -20,6 +21,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/competition/:id" component={CompetitionDetail} />
+      <Route path="/competition/:competitionId/sector/:sector" component={SectorDetail} />
       <Route path="/team/:teamId" component={TeamDetail} />
       <Route path="/admin-panel">
         <ProtectedRoute roles={["organizer"]}>
