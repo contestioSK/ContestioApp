@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Eye, Trophy, UserPlus, Clock, MapPin, Users, Star } from "lucide-react";
+import { Calendar, Eye, Trophy, UserPlus, ArrowRight, Clock } from "lucide-react";
 import { Link } from "wouter";
 
 interface Contest {
@@ -17,16 +17,6 @@ interface Contest {
 interface ContestCategoriesProps {
   contests: Contest[];
 }
-
-// Competition images for visual appeal
-const competitionImages = [
-  "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=300",
-  "https://images.unsplash.com/photo-1559827260-dc66d52bef19?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=300", 
-  "https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=300",
-  "https://images.unsplash.com/photo-1544551763-46a013bb70d5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=300",
-  "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=300",
-  "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=300"
-];
 
 export function ContestCategories({ contests }: ContestCategoriesProps) {
   // Filter contests into categories
@@ -63,189 +53,121 @@ export function ContestCategories({ contests }: ContestCategoriesProps) {
 
   const { registrationOpen, registrationClosedFuture, liveContests, finishedContests } = categorizeContests();
 
-  const CategorySection = ({ 
-    title, 
-    subtitle,
-    contests, 
-    ctaText, 
-    ctaAction, 
-    icon: Icon, 
-    badgeVariant = "default",
-    accentColor = "primary"
-  }: {
-    title: string;
-    subtitle: string;
-    contests: Contest[];
-    ctaText: string;
-    ctaAction: (contestId: string) => string;
-    icon: any;
-    badgeVariant?: "default" | "secondary" | "destructive" | "outline";
-    accentColor?: string;
-  }) => (
-    <div className="mb-16">
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-4">
-          <div className={`p-3 rounded-xl bg-${accentColor}/10`}>
-            <Icon className={`w-8 h-8 text-${accentColor}`} />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold text-foreground">{title}</h2>
-            <p className="text-muted-foreground">{subtitle}</p>
-          </div>
-        </div>
-        <Badge variant={badgeVariant} className="px-3 py-1">
-          {contests.length} súťaží
-        </Badge>
-      </div>
-      
-      {contests.length === 0 ? (
-        <Card className="p-8 text-center bg-muted/30">
-          <Icon className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-muted-foreground mb-2">
-            Žiadne súťaže v tejto kategórii
-          </h3>
-          <p className="text-sm text-muted-foreground">
-            Momentálne sa v tejto kategórii nenachádzajú žiadne súťaže
-          </p>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {contests.slice(0, 6).map((contest, index) => (
-            <Card key={contest.id} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 overflow-hidden border-0 shadow-lg">
-              <div className="relative">
-                <img 
-                  src={competitionImages[index % competitionImages.length]}
-                  alt={contest.name}
-                  className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" 
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                <div className="absolute top-3 left-3">
-                  <Badge variant={badgeVariant} className="bg-white/90 text-black backdrop-blur-sm">
-                    {contest.status === 'live' && '🔴 ŽIVO'}
-                    {contest.status === 'registration' && '📝 REGISTRÁCIA'}
-                    {contest.status === 'finished' && '🏆 UKONČENÁ'}
-                  </Badge>
-                </div>
-                <div className="absolute bottom-3 left-3 right-3 text-white">
-                  <h3 className="font-bold text-lg mb-1" data-testid={`text-contest-title-${contest.id}`}>
-                    {contest.name}
-                  </h3>
-                </div>
-              </div>
-              
-              <CardContent className="p-6">
-                <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                  {contest.description}
-                </p>
-                
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <MapPin className="w-4 h-4" />
-                    <span>{contest.location}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Calendar className="w-4 h-4" />
-                    <span>{new Date(contest.startDate).toLocaleDateString('sk-SK')}</span>
-                  </div>
-                  {contest.status === 'live' && (
-                    <div className="flex items-center gap-2 text-sm text-secondary">
-                      <Users className="w-4 h-4" />
-                      <span>24 aktívnych tímov</span>
-                    </div>
-                  )}
-                  {contest.status === 'finished' && (
-                    <div className="flex items-center gap-2 text-sm text-accent">
-                      <Star className="w-4 h-4" />
-                      <span>Víťaz: Team Champions</span>
-                    </div>
-                  )}
-                </div>
-                
-                <Link href={ctaAction(contest.id)}>
-                  <Button 
-                    className={`w-full transition-all ${
-                      contest.status === 'live' 
-                        ? 'bg-secondary hover:bg-secondary/90 text-secondary-foreground' 
-                        : contest.status === 'finished'
-                        ? 'bg-accent hover:bg-accent/90 text-accent-foreground'
-                        : 'bg-primary hover:bg-primary/90 text-primary-foreground'
-                    }`}
-                    data-testid={`button-cta-${contest.id}`}
-                  >
-                    {ctaText}
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-      
-      {contests.length > 6 && (
-        <div className="text-center mt-8">
-          <Button variant="outline" size="lg">
-            Zobraziť všetkých {contests.length} súťaží
-          </Button>
-        </div>
-      )}
-    </div>
-  );
+  const categories = [
+    {
+      title: "Registrácia prebieha",
+      description: "Prihláste sa do aktuálnych súťaží s otvorenou registráciou",
+      count: registrationOpen.length,
+      icon: UserPlus,
+      route: "/categories/registration-open",
+      gradient: "from-primary to-primary/80",
+      bgPattern: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
+      badge: "🔥 Aktívne",
+      badgeVariant: "default" as const
+    },
+    {
+      title: "Budúce preteky", 
+      description: "Nadchádzajúce súťaže s ukončenou registráciou",
+      count: registrationClosedFuture.length,
+      icon: Calendar,
+      route: "/categories/upcoming",
+      gradient: "from-secondary to-secondary/80",
+      bgPattern: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
+      badge: "📅 Nadchádzajúce",
+      badgeVariant: "secondary" as const
+    },
+    {
+      title: "Prebiehajúce preteky",
+      description: "Sledujte živé súťaže a aktuálne výsledky v reálnom čase", 
+      count: liveContests.length,
+      icon: Eye,
+      route: "/categories/live",
+      gradient: "from-red-500 to-red-600",
+      bgPattern: "https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
+      badge: "🔴 Live",
+      badgeVariant: "destructive" as const
+    },
+    {
+      title: "Ukončené preteky",
+      description: "Prezrite si výsledky a štatistiky zo skončených súťaží",
+      count: finishedContests.length, 
+      icon: Trophy,
+      route: "/categories/finished",
+      gradient: "from-accent to-accent/80",
+      bgPattern: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
+      badge: "🏆 Ukončené",
+      badgeVariant: "outline" as const
+    }
+  ];
 
   return (
     <section className="py-16 bg-gradient-to-br from-background via-muted/20 to-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
-            Rybárske <span className="text-primary">Súťaže</span>
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Objavte pestrosť rybárskych turnajov - od aktuálnych registrácií až po živé súťaže a výsledky
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+            Kategórie súťaží
+          </h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Vyberte si kategóriu súťaží, ktorá vás zaujíma a preskúmajte dostupné turnaje
           </p>
         </div>
         
-        <CategorySection
-          title="🔥 Registrácia prebieha"
-          subtitle="Prihláste sa do najnovších súťaží s otvorenou registráciou"
-          contests={registrationOpen}
-          ctaText="Prihlásiť tím"
-          ctaAction={(contestId) => `/competition/${contestId}/register`}
-          icon={UserPlus}
-          badgeVariant="default"
-          accentColor="primary"
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {categories.map((category) => (
+            <Link key={category.route} href={category.route}>
+              <Card className="group cursor-pointer overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 bg-white dark:bg-card" data-testid={`category-card-${category.route.split('/').pop()}`}>
+                <div className="relative h-48">
+                  <img 
+                    src={category.bgPattern}
+                    alt={category.title}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                  <div className={`absolute inset-0 bg-gradient-to-br ${category.gradient} opacity-80`} />
+                  <div className="absolute inset-0 bg-black/20" />
+                  
+                  <div className="absolute top-4 left-4">
+                    <Badge variant={category.badgeVariant} className="bg-white/90 text-black backdrop-blur-sm font-medium">
+                      {category.badge}
+                    </Badge>
+                  </div>
+                  
+                  <div className="absolute top-4 right-4">
+                    <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                      <category.icon className="w-6 h-6 text-white" />
+                    </div>
+                  </div>
+                  
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <div className="flex items-center justify-between text-white">
+                      <div className="text-2xl font-bold">{category.count}</div>
+                      <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </div>
+                </div>
+                
+                <CardContent className="p-6">
+                  <h3 className="font-bold text-lg text-foreground mb-2 group-hover:text-primary transition-colors">
+                    {category.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {category.description}
+                  </p>
+                  
+                  <div className="mt-4 flex items-center text-sm font-medium text-primary">
+                    <span>Preskúmať súťaže</span>
+                    <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
         
-        <CategorySection
-          title="📅 Budúce preteky"
-          subtitle="Nadchádzajúce súťaže s ukončenou registráciou"
-          contests={registrationClosedFuture}
-          ctaText="Pridať do kalendára"
-          ctaAction={(contestId) => `/competition/${contestId}`}
-          icon={Calendar}
-          badgeVariant="secondary"
-          accentColor="secondary"
-        />
-        
-        <CategorySection
-          title="🔴 Prebiehajúce preteky"
-          subtitle="Sledujte živé súťaže a aktuálne výsledky v reálnom čase"
-          contests={liveContests}
-          ctaText="Sledovať live"
-          ctaAction={(contestId) => `/competition/${contestId}/live`}
-          icon={Eye}
-          badgeVariant="destructive"
-          accentColor="secondary"
-        />
-        
-        <CategorySection
-          title="🏆 Ukončené preteky"
-          subtitle="Prezrite si výsledky a štatistiky zo skončených súťaží"
-          contests={finishedContests}
-          ctaText="Prezrieť výsledky"
-          ctaAction={(contestId) => `/competition/${contestId}/results`}
-          icon={Trophy}
-          badgeVariant="outline"
-          accentColor="accent"
-        />
+        <div className="text-center mt-12">
+          <p className="text-muted-foreground">
+            Kliknite na ktorúkoľvek kategóriu a preskúmajte všetky dostupné súťaže v danej kategórii
+          </p>
+        </div>
       </div>
     </section>
   );
