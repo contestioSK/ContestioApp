@@ -655,12 +655,15 @@ export default function AdminPanel() {
                             <FormItem>
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 {[
-                                  { id: "biggest-fish", label: "Najväčšia ryba" },
-                                  { id: "most-fish", label: "Najviac rýb" },
-                                  { id: "youth-category", label: "Mládežnícka kategória" },
-                                  { id: "women-category", label: "Ženská kategória" },
-                                  { id: "team-spirit", label: "Najlepší tímový duch" },
-                                  { id: "early-bird", label: "Ranná úlovka" },
+                                  { id: "big-fish-overall", label: "Najväčší úlovok súťaže" },
+                                  { id: "big-common-carp", label: "Najväčší šupináč" },
+                                  { id: "big-mirror-carp", label: "Najväčší lysec" },
+                                  { id: "first-catch", label: "Prvá ryba súťaže" },
+                                  { id: "last-catch", label: "Posledná ryba súťaže" },
+                                  { id: "most-fish-caught", label: "Najväčší počet ulovených rýb" },
+                                  { id: "best-5-fish", label: "Top 5 rýb" },
+                                  { id: "daily-big-fish", label: "Najväčší úlovok dňa" },
+                                  { id: "first-fish-over-weight", label: "Prvá ryba nad 20 kg / 25 kg / 30 kg" },
                                 ].map((item) => (
                                   <div
                                     key={item.id}
