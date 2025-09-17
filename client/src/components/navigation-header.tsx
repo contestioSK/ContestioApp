@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Fish, Menu } from "lucide-react";
+import { Fish, Menu, DollarSign } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export default function NavigationHeader() {
@@ -60,6 +60,15 @@ export default function NavigationHeader() {
               data-testid="nav-competitions"
             >
               Súťaže
+            </Link>
+            <Link 
+              href="/pricing" 
+              className={`font-medium transition-colors ${
+                location === '/pricing' ? 'text-primary' : 'text-muted-foreground hover:text-primary'
+              }`}
+              data-testid="nav-pricing"
+            >
+              Cenníky
             </Link>
             <a href="#archive" className="text-muted-foreground hover:text-primary transition-colors">
               Archív

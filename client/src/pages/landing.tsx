@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Fish, Users, Trophy, MapPin, PlusCircle, Menu, X, Info } from "lucide-react";
+import { Fish, Users, Trophy, MapPin, PlusCircle, Menu, X, Info, DollarSign } from "lucide-react";
 import { ContestCategories } from "@/components/contest-categories";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
@@ -12,6 +12,7 @@ export default function Landing() {
 
   // Navigation items
   const navItems = [
+    { href: "/pricing", label: "Cenníky", icon: DollarSign },
     { href: "/register-competition", label: "Zaregistrovať súťaž", icon: Trophy },
     { href: "/register-team", label: "Zaregistrovať tím", icon: Users },
   ];
