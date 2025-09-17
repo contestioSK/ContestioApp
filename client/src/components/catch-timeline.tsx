@@ -175,12 +175,6 @@ export default function CatchTimeline({ catches, isLoading, competitionId }: Cat
                       <div className="font-mono font-bold text-accent text-xl" data-testid={`catch-weight-${catch_.id}`}>
                         {parseFloat(catch_.weight).toFixed(2)} kg
                       </div>
-                      
-                      {catch_.isVerified && (
-                        <Badge className="bg-secondary/10 text-secondary text-sm">
-                          Overený
-                        </Badge>
-                      )}
                     </div>
                   </div>
                 </div>
