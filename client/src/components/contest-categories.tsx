@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Eye, Trophy, UserPlus, ArrowRight, Clock } from "lucide-react";
 import { Link } from "wouter";
+import registrationImage from "@assets/FB_IMG_1710518342053_1758098361872.jpg";
 
 interface Contest {
   id: string;
@@ -60,8 +61,8 @@ export function ContestCategories({ contests }: ContestCategoriesProps) {
       count: registrationOpen.length,
       icon: UserPlus,
       route: "/categories/registration-open",
-      gradient: "from-primary to-primary/80",
-      bgPattern: "https://images.unsplash.com/photo-1580623557890-2e7e88b73b31?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
+      gradient: "from-green-500 to-green-600",
+      bgPattern: registrationImage,
       badge: "🔥 Aktívne",
       badgeVariant: "default" as const
     },
@@ -71,8 +72,8 @@ export function ContestCategories({ contests }: ContestCategoriesProps) {
       count: registrationClosedFuture.length,
       icon: Calendar,
       route: "/categories/upcoming",
-      gradient: "from-secondary to-secondary/80",
-      bgPattern: "https://images.unsplash.com/photo-1606189934846-8b4b0c7ad8e9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
+      gradient: "from-blue-500 to-blue-600",
+      bgPattern: null,
       badge: "📅 Nadchádzajúce",
       badgeVariant: "secondary" as const
     },
@@ -83,7 +84,7 @@ export function ContestCategories({ contests }: ContestCategoriesProps) {
       icon: Eye,
       route: "/categories/live",
       gradient: "from-red-500 to-red-600",
-      bgPattern: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
+      bgPattern: null,
       badge: "🔴 Live",
       badgeVariant: "destructive" as const
     },
@@ -93,8 +94,8 @@ export function ContestCategories({ contests }: ContestCategoriesProps) {
       count: finishedContests.length, 
       icon: Trophy,
       route: "/categories/finished",
-      gradient: "from-accent to-accent/80",
-      bgPattern: "https://images.unsplash.com/photo-1522540621023-50aa8a89a32e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400",
+      gradient: "from-amber-500 to-amber-600",
+      bgPattern: null,
       badge: "🏆 Ukončené",
       badgeVariant: "outline" as const
     }
@@ -132,14 +133,31 @@ export function ContestCategories({ contests }: ContestCategoriesProps) {
                 data-testid={`category-card-${category.route.split('/').pop()}`}
               >
                 <div className="relative h-56 overflow-hidden">
-                  <img 
-                    src={category.bgPattern}
-                    alt={category.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                    loading="lazy"
-                  />
-                  <div className={`absolute inset-0 bg-gradient-to-br ${category.gradient} opacity-85 group-hover:opacity-75 transition-opacity duration-300`} />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                  {category.bgPattern ? (
+                    <>
+                      <img 
+                        src={category.bgPattern}
+                        alt={category.title}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                        loading="lazy"
+                      />
+                      <div className={`absolute inset-0 bg-gradient-to-br ${category.gradient} opacity-85 group-hover:opacity-75 transition-opacity duration-300`} />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                    </>
+                  ) : (
+                    <>
+                      <div className={`absolute inset-0 bg-gradient-to-br ${category.gradient} opacity-90`} />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
+                      {/* Pattern overlay for gradient backgrounds */}
+                      <div className="absolute inset-0 opacity-20">
+                        <div className="w-full h-full" style={{
+                          backgroundImage: `radial-gradient(circle at 25% 25%, white 2px, transparent 2px),
+                                           radial-gradient(circle at 75% 75%, white 2px, transparent 2px)`,
+                          backgroundSize: '20px 20px'
+                        }}></div>
+                      </div>
+                    </>
+                  )}
                   
                   <div className="absolute top-4 left-4">
                     <Badge 
