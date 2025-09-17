@@ -585,13 +585,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         startDate: new Date(req.body.startDate),
         endDate: new Date(req.body.endDate),
         maxTeams: req.body.maxTeams ? parseInt(req.body.maxTeams) : null,
-        minWeight: req.body.minWeight ?? "2.00",
+        minWeight: req.body.minWeight ? parseFloat(req.body.minWeight) : 2,
         hasSectors: req.body.hasSectors === 'true',
         sectorPlaces,
         sideCompetitions,
         selectedPlan,
-        requestedSubdomain: req.body.requestedSubdomain || null,
-        branding,
+        requestedSubdomain: req.body.requestedSubdomain || undefined,
+        branding: branding || undefined,
       });
       
       const registration = await storage.createCompetitionRegistration(registrationData);
