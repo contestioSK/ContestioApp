@@ -149,6 +149,34 @@ export default function AdminPanel() {
     enabled: isAuthenticated && isAdmin,
   });
 
+  // Users query for user management
+  const { data: allUsers, isLoading: usersLoading, refetch: refetchUsers } = useQuery({
+    queryKey: ["/api/admin/users"],
+    enabled: isAuthenticated && isAdmin,
+  });
+
+  // User role update mutation
+  const updateUserRoleMutation = useMutation({
+    mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
+      const response = await apiRequest("PUT", `/api/admin/users/${userId}/role`, { role });
+      return response.json();
+    },
+    onSuccess: () => {
+      refetchUsers();
+      toast({
+        title: "Úspech",
+        description: "Rola používateľa bola aktualizovaná",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Chyba",
+        description: "Nepodarilo sa aktualizovať rolu používateľa",
+        variant: "destructive",
+      });
+    },
+  });
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto py-8 px-4">
@@ -263,6 +291,10 @@ export default function AdminPanel() {
                       <TabsTrigger value="dashboard" className="py-4 border-b-2 border-primary text-primary font-medium text-sm">
                         <BarChart3 className="w-4 h-4 mr-2" />
                         Dashboard
+                      </TabsTrigger>
+                      <TabsTrigger value="users" className="py-4 text-muted-foreground hover:text-foreground font-medium text-sm">
+                        <Users className="w-4 h-4 mr-2" />
+                        Používatelia
                       </TabsTrigger>
                       <TabsTrigger value="registrations" className="py-4 text-muted-foreground hover:text-foreground font-medium text-sm">
                         <FileText className="w-4 h-4 mr-2" />
@@ -472,6 +504,97 @@ export default function AdminPanel() {
                             </CardContent>
                           </Card>
                         </>
+                      )}
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="users" className="p-6">
+                    <div className="space-y-6">
+                      <div>
+                        <h2 className="text-2xl font-bold text-foreground mb-2">Správa používateľov</h2>
+                        <p className="text-muted-foreground">Spravujte roly a oprávnenia používateľov</p>
+                      </div>
+
+                      {usersLoading ? (
+                        <div className="space-y-4">
+                          {[...Array(10)].map((_, i) => (
+                            <div key={i} className="flex items-center space-x-4 p-4 border border-border rounded-lg">
+                              <Skeleton className="h-10 w-10 rounded-full" />
+                              <div className="space-y-2 flex-1">
+                                <Skeleton className="h-4 w-48" />
+                                <Skeleton className="h-3 w-32" />
+                              </div>
+                              <Skeleton className="h-6 w-20" />
+                              <Skeleton className="h-8 w-32" />
+                            </div>
+                          ))}
+                        </div>
+                      ) : allUsers?.length === 0 ? (
+                        <div className="text-center py-12">
+                          <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                          <p className="text-muted-foreground text-lg">Žiadni používatelia nenájdení</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {allUsers?.map((user: any) => (
+                            <div key={user.id} className="flex items-center space-x-4 p-4 border border-border rounded-lg bg-card">
+                              {/* User Info */}
+                              <div className="flex items-center space-x-3 flex-1">
+                                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                  <Users className="h-5 w-5 text-primary" />
+                                </div>
+                                <div>
+                                  <p className="font-medium text-foreground" data-testid={`text-user-name-${user.id}`}>
+                                    {user.name || user.email}
+                                  </p>
+                                  <p className="text-sm text-muted-foreground">{user.email}</p>
+                                  {user.createdAt && (
+                                    <p className="text-xs text-muted-foreground">
+                                      Registrovaný {new Date(user.createdAt).toLocaleDateString('sk-SK')}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Role Badge */}
+                              <div>
+                                <Badge variant={
+                                  user.role === 'admin' ? 'destructive' :
+                                  user.role === 'organizer' ? 'default' :
+                                  user.role === 'referee' ? 'secondary' : 'outline'
+                                } data-testid={`badge-role-${user.id}`}>
+                                  {user.role === 'admin' ? 'Admin' :
+                                   user.role === 'organizer' ? 'Organizátor' :
+                                   user.role === 'referee' ? 'Rozhodca' : 'Verejnosť'}
+                                </Badge>
+                              </div>
+
+                              {/* Role Change Select */}
+                              <div className="min-w-[160px]">
+                                <Select 
+                                  value={user.role} 
+                                  onValueChange={(newRole) => updateUserRoleMutation.mutate({ userId: user.id, role: newRole })}
+                                  disabled={updateUserRoleMutation.isPending}
+                                >
+                                  <SelectTrigger data-testid={`select-role-${user.id}`}>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="public">Verejnosť</SelectItem>
+                                    <SelectItem value="referee">Rozhodca</SelectItem>
+                                    <SelectItem value="organizer">Organizátor</SelectItem>
+                                    <SelectItem value="admin">Admin</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+
+                              {/* Additional Info */}
+                              <div className="text-right min-w-[80px]">
+                                <p className="text-xs text-muted-foreground">ID: {user.id}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       )}
                     </div>
                   </TabsContent>

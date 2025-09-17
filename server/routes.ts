@@ -532,6 +532,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin user management endpoints
+  app.get('/api/admin/users', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!isAdmin(user)) {
+        return res.status(403).json({ message: "Only admins can manage users" });
+      }
+
+      const users = await storage.getAllUsers();
+      res.json(users);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  app.put('/api/admin/users/:userId/role', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!isAdmin(user)) {
+        return res.status(403).json({ message: "Only admins can update user roles" });
+      }
+
+      const { role } = req.body;
+      const targetUserId = req.params.userId;
+      
+      if (!role || !['public', 'organizer', 'referee', 'admin'].includes(role)) {
+        return res.status(400).json({ message: "Invalid role" });
+      }
+
+      const updatedUser = await storage.updateUserRole(targetUserId, role);
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("Error updating user role:", error);
+      res.status(500).json({ message: "Failed to update user role" });
+    }
+  });
+
+  app.put('/api/admin/users/:userId/status', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!isAdmin(user)) {
+        return res.status(403).json({ message: "Only admins can update user status" });
+      }
+
+      const { active } = req.body;
+      const targetUserId = req.params.userId;
+      
+      if (typeof active !== 'boolean') {
+        return res.status(400).json({ message: "Active must be boolean" });
+      }
+
+      const updatedUser = await storage.updateUserStatus(targetUserId, active);
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("Error updating user status:", error);
+      res.status(500).json({ message: "Failed to update user status" });
+    }
+  });
+
   // Competition registration routes
   app.post('/api/competition-registrations', upload.single('competitionLogo'), async (req: any, res) => {
     try {
