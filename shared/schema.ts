@@ -128,6 +128,7 @@ export const teams = pgTable("teams", {
   totalWeight: decimal("total_weight", { precision: 10, scale: 3 }).default("0"),
   fishCount: integer("fish_count").default(0),
   photoUrl: varchar("photo_url"), // Team logo/photo
+  country: varchar("country", { length: 2 }).default("SK"), // ISO country code (SK, CZ, HU, etc.)
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -303,6 +304,7 @@ export const insertTeamSchema = createInsertSchema(teams).omit({
 }).extend({
   sectorName: z.string().optional(),
   placeName: z.string().optional(),
+  country: z.string().length(2, "Kód krajiny musí mať presne 2 znaky").default("SK"),
 }).refine((data) => {
   // If sectorName is provided, placeName must also be provided
   if (data.sectorName && !data.placeName) {
