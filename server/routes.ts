@@ -13,6 +13,7 @@ import {
   insertSponsorSchema,
   createTeamStatusValidationSchema,
 } from "@shared/schema";
+import { canUseFeature } from "@shared/plan-capabilities";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -473,6 +474,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Parse complex fields
       let sectorPlaces = [];
       let sideCompetitions = [];
+      let branding = null;
       
       if (req.body.sectorPlaces) {
         try {
@@ -489,6 +491,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.error('Error parsing sideCompetitions:', e);
         }
       }
+      
+      if (req.body.branding) {
+        try {
+          branding = JSON.parse(req.body.branding);
+        } catch (e) {
+          console.error('Error parsing branding:', e);
+        }
+      }
+
+      // Validate plan capabilities - SECURITY: Ensure features match selected plan
+      const validPlans = ['basic', 'pro', 'premium', 'enterprise'] as const;
+      const rawPlan = req.body.selectedPlan;
+      const selectedPlan = validPlans.includes(rawPlan) ? rawPlan : 'basic';
+      const hasSectors = req.body.hasSectors === 'true';
+      const hasSubdomain = req.body.requestedSubdomain && req.body.requestedSubdomain.trim() !== '';
+      
+      // Validate sectors feature
+      if (hasSectors && !canUseFeature(selectedPlan, 'sectors')) {
+        return res.status(400).json({ 
+          message: "Sectors feature not available in selected plan",
+          selectedPlan,
+          feature: 'sectors'
+        });
+      }
+      
+      // Validate side competitions feature
+      if (sideCompetitions.length > 0 && !canUseFeature(selectedPlan, 'sideCompetitions')) {
+        return res.status(400).json({ 
+          message: "Side competitions feature not available in selected plan",
+          selectedPlan,
+          feature: 'sideCompetitions'
+        });
+      }
+      
+      // Validate branding feature
+      if ((branding || hasSubdomain) && !canUseFeature(selectedPlan, 'branding')) {
+        return res.status(400).json({ 
+          message: "Branding features not available in selected plan",
+          selectedPlan,
+          feature: 'branding'
+        });
+      }
 
       const registrationData = insertCompetitionRegistrationSchema.parse({
         ...req.body,
@@ -499,6 +543,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         hasSectors: req.body.hasSectors === 'true',
         sectorPlaces,
         sideCompetitions,
+        selectedPlan,
+        requestedSubdomain: req.body.requestedSubdomain || null,
+        branding,
       });
       
       const registration = await storage.createCompetitionRegistration(registrationData);

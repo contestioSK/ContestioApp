@@ -49,7 +49,7 @@ const competitionRegistrationFormSchema = z.object({
   sectorPlaces: z.array(z.object({
     sectorName: z.string().min(1, "Názov sektoru je povinný"),
     places: z.array(z.string().min(1, "Názov miesta je povinný")).min(1, "Sektor musí mať aspoň jedno miesto")
-  })).min(1, "Súťaž musí mať aspoň jeden sektor"),
+  })),
   sideCompetitions: z.array(z.string()).optional().default([]),
   scoringType: z.enum(["total", "avg3", "avg5"]).default("total"),
   // Plan-related fields
@@ -105,6 +105,35 @@ export default function RegisterCompetition() {
   // Watch the selected plan to dynamically enable/disable features
   const selectedPlan = form.watch("selectedPlan");
   const hasSectors = form.watch("hasSectors");
+
+  // Reset form values when plan changes to ensure capability compliance
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === 'selectedPlan') {
+        const newPlan = value.selectedPlan as PlanTier;
+        
+        // Reset sectors if not allowed in new plan
+        if (!canUseFeature(newPlan, 'sectors')) {
+          form.setValue('hasSectors', false);
+          form.setValue('sectorPlaces', []);
+        }
+        
+        // Reset side competitions if not allowed in new plan
+        if (!canUseFeature(newPlan, 'sideCompetitions')) {
+          form.setValue('sideCompetitions', []);
+        }
+        
+        // Reset branding if not allowed in new plan
+        if (!canUseFeature(newPlan, 'branding')) {
+          form.setValue('requestedSubdomain', '');
+          form.setValue('brandingPrimaryColor', '');
+          form.setValue('brandingSecondaryColor', '');
+        }
+      }
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [form]);
 
   const handleLogoSelect = (file: File | null) => {
     setCompetitionLogo(file);
