@@ -11,6 +11,7 @@ import { ArrowLeft, Fish, Calendar, Weight, Clock, User, Camera, X } from "lucid
 import type { Catch, Team, Referee, Competition } from "@shared/schema";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
+import { getCountryFlag } from "@/lib/countries";
 
 interface CatchWithDetails extends Catch {
   team?: Team;
@@ -214,7 +215,9 @@ export default function CompetitionCatches() {
                         {catch_.team ? (
                           <Link href={`/team/${catch_.team.id}`} data-testid={`link-catch-team-${catch_.id}`}>
                             <div className="group flex items-center gap-2 p-2 rounded-lg hover:bg-accent/10 transition-all duration-200">
-                              <User className="w-4 h-4 text-accent" />
+                              <span className="text-xl" title={`Krajina: ${catch_.team.country || 'SK'}`}>
+                                {getCountryFlag(catch_.team.country || 'SK')}
+                              </span>
                               <span className="font-semibold group-hover:text-accent cursor-pointer transition-colors">
                                 {catch_.team.name}
                               </span>
