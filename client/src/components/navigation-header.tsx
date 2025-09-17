@@ -88,6 +88,15 @@ export default function NavigationHeader() {
             >
               O nás
             </Link>
+            <Link 
+              href="/contact" 
+              className={`font-medium transition-colors ${
+                location === '/contact' ? 'text-primary' : 'text-muted-foreground hover:text-primary'
+              }`}
+              data-testid="nav-contact"
+            >
+              Kontakt
+            </Link>
           </nav>
           
           {/* User Actions */}
