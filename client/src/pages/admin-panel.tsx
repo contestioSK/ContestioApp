@@ -777,6 +777,20 @@ export default function AdminPanel() {
                                   />
                                 </div>
 
+                                <FormField
+                                  control={form.control}
+                                  name="rules"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Pravidlá súťaže</FormLabel>
+                                      <FormControl>
+                                        <Textarea placeholder="Pravidlá a podmienky súťaže..." className="min-h-[80px]" {...field} data-testid="textarea-competition-rules" />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+
                                 <div className="grid grid-cols-2 gap-4">
                                   <FormField
                                     control={form.control}
@@ -793,12 +807,68 @@ export default function AdminPanel() {
                                   />
                                   <FormField
                                     control={form.control}
-                                    name="registrationFee"
+                                    name="minWeight"
                                     render={({ field }) => (
                                       <FormItem>
-                                        <FormLabel>Registračný poplatok (€)</FormLabel>
+                                        <FormLabel>Minimálna hmotnosť (g)</FormLabel>
                                         <FormControl>
-                                          <Input type="number" step="0.01" placeholder="25.00" {...field} data-testid="input-registration-fee" />
+                                          <Input type="number" placeholder="250" {...field} data-testid="input-min-weight" />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                </div>
+
+                                <FormField
+                                  control={form.control}
+                                  name="registrationFee"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Registračný poplatok (€)</FormLabel>
+                                      <FormControl>
+                                        <Input type="number" step="0.01" placeholder="25.00" {...field} data-testid="input-registration-fee" />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+
+                                <div className="grid grid-cols-3 gap-4">
+                                  <FormField
+                                    control={form.control}
+                                    name="firstPlacePrize"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>1. cena (€)</FormLabel>
+                                        <FormControl>
+                                          <Input type="number" step="0.01" placeholder="500.00" {...field} data-testid="input-first-prize" />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                  <FormField
+                                    control={form.control}
+                                    name="secondPlacePrize"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>2. cena (€)</FormLabel>
+                                        <FormControl>
+                                          <Input type="number" step="0.01" placeholder="300.00" {...field} data-testid="input-second-prize" />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                  <FormField
+                                    control={form.control}
+                                    name="thirdPlacePrize"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>3. cena (€)</FormLabel>
+                                        <FormControl>
+                                          <Input type="number" step="0.01" placeholder="200.00" {...field} data-testid="input-third-prize" />
                                         </FormControl>
                                         <FormMessage />
                                       </FormItem>
