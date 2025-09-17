@@ -42,6 +42,12 @@ export const COUNTRIES = [
 export type CountryCode = typeof COUNTRIES[number]['code'];
 
 export function getCountryFlag(countryCode: string): string {
+  // Return SVG flag URL instead of emoji
+  const code = countryCode.toLowerCase();
+  return `https://flagcdn.com/24x18/${code}.png`;
+}
+
+export function getCountryFlagEmoji(countryCode: string): string {
   const country = COUNTRIES.find(c => c.code === countryCode.toUpperCase());
   return country ? country.flag : "🏳️";
 }

@@ -215,9 +215,20 @@ export default function CompetitionCatches() {
                         {catch_.team ? (
                           <Link href={`/team/${catch_.team.id}`} data-testid={`link-catch-team-${catch_.id}`}>
                             <div className="group flex items-center gap-2 p-2 rounded-lg hover:bg-accent/10 transition-all duration-200">
-                              <span className="text-xl" title={`Krajina: ${catch_.team.country || 'SK'}`}>
-                                {getCountryFlag(catch_.team.country || 'SK')}
-                              </span>
+                              <img 
+                                src={getCountryFlag(catch_.team.country || 'SK')} 
+                                alt={`Vlajka ${catch_.team.country || 'SK'}`}
+                                className="w-6 h-4 object-cover rounded-sm border border-gray-200"
+                                title={`Krajina: ${catch_.team.country || 'SK'}`}
+                                onError={(e) => {
+                                  // Fallback to emoji if image fails to load
+                                  e.currentTarget.style.display = 'none';
+                                  const span = document.createElement('span');
+                                  span.textContent = '🏳️';
+                                  span.className = 'text-lg';
+                                  e.currentTarget.parentNode?.insertBefore(span, e.currentTarget);
+                                }}
+                              />
                               <span className="font-semibold group-hover:text-accent cursor-pointer transition-colors">
                                 {catch_.team.name}
                               </span>

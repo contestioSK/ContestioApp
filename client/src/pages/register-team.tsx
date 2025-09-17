@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Users, Plus, Trash2, Fish, Camera, User, X, Flag } from "lucide-react";
 import { Link } from "wouter";
-import { COUNTRIES, getCountryFlag, getCountryDisplay } from "@/lib/countries";
+import { COUNTRIES, getCountryFlag, getCountryDisplay, getCountryFlagEmoji } from "@/lib/countries";
 
 // Team registration form schema
 const teamRegistrationSchema = z.object({
@@ -293,7 +293,19 @@ export default function RegisterTeam() {
                           {COUNTRIES.map((country) => (
                             <SelectItem key={country.code} value={country.code}>
                               <div className="flex items-center gap-2">
-                                <span className="text-lg">{country.flag}</span>
+                                <img 
+                                  src={`https://flagcdn.com/16x12/${country.code.toLowerCase()}.png`} 
+                                  alt={`${country.name} flag`}
+                                  className="w-4 h-3 object-cover rounded-sm border border-gray-200"
+                                  onError={(e) => {
+                                    // Fallback to emoji
+                                    e.currentTarget.style.display = 'none';
+                                    const span = document.createElement('span');
+                                    span.textContent = country.flag;
+                                    span.className = 'text-sm';
+                                    e.currentTarget.parentNode?.insertBefore(span, e.currentTarget);
+                                  }}
+                                />
                                 <span>{country.name}</span>
                               </div>
                             </SelectItem>
