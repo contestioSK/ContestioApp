@@ -14,7 +14,6 @@ export default function Landing() {
   const navItems = [
     { href: "/register-competition", label: "Zaregistrovať súťaž", icon: Trophy },
     { href: "/register-team", label: "Zaregistrovať tím", icon: Users },
-    { href: "/about-us", label: "O nás", icon: Info },
   ];
 
   // Sample contests data to showcase different categories
@@ -92,6 +91,17 @@ export default function Landing() {
                 <span className="w-2 h-2 bg-secondary rounded-full animate-pulse"></span>
                 <span className="text-sm font-medium text-secondary">Súťaže naživo</span>
               </div>
+              <Link href="/about-us">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="hidden md:flex items-center space-x-2"
+                  data-testid="button-about-us"
+                >
+                  <Info className="w-4 h-4" />
+                  <span>O nás</span>
+                </Button>
+              </Link>
             </div>
             
             {/* Desktop Navigation */}
@@ -167,6 +177,17 @@ export default function Landing() {
                     </Link>
                   );
                 })}
+                
+                <Link href="/about-us">
+                  <div 
+                    className="flex items-center space-x-3 px-3 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 cursor-pointer transition-all duration-200"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    data-testid="mobile-nav-about-us"
+                  >
+                    <Info className="w-5 h-5" />
+                    <span>O nás</span>
+                  </div>
+                </Link>
                 
                 <div className="border-t border-border my-2"></div>
                 
