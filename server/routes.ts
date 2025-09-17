@@ -375,6 +375,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   }, async (req: any, res) => {
     try {
+      // Check if competition is in live status before allowing catch submission
+      const competition = await storage.getCompetition(req.body.competitionId);
+      if (!competition) {
+        return res.status(404).json({ message: "Súťaž nebola nájdená" });
+      }
+      
+      if (competition.status !== 'live') {
+        return res.status(400).json({ 
+          message: `Úlovky sa dajú pridávať len do prebehajúcich súťaží. Súťaž "${competition.name}" je v štádiu: ${competition.status}` 
+        });
+      }
+
       // DEMO MODE - Skip authentication for demo
       // const userId = req.user.claims.sub;
       // const user = await storage.getUser(userId);
