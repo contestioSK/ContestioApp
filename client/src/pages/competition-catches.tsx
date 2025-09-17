@@ -165,13 +165,13 @@ export default function CompetitionCatches() {
               <Table data-testid="table-catches">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[100px]">Hmotnosť</TableHead>
+                    <TableHead className="w-[140px]">Hmotnosť</TableHead>
                     <TableHead>Druh</TableHead>
                     <TableHead>Tím</TableHead>
                     <TableHead>Sektor</TableHead>
                     <TableHead>Čas úlovku</TableHead>
                     <TableHead>Fotografia</TableHead>
-                    <TableHead>Stav</TableHead>
+                    <TableHead className="w-[120px]">Stav</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
