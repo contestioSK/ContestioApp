@@ -209,6 +209,7 @@ export class DatabaseStorage implements IStorage {
       thirdPlacePrize: registration.thirdPlacePrize,
       registrationFee: registration.registrationFee,
       maxTeams: registration.maxTeams,
+      imageUrl: registration.imageUrl, // Transfer logo from registration to competition
       sectorPlaces: registration.sectorPlaces || undefined,
       sideCompetitions: registration.sideCompetitions || [],
       hasSectors: registration.hasSectors || false,
