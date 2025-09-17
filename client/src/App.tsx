@@ -50,11 +50,7 @@ function Router() {
           <AdminPanel />
         </ProtectedRoute>
       </Route>
-      <Route path="/referee-interface">
-        <ProtectedRoute roles={["referee", "organizer"]}>
-          <RefereeInterface />
-        </ProtectedRoute>
-      </Route>
+      <Route path="/referee-interface" component={RefereeInterface} />
       {!isLoading && <Route component={NotFound} />}
     </Switch>
   );

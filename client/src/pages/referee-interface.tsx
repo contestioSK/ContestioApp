@@ -34,20 +34,21 @@ export default function RefereeInterface() {
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
   const [selectedCompetition, setSelectedCompetition] = useState<string>("");
 
+  // DEMO MODE - Temporarily disabled for demonstration
   // Redirect if not authenticated or not referee
-  useEffect(() => {
-    if (!isLoading && (!isAuthenticated || user?.role !== 'referee')) {
-      toast({
-        title: "Neautorizovaný",
-        description: "Ste odhlásený. Prihlasujem znovu...",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = "/api/login";
-      }, 500);
-      return;
-    }
-  }, [isAuthenticated, isLoading, user, toast]);
+  // useEffect(() => {
+  //   if (!isLoading && (!isAuthenticated || user?.role !== 'referee')) {
+  //     toast({
+  //       title: "Neautorizovaný",
+  //       description: "Ste odhlásený. Prihlasujem znovu...",
+  //       variant: "destructive",
+  //     });
+  //     setTimeout(() => {
+  //       window.location.href = "/api/login";
+  //     }, 500);
+  //     return;
+  //   }
+  // }, [isAuthenticated, isLoading, user, toast]);
 
   const form = useForm<CatchSubmissionForm>({
     resolver: zodResolver(catchSubmissionSchema),
@@ -61,24 +62,31 @@ export default function RefereeInterface() {
 
   const { data: competitions, isLoading: competitionsLoading } = useQuery<Competition[]>({
     queryKey: ["/api/competitions"],
-    enabled: isAuthenticated && user?.role === 'referee',
+    enabled: true, // DEMO MODE - Always enabled for demonstration
   });
 
   const { data: teams } = useQuery<Team[]>({
     queryKey: ["/api/competitions", selectedCompetition, "teams"],
-    enabled: isAuthenticated && !!selectedCompetition,
+    enabled: !!selectedCompetition, // DEMO MODE - Enabled when competition selected
   });
 
   const { data: recentCatches } = useQuery<(Catch & { team: Team })[]>({
     queryKey: ["/api/competitions", selectedCompetition, "catches"],
-    enabled: isAuthenticated && !!selectedCompetition,
+    enabled: !!selectedCompetition, // DEMO MODE - Enabled when competition selected
   });
 
+  // DEMO MODE - Mock referee assignment for demonstration
+  const refereeAssignment = {
+    assignedSector: 'A',
+    userId: 'demo_referee_001',
+    competitionId: selectedCompetition
+  };
+  
   // Get referee assignment for the current user and selected competition
-  const { data: refereeAssignment } = useQuery<Referee>({
-    queryKey: ["/api/competitions", selectedCompetition, "referees", user?.id],
-    enabled: isAuthenticated && !!selectedCompetition && user?.role === 'referee',
-  });
+  // const { data: refereeAssignment } = useQuery<Referee>({
+  //   queryKey: ["/api/competitions", selectedCompetition, "referees", user?.id],
+  //   enabled: isAuthenticated && !!selectedCompetition && user?.role === 'referee',
+  // });
 
   const submitCatchMutation = useMutation({
     mutationFn: async (data: CatchSubmissionForm & { photo?: File }) => {
@@ -172,7 +180,7 @@ export default function RefereeInterface() {
               <div>
                 <CardTitle className="font-semibold">Rozhranie rozhodcu</CardTitle>
                 <p className="text-sm text-primary-foreground/80">
-                  {user?.firstName} {user?.lastName} - {
+                  Peter Rozhodca - {
                     refereeAssignment?.assignedSector && selectedCompetition ? (
                       <Link href={`/competition/${selectedCompetition}/sector/${refereeAssignment.assignedSector}`} data-testid="link-referee-sector">
                         <span className="underline hover:text-primary-foreground cursor-pointer transition-colors">
