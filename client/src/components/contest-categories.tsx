@@ -233,39 +233,6 @@ export function ContestCategories({ contests }: ContestCategoriesProps) {
           ))}
         </div>
         
-        <div className="text-center mt-16">
-          <div className="bg-white/80 dark:bg-card/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-border/50">
-            <div className="flex items-center justify-center space-x-4 mb-4">
-              <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-              <p className="text-lg font-medium text-foreground">
-                Pripravení na konkurenciu?
-              </p>
-              <div className="w-2 h-2 bg-secondary rounded-full animate-pulse animation-delay-150"></div>
-            </div>
-            <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-              Kliknite na ktorúkoľvek kategóriu a preskúmajte všetky dostupné súťaže v danej kategórii. 
-              Sledujte live výsledky, registrujte tímy a získajte ceny!
-            </p>
-            <div className="flex flex-wrap justify-center items-center gap-4 text-sm text-muted-foreground">
-              <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                <span>Otvorené registrácie</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                <span>Prebiehajúce súťaže</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                <span>Nadchádzajúce podujatia</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 rounded-full bg-amber-500"></div>
-                <span>Ukončené turnaje</span>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
   );
