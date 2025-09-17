@@ -103,10 +103,6 @@ export default function Landing() {
                   <h1 className="text-xl font-bold text-primary">Contestio</h1>
                 </div>
               </Link>
-              <div className="hidden md:flex items-center space-x-1 bg-muted/20 rounded-full px-3 py-1">
-                <span className="w-2 h-2 bg-secondary rounded-full animate-pulse"></span>
-                <span className="text-sm font-medium text-secondary">Súťaže naživo</span>
-              </div>
               <div className="hidden md:flex items-center space-x-8">
                 <Link href="/about-us">
                   <span 
