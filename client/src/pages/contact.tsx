@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Mail, Phone, MapPin, Clock, Send } from "lucide-react";
+import { SiFacebook, SiInstagram, SiLinkedin } from "react-icons/si";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -134,6 +135,43 @@ export default function Contact() {
                           <p>Sobota - Nedeľa: Zatvorené</p>
                         </div>
                       </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="p-6">
+                  <CardContent className="p-0">
+                    <div className="space-y-4">
+                      <h3 className="font-semibold text-foreground">Sociálne siete</h3>
+                      <div className="flex items-center space-x-4">
+                        <a
+                          href="#"
+                          className="w-10 h-10 bg-[#1877F2]/10 hover:bg-[#1877F2]/20 rounded-full flex items-center justify-center transition-colors group"
+                          data-testid="social-facebook"
+                          aria-label="Facebook"
+                        >
+                          <SiFacebook className="w-5 h-5 text-[#1877F2] group-hover:scale-110 transition-transform" />
+                        </a>
+                        <a
+                          href="#"
+                          className="w-10 h-10 bg-[#E4405F]/10 hover:bg-[#E4405F]/20 rounded-full flex items-center justify-center transition-colors group"
+                          data-testid="social-instagram"
+                          aria-label="Instagram"
+                        >
+                          <SiInstagram className="w-5 h-5 text-[#E4405F] group-hover:scale-110 transition-transform" />
+                        </a>
+                        <a
+                          href="#"
+                          className="w-10 h-10 bg-[#0A66C2]/10 hover:bg-[#0A66C2]/20 rounded-full flex items-center justify-center transition-colors group"
+                          data-testid="social-linkedin"
+                          aria-label="LinkedIn"
+                        >
+                          <SiLinkedin className="w-5 h-5 text-[#0A66C2] group-hover:scale-110 transition-transform" />
+                        </a>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Sledujte nás na sociálnych sieťach pre najnovšie informácie a aktuality.
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
