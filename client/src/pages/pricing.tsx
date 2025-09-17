@@ -20,6 +20,7 @@ export default function Pricing() {
       cta: "Vybrať balík",
       features: [
         "Registrácia tímov",
+        "Maximálne 10 tímov",
         "Zápis úlovkov rozhodcami",
         "Live tabuľka výsledkov",
         "Základné štatistiky",
@@ -39,6 +40,7 @@ export default function Pricing() {
       cta: "Vybrať balík",
       features: [
         "Všetko z Basic +",
+        "Neobmedzený počet tímov",
         "Doplnkové súťaže (Prvá ryba nad 20/25/30 kg, Najväčšia ryba a pod.)",
         "Sektory + ocenenie pre top 3 v sektore",
         "Profil tímov + kompletný zoznam úlovkov",
