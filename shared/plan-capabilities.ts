@@ -19,18 +19,21 @@ export type PlanFeature =
 // Plan capabilities configuration
 export const PLAN_CAPABILITIES: Record<PlanTier, {
   maxReferees: number | null; // null = unlimited
+  maxTeams: number | null; // null = unlimited
   features: Set<PlanFeature>;
   price: number | null; // null = custom pricing
   currency: string;
 }> = {
   basic: {
     maxReferees: 2,
+    maxTeams: 10, // Limited to 10 teams
     features: new Set<PlanFeature>([]), // Only core features
     price: 49,
     currency: '€'
   },
   pro: {
     maxReferees: 5,
+    maxTeams: null, // Unlimited teams
     features: new Set<PlanFeature>([
       'sectors',
       'sideCompetitions', 
@@ -42,6 +45,7 @@ export const PLAN_CAPABILITIES: Record<PlanTier, {
   },
   premium: {
     maxReferees: null, // unlimited
+    maxTeams: null, // unlimited
     features: new Set<PlanFeature>([
       'sectors',
       'sideCompetitions',
@@ -57,6 +61,7 @@ export const PLAN_CAPABILITIES: Record<PlanTier, {
   },
   enterprise: {
     maxReferees: null, // unlimited
+    maxTeams: null, // unlimited
     features: new Set<PlanFeature>([
       'sectors',
       'sideCompetitions',
@@ -84,6 +89,10 @@ export function canUseFeature(planTier: PlanTier, feature: PlanFeature): boolean
 
 export function getMaxReferees(planTier: PlanTier): number | null {
   return PLAN_CAPABILITIES[planTier].maxReferees;
+}
+
+export function getMaxTeams(planTier: PlanTier): number | null {
+  return PLAN_CAPABILITIES[planTier].maxTeams;
 }
 
 export function getPlanPrice(planTier: PlanTier): { price: number | null; currency: string } {
@@ -175,6 +184,7 @@ export function validatePlanConstraints(
   planTier: PlanTier,
   data: {
     refereeCount?: number;
+    teamCount?: number;
     hasSectors?: boolean;
     sideCompetitions?: string[];
     hasSponsors?: boolean;
@@ -189,6 +199,13 @@ export function validatePlanConstraints(
   if (data.refereeCount && capabilities.maxReferees !== null) {
     if (data.refereeCount > capabilities.maxReferees) {
       errors.push(`Balík ${planTier} povoľuje maximálne ${capabilities.maxReferees} rozhodcov`);
+    }
+  }
+
+  // Check team limit
+  if (data.teamCount && capabilities.maxTeams !== null) {
+    if (data.teamCount > capabilities.maxTeams) {
+      errors.push(`Balík ${planTier} povoľuje maximálne ${capabilities.maxTeams} tímov`);
     }
   }
 
