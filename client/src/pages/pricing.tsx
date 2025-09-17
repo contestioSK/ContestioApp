@@ -20,11 +20,11 @@ export default function Pricing() {
       cta: "Vybrať balík",
       features: [
         "Registrácia tímov",
-        "🔢 Maximálne 10 tímov",
+        "👥 **Maximálne 10 tímov**",
         "Zápis úlovkov rozhodcami",
         "Live tabuľka výsledkov",
         "Základné štatistiky",
-        "👨‍⚖️ Až 2 rozhodcov"
+        "👨‍⚖️ **Až 2 rozhodcov**"
       ]
     },
     {
@@ -40,13 +40,13 @@ export default function Pricing() {
       cta: "Vybrať balík",
       features: [
         "Všetko z Basic +",
-        "🔢 Neobmedzený počet tímov",
+        "👥 **Neobmedzený počet tímov**",
         "Doplnkové súťaže (Prvá ryba nad 20/25/30 kg, Najväčšia ryba a pod.)",
         "Sektory + ocenenie pre top 3 v sektore",
         "Profil tímov + kompletný zoznam úlovkov",
         "Sponzori (logá, ceny)",
         "Export výsledkov (PDF, Excel)",
-        "👨‍⚖️ Až 5 rozhodcov"
+        "👨‍⚖️ **Až 5 rozhodcov**"
       ]
     },
     {
@@ -62,10 +62,10 @@ export default function Pricing() {
       cta: "Vybrať balík",
       features: [
         "Všetko z Pro +",
-        "🔢 Neobmedzený počet tímov",
+        "👥 **Neobmedzený počet tímov**",
         "Branding (logo, farby, subdoména contestio.sk/nazovpreteku)",
         "Pokročilé štatistiky a grafy",
-        "👨‍⚖️ Neobmedzený počet rozhodcov",
+        "👨‍⚖️ **Neobmedzený počet rozhodcov**",
         "Prístup pre médiá a live výsledky",
         "Prioritná podpora počas preteku"
       ]
@@ -83,8 +83,8 @@ export default function Pricing() {
       cta: "Kontaktujte nás",
       features: [
         "Všetko z Premium +",
-        "🔢 Neobmedzený počet tímov",
-        "👨‍⚖️ Neobmedzený počet rozhodcov",
+        "👥 **Neobmedzený počet tímov**",
+        "👨‍⚖️ **Neobmedzený počet rozhodcov**",
         "Interaktívna mapa sektorov s umiestnením tímov",
         "Viacero súťaží pod jednou organizáciou",
         "White-label riešenie (aplikácia pod vlastnou značkou)",
