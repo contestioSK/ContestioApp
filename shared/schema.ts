@@ -337,6 +337,24 @@ export const insertCatchSchema = createInsertSchema(catches).omit({
   submittedAt: true,
 });
 
+// Function to create catch validation schema with competition-specific minimum weight
+export function createCatchValidationSchema(competition: Competition) {
+  const minWeight = competition.minWeight ? parseFloat(competition.minWeight) : 2;
+  
+  return insertCatchSchema.extend({
+    weight: z.string().transform((val) => {
+      const weight = parseFloat(val);
+      if (isNaN(weight)) {
+        throw new Error("Neplatná váha");
+      }
+      if (weight < minWeight) {
+        throw new Error(`Váha musí byť najmenej ${minWeight} kg`);
+      }
+      return weight.toString();
+    }),
+  });
+}
+
 export const insertSponsorSchema = createInsertSchema(sponsors).omit({
   id: true,
   createdAt: true,

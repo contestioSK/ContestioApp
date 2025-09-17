@@ -12,6 +12,7 @@ import {
   insertCatchSchema,
   insertSponsorSchema,
   createTeamStatusValidationSchema,
+  createCatchValidationSchema,
 } from "@shared/schema";
 import { canUseFeature } from "@shared/plan-capabilities";
 import multer from "multer";
@@ -124,6 +125,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const competitionData = insertCompetitionSchema.parse({
         ...req.body,
         organizerId: userId,
+        minWeight: req.body.minWeight ?? "2.00",
       });
       
       const competition = await storage.createCompetition(competitionData);
@@ -412,11 +414,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Use server-side referee assignment for sector (security measure)
-      const catchData = insertCatchSchema.parse({
+      // Dynamic validation based on competition's minimum weight
+      const catchValidationSchema = createCatchValidationSchema(competition);
+      const catchData = catchValidationSchema.parse({
         ...req.body,
         refereeId: referee.id,
         photoUrl,
-        weight: (parseFloat(req.body.weight) / 1000).toString(), // Convert grams to kg and keep as string
+        weight: req.body.weight, // Frontend already sends weight in kg
         sector: referee.assignedSector, // Always use referee's assigned sector
       });
       
@@ -581,6 +585,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         startDate: new Date(req.body.startDate),
         endDate: new Date(req.body.endDate),
         maxTeams: req.body.maxTeams ? parseInt(req.body.maxTeams) : null,
+        minWeight: req.body.minWeight ?? "2.00",
         hasSectors: req.body.hasSectors === 'true',
         sectorPlaces,
         sideCompetitions,
