@@ -115,15 +115,15 @@ export default function CatchTimeline({ catches, isLoading, competitionId }: Cat
             {sortedCatches.map((catch_) => (
               <div 
                 key={catch_.id} 
-                className="p-6 border-b border-border hover:bg-muted/20 transition-colors"
+                className="p-4 border-b border-border hover:bg-muted/20 transition-colors"
                 data-testid={`catch-timeline-item-${catch_.id}`}
               >
-                <div className="flex space-x-4">
+                <div className="flex space-x-3">
                   {/* Fish photo placeholder - would show actual photo if available */}
-                  <div className="w-16 h-16 rounded-lg bg-muted/20 flex items-center justify-center flex-shrink-0">
+                  <div className="w-12 h-12 rounded-lg bg-muted/20 flex items-center justify-center flex-shrink-0">
                     {catch_.photoUrl ? (
                       <div 
-                        className="w-16 h-16 rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all transform hover:scale-105"
+                        className="w-12 h-12 rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all transform hover:scale-105"
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
@@ -148,32 +148,33 @@ export default function CatchTimeline({ catches, isLoading, competitionId }: Cat
                         />
                       </div>
                     ) : (
-                      <div className="text-xs text-muted-foreground text-center">
+                      <div className="text-xs text-muted-foreground text-center leading-tight">
                         Žiadna<br />fotka
                       </div>
                     )}
                   </div>
                   
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="font-medium text-foreground text-base" data-testid={`catch-team-${catch_.id}`}>
+                    {/* First row: Team name, time, and weight */}
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="font-medium text-foreground text-sm" data-testid={`catch-team-${catch_.id}`}>
                         {catch_.team?.name || 'Neznámy tím'}
                       </div>
-                      <div className="text-sm text-muted-foreground" data-testid={`catch-time-${catch_.id}`}>
-                        {formatTimeAgo(catch_.submittedAt!)}
+                      <div className="font-mono font-bold text-accent text-lg" data-testid={`catch-weight-${catch_.id}`}>
+                        {parseFloat(catch_.weight).toFixed(2)} kg
                       </div>
                     </div>
                     
-                    <div className="flex items-center space-x-3 mb-3">
-                      {getSectorBadge(catch_.sector)}
-                      <span className="text-sm text-muted-foreground" data-testid={`catch-fish-type-${catch_.id}`}>
-                        {getFishTypeDisplay(catch_.fishType)}
-                      </span>
-                    </div>
-                    
+                    {/* Second row: Sector, fish type, and time */}
                     <div className="flex items-center justify-between">
-                      <div className="font-mono font-bold text-accent text-xl" data-testid={`catch-weight-${catch_.id}`}>
-                        {parseFloat(catch_.weight).toFixed(2)} kg
+                      <div className="flex items-center space-x-2">
+                        {getSectorBadge(catch_.sector)}
+                        <span className="text-xs text-muted-foreground" data-testid={`catch-fish-type-${catch_.id}`}>
+                          {getFishTypeDisplay(catch_.fishType)}
+                        </span>
+                      </div>
+                      <div className="text-xs text-muted-foreground" data-testid={`catch-time-${catch_.id}`}>
+                        {formatTimeAgo(catch_.submittedAt!)}
                       </div>
                     </div>
                   </div>
