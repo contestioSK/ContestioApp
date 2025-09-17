@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { useParams, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Users, Trophy, Fish, MapPin } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ArrowLeft, Users, Trophy, Fish, MapPin, Camera, X } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Team, TeamMember, Catch } from "@shared/schema";
 import { formatSectorPlace, getSectorLetter } from "@/lib/utils";
@@ -15,6 +17,7 @@ type TeamWithDetails = Team & {
 
 export default function TeamDetail() {
   const { teamId } = useParams();
+  const [selectedPhoto, setSelectedPhoto] = useState<{ url: string; teamName: string; weight: string; fishType: string } | null>(null);
 
   const { data: teamData, isLoading } = useQuery<TeamWithDetails>({
     queryKey: ["/api/teams", teamId],
@@ -381,11 +384,33 @@ export default function TeamDetail() {
                             </td>
                             <td className="p-3 text-center">
                               {catch_.photoUrl ? (
-                                <Button variant="ghost" size="sm" data-testid={`button-view-photo-${index}`}>
-                                  📸
-                                </Button>
+                                <div className="flex items-center justify-center">
+                                  <div
+                                    className="w-8 h-8 rounded overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all transform hover:scale-110"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      setSelectedPhoto({
+                                        url: catch_.photoUrl!,
+                                        teamName: teamData.name,
+                                        weight: `${parseFloat(catch_.weight).toFixed(2)} kg`,
+                                        fishType: getFishTypeLabel(catch_.fishType)
+                                      });
+                                    }}
+                                    data-testid={`img-catch-photo-${index}`}
+                                  >
+                                    <img 
+                                      src={catch_.photoUrl} 
+                                      alt="Úlovok" 
+                                      className="w-full h-full object-cover pointer-events-none"
+                                    />
+                                  </div>
+                                </div>
                               ) : (
-                                <span className="text-muted-foreground text-sm">—</span>
+                                <div className="flex items-center justify-center">
+                                  <Camera className="w-4 h-4 text-muted-foreground" />
+                                  <span className="text-xs text-muted-foreground ml-1">Bez fotky</span>
+                                </div>
                               )}
                             </td>
                           </tr>
@@ -399,6 +424,45 @@ export default function TeamDetail() {
           </div>
         </div>
       </div>
+
+      {/* Photo Modal */}
+      <Dialog open={!!selectedPhoto} onOpenChange={() => setSelectedPhoto(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] p-0" aria-describedby="catch-photo-description">
+          <div className="relative">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute top-4 right-4 z-50 bg-black/20 text-white hover:bg-black/40"
+              onClick={() => setSelectedPhoto(null)}
+            >
+              <X className="w-4 h-4" />
+            </Button>
+            
+            {selectedPhoto && (
+              <div className="flex flex-col">
+                <div className="relative">
+                  <img 
+                    src={selectedPhoto.url}
+                    alt="Zväčšená fotka úlovku"
+                    className="w-full h-auto max-h-[70vh] object-contain"
+                  />
+                </div>
+                
+                <div className="p-6 bg-background border-t">
+                  <DialogHeader>
+                    <DialogTitle className="text-xl font-bold text-foreground">
+                      {selectedPhoto.teamName}
+                    </DialogTitle>
+                    <p id="catch-photo-description" className="text-sm text-muted-foreground mb-2">
+                      Váha: {selectedPhoto.weight} • Typ: {selectedPhoto.fishType}
+                    </p>
+                  </DialogHeader>
+                </div>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
