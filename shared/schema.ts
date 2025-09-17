@@ -59,6 +59,7 @@ export const competitions = pgTable("competitions", {
   sideCompetitions: jsonb("side_competitions").$type<string[]>().default([]), // Array of side competition names
   hasSectors: boolean("has_sectors").notNull().default(false), // Whether competition is divided into sectors
   scoringType: varchar("scoring_type").notNull().default("total"), // "total", "avg3", "avg5"
+  minWeight: decimal("min_weight", { precision: 10, scale: 2 }).notNull().default("2.00"), // minimum weight for scoring in kg
   
   // Plan-related fields  
   planTier: varchar("plan_tier").notNull().default("basic"), // "basic", "pro", "premium", "enterprise"
@@ -89,6 +90,7 @@ export const competitionRegistrations = pgTable("competition_registrations", {
   sideCompetitions: jsonb("side_competitions").$type<string[]>().default([]), // Array of side competition names
   hasSectors: boolean("has_sectors").notNull().default(false), // Whether competition is divided into sectors
   scoringType: varchar("scoring_type").notNull().default("total"), // "total", "avg3", "avg5"
+  minWeight: decimal("min_weight", { precision: 10, scale: 2 }).notNull().default("2.00"), // minimum weight for scoring in kg
   
   // Contact information
   contactName: varchar("contact_name", { length: 255 }).notNull(),
@@ -267,6 +269,7 @@ export const insertCompetitionSchema = createInsertSchema(competitions).omit({
     sectorName: z.string().min(1, "Názov sektoru je povinný"),
     places: z.array(z.string().min(1, "Názov miesta je povinný")).min(1, "Sektor musí mať aspoň jedno miesto")
   })).optional(),
+  minWeight: z.number().min(2, "Minimálna hmotnosť musí byť aspoň 2 kg").max(15, "Maximálna hmotnosť môže byť 15 kg").default(2),
 });
 
 export const insertCompetitionRegistrationSchema = createInsertSchema(competitionRegistrations).omit({
@@ -286,6 +289,7 @@ export const insertCompetitionRegistrationSchema = createInsertSchema(competitio
     sectorName: z.string().min(1, "Názov sektoru je povinný"),
     places: z.array(z.string().min(1, "Názov miesta je povinný")).min(1, "Sektor musí mať aspoň jedno miesto")
   })).optional(),
+  minWeight: z.number().min(2, "Minimálna hmotnosť musí byť aspoň 2 kg").max(15, "Maximálna hmotnosť môže byť 15 kg").default(2),
   selectedPlan: z.enum(["basic", "pro", "premium", "enterprise"]).default("basic"),
   requestedSubdomain: z.string().min(3, "Subdoména musí mať aspoň 3 znaky").max(20, "Subdoména môže mať maximálne 20 znakov").regex(/^[a-z0-9-]+$/, "Subdoména môže obsahovať len malé písmená, čísla a pomlčky").optional(),
   branding: z.object({

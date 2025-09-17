@@ -24,6 +24,7 @@ import { Plus, Trash2, ArrowLeft, Award, MapPin, Trophy, Camera, X, Crown, Star,
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getSideCompetitionLabel } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { z } from "zod";
@@ -52,6 +53,7 @@ const competitionRegistrationFormSchema = z.object({
   })),
   sideCompetitions: z.array(z.string()).optional().default([]),
   scoringType: z.enum(["total", "avg3", "avg5"]).default("total"),
+  minWeight: z.number().min(2, "Minimálna hmotnosť musí byť aspoň 2 kg").max(15, "Maximálna hmotnosť môže byť 15 kg").default(2),
   // Plan-related fields
   selectedPlan: z.enum(["basic", "pro", "premium", "enterprise"]).default("basic"),
   requestedSubdomain: z.string().min(3, "Subdoména musí mať aspoň 3 znaky").max(20, "Subdoména môže mať maximálne 20 znakov").regex(/^[a-z0-9-]+$/, "Subdoména môže obsahovať len malé písmená, čísla a pomlčky").optional(),
@@ -95,6 +97,7 @@ export default function RegisterCompetition() {
       ],
       sideCompetitions: [],
       scoringType: "total",
+      minWeight: 2,
       selectedPlan: (preselectedPlan && ['basic', 'pro', 'premium', 'enterprise'].includes(preselectedPlan)) ? preselectedPlan : "basic",
       requestedSubdomain: "",
       brandingPrimaryColor: "",
@@ -729,6 +732,45 @@ export default function RegisterCompetition() {
                               </div>
                             </RadioGroup>
                           </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
+                  {/* Minimum Weight */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <Trophy className="w-5 h-5 text-muted-foreground" />
+                      <h4 className="text-sm font-medium text-foreground">Minimálna hmotnošť bodovanej ryby</h4>
+                    </div>
+                    
+                    <FormField
+                      control={form.control}
+                      name="minWeight"
+                      render={({ field }) => (
+                        <FormItem className="max-w-xs">
+                          <FormLabel>Minimálna váha (kg) *</FormLabel>
+                          <Select value={field.value.toString()} onValueChange={(value) => field.onChange(parseInt(value))}>
+                            <FormControl>
+                              <SelectTrigger data-testid="select-min-weight">
+                                <SelectValue placeholder="Vyberte minimálnu hmotnošť" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {Array.from({ length: 14 }, (_, i) => {
+                                const weight = i + 2; // 2-15 kg
+                                return (
+                                  <SelectItem key={weight} value={weight.toString()} data-testid={`option-min-weight-${weight}`}>
+                                    {weight} kg
+                                  </SelectItem>
+                                );
+                              })}
+                            </SelectContent>
+                          </Select>
+                          <FormDescription>
+                            Úlovky pod touto hmotnost’ou nebudú započítané do výsledkov
+                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
