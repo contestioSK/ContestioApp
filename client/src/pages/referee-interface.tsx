@@ -53,8 +53,10 @@ export default function RefereeInterface() {
   //   }
   // }, [isAuthenticated, isLoading, user, toast]);
 
+  const [currentSchema, setCurrentSchema] = useState(defaultCatchSubmissionSchema);
+  
   const form = useForm<CatchSubmissionForm>({
-    resolver: zodResolver(defaultCatchSubmissionSchema),
+    resolver: zodResolver(currentSchema),
     defaultValues: {
       weight: 0,
       fishType: "scaly",
@@ -76,15 +78,17 @@ export default function RefereeInterface() {
   // Update form validation when competition changes
   useEffect(() => {
     if (selectedCompetitionDetails?.minWeight) {
-      const newSchema = createCatchSubmissionSchema(parseFloat(selectedCompetitionDetails.minWeight));
+      const minWeight = parseFloat(selectedCompetitionDetails.minWeight);
+      const newSchema = createCatchSubmissionSchema(minWeight);
+      setCurrentSchema(newSchema);
+      
+      // Reset form with new resolver
       form.reset({
         weight: 0,
         fishType: "scaly",
         competitionId: selectedCompetition,
         teamId: "",
       });
-      // Note: We need to create a new form resolver with updated schema
-      // For now, we'll show the minimum weight in the label and placeholder
     }
   }, [selectedCompetitionDetails, selectedCompetition, form]);
 
@@ -116,7 +120,7 @@ export default function RefereeInterface() {
       const formData = new FormData();
       formData.append('teamId', data.teamId);
       formData.append('competitionId', data.competitionId);
-      formData.append('weight', (data.weight / 1000).toString()); // Convert grams to kg
+      formData.append('weight', data.weight.toString()); // Weight already in kg from form validation
       formData.append('fishType', data.fishType);
       // Note: sector is now set server-side from referee assignment for security
       
@@ -261,7 +265,7 @@ export default function RefereeInterface() {
                       <p className="text-sm text-muted-foreground">Zadajte detaily záberu a nahrajte fotku</p>
                     </div>
                     
-                    <Form {...form}>
+                    <Form {...form} key={`form-${selectedCompetition}-${selectedCompetitionDetails?.minWeight || 2}`}>
                       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                         
                         {/* Team Selection */}
@@ -296,16 +300,16 @@ export default function RefereeInterface() {
                           name="weight"
                           render={({ field }) => {
                             const minWeightKg = selectedCompetitionDetails?.minWeight ? parseFloat(selectedCompetitionDetails.minWeight) : 2;
-                            const minWeightGrams = minWeightKg * 1000;
-                            const placeholderWeight = Math.max(minWeightGrams + 500, 2500); // Slight buffer above minimum
+                            const placeholderWeight = minWeightKg + 0.5; // Slight buffer above minimum
                             
                             return (
                             <FormItem>
-                              <FormLabel>Váha (gramy) - min. {minWeightKg} kg</FormLabel>
+                              <FormLabel>Váha (kg) - min. {minWeightKg} kg</FormLabel>
                               <FormControl>
                                 <div className="relative">
                                   <Input 
                                     type="number" 
+                                    step="0.1"
                                     placeholder={placeholderWeight.toString()} 
                                     className="font-mono pr-12"
                                     {...field}
@@ -313,7 +317,7 @@ export default function RefereeInterface() {
                                     data-testid="input-weight"
                                   />
                                   <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-sm">
-                                    g
+                                    kg
                                   </span>
                                 </div>
                               </FormControl>
