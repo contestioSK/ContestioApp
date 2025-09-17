@@ -105,7 +105,7 @@ export function ContestCategories({ contests }: ContestCategoriesProps) {
   ];
 
   return (
-    <section className="py-20 bg-gradient-to-br from-slate-50 via-blue-50/50 to-green-50/50 dark:from-slate-900 dark:via-slate-800/50 dark:to-slate-900 relative overflow-hidden">
+    <section className="py-12 bg-gradient-to-br from-slate-50 via-blue-50/50 to-green-50/50 dark:from-slate-900 dark:via-slate-800/50 dark:to-slate-900 relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute inset-0 opacity-30">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-secondary/3 to-primary/5"></div>
@@ -114,17 +114,13 @@ export function ContestCategories({ contests }: ContestCategoriesProps) {
       </div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-primary/10 to-secondary/10 mb-6">
-            <Trophy className="w-10 h-10 text-primary" />
-          </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6 bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-3 bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent">
             Kategórie súťaží
           </h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Vyberte si kategóriu súťaží, ktorá vás zaujíma a preskúmajte dostupné turnaje v reálnom čase
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Vyberte si kategóriu súťaží, ktorá vás zaujíma a preskúmajte dostupné turnaje
           </p>
-          <div className="w-32 h-1 bg-gradient-to-r from-primary to-secondary mx-auto mt-8 rounded-full"></div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
