@@ -1,8 +1,11 @@
+import { useState } from "react";
 import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Clock } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Clock, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import type { Catch, Team, Referee } from "@shared/schema";
 
 interface CatchTimelineProps {
@@ -12,6 +15,8 @@ interface CatchTimelineProps {
 }
 
 export default function CatchTimeline({ catches, isLoading, competitionId }: CatchTimelineProps) {
+  const [selectedPhoto, setSelectedPhoto] = useState<{ url: string; teamName: string; weight: string; fishType: string } | null>(null);
+
   const formatTimeAgo = (date: string | Date | null) => {
     if (!date) return 'Neznámy čas';
     const now = new Date();
@@ -120,8 +125,14 @@ export default function CatchTimeline({ catches, isLoading, competitionId }: Cat
                       <img 
                         src={catch_.photoUrl} 
                         alt="Fotka úlovku" 
-                        className="w-16 h-16 rounded-lg object-cover"
+                        className="w-16 h-16 rounded-lg object-cover cursor-pointer hover:opacity-80 transition-opacity"
                         data-testid={`catch-photo-${catch_.id}`}
+                        onClick={() => setSelectedPhoto({
+                          url: catch_.photoUrl!,
+                          teamName: catch_.team?.name || 'Neznámy tím',
+                          weight: `${parseFloat(catch_.weight).toFixed(2)} kg`,
+                          fishType: getFishTypeDisplay(catch_.fishType)
+                        })}
                       />
                     ) : (
                       <div className="text-xs text-muted-foreground text-center">
@@ -166,6 +177,50 @@ export default function CatchTimeline({ catches, isLoading, competitionId }: Cat
           </div>
         )}
       </CardContent>
+
+      {/* Photo Modal */}
+      <Dialog open={!!selectedPhoto} onOpenChange={() => setSelectedPhoto(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] p-0">
+          <div className="relative">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute top-4 right-4 z-50 bg-black/20 text-white hover:bg-black/40"
+              onClick={() => setSelectedPhoto(null)}
+            >
+              <X className="w-4 h-4" />
+            </Button>
+            
+            {selectedPhoto && (
+              <div className="flex flex-col">
+                <div className="relative">
+                  <img 
+                    src={selectedPhoto.url}
+                    alt="Zväčšená fotka úlovku"
+                    className="w-full h-auto max-h-[70vh] object-contain"
+                  />
+                </div>
+                
+                <div className="p-6 bg-background border-t">
+                  <DialogHeader>
+                    <DialogTitle className="text-xl font-bold text-foreground">
+                      {selectedPhoto.teamName}
+                    </DialogTitle>
+                    <div className="flex items-center space-x-4 mt-2">
+                      <div className="font-mono text-2xl text-accent font-bold">
+                        {selectedPhoto.weight}
+                      </div>
+                      <Badge variant="outline" className="text-base px-3 py-1">
+                        {selectedPhoto.fishType}
+                      </Badge>
+                    </div>
+                  </DialogHeader>
+                </div>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
