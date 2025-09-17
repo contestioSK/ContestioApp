@@ -22,7 +22,8 @@ export default function Pricing() {
         "Registrácia tímov",
         "Zápis úlovkov rozhodcami",
         "Live tabuľka výsledkov",
-        "Základné štatistiky"
+        "Základné štatistiky",
+        "Počet rozhodcov: 2"
       ]
     },
     {
@@ -42,7 +43,8 @@ export default function Pricing() {
         "Sektory + ocenenie pre top 3 v sektore",
         "Profil tímov + kompletný zoznam úlovkov",
         "Sponzori (logá, ceny)",
-        "Export výsledkov (PDF, Excel)"
+        "Export výsledkov (PDF, Excel)",
+        "Počet rozhodcov: 5"
       ]
     },
     {
