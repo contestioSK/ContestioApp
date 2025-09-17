@@ -64,9 +64,15 @@ export default function NavigationHeader() {
             <a href="#archive" className="text-muted-foreground hover:text-primary transition-colors">
               Archív
             </a>
-            <a href="#about" className="text-muted-foreground hover:text-primary transition-colors">
+            <Link 
+              href="/about-us" 
+              className={`font-medium transition-colors ${
+                location === '/about-us' ? 'text-primary' : 'text-muted-foreground hover:text-primary'
+              }`}
+              data-testid="nav-about-us"
+            >
               O nás
-            </a>
+            </Link>
           </nav>
           
           {/* User Actions */}

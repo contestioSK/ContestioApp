@@ -590,7 +590,7 @@ export default function CompetitionDetail() {
               </Card>
               
               {/* Live Catch Timeline */}
-              <CatchTimeline catches={(catches || []).map(c => ({ ...c, team: c.team || { id: '', name: 'Neznámy tím', status: '', createdAt: null, updatedAt: null, competitionId: '', sector: null, sectorName: null, placeName: null, position: null, totalWeight: null, fishCount: null }, referee: c.referee || { id: '', userId: '', competitionId: '', assignedSector: '', isActive: true, createdAt: null } }))} isLoading={catchesLoading} competitionId={id!} />
+              <CatchTimeline catches={(catches || []).map(c => ({ ...c, team: c.team || { id: '', name: 'Neznámy tím', status: '', createdAt: null, updatedAt: null, competitionId: '', sector: null, sectorName: null, placeName: null, position: null, totalWeight: null, fishCount: null, photoUrl: null }, referee: c.referee || { id: '', userId: '', competitionId: '', assignedSector: '', isActive: true, createdAt: null } }))} isLoading={catchesLoading} competitionId={id!} />
               
             </div>
           </div>
