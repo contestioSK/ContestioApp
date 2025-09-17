@@ -6,6 +6,22 @@ import { Check, Star, Crown, Zap, Building } from "lucide-react";
 import { Link } from "wouter";
 
 export default function Pricing() {
+  // Helper function to render text with bold formatting
+  const renderFeatureText = (text: string) => {
+    if (!text.includes('**')) {
+      return text;
+    }
+    
+    const parts = text.split('**');
+    return parts.map((part, index) => {
+      // Every odd index should be bold
+      if (index % 2 === 1) {
+        return <strong key={index} className="font-semibold">{part}</strong>;
+      }
+      return part;
+    });
+  };
+
   const pricingPlans = [
     {
       id: "basic",
@@ -187,7 +203,7 @@ export default function Pricing() {
                         <li key={index} className="flex items-start">
                           <Check className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
                           <span className="text-sm text-foreground leading-relaxed">
-                            {feature}
+                            {renderFeatureText(feature)}
                           </span>
                         </li>
                       ))}
