@@ -200,6 +200,46 @@ export default function AdminPanel() {
     },
   });
 
+  // Competition creation mutation
+  const createCompetitionMutation = useMutation({
+    mutationFn: async (competitionData: any) => {
+      const response = await apiRequest("POST", "/api/competitions", competitionData);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/competitions"] });
+      form.reset();
+      toast({
+        title: "Úspech",
+        description: "Súťaž bola úspešne vytvorená",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Chyba",
+        description: "Nepodarilo sa vytvoriť súťaž",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Form submission handler
+  const onSubmit = async (data: any) => {
+    try {
+      const competitionData = {
+        ...data,
+        startDate: new Date(data.startDate),
+        endDate: new Date(data.endDate),
+        organizerId: user?.id,
+        maxTeams: data.maxTeams ? parseInt(data.maxTeams) : null,
+        registrationFee: data.registrationFee ? parseFloat(data.registrationFee) : null,
+      };
+      await createCompetitionMutation.mutateAsync(competitionData);
+    } catch (error) {
+      console.error("Error creating competition:", error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto py-8 px-4">
@@ -318,6 +358,10 @@ export default function AdminPanel() {
                       <TabsTrigger value="users" className="py-4 text-muted-foreground hover:text-foreground font-medium text-sm">
                         <Users className="w-4 h-4 mr-2" />
                         Používatelia
+                      </TabsTrigger>
+                      <TabsTrigger value="competitions" className="py-4 text-muted-foreground hover:text-foreground font-medium text-sm">
+                        <Trophy className="w-4 h-4 mr-2" />
+                        Súťaže
                       </TabsTrigger>
                       <TabsTrigger value="registrations" className="py-4 text-muted-foreground hover:text-foreground font-medium text-sm">
                         <FileText className="w-4 h-4 mr-2" />
@@ -636,6 +680,211 @@ export default function AdminPanel() {
                               </div>
                             </div>
                           ))}
+                        </div>
+                      )}
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="competitions" className="p-6">
+                    <div className="space-y-6">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h2 className="text-2xl font-bold text-foreground mb-2">Správa súťaží</h2>
+                          <p className="text-muted-foreground">Spravujte všetky súťaže v systéme</p>
+                        </div>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button data-testid="button-create-competition">
+                              <Plus className="w-4 h-4 mr-2" />
+                              Vytvoriť súťaž
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-2xl">
+                            <DialogHeader>
+                              <DialogTitle>Vytvoriť novú súťaž</DialogTitle>
+                            </DialogHeader>
+                            <Form {...form}>
+                              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                                <div className="grid grid-cols-2 gap-4">
+                                  <FormField
+                                    control={form.control}
+                                    name="name"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Názov súťaže</FormLabel>
+                                        <FormControl>
+                                          <Input placeholder="Názov súťaže" {...field} data-testid="input-competition-name" />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                  <FormField
+                                    control={form.control}
+                                    name="location"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Lokalita</FormLabel>
+                                        <FormControl>
+                                          <Input placeholder="Lokalita súťaže" {...field} data-testid="input-competition-location" />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                </div>
+
+                                <FormField
+                                  control={form.control}
+                                  name="description"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Popis</FormLabel>
+                                      <FormControl>
+                                        <Textarea placeholder="Popis súťaže..." className="min-h-[100px]" {...field} data-testid="textarea-competition-description" />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+
+                                <div className="grid grid-cols-2 gap-4">
+                                  <FormField
+                                    control={form.control}
+                                    name="startDate"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Dátum začiatku</FormLabel>
+                                        <FormControl>
+                                          <Input type="datetime-local" {...field} data-testid="input-start-date" />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                  <FormField
+                                    control={form.control}
+                                    name="endDate"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Dátum konca</FormLabel>
+                                        <FormControl>
+                                          <Input type="datetime-local" {...field} data-testid="input-end-date" />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                  <FormField
+                                    control={form.control}
+                                    name="maxTeams"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Maximálny počet tímov</FormLabel>
+                                        <FormControl>
+                                          <Input type="number" placeholder="50" {...field} data-testid="input-max-teams" />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                  <FormField
+                                    control={form.control}
+                                    name="registrationFee"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Registračný poplatok (€)</FormLabel>
+                                        <FormControl>
+                                          <Input type="number" step="0.01" placeholder="25.00" {...field} data-testid="input-registration-fee" />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                </div>
+
+                                <div className="flex justify-end space-x-2">
+                                  <Button type="button" variant="outline" onClick={() => form.reset()}>
+                                    Zrušiť
+                                  </Button>
+                                  <Button type="submit" disabled={createCompetitionMutation.isPending} data-testid="button-submit-competition">
+                                    {createCompetitionMutation.isPending ? "Vytváranie..." : "Vytvoriť súťaž"}
+                                  </Button>
+                                </div>
+                              </form>
+                            </Form>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
+
+                      {/* Competitions List */}
+                      {competitions ? (
+                        <div className="space-y-4">
+                          {competitions.map((competition: Competition) => (
+                            <Card key={competition.id} className="hover:shadow-md transition-shadow">
+                              <CardContent className="p-6">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex-1">
+                                    <div className="flex items-center space-x-3 mb-2">
+                                      <h3 className="font-semibold text-lg text-foreground" data-testid={`text-competition-name-${competition.id}`}>
+                                        {competition.name}
+                                      </h3>
+                                      <Badge variant={
+                                        competition.status === 'live' ? 'default' :
+                                        competition.status === 'registration' ? 'secondary' :
+                                        competition.status === 'finished' ? 'outline' : 'destructive'
+                                      } data-testid={`badge-competition-status-${competition.id}`}>
+                                        {competition.status === 'live' ? 'Prebiehajúca' :
+                                         competition.status === 'registration' ? 'Registrácie' :
+                                         competition.status === 'finished' ? 'Ukončená' : 'Pozastavená'}
+                                      </Badge>
+                                    </div>
+                                    <p className="text-muted-foreground text-sm mb-2">{competition.description}</p>
+                                    <div className="flex items-center space-x-6 text-sm text-muted-foreground">
+                                      <div className="flex items-center space-x-1">
+                                        <MapPin className="w-4 h-4" />
+                                        <span>{competition.location}</span>
+                                      </div>
+                                      <div className="flex items-center space-x-1">
+                                        <Calendar className="w-4 h-4" />
+                                        <span>{new Date(competition.startDate).toLocaleDateString('sk-SK')}</span>
+                                      </div>
+                                      {competition.maxTeams && (
+                                        <div className="flex items-center space-x-1">
+                                          <Users className="w-4 h-4" />
+                                          <span>Max {competition.maxTeams} tímov</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center space-x-2">
+                                    <Button 
+                                      size="sm" 
+                                      variant="outline"
+                                      onClick={() => setSelectedCompetition(competition.id)}
+                                      data-testid={`button-select-competition-${competition.id}`}
+                                    >
+                                      <Eye className="w-4 h-4 mr-1" />
+                                      Zobraziť
+                                    </Button>
+                                    <Button size="sm" variant="outline" data-testid={`button-edit-competition-${competition.id}`}>
+                                      <Edit className="w-4 h-4 mr-1" />
+                                      Upraviť
+                                    </Button>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-12">
+                          <Trophy className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                          <p className="text-muted-foreground text-lg">Žiadne súťaže nenájdené</p>
                         </div>
                       )}
                     </div>
