@@ -40,7 +40,7 @@ export default function Pricing() {
         "Zápis úlovkov rozhodcami",
         "Live tabuľka výsledkov",
         "Základné štatistiky",
-        "👨‍⚖️ **Až 2 rozhodcov**"
+        "👨‍⚖️ **Až 2 rozhodcovia**"
       ]
     },
     {
@@ -62,7 +62,7 @@ export default function Pricing() {
         "Profil tímov + kompletný zoznam úlovkov",
         "Sponzori (logá, ceny)",
         "Export výsledkov (PDF, Excel)",
-        "👨‍⚖️ **Až 5 rozhodcov**"
+        "👨‍⚖️ **Až 5 rozhodcovia**"
       ]
     },
     {
@@ -81,7 +81,7 @@ export default function Pricing() {
         "👥 **Neobmedzený počet tímov**",
         "Branding (logo, farby, subdoména contestio.sk/nazovpreteku)",
         "Pokročilé štatistiky a grafy",
-        "👨‍⚖️ **Neobmedzený počet rozhodcov**",
+        "👨‍⚖️ **Neobmedzený počet rozhodcovia**",
         "Prístup pre médiá a live výsledky",
         "Prioritná podpora počas preteku"
       ]
@@ -100,7 +100,7 @@ export default function Pricing() {
       features: [
         "Všetko z Premium +",
         "👥 **Neobmedzený počet tímov**",
-        "👨‍⚖️ **Neobmedzený počet rozhodcov**",
+        "👨‍⚖️ **Neobmedzený počet rozhodcovia**",
         "Interaktívna mapa sektorov s umiestnením tímov",
         "Viacero súťaží pod jednou organizáciou",
         "White-label riešenie (aplikácia pod vlastnou značkou)",
