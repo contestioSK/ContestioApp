@@ -54,7 +54,7 @@ export default function LiveLeaderboard({ teams, isLoading, competitionId }: Liv
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Rebríček naživo</CardTitle>
+            <CardTitle>Aktuálna tabuľka</CardTitle>
             <Skeleton className="h-4 w-24" />
           </div>
         </CardHeader>
@@ -131,7 +131,7 @@ export default function LiveLeaderboard({ teams, isLoading, competitionId }: Liv
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex flex-col space-y-2">
-            <CardTitle>Rebríček naživo</CardTitle>
+            <CardTitle>Aktuálna tabuľka</CardTitle>
             {competition && getScoringTypeBadge(competition.scoringType)}
           </div>
           <div className="flex items-center space-x-2 text-sm text-muted-foreground">
