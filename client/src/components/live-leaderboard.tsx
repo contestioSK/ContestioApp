@@ -191,10 +191,6 @@ export default function LiveLeaderboard({ teams, isLoading, competitionId }: Liv
                           {team.name}
                         </div>
                       </Link>
-                      <div className="text-sm text-muted-foreground">
-                        {(team.members || []).slice(0, 2).map(m => m.name).join(', ')}
-                        {(team.members || []).length > 2 && ` +${(team.members || []).length - 2} ďalších`}
-                      </div>
                     </td>
                     <td className="p-4">
                       {getSectorBadge(team)}
