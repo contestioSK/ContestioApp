@@ -579,7 +579,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const registrationData = insertCompetitionRegistrationSchema.parse({
+      // Debug: Log the data before validation
+      const dataToValidate = {
         ...req.body,
         imageUrl,
         startDate: new Date(req.body.startDate),
@@ -592,7 +593,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         selectedPlan,
         requestedSubdomain: req.body.requestedSubdomain || undefined,
         branding: branding || undefined,
-      });
+      };
+      console.log('Data to validate:', JSON.stringify({
+        minWeight: dataToValidate.minWeight,
+        minWeightType: typeof dataToValidate.minWeight,
+        requestedSubdomain: dataToValidate.requestedSubdomain,
+        branding: dataToValidate.branding,
+        selectedPlan: dataToValidate.selectedPlan
+      }, null, 2));
+      
+      const registrationData = insertCompetitionRegistrationSchema.parse(dataToValidate);
       
       const registration = await storage.createCompetitionRegistration(registrationData);
       res.status(201).json(registration);
