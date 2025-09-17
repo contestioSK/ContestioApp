@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Fish, Users, Trophy, MapPin, PlusCircle, Menu, X, Info, DollarSign } from "lucide-react";
+import { Fish, Users, Trophy, MapPin, PlusCircle, Menu, X, Info, DollarSign, HelpCircle } from "lucide-react";
 import { ContestCategories } from "@/components/contest-categories";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
@@ -111,6 +111,17 @@ export default function Landing() {
                 >
                   <DollarSign className="w-4 h-4" />
                   <span>Cenník</span>
+                </Button>
+              </Link>
+              <Link href="/faq">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="hidden md:flex items-center space-x-2"
+                  data-testid="button-faq"
+                >
+                  <HelpCircle className="w-4 h-4" />
+                  <span>FAQ</span>
                 </Button>
               </Link>
             </div>
