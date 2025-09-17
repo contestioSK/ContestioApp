@@ -390,8 +390,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       //   return res.status(403).json({ message: "Referee not assigned to this competition" });
       // }
 
-      // DEMO MODE - Mock referee
-      const referee = { id: 'demo_referee_001', assignedSector: 'A' };
+      // DEMO MODE - Mock referee with real UUID from database
+      const referee = { id: '10a24904-20a0-4dea-b964-8b91e306ebb3', assignedSector: 'A' };
 
       let photoUrl = null;
       if (req.file) {
@@ -404,7 +404,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...req.body,
         refereeId: referee.id,
         photoUrl,
-        weight: parseFloat(req.body.weight),
+        weight: (parseFloat(req.body.weight) / 1000).toString(), // Convert grams to kg and keep as string
         sector: referee.assignedSector, // Always use referee's assigned sector
       });
       
