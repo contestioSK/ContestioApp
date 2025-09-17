@@ -56,9 +56,9 @@ const competitionRegistrationFormSchema = z.object({
   minWeight: z.number().min(2, "Minimálna hmotnosť musí byť aspoň 2 kg").max(15, "Maximálna hmotnosť môže byť 15 kg").default(2),
   // Plan-related fields
   selectedPlan: z.enum(["basic", "pro", "premium", "enterprise"]).default("basic"),
-  requestedSubdomain: z.string().min(3, "Subdoména musí mať aspoň 3 znaky").max(20, "Subdoména môže mať maximálne 20 znakov").regex(/^[a-z0-9-]+$/, "Subdoména môže obsahovať len malé písmená, čísla a pomlčky").optional(),
-  brandingPrimaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Neplatná farba").optional(),
-  brandingSecondaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Neplatná farba").optional(),
+  requestedSubdomain: z.literal("").or(z.string().min(3, "Subdoména musí mať aspoň 3 znaky").max(20, "Subdoména môže mať maximálne 20 znakov").regex(/^[a-z0-9-]+$/, "Subdoména môže obsahovať len malé písmená, čísla a pomlčky")).optional(),
+  brandingPrimaryColor: z.literal("").or(z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Neplatná farba")).optional(),
+  brandingSecondaryColor: z.literal("").or(z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Neplatná farba")).optional(),
 });
 
 type CompetitionRegistrationForm = z.infer<typeof competitionRegistrationFormSchema>;
