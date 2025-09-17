@@ -161,56 +161,73 @@ export default function CompetitionCatches() {
 
           {/* Catches Table */}
           {filteredCatches.length > 0 ? (
-            <Card className="overflow-hidden">
+            <Card className="overflow-hidden shadow-xl border-0 bg-gradient-to-br from-background via-background to-muted/20">
               <Table data-testid="table-catches">
                 <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[140px]">Hmotnosť</TableHead>
-                    <TableHead>Druh</TableHead>
-                    <TableHead>Tím</TableHead>
-                    <TableHead>Sektor</TableHead>
-                    <TableHead>Čas úlovku</TableHead>
-                    <TableHead>Fotografia</TableHead>
+                  <TableRow className="bg-gradient-to-r from-primary/5 via-secondary/5 to-accent/5 border-b-2 border-primary/10">
+                    <TableHead className="w-[140px] font-bold text-foreground py-4">Hmotnosť</TableHead>
+                    <TableHead className="font-bold text-foreground py-4">Druh</TableHead>
+                    <TableHead className="font-bold text-foreground py-4">Tím</TableHead>
+                    <TableHead className="font-bold text-foreground py-4">Sektor</TableHead>
+                    <TableHead className="font-bold text-foreground py-4">Čas úlovku</TableHead>
+                    <TableHead className="font-bold text-foreground py-4">Fotografia</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredCatches.map((catch_) => (
-                    <TableRow key={catch_.id} className="hover:bg-muted/50" data-testid={`row-catch-${catch_.id}`}>
-                      <TableCell className="font-medium text-primary">
-                        <div className="flex items-center gap-1">
-                          <Weight className="w-4 h-4" />
-                          <span data-testid={`text-catch-weight-${catch_.id}`}>
+                  {filteredCatches.map((catch_, index) => (
+                    <TableRow 
+                      key={catch_.id} 
+                      className={`
+                        ${index % 2 === 0 ? 'bg-background' : 'bg-muted/30'}
+                        hover:bg-gradient-to-r hover:from-primary/5 hover:to-secondary/5
+                        transition-all duration-300 ease-in-out
+                        hover:shadow-lg hover:scale-[1.01]
+                        border-b border-border/50
+                      `}
+                      data-testid={`row-catch-${catch_.id}`}
+                    >
+                      <TableCell className="font-bold text-primary py-4">
+                        <div className="flex items-center gap-2 p-2 bg-primary/5 rounded-lg border border-primary/20">
+                          <Weight className="w-5 h-5 text-primary" />
+                          <span data-testid={`text-catch-weight-${catch_.id}`} className="font-mono text-lg">
                             {catch_.weight} kg
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary" data-testid={`badge-fish-type-${catch_.id}`}>
+                      <TableCell className="py-4">
+                        <Badge 
+                          variant="secondary" 
+                          className="bg-gradient-to-r from-secondary/20 to-secondary/40 text-secondary-foreground font-semibold px-3 py-1 rounded-full shadow-sm hover:shadow-md transition-shadow"
+                          data-testid={`badge-fish-type-${catch_.id}`}
+                        >
                           {getFishTypeLabel(catch_.fishType)}
                         </Badge>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="py-4">
                         {catch_.team ? (
                           <Link href={`/team/${catch_.team.id}`} data-testid={`link-catch-team-${catch_.id}`}>
-                            <span className="font-medium hover:text-primary cursor-pointer transition-colors">
-                              {catch_.team.name}
-                            </span>
+                            <div className="group flex items-center gap-2 p-2 rounded-lg hover:bg-accent/10 transition-all duration-200">
+                              <User className="w-4 h-4 text-accent" />
+                              <span className="font-semibold group-hover:text-accent cursor-pointer transition-colors">
+                                {catch_.team.name}
+                              </span>
+                            </div>
                           </Link>
                         ) : (
-                          <span className="text-muted-foreground">Neznámy tím</span>
+                          <span className="text-muted-foreground italic">Neznámy tím</span>
                         )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="py-4">
                         <Link href={`/competition/${id}/sector/${catch_.sector}`} data-testid={`link-catch-sector-${catch_.id}`}>
-                          <Badge className={`${getSectorBadgeColor(catch_.sector)} hover:opacity-80 cursor-pointer transition-opacity`}>
+                          <Badge className={`${getSectorBadgeColor(catch_.sector)} hover:scale-105 cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md font-bold px-4 py-2 rounded-full border-2 border-current/20`}>
                             Sektor {catch_.sector}
                           </Badge>
                         </Link>
                       </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1 text-sm">
-                          <Clock className="w-3 h-3" />
-                          <span data-testid={`text-catch-time-${catch_.id}`}>
+                      <TableCell className="py-4">
+                        <div className="flex items-center gap-2 p-2 bg-muted/20 rounded-lg">
+                          <Clock className="w-4 h-4 text-muted-foreground" />
+                          <span data-testid={`text-catch-time-${catch_.id}`} className="text-sm font-medium">
                             {(() => {
                               const submittedDate = catch_.submittedAt ? new Date(catch_.submittedAt) : null;
                               if (!submittedDate || isNaN(submittedDate.getTime())) {
@@ -221,11 +238,11 @@ export default function CompetitionCatches() {
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="py-4">
                         {catch_.photoUrl ? (
-                          <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-2">
                             <div
-                              className="w-8 h-8 rounded overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all transform hover:scale-110"
+                              className="relative w-12 h-12 rounded-xl overflow-hidden cursor-pointer hover:ring-4 hover:ring-primary/30 transition-all duration-300 transform hover:scale-110 shadow-lg hover:shadow-xl group"
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
@@ -241,15 +258,16 @@ export default function CompetitionCatches() {
                               <img 
                                 src={catch_.photoUrl} 
                                 alt="Úlovok" 
-                                className="w-full h-full object-cover pointer-events-none"
+                                className="w-full h-full object-cover pointer-events-none group-hover:scale-110 transition-transform duration-300"
                               />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                             </div>
-                            <Camera className="w-4 h-4 text-green-500" />
+                            <Camera className="w-5 h-5 text-emerald-500 drop-shadow-sm" />
                           </div>
                         ) : (
-                          <div className="flex items-center gap-1 text-muted-foreground">
-                            <Camera className="w-4 h-4" />
-                            <span className="text-xs">Bez fotografie</span>
+                          <div className="flex items-center gap-2 p-2 bg-muted/30 rounded-lg">
+                            <Camera className="w-4 h-4 text-muted-foreground" />
+                            <span className="text-xs text-muted-foreground">Bez fotografie</span>
                           </div>
                         )}
                       </TableCell>
