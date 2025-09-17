@@ -91,39 +91,32 @@ export default function Landing() {
                 <span className="w-2 h-2 bg-secondary rounded-full animate-pulse"></span>
                 <span className="text-sm font-medium text-secondary">Súťaže naživo</span>
               </div>
-              <Link href="/about-us">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="hidden md:flex items-center space-x-2"
-                  data-testid="button-about-us"
-                >
-                  <Info className="w-4 h-4" />
-                  <span>O nás</span>
-                </Button>
-              </Link>
-              <Link href="/pricing">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="hidden md:flex items-center space-x-2"
-                  data-testid="button-pricing"
-                >
-                  <DollarSign className="w-4 h-4" />
-                  <span>Cenník</span>
-                </Button>
-              </Link>
-              <Link href="/faq">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="hidden md:flex items-center space-x-2"
-                  data-testid="button-faq"
-                >
-                  <HelpCircle className="w-4 h-4" />
-                  <span>FAQ</span>
-                </Button>
-              </Link>
+              <div className="hidden md:flex items-center space-x-8">
+                <Link href="/about-us">
+                  <span 
+                    className="text-sm font-medium text-foreground hover:text-primary transition-colors duration-200 relative after:content-[''] after:absolute after:w-0 after:h-0.5 after:bg-primary after:left-0 after:bottom-[-4px] after:transition-all after:duration-200 hover:after:w-full cursor-pointer"
+                    data-testid="button-about-us"
+                  >
+                    O nás
+                  </span>
+                </Link>
+                <Link href="/pricing">
+                  <span 
+                    className="text-sm font-medium text-foreground hover:text-primary transition-colors duration-200 relative after:content-[''] after:absolute after:w-0 after:h-0.5 after:bg-primary after:left-0 after:bottom-[-4px] after:transition-all after:duration-200 hover:after:w-full cursor-pointer"
+                    data-testid="button-pricing"
+                  >
+                    Cenník
+                  </span>
+                </Link>
+                <Link href="/faq">
+                  <span 
+                    className="text-sm font-medium text-foreground hover:text-primary transition-colors duration-200 relative after:content-[''] after:absolute after:w-0 after:h-0.5 after:bg-primary after:left-0 after:bottom-[-4px] after:transition-all after:duration-200 hover:after:w-full cursor-pointer"
+                    data-testid="button-faq"
+                  >
+                    FAQ
+                  </span>
+                </Link>
+              </div>
             </div>
             
             {/* Desktop Navigation */}
