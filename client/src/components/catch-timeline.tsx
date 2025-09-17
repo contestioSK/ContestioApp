@@ -59,7 +59,7 @@ export default function CatchTimeline({ catches, isLoading, competitionId }: Cat
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Živé úlovky</CardTitle>
+          <CardTitle>Posledné úlovky</CardTitle>
           <p className="text-sm text-muted-foreground">Najnovšie príspevky rozhodcov</p>
         </CardHeader>
         <CardContent>
@@ -96,7 +96,7 @@ export default function CatchTimeline({ catches, isLoading, competitionId }: Cat
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <Clock className="w-5 h-5" />
-          <span>Živé úlovky</span>
+          <span>Posledné úlovky</span>
         </CardTitle>
         <p className="text-sm text-muted-foreground">Najnovšie príspevky rozhodcov</p>
       </CardHeader>
