@@ -22,7 +22,7 @@ const teamRegistrationSchema = z.object({
   members: z.array(z.object({
     name: z.string().min(1, "Meno člena je povinné"),
     role: z.enum(["captain", "member"]),
-    email: z.string().email("Zadajte platný e-mail").optional(),
+    email: z.string().optional().refine((val) => !val || z.string().email().safeParse(val).success, "Zadajte platný e-mail"),
     phone: z.string().optional(),
   })).min(1, "Aspoň jeden člen tímu je povinný").max(6, "Maximálne 6 členov je povolených"),
 });
