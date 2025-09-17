@@ -12,7 +12,6 @@ export default function Landing() {
 
   // Navigation items
   const navItems = [
-    { href: "/pricing", label: "Cenníky", icon: DollarSign },
     { href: "/register-competition", label: "Zaregistrovať súťaž", icon: Trophy },
     { href: "/register-team", label: "Zaregistrovať tím", icon: Users },
   ];
@@ -101,6 +100,17 @@ export default function Landing() {
                 >
                   <Info className="w-4 h-4" />
                   <span>O nás</span>
+                </Button>
+              </Link>
+              <Link href="/pricing">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="hidden md:flex items-center space-x-2"
+                  data-testid="button-pricing"
+                >
+                  <DollarSign className="w-4 h-4" />
+                  <span>Cenník</span>
                 </Button>
               </Link>
             </div>
