@@ -37,7 +37,7 @@ export default function Landing() {
     {
       id: "1",
       name: "Lake Michigan Championship",
-      description: "Prestížny turnaj na jednom z najväčších jazier v Severnej Amerike. Súťaž je otvorená pre všetky kategórie rybárov.",
+      description: "Prestížna súťaž na jednom z najväčších jazier v Severnej Amerike. Súťaž je otvorená pre všetky kategórie rybárov.",
       status: "live" as const,
       startDate: new Date().toISOString(),
       endDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
@@ -55,7 +55,7 @@ export default function Landing() {
     {
       id: "3",
       name: "Atlantic Coast Masters", 
-      description: "Završený turnaj na atlantickom pobreží s vysokou účasťou profesionálnych rybárov z celého sveta.",
+      description: "Završená súťaž na atlantickom pobreží s vysokou účasťou profesionálnych rybárov z celého sveta.",
       status: "finished" as const,
       startDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
       endDate: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
@@ -82,7 +82,7 @@ export default function Landing() {
     {
       id: "6",
       name: "Mediterranean Bass Tournament",
-      description: "Ukončený turnaj na Stredozemnom mori s účasťou najlepších európskych rybárov.",
+      description: "Ukončená súťaž na Stredozemnom mori s účasťou najlepších európskych rybárov.",
       status: "finished" as const,
       startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
       endDate: new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString(),

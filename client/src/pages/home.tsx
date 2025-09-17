@@ -126,7 +126,7 @@ export default function Home() {
           <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-8">
             <div>
               <h2 className="text-3xl font-bold text-foreground mb-2">Aktívne súťaže</h2>
-              <p className="text-muted-foreground">Živé a nadchádzajúce rybárske turnaje</p>
+              <p className="text-muted-foreground">Živé a nadchádzajúce rybárske súťaže</p>
             </div>
           </div>
           

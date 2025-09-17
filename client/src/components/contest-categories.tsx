@@ -119,7 +119,7 @@ export function ContestCategories({ contests }: ContestCategoriesProps) {
             Kategórie súťaží
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Vyberte si kategóriu súťaží, ktorá vás zaujíma a preskúmajte dostupné turnaje
+            Vyberte si kategóriu súťaží, ktorá vás zaujíma a preskúmajte dostupné súťaže
           </p>
           <div className="w-24 h-1 bg-gradient-to-r from-primary to-secondary mx-auto mt-4 rounded-full"></div>
         </div>
