@@ -105,14 +105,10 @@ function updateUserSession(
 async function upsertUser(
   claims: any,
 ) {
-  console.log(`[AUTH] upsertUser called for user: ${claims["sub"]}`);
-  
   // Check if user already exists to preserve their role
   const existingUser = await storage.getUser(claims["sub"]);
-  console.log(`[AUTH] Existing user found:`, existingUser ? `role=${existingUser.role}` : 'NOT FOUND');
   
   const roleToUse = existingUser?.role || claims["role"] || "public";
-  console.log(`[AUTH] Role to use: ${roleToUse} (existing: ${existingUser?.role}, claims: ${claims["role"]})`);
   
   await storage.upsertUser({
     id: claims["sub"],
@@ -123,8 +119,6 @@ async function upsertUser(
     // Preserve existing role for returning users, default to "public" for new users
     role: roleToUse,
   });
-  
-  console.log(`[AUTH] upsertUser completed with role: ${roleToUse}`);
 }
 
 export async function setupAuth(app: Express) {
