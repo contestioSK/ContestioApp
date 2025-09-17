@@ -31,6 +31,9 @@ export interface IStorage {
   // User operations (required for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
+  getAllUsers(): Promise<User[]>;
+  updateUserRole(userId: string, newRole: string): Promise<User>;
+  updateUserStatus(userId: string, active: boolean): Promise<User>;
   
   // Competition operations
   getCompetitions(): Promise<Competition[]>;
@@ -155,6 +158,43 @@ export class DatabaseStorage implements IStorage {
       .values(userData)
       .returning();
     return newUser;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return db.select().from(users).orderBy(desc(users.createdAt));
+  }
+
+  async updateUserRole(userId: string, newRole: string): Promise<User> {
+    const [updatedUser] = await db
+      .update(users)
+      .set({ 
+        role: newRole as "public" | "organizer" | "referee" | "admin",
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    
+    if (!updatedUser) {
+      throw new Error("Používateľ nenájdený");
+    }
+    return updatedUser;
+  }
+
+  async updateUserStatus(userId: string, active: boolean): Promise<User> {
+    // TODO: Add active field to users schema
+    const [updatedUser] = await db
+      .update(users)
+      .set({ 
+        // active, // TODO: Add active field to schema
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    
+    if (!updatedUser) {
+      throw new Error("Používateľ nenájdený");
+    }
+    return updatedUser;
   }
 
   // Competition operations
@@ -642,8 +682,9 @@ export class DatabaseStorage implements IStorage {
         .limit(5)
       )
     ]
-    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-    .slice(0, 10);
+      .filter(activity => activity.timestamp) // Filter out null timestamps
+      .sort((a, b) => new Date(b.timestamp!).getTime() - new Date(a.timestamp!).getTime())
+      .slice(0, 10);
 
     return {
       totalUsers: totalUsersResult.count,
