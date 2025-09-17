@@ -187,9 +187,9 @@ export default function CompetitionCatches() {
                       data-testid={`row-catch-${catch_.id}`}
                     >
                       <TableCell className="font-bold text-primary py-4">
-                        <div className="flex items-center gap-2 p-2 bg-primary/5 rounded-lg border border-primary/20">
-                          <Weight className="w-5 h-5 text-primary" />
-                          <span data-testid={`text-catch-weight-${catch_.id}`} className="font-mono text-lg">
+                        <div className="flex items-center gap-1">
+                          <Weight className="w-4 h-4 text-primary" />
+                          <span data-testid={`text-catch-weight-${catch_.id}`} className="font-bold">
                             {catch_.weight} kg
                           </span>
                         </div>
@@ -197,7 +197,7 @@ export default function CompetitionCatches() {
                       <TableCell className="py-4">
                         <Badge 
                           variant="secondary" 
-                          className="bg-gradient-to-r from-secondary/20 to-secondary/40 text-secondary-foreground font-semibold px-3 py-1 rounded-full shadow-sm hover:shadow-md transition-shadow"
+                          className="bg-gradient-to-r from-secondary/60 to-secondary/80 text-white font-semibold px-3 py-1 rounded-full shadow-sm hover:shadow-md transition-shadow"
                           data-testid={`badge-fish-type-${catch_.id}`}
                         >
                           {getFishTypeLabel(catch_.fishType)}
