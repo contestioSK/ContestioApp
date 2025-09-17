@@ -171,7 +171,6 @@ export default function CompetitionCatches() {
                     <TableHead>Sektor</TableHead>
                     <TableHead>Čas úlovku</TableHead>
                     <TableHead>Fotografia</TableHead>
-                    <TableHead className="w-[120px]">Stav</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -253,14 +252,6 @@ export default function CompetitionCatches() {
                             <span className="text-xs">Bez fotografie</span>
                           </div>
                         )}
-                      </TableCell>
-                      <TableCell>
-                        <Badge 
-                          variant={catch_.isVerified ? "default" : "secondary"}
-                          data-testid={`badge-verification-${catch_.id}`}
-                        >
-                          {catch_.isVerified ? "Overený" : "Neoverený"}
-                        </Badge>
                       </TableCell>
                     </TableRow>
                   ))}
