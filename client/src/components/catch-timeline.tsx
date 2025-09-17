@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Clock, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Catch, Team, Referee } from "@shared/schema";
+import { getCountryFlag } from "@/lib/countries";
 
 interface CatchTimelineProps {
   catches: (Catch & { team: Team; referee: Referee })[];
@@ -155,10 +156,15 @@ export default function CatchTimeline({ catches, isLoading, competitionId }: Cat
                   </div>
                   
                   <div className="flex-1 min-w-0">
-                    {/* First row: Team name, time, and weight */}
+                    {/* First row: Team name with flag and weight */}
                     <div className="flex items-center justify-between mb-1">
-                      <div className="font-medium text-foreground text-sm" data-testid={`catch-team-${catch_.id}`}>
-                        {catch_.team?.name || 'Neznámy tím'}
+                      <div className="flex items-center gap-2" data-testid={`catch-team-${catch_.id}`}>
+                        <span className="text-base" title={`Krajina: ${catch_.team?.country || 'SK'}`}>
+                          {getCountryFlag(catch_.team?.country || 'SK')}
+                        </span>
+                        <span className="font-medium text-foreground text-sm">
+                          {catch_.team?.name || 'Neznámy tím'}
+                        </span>
                       </div>
                       <div className="font-mono font-bold text-accent text-lg" data-testid={`catch-weight-${catch_.id}`}>
                         {parseFloat(catch_.weight).toFixed(2)} kg
