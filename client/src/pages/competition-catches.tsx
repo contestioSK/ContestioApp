@@ -74,6 +74,14 @@ export default function CompetitionCatches() {
     return colors[sector as keyof typeof colors] || 'bg-muted/50';
   };
 
+  const getFishTypeBadgeColor = (fishType: string) => {
+    const colors = {
+      'scaly': 'bg-emerald-500 text-white', // Šupináč - zelená
+      'mirror': 'bg-blue-500 text-white',   // Lysec - modrá
+    };
+    return colors[fishType as keyof typeof colors] || 'bg-gray-500 text-white';
+  };
+
   if (competitionLoading || catchesLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -196,8 +204,7 @@ export default function CompetitionCatches() {
                       </TableCell>
                       <TableCell className="py-4">
                         <Badge 
-                          variant="secondary" 
-                          className="bg-gradient-to-r from-secondary/60 to-secondary/80 text-white font-semibold px-3 py-1 rounded-full shadow-sm hover:shadow-md transition-shadow"
+                          className={`${getFishTypeBadgeColor(catch_.fishType)} font-semibold px-3 py-1 rounded-full shadow-sm hover:shadow-md transition-shadow`}
                           data-testid={`badge-fish-type-${catch_.id}`}
                         >
                           {getFishTypeLabel(catch_.fishType)}
