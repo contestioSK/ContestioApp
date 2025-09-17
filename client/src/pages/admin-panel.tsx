@@ -21,7 +21,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import { Edit, Eye, Users, UserCheck, UserX, Plus, Trophy, Trash2, MapPin, CheckCircle, XCircle, Clock, Calendar, Mail, Phone, Building2, FileText, Award } from "lucide-react";
+import { Edit, Eye, Users, UserCheck, UserX, Plus, Trophy, Trash2, MapPin, CheckCircle, XCircle, Clock, Calendar, Mail, Phone, Building2, FileText, Award, BarChart3, TrendingUp, Activity, Database, Shield, Settings } from "lucide-react";
 import { getSideCompetitionLabels, getSideCompetitionLabel } from "@/lib/utils";
 import type { Competition, Team, TeamMember, CompetitionRegistration } from "@shared/schema";
 
@@ -48,6 +48,25 @@ const competitionSchema = z.object({
 });
 
 type CompetitionForm = z.infer<typeof competitionSchema>;
+
+// Dashboard stats type
+interface DashboardStats {
+  totalUsers: number;
+  totalCompetitions: number;
+  activeCompetitions: number;
+  totalTeams: number;
+  totalCatches: number;
+  pendingRegistrations: number;
+  recentActivity: Array<{
+    id: string;
+    type: string;
+    description: string;
+    timestamp: string; // API returns string, not Date
+    user?: string;
+  }>;
+  usersByRole: Array<{ role: string; count: number }>;
+  competitionsByStatus: Array<{ status: string; count: number }>;
+}
 
 export default function AdminPanel() {
   const { toast } = useToast();
@@ -160,6 +179,12 @@ export default function AdminPanel() {
   const { data: submittedRegistrations } = useQuery<CompetitionRegistration[]>({
     queryKey: ["/api/competition-registrations", { status: "submitted" }],
     queryFn: () => apiRequest("GET", "/api/competition-registrations?status=submitted").then(res => res.json()),
+    enabled: isAuthenticated && isAdmin,
+  });
+
+  // Dashboard stats query
+  const { data: dashboardStats, isLoading: dashboardLoading } = useQuery<DashboardStats>({
+    queryKey: ["/api/admin/dashboard"],
     enabled: isAuthenticated && isAdmin,
   });
 
@@ -862,31 +887,225 @@ export default function AdminPanel() {
               )}
             </div>
           ) : (
-            <Tabs defaultValue="teams" className="w-full">
+            <Tabs defaultValue={isAdmin ? "dashboard" : "teams"} className="w-full">
               
               {/* Tab Navigation */}
               <div className="border-b border-border">
                 <TabsList className="flex space-x-8 px-6 bg-transparent">
-                  <TabsTrigger value="teams" className="py-4 border-b-2 border-primary text-primary font-medium text-sm">
+                  {isAdmin && (
+                    <TabsTrigger value="dashboard" className="py-4 border-b-2 border-primary text-primary font-medium text-sm">
+                      <BarChart3 className="w-4 h-4 mr-2" />
+                      Dashboard
+                    </TabsTrigger>
+                  )}
+                  <TabsTrigger value="teams" className="py-4 text-muted-foreground hover:text-foreground font-medium text-sm">
+                    <Users className="w-4 h-4 mr-2" />
                     Tímy
                   </TabsTrigger>
                   <TabsTrigger value="referees" className="py-4 text-muted-foreground hover:text-foreground font-medium text-sm">
+                    <UserCheck className="w-4 h-4 mr-2" />
                     Rozhodcovia
                   </TabsTrigger>
                   <TabsTrigger value="sponsors" className="py-4 text-muted-foreground hover:text-foreground font-medium text-sm">
+                    <Award className="w-4 h-4 mr-2" />
                     Sponzori
                   </TabsTrigger>
                   {isAdmin && (
                     <TabsTrigger value="registrations" className="py-4 text-muted-foreground hover:text-foreground font-medium text-sm">
+                      <FileText className="w-4 h-4 mr-2" />
                       Registrácie
                     </TabsTrigger>
                   )}
                   <TabsTrigger value="settings" className="py-4 text-muted-foreground hover:text-foreground font-medium text-sm">
+                    <Settings className="w-4 h-4 mr-2" />
                     Nastavenia
                   </TabsTrigger>
                 </TabsList>
               </div>
               
+              {/* Admin Dashboard Tab */}
+              {isAdmin && (
+                <TabsContent value="dashboard" className="p-6">
+                  <div className="space-y-6">
+                    <div>
+                      <h2 className="text-2xl font-bold text-foreground mb-2">Prehľad systému</h2>
+                      <p className="text-muted-foreground">Komplexný prehľad platformy a kľúčových metrík</p>
+                    </div>
+
+                    {dashboardLoading ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {[...Array(8)].map((_, i) => (
+                          <Card key={i} className="p-6">
+                            <Skeleton className="h-8 w-24 mb-2" />
+                            <Skeleton className="h-12 w-16 mb-1" />
+                            <Skeleton className="h-4 w-32" />
+                          </Card>
+                        ))}
+                      </div>
+                    ) : (
+                      <>
+                        {/* Statistics Cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                          <Card className="p-6" data-testid="card-total-users">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-sm font-medium text-muted-foreground">Celkový počet užívateľov</p>
+                                <p className="text-3xl font-bold text-foreground">
+                                  {dashboardStats?.totalUsers || 0}
+                                </p>
+                              </div>
+                              <div className="h-12 w-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                                <Users className="h-6 w-6 text-primary" />
+                              </div>
+                            </div>
+                          </Card>
+
+                          <Card className="p-6" data-testid="card-total-competitions">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-sm font-medium text-muted-foreground">Celkový počet súťaží</p>
+                                <p className="text-3xl font-bold text-foreground">
+                                  {dashboardStats?.totalCompetitions || 0}
+                                </p>
+                              </div>
+                              <div className="h-12 w-12 bg-secondary/10 rounded-lg flex items-center justify-center">
+                                <Trophy className="h-6 w-6 text-secondary" />
+                              </div>
+                            </div>
+                          </Card>
+
+                          <Card className="p-6" data-testid="card-active-competitions">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-sm font-medium text-muted-foreground">Aktívne súťaže</p>
+                                <p className="text-3xl font-bold text-foreground">
+                                  {dashboardStats?.activeCompetitions || 0}
+                                </p>
+                              </div>
+                              <div className="h-12 w-12 bg-accent/10 rounded-lg flex items-center justify-center">
+                                <Activity className="h-6 w-6 text-accent" />
+                              </div>
+                            </div>
+                          </Card>
+
+                          <Card className="p-6" data-testid="card-pending-registrations">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-sm font-medium text-muted-foreground">Čakajúce registrácie</p>
+                                <p className="text-3xl font-bold text-foreground">
+                                  {dashboardStats?.pendingRegistrations || 0}
+                                </p>
+                              </div>
+                              <div className="h-12 w-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                                <Clock className="h-6 w-6 text-orange-600" />
+                              </div>
+                            </div>
+                          </Card>
+                        </div>
+
+                        {/* Charts Row */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                          {/* Users by Role */}
+                          <Card className="p-6">
+                            <CardHeader className="pb-4">
+                              <CardTitle className="text-lg font-semibold">Užívatelia podľa rolí</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="space-y-3">
+                                {dashboardStats?.usersByRole?.map((item, index) => (
+                                  <div key={item.role} className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-3">
+                                      <div className={`w-3 h-3 rounded-full ${
+                                        item.role === 'admin' ? 'bg-red-500' :
+                                        item.role === 'organizer' ? 'bg-blue-500' :
+                                        item.role === 'referee' ? 'bg-green-500' : 'bg-gray-500'
+                                      }`} />
+                                      <span className="text-sm font-medium capitalize">
+                                        {item.role === 'admin' ? 'Admin' :
+                                         item.role === 'organizer' ? 'Organizátor' :
+                                         item.role === 'referee' ? 'Rozhodca' : 'Verejnosť'}
+                                      </span>
+                                    </div>
+                                    <span className="text-sm font-semibold">{item.count}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </CardContent>
+                          </Card>
+
+                          {/* Competitions by Status */}
+                          <Card className="p-6">
+                            <CardHeader className="pb-4">
+                              <CardTitle className="text-lg font-semibold">Súťaže podľa statusu</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="space-y-3">
+                                {dashboardStats?.competitionsByStatus?.map((item) => (
+                                  <div key={item.status} className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-3">
+                                      <div className={`w-3 h-3 rounded-full ${
+                                        item.status === 'live' ? 'bg-green-500' :
+                                        item.status === 'registration' ? 'bg-yellow-500' :
+                                        item.status === 'finished' ? 'bg-gray-500' : 'bg-blue-500'
+                                      }`} />
+                                      <span className="text-sm font-medium capitalize">
+                                        {item.status === 'live' ? 'Živo' :
+                                         item.status === 'registration' ? 'Registrácia' :
+                                         item.status === 'finished' ? 'Ukončené' : item.status}
+                                      </span>
+                                    </div>
+                                    <span className="text-sm font-semibold">{item.count}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
+
+                        {/* Recent Activity */}
+                        <Card className="p-6">
+                          <CardHeader className="pb-4">
+                            <CardTitle className="text-lg font-semibold">Nedávna aktivita</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-4">
+                              {dashboardStats?.recentActivity?.length ? (
+                                dashboardStats.recentActivity.map((activity, index) => (
+                                  <div key={activity.id} className="flex items-center space-x-3 p-3 bg-muted/30 rounded-lg">
+                                    <div className={`p-2 rounded-full ${
+                                      activity.type === 'team_registration' ? 'bg-blue-100' :
+                                      activity.type === 'catch_submission' ? 'bg-green-100' :
+                                      'bg-yellow-100'
+                                    }`}>
+                                      {activity.type === 'team_registration' ? (
+                                        <Users className="h-4 w-4 text-blue-600" />
+                                      ) : activity.type === 'catch_submission' ? (
+                                        <Trophy className="h-4 w-4 text-green-600" />
+                                      ) : (
+                                        <FileText className="h-4 w-4 text-yellow-600" />
+                                      )}
+                                    </div>
+                                    <div className="flex-1">
+                                      <p className="text-sm font-medium text-foreground">{activity.description}</p>
+                                      <p className="text-xs text-muted-foreground">
+                                        {new Date(activity.timestamp).toLocaleString('sk-SK')}
+                                        {activity.user && ` • ${activity.user}`}
+                                      </p>
+                                    </div>
+                                  </div>
+                                ))
+                              ) : (
+                                <p className="text-center text-muted-foreground py-8">Žiadna nedávna aktivita</p>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </>
+                    )}
+                  </div>
+                </TabsContent>
+              )}
+
               {/* Team Management Tab */}
               <TabsContent value="teams" className="p-6">
                 <div className="flex items-center justify-between mb-6">
