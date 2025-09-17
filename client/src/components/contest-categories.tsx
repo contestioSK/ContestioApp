@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, Eye, Trophy, UserPlus, ArrowRight, Clock } from "lucide-react";
 import { Link } from "wouter";
 import registrationImage from "@assets/FB_IMG_1710518342053_1758098361872.jpg";
+import upcomingImage from "@assets/360_F_381579894_CiNFCkD3dVWVjOm5WzxGeYlD9B1Go1sr_1758098475555.jpg";
 
 interface Contest {
   id: string;
@@ -72,8 +73,8 @@ export function ContestCategories({ contests }: ContestCategoriesProps) {
       count: registrationClosedFuture.length,
       icon: Calendar,
       route: "/categories/upcoming",
-      gradient: "from-blue-500 to-blue-600",
-      bgPattern: null,
+      gradient: "from-orange-500 to-orange-600",
+      bgPattern: upcomingImage,
       badge: "📅 Nadchádzajúce",
       badgeVariant: "secondary" as const
     },
