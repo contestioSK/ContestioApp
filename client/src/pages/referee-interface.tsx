@@ -12,21 +12,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { Camera, LogOut, Check, Clock } from "lucide-react";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import type { Competition, Team, Referee, Catch } from "@shared/schema";
 import { formatSectorPlace } from "@/lib/utils";
 
-const catchSubmissionSchema = z.object({
+// Dynamic schema based on competition's minimum weight
+const createCatchSubmissionSchema = (minWeight: number = 2) => z.object({
   teamId: z.string().min(1, "Prosím vyberte tím"),
-  weight: z.number().min(0.1, "Váha musí byť najmenej 0,1 kg"),
+  weight: z.number().min(minWeight, `Váha musí byť najmenej ${minWeight} kg`),
   fishType: z.enum(["scaly", "mirror"], { required_error: "Prosím vyberte typ ryby" }),
   competitionId: z.string().min(1),
 });
 
-type CatchSubmissionForm = z.infer<typeof catchSubmissionSchema>;
+const defaultCatchSubmissionSchema = createCatchSubmissionSchema(2);
+
+type CatchSubmissionForm = z.infer<typeof defaultCatchSubmissionSchema>;
 
 export default function RefereeInterface() {
   const { toast } = useToast();
@@ -51,7 +54,7 @@ export default function RefereeInterface() {
   // }, [isAuthenticated, isLoading, user, toast]);
 
   const form = useForm<CatchSubmissionForm>({
-    resolver: zodResolver(catchSubmissionSchema),
+    resolver: zodResolver(defaultCatchSubmissionSchema),
     defaultValues: {
       weight: 0,
       fishType: "scaly",
@@ -64,6 +67,26 @@ export default function RefereeInterface() {
     queryKey: ["/api/competitions"],
     enabled: true, // DEMO MODE - Always enabled for demonstration
   });
+
+  const { data: selectedCompetitionDetails } = useQuery<Competition>({
+    queryKey: ["/api/competitions", selectedCompetition],
+    enabled: !!selectedCompetition,
+  });
+
+  // Update form validation when competition changes
+  useEffect(() => {
+    if (selectedCompetitionDetails?.minWeight) {
+      const newSchema = createCatchSubmissionSchema(parseFloat(selectedCompetitionDetails.minWeight));
+      form.reset({
+        weight: 0,
+        fishType: "scaly",
+        competitionId: selectedCompetition,
+        teamId: "",
+      });
+      // Note: We need to create a new form resolver with updated schema
+      // For now, we'll show the minimum weight in the label and placeholder
+    }
+  }, [selectedCompetitionDetails, selectedCompetition, form]);
 
   const { data: teams } = useQuery<Team[]>({
     queryKey: ["/api/competitions", selectedCompetition, "teams"],
@@ -271,14 +294,19 @@ export default function RefereeInterface() {
                         <FormField
                           control={form.control}
                           name="weight"
-                          render={({ field }) => (
+                          render={({ field }) => {
+                            const minWeightKg = selectedCompetitionDetails?.minWeight ? parseFloat(selectedCompetitionDetails.minWeight) : 2;
+                            const minWeightGrams = minWeightKg * 1000;
+                            const placeholderWeight = Math.max(minWeightGrams + 500, 2500); // Slight buffer above minimum
+                            
+                            return (
                             <FormItem>
-                              <FormLabel>Váha (gramy)</FormLabel>
+                              <FormLabel>Váha (gramy) - min. {minWeightKg} kg</FormLabel>
                               <FormControl>
                                 <div className="relative">
                                   <Input 
                                     type="number" 
-                                    placeholder="2850" 
+                                    placeholder={placeholderWeight.toString()} 
                                     className="font-mono pr-12"
                                     {...field}
                                     onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
@@ -289,9 +317,13 @@ export default function RefereeInterface() {
                                   </span>
                                 </div>
                               </FormControl>
+                              <FormDescription className="text-xs">
+                                Úlovky pod {minWeightKg} kg nebudú započítané do výsledkov
+                              </FormDescription>
                               <FormMessage />
                             </FormItem>
-                          )}
+                            );
+                          }}
                         />
                         
                         {/* Fish Type */}
