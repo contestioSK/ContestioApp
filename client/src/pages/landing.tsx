@@ -116,6 +116,14 @@ export default function Landing() {
                     FAQ
                   </span>
                 </Link>
+                <Link href="/contact">
+                  <span 
+                    className="text-sm font-medium text-foreground hover:text-primary transition-colors duration-200 relative after:content-[''] after:absolute after:w-0 after:h-0.5 after:bg-primary after:left-0 after:bottom-[-4px] after:transition-all after:duration-200 hover:after:w-full cursor-pointer"
+                    data-testid="button-contact"
+                  >
+                    Kontakt
+                  </span>
+                </Link>
               </div>
             </div>
             
