@@ -101,61 +101,110 @@ export function ContestCategories({ contests }: ContestCategoriesProps) {
   ];
 
   return (
-    <section className="py-16 bg-gradient-to-br from-background via-muted/20 to-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+    <section className="py-20 bg-gradient-to-br from-slate-50 via-blue-50/50 to-green-50/50 dark:from-slate-900 dark:via-slate-800/50 dark:to-slate-900 relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute inset-0 opacity-30">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-secondary/3 to-primary/5"></div>
+        <div className="absolute top-20 left-20 w-32 h-32 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-40 right-20 w-48 h-48 bg-secondary/10 rounded-full blur-3xl animate-pulse animation-delay-300"></div>
+      </div>
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-primary/10 to-secondary/10 mb-6">
+            <Trophy className="w-10 h-10 text-primary" />
+          </div>
+          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6 bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent">
             Kategórie súťaží
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Vyberte si kategóriu súťaží, ktorá vás zaujíma a preskúmajte dostupné turnaje
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+            Vyberte si kategóriu súťaží, ktorá vás zaujíma a preskúmajte dostupné turnaje v reálnom čase
           </p>
+          <div className="w-32 h-1 bg-gradient-to-r from-primary to-secondary mx-auto mt-8 rounded-full"></div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {categories.map((category) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
+          {categories.map((category, index) => (
             <Link key={category.route} href={category.route}>
-              <Card className="group cursor-pointer overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 bg-white dark:bg-card" data-testid={`category-card-${category.route.split('/').pop()}`}>
-                <div className="relative h-48">
+              <Card 
+                className="group cursor-pointer overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 hover:rotate-1 bg-white dark:bg-card relative"
+                style={{ animationDelay: `${index * 0.1}s` }}
+                data-testid={`category-card-${category.route.split('/').pop()}`}
+              >
+                <div className="relative h-56 overflow-hidden">
                   <img 
                     src={category.bgPattern}
                     alt={category.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    loading="lazy"
                   />
-                  <div className={`absolute inset-0 bg-gradient-to-br ${category.gradient} opacity-80`} />
-                  <div className="absolute inset-0 bg-black/20" />
+                  <div className={`absolute inset-0 bg-gradient-to-br ${category.gradient} opacity-85 group-hover:opacity-75 transition-opacity duration-300`} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
                   
                   <div className="absolute top-4 left-4">
-                    <Badge variant={category.badgeVariant} className="bg-white/90 text-black backdrop-blur-sm font-medium">
+                    <Badge 
+                      variant={category.badgeVariant} 
+                      className="bg-white/95 text-black backdrop-blur-sm font-semibold px-3 py-1 shadow-lg border-0"
+                    >
                       {category.badge}
                     </Badge>
                   </div>
                   
                   <div className="absolute top-4 right-4">
-                    <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                      <category.icon className="w-6 h-6 text-white" />
+                    <div className="w-14 h-14 rounded-full bg-white/25 backdrop-blur-sm flex items-center justify-center group-hover:bg-white/35 transition-colors duration-300 shadow-lg">
+                      <category.icon className="w-7 h-7 text-white drop-shadow-lg" />
                     </div>
                   </div>
                   
                   <div className="absolute bottom-4 left-4 right-4">
                     <div className="flex items-center justify-between text-white">
-                      <div className="text-2xl font-bold">{category.count}</div>
-                      <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                      <div className="flex items-center space-x-2">
+                        <div className="text-3xl font-bold drop-shadow-lg">{category.count}</div>
+                        <div className="text-sm opacity-90">súťaží</div>
+                      </div>
+                      <div className="flex items-center space-x-2 bg-white/20 backdrop-blur-sm rounded-full px-3 py-1 shadow-lg">
+                        <span className="text-xs font-medium">Zobraziť</span>
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+                      </div>
                     </div>
                   </div>
+                  
+                  {/* Decorative corner element */}
+                  <div className="absolute -bottom-2 -right-2 w-16 h-16 bg-white/10 rounded-full blur-xl group-hover:bg-white/20 transition-colors duration-300"></div>
                 </div>
                 
-                <CardContent className="p-6">
-                  <h3 className="font-bold text-lg text-foreground mb-2 group-hover:text-primary transition-colors">
-                    {category.title}
+                <CardContent className="p-6 bg-gradient-to-br from-white to-slate-50/50 dark:from-card dark:to-card/50">
+                  <h3 className="font-bold text-xl text-foreground mb-3 group-hover:text-primary transition-colors duration-300 flex items-center space-x-2">
+                    <span>{category.title}</span>
+                    <Clock className={`w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity ${
+                      category.title.includes('Registrácia') ? 'text-green-500' : 
+                      category.title.includes('Prebiehajúce') ? 'text-red-500' : 
+                      category.title.includes('Budúce') ? 'text-blue-500' : 'text-amber-500'
+                    }`} />
                   </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-4">
                     {category.description}
                   </p>
                   
-                  <div className="mt-4 flex items-center text-sm font-medium text-primary">
-                    <span>Preskúmať súťaže</span>
-                    <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center text-sm font-semibold text-primary bg-primary/10 px-3 py-1 rounded-full">
+                      <span>Preskúmať všetky</span>
+                    </div>
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                      <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-300" />
+                    </div>
+                  </div>
+                  
+                  {/* Progress bar for visual appeal */}
+                  <div className="mt-4 h-1 bg-muted rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full bg-gradient-to-r transition-all duration-1000 delay-300 ${
+                        category.title.includes('Registrácia') ? 'from-green-400 to-green-600' :
+                        category.title.includes('Prebiehajúce') ? 'from-red-400 to-red-600' :
+                        category.title.includes('Budúce') ? 'from-blue-400 to-blue-600' : 'from-amber-400 to-amber-600'
+                      }`}
+                      style={{ width: category.count > 0 ? `${Math.min(100, category.count * 20)}%` : '5%' }}
+                    ></div>
                   </div>
                 </CardContent>
               </Card>
@@ -163,10 +212,38 @@ export function ContestCategories({ contests }: ContestCategoriesProps) {
           ))}
         </div>
         
-        <div className="text-center mt-12">
-          <p className="text-muted-foreground">
-            Kliknite na ktorúkoľvek kategóriu a preskúmajte všetky dostupné súťaže v danej kategórii
-          </p>
+        <div className="text-center mt-16">
+          <div className="bg-white/80 dark:bg-card/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-border/50">
+            <div className="flex items-center justify-center space-x-4 mb-4">
+              <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+              <p className="text-lg font-medium text-foreground">
+                Pripravení na konkurenciu?
+              </p>
+              <div className="w-2 h-2 bg-secondary rounded-full animate-pulse animation-delay-150"></div>
+            </div>
+            <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
+              Kliknite na ktorúkoľvek kategóriu a preskúmajte všetky dostupné súťaže v danej kategórii. 
+              Sledujte live výsledky, registrujte tímy a získajte ceny!
+            </p>
+            <div className="flex flex-wrap justify-center items-center gap-4 text-sm text-muted-foreground">
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                <span>Otvorené registrácie</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                <span>Prebiehajúce súťaže</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                <span>Nadchádzajúce podujatia</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 rounded-full bg-amber-500"></div>
+                <span>Ukončené turnaje</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
