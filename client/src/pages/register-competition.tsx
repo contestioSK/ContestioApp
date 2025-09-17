@@ -169,6 +169,7 @@ export default function RegisterCompetition() {
     if (data.thirdPlacePrize) formData.append('thirdPlacePrize', data.thirdPlacePrize);
     if (data.registrationFee) formData.append('registrationFee', data.registrationFee);
     if (data.maxTeams) formData.append('maxTeams', data.maxTeams);
+    formData.append('minWeight', data.minWeight.toString()); // Add minimum weight
     formData.append('contactName', data.contactName);
     formData.append('contactEmail', data.contactEmail);
     if (data.contactPhone) formData.append('contactPhone', data.contactPhone);
