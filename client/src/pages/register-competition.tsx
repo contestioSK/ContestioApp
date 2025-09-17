@@ -19,12 +19,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { insertCompetitionRegistrationSchema, type InsertCompetitionRegistration } from "@shared/schema";
-import { Plus, Trash2, ArrowLeft, Award, MapPin, Trophy, Camera, X } from "lucide-react";
+import { PlanTier, canUseFeature, PLAN_CAPABILITIES, getPlanPrice } from "@shared/plan-capabilities";
+import { Plus, Trash2, ArrowLeft, Award, MapPin, Trophy, Camera, X, Crown, Star, Zap, Building } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { getSideCompetitionLabel } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { z } from "zod";
 
 // Form-specific schema that uses strings for dates and handles null values
@@ -51,6 +52,11 @@ const competitionRegistrationFormSchema = z.object({
   })).min(1, "Súťaž musí mať aspoň jeden sektor"),
   sideCompetitions: z.array(z.string()).optional().default([]),
   scoringType: z.enum(["total", "avg3", "avg5"]).default("total"),
+  // Plan-related fields
+  selectedPlan: z.enum(["basic", "pro", "premium", "enterprise"]).default("basic"),
+  requestedSubdomain: z.string().min(3, "Subdoména musí mať aspoň 3 znaky").max(20, "Subdoména môže mať maximálne 20 znakov").regex(/^[a-z0-9-]+$/, "Subdoména môže obsahovať len malé písmená, čísla a pomlčky").optional(),
+  brandingPrimaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Neplatná farba").optional(),
+  brandingSecondaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Neplatná farba").optional(),
 });
 
 type CompetitionRegistrationForm = z.infer<typeof competitionRegistrationFormSchema>;
@@ -59,6 +65,10 @@ export default function RegisterCompetition() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [competitionLogo, setCompetitionLogo] = useState<File | null>(null);
+
+  // Get URL parameters for plan preselection
+  const urlParams = new URLSearchParams(window.location.search);
+  const preselectedPlan = urlParams.get('plan') as PlanTier | null;
 
   const form = useForm<CompetitionRegistrationForm>({
     resolver: zodResolver(competitionRegistrationFormSchema),
@@ -85,8 +95,16 @@ export default function RegisterCompetition() {
       ],
       sideCompetitions: [],
       scoringType: "total",
+      selectedPlan: (preselectedPlan && ['basic', 'pro', 'premium', 'enterprise'].includes(preselectedPlan)) ? preselectedPlan : "basic",
+      requestedSubdomain: "",
+      brandingPrimaryColor: "",
+      brandingSecondaryColor: "",
     },
   });
+
+  // Watch the selected plan to dynamically enable/disable features
+  const selectedPlan = form.watch("selectedPlan");
+  const hasSectors = form.watch("hasSectors");
 
   const handleLogoSelect = (file: File | null) => {
     setCompetitionLogo(file);
@@ -126,6 +144,18 @@ export default function RegisterCompetition() {
     formData.append('hasSectors', data.hasSectors.toString());
     formData.append('sectorPlaces', JSON.stringify(data.sectorPlaces));
     formData.append('sideCompetitions', JSON.stringify(data.sideCompetitions || []));
+    
+    // Plan-related fields
+    formData.append('selectedPlan', data.selectedPlan);
+    if (data.requestedSubdomain) formData.append('requestedSubdomain', data.requestedSubdomain);
+    
+    // Branding fields (combine into branding object)
+    const branding: any = {};
+    if (data.brandingPrimaryColor) branding.primaryColor = data.brandingPrimaryColor;
+    if (data.brandingSecondaryColor) branding.secondaryColor = data.brandingSecondaryColor;
+    if (Object.keys(branding).length > 0) {
+      formData.append('branding', JSON.stringify(branding));
+    }
 
     setIsSubmitting(true);
 
@@ -231,6 +261,105 @@ export default function RegisterCompetition() {
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                 
+                {/* Plan Selection */}
+                <div className="space-y-6">
+                  <h3 className="text-lg font-medium text-foreground">Výber balíka</h3>
+                  <FormField
+                    control={form.control}
+                    name="selectedPlan"
+                    render={({ field }) => (
+                      <FormItem className="space-y-3">
+                        <FormControl>
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            value={field.value}
+                            className="grid gap-4 md:grid-cols-2 lg:grid-cols-4"
+                            data-testid="radio-group-plan-selection"
+                          >
+                            {Object.entries(PLAN_CAPABILITIES).map(([planId, capabilities]) => {
+                              const isSelected = field.value === planId;
+                              const planTier = planId as PlanTier;
+                              const { price, currency } = getPlanPrice(planTier);
+                              
+                              const PlanIcon = planTier === 'basic' ? Zap : 
+                                             planTier === 'pro' ? Star : 
+                                             planTier === 'premium' ? Crown : Building;
+                              
+                              return (
+                                <div key={planId}>
+                                  <RadioGroupItem value={planId} id={planId} className="sr-only" />
+                                  <label
+                                    htmlFor={planId}
+                                    className={`
+                                      relative flex flex-col p-4 rounded-lg border-2 cursor-pointer transition-all
+                                      ${isSelected 
+                                        ? 'border-primary bg-primary/5 ring-2 ring-primary/20' 
+                                        : 'border-border hover:border-primary/50'
+                                      }
+                                    `}
+                                    data-testid={`plan-card-${planId}`}
+                                  >
+                                    {planTier === 'pro' && (
+                                      <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-purple-500 text-white text-xs">
+                                        Najobľúbenejší
+                                      </Badge>
+                                    )}
+                                    
+                                    <div className="flex items-center justify-center w-12 h-12 mb-3 mx-auto bg-primary/10 rounded-full">
+                                      <PlanIcon className="w-6 h-6 text-primary" />
+                                    </div>
+                                    
+                                    <h4 className="text-center font-semibold capitalize mb-2">
+                                      {planTier}
+                                    </h4>
+                                    
+                                    <div className="text-center mb-4">
+                                      {price ? (
+                                        <div>
+                                          <span className="text-2xl font-bold">{price}</span>
+                                          <span className="text-muted-foreground ml-1">{currency}</span>
+                                          <div className="text-xs text-muted-foreground">/ súťaž</div>
+                                        </div>
+                                      ) : (
+                                        <div className="text-sm font-medium text-muted-foreground">
+                                          Cena na vyžiadanie
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    <div className="text-xs text-muted-foreground space-y-1">
+                                      <div>• Počet rozhodcov: {capabilities.maxReferees ?? 'Neobmedzený'}</div>
+                                      {planTier === 'basic' && <div>• Základné funkcie</div>}
+                                      {canUseFeature(planTier, 'sectors') && <div>• Sektory</div>}
+                                      {canUseFeature(planTier, 'sideCompetitions') && <div>• Doplnkové súťaže</div>}
+                                      {canUseFeature(planTier, 'sponsors') && <div>• Sponzori</div>}
+                                      {canUseFeature(planTier, 'export') && <div>• Export výsledkov</div>}
+                                      {canUseFeature(planTier, 'branding') && <div>• Vlastný branding</div>}
+                                      {canUseFeature(planTier, 'prioritySupport') && <div>• Prioritná podpora</div>}
+                                    </div>
+                                  </label>
+                                </div>
+                              );
+                            })}
+                          </RadioGroup>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  {selectedPlan && (
+                    <div className="p-4 bg-muted/30 rounded-lg">
+                      <p className="text-sm text-muted-foreground">
+                        <strong>Vybraný balík:</strong> {selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)}
+                        {getPlanPrice(selectedPlan).price && (
+                          <span> - {getPlanPrice(selectedPlan).price}{getPlanPrice(selectedPlan).currency}</span>
+                        )}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
                 {/* Basic Information */}
                 <div className="space-y-6">
                   <h3 className="text-lg font-medium text-foreground">Základné informácie</h3>
@@ -400,6 +529,131 @@ export default function RegisterCompetition() {
                   </div>
                 </div>
 
+                {/* Branding Section */}
+                {canUseFeature(selectedPlan, 'branding') ? (
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-2">
+                      <Trophy className="w-5 h-5 text-muted-foreground" />
+                      <h3 className="text-lg font-medium text-foreground">Vlastný branding</h3>
+                      <Badge variant="secondary" className="text-xs">
+                        {selectedPlan.toUpperCase()}
+                      </Badge>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <FormField
+                        control={form.control}
+                        name="requestedSubdomain"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Požadovaná subdoména</FormLabel>
+                            <FormControl>
+                              <div className="flex">
+                                <Input 
+                                  placeholder="nazov-sutaze" 
+                                  {...field} 
+                                  data-testid="input-requested-subdomain"
+                                  className="rounded-r-none"
+                                />
+                                <span className="inline-flex items-center px-3 rounded-r-md border border-l-0 border-muted-foreground/20 bg-muted text-muted-foreground text-sm">
+                                  .contestio.sk
+                                </span>
+                              </div>
+                            </FormControl>
+                            <FormDescription>
+                              Vaša súťaž bude dostupná na vlastnej adrese (napr. nazov-sutaze.contestio.sk)
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="brandingPrimaryColor"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Primárna farba</FormLabel>
+                            <FormControl>
+                              <div className="flex items-center space-x-2">
+                                <Input 
+                                  type="color" 
+                                  {...field} 
+                                  className="w-20 h-10 p-1 border"
+                                  data-testid="input-branding-primary-color"
+                                />
+                                <Input 
+                                  placeholder="#3B82F6" 
+                                  {...field} 
+                                  className="flex-1"
+                                  data-testid="input-branding-primary-hex"
+                                />
+                              </div>
+                            </FormControl>
+                            <FormDescription>
+                              Hlavná farba pre tlačidlá a zvýraznené prvky
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <FormField
+                      control={form.control}
+                      name="brandingSecondaryColor"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Sekundárna farba</FormLabel>
+                          <FormControl>
+                            <div className="flex items-center space-x-2">
+                              <Input 
+                                type="color" 
+                                {...field} 
+                                className="w-20 h-10 p-1 border"
+                                data-testid="input-branding-secondary-color"
+                              />
+                              <Input 
+                                placeholder="#64748B" 
+                                {...field} 
+                                className="flex-1"
+                                data-testid="input-branding-secondary-hex"
+                              />
+                            </div>
+                          </FormControl>
+                          <FormDescription>
+                            Doplnková farba pre texty a pozadia
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                ) : (
+                  selectedPlan === 'pro' && (
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-2">
+                        <Trophy className="w-5 h-5 text-muted-foreground" />
+                        <h3 className="text-lg font-medium text-muted-foreground">Vlastný branding</h3>
+                      </div>
+                      <div className="p-4 border-2 border-dashed border-muted-foreground/20 rounded-lg bg-muted/10">
+                        <p className="text-center text-muted-foreground text-sm">
+                          Vlastný branding (logo, farby, subdoména) je dostupný v <strong>Premium</strong> a <strong>Enterprise</strong> balíkoch.
+                          <br />
+                          <button
+                            type="button"
+                            onClick={() => form.setValue("selectedPlan", "premium")}
+                            className="mt-2 text-primary underline hover:no-underline"
+                            data-testid="button-upgrade-to-premium"
+                          >
+                            Upgradovať na Premium balík
+                          </button>
+                        </p>
+                      </div>
+                    </div>
+                  )
+                )}
+
                 {/* Competition Details */}
                 <div className="space-y-6">
                   <h3 className="text-lg font-medium text-foreground">Detaily súťaže</h3>
@@ -526,11 +780,15 @@ export default function RegisterCompetition() {
                 </div>
 
                 {/* Side Competitions */}
-                <div className="space-y-6">
-                  <div className="flex items-center gap-2">
-                    <Award className="w-5 h-5 text-muted-foreground" />
-                    <h3 className="text-lg font-medium text-foreground">Špeciálne súťaže</h3>
-                  </div>
+                {canUseFeature(selectedPlan, 'sideCompetitions') ? (
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-2">
+                      <Award className="w-5 h-5 text-muted-foreground" />
+                      <h3 className="text-lg font-medium text-foreground">Špeciálne súťaže</h3>
+                      <Badge variant="secondary" className="text-xs">
+                        {selectedPlan.toUpperCase()}
+                      </Badge>
+                    </div>
                   
                   <FormField
                     control={form.control}
@@ -609,8 +867,29 @@ export default function RegisterCompetition() {
                       </div>
                     </div>
                   )}
-                </div>
-
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-2">
+                      <Award className="w-5 h-5 text-muted-foreground" />
+                      <h3 className="text-lg font-medium text-muted-foreground">Špeciálne súťaže</h3>
+                    </div>
+                    <div className="p-4 border-2 border-dashed border-muted-foreground/20 rounded-lg bg-muted/10">
+                      <p className="text-center text-muted-foreground text-sm">
+                        Špeciálne súťaže sú dostupné v <strong>Pro</strong>, <strong>Premium</strong> a <strong>Enterprise</strong> balíkoch.
+                        <br />
+                        <button
+                          type="button"
+                          onClick={() => form.setValue("selectedPlan", "pro")}
+                          className="mt-2 text-primary underline hover:no-underline"
+                          data-testid="button-upgrade-to-pro"
+                        >
+                          Upgradovať na Pro balík
+                        </button>
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 {/* Contact Information */}
                 <div className="space-y-6">
@@ -695,29 +974,56 @@ export default function RegisterCompetition() {
                   </div>
                   
                   {/* Sector Toggle */}
-                  <FormField
-                    control={form.control}
-                    name="hasSectors"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center justify-between rounded-lg border p-4">
+                  {canUseFeature(selectedPlan, 'sectors') ? (
+                    <FormField
+                      control={form.control}
+                      name="hasSectors"
+                      render={({ field }) => (
+                        <FormItem className="flex items-center justify-between rounded-lg border p-4">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-base font-medium">
+                              Súťaž je rozdelená do sektorov
+                              <Badge variant="secondary" className="ml-2 text-xs">
+                                {selectedPlan.toUpperCase()}
+                              </Badge>
+                            </FormLabel>
+                            <FormDescription>
+                              Aktivujte túto možnosť, ak sa súťaž bude konať v geograficky rozdelených sektoroch
+                            </FormDescription>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                              data-testid="switch-has-sectors"
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  ) : (
+                    <div className="p-4 border-2 border-dashed border-muted-foreground/20 rounded-lg bg-muted/10">
+                      <div className="flex items-center justify-between">
                         <div className="space-y-0.5">
-                          <FormLabel className="text-base font-medium">
-                            Súťaž je rozdelená do sektorov
-                          </FormLabel>
-                          <FormDescription>
-                            Aktivujte túto možnosť, ak sa súťaž bude konať v geograficky rozdelených sektoroch
-                          </FormDescription>
+                          <div className="text-base font-medium text-muted-foreground">
+                            Súťaž rozdelená do sektorov
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            Funkcia dostupná v Pro, Premium a Enterprise balíkoch
+                          </div>
                         </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                            data-testid="switch-has-sectors"
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
+                        <Switch disabled={true} data-testid="switch-has-sectors-disabled" />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => form.setValue("selectedPlan", "pro")}
+                        className="mt-2 text-primary text-sm underline hover:no-underline"
+                        data-testid="button-upgrade-sectors"
+                      >
+                        Upgradovať na Pro balík
+                      </button>
+                    </div>
+                  )}
                   
                   {form.watch("hasSectors") && (
                     <>
