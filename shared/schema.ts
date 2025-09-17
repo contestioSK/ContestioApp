@@ -59,6 +59,14 @@ export const competitions = pgTable("competitions", {
   sideCompetitions: jsonb("side_competitions").$type<string[]>().default([]), // Array of side competition names
   hasSectors: boolean("has_sectors").notNull().default(false), // Whether competition is divided into sectors
   scoringType: varchar("scoring_type").notNull().default("total"), // "total", "avg3", "avg5"
+  
+  // Plan-related fields  
+  planTier: varchar("plan_tier").notNull().default("basic"), // "basic", "pro", "premium", "enterprise"
+  maxReferees: integer("max_referees"), // 2 for basic, 5 for pro, null for unlimited (premium/enterprise)
+  branding: jsonb("branding").$type<{primaryColor?: string; secondaryColor?: string; subdomain?: string}>(),
+  mediaAccess: boolean("media_access").notNull().default(false), // Premium/Enterprise feature
+  prioritySupport: boolean("priority_support").notNull().default(false), // Premium/Enterprise feature
+  
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -91,6 +99,13 @@ export const competitionRegistrations = pgTable("competition_registrations", {
   
   // Registration status
   status: varchar("status").notNull().default("submitted"), // "submitted", "approved", "declined"
+  
+  // Plan-related fields
+  selectedPlan: varchar("selected_plan").notNull().default("basic"), // "basic", "pro", "premium", "enterprise"
+  paymentStatus: varchar("payment_status").notNull().default("unpaid"), // "unpaid", "paid", "waived"
+  checkoutSessionId: varchar("checkout_session_id"), // For Stripe integration later
+  requestedSubdomain: varchar("requested_subdomain"), // For premium/enterprise branding
+  branding: jsonb("branding").$type<{primaryColor?: string; secondaryColor?: string; logoUrl?: string}>(),
   
   // Timestamps
   createdAt: timestamp("created_at").defaultNow(),
@@ -259,6 +274,8 @@ export const insertCompetitionRegistrationSchema = createInsertSchema(competitio
   updatedAt: true,
   status: true,
   approvedCompetitionId: true,
+  paymentStatus: true,
+  checkoutSessionId: true,
 }).extend({
   startDate: z.string().or(z.date()).transform((val) => new Date(val)),
   endDate: z.string().or(z.date()).transform((val) => new Date(val)),
@@ -268,6 +285,13 @@ export const insertCompetitionRegistrationSchema = createInsertSchema(competitio
     sectorName: z.string().min(1, "Názov sektoru je povinný"),
     places: z.array(z.string().min(1, "Názov miesta je povinný")).min(1, "Sektor musí mať aspoň jedno miesto")
   })).optional(),
+  selectedPlan: z.enum(["basic", "pro", "premium", "enterprise"]).default("basic"),
+  requestedSubdomain: z.string().min(3, "Subdoména musí mať aspoň 3 znaky").max(20, "Subdoména môže mať maximálne 20 znakov").regex(/^[a-z0-9-]+$/, "Subdoména môže obsahovať len malé písmená, čísla a pomlčky").optional(),
+  branding: z.object({
+    primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Neplatná farba").optional(),
+    secondaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Neplatná farba").optional(),
+    logoUrl: z.string().url("Neplatná URL").optional(),
+  }).optional(),
 });
 
 export const insertTeamSchema = createInsertSchema(teams).omit({
