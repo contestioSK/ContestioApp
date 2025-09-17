@@ -130,7 +130,7 @@ export default function Pricing() {
             Cenníky pre organizátorov
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Vyberte si balík, ktorý najlepšie vyhovuje vašej súťaži. Od jednoduchých turnajov 
+            Vyberte si balík, ktorý najlepšie vyhovuje vašej súťaži. Od jednoduchých pretkov 
             až po komplexné podujatia s vlastným brandingom.
           </p>
           <div className="w-24 h-1 bg-gradient-to-r from-primary to-primary/60 mx-auto mt-6 rounded-full"></div>
