@@ -31,48 +31,30 @@ const defaultCatchSubmissionSchema = createCatchSubmissionSchema(2);
 
 type CatchSubmissionForm = z.infer<typeof defaultCatchSubmissionSchema>;
 
-export default function RefereeInterface() {
+// Separate form component that can be remounted with key prop
+interface CatchSubmissionFormProps {
+  selectedCompetition: string;
+  selectedCompetitionDetails: Competition | undefined;
+  teams: Team[] | undefined;
+  onSuccess: () => void;
+}
+
+function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetitionDetails, teams, onSuccess }: CatchSubmissionFormProps) {
   const { toast } = useToast();
-  const { user, isAuthenticated, isLoading } = useAuth();
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
-  const [selectedCompetition, setSelectedCompetition] = useState<string>("");
-
-  // DEMO MODE - Temporarily disabled for demonstration
-  // Redirect if not authenticated or not referee
-  // useEffect(() => {
-  //   if (!isLoading && (!isAuthenticated || user?.role !== 'referee')) {
-  //     toast({
-  //       title: "Neautorizovaný",
-  //       description: "Ste odhlásený. Prihlasujem znovu...",
-  //       variant: "destructive",
-  //     });
-  //     setTimeout(() => {
-  //       window.location.href = "/api/login";
-  //     }, 500);
-  //     return;
-  //   }
-  // }, [isAuthenticated, isLoading, user, toast]);
-
-  const [currentSchema, setCurrentSchema] = useState(defaultCatchSubmissionSchema);
+  const [currentSchema, setCurrentSchema] = useState(() => {
+    const minWeight = selectedCompetitionDetails?.minWeight ? parseFloat(selectedCompetitionDetails.minWeight) : 2;
+    return createCatchSubmissionSchema(minWeight);
+  });
   
   const form = useForm<CatchSubmissionForm>({
     resolver: zodResolver(currentSchema),
     defaultValues: {
       weight: 0,
       fishType: "scaly",
-      competitionId: "",
+      competitionId: selectedCompetition,
       teamId: "",
     },
-  });
-
-  const { data: competitions, isLoading: competitionsLoading } = useQuery<Competition[]>({
-    queryKey: ["/api/competitions"],
-    enabled: true, // DEMO MODE - Always enabled for demonstration
-  });
-
-  const { data: selectedCompetitionDetails } = useQuery<Competition>({
-    queryKey: ["/api/competitions", selectedCompetition],
-    enabled: !!selectedCompetition,
   });
 
   // Update form validation when competition changes
@@ -82,7 +64,7 @@ export default function RefereeInterface() {
       const newSchema = createCatchSubmissionSchema(minWeight);
       setCurrentSchema(newSchema);
       
-      // Reset form with new resolver
+      // Reset form with new values
       form.reset({
         weight: 0,
         fishType: "scaly",
@@ -92,29 +74,6 @@ export default function RefereeInterface() {
     }
   }, [selectedCompetitionDetails, selectedCompetition, form]);
 
-  const { data: teams } = useQuery<Team[]>({
-    queryKey: ["/api/competitions", selectedCompetition, "teams"],
-    enabled: !!selectedCompetition, // DEMO MODE - Enabled when competition selected
-  });
-
-  const { data: recentCatches } = useQuery<(Catch & { team: Team })[]>({
-    queryKey: ["/api/competitions", selectedCompetition, "catches"],
-    enabled: !!selectedCompetition, // DEMO MODE - Enabled when competition selected
-  });
-
-  // DEMO MODE - Mock referee assignment for demonstration
-  const refereeAssignment = {
-    assignedSector: 'A',
-    userId: 'demo_referee_001',
-    competitionId: selectedCompetition
-  };
-  
-  // Get referee assignment for the current user and selected competition
-  // const { data: refereeAssignment } = useQuery<Referee>({
-  //   queryKey: ["/api/competitions", selectedCompetition, "referees", user?.id],
-  //   enabled: isAuthenticated && !!selectedCompetition && user?.role === 'referee',
-  // });
-
   const submitCatchMutation = useMutation({
     mutationFn: async (data: CatchSubmissionForm & { photo?: File }) => {
       const formData = new FormData();
@@ -122,7 +81,6 @@ export default function RefereeInterface() {
       formData.append('competitionId', data.competitionId);
       formData.append('weight', data.weight.toString()); // Weight already in kg from form validation
       formData.append('fishType', data.fishType);
-      // Note: sector is now set server-side from referee assignment for security
       
       if (data.photo) {
         formData.append('photo', data.photo);
@@ -149,6 +107,7 @@ export default function RefereeInterface() {
       form.reset();
       setSelectedPhoto(null);
       queryClient.invalidateQueries({ queryKey: ["/api/competitions", selectedCompetition, "catches"] });
+      onSuccess();
     },
     onError: (error) => {
       if (isUnauthorizedError(error)) {
@@ -186,6 +145,212 @@ export default function RefereeInterface() {
       setSelectedPhoto(file);
     }
   };
+
+  return (
+    <>
+      <div className="text-center mb-6">
+        <h3 className="text-lg font-semibold text-foreground mb-2">Odoslať nový záber</h3>
+        <p className="text-sm text-muted-foreground">Zadajte detaily záberu a nahrajte fotku</p>
+      </div>
+      
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          
+          {/* Team Selection */}
+          <FormField
+            control={form.control}
+            name="teamId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Vybrať tím</FormLabel>
+                <FormControl>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger data-testid="select-team">
+                      <SelectValue placeholder="Vyberte tím" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {teams?.filter((team: Team) => team.status === 'approved').map((team: Team) => (
+                        <SelectItem key={team.id} value={team.id}>
+                          {team.name} - {formatSectorPlace(team) || `Sektor ${team.sector}`}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          {/* Weight Input */}
+          <FormField
+            control={form.control}
+            name="weight"
+            render={({ field }) => {
+              const minWeightKg = selectedCompetitionDetails?.minWeight ? parseFloat(selectedCompetitionDetails.minWeight) : 2;
+              const placeholderWeight = minWeightKg + 0.5; // Slight buffer above minimum
+              
+              return (
+              <FormItem>
+                <FormLabel>Váha (kg) - min. {minWeightKg} kg</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input 
+                      type="number" 
+                      step="0.1"
+                      placeholder={placeholderWeight.toString()} 
+                      className="font-mono pr-12"
+                      {...field}
+                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                      data-testid="input-weight"
+                    />
+                    <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-sm">
+                      kg
+                    </span>
+                  </div>
+                </FormControl>
+                <FormDescription className="text-xs">
+                  Úlovky pod {minWeightKg} kg nebudú započítané do výsledkov
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+              );
+            }}
+          />
+          
+          {/* Fish Type */}
+          <FormField
+            control={form.control}
+            name="fishType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Typ ryby</FormLabel>
+                <FormControl>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      type="button"
+                      variant={field.value === "scaly" ? "default" : "outline"}
+                      className={field.value === "scaly" ? "bg-primary text-primary-foreground" : ""}
+                      onClick={() => field.onChange("scaly")}
+                      data-testid="button-scaly-carp"
+                    >
+                      Šupináč
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={field.value === "mirror" ? "default" : "outline"}
+                      className={field.value === "mirror" ? "bg-primary text-primary-foreground" : ""}
+                      onClick={() => field.onChange("mirror")}
+                      data-testid="button-mirror-carp"
+                    >
+                      Lysec
+                    </Button>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          {/* Photo Upload */}
+          <div>
+            <Label className="block text-sm font-medium text-foreground mb-2">Fotka ryby</Label>
+            <div 
+              className="border-2 border-dashed border-border rounded-lg p-4 text-center cursor-pointer hover:bg-muted/10"
+              onClick={() => document.getElementById('photo-input')?.click()}
+            >
+              <input
+                id="photo-input"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handlePhotoSelect}
+                data-testid="input-photo"
+              />
+              {selectedPhoto ? (
+                <div className="space-y-2">
+                  <Check className="mx-auto h-6 w-6 text-secondary" />
+                  <div className="text-sm text-foreground">Fotka vybraná: {selectedPhoto.name}</div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Camera className="mx-auto h-6 w-6 text-muted-foreground" />
+                  <div className="text-sm text-muted-foreground">Kliknite pre vytvorenie fotky</div>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Submit Button */}
+          <Button 
+            type="submit" 
+            className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90"
+            disabled={submitCatchMutation.isPending}
+            data-testid="button-submit-catch"
+          >
+            {submitCatchMutation.isPending ? "Odosíla sa..." : "Odoslať záber"}
+          </Button>
+          
+        </form>
+      </Form>
+    </>
+  );
+}
+
+export default function RefereeInterface() {
+  const { toast } = useToast();
+  const { user, isAuthenticated, isLoading } = useAuth();
+  const [selectedCompetition, setSelectedCompetition] = useState<string>("");
+
+  // DEMO MODE - Temporarily disabled for demonstration
+  // Redirect if not authenticated or not referee
+  // useEffect(() => {
+  //   if (!isLoading && (!isAuthenticated || user?.role !== 'referee')) {
+  //     toast({
+  //       title: "Neautorizovaný",
+  //       description: "Ste odhlásený. Prihlasujem znovu...",
+  //       variant: "destructive",
+  //     });
+  //     setTimeout(() => {
+  //       window.location.href = "/api/login";
+  //     }, 500);
+  //     return;
+  //   }
+  // }, [isAuthenticated, isLoading, user, toast]);
+
+  const { data: competitions, isLoading: competitionsLoading } = useQuery<Competition[]>({
+    queryKey: ["/api/competitions"],
+    enabled: true, // DEMO MODE - Always enabled for demonstration
+  });
+
+  const { data: selectedCompetitionDetails } = useQuery<Competition>({
+    queryKey: ["/api/competitions", selectedCompetition],
+    enabled: !!selectedCompetition,
+  });
+
+  const { data: teams } = useQuery<Team[]>({
+    queryKey: ["/api/competitions", selectedCompetition, "teams"],
+    enabled: !!selectedCompetition, // DEMO MODE - Enabled when competition selected
+  });
+
+  const { data: recentCatches } = useQuery<(Catch & { team: Team })[]>({
+    queryKey: ["/api/competitions", selectedCompetition, "catches"],
+    enabled: !!selectedCompetition, // DEMO MODE - Enabled when competition selected
+  });
+
+  // DEMO MODE - Mock referee assignment for demonstration
+  const refereeAssignment = {
+    assignedSector: 'A',
+    userId: 'demo_referee_001',
+    competitionId: selectedCompetition
+  };
+  
+  // Get referee assignment for the current user and selected competition
+  // const { data: refereeAssignment } = useQuery<Referee>({
+  //   queryKey: ["/api/competitions", selectedCompetition, "referees", user?.id],
+  //   enabled: isAuthenticated && !!selectedCompetition && user?.role === 'referee',
+  // });
+
 
   if (isLoading) {
     return <div className="min-h-screen bg-background" />;
@@ -259,153 +424,15 @@ export default function RefereeInterface() {
                 </div>
 
                 {selectedCompetition && (
-                  <>
-                    <div className="text-center mb-6">
-                      <h3 className="text-lg font-semibold text-foreground mb-2">Odoslať nový záber</h3>
-                      <p className="text-sm text-muted-foreground">Zadajte detaily záberu a nahrajte fotku</p>
-                    </div>
-                    
-                    <Form {...form} key={`form-${selectedCompetition}-${selectedCompetitionDetails?.minWeight || 2}`}>
-                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                        
-                        {/* Team Selection */}
-                        <FormField
-                          control={form.control}
-                          name="teamId"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Vybrať tím</FormLabel>
-                              <FormControl>
-                                <Select onValueChange={field.onChange} value={field.value}>
-                                  <SelectTrigger data-testid="select-team">
-                                    <SelectValue placeholder="Vyberte tím" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {teams?.filter((team: Team) => team.status === 'approved').map((team: Team) => (
-                                      <SelectItem key={team.id} value={team.id}>
-                                        {team.name} - {formatSectorPlace(team) || `Sektor ${team.sector}`}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        {/* Weight Input */}
-                        <FormField
-                          control={form.control}
-                          name="weight"
-                          render={({ field }) => {
-                            const minWeightKg = selectedCompetitionDetails?.minWeight ? parseFloat(selectedCompetitionDetails.minWeight) : 2;
-                            const placeholderWeight = minWeightKg + 0.5; // Slight buffer above minimum
-                            
-                            return (
-                            <FormItem>
-                              <FormLabel>Váha (kg) - min. {minWeightKg} kg</FormLabel>
-                              <FormControl>
-                                <div className="relative">
-                                  <Input 
-                                    type="number" 
-                                    step="0.1"
-                                    placeholder={placeholderWeight.toString()} 
-                                    className="font-mono pr-12"
-                                    {...field}
-                                    onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                                    data-testid="input-weight"
-                                  />
-                                  <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-sm">
-                                    kg
-                                  </span>
-                                </div>
-                              </FormControl>
-                              <FormDescription className="text-xs">
-                                Úlovky pod {minWeightKg} kg nebudú započítané do výsledkov
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                            );
-                          }}
-                        />
-                        
-                        {/* Fish Type */}
-                        <FormField
-                          control={form.control}
-                          name="fishType"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Typ ryby</FormLabel>
-                              <FormControl>
-                                <div className="grid grid-cols-2 gap-2">
-                                  <Button
-                                    type="button"
-                                    variant={field.value === "scaly" ? "default" : "outline"}
-                                    className={field.value === "scaly" ? "bg-primary text-primary-foreground" : ""}
-                                    onClick={() => field.onChange("scaly")}
-                                    data-testid="button-scaly-carp"
-                                  >
-                                    Šupináč
-                                  </Button>
-                                  <Button
-                                    type="button"
-                                    variant={field.value === "mirror" ? "default" : "outline"}
-                                    className={field.value === "mirror" ? "bg-primary text-primary-foreground" : ""}
-                                    onClick={() => field.onChange("mirror")}
-                                    data-testid="button-mirror-carp"
-                                  >
-                                    Lysec
-                                  </Button>
-                                </div>
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        {/* Photo Upload */}
-                        <div>
-                          <Label className="block text-sm font-medium text-foreground mb-2">Fotka ryby</Label>
-                          <div 
-                            className="border-2 border-dashed border-border rounded-lg p-4 text-center cursor-pointer hover:bg-muted/10"
-                            onClick={() => document.getElementById('photo-input')?.click()}
-                          >
-                            <input
-                              id="photo-input"
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={handlePhotoSelect}
-                              data-testid="input-photo"
-                            />
-                            {selectedPhoto ? (
-                              <div className="space-y-2">
-                                <Check className="mx-auto h-6 w-6 text-secondary" />
-                                <div className="text-sm text-foreground">Fotka vybraná: {selectedPhoto.name}</div>
-                              </div>
-                            ) : (
-                              <div className="space-y-2">
-                                <Camera className="mx-auto h-6 w-6 text-muted-foreground" />
-                                <div className="text-sm text-muted-foreground">Kliknite pre vytvorenie fotky</div>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        
-                        {/* Submit Button */}
-                        <Button 
-                          type="submit" 
-                          className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90"
-                          disabled={submitCatchMutation.isPending}
-                          data-testid="button-submit-catch"
-                        >
-                          {submitCatchMutation.isPending ? "Odosíla sa..." : "Odoslať záber"}
-                        </Button>
-                        
-                      </form>
-                    </Form>
-                  </>
+                  <CatchSubmissionFormComponent
+                    key={`${selectedCompetition}-${selectedCompetitionDetails?.minWeight || 2}`}
+                    selectedCompetition={selectedCompetition}
+                    selectedCompetitionDetails={selectedCompetitionDetails}
+                    teams={teams}
+                    onSuccess={() => {
+                      queryClient.invalidateQueries({ queryKey: ["/api/competitions", selectedCompetition, "catches"] });
+                    }}
+                  />
                 )}
               </>
             )}
