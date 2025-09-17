@@ -259,7 +259,7 @@ export default function CompetitionCatches() {
                           variant={catch_.isVerified ? "default" : "secondary"}
                           data-testid={`badge-verification-${catch_.id}`}
                         >
-                          {catch_.isVerified ? "Overený" : "Čaká na overenie"}
+                          {catch_.isVerified ? "Overený" : "Neoverený"}
                         </Badge>
                       </TableCell>
                     </TableRow>
