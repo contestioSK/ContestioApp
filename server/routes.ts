@@ -122,8 +122,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Only organizers and admins can create competitions" });
       }
 
+      // Ensure sideCompetitions is properly typed
+      const sideCompetitions = Array.isArray(req.body.sideCompetitions) 
+        ? req.body.sideCompetitions 
+        : (req.body.sideCompetitions ? [req.body.sideCompetitions] : []);
+
+      const { sideCompetitions: _, ...bodyData } = req.body;
       const competitionData = insertCompetitionSchema.parse({
-        ...req.body,
+        ...bodyData,
+        sideCompetitions: sideCompetitions as string[],
         organizerId: userId,
         minWeight: req.body.minWeight ?? "2.00",
       });
@@ -517,13 +524,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Parse complex fields
-      let sectorPlaces = [];
-      let sideCompetitions = [];
+      let sectorPlaces: Array<{ sectorName: string; places: string[] }> = [];
+      let sideCompetitions: string[] = [];
       let branding = null;
       
       if (req.body.sectorPlaces) {
         try {
-          sectorPlaces = JSON.parse(req.body.sectorPlaces);
+          sectorPlaces = JSON.parse(req.body.sectorPlaces) as Array<{ sectorName: string; places: string[] }>;
         } catch (e) {
           console.error('Error parsing sectorPlaces:', e);
         }
@@ -531,7 +538,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (req.body.sideCompetitions) {
         try {
-          sideCompetitions = JSON.parse(req.body.sideCompetitions);
+          sideCompetitions = JSON.parse(req.body.sideCompetitions) as string[];
         } catch (e) {
           console.error('Error parsing sideCompetitions:', e);
         }
@@ -602,7 +609,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         selectedPlan: dataToValidate.selectedPlan
       }, null, 2));
       
-      const registrationData = insertCompetitionRegistrationSchema.parse(dataToValidate);
+      const { sideCompetitions: _sideComps, sectorPlaces: _sectorPlaces, ...validationData } = dataToValidate;
+      const registrationData = insertCompetitionRegistrationSchema.parse({
+        ...validationData,
+        sideCompetitions: sideCompetitions as string[],
+        sectorPlaces: sectorPlaces as Array<{ sectorName: string; places: string[] }>,
+      });
       
       const registration = await storage.createCompetitionRegistration(registrationData);
       res.status(201).json(registration);
