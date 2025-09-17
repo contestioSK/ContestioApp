@@ -165,13 +165,10 @@ export default function CatchTimeline({ catches, isLoading, competitionId }: Cat
                       </div>
                     </div>
                     
-                    {/* Second row: Sector, fish type, and time */}
+                    {/* Second row: Sector and time */}
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center">
                         {getSectorBadge(catch_.sector)}
-                        <span className="text-xs text-muted-foreground" data-testid={`catch-fish-type-${catch_.id}`}>
-                          {getFishTypeDisplay(catch_.fishType)}
-                        </span>
                       </div>
                       <div className="text-xs text-muted-foreground" data-testid={`catch-time-${catch_.id}`}>
                         {formatTimeAgo(catch_.submittedAt!)}
