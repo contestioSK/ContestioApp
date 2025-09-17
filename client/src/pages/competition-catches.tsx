@@ -202,7 +202,7 @@ export default function CompetitionCatches() {
                       </TableCell>
                       <TableCell>
                         <Link href={`/competition/${id}/sector/${catch_.sector}`} data-testid={`link-catch-sector-${catch_.id}`}>
-                          <Badge className={`${getSectorBadgeColor(catch_.sector)} font-mono hover:opacity-80 cursor-pointer transition-opacity`}>
+                          <Badge className={`${getSectorBadgeColor(catch_.sector)} hover:opacity-80 cursor-pointer transition-opacity`}>
                             Sektor {catch_.sector}
                           </Badge>
                         </Link>
