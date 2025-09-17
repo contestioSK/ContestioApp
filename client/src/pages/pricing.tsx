@@ -127,7 +127,7 @@ export default function Pricing() {
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6" data-testid="text-pricing-title">
-            Cenníky pre organizátorov
+            Cenník pre organizátorov
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
             Vyberte si balík, ktorý najlepšie vyhovuje vašej súťaži. Od jednoduchých pretkov 
