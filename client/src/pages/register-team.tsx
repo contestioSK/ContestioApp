@@ -11,14 +11,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Users, Plus, Trash2, Fish, Camera, User, X } from "lucide-react";
+import { Users, Plus, Trash2, Fish, Camera, User, X, Flag } from "lucide-react";
 import { Link } from "wouter";
+import { COUNTRIES, getCountryFlag, getCountryDisplay } from "@/lib/countries";
 
 // Team registration form schema
 const teamRegistrationSchema = z.object({
   competitionId: z.string().min(1, "Výber súťaže je povinný"),
   name: z.string().min(1, "Názov tímu je povinný").max(100, "Názov tímu je príliš dlhý"),
   description: z.string().optional(),
+  country: z.string().length(2, "Kód krajiny musí mať presne 2 znaky").default("SK"),
   members: z.array(z.object({
     name: z.string().min(1, "Meno člena je povinné"),
     role: z.enum(["captain", "member"]),
@@ -54,6 +56,7 @@ export default function RegisterTeam() {
       competitionId: "",
       name: "",
       description: "",
+      country: "SK",
       members: [
         { name: "", role: "captain", email: "", phone: "" }
       ],
@@ -117,6 +120,7 @@ export default function RegisterTeam() {
     const formData = new FormData();
     formData.append('competitionId', data.competitionId);
     formData.append('name', data.name);
+    formData.append('country', data.country);
     if (data.description) {
       formData.append('description', data.description);
     }
@@ -264,6 +268,38 @@ export default function RegisterTeam() {
                       <FormControl>
                         <Textarea placeholder="Krátky popis vášho tímu" {...field} />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Country Selection */}
+                <FormField
+                  control={form.control}
+                  name="country"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        <Flag className="w-4 h-4" />
+                        Krajina
+                      </FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-team-country">
+                            <SelectValue placeholder="Vyberte krajinu" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="max-h-60">
+                          {COUNTRIES.map((country) => (
+                            <SelectItem key={country.code} value={country.code}>
+                              <div className="flex items-center gap-2">
+                                <span className="text-lg">{country.flag}</span>
+                                <span>{country.name}</span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
