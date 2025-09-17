@@ -7,6 +7,7 @@ import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import type { Team, TeamMember, Competition } from "@shared/schema";
 import { formatSectorPlace, getSectorLetter } from "@/lib/utils";
+import { getCountryFlag } from "@/lib/countries";
 
 interface LiveLeaderboardProps {
   teams: (Team & { members: TeamMember[] })[];
@@ -172,7 +173,21 @@ export default function LiveLeaderboard({ teams, isLoading, competitionId }: Liv
                     </td>
                     <td className="p-4">
                       <Link href={`/team/${team.id}`}>
-                        <div className="font-medium text-foreground group-hover:text-primary transition-colors" data-testid={`text-team-name-${team.id}`}>
+                        <div className="flex items-center gap-2 font-medium text-foreground group-hover:text-primary transition-colors" data-testid={`text-team-name-${team.id}`}>
+                          <img 
+                            src={getCountryFlag(team.country || 'SK')} 
+                            alt={`Vlajka ${team.country || 'SK'}`}
+                            className="w-5 h-4 object-cover rounded-sm border border-gray-200"
+                            title={`Krajina: ${team.country || 'SK'}`}
+                            onError={(e) => {
+                              // Fallback to emoji if image fails to load
+                              e.currentTarget.style.display = 'none';
+                              const span = document.createElement('span');
+                              span.textContent = '🏳️';
+                              span.className = 'text-sm';
+                              e.currentTarget.parentNode?.insertBefore(span, e.currentTarget);
+                            }}
+                          />
                           {team.name}
                         </div>
                       </Link>
