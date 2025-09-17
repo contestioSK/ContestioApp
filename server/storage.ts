@@ -181,11 +181,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateUserStatus(userId: string, active: boolean): Promise<User> {
-    // TODO: Add active field to users schema
     const [updatedUser] = await db
       .update(users)
       .set({ 
-        // active, // TODO: Add active field to schema
+        active,
         updatedAt: new Date() 
       })
       .where(eq(users.id, userId))

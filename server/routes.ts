@@ -14,6 +14,7 @@ import {
   createTeamStatusValidationSchema,
   createCatchValidationSchema,
 } from "@shared/schema";
+import { z } from "zod";
 import { canUseFeature } from "@shared/plan-capabilities";
 import multer from "multer";
 import path from "path";
@@ -559,12 +560,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Only admins can update user roles" });
       }
 
-      const { role } = req.body;
-      const targetUserId = req.params.userId;
+      // Zod validation for role
+      const roleSchema = z.object({
+        role: z.enum(['public', 'organizer', 'referee', 'admin'])
+      });
       
-      if (!role || !['public', 'organizer', 'referee', 'admin'].includes(role)) {
-        return res.status(400).json({ message: "Invalid role" });
+      const validation = roleSchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ message: "Invalid role. Must be one of: public, organizer, referee, admin" });
       }
+
+      const { role } = validation.data;
+      const targetUserId = req.params.userId;
 
       const updatedUser = await storage.updateUserRole(targetUserId, role);
       res.json(updatedUser);
@@ -583,12 +590,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Only admins can update user status" });
       }
 
-      const { active } = req.body;
-      const targetUserId = req.params.userId;
+      // Zod validation for status
+      const statusSchema = z.object({
+        active: z.boolean()
+      });
       
-      if (typeof active !== 'boolean') {
-        return res.status(400).json({ message: "Active must be boolean" });
+      const validation = statusSchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ message: "Invalid status. Active must be boolean" });
       }
+
+      const { active } = validation.data;
+      const targetUserId = req.params.userId;
 
       const updatedUser = await storage.updateUserStatus(targetUserId, active);
       res.json(updatedUser);

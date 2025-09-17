@@ -10,6 +10,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -172,6 +173,28 @@ export default function AdminPanel() {
       toast({
         title: "Chyba",
         description: "Nepodarilo sa aktualizovať rolu používateľa",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // User status update mutation
+  const updateUserStatusMutation = useMutation({
+    mutationFn: async ({ userId, active }: { userId: string; active: boolean }) => {
+      const response = await apiRequest("PUT", `/api/admin/users/${userId}/status`, { active });
+      return response.json();
+    },
+    onSuccess: () => {
+      refetchUsers();
+      toast({
+        title: "Úspech",
+        description: "Status používateľa bol aktualizovaný",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Chyba",
+        description: "Nepodarilo sa aktualizovať status používateľa",
         variant: "destructive",
       });
     },
@@ -556,8 +579,11 @@ export default function AdminPanel() {
                                 </div>
                               </div>
 
-                              {/* Role Badge */}
-                              <div>
+                              {/* Status and Role Badges */}
+                              <div className="flex items-center space-x-2">
+                                <Badge variant={user.active ? 'default' : 'destructive'} data-testid={`badge-status-${user.id}`}>
+                                  {user.active ? 'Aktívny' : 'Neaktívny'}
+                                </Badge>
                                 <Badge variant={
                                   user.role === 'admin' ? 'destructive' :
                                   user.role === 'organizer' ? 'default' :
@@ -569,23 +595,39 @@ export default function AdminPanel() {
                                 </Badge>
                               </div>
 
-                              {/* Role Change Select */}
-                              <div className="min-w-[160px]">
-                                <Select 
-                                  value={user.role} 
-                                  onValueChange={(newRole) => updateUserRoleMutation.mutate({ userId: user.id, role: newRole })}
-                                  disabled={updateUserRoleMutation.isPending}
-                                >
-                                  <SelectTrigger data-testid={`select-role-${user.id}`}>
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="public">Verejnosť</SelectItem>
-                                    <SelectItem value="referee">Rozhodca</SelectItem>
-                                    <SelectItem value="organizer">Organizátor</SelectItem>
-                                    <SelectItem value="admin">Admin</SelectItem>
-                                  </SelectContent>
-                                </Select>
+                              {/* Status Toggle and Role Change Select */}
+                              <div className="flex items-center space-x-2">
+                                {/* Status Toggle Switch */}
+                                <div className="flex items-center space-x-2 min-w-[100px]">
+                                  <Switch 
+                                    checked={user.active}
+                                    onCheckedChange={(active) => updateUserStatusMutation.mutate({ userId: user.id, active })}
+                                    disabled={updateUserStatusMutation.isPending}
+                                    data-testid={`switch-status-${user.id}`}
+                                  />
+                                  <span className="text-xs text-muted-foreground">
+                                    {user.active ? 'Aktívny' : 'Neaktívny'}
+                                  </span>
+                                </div>
+
+                                {/* Role Change Select */}
+                                <div className="min-w-[140px]">
+                                  <Select 
+                                    value={user.role} 
+                                    onValueChange={(newRole) => updateUserRoleMutation.mutate({ userId: user.id, role: newRole })}
+                                    disabled={updateUserRoleMutation.isPending}
+                                  >
+                                    <SelectTrigger data-testid={`select-role-${user.id}`}>
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="public">Verejnosť</SelectItem>
+                                      <SelectItem value="referee">Rozhodca</SelectItem>
+                                      <SelectItem value="organizer">Organizátor</SelectItem>
+                                      <SelectItem value="admin">Admin</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
                               </div>
 
                               {/* Additional Info */}
