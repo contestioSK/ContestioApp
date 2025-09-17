@@ -149,6 +149,7 @@ export default function RegisterCompetition() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const onSubmit = async (data: CompetitionRegistrationForm) => {
+    console.log('Submitting registration', data); // Debug log
     // Create FormData to handle file uploads
     const formData = new FormData();
     
@@ -292,7 +293,14 @@ export default function RegisterCompetition() {
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              <form onSubmit={form.handleSubmit(onSubmit, (errors) => {
+                console.log('Form validation errors:', errors);
+                toast({
+                  title: "Formulár obsahuje chyby",
+                  description: "Skontrolujte zvýraznené polia a skúste znovu.",
+                  variant: "destructive"
+                });
+              })} className="space-y-8">
                 
                 {/* Plan Selection */}
                 <div className="space-y-6">
