@@ -70,9 +70,6 @@ export default function NavigationHeader() {
             >
               Cenník
             </Link>
-            <a href="#archive" className="text-muted-foreground hover:text-primary transition-colors">
-              Archív
-            </a>
             <Link 
               href="/about-us" 
               className={`font-medium transition-colors ${
