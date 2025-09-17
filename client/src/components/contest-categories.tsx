@@ -121,6 +121,7 @@ export function ContestCategories({ contests }: ContestCategoriesProps) {
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Vyberte si kategóriu súťaží, ktorá vás zaujíma a preskúmajte dostupné turnaje
           </p>
+          <div className="w-24 h-1 bg-gradient-to-r from-primary to-secondary mx-auto mt-4 rounded-full"></div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
