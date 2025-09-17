@@ -5,10 +5,26 @@ import { Fish, Users, Trophy, MapPin, PlusCircle, Menu, X, Info, DollarSign, Hel
 import { ContestCategories } from "@/components/contest-categories";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import heroImage from "@assets/Carp_Fishing_1600x500_crop_center_6bc11ee9-9096-425e-8946-560290a33987_2016x630_1758061236097.webp";
+interface Competition {
+  id: string;
+  name: string;
+  description: string;
+  location: string;
+  status: 'registration' | 'live' | 'finished';
+  startDate: string;
+  endDate: string;
+}
+
 export default function Landing() {
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  // Fetch real competitions from API
+  const { data: competitions = [], isLoading } = useQuery<Competition[]>({
+    queryKey: ["/api/competitions"]
+  });
 
   // Navigation items
   const navItems = [
@@ -299,7 +315,7 @@ export default function Landing() {
       </section>
 
       {/* Contest Categories */}
-      <ContestCategories contests={sampleContests} />
+      <ContestCategories contests={competitions} />
 
       {/* Footer */}
       <footer className="bg-primary text-primary-foreground py-12">
