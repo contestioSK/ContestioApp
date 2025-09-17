@@ -13,6 +13,8 @@ export default function NavigationHeader() {
     switch (role) {
       case 'organizer':
         return 'Panel organizátora';
+      case 'admin':
+        return 'Admin panel';
       case 'referee':
         return 'Rozhranie rozhodcu';
       default:
@@ -26,6 +28,9 @@ export default function NavigationHeader() {
         setLocation('/');
         break;
       case 'organizer':
+        setLocation('/admin-panel');
+        break;
+      case 'admin':
         setLocation('/admin-panel');
         break;
       case 'referee':
@@ -116,6 +121,9 @@ export default function NavigationHeader() {
                     {user.role === 'organizer' && (
                       <SelectItem value="organizer">Panel organizátora</SelectItem>
                     )}
+                    {user.role === 'admin' && (
+                      <SelectItem value="admin">Admin panel</SelectItem>
+                    )}
                     {user.role === 'referee' && (
                       <SelectItem value="referee">Rozhranie rozhodcu</SelectItem>
                     )}
@@ -124,7 +132,7 @@ export default function NavigationHeader() {
               </div>
             )}
             
-            {user?.role === 'organizer' && (
+            {(user?.role === 'organizer' || user?.role === 'admin') && (
               <Button 
                 className="bg-accent text-accent-foreground hover:bg-accent/90"
                 onClick={() => setLocation('/admin-panel')}
