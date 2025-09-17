@@ -6,6 +6,7 @@ import { Link } from "wouter";
 import registrationImage from "@assets/FB_IMG_1710518342053_1758098361872.jpg";
 import upcomingImage from "@assets/360_F_381579894_CiNFCkD3dVWVjOm5WzxGeYlD9B1Go1sr_1758098475555.jpg";
 import liveImage from "@assets/image0000021(2)_1758098537265.jpg";
+import finishedImage from "@assets/zemplinska-sirava-6_1758098736505.avif";
 
 interface Contest {
   id: string;
@@ -96,8 +97,8 @@ export function ContestCategories({ contests }: ContestCategoriesProps) {
       count: finishedContests.length, 
       icon: Trophy,
       route: "/categories/finished",
-      gradient: "from-amber-500 to-amber-600",
-      bgPattern: null,
+      gradient: "from-blue-500 to-blue-600",
+      bgPattern: finishedImage,
       badge: "🏆 Ukončené",
       badgeVariant: "outline" as const
     }
