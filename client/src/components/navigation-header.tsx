@@ -71,6 +71,15 @@ export default function NavigationHeader() {
               Cenník
             </Link>
             <Link 
+              href="/faq" 
+              className={`font-medium transition-colors ${
+                location === '/faq' ? 'text-primary' : 'text-muted-foreground hover:text-primary'
+              }`}
+              data-testid="nav-faq"
+            >
+              FAQ
+            </Link>
+            <Link 
               href="/about-us" 
               className={`font-medium transition-colors ${
                 location === '/about-us' ? 'text-primary' : 'text-muted-foreground hover:text-primary'
