@@ -68,7 +68,7 @@ export default function NavigationHeader() {
               }`}
               data-testid="nav-pricing"
             >
-              Cenníky
+              Cenník
             </Link>
             <a href="#archive" className="text-muted-foreground hover:text-primary transition-colors">
               Archív
