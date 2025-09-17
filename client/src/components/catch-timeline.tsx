@@ -122,18 +122,31 @@ export default function CatchTimeline({ catches, isLoading, competitionId }: Cat
                   {/* Fish photo placeholder - would show actual photo if available */}
                   <div className="w-16 h-16 rounded-lg bg-muted/20 flex items-center justify-center flex-shrink-0">
                     {catch_.photoUrl ? (
-                      <img 
-                        src={catch_.photoUrl} 
-                        alt="Fotka úlovku" 
-                        className="w-16 h-16 rounded-lg object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                      <div 
+                        className="w-16 h-16 rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all transform hover:scale-105"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          console.log('Kliknul si na fotku:', catch_.photoUrl);
+                          setSelectedPhoto({
+                            url: catch_.photoUrl!,
+                            teamName: catch_.team?.name || 'Neznámy tím',
+                            weight: `${parseFloat(catch_.weight).toFixed(2)} kg`,
+                            fishType: getFishTypeDisplay(catch_.fishType)
+                          });
+                        }}
                         data-testid={`catch-photo-${catch_.id}`}
-                        onClick={() => setSelectedPhoto({
-                          url: catch_.photoUrl!,
-                          teamName: catch_.team?.name || 'Neznámy tím',
-                          weight: `${parseFloat(catch_.weight).toFixed(2)} kg`,
-                          fishType: getFishTypeDisplay(catch_.fishType)
-                        })}
-                      />
+                      >
+                        <img 
+                          src={catch_.photoUrl} 
+                          alt="Fotka úlovku" 
+                          className="w-full h-full object-cover pointer-events-none"
+                          onError={(e) => {
+                            console.error('Chyba pri načítaní fotky:', catch_.photoUrl);
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      </div>
                     ) : (
                       <div className="text-xs text-muted-foreground text-center">
                         Žiadna<br />fotka
