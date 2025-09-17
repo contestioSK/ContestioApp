@@ -41,19 +41,29 @@ import type { Competition, Team, TeamMember } from "@shared/schema";
 
 // Schema for competition creation
 const competitionSchema = z.object({
-  name: z.string().min(1, "Názov je povinný"),
-  description: z.string().optional(),
-  location: z.string().min(1, "Lokalita je povinná"),
-  startDate: z.string().min(1, "Začiatok je povinný"),
-  endDate: z.string().min(1, "Koniec je povinný"),
-  registrationDeadline: z.string().min(1, "Deadline je povinný"),
-  maxTeams: z.number().min(1, "Min 1 tím"),
-  registrationFee: z.number().min(0, "Poplatok musí byť >= 0"),
-  minWeight: z.number().min(0, "Min hmotnosť musí byť >= 0"),
+  name: z.string().min(1, "Názov súťaže je povinný").max(255, "Názov je príliš dlhý"),
+  description: z.string().max(500, "Popis môže mať maximálne 500 znakov").optional(),
+  rules: z.string().optional(),
+  location: z.string().min(1, "Miesto je povinné").max(255, "Miesto je príliš dlhé"),
+  startDate: z.string().min(1, "Dátum začiatku je povinný"),
+  endDate: z.string().min(1, "Dátum konca je povinný"),
+  firstPlacePrize: z.string().optional(),
+  secondPlacePrize: z.string().optional(),
+  thirdPlacePrize: z.string().optional(),
+  registrationFee: z.string().optional(),
+  maxTeams: z.string().optional(),
+  hasSectors: z.boolean().default(false),
+  sectorPlaces: z.array(z.object({
+    sectorName: z.string().min(1, "Názov sektoru je povinný"),
+    places: z.array(z.string().min(1, "Názov miesta je povinný")).min(1, "Sektor musí mať aspoň jedno miesto")
+  })).default([]),
   sideCompetitions: z.array(z.string()).default([]),
-  prizes: z.array(z.string()).default([]),
-  hasSectors: z.boolean().optional().default(false),
   scoringType: z.enum(["total", "avg3", "avg5"]).default("total"),
+  minWeight: z.string().optional(),
+  selectedPlan: z.enum(["basic", "pro", "premium", "enterprise"]).default("basic"),
+  requestedSubdomain: z.string().optional(),
+  brandingPrimaryColor: z.string().optional(),
+  brandingSecondaryColor: z.string().optional(),
 });
 
 type CompetitionForm = z.infer<typeof competitionSchema>;
@@ -90,19 +100,33 @@ export default function AdminPanel() {
     defaultValues: {
       name: "",
       description: "",
+      rules: "",
       location: "",
-      startDate: "",
-      endDate: "",
-      registrationDeadline: "",
-      maxTeams: 50,
-      registrationFee: 0,
-      minWeight: 0,
-      sideCompetitions: [],
-      prizes: [],
+      startDate: new Date().toISOString().slice(0, 16),
+      endDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
+      firstPlacePrize: "",
+      secondPlacePrize: "",
+      thirdPlacePrize: "",
+      registrationFee: "",
+      maxTeams: "",
       hasSectors: false,
+      sectorPlaces: [
+        { sectorName: "Sektor A", places: ["Miesto 1", "Miesto 2", "Miesto 3"] },
+        { sectorName: "Sektor B", places: ["Miesto 1", "Miesto 2"] }
+      ],
+      sideCompetitions: [],
       scoringType: "total",
+      minWeight: "",
+      selectedPlan: "basic",
+      requestedSubdomain: "",
+      brandingPrimaryColor: "",
+      brandingSecondaryColor: "",
     },
   });
+
+  // Watch form values for dynamic behavior
+  const selectedPlan = form.watch("selectedPlan");
+  const hasSectors = form.watch("hasSectors");
 
   // Loading state
   if (isLoading) {
