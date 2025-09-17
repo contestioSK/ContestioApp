@@ -193,7 +193,7 @@ export default function CatchTimeline({ catches, isLoading, competitionId }: Cat
 
       {/* Photo Modal */}
       <Dialog open={!!selectedPhoto} onOpenChange={() => setSelectedPhoto(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] p-0">
+        <DialogContent className="max-w-4xl max-h-[90vh] p-0" aria-describedby="catch-photo-description">
           <div className="relative">
             <Button
               variant="ghost"
@@ -219,6 +219,9 @@ export default function CatchTimeline({ catches, isLoading, competitionId }: Cat
                     <DialogTitle className="text-xl font-bold text-foreground">
                       {selectedPhoto.teamName}
                     </DialogTitle>
+                    <p id="catch-photo-description" className="text-sm text-muted-foreground mb-2">
+                      Detail úlovku s váhou a typom ryby
+                    </p>
                     <div className="flex items-center space-x-4 mt-2">
                       <div className="font-mono text-2xl text-accent font-bold">
                         {selectedPhoto.weight}
