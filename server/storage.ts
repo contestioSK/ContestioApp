@@ -25,7 +25,7 @@ import {
   type InsertSponsor,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, sql, ne } from "drizzle-orm";
+import { eq, desc, and, sql, ne, count, gt, gte } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (required for Replit Auth)
@@ -44,6 +44,25 @@ export interface IStorage {
   createCompetitionRegistration(registration: InsertCompetitionRegistration): Promise<CompetitionRegistration>;
   approveCompetitionRegistration(id: string, approverUserId: string): Promise<{ registration: CompetitionRegistration; competition: Competition }>;
   declineCompetitionRegistration(id: string): Promise<CompetitionRegistration>;
+  
+  // Admin dashboard operations
+  getDashboardStats(): Promise<{
+    totalUsers: number;
+    totalCompetitions: number;
+    activeCompetitions: number;
+    totalTeams: number;
+    totalCatches: number;
+    pendingRegistrations: number;
+    recentActivity: Array<{
+      id: string;
+      type: string;
+      description: string;
+      timestamp: Date;
+      user?: string;
+    }>;
+    usersByRole: Array<{ role: string; count: number }>;
+    competitionsByStatus: Array<{ status: string; count: number }>;
+  }>;
   
   // Team operations
   getTeamsByCompetition(competitionId: string): Promise<(Team & { members: TeamMember[] })[]>;
@@ -546,6 +565,96 @@ export class DatabaseStorage implements IStorage {
       biggestScalyCarp,
       biggestMirrorCarp,
       averageWeight,
+    };
+  }
+
+  // Admin dashboard operations
+  async getDashboardStats() {
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    // Get basic counts
+    const [totalUsersResult] = await db.select({ count: count() }).from(users);
+    const [totalCompetitionsResult] = await db.select({ count: count() }).from(competitions);
+    const [activeCompetitionsResult] = await db.select({ count: count() }).from(competitions)
+      .where(eq(competitions.status, 'live'));
+    const [totalTeamsResult] = await db.select({ count: count() }).from(teams);
+    const [totalCatchesResult] = await db.select({ count: count() }).from(catches);
+    const [pendingRegistrationsResult] = await db.select({ count: count() }).from(competitionRegistrations)
+      .where(eq(competitionRegistrations.status, 'submitted'));
+
+    // Get users by role
+    const usersByRole = await db
+      .select({ role: users.role, count: count() })
+      .from(users)
+      .groupBy(users.role);
+
+    // Get competitions by status  
+    const competitionsByStatus = await db
+      .select({ status: competitions.status, count: count() })
+      .from(competitions)
+      .groupBy(competitions.status);
+
+    // Get recent activity (teams, catches, registrations in last 30 days)
+    const recentActivity = [
+      // Recent team registrations
+      ...(await db
+        .select({
+          id: teams.id,
+          type: sql<string>`'team_registration'`,
+          description: sql<string>`CONCAT('Tím "', ${teams.name}, '" sa zaregistroval do súťaže')`,
+          timestamp: teams.createdAt,
+          user: sql<string>`NULL`,
+        })
+        .from(teams)
+        .where(gte(teams.createdAt, thirtyDaysAgo))
+        .orderBy(desc(teams.createdAt))
+        .limit(5)
+      ),
+      
+      // Recent catches
+      ...(await db
+        .select({
+          id: catches.id,
+          type: sql<string>`'catch_submission'`,
+          description: sql<string>`CONCAT('Nový úlovok: ', CAST(${catches.weight} AS TEXT), 'kg')`,
+          timestamp: catches.submittedAt,
+          user: sql<string>`NULL`,
+        })
+        .from(catches)
+        .where(gte(catches.submittedAt, thirtyDaysAgo))
+        .orderBy(desc(catches.submittedAt))
+        .limit(5)
+      ),
+      
+      // Recent competition registrations
+      ...(await db
+        .select({
+          id: competitionRegistrations.id,
+          type: sql<string>`'competition_request'`,
+          description: sql<string>`CONCAT('Nová žiadosť o súťaž: "', ${competitionRegistrations.name}, '"')`,
+          timestamp: competitionRegistrations.createdAt,
+          user: competitionRegistrations.contactName,
+        })
+        .from(competitionRegistrations)
+        .where(gte(competitionRegistrations.createdAt, thirtyDaysAgo))
+        .orderBy(desc(competitionRegistrations.createdAt))
+        .limit(5)
+      )
+    ]
+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+    .slice(0, 10);
+
+    return {
+      totalUsers: totalUsersResult.count,
+      totalCompetitions: totalCompetitionsResult.count,
+      activeCompetitions: activeCompetitionsResult.count,
+      totalTeams: totalTeamsResult.count,
+      totalCatches: totalCatchesResult.count,
+      pendingRegistrations: pendingRegistrationsResult.count,
+      recentActivity,
+      usersByRole,
+      competitionsByStatus,
     };
   }
 }
