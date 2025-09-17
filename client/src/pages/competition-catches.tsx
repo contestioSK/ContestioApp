@@ -5,8 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Link } from "wouter";
-import { ArrowLeft, Fish, Calendar, Weight, Clock, User, Camera } from "lucide-react";
+import { ArrowLeft, Fish, Calendar, Weight, Clock, User, Camera, X } from "lucide-react";
 import type { Catch, Team, Referee, Competition } from "@shared/schema";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
@@ -19,6 +20,7 @@ interface CatchWithDetails extends Catch {
 export default function CompetitionCatches() {
   const { id } = useParams();
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedPhoto, setSelectedPhoto] = useState<{ url: string; teamName: string; weight: string; fishType: string } | null>(null);
 
   // Fetch competition details
   const { data: competition, isLoading: competitionLoading } = useQuery<Competition>({
@@ -223,12 +225,26 @@ export default function CompetitionCatches() {
                       <TableCell>
                         {catch_.photoUrl ? (
                           <div className="flex items-center gap-1">
-                            <img 
-                              src={catch_.photoUrl} 
-                              alt="Úlovok" 
-                              className="w-8 h-8 rounded object-cover"
+                            <div
+                              className="w-8 h-8 rounded overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all transform hover:scale-110"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setSelectedPhoto({
+                                  url: catch_.photoUrl!,
+                                  teamName: catch_.team?.name || 'Neznámy tím',
+                                  weight: `${catch_.weight} kg`,
+                                  fishType: getFishTypeLabel(catch_.fishType)
+                                });
+                              }}
                               data-testid={`img-catch-photo-${catch_.id}`}
-                            />
+                            >
+                              <img 
+                                src={catch_.photoUrl} 
+                                alt="Úlovok" 
+                                className="w-full h-full object-cover pointer-events-none"
+                              />
+                            </div>
                             <Camera className="w-4 h-4 text-green-500" />
                           </div>
                         ) : (
@@ -269,6 +285,53 @@ export default function CompetitionCatches() {
           )}
 
         </div>
+
+        {/* Photo Modal */}
+        <Dialog open={!!selectedPhoto} onOpenChange={() => setSelectedPhoto(null)}>
+          <DialogContent className="max-w-4xl max-h-[90vh] p-0" aria-describedby="catch-photo-description">
+            <div className="relative">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute top-4 right-4 z-50 bg-black/20 text-white hover:bg-black/40"
+                onClick={() => setSelectedPhoto(null)}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+              
+              {selectedPhoto && (
+                <div className="flex flex-col">
+                  <div className="relative">
+                    <img 
+                      src={selectedPhoto.url}
+                      alt="Zväčšená fotka úlovku"
+                      className="w-full h-auto max-h-[70vh] object-contain"
+                    />
+                  </div>
+                  
+                  <div className="p-6 bg-background border-t">
+                    <DialogHeader>
+                      <DialogTitle className="text-xl font-bold text-foreground">
+                        {selectedPhoto.teamName}
+                      </DialogTitle>
+                      <p id="catch-photo-description" className="text-sm text-muted-foreground mb-2">
+                        Detail úlovku s váhou a typom ryby
+                      </p>
+                      <div className="flex items-center space-x-4 mt-2">
+                        <div className="font-mono text-2xl text-accent font-bold">
+                          {selectedPhoto.weight}
+                        </div>
+                        <Badge variant="outline" className="text-base px-3 py-1">
+                          {selectedPhoto.fishType}
+                        </Badge>
+                      </div>
+                    </DialogHeader>
+                  </div>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
