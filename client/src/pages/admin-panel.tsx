@@ -900,6 +900,162 @@ export default function AdminPanel() {
                                   />
                                 </div>
 
+                                {/* Plan Selection */}
+                                <FormField
+                                  control={form.control}
+                                  name="selectedPlan"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Cenový plán</FormLabel>
+                                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                          <SelectTrigger data-testid="select-plan-tier">
+                                            <SelectValue placeholder="Zvoľte plán" />
+                                          </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                          <SelectItem value="basic">Basic</SelectItem>
+                                          <SelectItem value="pro">Pro</SelectItem>
+                                          <SelectItem value="premium">Premium</SelectItem>
+                                          <SelectItem value="enterprise">Enterprise</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+
+                                {/* Side Competitions */}
+                                <div className="space-y-4">
+                                  <div className="flex items-center gap-2">
+                                    <Award className="w-5 h-5 text-muted-foreground" />
+                                    <h3 className="text-lg font-medium">Doplnkové súťaže</h3>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-4">
+                                    {[
+                                      { id: "big-fish-overall", label: "Najväčšia ryba celkovo" },
+                                      { id: "big-common-carp", label: "Najväčší šupináč" },
+                                      { id: "big-mirror-carp", label: "Najväčší zrkadláč" },
+                                      { id: "first-catch", label: "Prvý úlovok" },
+                                      { id: "most-fish-caught", label: "Najviac rýb" },
+                                      { id: "best-5-fish", label: "Najlepších 5 rýb" },
+                                    ].map((item) => (
+                                      <FormField
+                                        key={item.id}
+                                        control={form.control}
+                                        name="sideCompetitions"
+                                        render={({ field }) => {
+                                          return (
+                                            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                              <FormControl>
+                                                <input
+                                                  type="checkbox"
+                                                  className="mt-1"
+                                                  checked={field.value?.includes(item.id)}
+                                                  onChange={(checked) => {
+                                                    return checked.target.checked
+                                                      ? field.onChange([...field.value, item.id])
+                                                      : field.onChange(
+                                                          field.value?.filter(
+                                                            (value: string) => value !== item.id
+                                                          )
+                                                        )
+                                                  }}
+                                                />
+                                              </FormControl>
+                                              <div className="space-y-1 leading-none">
+                                                <FormLabel className="text-sm font-normal">
+                                                  {item.label}
+                                                </FormLabel>
+                                              </div>
+                                            </FormItem>
+                                          )
+                                        }}
+                                      />
+                                    ))}
+                                  </div>
+                                </div>
+
+                                {/* Sectors */}
+                                <FormField
+                                  control={form.control}
+                                  name="hasSectors"
+                                  render={({ field }) => (
+                                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                      <FormControl>
+                                        <input
+                                          type="checkbox"
+                                          className="mt-1"
+                                          checked={field.value}
+                                          onChange={field.onChange}
+                                        />
+                                      </FormControl>
+                                      <div className="space-y-1 leading-none">
+                                        <FormLabel>
+                                          Rozdeliť súťaž na sektory
+                                        </FormLabel>
+                                        <p className="text-sm text-muted-foreground">
+                                          Povoliť účastníkom súťažiť v rôznych sektoroch/oblastiach
+                                        </p>
+                                      </div>
+                                    </FormItem>
+                                  )}
+                                />
+
+                                {/* Branding (Premium/Enterprise) */}
+                                {(selectedPlan === 'premium' || selectedPlan === 'enterprise') && (
+                                  <div className="space-y-4">
+                                    <div className="flex items-center gap-2">
+                                      <Settings className="w-5 h-5 text-muted-foreground" />
+                                      <h3 className="text-lg font-medium">Branding</h3>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <FormField
+                                        control={form.control}
+                                        name="brandingPrimaryColor"
+                                        render={({ field }) => (
+                                          <FormItem>
+                                            <FormLabel>Primárna farba</FormLabel>
+                                            <FormControl>
+                                              <Input type="color" {...field} data-testid="input-primary-color" />
+                                            </FormControl>
+                                            <FormMessage />
+                                          </FormItem>
+                                        )}
+                                      />
+                                      <FormField
+                                        control={form.control}
+                                        name="brandingSecondaryColor"
+                                        render={({ field }) => (
+                                          <FormItem>
+                                            <FormLabel>Sekundárna farba</FormLabel>
+                                            <FormControl>
+                                              <Input type="color" {...field} data-testid="input-secondary-color" />
+                                            </FormControl>
+                                            <FormMessage />
+                                          </FormItem>
+                                        )}
+                                      />
+                                    </div>
+                                    <FormField
+                                      control={form.control}
+                                      name="requestedSubdomain"
+                                      render={({ field }) => (
+                                        <FormItem>
+                                          <FormLabel>Vlastná subdoména</FormLabel>
+                                          <FormControl>
+                                            <Input placeholder="moja-sutaz" {...field} data-testid="input-subdomain" />
+                                          </FormControl>
+                                          <p className="text-sm text-muted-foreground">
+                                            Bude dostupná na: {field.value || 'moja-sutaz'}.contestio.sk
+                                          </p>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
+                                  </div>
+                                )}
+
                                 <div className="flex justify-end space-x-2">
                                   <Button type="button" variant="outline" onClick={() => form.reset()}>
                                     Zrušiť
