@@ -1386,10 +1386,10 @@ export default function AdminPanel() {
                                     startDate: new Date(data.startDate),
                                     endDate: new Date(data.endDate),
                                     maxTeams: data.maxTeams ? parseInt(data.maxTeams) : null,
-                                    registrationFee: data.registrationFee ? parseFloat(data.registrationFee) : null,
-                                    firstPlacePrize: data.firstPlacePrize ? parseFloat(data.firstPlacePrize) : null,
-                                    secondPlacePrize: data.secondPlacePrize ? parseFloat(data.secondPlacePrize) : null,
-                                    thirdPlacePrize: data.thirdPlacePrize ? parseFloat(data.thirdPlacePrize) : null,
+                                    registrationFee: data.registrationFee || null,
+                                    firstPlacePrize: data.firstPlacePrize || null,
+                                    secondPlacePrize: data.secondPlacePrize || null,
+                                    thirdPlacePrize: data.thirdPlacePrize || null,
                                     minWeight: typeof data.minWeight === 'string' ? parseFloat(data.minWeight) : data.minWeight,
                                   };
                                   
