@@ -1350,14 +1350,37 @@ export default function AdminPanel() {
                           </DialogHeader>
                           {editingCompetition && (
                             <Form {...form}>
-                              <form onSubmit={form.handleSubmit((data) => {
-                                // TODO: Implement edit submission
-                                console.log('Edit competition:', data);
-                                setIsEditDialogOpen(false);
-                                toast({
-                                  title: "Súťaž upravená",
-                                  description: "Zmeny boli úspešne uložené."
-                                });
+                              <form onSubmit={form.handleSubmit(async (data) => {
+                                try {
+                                  const competitionData = {
+                                    ...data,
+                                    startDate: new Date(data.startDate),
+                                    endDate: new Date(data.endDate),
+                                    maxTeams: data.maxTeams ? parseInt(data.maxTeams) : null,
+                                    registrationFee: data.registrationFee ? parseFloat(data.registrationFee) : null,
+                                    firstPlacePrize: data.firstPlacePrize ? parseFloat(data.firstPlacePrize) : null,
+                                    secondPlacePrize: data.secondPlacePrize ? parseFloat(data.secondPlacePrize) : null,
+                                    thirdPlacePrize: data.thirdPlacePrize ? parseFloat(data.thirdPlacePrize) : null,
+                                    minWeight: typeof data.minWeight === 'string' ? parseFloat(data.minWeight) : data.minWeight,
+                                  };
+                                  
+                                  console.log('Edit competition data:', competitionData);
+                                  // TODO: Add actual edit API call here
+                                  // await editCompetitionMutation.mutateAsync({id: editingCompetition.id, data: competitionData});
+                                  
+                                  setIsEditDialogOpen(false);
+                                  toast({
+                                    title: "Súťaž upravená",
+                                    description: "Zmeny boli úspešne uložené."
+                                  });
+                                } catch (error) {
+                                  console.error("Error editing competition:", error);
+                                  toast({
+                                    title: "Chyba",
+                                    description: "Nepodarilo sa upraviť súťaž.",
+                                    variant: "destructive"
+                                  });
+                                }
                               })} className="space-y-6">
                                 
                                 {/* Basic Information */}
