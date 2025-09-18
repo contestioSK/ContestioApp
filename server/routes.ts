@@ -124,14 +124,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Ensure sideCompetitions is properly typed
-      const sideCompetitions = Array.isArray(req.body.sideCompetitions) 
+      const sideCompetitions: string[] = Array.isArray(req.body.sideCompetitions) 
         ? req.body.sideCompetitions 
         : (req.body.sideCompetitions ? [req.body.sideCompetitions] : []);
 
       const { sideCompetitions: _, ...bodyData } = req.body;
       const competitionData = insertCompetitionSchema.parse({
         ...bodyData,
-        sideCompetitions: sideCompetitions as string[],
+        sideCompetitions,
         organizerId: userId,
         minWeight: req.body.minWeight ?? "2.00",
       });
@@ -160,31 +160,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Ensure sideCompetitions is properly typed
-      const sideCompetitions = Array.isArray(req.body.sideCompetitions) 
+      const sideCompetitions: string[] = Array.isArray(req.body.sideCompetitions) 
         ? req.body.sideCompetitions 
         : (req.body.sideCompetitions ? [req.body.sideCompetitions] : []);
 
-      const { sideCompetitions: _, ...bodyData } = req.body;
-      
-      // Only include fields that should be updatable
-      const updateData: Partial<typeof insertCompetitionSchema._type> = {};
-      const allowedFields = [
-        'name', 'description', 'rules', 'location', 'startDate', 'endDate',
-        'firstPlacePrize', 'secondPlacePrize', 'thirdPlacePrize', 'registrationFee',
-        'maxTeams', 'hasSectors', 'sectorPlaces', 'scoringType', 'minWeight',
-        'selectedPlan', 'requestedSubdomain', 'brandingPrimaryColor', 'brandingSecondaryColor'
-      ];
-
-      for (const field of allowedFields) {
-        if (bodyData[field] !== undefined) {
-          updateData[field] = bodyData[field];
-        }
-      }
-
-      // Add sideCompetitions
-      if (sideCompetitions) {
-        updateData.sideCompetitions = sideCompetitions as string[];
-      }
+      // Parse and validate the update data using the same schema as creation
+      const { sideCompetitions: _, organizerId: __, ...bodyData } = req.body;
+      const updateData = insertCompetitionSchema.partial().parse({
+        ...bodyData,
+        sideCompetitions,
+      });
       
       const updatedCompetition = await storage.updateCompetition(req.params.id, updateData);
       res.json(updatedCompetition);
