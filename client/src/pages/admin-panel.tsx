@@ -219,6 +219,7 @@ export default function AdminPanel() {
     if (editingCompetition && competitions) {
       const updatedCompetition = competitions.find((c: any) => c.id === editingCompetition.id);
       if (updatedCompetition) {
+        console.log('Updating editingCompetition with new data:', updatedCompetition);
         setEditingCompetition(updatedCompetition);
       }
     }
