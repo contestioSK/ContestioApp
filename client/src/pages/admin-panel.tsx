@@ -1014,7 +1014,14 @@ export default function AdminPanel() {
                                       <FormItem>
                                         <FormLabel>Minimálna váha (kg)</FormLabel>
                                         <FormControl>
-                                          <Input type="number" step="0.1" placeholder="2.0" {...field} data-testid="input-min-weight" />
+                                          <Input 
+                                            type="number" 
+                                            step="0.1" 
+                                            placeholder="2.0" 
+                                            {...field}
+                                            onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
+                                            data-testid="input-min-weight" 
+                                          />
                                         </FormControl>
                                         <FormMessage />
                                       </FormItem>
@@ -1571,7 +1578,14 @@ export default function AdminPanel() {
                                       <FormItem>
                                         <FormLabel>Minimálna váha (kg)</FormLabel>
                                         <FormControl>
-                                          <Input type="number" step="0.1" placeholder="2.0" {...field} data-testid="input-edit-min-weight" />
+                                          <Input 
+                                            type="number" 
+                                            step="0.1" 
+                                            placeholder="2.0" 
+                                            {...field}
+                                            onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
+                                            data-testid="input-edit-min-weight" 
+                                          />
                                         </FormControl>
                                         <FormMessage />
                                       </FormItem>
