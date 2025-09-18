@@ -130,16 +130,6 @@ export default function AdminPanel() {
     },
   });
 
-  // Update editingCompetition when competitions data changes
-  useEffect(() => {
-    if (editingCompetition && competitions) {
-      const updatedCompetition = competitions.find(c => c.id === editingCompetition.id);
-      if (updatedCompetition) {
-        setEditingCompetition(updatedCompetition);
-      }
-    }
-  }, [competitions, editingCompetition?.id]);
-
   // Prefill form when editing competition
   useEffect(() => {
     if (editingCompetition && isEditDialogOpen) {
@@ -223,6 +213,16 @@ export default function AdminPanel() {
     queryKey: ["/api/admin/users"],
     enabled: isAuthenticated && isAdmin,
   });
+
+  // Update editingCompetition when competitions data changes
+  useEffect(() => {
+    if (editingCompetition && competitions) {
+      const updatedCompetition = competitions.find((c: any) => c.id === editingCompetition.id);
+      if (updatedCompetition) {
+        setEditingCompetition(updatedCompetition);
+      }
+    }
+  }, [competitions, editingCompetition?.id]);
 
   // User role update mutation
   const updateUserRoleMutation = useMutation({
