@@ -821,34 +821,19 @@ export default function AdminPanel() {
                                   )}
                                 />
 
-                                <div className="grid grid-cols-2 gap-4">
-                                  <FormField
-                                    control={form.control}
-                                    name="maxTeams"
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormLabel>Maximálny počet tímov</FormLabel>
-                                        <FormControl>
-                                          <Input type="number" placeholder="50" {...field} data-testid="input-max-teams" />
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                  <FormField
-                                    control={form.control}
-                                    name="minWeight"
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormLabel>Minimálna hmotnosť (g)</FormLabel>
-                                        <FormControl>
-                                          <Input type="number" placeholder="250" {...field} data-testid="input-min-weight" />
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                </div>
+                                <FormField
+                                  control={form.control}
+                                  name="maxTeams"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Maximálny počet tímov</FormLabel>
+                                      <FormControl>
+                                        <Input type="number" placeholder="50" {...field} data-testid="input-max-teams" />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
 
                                 <FormField
                                   control={form.control}
@@ -966,7 +951,7 @@ export default function AdminPanel() {
                                     name="minWeight"
                                     render={({ field }) => (
                                       <FormItem>
-                                        <FormLabel>Minimálna hmotnosť (kg)</FormLabel>
+                                        <FormLabel>Minimálna váha (kg)</FormLabel>
                                         <FormControl>
                                           <Input type="number" step="0.1" placeholder="2.0" {...field} data-testid="input-min-weight" />
                                         </FormControl>
