@@ -1274,6 +1274,19 @@ export default function AdminPanel() {
                                          competition.status === 'registration' ? 'Registrácie' :
                                          competition.status === 'finished' ? 'Ukončená' : 'Pozastavená'}
                                       </Badge>
+                                      <Badge 
+                                        variant="outline"
+                                        className={
+                                          competition.planTier === 'basic' ? 'bg-gray-100 text-gray-800 border-gray-300' :
+                                          competition.planTier === 'pro' ? 'bg-blue-100 text-blue-800 border-blue-300' :
+                                          competition.planTier === 'premium' ? 'bg-purple-100 text-purple-800 border-purple-300' :
+                                          competition.planTier === 'enterprise' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' :
+                                          'bg-gray-100 text-gray-800 border-gray-300'
+                                        }
+                                        data-testid={`badge-competition-plan-${competition.id}`}
+                                      >
+                                        {competition.planTier?.toUpperCase() || 'BASIC'}
+                                      </Badge>
                                     </div>
                                     <p className="text-muted-foreground text-sm mb-2">{competition.description}</p>
                                     <div className="flex items-center space-x-6 text-sm text-muted-foreground">
