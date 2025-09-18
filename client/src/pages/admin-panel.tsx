@@ -8,9 +8,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -38,6 +39,7 @@ import {
   Activity
 } from "lucide-react";
 import type { Competition, Team, TeamMember } from "@shared/schema";
+import { getSideCompetitionLabel } from "@/lib/utils";
 
 // Schema for competition creation
 const competitionSchema = z.object({
@@ -59,7 +61,7 @@ const competitionSchema = z.object({
   })).default([]),
   sideCompetitions: z.array(z.string()).default([]),
   scoringType: z.enum(["total", "avg3", "avg5"]).default("total"),
-  minWeight: z.string().optional(),
+  minWeight: z.number().min(2, "Minimálna hmotnosť musí byť aspoň 2 kg").max(15, "Maximálna hmotnosť môže byť 15 kg").default(2),
   selectedPlan: z.enum(["basic", "pro", "premium", "enterprise"]).default("basic"),
   requestedSubdomain: z.string().optional(),
   brandingPrimaryColor: z.string().optional(),
@@ -116,7 +118,7 @@ export default function AdminPanel() {
       ],
       sideCompetitions: [],
       scoringType: "total",
-      minWeight: "",
+      minWeight: 2,
       selectedPlan: "basic",
       requestedSubdomain: "",
       brandingPrimaryColor: "",
@@ -257,6 +259,10 @@ export default function AdminPanel() {
         organizerId: user?.id,
         maxTeams: data.maxTeams ? parseInt(data.maxTeams) : null,
         registrationFee: data.registrationFee ? parseFloat(data.registrationFee) : null,
+        firstPlacePrize: data.firstPlacePrize ? parseFloat(data.firstPlacePrize) : null,
+        secondPlacePrize: data.secondPlacePrize ? parseFloat(data.secondPlacePrize) : null,
+        thirdPlacePrize: data.thirdPlacePrize ? parseFloat(data.thirdPlacePrize) : null,
+        minWeight: typeof data.minWeight === 'string' ? parseFloat(data.minWeight) : data.minWeight,
       };
       await createCompetitionMutation.mutateAsync(competitionData);
     } catch (error) {
@@ -996,55 +1002,116 @@ export default function AdminPanel() {
                                 />
 
                                 {/* Side Competitions */}
-                                <div className="space-y-4">
-                                  <div className="flex items-center gap-2">
-                                    <Award className="w-5 h-5 text-muted-foreground" />
-                                    <h3 className="text-lg font-medium">Doplnkové súťaže</h3>
+                                {(selectedPlan === 'pro' || selectedPlan === 'premium' || selectedPlan === 'enterprise') ? (
+                                  <div className="space-y-6">
+                                    <div className="flex items-center gap-2">
+                                      <Award className="w-5 h-5 text-muted-foreground" />
+                                      <h3 className="text-lg font-medium text-foreground">Špeciálne súťaže</h3>
+                                      <Badge variant="secondary" className="text-xs">
+                                        {selectedPlan.toUpperCase()}
+                                      </Badge>
+                                    </div>
+                                  
+                                  <FormField
+                                    control={form.control}
+                                    name="sideCompetitions"
+                                    render={() => (
+                                      <FormItem>
+                                        <FormDescription>
+                                          Vyberte špeciálne súťaže, ktoré budú súčasťou hlavnej súťaže
+                                        </FormDescription>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                          {[
+                                            { id: "big-fish-overall", label: getSideCompetitionLabel("big-fish-overall") },
+                                            { id: "big-common-carp", label: getSideCompetitionLabel("big-common-carp") },
+                                            { id: "big-mirror-carp", label: getSideCompetitionLabel("big-mirror-carp") },
+                                            { id: "first-catch", label: getSideCompetitionLabel("first-catch") },
+                                            { id: "last-catch", label: getSideCompetitionLabel("last-catch") },
+                                            { id: "most-fish-caught", label: getSideCompetitionLabel("most-fish-caught") },
+                                            { id: "best-5-fish", label: getSideCompetitionLabel("best-5-fish") },
+                                            { id: "best-3-fish", label: getSideCompetitionLabel("best-3-fish") },
+                                            { id: "daily-big-fish", label: getSideCompetitionLabel("daily-big-fish") },
+                                            { id: "first-fish-over-15kg", label: getSideCompetitionLabel("first-fish-over-15kg") },
+                                            { id: "first-fish-over-20kg", label: getSideCompetitionLabel("first-fish-over-20kg") },
+                                            { id: "first-fish-over-25kg", label: getSideCompetitionLabel("first-fish-over-25kg") },
+                                          ].map((item) => (
+                                            <FormField
+                                              key={item.id}
+                                              control={form.control}
+                                              name="sideCompetitions"
+                                              render={({ field }) => {
+                                                return (
+                                                  <FormItem
+                                                    key={item.id}
+                                                    className="flex flex-row items-start space-x-3 space-y-0"
+                                                  >
+                                                    <FormControl>
+                                                      <Checkbox
+                                                        checked={field.value?.includes(item.id)}
+                                                        onCheckedChange={(checked) => {
+                                                          const currentValue = field.value || [];
+                                                          return checked
+                                                            ? field.onChange([...currentValue, item.id])
+                                                            : field.onChange(currentValue.filter((value) => value !== item.id));
+                                                        }}
+                                                        data-testid={`checkbox-side-competition-${item.id}`}
+                                                      />
+                                                    </FormControl>
+                                                    <FormLabel className="text-sm font-normal cursor-pointer">
+                                                      {item.label}
+                                                    </FormLabel>
+                                                  </FormItem>
+                                                );
+                                              }}
+                                            />
+                                          ))}
+                                        </div>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                  
+                                  {/* Show selected side competitions as badges */}
+                                  {form.watch("sideCompetitions")?.length > 0 && (
+                                    <div>
+                                      <FormLabel className="text-sm font-medium">Vybrané špeciálne súťaže:</FormLabel>
+                                      <div className="flex flex-wrap gap-2 mt-2">
+                                        {form.watch("sideCompetitions").map((id: string, index: number) => (
+                                          <Badge 
+                                            key={id} 
+                                            variant="outline" 
+                                            className="bg-muted/20 text-foreground border-muted"
+                                            data-testid={`badge-selected-side-competition-${index}`}
+                                          >
+                                            {getSideCompetitionLabel(id)}
+                                          </Badge>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
                                   </div>
-                                  <div className="grid grid-cols-2 gap-4">
-                                    {[
-                                      { id: "big-fish-overall", label: "Najväčšia ryba celkovo" },
-                                      { id: "big-common-carp", label: "Najväčší šupináč" },
-                                      { id: "big-mirror-carp", label: "Najväčší zrkadláč" },
-                                      { id: "first-catch", label: "Prvý úlovok" },
-                                      { id: "most-fish-caught", label: "Najviac rýb" },
-                                      { id: "best-5-fish", label: "Najlepších 5 rýb" },
-                                    ].map((item) => (
-                                      <FormField
-                                        key={item.id}
-                                        control={form.control}
-                                        name="sideCompetitions"
-                                        render={({ field }) => {
-                                          return (
-                                            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                                              <FormControl>
-                                                <input
-                                                  type="checkbox"
-                                                  className="mt-1"
-                                                  checked={field.value?.includes(item.id)}
-                                                  onChange={(checked) => {
-                                                    return checked.target.checked
-                                                      ? field.onChange([...field.value, item.id])
-                                                      : field.onChange(
-                                                          field.value?.filter(
-                                                            (value: string) => value !== item.id
-                                                          )
-                                                        )
-                                                  }}
-                                                />
-                                              </FormControl>
-                                              <div className="space-y-1 leading-none">
-                                                <FormLabel className="text-sm font-normal">
-                                                  {item.label}
-                                                </FormLabel>
-                                              </div>
-                                            </FormItem>
-                                          )
-                                        }}
-                                      />
-                                    ))}
+                                ) : (
+                                  <div className="space-y-6">
+                                    <div className="flex items-center gap-2">
+                                      <Award className="w-5 h-5 text-muted-foreground" />
+                                      <h3 className="text-lg font-medium text-muted-foreground">Špeciálne súťaže</h3>
+                                    </div>
+                                    <div className="p-4 border-2 border-dashed border-muted-foreground/20 rounded-lg bg-muted/10">
+                                      <p className="text-center text-muted-foreground text-sm">
+                                        Špeciálne súťaže sú dostupné v <strong>Pro</strong>, <strong>Premium</strong> a <strong>Enterprise</strong> balíkoch.
+                                        <br />
+                                        <button
+                                          type="button"
+                                          onClick={() => form.setValue("selectedPlan", "pro")}
+                                          className="mt-2 text-primary underline hover:no-underline"
+                                          data-testid="button-upgrade-to-pro"
+                                        >
+                                          Upgradovať na Pro balík
+                                        </button>
+                                      </p>
+                                    </div>
                                   </div>
-                                </div>
+                                )}
 
                                 {/* Sectors */}
                                 <FormField
