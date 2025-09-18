@@ -723,7 +723,7 @@ export default function AdminPanel() {
                               Vytvoriť súťaž
                             </Button>
                           </DialogTrigger>
-                          <DialogContent className="max-w-2xl">
+                          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                             <DialogHeader>
                               <DialogTitle>Vytvoriť novú súťaž</DialogTitle>
                             </DialogHeader>
