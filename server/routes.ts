@@ -144,6 +144,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put('/api/competitions/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'organizer' && user?.role !== 'admin') {
+        return res.status(403).json({ message: "Only organizers and admins can update competitions" });
+      }
+
+      // Verify competition exists
+      const existingCompetition = await storage.getCompetition(req.params.id);
+      if (!existingCompetition) {
+        return res.status(404).json({ message: "Competition not found" });
+      }
+
+      // Ensure sideCompetitions is properly typed
+      const sideCompetitions = Array.isArray(req.body.sideCompetitions) 
+        ? req.body.sideCompetitions 
+        : (req.body.sideCompetitions ? [req.body.sideCompetitions] : []);
+
+      const { sideCompetitions: _, ...bodyData } = req.body;
+      
+      // Only include fields that should be updatable
+      const updateData: Partial<typeof insertCompetitionSchema._type> = {};
+      const allowedFields = [
+        'name', 'description', 'rules', 'location', 'startDate', 'endDate',
+        'firstPlacePrize', 'secondPlacePrize', 'thirdPlacePrize', 'registrationFee',
+        'maxTeams', 'hasSectors', 'sectorPlaces', 'scoringType', 'minWeight',
+        'selectedPlan', 'requestedSubdomain', 'brandingPrimaryColor', 'brandingSecondaryColor'
+      ];
+
+      for (const field of allowedFields) {
+        if (bodyData[field] !== undefined) {
+          updateData[field] = bodyData[field];
+        }
+      }
+
+      // Add sideCompetitions
+      if (sideCompetitions) {
+        updateData.sideCompetitions = sideCompetitions as string[];
+      }
+      
+      const updatedCompetition = await storage.updateCompetition(req.params.id, updateData);
+      res.json(updatedCompetition);
+    } catch (error) {
+      console.error("Error updating competition:", error);
+      res.status(500).json({ message: "Failed to update competition" });
+    }
+  });
+
   // Team routes
   app.get('/api/competitions/:id/teams', async (req, res) => {
     try {
