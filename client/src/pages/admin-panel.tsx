@@ -900,6 +900,76 @@ export default function AdminPanel() {
                                   />
                                 </div>
 
+                                {/* Logo Upload */}
+                                <div>
+                                  <FormLabel>Logo súťaže (voliteľné)</FormLabel>
+                                  <div className="mt-2">
+                                    <label
+                                      htmlFor="competition-logo-input"
+                                      className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-muted rounded-lg cursor-pointer hover:border-primary/50 transition-colors bg-muted/10 hover:bg-muted/20"
+                                      data-testid="label-competition-logo-upload"
+                                    >
+                                      <input
+                                        id="competition-logo-input"
+                                        type="file"
+                                        accept="image/*"
+                                        className="hidden"
+                                        data-testid="input-competition-logo"
+                                      />
+                                      <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center mb-3">
+                                        <Trophy className="w-8 h-8 text-primary" />
+                                      </div>
+                                      <p className="text-sm font-medium text-foreground mb-1">
+                                        Pridať logo súťaže
+                                      </p>
+                                      <p className="text-xs text-muted-foreground text-center">
+                                        Kliknite pre výber súboru
+                                        <br />
+                                        <span className="text-xs">JPG, PNG, GIF (max 5MB)</span>
+                                      </p>
+                                    </label>
+                                  </div>
+                                </div>
+
+                                {/* Competition Configuration */}
+                                <div className="grid grid-cols-2 gap-4">
+                                  <FormField
+                                    control={form.control}
+                                    name="scoringType"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Typ hodnotenia</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                          <FormControl>
+                                            <SelectTrigger data-testid="select-scoring-type">
+                                              <SelectValue placeholder="Zvoľte typ hodnotenia" />
+                                            </SelectTrigger>
+                                          </FormControl>
+                                          <SelectContent>
+                                            <SelectItem value="total">Celková hmotnosť</SelectItem>
+                                            <SelectItem value="avg3">Priemer 3 najlepších</SelectItem>
+                                            <SelectItem value="avg5">Priemer 5 najlepších</SelectItem>
+                                          </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                  <FormField
+                                    control={form.control}
+                                    name="minWeight"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Minimálna hmotnosť (kg)</FormLabel>
+                                        <FormControl>
+                                          <Input type="number" step="0.1" placeholder="2.0" {...field} data-testid="input-min-weight" />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                </div>
+
                                 {/* Plan Selection */}
                                 <FormField
                                   control={form.control}
