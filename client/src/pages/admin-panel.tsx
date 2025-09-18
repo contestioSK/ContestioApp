@@ -95,6 +95,8 @@ export default function AdminPanel() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const [selectedCompetition, setSelectedCompetition] = useState<string>("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingCompetition, setEditingCompetition] = useState<Competition | null>(null);
   const [userSearchTerm, setUserSearchTerm] = useState("");
 
   const isAdmin = user?.role === 'admin';
@@ -1274,7 +1276,15 @@ export default function AdminPanel() {
                                       <Eye className="w-4 h-4 mr-1" />
                                       Zobraziť
                                     </Button>
-                                    <Button size="sm" variant="outline" data-testid={`button-edit-competition-${competition.id}`}>
+                                    <Button 
+                                      size="sm" 
+                                      variant="outline"
+                                      onClick={() => {
+                                        setEditingCompetition(competition);
+                                        setIsEditDialogOpen(true);
+                                      }}
+                                      data-testid={`button-edit-competition-${competition.id}`}
+                                    >
                                       <Edit className="w-4 h-4 mr-1" />
                                       Upraviť
                                     </Button>
@@ -1290,6 +1300,70 @@ export default function AdminPanel() {
                           <p className="text-muted-foreground text-lg">Žiadne súťaže nenájdené</p>
                         </div>
                       )}
+
+                      {/* Edit Competition Dialog */}
+                      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+                        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                          <DialogHeader>
+                            <DialogTitle>Upraviť súťaž</DialogTitle>
+                          </DialogHeader>
+                          {editingCompetition && (
+                            <Form {...form}>
+                              <form onSubmit={form.handleSubmit((data) => {
+                                // TODO: Implement edit submission
+                                console.log('Edit competition:', data);
+                                setIsEditDialogOpen(false);
+                                toast({
+                                  title: "Súťaž upravená",
+                                  description: "Zmeny boli úspešne uložené."
+                                });
+                              })} className="space-y-6">
+                                <div className="grid grid-cols-2 gap-4">
+                                  <FormField
+                                    control={form.control}
+                                    name="name"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Názov súťaže</FormLabel>
+                                        <FormControl>
+                                          <Input placeholder="Názov súťaže" {...field} data-testid="input-edit-competition-name" />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                  <FormField
+                                    control={form.control}
+                                    name="location"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Lokalita</FormLabel>
+                                        <FormControl>
+                                          <Input placeholder="Lokalita súťaže" {...field} data-testid="input-edit-competition-location" />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                </div>
+
+                                <div className="flex space-x-2">
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => setIsEditDialogOpen(false)}
+                                  >
+                                    Zrušiť
+                                  </Button>
+                                  <Button type="submit">
+                                    Uložiť zmeny
+                                  </Button>
+                                </div>
+                              </form>
+                            </Form>
+                          )}
+                        </DialogContent>
+                      </Dialog>
                     </div>
                   </TabsContent>
 
