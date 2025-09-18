@@ -289,6 +289,7 @@ export default function AdminPanel() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/competitions"] });
+      setIsEditDialogOpen(false);
       toast({
         title: "Úspech",
         description: "Súťaž bola úspešne upravená",
@@ -1395,8 +1396,6 @@ export default function AdminPanel() {
                                   
                                   console.log('Edit competition data:', competitionData);
                                   await editCompetitionMutation.mutateAsync({id: editingCompetition.id, data: competitionData});
-                                  
-                                  setIsEditDialogOpen(false);
                                 } catch (error) {
                                   console.error("Error editing competition:", error);
                                   toast({
