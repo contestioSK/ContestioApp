@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -129,6 +129,34 @@ export default function AdminPanel() {
       brandingSecondaryColor: "",
     },
   });
+
+  // Prefill form when editing competition
+  useEffect(() => {
+    if (editingCompetition && isEditDialogOpen) {
+      form.reset({
+        name: editingCompetition.name || "",
+        description: editingCompetition.description || "",
+        rules: editingCompetition.rules || "",
+        location: editingCompetition.location || "",
+        startDate: editingCompetition.startDate ? new Date(editingCompetition.startDate).toISOString().slice(0, 16) : "",
+        endDate: editingCompetition.endDate ? new Date(editingCompetition.endDate).toISOString().slice(0, 16) : "",
+        firstPlacePrize: editingCompetition.firstPlacePrize?.toString() || "",
+        secondPlacePrize: editingCompetition.secondPlacePrize?.toString() || "",
+        thirdPlacePrize: editingCompetition.thirdPlacePrize?.toString() || "",
+        registrationFee: editingCompetition.registrationFee?.toString() || "",
+        maxTeams: editingCompetition.maxTeams?.toString() || "",
+        hasSectors: editingCompetition.hasSectors || false,
+        sectorPlaces: editingCompetition.sectorPlaces || [],
+        sideCompetitions: editingCompetition.sideCompetitions || [],
+        scoringType: editingCompetition.scoringType || "total",
+        minWeight: editingCompetition.minWeight || 2,
+        selectedPlan: "basic", // Default since competitions don't store this
+        requestedSubdomain: "",
+        brandingPrimaryColor: "",
+        brandingSecondaryColor: "",
+      });
+    }
+  }, [editingCompetition, isEditDialogOpen, form]);
 
   // Watch form values for dynamic behavior
   const selectedPlan = form.watch("selectedPlan");
@@ -1318,6 +1346,8 @@ export default function AdminPanel() {
                                   description: "Zmeny boli úspešne uložené."
                                 });
                               })} className="space-y-6">
+                                
+                                {/* Basic Information */}
                                 <div className="grid grid-cols-2 gap-4">
                                   <FormField
                                     control={form.control}
@@ -1346,6 +1376,269 @@ export default function AdminPanel() {
                                     )}
                                   />
                                 </div>
+
+                                <FormField
+                                  control={form.control}
+                                  name="description"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Popis</FormLabel>
+                                      <FormControl>
+                                        <Textarea placeholder="Popis súťaže..." className="min-h-[100px]" {...field} data-testid="textarea-edit-competition-description" />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+
+                                <div className="grid grid-cols-2 gap-4">
+                                  <FormField
+                                    control={form.control}
+                                    name="startDate"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Dátum začiatku</FormLabel>
+                                        <FormControl>
+                                          <Input type="datetime-local" {...field} data-testid="input-edit-start-date" />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                  <FormField
+                                    control={form.control}
+                                    name="endDate"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Dátum konca</FormLabel>
+                                        <FormControl>
+                                          <Input type="datetime-local" {...field} data-testid="input-edit-end-date" />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                </div>
+
+                                <FormField
+                                  control={form.control}
+                                  name="rules"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Pravidlá súťaže</FormLabel>
+                                      <FormControl>
+                                        <Textarea placeholder="Pravidlá a podmienky súťaže..." className="min-h-[80px]" {...field} data-testid="textarea-edit-competition-rules" />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+
+                                <FormField
+                                  control={form.control}
+                                  name="maxTeams"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Maximálny počet tímov</FormLabel>
+                                      <FormControl>
+                                        <Input type="number" placeholder="50" {...field} data-testid="input-edit-max-teams" />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+
+                                <FormField
+                                  control={form.control}
+                                  name="registrationFee"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Registračný poplatok (€)</FormLabel>
+                                      <FormControl>
+                                        <Input type="number" step="0.01" placeholder="25.00" {...field} data-testid="input-edit-registration-fee" />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+
+                                <div className="grid grid-cols-3 gap-4">
+                                  <FormField
+                                    control={form.control}
+                                    name="firstPlacePrize"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>1. cena (€)</FormLabel>
+                                        <FormControl>
+                                          <Input type="number" step="0.01" placeholder="500.00" {...field} data-testid="input-edit-first-prize" />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                  <FormField
+                                    control={form.control}
+                                    name="secondPlacePrize"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>2. cena (€)</FormLabel>
+                                        <FormControl>
+                                          <Input type="number" step="0.01" placeholder="300.00" {...field} data-testid="input-edit-second-prize" />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                  <FormField
+                                    control={form.control}
+                                    name="thirdPlacePrize"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>3. cena (€)</FormLabel>
+                                        <FormControl>
+                                          <Input type="number" step="0.01" placeholder="100.00" {...field} data-testid="input-edit-third-prize" />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                </div>
+
+                                {/* Competition Configuration */}
+                                <div className="grid grid-cols-2 gap-4">
+                                  <FormField
+                                    control={form.control}
+                                    name="scoringType"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Typ hodnotenia</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                          <FormControl>
+                                            <SelectTrigger data-testid="select-edit-scoring-type">
+                                              <SelectValue placeholder="Zvoľte typ hodnotenia" />
+                                            </SelectTrigger>
+                                          </FormControl>
+                                          <SelectContent>
+                                            <SelectItem value="total">Celková hmotnosť</SelectItem>
+                                            <SelectItem value="avg3">Priemer 3 najlepších</SelectItem>
+                                            <SelectItem value="avg5">Priemer 5 najlepších</SelectItem>
+                                          </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                  <FormField
+                                    control={form.control}
+                                    name="minWeight"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Minimálna váha (kg)</FormLabel>
+                                        <FormControl>
+                                          <Input type="number" step="0.1" placeholder="2.0" {...field} data-testid="input-edit-min-weight" />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                </div>
+
+                                {/* Plan Selection */}
+                                <FormField
+                                  control={form.control}
+                                  name="selectedPlan"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Cenový plán</FormLabel>
+                                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                          <SelectTrigger data-testid="select-edit-plan-tier">
+                                            <SelectValue placeholder="Zvoľte plán" />
+                                          </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                          <SelectItem value="basic">Basic</SelectItem>
+                                          <SelectItem value="pro">Pro</SelectItem>
+                                          <SelectItem value="premium">Premium</SelectItem>
+                                          <SelectItem value="enterprise">Enterprise</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+
+                                {/* Side Competitions - simplified version for edit mode */}
+                                {(form.watch("selectedPlan") === 'pro' || form.watch("selectedPlan") === 'premium' || form.watch("selectedPlan") === 'enterprise') && (
+                                  <div className="space-y-4">
+                                    <div className="flex items-center gap-2">
+                                      <Award className="w-5 h-5 text-muted-foreground" />
+                                      <h3 className="text-lg font-medium text-foreground">Špeciálne súťaže</h3>
+                                      <Badge variant="secondary" className="text-xs">
+                                        {form.watch("selectedPlan")?.toUpperCase()}
+                                      </Badge>
+                                    </div>
+                                    
+                                    <FormField
+                                      control={form.control}
+                                      name="sideCompetitions"
+                                      render={() => (
+                                        <FormItem>
+                                          <FormDescription>
+                                            Vyberte špeciálne súťaže, ktoré budú súčasťou hlavnej súťaže
+                                          </FormDescription>
+                                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {[
+                                              { id: "big-fish-overall", label: getSideCompetitionLabel("big-fish-overall") },
+                                              { id: "big-common-carp", label: getSideCompetitionLabel("big-common-carp") },
+                                              { id: "big-mirror-carp", label: getSideCompetitionLabel("big-mirror-carp") },
+                                              { id: "first-catch", label: getSideCompetitionLabel("first-catch") },
+                                              { id: "last-catch", label: getSideCompetitionLabel("last-catch") },
+                                              { id: "most-fish-caught", label: getSideCompetitionLabel("most-fish-caught") },
+                                              { id: "best-5-fish", label: getSideCompetitionLabel("best-5-fish") },
+                                              { id: "best-3-fish", label: getSideCompetitionLabel("best-3-fish") },
+                                              { id: "daily-big-fish", label: getSideCompetitionLabel("daily-big-fish") },
+                                              { id: "first-fish-over-15kg", label: getSideCompetitionLabel("first-fish-over-15kg") },
+                                              { id: "first-fish-over-20kg", label: getSideCompetitionLabel("first-fish-over-20kg") },
+                                              { id: "first-fish-over-25kg", label: getSideCompetitionLabel("first-fish-over-25kg") },
+                                            ].map((item) => (
+                                              <FormField
+                                                key={item.id}
+                                                control={form.control}
+                                                name="sideCompetitions"
+                                                render={({ field }) => {
+                                                  return (
+                                                    <FormItem
+                                                      key={item.id}
+                                                      className="flex flex-row items-start space-x-3 space-y-0"
+                                                    >
+                                                      <FormControl>
+                                                        <Checkbox
+                                                          checked={field.value?.includes(item.id)}
+                                                          onCheckedChange={(checked) => {
+                                                            const currentValue = field.value || [];
+                                                            return checked
+                                                              ? field.onChange([...currentValue, item.id])
+                                                              : field.onChange(currentValue.filter((value) => value !== item.id));
+                                                          }}
+                                                          data-testid={`checkbox-edit-side-competition-${item.id}`}
+                                                        />
+                                                      </FormControl>
+                                                      <FormLabel className="text-sm font-normal cursor-pointer">
+                                                        {item.label}
+                                                      </FormLabel>
+                                                    </FormItem>
+                                                  );
+                                                }}
+                                              />
+                                            ))}
+                                          </div>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
+                                  </div>
+                                )}
 
                                 <div className="flex space-x-2">
                                   <Button
