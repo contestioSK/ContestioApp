@@ -36,7 +36,8 @@ import {
   Eye,
   UserX,
   BarChart3,
-  Activity
+  Activity,
+  Search
 } from "lucide-react";
 import type { Competition, Team, TeamMember } from "@shared/schema";
 import { getSideCompetitionLabel } from "@/lib/utils";
@@ -94,6 +95,7 @@ export default function AdminPanel() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const [selectedCompetition, setSelectedCompetition] = useState<string>("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [userSearchTerm, setUserSearchTerm] = useState("");
 
   const isAdmin = user?.role === 'admin';
 
@@ -612,6 +614,18 @@ export default function AdminPanel() {
                         <p className="text-muted-foreground">Spravujte roly a oprávnenia používateľov</p>
                       </div>
 
+                      {/* Search Users */}
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Vyhľadať používateľa podľa emailovej adresy..."
+                          value={userSearchTerm}
+                          onChange={(e) => setUserSearchTerm(e.target.value)}
+                          className="pl-9"
+                          data-testid="input-search-users"
+                        />
+                      </div>
+
                       {usersLoading ? (
                         <div className="space-y-4">
                           {[...Array(10)].map((_, i) => (
@@ -631,9 +645,25 @@ export default function AdminPanel() {
                           <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                           <p className="text-muted-foreground text-lg">Žiadni používatelia nenájdení</p>
                         </div>
-                      ) : (
-                        <div className="space-y-4">
-                          {allUsers?.map((user: any) => (
+                      ) : (() => {
+                        // Filter users based on search term
+                        const filteredUsers = allUsers?.filter((user: any) => 
+                          user.email.toLowerCase().includes(userSearchTerm.toLowerCase())
+                        ) || [];
+                        
+                        return filteredUsers.length === 0 && userSearchTerm ? (
+                          <div className="text-center py-12">
+                            <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                            <p className="text-muted-foreground text-lg">
+                              Žiadni používatelia pre "{userSearchTerm}" nenájdení
+                            </p>
+                            <p className="text-muted-foreground text-sm">
+                              Skúste upraviť vyhľadávací výraz
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            {filteredUsers?.map((user: any) => (
                             <div key={user.id} className="flex items-center space-x-4 p-4 border border-border rounded-lg bg-card">
                               {/* User Info */}
                               <div className="flex items-center space-x-3 flex-1">
@@ -711,7 +741,8 @@ export default function AdminPanel() {
                             </div>
                           ))}
                         </div>
-                      )}
+                        );
+                      })()}
                     </div>
                   </TabsContent>
 
