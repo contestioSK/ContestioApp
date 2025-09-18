@@ -281,6 +281,28 @@ export default function AdminPanel() {
     },
   });
 
+  // Competition edit mutation
+  const editCompetitionMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      const response = await apiRequest("PUT", `/api/competitions/${id}`, data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/competitions"] });
+      toast({
+        title: "Úspech",
+        description: "Súťaž bola úspešne upravená",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Chyba",
+        description: "Nepodarilo sa upraviť súťaž",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Form submission handler
   const onSubmit = async (data: any) => {
     try {
@@ -1372,14 +1394,9 @@ export default function AdminPanel() {
                                   };
                                   
                                   console.log('Edit competition data:', competitionData);
-                                  // TODO: Add actual edit API call here
-                                  // await editCompetitionMutation.mutateAsync({id: editingCompetition.id, data: competitionData});
+                                  await editCompetitionMutation.mutateAsync({id: editingCompetition.id, data: competitionData});
                                   
                                   setIsEditDialogOpen(false);
-                                  toast({
-                                    title: "Súťaž upravená",
-                                    description: "Zmeny boli úspešne uložené."
-                                  });
                                 } catch (error) {
                                   console.error("Error editing competition:", error);
                                   toast({

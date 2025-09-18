@@ -39,6 +39,7 @@ export interface IStorage {
   getCompetitions(): Promise<Competition[]>;
   getCompetition(id: string): Promise<Competition | undefined>;
   createCompetition(competition: InsertCompetition): Promise<Competition>;
+  updateCompetition(id: string, competition: Partial<InsertCompetition>): Promise<Competition>;
   updateCompetitionStatus(id: string, status: string): Promise<void>;
   
   // Competition registration operations
@@ -212,6 +213,15 @@ export class DatabaseStorage implements IStorage {
       .values(competition as typeof competitions.$inferInsert)
       .returning();
     return newCompetition;
+  }
+
+  async updateCompetition(id: string, competition: Partial<InsertCompetition>): Promise<Competition> {
+    const [updatedCompetition] = await db
+      .update(competitions)
+      .set({ ...competition, updatedAt: new Date() })
+      .where(eq(competitions.id, id))
+      .returning();
+    return updatedCompetition;
   }
 
   async updateCompetitionStatus(id: string, status: string): Promise<void> {
