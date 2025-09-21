@@ -92,6 +92,28 @@ const refereeSchema = z.object({
 
 type RefereeForm = z.infer<typeof refereeSchema>;
 
+// Schema for team editing
+const editTeamSchema = z.object({
+  name: z.string().min(1, "Názov tímu je povinný").max(255, "Názov je príliš dlhý"),
+  country: z.string().length(2, "Kód krajiny musí mať presne 2 znaky").default("SK"),
+  sectorName: z.string().optional(),
+  placeName: z.string().optional(),
+}).refine((data) => {
+  // If sectorName is provided, placeName must also be provided
+  if (data.sectorName && !data.placeName) {
+    return false;
+  }
+  if (data.placeName && !data.sectorName) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Ak je definovaný sektor, musí byť definované aj miesto",
+  path: ["sectorName"]
+});
+
+type EditTeamForm = z.infer<typeof editTeamSchema>;
+
 // Dashboard stats type
 interface DashboardStats {
   totalUsers: number;
@@ -128,6 +150,7 @@ export default function AdminPanel() {
   const [editingSponsor, setEditingSponsor] = useState<Sponsor | null>(null);
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [isTeamDetailsDialogOpen, setIsTeamDetailsDialogOpen] = useState(false);
+  const [isEditTeamDialogOpen, setIsEditTeamDialogOpen] = useState(false);
 
   const isAdmin = user?.role === 'admin';
 
@@ -189,6 +212,16 @@ export default function AdminPanel() {
     },
   });
 
+  const editTeamForm = useForm<EditTeamForm>({
+    resolver: zodResolver(editTeamSchema),
+    defaultValues: {
+      name: "",
+      country: "SK",
+      sectorName: "",
+      placeName: "",
+    },
+  });
+
   // Logo upload state
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>("");
@@ -243,6 +276,51 @@ export default function AdminPanel() {
       });
     }
   }, [editingCompetition, isEditDialogOpen, form]);
+
+  // Prefill team edit form when editing team
+  useEffect(() => {
+    if (selectedTeamDetails && isEditTeamDialogOpen) {
+      editTeamForm.reset({
+        name: selectedTeamDetails.name || "",
+        country: selectedTeamDetails.country || "SK",
+        sectorName: selectedTeamDetails.sectorName || "",
+        placeName: selectedTeamDetails.placeName || "",
+      });
+    }
+  }, [selectedTeamDetails, isEditTeamDialogOpen, editTeamForm]);
+
+  // Team edit submit handler
+  const onEditTeamSubmit = async (data: EditTeamForm) => {
+    if (!selectedTeamId) return;
+    
+    try {
+      // Transform data to prevent clearing existing sector/place assignments with empty strings
+      const cleanData: Partial<EditTeamForm> = {
+        name: data.name,
+        country: data.country,
+      };
+      
+      // Only include sector/place if both are provided (non-empty)
+      if (data.sectorName && data.sectorName.trim() && data.placeName && data.placeName.trim()) {
+        cleanData.sectorName = data.sectorName.trim();
+        cleanData.placeName = data.placeName.trim();
+      }
+      
+      await updateTeamMutation.mutateAsync({
+        teamId: selectedTeamId,
+        data: cleanData
+      });
+    } catch (error) {
+      console.error("Error updating team:", error);
+      // Surface server error message in toast
+      const errorMessage = error instanceof Error ? error.message : "Chyba pri aktualizácii tímu";
+      toast({
+        title: "Chyba",
+        description: errorMessage,
+        variant: "destructive"
+      });
+    }
+  };
 
   // Watch form values for dynamic behavior
   const selectedPlan = form.watch("selectedPlan");
@@ -463,6 +541,31 @@ export default function AdminPanel() {
         variant: "destructive",
         title: "Chyba",
         description: "Nepodarilo sa zmeniť status tímu"
+      });
+    },
+  });
+
+  // Team update mutation
+  const updateTeamMutation = useMutation({
+    mutationFn: async ({ teamId, data }: { teamId: string; data: any }) => {
+      const response = await apiRequest("PATCH", `/api/teams/${teamId}`, data);
+      return response.json();
+    },
+    onSuccess: (updatedTeam, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/teams", variables.teamId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/competitions", selectedCompetition, "teams"] });
+      setIsEditTeamDialogOpen(false);
+      toast({
+        title: "Úspech",
+        description: "Tím bol úspešne aktualizovaný"
+      });
+    },
+    onError: (error) => {
+      console.error("Error updating team:", error);
+      toast({
+        variant: "destructive",
+        title: "Chyba",
+        description: "Nepodarilo sa aktualizovať tím"
       });
     },
   });
@@ -3281,12 +3384,27 @@ export default function AdminPanel() {
       >
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>
-              {selectedTeamDetails ? `Detaily tímu - ${selectedTeamDetails.name}` : "Detaily tímu"}
-            </DialogTitle>
-            <DialogDescription>
-              Podrobné informácie o tíme a jeho členoch
-            </DialogDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <DialogTitle>
+                  {selectedTeamDetails ? `Detaily tímu - ${selectedTeamDetails.name}` : "Detaily tímu"}
+                </DialogTitle>
+                <DialogDescription>
+                  Podrobné informácie o tíme a jeho členoch
+                </DialogDescription>
+              </div>
+              {selectedTeamDetails && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsEditTeamDialogOpen(true)}
+                  data-testid="button-edit-team"
+                >
+                  <Edit className="w-4 h-4 mr-2" />
+                  Upraviť
+                </Button>
+              )}
+            </div>
           </DialogHeader>
           
           {teamDetailsLoading ? (
@@ -3444,6 +3562,109 @@ export default function AdminPanel() {
             <div className="text-center py-8 text-muted-foreground">
               Nepodarilo sa načítať detaily tímu.
             </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Team Dialog */}
+      <Dialog open={isEditTeamDialogOpen} onOpenChange={setIsEditTeamDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Upraviť tím</DialogTitle>
+            <DialogDescription>
+              Upravte základné informácie o tíme
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedTeamDetails && (
+            <Form {...editTeamForm}>
+              <form onSubmit={editTeamForm.handleSubmit(onEditTeamSubmit)} className="space-y-4">
+                <FormField
+                  control={editTeamForm.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Názov tímu</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Názov tímu" {...field} data-testid="input-edit-team-name" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={editTeamForm.control}
+                  name="country"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Krajina</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-edit-team-country">
+                            <SelectValue placeholder="Vyberte krajinu" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="SK">Slovensko</SelectItem>
+                          <SelectItem value="CZ">Česko</SelectItem>
+                          <SelectItem value="HU">Maďarsko</SelectItem>
+                          <SelectItem value="PL">Poľsko</SelectItem>
+                          <SelectItem value="AT">Rakúsko</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={editTeamForm.control}
+                  name="sectorName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Sektor</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Napr. Sektor A" {...field} data-testid="input-edit-team-sector" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={editTeamForm.control}
+                  name="placeName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Miesto</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Napr. Miesto 1" {...field} data-testid="input-edit-team-place" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="flex justify-end space-x-2 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsEditTeamDialogOpen(false)}
+                    data-testid="button-cancel-edit-team"
+                  >
+                    Zrušiť
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={updateTeamMutation.isPending}
+                    data-testid="button-save-edit-team"
+                  >
+                    {updateTeamMutation.isPending ? "Ukladám..." : "Uložiť"}
+                  </Button>
+                </div>
+              </form>
+            </Form>
           )}
         </DialogContent>
       </Dialog>

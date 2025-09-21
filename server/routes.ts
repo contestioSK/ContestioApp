@@ -7,6 +7,7 @@ import {
   insertCompetitionSchema,
   insertCompetitionRegistrationSchema,
   insertTeamSchema,
+  updateTeamSchema,
   insertTeamMemberSchema,
   insertRefereeSchema,
   insertCatchSchema,
@@ -326,6 +327,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating team status:", error);
       res.status(500).json({ message: "Failed to update team status" });
+    }
+  });
+
+  // Update team details
+  app.patch('/api/teams/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'organizer' && user?.role !== 'admin') {
+        return res.status(403).json({ message: "Only organizers and admins can update team details" });
+      }
+
+      // Get the team to find which competition it belongs to
+      const team = await storage.getTeam(req.params.id);
+      if (!team) {
+        return res.status(404).json({ message: "Team not found" });
+      }
+
+      // Get the competition to validate sector places
+      const competition = await storage.getCompetition(team.competitionId);
+      if (!competition) {
+        return res.status(404).json({ message: "Competition not found" });
+      }
+
+      // Verify competition ownership for non-admin users
+      if (user?.role === 'organizer' && competition.organizerId !== userId) {
+        return res.status(403).json({ message: "You can only update teams in your own competitions" });
+      }
+
+      // Validate the request data
+      const validationResult = updateTeamSchema.safeParse(req.body);
+      
+      if (!validationResult.success) {
+        const errorMessage = validationResult.error.errors[0]?.message || "Invalid request data";
+        return res.status(400).json({ 
+          message: errorMessage,
+          errors: validationResult.error.errors 
+        });
+      }
+
+      const updateData = validationResult.data;
+
+      // Check sector/place availability if they are being updated
+      if (updateData.sectorName && updateData.placeName) {
+        const isAvailable = await storage.checkSectorPlaceAvailability(
+          team.competitionId,
+          updateData.sectorName,
+          updateData.placeName,
+          req.params.id // Exclude current team from check
+        );
+
+        if (!isAvailable) {
+          return res.status(409).json({ 
+            message: `Miesto "${updateData.placeName}" v sektore "${updateData.sectorName}" je už obsadené iným tímom`,
+            conflictType: "sector_place_taken"
+          });
+        }
+      }
+
+      // Update team
+      const updatedTeam = await storage.updateTeam(req.params.id, updateData);
+      res.json(updatedTeam);
+    } catch (error) {
+      console.error("Error updating team:", error);
+      res.status(500).json({ message: "Failed to update team" });
     }
   });
 
