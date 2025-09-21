@@ -263,8 +263,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      if (user?.role !== 'organizer') {
-        return res.status(403).json({ message: "Only organizers can update team status" });
+      if (user?.role !== 'organizer' && user?.role !== 'admin') {
+        return res.status(403).json({ message: "Only organizers and admins can update team status" });
       }
 
       // Get the team to find which competition it belongs to

@@ -37,7 +37,9 @@ import {
   UserX,
   BarChart3,
   Activity,
-  Search
+  Search,
+  Check,
+  X
 } from "lucide-react";
 import type { Competition, Team, TeamMember } from "@shared/schema";
 import { getSideCompetitionLabel } from "@/lib/utils";
@@ -345,6 +347,29 @@ export default function AdminPanel() {
       console.error("Error creating competition:", error);
     }
   };
+
+  // Team status update mutation
+  const updateTeamStatusMutation = useMutation({
+    mutationFn: async ({ teamId, status }: { teamId: string; status: 'approved' | 'rejected' }) => {
+      const response = await apiRequest("PATCH", `/api/teams/${teamId}/status`, { status });
+      return response.json();
+    },
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/competitions", selectedCompetition, "teams"] });
+      toast({
+        title: "Úspech",
+        description: `Tím bol ${variables.status === 'approved' ? 'schválený' : 'zamietnutý'}`
+      });
+    },
+    onError: (error) => {
+      console.error("Error updating team status:", error);
+      toast({
+        variant: "destructive",
+        title: "Chyba",
+        description: "Nepodarilo sa zmeniť status tímu"
+      });
+    },
+  });
 
   return (
     <div className="min-h-screen bg-background">
@@ -1762,8 +1787,127 @@ export default function AdminPanel() {
               {selectedCompetition && (
                 <>
                   <TabsContent value="teams" className="p-6">
-                    <div className="text-center py-12">
-                      <p className="text-muted-foreground">Teams management príde skôr</p>
+                    <div className="space-y-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="text-lg font-medium text-foreground">Správa tímov</h3>
+                          <p className="text-muted-foreground">
+                            Spravujte tímy prihlásenej súťaže
+                          </p>
+                        </div>
+                      </div>
+
+                      {teamsLoading ? (
+                        <div className="grid gap-4">
+                          {[...Array(3)].map((_, i) => (
+                            <div key={i} className="border border-border rounded-lg p-4">
+                              <Skeleton className="h-6 w-48 mb-2" />
+                              <Skeleton className="h-4 w-32" />
+                            </div>
+                          ))}
+                        </div>
+                      ) : teams && teams.length > 0 ? (
+                        <div className="grid gap-4">
+                          {teams.map((team) => (
+                            <div key={team.id} className="border border-border rounded-lg p-4 hover:bg-accent/50 transition-colors">
+                              <div className="flex items-center justify-between">
+                                <div className="flex-1">
+                                  <div className="flex items-center space-x-3">
+                                    <h4 className="text-base font-medium text-foreground" data-testid={`text-team-name-${team.id}`}>
+                                      {team.name}
+                                    </h4>
+                                    <Badge 
+                                      variant={team.status === 'approved' ? 'default' : team.status === 'pending' ? 'secondary' : 'destructive'}
+                                      data-testid={`badge-team-status-${team.id}`}
+                                    >
+                                      {team.status === 'approved' ? 'Schválený' : team.status === 'pending' ? 'Čaká na schválenie' : 'Zamietnutý'}
+                                    </Badge>
+                                    {team.country && (
+                                      <Badge variant="outline" data-testid={`badge-team-country-${team.id}`}>
+                                        {team.country}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <div className="mt-2 flex items-center space-x-4 text-sm text-muted-foreground">
+                                    <span>Členovia: {team.members?.length || 0}</span>
+                                    <span>Úlovky: {team.fishCount || 0}</span>
+                                    <span>Celková hmotnosť: {team.totalWeight || 0} kg</span>
+                                    {team.sectorName && (
+                                      <span>Sektor: {team.sectorName}</span>
+                                    )}
+                                    {team.placeName && (
+                                      <span>Miesto: {team.placeName}</span>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    onClick={() => {
+                                      // TODO: Implement team details modal
+                                      toast({
+                                        title: "Detaily tímu",
+                                        description: "Funkcia detailov tímu bude implementovaná neskôr"
+                                      });
+                                    }}
+                                    data-testid={`button-view-team-${team.id}`}
+                                  >
+                                    <Eye className="w-4 h-4 mr-1" />
+                                    Detaily
+                                  </Button>
+                                  {team.status === 'pending' && (
+                                    <>
+                                      <Button 
+                                        size="sm" 
+                                        variant="default"
+                                        onClick={() => updateTeamStatusMutation.mutate({ teamId: team.id, status: 'approved' })}
+                                        disabled={updateTeamStatusMutation.isPending}
+                                        data-testid={`button-approve-team-${team.id}`}
+                                      >
+                                        <Check className="w-4 h-4 mr-1" />
+                                        Schváliť
+                                      </Button>
+                                      <Button 
+                                        size="sm" 
+                                        variant="destructive"
+                                        onClick={() => updateTeamStatusMutation.mutate({ teamId: team.id, status: 'rejected' })}
+                                        disabled={updateTeamStatusMutation.isPending}
+                                        data-testid={`button-reject-team-${team.id}`}
+                                      >
+                                        <X className="w-4 h-4 mr-1" />
+                                        Zamietnuť
+                                      </Button>
+                                    </>
+                                  )}
+                                  {team.status === 'rejected' && (
+                                    <Button 
+                                      size="sm" 
+                                      variant="default"
+                                      onClick={() => updateTeamStatusMutation.mutate({ teamId: team.id, status: 'approved' })}
+                                      disabled={updateTeamStatusMutation.isPending}
+                                      data-testid={`button-approve-team-${team.id}`}
+                                    >
+                                      <Check className="w-4 h-4 mr-1" />
+                                      Schváliť
+                                    </Button>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-12">
+                          <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                          <h3 className="text-lg font-medium text-foreground mb-2">
+                            Žiadne tímy
+                          </h3>
+                          <p className="text-muted-foreground">
+                            Pre túto súťaž sa zatiaľ neprihlásili žiadne tímy.
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </TabsContent>
                   
