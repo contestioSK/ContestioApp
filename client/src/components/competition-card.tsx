@@ -129,21 +129,29 @@ export default function CompetitionCard({ competition }: CompetitionCardProps) {
     <Card className="hover:shadow-lg transition-shadow" data-testid={`card-competition-${competition.id}`}>
       <div className="relative">
         <Link href={`/competition/${competition.id}`}>
-          <img 
-            src={competition.imageUrl || getCompetitionImage(competition.status)} 
-            alt={`Súťaž ${competition.name}`}
-            className={`w-full h-48 rounded-t-lg cursor-pointer hover:opacity-90 transition-opacity ${
-              competition.imageUrl 
-                ? 'object-contain bg-white' // Pre nahrané logá - zobrazí celé logo s bielym pozadím
-                : 'object-cover' // Pre predvolené obrázky - pokryje celú plochu
-            }`}
-            onError={(e) => {
-              // Ak sa custom obrázok nepodarí načítať, použije fallback
-              e.currentTarget.src = getCompetitionImage(competition.status);
-              e.currentTarget.className = e.currentTarget.className.replace('object-contain bg-white', 'object-cover');
-            }}
-            data-testid={`img-competition-${competition.id}`}
-          />
+          <div className="relative">
+            <img 
+              src={competition.imageUrl || getCompetitionImage(competition.status)} 
+              alt={`Súťaž ${competition.name}`}
+              className={`w-full h-48 rounded-t-lg cursor-pointer hover:opacity-90 transition-opacity object-cover`}
+              onError={(e) => {
+                // Ak sa custom obrázok nepodarí načítať, použije fallback
+                console.error('Failed to load competition image:', e.currentTarget.src);
+                e.currentTarget.src = getCompetitionImage(competition.status);
+                e.currentTarget.className = e.currentTarget.className.replace('object-contain bg-white', 'object-cover');
+              }}
+              onLoad={() => {
+                console.log('Competition image loaded successfully:', competition.imageUrl || 'fallback image');
+              }}
+              data-testid={`img-competition-${competition.id}`}
+            />
+            {/* DEBUG INFO */}
+            {competition.name === "CUP CUP CUP" && (
+              <div className="absolute top-0 left-0 bg-red-500 text-white p-1 text-xs z-50">
+                DEBUG: {competition.imageUrl ? `Custom: ${competition.imageUrl}` : `Fallback: ${getCompetitionImage(competition.status)}`}
+              </div>
+            )}
+          </div>
         </Link>
         <div className="absolute top-3 left-3">
           {getStatusBadge(competition.status)}
