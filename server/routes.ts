@@ -686,19 +686,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "You can only update your own competitions" });
       }
 
-      // Ensure sideCompetitions is properly typed
-      const sideCompetitions: string[] = Array.isArray(req.body.sideCompetitions) 
-        ? [...req.body.sideCompetitions] 
-        : (req.body.sideCompetitions ? [req.body.sideCompetitions] : []);
-
       // Handle uploaded image
       let imageUrl = req.body.imageUrl;
       if (req.file) {
         imageUrl = `/uploads/${req.file.filename}`;
       }
 
+      // When file is uploaded, FormData sends everything as strings - need to parse
+      const parsedData = { ...req.body };
+      
+      // Parse numbers and booleans when coming from FormData
+      if (req.file) {
+        if (parsedData.maxTeams) parsedData.maxTeams = parseInt(parsedData.maxTeams);
+        if (parsedData.maxReferees) parsedData.maxReferees = parseInt(parsedData.maxReferees);
+        if (parsedData.minWeight) parsedData.minWeight = parseFloat(parsedData.minWeight);
+        if (parsedData.hasSectors !== undefined) parsedData.hasSectors = parsedData.hasSectors === 'true';
+        if (parsedData.mediaAccess !== undefined) parsedData.mediaAccess = parsedData.mediaAccess === 'true';
+        if (parsedData.prioritySupport !== undefined) parsedData.prioritySupport = parsedData.prioritySupport === 'true';
+        
+        // Parse JSON arrays
+        if (parsedData.sectorPlaces && typeof parsedData.sectorPlaces === 'string') {
+          try {
+            parsedData.sectorPlaces = JSON.parse(parsedData.sectorPlaces);
+          } catch (e) {
+            parsedData.sectorPlaces = [];
+          }
+        }
+        if (parsedData.sideCompetitions && typeof parsedData.sideCompetitions === 'string') {
+          try {
+            parsedData.sideCompetitions = JSON.parse(parsedData.sideCompetitions);
+          } catch (e) {
+            parsedData.sideCompetitions = [];
+          }
+        }
+        
+        // Parse dates
+        if (parsedData.startDate && typeof parsedData.startDate === 'string') {
+          parsedData.startDate = new Date(parsedData.startDate);
+        }
+        if (parsedData.endDate && typeof parsedData.endDate === 'string') {
+          parsedData.endDate = new Date(parsedData.endDate);
+        }
+      }
+
+      // Ensure sideCompetitions is properly typed from parsed data
+      const sideCompetitions: string[] = Array.isArray(parsedData.sideCompetitions) 
+        ? [...parsedData.sideCompetitions] 
+        : (parsedData.sideCompetitions ? [parsedData.sideCompetitions] : []);
+
       // Parse and validate the update data using the same schema as creation
-      const { sideCompetitions: _, organizerId: __, selectedPlan, branding: ___, ...bodyData } = req.body;
+      const { sideCompetitions: _, organizerId: __, selectedPlan, branding: ___, ...bodyData } = parsedData;
       const updateData = insertCompetitionSchema.partial().parse({
         ...bodyData,
         imageUrl,
