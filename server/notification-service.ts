@@ -1,5 +1,31 @@
 import { storage } from './storage';
 import { type Competition, type Team, type Catch } from '@shared/schema';
+import webpush from 'web-push';
+
+// Configure web-push with VAPID keys from environment variables (required)
+const vapidPublicKey = process.env.VAPID_PUBLIC_KEY;
+const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
+
+if (!vapidPublicKey || !vapidPrivateKey) {
+  console.error('[SECURITY] VAPID keys are required! Set VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY environment variables.');
+  console.error('[SECURITY] Generate keys with: npx web-push generate-vapid-keys');
+  process.exit(1);
+}
+
+webpush.setVapidDetails(
+  'mailto:admin@contestio.app',
+  vapidPublicKey,
+  vapidPrivateKey
+);
+interface PushPayload {
+  title: string;
+  body: string;
+  icon?: string;
+  badge?: string;
+  tag?: string;
+  url?: string;
+  data?: any;
+}
 
 // WebSocket broadcaster interface (to be imported from routes.ts later)
 interface NotificationBroadcaster {
@@ -67,6 +93,41 @@ export class NotificationService {
     }
     
     console.log('[NotificationService] Cache cleanup completed');
+  }
+
+  // Send push notifications to specific users
+  private async sendPushNotifications(userIds: string[], payload: PushPayload): Promise<void> {
+    try {
+      if (userIds.length === 0) return;
+
+      // Get push subscriptions for targeted users
+      const subscriptions = await storage.getUserPushSubscriptions(userIds);
+      
+      if (subscriptions.length === 0) {
+        console.log(`[NotificationService] No push subscriptions found for ${userIds.length} users`);
+        return;
+      }
+
+      console.log(`[NotificationService] Sending push to ${subscriptions.length} subscriptions`);
+
+      // Send push notifications using web-push library
+      for (const { userId, subscription } of subscriptions) {
+        try {
+          await webpush.sendNotification(subscription, JSON.stringify(payload));
+          console.log(`[NotificationService] Push sent to user ${userId}:`, payload.title);
+        } catch (error: any) {
+          console.error(`[NotificationService] Push failed for user ${userId}:`, error);
+          
+          // Handle invalid subscriptions (410 Gone, 404 Not Found)
+          if (error.statusCode === 410 || error.statusCode === 404) {
+            console.log(`[NotificationService] Removing invalid push subscription for user ${userId}`);
+            await storage.removePushSubscription(userId);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('[NotificationService] Error sending push notifications:', error);
+    }
   }
 
   // Rate limiting check for catches
@@ -169,6 +230,21 @@ export class NotificationService {
         });
         
         console.log(`[NotificationService] Sent catch notification to ${usersToNotify.length} users`);
+        
+        // Send push notifications to users who have push notifications enabled
+        await this.sendPushNotifications(usersToNotify, {
+          title: `🎣 Nový úlovok v ${competition.name}!`,
+          body: `${team.name} chytil ${catch_.weight}kg ${catch_.fishType}`,
+          icon: '/favicon.ico',
+          tag: `catch-${catch_.id}`,
+          url: `/competitions/${competition.id}`,
+          data: {
+            type: 'catch',
+            competitionId: competition.id,
+            teamId: team.id,
+            catchId: catch_.id
+          }
+        });
       } else {
         console.log(`[NotificationService] No users to notify for catch in ${competition.name}`);
       }
@@ -212,6 +288,21 @@ export class NotificationService {
         });
         
         console.log(`[NotificationService] Sent leaderboard change to ${usersToNotify.length} users`);
+        
+        // Send push notifications for leaderboard changes
+        await this.sendPushNotifications(usersToNotify, {
+          title: `📊 Zmena v rebríčku - ${competition.name}`,
+          body: `${team.name} sa posunul na ${newPosition}. miesto`,
+          icon: '/favicon.ico',
+          tag: `leaderboard-${competition.id}-${team.id}`,
+          url: `/competitions/${competition.id}`,
+          data: {
+            type: 'leaderboard',
+            competitionId: competition.id,
+            teamId: team.id,
+            position: newPosition
+          }
+        });
       } else {
         console.log(`[NotificationService] No users to notify for leaderboard change in ${competition.name}`);
       }
@@ -255,6 +346,22 @@ export class NotificationService {
         });
         
         console.log(`[NotificationService] Sent biggest fish notification to ${usersToNotify.length} users`);
+        
+        // Send push notifications for biggest fish
+        await this.sendPushNotifications(usersToNotify, {
+          title: `🏆 ${isNewRecord ? 'Nový rekord!' : 'Veľká ryba!'}`,
+          body: `${team.name} chytil ${catch_.weight}kg ${catch_.fishType} v ${competition.name}`,
+          icon: '/favicon.ico',
+          tag: `biggest-fish-${catch_.id}`,
+          url: `/competitions/${competition.id}`,
+          data: {
+            type: 'biggest_fish',
+            competitionId: competition.id,
+            teamId: team.id,
+            catchId: catch_.id,
+            isNewRecord
+          }
+        });
       } else {
         console.log(`[NotificationService] No users to notify for biggest fish record`);
       }
@@ -292,6 +399,21 @@ export class NotificationService {
         });
         
         console.log(`[NotificationService] Sent official announcement to ${usersToNotify.length} users`);
+        
+        // Send push notifications for official announcements
+        await this.sendPushNotifications(usersToNotify, {
+          title: `📢 ${title}`,
+          body: message,
+          icon: '/favicon.ico',
+          tag: `announcement-${Date.now()}`,
+          url: competitionId ? `/competitions/${competitionId}` : '/',
+          data: {
+            type: 'announcement',
+            competitionId,
+            title,
+            message
+          }
+        });
       } else {
         console.log(`[NotificationService] No users to notify for official announcement`);
       }

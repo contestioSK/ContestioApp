@@ -11,6 +11,7 @@ import {
   favoriteCompetitions,
   favoriteTeams,
   notificationPreferences,
+  pushSubscriptions,
   type User,
   type UpsertUser,
   type Competition,
@@ -35,6 +36,8 @@ import {
   type NotificationPreferences,
   type InsertNotificationPreferences,
   type UpdateNotificationPreferences,
+  type PushSubscription,
+  type InsertPushSubscription,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql, ne, count, gt, gte, inArray } from "drizzle-orm";
@@ -171,6 +174,11 @@ export interface IStorage {
   getUsersToNotifyForLeaderboardChange(competitionId: string): Promise<string[]>;
   getUsersToNotifyForBiggestFish(): Promise<string[]>;
   getUsersToNotifyForOfficialAnnouncement(): Promise<string[]>;
+  
+  // Push notification subscription operations
+  savePushSubscription(userId: string, subscription: any): Promise<void>;
+  removePushSubscription(userId: string): Promise<void>;
+  getUserPushSubscriptions(userIds: string[]): Promise<Array<{ userId: string; subscription: any }>>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1212,6 +1220,61 @@ export class DatabaseStorage implements IStorage {
       .where(eq(notificationPreferences.officialAnnouncements, true));
     
     return result.map(r => r.userId);
+  }
+
+  // Push notification subscription operations
+  async savePushSubscription(userId: string, subscription: any): Promise<void> {
+    // Use upsert pattern - update if exists, create if doesn't exist
+    await db
+      .insert(pushSubscriptions)
+      .values({
+        userId,
+        endpoint: subscription.endpoint,
+        p256dhKey: subscription.keys.p256dh,
+        authKey: subscription.keys.auth,
+      })
+      .onConflictDoUpdate({
+        target: pushSubscriptions.userId,
+        set: {
+          endpoint: subscription.endpoint,
+          p256dhKey: subscription.keys.p256dh,
+          authKey: subscription.keys.auth,
+          updatedAt: new Date(),
+        },
+      });
+    
+    console.log(`[Storage] Push subscription saved for user ${userId}`);
+  }
+
+  async removePushSubscription(userId: string): Promise<void> {
+    await db
+      .delete(pushSubscriptions)
+      .where(eq(pushSubscriptions.userId, userId));
+    
+    console.log(`[Storage] Push subscription removed for user ${userId}`);
+  }
+
+  async getUserPushSubscriptions(userIds: string[]): Promise<Array<{ userId: string; subscription: any }>> {
+    const result = await db
+      .select({
+        userId: pushSubscriptions.userId,
+        endpoint: pushSubscriptions.endpoint,
+        p256dhKey: pushSubscriptions.p256dhKey,
+        authKey: pushSubscriptions.authKey,
+      })
+      .from(pushSubscriptions)
+      .where(inArray(pushSubscriptions.userId, userIds));
+    
+    return result.map(row => ({
+      userId: row.userId,
+      subscription: {
+        endpoint: row.endpoint,
+        keys: {
+          p256dh: row.p256dhKey,
+          auth: row.authKey,
+        },
+      },
+    }));
   }
 }
 

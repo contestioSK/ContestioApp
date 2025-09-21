@@ -325,6 +325,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Push notification subscription endpoints
+  app.post('/api/push/subscribe', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { subscription } = req.body;
+      
+      if (!subscription || !subscription.endpoint || !subscription.keys) {
+        return res.status(400).json({ message: "Neplatná subscription data" });
+      }
+      
+      await storage.savePushSubscription(userId, subscription);
+      console.log(`[PUSH] User ${userId} subscribed to push notifications`);
+      
+      res.json({ success: true, message: "Push subscription uložená" });
+    } catch (error) {
+      console.error("[PUSH] Error saving push subscription:", error);
+      res.status(500).json({ message: "Chyba pri ukladaní push subscription" });
+    }
+  });
+
+  app.post('/api/push/unsubscribe', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      await storage.removePushSubscription(userId);
+      console.log(`[PUSH] User ${userId} unsubscribed from push notifications`);
+      
+      res.json({ success: true, message: "Push subscription odstránená" });
+    } catch (error) {
+      console.error("[PUSH] Error removing push subscription:", error);
+      res.status(500).json({ message: "Chyba pri odstraňovaní push subscription" });
+    }
+  });
+
   // Competition routes
   app.get('/api/competitions', async (req, res) => {
     try {
