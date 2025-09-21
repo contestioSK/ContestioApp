@@ -200,6 +200,34 @@ interface DashboardStats {
     timestamp: string; // API returns string, not Date
     user?: string;
   }>;
+  newUsers: Array<{
+    id: string;
+    type: string;
+    description: string;
+    timestamp: string;
+    user?: string;
+  }>;
+  newCompetitions: Array<{
+    id: string;
+    type: string;
+    description: string;
+    timestamp: string;
+    user?: string;
+  }>;
+  newCatches: Array<{
+    id: string;
+    type: string;
+    description: string;
+    timestamp: string;
+    user?: string;
+  }>;
+  systemChanges: Array<{
+    id: string;
+    type: string;
+    description: string;
+    timestamp: string;
+    user?: string;
+  }>;
   usersByRole: Array<{ role: string; count: number }>;
   competitionsByStatus: Array<{ status: string; count: number }>;
 }
@@ -1599,44 +1627,113 @@ export default function AdminPanel() {
                             </Card>
                           </div>
 
-                          {/* Recent Activity */}
-                          <Card className="p-6">
-                            <CardHeader className="pb-4">
-                              <CardTitle className="text-lg font-semibold">Nedávna aktivita</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                              <div className="space-y-4">
-                                {dashboardStats?.recentActivity?.length ? (
-                                  dashboardStats.recentActivity.map((activity, index) => (
-                                    <div key={activity.id} className="flex items-center space-x-3 p-3 bg-muted/30 rounded-lg">
-                                      <div className={`p-2 rounded-full ${
-                                        activity.type === 'team_registration' ? 'bg-blue-100' :
-                                        activity.type === 'catch_submission' ? 'bg-green-100' :
-                                        'bg-yellow-100'
-                                      }`}>
-                                        {activity.type === 'team_registration' ? (
-                                          <Users className="h-4 w-4 text-blue-600" />
-                                        ) : activity.type === 'catch_submission' ? (
-                                          <Trophy className="h-4 w-4 text-green-600" />
-                                        ) : (
-                                          <FileText className="h-4 w-4 text-yellow-600" />
-                                        )}
-                                      </div>
-                                      <div className="flex-1">
-                                        <p className="text-sm font-medium text-foreground">{activity.description}</p>
+                          {/* Recent Activity - 4 Columns */}
+                          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
+                            {/* New Users Column */}
+                            <Card className="p-4">
+                              <CardHeader className="pb-3">
+                                <CardTitle className="text-base font-semibold flex items-center">
+                                  <Users className="h-4 w-4 mr-2 text-blue-600" />
+                                  Noví používatelia
+                                </CardTitle>
+                              </CardHeader>
+                              <CardContent>
+                                <div className="space-y-3">
+                                  {dashboardStats?.newUsers?.length ? (
+                                    dashboardStats.newUsers.map((user) => (
+                                      <div key={user.id} className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                                        <p className="text-xs font-medium text-foreground truncate">{user.description}</p>
                                         <p className="text-xs text-muted-foreground">
-                                          {new Date(activity.timestamp).toLocaleString('sk-SK')}
-                                          {activity.user && ` • ${activity.user}`}
+                                          {new Date(user.timestamp).toLocaleDateString('sk-SK')}
                                         </p>
                                       </div>
-                                    </div>
-                                  ))
-                                ) : (
-                                  <p className="text-center text-muted-foreground py-8">Žiadna nedávna aktivita</p>
-                                )}
-                              </div>
-                            </CardContent>
-                          </Card>
+                                    ))
+                                  ) : (
+                                    <p className="text-xs text-muted-foreground text-center py-4">Žiadni nový užívatelia</p>
+                                  )}
+                                </div>
+                              </CardContent>
+                            </Card>
+
+                            {/* New Competitions Column */}
+                            <Card className="p-4">
+                              <CardHeader className="pb-3">
+                                <CardTitle className="text-base font-semibold flex items-center">
+                                  <Trophy className="h-4 w-4 mr-2 text-green-600" />
+                                  Nové súťaže
+                                </CardTitle>
+                              </CardHeader>
+                              <CardContent>
+                                <div className="space-y-3">
+                                  {dashboardStats?.newCompetitions?.length ? (
+                                    dashboardStats.newCompetitions.map((competition) => (
+                                      <div key={competition.id} className="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                                        <p className="text-xs font-medium text-foreground truncate">{competition.description}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                          {new Date(competition.timestamp).toLocaleDateString('sk-SK')}
+                                        </p>
+                                      </div>
+                                    ))
+                                  ) : (
+                                    <p className="text-xs text-muted-foreground text-center py-4">Žiadne nové súťaže</p>
+                                  )}
+                                </div>
+                              </CardContent>
+                            </Card>
+
+                            {/* New Catches Column */}
+                            <Card className="p-4">
+                              <CardHeader className="pb-3">
+                                <CardTitle className="text-base font-semibold flex items-center">
+                                  <Award className="h-4 w-4 mr-2 text-orange-600" />
+                                  Nové úlovky
+                                </CardTitle>
+                              </CardHeader>
+                              <CardContent>
+                                <div className="space-y-3">
+                                  {dashboardStats?.newCatches?.length ? (
+                                    dashboardStats.newCatches.map((catch_) => (
+                                      <div key={catch_.id} className="p-2 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                                        <p className="text-xs font-medium text-foreground truncate">{catch_.description}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                          {new Date(catch_.timestamp).toLocaleDateString('sk-SK')}
+                                        </p>
+                                      </div>
+                                    ))
+                                  ) : (
+                                    <p className="text-xs text-muted-foreground text-center py-4">Žiadne nové úlovky</p>
+                                  )}
+                                </div>
+                              </CardContent>
+                            </Card>
+
+                            {/* System Changes Column */}
+                            <Card className="p-4">
+                              <CardHeader className="pb-3">
+                                <CardTitle className="text-base font-semibold flex items-center">
+                                  <Settings className="h-4 w-4 mr-2 text-purple-600" />
+                                  Zmeny v systéme
+                                </CardTitle>
+                              </CardHeader>
+                              <CardContent>
+                                <div className="space-y-3">
+                                  {dashboardStats?.systemChanges?.length ? (
+                                    dashboardStats.systemChanges.map((change) => (
+                                      <div key={change.id} className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                                        <p className="text-xs font-medium text-foreground truncate">{change.description}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                          {new Date(change.timestamp).toLocaleDateString('sk-SK')}
+                                          {change.user && ` • ${change.user}`}
+                                        </p>
+                                      </div>
+                                    ))
+                                  ) : (
+                                    <p className="text-xs text-muted-foreground text-center py-4">Žiadne zmeny</p>
+                                  )}
+                                </div>
+                              </CardContent>
+                            </Card>
+                          </div>
                         </>
                       )}
                     </div>

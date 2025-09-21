@@ -67,6 +67,34 @@ export interface IStorage {
       timestamp: Date;
       user?: string;
     }>;
+    newUsers: Array<{
+      id: string;
+      type: string;
+      description: string;
+      timestamp: Date;
+      user?: string;
+    }>;
+    newCompetitions: Array<{
+      id: string;
+      type: string;
+      description: string;
+      timestamp: Date;
+      user?: string;
+    }>;
+    newCatches: Array<{
+      id: string;
+      type: string;
+      description: string;
+      timestamp: Date;
+      user?: string;
+    }>;
+    systemChanges: Array<{
+      id: string;
+      type: string;
+      description: string;
+      timestamp: Date;
+      user?: string;
+    }>;
     usersByRole: Array<{ role: string; count: number }>;
     competitionsByStatus: Array<{ status: string; count: number }>;
   }>;
@@ -754,57 +782,117 @@ export class DatabaseStorage implements IStorage {
       .from(competitions)
       .groupBy(competitions.status);
 
-    // Get recent activity (teams, catches, registrations in last 30 days)
-    const recentActivity = [
+    // Get categorized recent activity for dashboard columns
+    
+    // New Users (recent user registrations)
+    const newUsersRaw = await db
+      .select({
+        id: users.id,
+        type: sql<string>`'user_registration'`,
+        description: sql<string>`CONCAT('Nový používateľ: ', COALESCE(${users.firstName}, ''), ' ', COALESCE(${users.lastName}, ''), ' (', ${users.email}, ')')`,
+        timestamp: users.createdAt,
+        user: sql<string>`CONCAT(COALESCE(${users.firstName}, ''), ' ', COALESCE(${users.lastName}, ''))`,
+      })
+      .from(users)
+      .where(gte(users.createdAt, thirtyDaysAgo))
+      .orderBy(desc(users.createdAt))
+      .limit(5);
+      
+    const newUsers = newUsersRaw
+      .filter(user => user.timestamp !== null)
+      .map(user => ({
+        ...user,
+        timestamp: user.timestamp as Date
+      }));
+
+    // New Competitions (recent competition creations)  
+    const newCompetitionsRaw = await db
+      .select({
+        id: competitions.id,
+        type: sql<string>`'competition_creation'`,
+        description: sql<string>`CONCAT('Nová súťaž: "', ${competitions.name}, '"')`,
+        timestamp: competitions.createdAt,
+        user: sql<string>`NULL`,
+      })
+      .from(competitions)
+      .where(gte(competitions.createdAt, thirtyDaysAgo))
+      .orderBy(desc(competitions.createdAt))
+      .limit(5);
+      
+    const newCompetitions = newCompetitionsRaw
+      .filter(comp => comp.timestamp !== null)
+      .map(comp => ({
+        ...comp,
+        timestamp: comp.timestamp as Date
+      }));
+      
+    // New Catches (recent catch submissions)
+    const newCatchesRaw = await db
+      .select({
+        id: catches.id,
+        type: sql<string>`'catch_submission'`,
+        description: sql<string>`CONCAT('Nový úlovok: ', CAST(${catches.weight} AS TEXT), 'kg')`,
+        timestamp: catches.submittedAt,
+        user: sql<string>`NULL`,
+      })
+      .from(catches)
+      .where(gte(catches.submittedAt, thirtyDaysAgo))
+      .orderBy(desc(catches.submittedAt))
+      .limit(5);
+      
+    const newCatches = newCatchesRaw
+      .filter(catch_ => catch_.timestamp !== null)
+      .map(catch_ => ({
+        ...catch_,
+        timestamp: catch_.timestamp as Date
+      }));
+      
+    // System Changes (team registrations, status changes, etc)
+    const systemChanges = [
       // Recent team registrations
       ...(await db
         .select({
           id: teams.id,
           type: sql<string>`'team_registration'`,
-          description: sql<string>`CONCAT('Tím "', ${teams.name}, '" sa zaregistroval do súťaže')`,
+          description: sql<string>`CONCAT('Tím "', ${teams.name}, '" sa zaregistroval')`,
           timestamp: teams.createdAt,
           user: sql<string>`NULL`,
         })
         .from(teams)
         .where(gte(teams.createdAt, thirtyDaysAgo))
         .orderBy(desc(teams.createdAt))
-        .limit(5)
+        .limit(3)
       ),
       
-      // Recent catches
-      ...(await db
-        .select({
-          id: catches.id,
-          type: sql<string>`'catch_submission'`,
-          description: sql<string>`CONCAT('Nový úlovok: ', CAST(${catches.weight} AS TEXT), 'kg')`,
-          timestamp: catches.submittedAt,
-          user: sql<string>`NULL`,
-        })
-        .from(catches)
-        .where(gte(catches.submittedAt, thirtyDaysAgo))
-        .orderBy(desc(catches.submittedAt))
-        .limit(5)
-      ),
-      
-      // Recent competition registrations
+      // Recent competition registration requests
       ...(await db
         .select({
           id: competitionRegistrations.id,
           type: sql<string>`'competition_request'`,
-          description: sql<string>`CONCAT('Nová žiadosť o súťaž: "', ${competitionRegistrations.name}, '"')`,
+          description: sql<string>`CONCAT('Žiadosť o súťaž: "', ${competitionRegistrations.name}, '"')`,
           timestamp: competitionRegistrations.createdAt,
           user: competitionRegistrations.contactName,
         })
         .from(competitionRegistrations)
         .where(gte(competitionRegistrations.createdAt, thirtyDaysAgo))
         .orderBy(desc(competitionRegistrations.createdAt))
-        .limit(5)
+        .limit(2)
       )
     ]
-      .filter(activity => activity.timestamp !== null) // Filter out null timestamps
+      .filter(activity => activity.timestamp !== null)
       .map(activity => ({
         ...activity,
-        timestamp: activity.timestamp as Date // Cast to Date since we filtered out nulls
+        timestamp: activity.timestamp as Date
+      }))
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      .slice(0, 5);
+
+    // Legacy combined activity for backward compatibility
+    const recentActivity = [...newUsers, ...newCompetitions, ...newCatches, ...systemChanges]
+      .filter(activity => activity.timestamp !== null)
+      .map(activity => ({
+        ...activity,
+        timestamp: activity.timestamp as Date
       }))
       .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
       .slice(0, 10);
@@ -817,6 +905,10 @@ export class DatabaseStorage implements IStorage {
       totalCatches: totalCatchesResult.count,
       pendingRegistrations: pendingRegistrationsResult.count,
       recentActivity,
+      newUsers,
+      newCompetitions,
+      newCatches,
+      systemChanges,
       usersByRole,
       competitionsByStatus,
     };
