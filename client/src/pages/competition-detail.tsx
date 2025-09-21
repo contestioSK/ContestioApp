@@ -483,15 +483,15 @@ export default function CompetitionDetail() {
             {/* Right Column: Live Catch Timeline & Special Contests */}
             <div className="space-y-6">
               
-              {/* Special Contests */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Špeciálne súťaže</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {competition.sideCompetitions && competition.sideCompetitions.length > 0 ? (
-                      catches && catches.length > 0 ? (
+              {/* Special Contests - only show if side competitions are active */}
+              {competition.sideCompetitions && competition.sideCompetitions.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Špeciálne súťaže</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {catches && catches.length > 0 ? (
                         <>
                           {competition.sideCompetitions.map((sideCompetitionId) => {
                             switch (sideCompetitionId) {
@@ -625,15 +625,11 @@ export default function CompetitionDetail() {
                         <div className="text-center py-4 text-muted-foreground">
                           Zatiaľ žiadne úlovky
                         </div>
-                      )
-                    ) : (
-                      <div className="text-center py-4 text-muted-foreground">
-                        Žiadne špeciálne súťaže nie sú aktívne
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
               
               {/* Live Catch Timeline */}
               <CatchTimeline catches={(catches || []).map(c => ({ ...c, team: c.team || { id: '', name: 'Neznámy tím', status: '', createdAt: null, updatedAt: null, competitionId: '', sector: null, sectorName: null, placeName: null, position: null, totalWeight: null, fishCount: null, photoUrl: null, country: null }, referee: c.referee || { id: '', userId: '', competitionId: '', assignedSector: '', isActive: true, createdAt: null } }))} isLoading={catchesLoading} competitionId={id!} />
