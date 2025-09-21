@@ -132,7 +132,14 @@ export default function LiveLeaderboard({ teams, isLoading, competitionId }: Liv
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex flex-col space-y-2">
-            <CardTitle>Aktuálna tabuľka</CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle>Aktuálna tabuľka</CardTitle>
+              {sortedTeams.length > 10 && (
+                <Badge variant="secondary" className="text-xs">
+                  Top 10 z {sortedTeams.length}
+                </Badge>
+              )}
+            </div>
             {competition && getScoringTypeBadge(competition.scoringType)}
           </div>
           <div className="flex items-center space-x-2 text-sm text-muted-foreground">
@@ -149,20 +156,21 @@ export default function LiveLeaderboard({ teams, isLoading, competitionId }: Liv
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-muted/20">
-                <tr>
-                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">Poradie</th>
-                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">Tím</th>
-                  <th className="text-left p-4 text-sm font-medium text-muted-foreground">Sektor</th>
-                  <th className="text-right p-4 text-sm font-medium text-muted-foreground">
-                    {getScoringTypeLabel(competition?.scoringType)}
-                  </th>
-                  <th className="text-right p-4 text-sm font-medium text-muted-foreground">Počet rýb</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sortedTeams.map((team, index) => (
+            <div className="max-h-[400px] overflow-y-auto">
+              <table className="w-full">
+                <thead className="bg-muted/20 sticky top-0">
+                  <tr>
+                    <th className="text-left p-4 text-sm font-medium text-muted-foreground">Poradie</th>
+                    <th className="text-left p-4 text-sm font-medium text-muted-foreground">Tím</th>
+                    <th className="text-left p-4 text-sm font-medium text-muted-foreground">Sektor</th>
+                    <th className="text-right p-4 text-sm font-medium text-muted-foreground">
+                      {getScoringTypeLabel(competition?.scoringType)}
+                    </th>
+                    <th className="text-right p-4 text-sm font-medium text-muted-foreground">Počet rýb</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedTeams.slice(0, 10).map((team, index) => (
                   <tr 
                     key={team.id}
                     className="border-b border-border hover:bg-muted/20 transition-colors cursor-pointer group"
@@ -212,6 +220,7 @@ export default function LiveLeaderboard({ teams, isLoading, competitionId }: Liv
                 ))}
               </tbody>
             </table>
+          </div>
           </div>
         )}
         
