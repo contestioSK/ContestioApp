@@ -163,3 +163,8 @@
 .max-h-96::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--primary));
 }
+
+/* Safe area padding for mobile devices */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
