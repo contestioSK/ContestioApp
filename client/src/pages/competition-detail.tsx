@@ -453,8 +453,10 @@ export default function CompetitionDetail() {
               {/* Live Leaderboard */}
               <LiveLeaderboard teams={(teams || []).map(team => ({ ...team, members: team.members || [] }))} isLoading={teamsLoading} competitionId={id!} />
               
-              {/* Interactive Map */}
-              <CompetitionMap competitionId={id!} teams={(teams || []).map(team => ({ ...team, members: team.members || [] }))} />
+              {/* Interactive Map - only show if competition has teams with sectors */}
+              {teams && teams.some(team => team.sector && team.status === 'approved') && (
+                <CompetitionMap competitionId={id!} teams={(teams || []).map(team => ({ ...team, members: team.members || [] }))} />
+              )}
               
             </div>
             
