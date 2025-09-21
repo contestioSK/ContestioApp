@@ -76,6 +76,15 @@ const competitionSchema = z.object({
 
 type CompetitionForm = z.infer<typeof competitionSchema>;
 
+// Schema for referee creation
+const refereeSchema = z.object({
+  userId: z.string().min(1, "Používateľ je povinný"),
+  assignedSector: z.string().min(1, "Sektor je povinný"),
+  isActive: z.boolean().default(true),
+});
+
+type RefereeForm = z.infer<typeof refereeSchema>;
+
 // Dashboard stats type
 interface DashboardStats {
   totalUsers: number;
@@ -107,6 +116,7 @@ export default function AdminPanel() {
   const [registrationFilter, setRegistrationFilter] = useState<string>("all");
   const [selectedRegistration, setSelectedRegistration] = useState<CompetitionRegistration | null>(null);
   const [isRegistrationDetailOpen, setIsRegistrationDetailOpen] = useState(false);
+  const [isAddRefereeDialogOpen, setIsAddRefereeDialogOpen] = useState(false);
 
   const isAdmin = user?.role === 'admin';
 
@@ -145,6 +155,15 @@ export default function AdminPanel() {
       requestedSubdomain: "",
       brandingPrimaryColor: "",
       brandingSecondaryColor: "",
+    },
+  });
+
+  const refereeForm = useForm<RefereeForm>({
+    resolver: zodResolver(refereeSchema),
+    defaultValues: {
+      userId: "",
+      assignedSector: "",
+      isActive: true,
     },
   });
 
@@ -530,6 +549,31 @@ export default function AdminPanel() {
       toast({
         title: "Chyba",
         description: "Nepodarilo sa zamietnuť registráciu",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Create referee mutation
+  const createRefereeMutation = useMutation({
+    mutationFn: async (refereeData: RefereeForm) => {
+      if (!selectedCompetition) throw new Error("No competition selected");
+      const response = await apiRequest("POST", `/api/competitions/${selectedCompetition}/referees`, refereeData);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/competitions", selectedCompetition, "referees"] });
+      refereeForm.reset();
+      setIsAddRefereeDialogOpen(false);
+      toast({
+        title: "Úspech",
+        description: "Rozhodca bol úspešne pridaný",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Chyba",
+        description: "Nepodarilo sa pridať rozhodcu",
         variant: "destructive",
       });
     },
@@ -2314,12 +2358,7 @@ export default function AdminPanel() {
                         </div>
                         <Button 
                           variant="default"
-                          onClick={() => {
-                            toast({
-                              title: "Pridanie rozhodcu",
-                              description: "Funkcia pridania rozhodcu bude implementovaná neskôr"
-                            });
-                          }}
+                          onClick={() => setIsAddRefereeDialogOpen(true)}
                           data-testid="button-add-referee"
                         >
                           <Plus className="w-4 h-4 mr-2" />
@@ -2411,6 +2450,99 @@ export default function AdminPanel() {
                           </p>
                         </div>
                       )}
+
+                      {/* Add Referee Dialog */}
+                      <Dialog open={isAddRefereeDialogOpen} onOpenChange={setIsAddRefereeDialogOpen}>
+                        <DialogContent className="max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>Pridať rozhodcu</DialogTitle>
+                          </DialogHeader>
+                          <Form {...refereeForm}>
+                            <form
+                              onSubmit={refereeForm.handleSubmit((data) => createRefereeMutation.mutate(data))}
+                              className="space-y-4"
+                            >
+                              <FormField
+                                control={refereeForm.control}
+                                name="userId"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Používateľ</FormLabel>
+                                    <FormControl>
+                                      <Select onValueChange={field.onChange} value={field.value}>
+                                        <SelectTrigger data-testid="select-referee-user">
+                                          <SelectValue placeholder="Vyberte používateľa" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          {allUsers?.filter(u => u.role === 'referee').map((u) => (
+                                            <SelectItem key={u.id} value={u.id}>
+                                              {u.email}
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={refereeForm.control}
+                                name="assignedSector"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Priradený sektor</FormLabel>
+                                    <FormControl>
+                                      <Input placeholder="Zadajte sektor" data-testid="input-referee-sector" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+
+                              <FormField
+                                control={refereeForm.control}
+                                name="isActive"
+                                render={({ field }) => (
+                                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                                    <div className="space-y-0.5">
+                                      <FormLabel>Aktívny rozhodca</FormLabel>
+                                      <FormDescription>
+                                        Rozhodca bude aktívny a pripravený na prácu
+                                      </FormDescription>
+                                    </div>
+                                    <FormControl>
+                                      <Switch
+                                        checked={field.value}
+                                        onCheckedChange={field.onChange}
+                                        data-testid="switch-referee-active"
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+
+                              <div className="flex justify-end space-x-2">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  onClick={() => setIsAddRefereeDialogOpen(false)}
+                                >
+                                  Zrušiť
+                                </Button>
+                                <Button
+                                  type="submit"
+                                  disabled={createRefereeMutation.isPending}
+                                  data-testid="button-submit-referee"
+                                >
+                                  {createRefereeMutation.isPending ? "Pridávam..." : "Pridať rozhodcu"}
+                                </Button>
+                              </div>
+                            </form>
+                          </Form>
+                        </DialogContent>
+                      </Dialog>
                     </div>
                   </TabsContent>
                   
