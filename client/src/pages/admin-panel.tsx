@@ -119,6 +119,7 @@ export default function AdminPanel() {
   const [isRegistrationDetailOpen, setIsRegistrationDetailOpen] = useState(false);
   const [isAddRefereeDialogOpen, setIsAddRefereeDialogOpen] = useState(false);
   const [isAddSponsorDialogOpen, setIsAddSponsorDialogOpen] = useState(false);
+  const [editingSponsor, setEditingSponsor] = useState<Sponsor | null>(null);
 
   const isAdmin = user?.role === 'admin';
 
@@ -682,6 +683,53 @@ export default function AdminPanel() {
       toast({
         title: "Chyba",
         description: "Nepodarilo sa pridať sponzora",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Update sponsor mutation
+  const updateSponsorMutation = useMutation({
+    mutationFn: async ({ sponsorId, sponsorData }: { sponsorId: string, sponsorData: InsertSponsor }) => {
+      if (!selectedCompetition) throw new Error("No competition selected");
+      
+      let logoUrl = sponsorData.logoUrl;
+      
+      // Upload logo if new file is selected
+      if (logoFile) {
+        setIsUploadingLogo(true);
+        try {
+          const uploadResult = await uploadLogoMutation.mutateAsync(logoFile);
+          logoUrl = uploadResult.logoUrl;
+        } catch (error) {
+          setIsUploadingLogo(false);
+          throw error;
+        }
+        setIsUploadingLogo(false);
+      }
+      
+      const response = await apiRequest("PATCH", `/api/competitions/${selectedCompetition}/sponsors/${sponsorId}`, {
+        ...sponsorData,
+        logoUrl,
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/competitions", selectedCompetition, "sponsors"] });
+      sponsorForm.reset();
+      setLogoFile(null);
+      setLogoPreview("");
+      setEditingSponsor(null);
+      setIsAddSponsorDialogOpen(false);
+      toast({
+        title: "Úspech",
+        description: "Sponzor bol úspešne aktualizovaný",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Chyba",
+        description: "Nepodarilo sa aktualizovať sponzora",
         variant: "destructive",
       });
     },
@@ -2687,6 +2735,17 @@ export default function AdminPanel() {
                               return;
                             }
                             
+                            // Clear editing state for new sponsor
+                            setEditingSponsor(null);
+                            sponsorForm.reset({
+                              name: "",
+                              logoUrl: "",
+                              websiteUrl: "",
+                              sponsorshipLevel: "regular",
+                              competitionId: selectedCompetition || "",
+                            });
+                            setLogoFile(null);
+                            setLogoPreview("");
                             setIsAddSponsorDialogOpen(true);
                           }}
                           data-testid="button-add-sponsor"
@@ -2753,10 +2812,22 @@ export default function AdminPanel() {
                                     size="sm" 
                                     variant="outline"
                                     onClick={() => {
-                                      toast({
-                                        title: "Úprava sponzora",
-                                        description: "Funkcia úpravy sponzora bude implementovaná neskôr"
+                                      setEditingSponsor(sponsor);
+                                      sponsorForm.reset({
+                                        name: sponsor.name,
+                                        logoUrl: sponsor.logoUrl || "",
+                                        websiteUrl: sponsor.websiteUrl || "",
+                                        sponsorshipLevel: sponsor.sponsorshipLevel,
+                                        competitionId: selectedCompetition || "",
                                       });
+                                      // Clear file states when editing
+                                      setLogoFile(null);
+                                      setLogoPreview("");
+                                      // If sponsor has a logo, set it as preview
+                                      if (sponsor.logoUrl) {
+                                        setLogoPreview(sponsor.logoUrl);
+                                      }
+                                      setIsAddSponsorDialogOpen(true);
                                     }}
                                     data-testid={`button-edit-sponsor-${sponsor.id}`}
                                   >
@@ -2791,10 +2862,22 @@ export default function AdminPanel() {
                       )}
 
                       {/* Add Sponsor Dialog */}
-                      <Dialog open={isAddSponsorDialogOpen} onOpenChange={setIsAddSponsorDialogOpen}>
+                      <Dialog 
+                        open={isAddSponsorDialogOpen} 
+                        onOpenChange={(open) => {
+                          setIsAddSponsorDialogOpen(open);
+                          if (!open) {
+                            setEditingSponsor(null);
+                            setLogoFile(null);
+                            setLogoPreview("");
+                          }
+                        }}
+                      >
                         <DialogContent className="max-w-md">
                           <DialogHeader>
-                            <DialogTitle>Pridať sponzora</DialogTitle>
+                            <DialogTitle>
+                              {editingSponsor ? "Upraviť sponzora" : "Pridať sponzora"}
+                            </DialogTitle>
                           </DialogHeader>
                           <Form {...sponsorForm}>
                             <form
@@ -2802,7 +2885,17 @@ export default function AdminPanel() {
                                 (data) => {
                                   console.log("Form submitted with data:", data);
                                   console.log("Form errors:", sponsorForm.formState.errors);
-                                  createSponsorMutation.mutate(data);
+                                  
+                                  if (editingSponsor) {
+                                    // Update existing sponsor
+                                    updateSponsorMutation.mutate({
+                                      sponsorId: editingSponsor.id,
+                                      sponsorData: data
+                                    });
+                                  } else {
+                                    // Create new sponsor
+                                    createSponsorMutation.mutate(data);
+                                  }
                                 },
                                 (errors) => {
                                   console.log("Form validation errors:", errors);
@@ -2944,11 +3037,13 @@ export default function AdminPanel() {
                                 </Button>
                                 <Button
                                   type="submit"
-                                  disabled={createSponsorMutation.isPending || isUploadingLogo}
+                                  disabled={createSponsorMutation.isPending || updateSponsorMutation.isPending || isUploadingLogo}
                                   data-testid="button-submit-sponsor"
                                 >
                                   {isUploadingLogo ? "Nahrávam logo..." : 
-                                   createSponsorMutation.isPending ? "Pridávam..." : "Pridať sponzora"}
+                                   (createSponsorMutation.isPending || updateSponsorMutation.isPending) ? 
+                                   (editingSponsor ? "Aktualizujem..." : "Pridávam...") : 
+                                   (editingSponsor ? "Upraviť sponzora" : "Pridať sponzora")}
                                 </Button>
                               </div>
                             </form>

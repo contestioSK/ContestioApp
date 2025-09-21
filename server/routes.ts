@@ -631,6 +631,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update sponsor
+  app.patch('/api/competitions/:id/sponsors/:sponsorId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'organizer' && user?.role !== 'admin') {
+        return res.status(403).json({ message: "Only organizers and admins can update sponsors" });
+      }
+
+      // Get competition to check plan tier and ownership
+      const competition = await storage.getCompetition(req.params.id);
+      if (!competition) {
+        return res.status(404).json({ message: "Competition not found" });
+      }
+
+      // Verify competition ownership for non-admin users
+      if (user?.role === 'organizer' && competition.organizerId !== userId) {
+        return res.status(403).json({ message: "You can only update sponsors for your own competitions" });
+      }
+
+      // Check if plan supports sponsors
+      if (!competition.planTier || !['pro', 'premium', 'enterprise'].includes(competition.planTier)) {
+        return res.status(403).json({ message: "Sponsor functionality is only available in Pro, Premium, and Enterprise plans" });
+      }
+
+      // Verify the sponsor belongs to this competition
+      const sponsors = await storage.getSponsorsByCompetition(req.params.id);
+      const targetSponsor = sponsors.find(s => s.id === req.params.sponsorId);
+      if (!targetSponsor) {
+        return res.status(404).json({ message: "Sponsor not found in this competition" });
+      }
+
+      // Parse and validate sponsor data (excluding competitionId to prevent tampering)
+      const sponsorData = insertSponsorSchema.omit({ competitionId: true }).parse(req.body);
+      
+      const sponsor = await storage.updateSponsor(req.params.sponsorId, sponsorData);
+      res.json(sponsor);
+    } catch (error) {
+      console.error("Error updating sponsor:", error);
+      res.status(500).json({ message: "Failed to update sponsor" });
+    }
+  });
+
   // Update referee status
   app.patch('/api/competitions/:id/referees/:refereeId', isAuthenticated, async (req: any, res) => {
     try {
