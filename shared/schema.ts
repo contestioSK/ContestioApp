@@ -178,7 +178,7 @@ export const sponsors = pgTable("sponsors", {
   name: varchar("name", { length: 255 }).notNull(),
   logoUrl: varchar("logo_url"),
   websiteUrl: varchar("website_url"),
-  sponsorshipLevel: varchar("sponsorship_level"), // "gold", "silver", "bronze"
+  sponsorshipLevel: varchar("sponsorship_level").notNull(), // "main", "regular", "media"
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -356,9 +356,17 @@ export function createCatchValidationSchema(competition: Competition) {
   });
 }
 
+export const sponsorLevels = ['main', 'regular', 'media'] as const;
+export type SponsorLevel = (typeof sponsorLevels)[number];
+
 export const insertSponsorSchema = createInsertSchema(sponsors).omit({
   id: true,
   createdAt: true,
+}).extend({
+  sponsorshipLevel: z.enum(['main', 'regular', 'media'], {
+    required_error: "Typ sponzorstva je povinný",
+    invalid_type_error: "Neplatný typ sponzorstva"
+  })
 });
 
 // Team status update schema
