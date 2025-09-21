@@ -193,6 +193,12 @@ export interface IStorage {
   getPublishedAnnouncements(options?: { competitionId?: string; limit?: number }): Promise<Announcement[]>;
   getUnnotifiedLiveAnnouncements(): Promise<Announcement[]>;
   markAnnouncementNotified(id: string): Promise<void>;
+  
+  // Result blocking operations
+  isResultBlocked(competitionId: string): Promise<boolean>;
+  updateResultBlockStatus(): Promise<void>;
+  getActiveCompetitions(): Promise<Competition[]>;
+  calculateAndUpdateResultBlockStartTime(competitionId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1412,6 +1418,80 @@ export class DatabaseStorage implements IStorage {
       ...options,
       published: true,
     });
+  }
+
+  // Result blocking operations
+  async isResultBlocked(competitionId: string): Promise<boolean> {
+    const competition = await this.getCompetition(competitionId);
+    
+    if (!competition || competition.resultBlocking === 'none') {
+      return false;
+    }
+    
+    const now = new Date();
+    const endDate = new Date(competition.endDate);
+    const blockDuration = competition.resultBlocking === '12h' ? 12 : 24;
+    const blockStartTime = new Date(endDate.getTime() - (blockDuration * 60 * 60 * 1000));
+    
+    return now >= blockStartTime && now < endDate;
+  }
+
+  async updateResultBlockStatus(): Promise<void> {
+    // Get all competitions that might need status update
+    const activeCompetitions = await this.getActiveCompetitions();
+    
+    for (const competition of activeCompetitions) {
+      const isBlocked = await this.isResultBlocked(competition.id);
+      
+      // Update only if status changed
+      if (competition.resultBlockActive !== isBlocked) {
+        await db
+          .update(competitions)
+          .set({ 
+            resultBlockActive: isBlocked,
+            updatedAt: new Date() 
+          })
+          .where(eq(competitions.id, competition.id));
+        
+        console.log(`[Storage] Updated result block status for competition ${competition.name}: ${isBlocked ? 'ACTIVE' : 'INACTIVE'}`);
+      }
+    }
+  }
+
+  async getActiveCompetitions(): Promise<Competition[]> {
+    const now = new Date();
+    
+    return await db
+      .select()
+      .from(competitions)
+      .where(
+        and(
+          ne(competitions.resultBlocking, 'none'), // Has blocking enabled
+          gte(competitions.endDate, now) // Not yet finished
+        )
+      );
+  }
+
+  async calculateAndUpdateResultBlockStartTime(competitionId: string): Promise<void> {
+    const competition = await this.getCompetition(competitionId);
+    
+    if (!competition || competition.resultBlocking === 'none') {
+      return;
+    }
+    
+    const endDate = new Date(competition.endDate);
+    const blockDuration = competition.resultBlocking === '12h' ? 12 : 24;
+    const blockStartTime = new Date(endDate.getTime() - (blockDuration * 60 * 60 * 1000));
+    
+    await db
+      .update(competitions)
+      .set({ 
+        resultBlockStartTime: blockStartTime,
+        updatedAt: new Date() 
+      })
+      .where(eq(competitions.id, competitionId));
+    
+    console.log(`[Storage] Updated result block start time for competition ${competition.name}: ${blockStartTime.toISOString()}`);
   }
 }
 

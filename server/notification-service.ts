@@ -162,6 +162,43 @@ export class NotificationService {
     return true;
   }
 
+  // Result blocking check - filters users based on result blocking status and their roles
+  private async filterUsersForResultBlocking(
+    competitionId: string, 
+    userIds: string[]
+  ): Promise<string[]> {
+    try {
+      // Check if results are blocked for this competition
+      const isBlocked = await storage.isResultBlocked(competitionId);
+      
+      if (!isBlocked) {
+        return userIds; // No blocking, return all users
+      }
+      
+      console.log(`[NotificationService] Result blocking active for competition ${competitionId}, filtering users`);
+      
+      // Filter users - only allow organizers, referees, and admins during blocking
+      const filteredUsers: string[] = [];
+      
+      for (const userId of userIds) {
+        const user = await storage.getUser(userId);
+        
+        if (user && ['organizer', 'referee', 'admin'].includes(user.role)) {
+          filteredUsers.push(userId);
+          console.log(`[NotificationService] Allowing notification for ${user.role}: ${user.email}`);
+        } else {
+          console.log(`[NotificationService] Blocking notification for public user: ${userId}`);
+        }
+      }
+      
+      return filteredUsers;
+    } catch (error) {
+      console.error('[NotificationService] Error filtering users for result blocking:', error);
+      // On error, return all users (fail open for better UX)
+      return userIds;
+    }
+  }
+
   // Rate limiting check for leaderboard changes
   private canSendLeaderboardNotification(competitionId: string, teamId: string, newPosition: number): boolean {
     const key = `${competitionId}:${teamId}`;
@@ -233,10 +270,16 @@ export class NotificationService {
         team.id
       );
 
-      if (usersToNotify.length > 0) {
+      // Apply result blocking filter
+      const filteredUsers = await this.filterUsersForResultBlocking(
+        competition.id, 
+        usersToNotify
+      );
+
+      if (filteredUsers.length > 0) {
         // Emit targeted notification via WebSocket (if broadcaster available)
         if (this.broadcaster) {
-          this.broadcaster.broadcastToUsers(usersToNotify, {
+          this.broadcaster.broadcastToUsers(filteredUsers, {
             type: 'targeted_catch_notification',
             competitionId: competition.id,
             competitionName: competition.name,
@@ -249,10 +292,10 @@ export class NotificationService {
           });
         }
         
-        console.log(`[NotificationService] Sent catch notification to ${usersToNotify.length} users`);
+        console.log(`[NotificationService] Sent catch notification to ${filteredUsers.length} users (filtered for result blocking)`);
         
         // Send push notifications to users who have push notifications enabled
-        await this.sendPushNotifications(usersToNotify, {
+        await this.sendPushNotifications(filteredUsers, {
           title: `🎣 Nový úlovok v ${competition.name}!`,
           body: `${team.name} chytil ${catch_.weight}kg ${catch_.fishType}`,
           icon: '/favicon.ico',
@@ -294,10 +337,16 @@ export class NotificationService {
         competition.id
       );
 
-      if (usersToNotify.length > 0) {
+      // Apply result blocking filter
+      const filteredUsers = await this.filterUsersForResultBlocking(
+        competition.id, 
+        usersToNotify
+      );
+
+      if (filteredUsers.length > 0) {
         // Emit targeted notification via WebSocket (if broadcaster available)
         if (this.broadcaster) {
-          this.broadcaster.broadcastToUsers(usersToNotify, {
+          this.broadcaster.broadcastToUsers(filteredUsers, {
             type: 'targeted_leaderboard_change',
             competitionId: competition.id,
             competitionName: competition.name,
@@ -309,10 +358,10 @@ export class NotificationService {
           });
         }
         
-        console.log(`[NotificationService] Sent leaderboard change to ${usersToNotify.length} users`);
+        console.log(`[NotificationService] Sent leaderboard change to ${filteredUsers.length} users (filtered for result blocking)`);
         
         // Send push notifications for leaderboard changes
-        await this.sendPushNotifications(usersToNotify, {
+        await this.sendPushNotifications(filteredUsers, {
           title: `📊 Zmena v rebríčku - ${competition.name}`,
           body: `${team.name} sa posunul na ${newPosition}. miesto`,
           icon: '/favicon.ico',
@@ -352,10 +401,16 @@ export class NotificationService {
       // Get users to notify for biggest fish records
       const usersToNotify = await storage.getUsersToNotifyForBiggestFish();
 
-      if (usersToNotify.length > 0) {
+      // Apply result blocking filter
+      const filteredUsers = await this.filterUsersForResultBlocking(
+        competition.id, 
+        usersToNotify
+      );
+
+      if (filteredUsers.length > 0) {
         // Emit targeted notification via WebSocket (if broadcaster available)
         if (this.broadcaster) {
-          this.broadcaster.broadcastToUsers(usersToNotify, {
+          this.broadcaster.broadcastToUsers(filteredUsers, {
             type: 'targeted_biggest_fish',
             competitionId: competition.id,
             competitionName: competition.name,
@@ -369,10 +424,10 @@ export class NotificationService {
           });
         }
         
-        console.log(`[NotificationService] Sent biggest fish notification to ${usersToNotify.length} users`);
+        console.log(`[NotificationService] Sent biggest fish notification to ${filteredUsers.length} users (filtered for result blocking)`);
         
         // Send push notifications for biggest fish
-        await this.sendPushNotifications(usersToNotify, {
+        await this.sendPushNotifications(filteredUsers, {
           title: `🏆 ${isNewRecord ? 'Nový rekord!' : 'Veľká ryba!'}`,
           body: `${team.name} chytil ${catch_.weight}kg ${catch_.fishType} v ${competition.name}`,
           icon: '/favicon.ico',
