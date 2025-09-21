@@ -165,10 +165,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         : (req.body.sideCompetitions ? [req.body.sideCompetitions] : []);
 
       // Parse and validate the update data using the same schema as creation
-      const { sideCompetitions: _, organizerId: __, ...bodyData } = req.body;
+      const { sideCompetitions: _, organizerId: __, selectedPlan, ...bodyData } = req.body;
       const updateData = insertCompetitionSchema.partial().parse({
         ...bodyData,
         sideCompetitions,
+        planTier: selectedPlan, // Map selectedPlan to planTier for competitions table
       });
       
       const updatedCompetition = await storage.updateCompetition(req.params.id, updateData);

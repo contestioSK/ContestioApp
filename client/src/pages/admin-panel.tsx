@@ -150,7 +150,7 @@ export default function AdminPanel() {
         sideCompetitions: editingCompetition.sideCompetitions || [],
         scoringType: editingCompetition.scoringType || "total",
         minWeight: editingCompetition.minWeight ? parseFloat(editingCompetition.minWeight.toString()) : 2,
-        selectedPlan: "basic", // Default since competitions don't store this
+        selectedPlan: editingCompetition.planTier || "basic", // Use actual plan tier from competition
         requestedSubdomain: "",
         brandingPrimaryColor: "",
         brandingSecondaryColor: "",
