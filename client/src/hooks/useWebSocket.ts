@@ -1,5 +1,7 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { queryClient } from '@/lib/queryClient';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 
 interface WebSocketMessage {
   type: string;
@@ -7,11 +9,14 @@ interface WebSocketMessage {
 }
 
 export function useWebSocket(onMessage?: (data: WebSocketMessage) => void) {
+  const { isAuthenticated, user } = useAuth();
+  const { toast } = useToast();
   const socketRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectAttempts = useRef(0);
   const maxReconnectAttempts = 5;
   const baseReconnectDelay = 1000; // 1 second
+  const [isSocketAuthenticated, setIsSocketAuthenticated] = useState(false);
 
   const connect = useCallback(() => {
     // Don't create multiple connections
@@ -28,7 +33,7 @@ export function useWebSocket(onMessage?: (data: WebSocketMessage) => void) {
       socketRef.current = socket;
 
       socket.onopen = () => {
-        console.log('WebSocket connected');
+        console.log('WebSocket connected - server will authenticate automatically');
         reconnectAttempts.current = 0;
       };
 
@@ -36,8 +41,62 @@ export function useWebSocket(onMessage?: (data: WebSocketMessage) => void) {
         try {
           const data = JSON.parse(event.data) as WebSocketMessage;
           
-          // Handle real-time updates with comprehensive admin panel support
+          // Handle authentication responses
+          if (data.type === 'auth_success') {
+            console.log('[WS] Authentication successful');
+            setIsSocketAuthenticated(true);
+            return;
+          }
+          
+          if (data.type === 'auth_error') {
+            console.error('[WS] Authentication failed:', data.message);
+            setIsSocketAuthenticated(false);
+            return;
+          }
+          
+          // Handle all WebSocket message types
           switch (data.type) {
+            // Targeted notification types for authenticated users
+            case 'targeted_catch_notification':
+              console.log('[WS] New catch notification for favorites:', data);
+              toast({
+                title: "🎣 Nový úlovok!",
+                description: `${data.teamName} chytil ${data.weight}kg rybu v obľúbenej súťaži ${data.competitionName}`,
+                duration: 5000,
+              });
+              if (onMessage) onMessage(data);
+              break;
+              
+            case 'targeted_leaderboard_change':
+              console.log('[WS] Leaderboard change for favorites:', data);
+              toast({
+                title: "📊 Zmena v rebríčku",
+                description: `${data.teamName} sa posunul na ${data.position}. miesto v súťaži ${data.competitionName}`,
+                duration: 4000,
+              });
+              if (onMessage) onMessage(data);
+              break;
+              
+            case 'targeted_biggest_fish':
+              console.log('[WS] New biggest fish notification:', data);
+              toast({
+                title: "🏆 Nová najväčšia ryba!",
+                description: `Rekordný úlovok ${data.weight}kg od ${data.teamName} v súťaži ${data.competitionName}!`,
+                duration: 6000,
+              });
+              if (onMessage) onMessage(data);
+              break;
+              
+            case 'targeted_official_announcement':
+              console.log('[WS] Official announcement:', data);
+              toast({
+                title: "📢 Oficiálne oznámenie",
+                description: data.message,
+                duration: 7000,
+              });
+              if (onMessage) onMessage(data);
+              break;
+
             // Competition events
             case 'competition_created':
             case 'competition_updated':

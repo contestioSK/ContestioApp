@@ -1,5 +1,6 @@
 import {
   users,
+  sessions,
   competitions,
   competitionRegistrations,
   teams,
@@ -45,6 +46,7 @@ export interface IStorage {
   getAllUsers(): Promise<User[]>;
   updateUserRole(userId: string, newRole: string): Promise<User>;
   updateUserStatus(userId: string, active: boolean): Promise<User>;
+  getUserFromSession(sessionId: string): Promise<User | null>;
   
   // Competition operations
   getCompetitions(): Promise<Competition[]>;
@@ -254,6 +256,37 @@ export class DatabaseStorage implements IStorage {
       throw new Error("Používateľ nenájdený");
     }
     return updatedUser;
+  }
+
+  async getUserFromSession(sessionId: string): Promise<User | null> {
+    try {
+      // Get session data from sessions table
+      const [sessionData] = await db
+        .select()
+        .from(sessions)
+        .where(eq(sessions.sid, sessionId));
+      
+      if (!sessionData) {
+        return null;
+      }
+
+      // Parse session data - connect-pg-simple stores session as JSON
+      const sessData = sessionData.sess as any;
+      
+      // Extract user ID from passport session data
+      const userId = sessData?.passport?.user?.claims?.sub;
+      
+      if (!userId) {
+        return null;
+      }
+
+      // Get the user from users table
+      const user = await this.getUser(userId);
+      return user || null;
+    } catch (error) {
+      console.error('[STORAGE] Error getting user from session:', error);
+      return null;
+    }
   }
 
   // Competition operations

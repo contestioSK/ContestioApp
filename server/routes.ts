@@ -54,25 +54,133 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create WebSocket server
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
   
-  // Store active WebSocket connections
-  const clients = new Set<WebSocket>();
+  // Store active WebSocket connections with user information
+  interface ClientConnection {
+    ws: WebSocket;
+    userId?: string;
+    sessionId?: string;
+    connectedAt: Date;
+  }
   
-  wss.on('connection', (ws) => {
-    clients.add(ws);
+  const clients = new Map<WebSocket, ClientConnection>();
+  
+  wss.on('connection', async (ws, req) => {
+    // Initialize connection
+    const connection: ClientConnection = {
+      ws,
+      connectedAt: new Date(),
+    };
+    clients.set(ws, connection);
+    
+    console.log('[WS] New WebSocket connection established');
+    
+    // Server-side authentication using cookies from request headers
+    try {
+      const cookieHeader = req.headers.cookie;
+      if (cookieHeader) {
+        // Parse connect.sid cookie
+        const cookies = cookieHeader.split(';').map(c => c.trim());
+        const sessionCookie = cookies.find(c => c.startsWith('connect.sid='));
+        
+        if (sessionCookie) {
+          // Extract session ID from cookie - format: connect.sid=s%3A{sessionId}.{signature}
+          const cookieValue = sessionCookie.split('=')[1];
+          const decodedValue = decodeURIComponent(cookieValue);
+          // After decoding, format becomes s:{sessionId}.{signature}
+          const sessionId = decodedValue.replace(/^s:/, '').split('.')[0];
+          
+          // Authenticate user from session
+          const userSession = await storage.getUserFromSession(sessionId);
+          if (userSession) {
+            connection.userId = userSession.id;
+            connection.sessionId = sessionId;
+            console.log(`[WS] User ${userSession.email} authenticated automatically on WebSocket`);
+            
+            // Send authentication success
+            ws.send(JSON.stringify({
+              type: 'auth_success',
+              userId: userSession.id,
+              email: userSession.email
+            }));
+          } else {
+            console.log(`[WS] Authentication failed for sessionId: ${sessionId}`);
+            ws.send(JSON.stringify({
+              type: 'auth_error',
+              message: 'Unauthenticated'
+            }));
+          }
+        }
+      }
+    } catch (error) {
+      console.error('[WS] Automatic authentication error:', error);
+    }
+    
+    ws.on('message', async (message) => {
+      try {
+        const data = JSON.parse(message.toString());
+        
+        // Handle other message types (keep for potential future use)
+        console.log('[WS] Received message:', data.type);
+      } catch (error) {
+        console.error('[WS] Error processing message:', error);
+      }
+    });
     
     ws.on('close', () => {
+      const connection = clients.get(ws);
+      if (connection?.userId) {
+        console.log(`[WS] User ${connection.userId} disconnected from WebSocket`);
+      }
+      clients.delete(ws);
+    });
+    
+    ws.on('error', (error) => {
+      console.error('[WS] WebSocket error:', error);
       clients.delete(ws);
     });
   });
 
-  // Helper function to broadcast updates
+  // Helper functions for broadcasting
   function broadcast(data: any) {
     const message = JSON.stringify(data);
-    clients.forEach(client => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(message);
+    clients.forEach((connection, ws) => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(message);
       }
     });
+  }
+
+  // Targeted broadcast to specific users
+  function broadcastToUsers(userIds: string[], data: any) {
+    const message = JSON.stringify(data);
+    clients.forEach((connection, ws) => {
+      if (ws.readyState === WebSocket.OPEN && 
+          connection.userId && 
+          userIds.includes(connection.userId)) {
+        ws.send(message);
+      }
+    });
+  }
+
+  // Broadcast to authenticated users only
+  function broadcastToAuthenticated(data: any) {
+    const message = JSON.stringify(data);
+    clients.forEach((connection, ws) => {
+      if (ws.readyState === WebSocket.OPEN && connection.userId) {
+        ws.send(message);
+      }
+    });
+  }
+
+  // Get all connected user IDs
+  function getConnectedUsers(): string[] {
+    const userIds: string[] = [];
+    clients.forEach((connection) => {
+      if (connection.userId) {
+        userIds.push(connection.userId);
+      }
+    });
+    return userIds;
   }
 
   // Auth routes
