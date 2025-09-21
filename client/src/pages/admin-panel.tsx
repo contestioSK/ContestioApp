@@ -176,7 +176,7 @@ export default function AdminPanel() {
       logoUrl: "",
       websiteUrl: "",
       sponsorshipLevel: "regular",
-      competitionId: "",
+      competitionId: selectedCompetition || "",
     },
   });
 
@@ -184,6 +184,13 @@ export default function AdminPanel() {
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>("");
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+
+  // Update sponsor form when competition changes
+  useEffect(() => {
+    if (selectedCompetition) {
+      sponsorForm.setValue("competitionId", selectedCompetition);
+    }
+  }, [selectedCompetition, sponsorForm]);
 
   // Handle logo file selection
   const handleLogoFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -2655,6 +2662,15 @@ export default function AdminPanel() {
                         <Button 
                           variant="default"
                           onClick={() => {
+                            if (!selectedCompetition) {
+                              toast({
+                                title: "Chyba",
+                                description: "Najprv vyberte súťaž",
+                                variant: "destructive"
+                              });
+                              return;
+                            }
+
                             const competition = competitions?.find(c => c.id === selectedCompetition);
                             const planTier = competition?.planTier;
                             
@@ -2778,7 +2794,21 @@ export default function AdminPanel() {
                           </DialogHeader>
                           <Form {...sponsorForm}>
                             <form
-                              onSubmit={sponsorForm.handleSubmit((data) => createSponsorMutation.mutate(data))}
+                              onSubmit={sponsorForm.handleSubmit(
+                                (data) => {
+                                  console.log("Form submitted with data:", data);
+                                  console.log("Form errors:", sponsorForm.formState.errors);
+                                  createSponsorMutation.mutate(data);
+                                },
+                                (errors) => {
+                                  console.log("Form validation errors:", errors);
+                                  toast({
+                                    title: "Chyba vo formulári",
+                                    description: "Prosím skontrolujte vyplnené údaje",
+                                    variant: "destructive"
+                                  });
+                                }
+                              )}
                               className="space-y-4"
                             >
                               <FormField
