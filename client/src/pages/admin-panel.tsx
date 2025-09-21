@@ -180,6 +180,26 @@ export default function AdminPanel() {
     },
   });
 
+  // Logo upload state
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string>("");
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+
+  // Handle logo file selection
+  const handleLogoFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setLogoFile(file);
+      
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setLogoPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   // Prefill form when editing competition
   useEffect(() => {
     if (editingCompetition && isEditDialogOpen) {
@@ -592,12 +612,46 @@ export default function AdminPanel() {
     },
   });
 
+  // Logo upload mutation
+  const uploadLogoMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('logo', file);
+      const response = await fetch('/api/sponsors/upload-logo', {
+        method: 'POST',
+        body: formData,
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Upload failed');
+      }
+      return response.json();
+    },
+  });
+
   // Create sponsor mutation
   const createSponsorMutation = useMutation({
     mutationFn: async (sponsorData: InsertSponsor) => {
       if (!selectedCompetition) throw new Error("No competition selected");
+      
+      let logoUrl = sponsorData.logoUrl;
+      
+      // Upload logo if file is selected
+      if (logoFile) {
+        setIsUploadingLogo(true);
+        try {
+          const uploadResult = await uploadLogoMutation.mutateAsync(logoFile);
+          logoUrl = uploadResult.logoUrl;
+        } catch (error) {
+          setIsUploadingLogo(false);
+          throw error;
+        }
+        setIsUploadingLogo(false);
+      }
+      
       const response = await apiRequest("POST", `/api/competitions/${selectedCompetition}/sponsors`, {
         ...sponsorData,
+        logoUrl,
         competitionId: selectedCompetition
       });
       return response.json();
@@ -605,6 +659,8 @@ export default function AdminPanel() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/competitions", selectedCompetition, "sponsors"] });
       sponsorForm.reset();
+      setLogoFile(null);
+      setLogoPreview("");
       setIsAddSponsorDialogOpen(false);
       toast({
         title: "Úspech",
@@ -2762,19 +2818,60 @@ export default function AdminPanel() {
                                 )}
                               />
                               
-                              <FormField
-                                control={sponsorForm.control}
-                                name="logoUrl"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>URL loga (nepovinné)</FormLabel>
-                                    <FormControl>
-                                      <Input placeholder="https://example.com/logo.png" data-testid="input-sponsor-logo" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
+                              <div className="space-y-4">
+                                <FormField
+                                  control={sponsorForm.control}
+                                  name="logoUrl"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Logo sponzora</FormLabel>
+                                      <div className="space-y-3">
+                                        {/* File upload */}
+                                        <div>
+                                          <Label className="text-sm text-muted-foreground mb-2 block">
+                                            Nahrať súbor
+                                          </Label>
+                                          <Input
+                                            type="file"
+                                            accept="image/jpeg,image/jpg,image/png,image/gif"
+                                            onChange={handleLogoFileChange}
+                                            data-testid="input-sponsor-logo-file"
+                                            className="cursor-pointer"
+                                          />
+                                        </div>
+                                        
+                                        {/* URL input as alternative */}
+                                        <div>
+                                          <Label className="text-sm text-muted-foreground mb-2 block">
+                                            Alebo URL loga
+                                          </Label>
+                                          <FormControl>
+                                            <Input 
+                                              placeholder="https://example.com/logo.png" 
+                                              data-testid="input-sponsor-logo-url" 
+                                              {...field} 
+                                            />
+                                          </FormControl>
+                                        </div>
+                                        
+                                        {/* Logo preview */}
+                                        {(logoPreview || field.value) && (
+                                          <div className="mt-2">
+                                            <Label className="text-sm text-muted-foreground">Náhľad:</Label>
+                                            <div className="mt-1 border rounded-lg p-2 bg-muted/50">
+                                              <img 
+                                                src={logoPreview || field.value} 
+                                                alt="Logo preview" 
+                                                className="max-h-20 max-w-full object-contain"
+                                              />
+                                            </div>
+                                          </div>
+                                        )}
+                                      </div>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                /></div>
 
                               <FormField
                                 control={sponsorForm.control}
@@ -2800,10 +2897,11 @@ export default function AdminPanel() {
                                 </Button>
                                 <Button
                                   type="submit"
-                                  disabled={createSponsorMutation.isPending}
+                                  disabled={createSponsorMutation.isPending || isUploadingLogo}
                                   data-testid="button-submit-sponsor"
                                 >
-                                  {createSponsorMutation.isPending ? "Pridávam..." : "Pridať sponzora"}
+                                  {isUploadingLogo ? "Nahrávam logo..." : 
+                                   createSponsorMutation.isPending ? "Pridávam..." : "Pridať sponzora"}
                                 </Button>
                               </div>
                             </form>

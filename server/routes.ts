@@ -550,6 +550,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Upload sponsor logo
+  app.post('/api/sponsors/upload-logo', isAuthenticated, (req: any, res, next) => {
+    upload.single('logo')(req, res, (err: any) => {
+      if (err) {
+        console.error("Multer error:", err);
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return res.status(400).json({ 
+            message: "Logo je príliš veľké. Maximálna veľkosť je 10MB." 
+          });
+        }
+        if (err.message === "Only image files are allowed" || err.message === "Povolené sú len obrázkové súbory (JPEG, PNG, GIF)") {
+          return res.status(400).json({ 
+            message: "Povolené sú len obrázkové súbory (JPEG, PNG, GIF)" 
+          });
+        }
+        return res.status(400).json({ 
+          message: "Chyba pri nahrávaní loga" 
+        });
+      }
+      next();
+    });
+  }, async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "Žiaden súbor nebol nahratý" });
+      }
+
+      const logoUrl = `/uploads/${req.file.filename}`;
+      res.json({ logoUrl });
+    } catch (error) {
+      console.error("Error uploading sponsor logo:", error);
+      res.status(500).json({ message: "Chyba pri nahrávaní loga" });
+    }
+  });
+
   app.post('/api/competitions/:id/sponsors', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
