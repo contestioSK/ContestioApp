@@ -27,10 +27,18 @@ export function ContestCategories({ contests }: ContestCategoriesProps) {
   const categorizeContests = () => {
     const now = new Date();
     
+    console.log('DEBUG CATEGORIES:', {
+      now: now.toISOString(),
+      totalContests: contests.length,
+      contestNames: contests.map(c => `${c.name} (${c.status}, ${c.startDate})`)
+    });
+    
     // Registration open: status is 'registration' and start date is in future
     const registrationOpen = contests.filter(contest => 
       contest.status === 'registration' && new Date(contest.startDate) > now
     );
+    
+    console.log('REGISTRATION OPEN:', registrationOpen.map(c => c.name));
     
     // Registration closed but future: status is 'registration' but start date is very close (within 3 days)
     const registrationClosedFuture = contests.filter(contest => {
