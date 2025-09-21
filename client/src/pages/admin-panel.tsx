@@ -883,7 +883,14 @@ export default function AdminPanel() {
         // Add all other form data
         Object.keys(data).forEach(key => {
           if (data[key] !== null && data[key] !== undefined) {
-            formData.append(key, data[key]);
+            // Convert objects and arrays to JSON strings for FormData
+            if (typeof data[key] === 'object' && !(data[key] instanceof Date)) {
+              formData.append(key, JSON.stringify(data[key]));
+            } else if (data[key] instanceof Date) {
+              formData.append(key, data[key].toISOString());
+            } else {
+              formData.append(key, String(data[key]));
+            }
           }
         });
         
