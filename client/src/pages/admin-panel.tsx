@@ -3064,83 +3064,9 @@ export default function AdminPanel() {
                         </DialogContent>
                       </Dialog>
 
-                      {/* Team Details Dialog */}
-                      <Dialog 
-                        open={isTeamDetailsDialogOpen} 
-                        onOpenChange={(open) => {
-                          setIsTeamDetailsDialogOpen(open);
-                          if (!open) {
-                            setSelectedTeamId(null);
-                          }
-                        }}
-                      >
-                        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                          <DialogHeader>
-                            <DialogTitle>
-                              {selectedTeamDetails ? `Detaily tímu - ${selectedTeamDetails.name}` : "Detaily tímu"}
-                            </DialogTitle>
-                            <DialogDescription>
-                              Podrobné informácie o tíme a jeho členoch
-                            </DialogDescription>
-                          </DialogHeader>
-                          
-                          {teamDetailsLoading ? (
-                            <div className="flex justify-center items-center py-8">
-                              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                            </div>
-                          ) : selectedTeamDetails ? (
-                            <div className="space-y-6">
-                              {/* Team Basic Info */}
-                              <div className="space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
-                                  <div>
-                                    <Label className="text-sm font-medium text-muted-foreground">Názov tímu</Label>
-                                    <p className="text-foreground font-medium" data-testid="team-name">
-                                      {selectedTeamDetails.name}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <Label className="text-sm font-medium text-muted-foreground">Status</Label>
-                                    <div className="mt-1">
-                                      <Badge 
-                                        variant={selectedTeamDetails.status === 'approved' ? 'default' : 
-                                                selectedTeamDetails.status === 'pending' ? 'secondary' : 'destructive'}
-                                        data-testid="team-status"
-                                      >
-                                        {selectedTeamDetails.status === 'approved' ? 'Schválený' : 
-                                         selectedTeamDetails.status === 'pending' ? 'Čaká na schválenie' : 'Zamietnutý'}
-                                      </Badge>
-                                    </div>
-                                  </div>
-                                </div>
 
-                                {selectedTeamDetails.country && (
-                                  <div>
-                                    <Label className="text-sm font-medium text-muted-foreground">Krajina</Label>
-                                    <p className="text-foreground" data-testid="team-country">
-                                      {selectedTeamDetails.country === 'SK' ? 'Slovensko' : 
-                                       selectedTeamDetails.country === 'CZ' ? 'Česko' : 
-                                       selectedTeamDetails.country}
-                                    </p>
-                                  </div>
-                                )}
 
-                                {selectedTeamDetails.sectorName && (
-                                  <div>
-                                    <Label className="text-sm font-medium text-muted-foreground">Sektor</Label>
-                                    <p className="text-foreground" data-testid="team-sector">
-                                      {selectedTeamDetails.sectorName}
-                                    </p>
-                                  </div>
-                                )}
 
-                                {selectedTeamDetails.placeName && (
-                                  <div>
-                                    <Label className="text-sm font-medium text-muted-foreground">Miesto</Label>
-                                    <p className="text-foreground" data-testid="team-place">
-                                      {selectedTeamDetails.placeName}
-                                    </p>
-                                  </div>
                                 )}
 
                                 {selectedTeamDetails.totalWeight !== undefined && selectedTeamDetails.totalWeight > 0 && (
@@ -3212,36 +3138,10 @@ export default function AdminPanel() {
                                             </div>
                                           )}
                                         </div>
-                                        
-                                        {/* Role Badge */}
-                                        <div>
-                                          <Badge 
-                                            variant={member.role === 'captain' ? 'default' : 'secondary'}
-                                            data-testid={`member-role-${index}`}
-                                          >
-                                            {member.role === 'captain' ? 'Kapitán' : 'Člen'}
-                                          </Badge>
-                                        </div>
                                       </div>
                                     ))
                                   ) : (
                                     <p className="text-muted-foreground">Žiadni členovia tímu.</p>
-                                  )}
-                                </div>
-                              </div>
-
-                              {/* Created/Updated Info */}
-                              <div className="pt-4 border-t border-border">
-                                <div className="grid grid-cols-1 gap-2 text-sm text-muted-foreground">
-                                  {selectedTeamDetails.createdAt && (
-                                    <div>
-                                      <span className="font-medium">Vytvorené:</span> {new Date(selectedTeamDetails.createdAt).toLocaleString('sk-SK')}
-                                    </div>
-                                  )}
-                                  {selectedTeamDetails.updatedAt && (
-                                    <div>
-                                      <span className="font-medium">Posledná úprava:</span> {new Date(selectedTeamDetails.updatedAt).toLocaleString('sk-SK')}
-                                    </div>
                                   )}
                                 </div>
                               </div>
@@ -3456,6 +3356,185 @@ export default function AdminPanel() {
 
         </Card>
       </div>
+
+      {/* Team Details Dialog - Moved to top level to avoid z-index conflicts */}
+      <Dialog 
+        open={isTeamDetailsDialogOpen} 
+        onOpenChange={(open) => {
+          setIsTeamDetailsDialogOpen(open);
+          if (!open) {
+            setSelectedTeamId(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {selectedTeamDetails ? `Detaily tímu - ${selectedTeamDetails.name}` : "Detaily tímu"}
+            </DialogTitle>
+            <DialogDescription>
+              Podrobné informácie o tíme a jeho členoch
+            </DialogDescription>
+          </DialogHeader>
+          
+          {teamDetailsLoading ? (
+            <div className="flex justify-center items-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : selectedTeamDetails ? (
+            <div className="space-y-6">
+              {/* Team Basic Info */}
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Názov tímu</Label>
+                    <p className="text-foreground font-medium" data-testid="team-name">
+                      {selectedTeamDetails.name}
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Status</Label>
+                    <div className="mt-1">
+                      <Badge 
+                        variant={selectedTeamDetails.status === 'approved' ? 'default' : 
+                                selectedTeamDetails.status === 'pending' ? 'secondary' : 'destructive'}
+                        data-testid="team-status"
+                      >
+                        {selectedTeamDetails.status === 'approved' ? 'Schválený' : 
+                         selectedTeamDetails.status === 'pending' ? 'Čaká na schválenie' : 'Zamietnutý'}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-muted-foreground">Krajina</Label>
+                    <p className="text-foreground font-medium" data-testid="team-country">
+                      {selectedTeamDetails.country || 'SK'}
+                    </p>
+                  </div>
+                  {selectedTeamDetails.sectorName && (
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Sektor</Label>
+                      <p className="text-foreground font-medium" data-testid="team-sector">
+                        {selectedTeamDetails.sectorName}
+                      </p>
+                    </div>
+                  )}
+                  {selectedTeamDetails.placeName && (
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Miesto</Label>
+                      <p className="text-foreground font-medium" data-testid="team-place">
+                        {selectedTeamDetails.placeName}
+                      </p>
+                    </div>
+                  )}
+                  {selectedTeamDetails.totalWeight && parseFloat(selectedTeamDetails.totalWeight) > 0 && (
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Celková váha</Label>
+                      <p className="text-foreground font-medium" data-testid="team-total-weight">
+                        {selectedTeamDetails.totalWeight} kg
+                      </p>
+                    </div>
+                  )}
+                  {selectedTeamDetails.fishCount && selectedTeamDetails.fishCount > 0 && (
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Počet rýb</Label>
+                      <p className="text-foreground font-medium" data-testid="team-fish-count">
+                        {selectedTeamDetails.fishCount}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Team Photo */}
+              {selectedTeamDetails.photoUrl && (
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">Fotka tímu</Label>
+                  <div className="mt-2">
+                    <img 
+                      src={selectedTeamDetails.photoUrl} 
+                      alt={`Fotka tímu ${selectedTeamDetails.name}`}
+                      className="w-full max-w-md h-48 object-cover rounded-lg border"
+                      data-testid="team-photo"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Team Members */}
+              <div>
+                <Label className="text-sm font-medium text-muted-foreground">
+                  Členovia tímu ({selectedTeamDetails.members?.length || 0})
+                </Label>
+                <div className="mt-3 space-y-3">
+                  {selectedTeamDetails.members?.length > 0 ? (
+                    selectedTeamDetails.members.map((member: TeamMember, index: number) => (
+                      <div 
+                        key={member.id || index} 
+                        className="flex items-center space-x-3 p-3 bg-muted/20 rounded-lg border"
+                        data-testid={`member-${index}`}
+                      >
+                        {/* Member Photo */}
+                        <div className="flex-shrink-0">
+                          <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center">
+                            <Users className="w-6 h-6 text-muted-foreground" />
+                          </div>
+                        </div>
+                        
+                        {/* Member Info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-foreground" data-testid={`member-name-${index}`}>
+                            {member.name}
+                          </div>
+                          {member.email && (
+                            <div className="text-sm text-muted-foreground truncate" data-testid={`member-email-${index}`}>
+                              {member.email}
+                            </div>
+                          )}
+                          {member.phone && (
+                            <div className="text-sm text-muted-foreground" data-testid={`member-phone-${index}`}>
+                              {member.phone}
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Role Badge */}
+                        <div>
+                          <Badge variant={member.role === 'captain' ? 'default' : 'secondary'} data-testid={`member-role-${index}`}>
+                            {member.role === 'captain' ? 'Kapitán' : 'Člen'}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-muted-foreground">Žiadni členovia tímu.</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Created/Updated Info */}
+              <div className="pt-4 border-t border-border">
+                <div className="grid grid-cols-1 gap-2 text-sm text-muted-foreground">
+                  {selectedTeamDetails.createdAt && (
+                    <div>
+                      <span className="font-medium">Vytvorené:</span> {new Date(selectedTeamDetails.createdAt).toLocaleString('sk-SK')}
+                    </div>
+                  )}
+                  {selectedTeamDetails.updatedAt && (
+                    <div>
+                      <span className="font-medium">Posledná úprava:</span> {new Date(selectedTeamDetails.updatedAt).toLocaleString('sk-SK')}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              Nepodarilo sa načítať detaily tímu.
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
