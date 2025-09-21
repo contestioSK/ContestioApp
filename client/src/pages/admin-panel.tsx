@@ -389,92 +389,7 @@ export default function AdminPanel() {
 
 
 
-  // Team edit submit handler with enhanced validation
-  const onEditTeamSubmit = async (data: EditTeamForm) => {
-    if (!selectedTeamId) return;
-    
-    try {
-      // Check if sector/place combination is already taken
-      if (data.sectorName && data.placeName) {
-        const availablePlaces = getAvailableSectorPlaces();
-        const selectedPlace = availablePlaces.find(
-          place => place.sectorName === data.sectorName && place.placeName === data.placeName
-        );
-        
-        if (selectedPlace?.isOccupied) {
-          // Check if it's the same team editing its own place
-          const currentTeam = teams?.find(t => t.id === selectedTeamId);
-          if (currentTeam?.sectorName !== data.sectorName || currentTeam?.placeName !== data.placeName) {
-            toast({
-              title: "Chyba",
-              description: `Miesto ${data.sectorName} - ${data.placeName} je už obsadené iným tímom`,
-              variant: "destructive"
-            });
-            return;
-          }
-        }
-      }
-      
-      // Transform data to prevent clearing existing sector/place assignments with empty strings
-      const cleanData: Partial<EditTeamForm> = {
-        name: data.name,
-        country: data.country,
-      };
-      
-      // Only include sector/place if both are provided (non-empty)
-      if (data.sectorName && data.sectorName.trim() && data.placeName && data.placeName.trim()) {
-        cleanData.sectorName = data.sectorName.trim();
-        cleanData.placeName = data.placeName.trim();
-      } else if (!data.sectorName && !data.placeName) {
-        // Allow clearing both sector and place
-        cleanData.sectorName = null;
-        cleanData.placeName = null;
-      }
-      
-      await updateTeamMutation.mutateAsync({
-        teamId: selectedTeamId,
-        data: cleanData
-      });
-    } catch (error) {
-      console.error("Error updating team:", error);
-      // Surface server error message in toast
-      const errorMessage = error instanceof Error ? error.message : "Chyba pri aktualizácii tímu";
-      toast({
-        title: "Chyba",
-        description: errorMessage,
-        variant: "destructive"
-      });
-    }
-  };
 
-  // Filter teams based on status and search term
-  const filteredTeams = teams?.filter(team => {
-    const matchesFilter = teamsFilter === "all" || team.status === teamsFilter;
-    const matchesSearch = !teamsSearchTerm || 
-      team.name?.toLowerCase().includes(teamsSearchTerm.toLowerCase()) ||
-      team.members?.some(member => 
-        member.name?.toLowerCase().includes(teamsSearchTerm.toLowerCase())
-      );
-    return matchesFilter && matchesSearch;
-  }) || [];
-
-  // Helper function to handle team selection for bulk actions
-  const toggleTeamSelection = (teamId: string) => {
-    setSelectedTeamsForBulk(prev => 
-      prev.includes(teamId) 
-        ? prev.filter(id => id !== teamId)
-        : [...prev, teamId]
-    );
-  };
-
-  const selectAllTeams = () => {
-    const pendingTeams = filteredTeams.filter(team => team.status === 'pending').map(team => team.id);
-    setSelectedTeamsForBulk(pendingTeams);
-  };
-
-  const clearTeamSelection = () => {
-    setSelectedTeamsForBulk([]);
-  };
 
   // Watch form values for dynamic behavior
   const selectedPlan = form.watch("selectedPlan");
@@ -605,6 +520,93 @@ export default function AdminPanel() {
       title: "Úspech",
       description: "Tímy boli exportované do CSV súboru"
     });
+  };
+
+  // Filter teams based on status and search term
+  const filteredTeams = teams?.filter(team => {
+    const matchesFilter = teamsFilter === "all" || team.status === teamsFilter;
+    const matchesSearch = !teamsSearchTerm || 
+      team.name?.toLowerCase().includes(teamsSearchTerm.toLowerCase()) ||
+      team.members?.some(member => 
+        member.name?.toLowerCase().includes(teamsSearchTerm.toLowerCase())
+      );
+    return matchesFilter && matchesSearch;
+  }) || [];
+
+  // Helper function to handle team selection for bulk actions
+  const toggleTeamSelection = (teamId: string) => {
+    setSelectedTeamsForBulk(prev => 
+      prev.includes(teamId) 
+        ? prev.filter(id => id !== teamId)
+        : [...prev, teamId]
+    );
+  };
+
+  const selectAllTeams = () => {
+    const pendingTeams = filteredTeams.filter(team => team.status === 'pending').map(team => team.id);
+    setSelectedTeamsForBulk(pendingTeams);
+  };
+
+  const clearTeamSelection = () => {
+    setSelectedTeamsForBulk([]);
+  };
+
+  // Team edit submit handler with enhanced validation
+  const onEditTeamSubmit = async (data: EditTeamForm) => {
+    if (!selectedTeamId) return;
+    
+    try {
+      // Check if sector/place combination is already taken
+      if (data.sectorName && data.placeName) {
+        const availablePlaces = getAvailableSectorPlaces();
+        const selectedPlace = availablePlaces.find(
+          (place: any) => place.sectorName === data.sectorName && place.placeName === data.placeName
+        );
+        
+        if (selectedPlace?.isOccupied) {
+          // Check if it's the same team editing its own place
+          const currentTeam = teams?.find(t => t.id === selectedTeamId);
+          if (currentTeam?.sectorName !== data.sectorName || currentTeam?.placeName !== data.placeName) {
+            toast({
+              title: "Chyba",
+              description: `Miesto ${data.sectorName} - ${data.placeName} je už obsadené iným tímom`,
+              variant: "destructive"
+            });
+            return;
+          }
+        }
+      }
+      
+      // Transform data to prevent clearing existing sector/place assignments with empty strings
+      const cleanData: Partial<EditTeamForm> = {
+        name: data.name,
+        country: data.country,
+      };
+      
+      // Only include sector/place if both are provided (non-empty)
+      if (data.sectorName && data.sectorName.trim() && data.placeName && data.placeName.trim()) {
+        cleanData.sectorName = data.sectorName.trim();
+        cleanData.placeName = data.placeName.trim();
+      } else if (!data.sectorName && !data.placeName) {
+        // Allow clearing both sector and place
+        cleanData.sectorName = undefined;
+        cleanData.placeName = undefined;
+      }
+      
+      await updateTeamMutation.mutateAsync({
+        teamId: selectedTeamId,
+        data: cleanData
+      });
+    } catch (error) {
+      console.error("Error updating team:", error);
+      // Surface server error message in toast
+      const errorMessage = error instanceof Error ? error.message : "Chyba pri aktualizácii tímu";
+      toast({
+        title: "Chyba",
+        description: errorMessage,
+        variant: "destructive"
+      });
+    }
   };
 
   // Dashboard stats query
