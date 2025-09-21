@@ -52,7 +52,8 @@ import {
   Trash2,
   Play,
   Square,
-  ArrowRight
+  ArrowRight,
+  Palette
 } from "lucide-react";
 import type { Competition, Team, TeamMember, CompetitionRegistration, InsertSponsor, Sponsor, SponsorLevel, Catch, Referee, InsertReferee } from "@shared/schema";
 import { getSideCompetitionLabel } from "@/lib/utils";
@@ -94,6 +95,64 @@ const competitionSchema = z.object({
 });
 
 type CompetitionForm = z.infer<typeof competitionSchema>;
+
+// Schema for competition editing - extends creation schema with additional fields
+const editCompetitionSchema = z.object({
+  name: z.string().min(1, "Názov súťaže je povinný").max(255, "Názov je príliš dlhý"),
+  description: z.string().max(500, "Popis môže mať maximálne 500 znakov").optional(),
+  rules: z.string().optional(),
+  location: z.string().min(1, "Miesto je povinné").max(255, "Miesto je príliš dlhé"),
+  startDate: z.string().min(1, "Dátum začiatku je povinný"),
+  endDate: z.string().min(1, "Dátum konca je povinný"),
+  status: z.enum(["registration", "live", "finished"]).default("registration"),
+  imageUrl: z.string().url("Neplatná URL adresa").optional().or(z.literal("")),
+  firstPlacePrize: z.preprocess(v => v === "" || v == null ? undefined : v, z.coerce.number().positive("Cena musí byť kladná")).optional(),
+  secondPlacePrize: z.preprocess(v => v === "" || v == null ? undefined : v, z.coerce.number().positive("Cena musí byť kladná")).optional(),
+  thirdPlacePrize: z.preprocess(v => v === "" || v == null ? undefined : v, z.coerce.number().positive("Cena musí byť kladná")).optional(),
+  registrationFee: z.preprocess(v => v === "" || v == null ? undefined : v, z.coerce.number().positive("Poplatok musí byť kladný")).optional(),
+  maxTeams: z.preprocess(v => v === "" || v == null ? undefined : v, z.coerce.number().int().positive("Počet tímov musí byť kladný")).optional(),
+  maxReferees: z.preprocess(v => v === "" || v == null ? undefined : v, z.coerce.number().int().positive("Počet rozhodcov musí byť kladný")).optional(),
+  hasSectors: z.boolean().default(false),
+  sectorPlaces: z.preprocess((val) => {
+    if (typeof val === 'string') {
+      try {
+        return JSON.parse(val);
+      } catch {
+        return [];
+      }
+    }
+    return val || [];
+  }, z.array(z.object({
+    sectorName: z.string().min(1, "Názov sektoru je povinný"),
+    places: z.array(z.string().min(1, "Názov miesta je povinný")).min(1, "Sektor musí mať aspoň jedno miesto")
+  }))).optional(),
+  sideCompetitions: z.array(z.string()).default([]),
+  scoringType: z.enum(["total", "avg3", "avg5"]).default("total"),
+  minWeight: z.coerce.number().min(2, "Minimálna hmotnosť musí byť aspoň 2 kg").max(15, "Maximálna hmotnosť môže byť 15 kg").default(2),
+  selectedPlan: z.enum(["basic", "pro", "premium", "enterprise"]).default("basic"),
+  branding: z.object({
+    primaryColor: z.string().optional(),
+    secondaryColor: z.string().optional(),
+    subdomain: z.string().optional(),
+  }).optional(),
+  mediaAccess: z.boolean().default(false),
+  prioritySupport: z.boolean().default(false),
+}).refine((data) => {
+  // Enforce plan constraints
+  const plan = data.selectedPlan;
+  if (data.maxReferees && data.maxReferees > getMaxReferees(plan)) {
+    return false;
+  }
+  if ((data.mediaAccess || data.prioritySupport) && !['premium', 'enterprise'].includes(plan)) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Nastavenia nie sú kompatibilné s vybraným plánom",
+  path: ["selectedPlan"]
+});
+
+type EditCompetitionForm = z.infer<typeof editCompetitionSchema>;
 
 // Schema for referee creation
 const refereeSchema = z.object({
@@ -236,8 +295,8 @@ export default function AdminPanel() {
     }
   }, [selectedCompetition]);
 
-  const form = useForm<CompetitionForm>({
-    resolver: zodResolver(competitionSchema),
+  const form = useForm<EditCompetitionForm>({
+    resolver: zodResolver(editCompetitionSchema),
     defaultValues: {
       name: "",
       description: "",
@@ -341,20 +400,27 @@ export default function AdminPanel() {
         location: editingCompetition.location || "",
         startDate: editingCompetition.startDate ? new Date(editingCompetition.startDate).toISOString().slice(0, 16) : "",
         endDate: editingCompetition.endDate ? new Date(editingCompetition.endDate).toISOString().slice(0, 16) : "",
+        status: editingCompetition.status || "registration",
+        imageUrl: editingCompetition.imageUrl || "",
         firstPlacePrize: editingCompetition.firstPlacePrize?.toString() || "",
         secondPlacePrize: editingCompetition.secondPlacePrize?.toString() || "",
         thirdPlacePrize: editingCompetition.thirdPlacePrize?.toString() || "",
         registrationFee: editingCompetition.registrationFee?.toString() || "",
         maxTeams: editingCompetition.maxTeams?.toString() || "",
+        maxReferees: editingCompetition.maxReferees?.toString() || "",
         hasSectors: editingCompetition.hasSectors || false,
         sectorPlaces: editingCompetition.sectorPlaces || [],
         sideCompetitions: editingCompetition.sideCompetitions || [],
         scoringType: editingCompetition.scoringType || "total",
         minWeight: editingCompetition.minWeight ? parseFloat(editingCompetition.minWeight.toString()) : 2,
-        selectedPlan: editingCompetition.planTier || "basic", // Use actual plan tier from competition
-        requestedSubdomain: "",
-        brandingPrimaryColor: "",
-        brandingSecondaryColor: "",
+        selectedPlan: editingCompetition.planTier || "basic",
+        branding: {
+          primaryColor: editingCompetition.branding?.primaryColor || "",
+          secondaryColor: editingCompetition.branding?.secondaryColor || "",
+          subdomain: editingCompetition.branding?.subdomain || "",
+        },
+        mediaAccess: editingCompetition.mediaAccess || false,
+        prioritySupport: editingCompetition.prioritySupport || false,
       });
     }
   }, [editingCompetition, isEditDialogOpen, form]);
@@ -2382,15 +2448,33 @@ export default function AdminPanel() {
                               <form onSubmit={form.handleSubmit(async (data) => {
                                 try {
                                   const competitionData = {
-                                    ...data,
+                                    name: data.name,
+                                    description: data.description,
+                                    rules: data.rules,
+                                    location: data.location,
+                                    status: data.status,
+                                    imageUrl: data.imageUrl || null,
                                     startDate: new Date(data.startDate),
                                     endDate: new Date(data.endDate),
                                     maxTeams: data.maxTeams ? parseInt(data.maxTeams) : null,
+                                    maxReferees: data.maxReferees ? parseInt(data.maxReferees) : null,
                                     registrationFee: data.registrationFee || null,
                                     firstPlacePrize: data.firstPlacePrize || null,
                                     secondPlacePrize: data.secondPlacePrize || null,
                                     thirdPlacePrize: data.thirdPlacePrize || null,
                                     minWeight: typeof data.minWeight === 'string' ? parseFloat(data.minWeight) : data.minWeight,
+                                    hasSectors: data.hasSectors,
+                                    sectorPlaces: data.sectorPlaces || [],
+                                    sideCompetitions: data.sideCompetitions || [],
+                                    scoringType: data.scoringType,
+                                    planTier: data.selectedPlan,
+                                    branding: data.branding && (data.branding.primaryColor || data.branding.secondaryColor || data.branding.subdomain) ? {
+                                      primaryColor: data.branding.primaryColor || null,
+                                      secondaryColor: data.branding.secondaryColor || null,
+                                      subdomain: data.branding.subdomain || null,
+                                    } : null,
+                                    mediaAccess: data.mediaAccess,
+                                    prioritySupport: data.prioritySupport,
                                   };
                                   
                                   console.log('Edit competition data:', competitionData);
@@ -2491,6 +2575,45 @@ export default function AdminPanel() {
                                     </FormItem>
                                   )}
                                 />
+
+                                {/* Status and Image */}
+                                <div className="grid grid-cols-2 gap-4">
+                                  <FormField
+                                    control={form.control}
+                                    name="status"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Status súťaže</FormLabel>
+                                        <Select onValueChange={field.onChange} value={field.value}>
+                                          <FormControl>
+                                            <SelectTrigger data-testid="select-edit-competition-status">
+                                              <SelectValue placeholder="Zvoľte status" />
+                                            </SelectTrigger>
+                                          </FormControl>
+                                          <SelectContent>
+                                            <SelectItem value="registration">Registrácie</SelectItem>
+                                            <SelectItem value="live">Prebiehajúca</SelectItem>
+                                            <SelectItem value="finished">Ukončená</SelectItem>
+                                          </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                  <FormField
+                                    control={form.control}
+                                    name="imageUrl"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>URL obrázka súťaže</FormLabel>
+                                        <FormControl>
+                                          <Input placeholder="https://example.com/image.jpg" {...field} data-testid="input-edit-competition-image" />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                </div>
 
                                 <FormField
                                   control={form.control}
@@ -2608,30 +2731,224 @@ export default function AdminPanel() {
                                   />
                                 </div>
 
-                                {/* Plan Selection */}
-                                <FormField
-                                  control={form.control}
-                                  name="selectedPlan"
-                                  render={({ field }) => (
-                                    <FormItem>
-                                      <FormLabel>Cenový plán</FormLabel>
-                                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                {/* Plan Selection and Advanced Settings */}
+                                <div className="grid grid-cols-2 gap-4">
+                                  <FormField
+                                    control={form.control}
+                                    name="selectedPlan"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Cenový plán</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                          <FormControl>
+                                            <SelectTrigger data-testid="select-edit-plan-tier">
+                                              <SelectValue placeholder="Zvoľte plán" />
+                                            </SelectTrigger>
+                                          </FormControl>
+                                          <SelectContent>
+                                            <SelectItem value="basic">Basic</SelectItem>
+                                            <SelectItem value="pro">Pro</SelectItem>
+                                            <SelectItem value="premium">Premium</SelectItem>
+                                            <SelectItem value="enterprise">Enterprise</SelectItem>
+                                          </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                  <FormField
+                                    control={form.control}
+                                    name="maxReferees"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Max. počet rozhodcov</FormLabel>
                                         <FormControl>
-                                          <SelectTrigger data-testid="select-edit-plan-tier">
-                                            <SelectValue placeholder="Zvoľte plán" />
-                                          </SelectTrigger>
+                                          <Input 
+                                            type="number" 
+                                            placeholder="5" 
+                                            {...field}
+                                            onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : null)}
+                                            data-testid="input-edit-max-referees" 
+                                          />
                                         </FormControl>
-                                        <SelectContent>
-                                          <SelectItem value="basic">Basic</SelectItem>
-                                          <SelectItem value="pro">Pro</SelectItem>
-                                          <SelectItem value="premium">Premium</SelectItem>
-                                          <SelectItem value="enterprise">Enterprise</SelectItem>
-                                        </SelectContent>
-                                      </Select>
-                                      <FormMessage />
-                                    </FormItem>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                </div>
+
+                                {/* Sectors Configuration */}
+                                <div className="space-y-4">
+                                  <FormField
+                                    control={form.control}
+                                    name="hasSectors"
+                                    render={({ field }) => (
+                                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                        <div className="space-y-0.5">
+                                          <FormLabel className="text-base">Rozdelenie do sektorov</FormLabel>
+                                          <FormDescription>
+                                            Povoliť rozdelenie súťaže do geografických sektorov
+                                          </FormDescription>
+                                        </div>
+                                        <FormControl>
+                                          <Switch
+                                            checked={field.value}
+                                            onCheckedChange={field.onChange}
+                                            data-testid="switch-edit-has-sectors"
+                                          />
+                                        </FormControl>
+                                      </FormItem>
+                                    )}
+                                  />
+
+                                  {form.watch("hasSectors") && (
+                                    <FormField
+                                      control={form.control}
+                                      name="sectorPlaces"
+                                      render={({ field }) => (
+                                        <FormItem>
+                                          <FormLabel>Nastavenia sektorov (JSON)</FormLabel>
+                                          <FormControl>
+                                            <Textarea 
+                                              placeholder='[{"sectorName": "Sektor A", "places": ["Miesto 1", "Miesto 2"]}]'
+                                              className="min-h-[100px] font-mono text-sm"
+                                              {...field}
+                                              value={typeof field.value === 'string' ? field.value : JSON.stringify(field.value || [], null, 2)}
+                                              onChange={(e) => {
+                                                try {
+                                                  const parsed = JSON.parse(e.target.value);
+                                                  field.onChange(parsed);
+                                                } catch {
+                                                  field.onChange(e.target.value);
+                                                }
+                                              }}
+                                              data-testid="textarea-edit-sector-places"
+                                            />
+                                          </FormControl>
+                                          <FormDescription>
+                                            JSON formát pre definovanie sektorov a miest
+                                          </FormDescription>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
                                   )}
-                                />
+                                </div>
+
+                                {/* Branding Settings */}
+                                {(form.watch("selectedPlan") === 'premium' || form.watch("selectedPlan") === 'enterprise') && (
+                                  <div className="space-y-4">
+                                    <div className="flex items-center gap-2">
+                                      <Palette className="w-5 h-5 text-muted-foreground" />
+                                      <h3 className="text-lg font-medium text-foreground">Branding nastavenia</h3>
+                                      <Badge variant="secondary" className="text-xs">
+                                        {form.watch("selectedPlan")?.toUpperCase()}
+                                      </Badge>
+                                    </div>
+                                    
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <FormField
+                                        control={form.control}
+                                        name="branding.primaryColor"
+                                        render={({ field }) => (
+                                          <FormItem>
+                                            <FormLabel>Primárna farba</FormLabel>
+                                            <FormControl>
+                                              <Input 
+                                                type="color" 
+                                                {...field}
+                                                data-testid="input-edit-primary-color"
+                                              />
+                                            </FormControl>
+                                            <FormMessage />
+                                          </FormItem>
+                                        )}
+                                      />
+                                      <FormField
+                                        control={form.control}
+                                        name="branding.secondaryColor"
+                                        render={({ field }) => (
+                                          <FormItem>
+                                            <FormLabel>Sekundárna farba</FormLabel>
+                                            <FormControl>
+                                              <Input 
+                                                type="color" 
+                                                {...field}
+                                                data-testid="input-edit-secondary-color"
+                                              />
+                                            </FormControl>
+                                            <FormMessage />
+                                          </FormItem>
+                                        )}
+                                      />
+                                    </div>
+                                    
+                                    <FormField
+                                      control={form.control}
+                                      name="branding.subdomain"
+                                      render={({ field }) => (
+                                        <FormItem>
+                                          <FormLabel>Vlastná subdoména</FormLabel>
+                                          <FormControl>
+                                            <Input placeholder="moja-sutaz" {...field} data-testid="input-edit-subdomain" />
+                                          </FormControl>
+                                          <FormDescription>
+                                            Bude dostupná na: {field.value || 'moja-sutaz'}.contestio.sk
+                                          </FormDescription>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
+                                  </div>
+                                )}
+
+                                {/* Advanced Features */}
+                                {(form.watch("selectedPlan") === 'premium' || form.watch("selectedPlan") === 'enterprise') && (
+                                  <div className="grid grid-cols-2 gap-4">
+                                    <FormField
+                                      control={form.control}
+                                      name="mediaAccess"
+                                      render={({ field }) => (
+                                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                          <div className="space-y-0.5">
+                                            <FormLabel className="text-base">Mediálny prístup</FormLabel>
+                                            <FormDescription>
+                                              Povoliť prístup pre médiá
+                                            </FormDescription>
+                                          </div>
+                                          <FormControl>
+                                            <Switch
+                                              checked={field.value}
+                                              onCheckedChange={field.onChange}
+                                              data-testid="switch-edit-media-access"
+                                            />
+                                          </FormControl>
+                                        </FormItem>
+                                      )}
+                                    />
+                                    <FormField
+                                      control={form.control}
+                                      name="prioritySupport"
+                                      render={({ field }) => (
+                                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                          <div className="space-y-0.5">
+                                            <FormLabel className="text-base">Prioritná podpora</FormLabel>
+                                            <FormDescription>
+                                              Aktivovať prioritnú podporu
+                                            </FormDescription>
+                                          </div>
+                                          <FormControl>
+                                            <Switch
+                                              checked={field.value}
+                                              onCheckedChange={field.onChange}
+                                              data-testid="switch-edit-priority-support"
+                                            />
+                                          </FormControl>
+                                        </FormItem>
+                                      )}
+                                    />
+                                  </div>
+                                )}
 
                                 {/* Side Competitions - simplified version for edit mode */}
                                 {(form.watch("selectedPlan") === 'pro' || form.watch("selectedPlan") === 'premium' || form.watch("selectedPlan") === 'enterprise') && (
