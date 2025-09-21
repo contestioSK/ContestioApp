@@ -128,15 +128,18 @@ export default function CompetitionCard({ competition }: CompetitionCardProps) {
   return (
     <Card className="hover:shadow-lg transition-shadow" data-testid={`card-competition-${competition.id}`}>
       <div className="relative">
-        <img 
-          src={competition.imageUrl || getCompetitionImage(competition.status)} 
-          alt={`Súťaž ${competition.name}`}
-          className={`w-full h-48 rounded-t-lg ${
-            competition.imageUrl 
-              ? 'object-contain bg-white' // Pre nahrané logá - zobrazí celé logo s bielym pozadím
-              : 'object-cover' // Pre predvolené obrázky - pokryje celú plochu
-          }`}
-        />
+        <Link href={`/competition/${competition.id}`}>
+          <img 
+            src={competition.imageUrl || getCompetitionImage(competition.status)} 
+            alt={`Súťaž ${competition.name}`}
+            className={`w-full h-48 rounded-t-lg cursor-pointer hover:opacity-90 transition-opacity ${
+              competition.imageUrl 
+                ? 'object-contain bg-white' // Pre nahrané logá - zobrazí celé logo s bielym pozadím
+                : 'object-cover' // Pre predvolené obrázky - pokryje celú plochu
+            }`}
+            data-testid={`img-competition-${competition.id}`}
+          />
+        </Link>
         <div className="absolute top-3 left-3">
           {getStatusBadge(competition.status)}
         </div>
