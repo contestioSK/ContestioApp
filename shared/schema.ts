@@ -237,6 +237,39 @@ export const pushSubscriptions = pgTable("push_subscriptions", {
   uniqueUserSubscription: uniqueIndex("unique_user_push_subscription").on(table.userId),
 }));
 
+// Official announcements table
+export const announcements = pgTable("announcements", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: varchar("title", { length: 255 }).notNull(),
+  content: text("content").notNull(),
+  
+  // Author (organizer/admin who created the announcement)
+  authorId: varchar("author_id").notNull().references(() => users.id),
+  
+  // Competition reference (optional - null for global announcements)
+  competitionId: uuid("competition_id").references(() => competitions.id),
+  
+  // Target audience
+  targetAudience: varchar("target_audience").notNull().default("all"), // "all", "registered_teams", "spectators"
+  
+  // Publishing control
+  publishAt: timestamp("publish_at").defaultNow(), // When to publish (for scheduling)
+  published: boolean("published").default(true).notNull(), // Published status
+  priority: varchar("priority").default("normal").notNull(), // "low", "normal", "high", "urgent"
+  
+  // File attachments
+  imageUrl: varchar("image_url"), // Optional image/banner
+  attachmentUrl: varchar("attachment_url"), // Optional file attachment
+  attachmentName: varchar("attachment_name"), // Original file name for display
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  // Index for efficient queries
+  index("announcements_competition_idx").on(table.competitionId),
+  index("announcements_published_idx").on(table.published, table.publishAt),
+]);
+
 // Relations
 export const usersRelations = relations(users, ({ one, many }) => ({
   organizedCompetitions: many(competitions),
@@ -244,6 +277,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   favoriteCompetitions: many(favoriteCompetitions),
   favoriteTeams: many(favoriteTeams),
   notificationPreferences: one(notificationPreferences),
+  announcements: many(announcements),
 }));
 
 export const competitionsRelations = relations(competitions, ({ one, many }) => ({
@@ -255,6 +289,7 @@ export const competitionsRelations = relations(competitions, ({ one, many }) => 
   referees: many(referees),
   catches: many(catches),
   sponsors: many(sponsors),
+  announcements: many(announcements),
 }));
 
 export const competitionRegistrationsRelations = relations(competitionRegistrations, ({ one }) => ({
@@ -341,6 +376,17 @@ export const notificationPreferencesRelations = relations(notificationPreference
   user: one(users, {
     fields: [notificationPreferences.userId],
     references: [users.id],
+  }),
+}));
+
+export const announcementsRelations = relations(announcements, ({ one }) => ({
+  author: one(users, {
+    fields: [announcements.authorId],
+    references: [users.id],
+  }),
+  competition: one(competitions, {
+    fields: [announcements.competitionId],
+    references: [competitions.id],
   }),
 }));
 
@@ -515,6 +561,40 @@ export const updateNotificationPreferencesSchema = createInsertSchema(notificati
   updatedAt: true,
 });
 
+// Announcements schemas
+export const insertAnnouncementSchema = createInsertSchema(announcements).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  title: z.string().min(1, "Nadpis je povinný").max(255, "Nadpis môže mať maximálne 255 znakov"),
+  content: z.string().min(1, "Obsah je povinný").max(5000, "Obsah môže mať maximálne 5000 znakov"),
+  targetAudience: z.enum(["all", "registered_teams", "spectators"], {
+    required_error: "Cieľová skupina je povinná",
+    invalid_type_error: "Neplatná cieľová skupina"
+  }).default("all"),
+  priority: z.enum(["low", "normal", "high", "urgent"], {
+    required_error: "Priorita je povinná",
+    invalid_type_error: "Neplatná priorita"
+  }).default("normal"),
+  publishAt: z.string().or(z.date()).transform((val) => new Date(val)).optional(),
+  published: z.boolean().default(true),
+});
+
+export const updateAnnouncementSchema = createInsertSchema(announcements).omit({
+  id: true,
+  authorId: true, // Cannot change author
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  title: z.string().min(1, "Nadpis je povinný").max(255, "Nadpis môže mať maximálne 255 znakov").optional(),
+  content: z.string().min(1, "Obsah je povinný").max(5000, "Obsah môže mať maximálne 5000 znakov").optional(),
+  targetAudience: z.enum(["all", "registered_teams", "spectators"]).optional(),
+  priority: z.enum(["low", "normal", "high", "urgent"]).optional(),
+  publishAt: z.string().or(z.date()).transform((val) => new Date(val)).optional(),
+  published: z.boolean().optional(),
+});
+
 // Team status update schema
 export const updateTeamStatusSchema = z.object({
   status: z.enum(["pending", "approved", "rejected"], {
@@ -596,3 +676,8 @@ export type UpdateNotificationPreferences = z.infer<typeof updateNotificationPre
 // Push subscription types
 export type PushSubscription = typeof pushSubscriptions.$inferSelect;
 export type InsertPushSubscription = typeof pushSubscriptions.$inferInsert;
+
+// Announcement types
+export type Announcement = typeof announcements.$inferSelect;
+export type InsertAnnouncement = z.infer<typeof insertAnnouncementSchema>;
+export type UpdateAnnouncement = z.infer<typeof updateAnnouncementSchema>;

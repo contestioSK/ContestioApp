@@ -9,6 +9,7 @@ const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
 if (!vapidPublicKey || !vapidPrivateKey) {
   console.error('[SECURITY] VAPID keys are required! Set VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY environment variables.');
   console.error('[SECURITY] Generate keys with: npx web-push generate-vapid-keys');
+  console.error('[SECURITY] For development, create a .env file or set environment variables.');
   process.exit(1);
 }
 
