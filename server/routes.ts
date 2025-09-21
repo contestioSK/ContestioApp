@@ -325,8 +325,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      if (user?.role !== 'organizer') {
-        return res.status(403).json({ message: "Only organizers can view referees" });
+      if (user?.role !== 'organizer' && user?.role !== 'admin') {
+        return res.status(403).json({ message: "Only organizers and admins can view referees" });
       }
 
       const referees = await storage.getRefereesByCompetition(req.params.id);
@@ -342,8 +342,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      if (user?.role !== 'organizer') {
-        return res.status(403).json({ message: "Only organizers can create referees" });
+      if (user?.role !== 'organizer' && user?.role !== 'admin') {
+        return res.status(403).json({ message: "Only organizers and admins can create referees" });
       }
 
       const refereeData = insertRefereeSchema.parse({
@@ -529,8 +529,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      if (user?.role !== 'organizer') {
-        return res.status(403).json({ message: "Only organizers can add sponsors" });
+      if (user?.role !== 'organizer' && user?.role !== 'admin') {
+        return res.status(403).json({ message: "Only organizers and admins can add sponsors" });
       }
 
       const sponsorData = insertSponsorSchema.parse({
