@@ -7,6 +7,9 @@ import {
   referees,
   catches,
   sponsors,
+  favoriteCompetitions,
+  favoriteTeams,
+  notificationPreferences,
   type User,
   type UpsertUser,
   type Competition,
@@ -24,6 +27,13 @@ import {
   type InsertCatch,
   type Sponsor,
   type InsertSponsor,
+  type FavoriteCompetition,
+  type InsertFavoriteCompetition,
+  type FavoriteTeam,
+  type InsertFavoriteTeam,
+  type NotificationPreferences,
+  type InsertNotificationPreferences,
+  type UpdateNotificationPreferences,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql, ne, count, gt, gte, inArray } from "drizzle-orm";
@@ -140,6 +150,19 @@ export interface IStorage {
     biggestMirrorCarp: Catch | null;
     averageWeight: number;
   }>;
+
+  // User favorites operations
+  getUserFavoriteCompetitions(userId: string): Promise<(FavoriteCompetition & { competition: Competition })[]>;
+  addFavoriteCompetition(favorite: InsertFavoriteCompetition): Promise<FavoriteCompetition>;
+  removeFavoriteCompetition(userId: string, competitionId: string): Promise<void>;
+  
+  getUserFavoriteTeams(userId: string): Promise<(FavoriteTeam & { team: Team & { competition: Competition } })[]>;
+  addFavoriteTeam(favorite: InsertFavoriteTeam): Promise<FavoriteTeam>;
+  removeFavoriteTeam(userId: string, teamId: string): Promise<void>;
+  
+  // Notification preferences operations
+  getUserNotificationPreferences(userId: string): Promise<NotificationPreferences>;
+  updateUserNotificationPreferences(userId: string, preferences: UpdateNotificationPreferences): Promise<NotificationPreferences>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -913,6 +936,169 @@ export class DatabaseStorage implements IStorage {
       usersByRole,
       competitionsByStatus,
     };
+  }
+
+  // User favorites operations
+  async getUserFavoriteCompetitions(userId: string): Promise<(FavoriteCompetition & { competition: Competition })[]> {
+    return db
+      .select()
+      .from(favoriteCompetitions)
+      .leftJoin(competitions, eq(favoriteCompetitions.competitionId, competitions.id))
+      .where(eq(favoriteCompetitions.userId, userId))
+      .then(results => 
+        results.map(result => ({
+          ...result.favorite_competitions,
+          competition: result.competitions!
+        }))
+      );
+  }
+
+  async addFavoriteCompetition(favorite: InsertFavoriteCompetition): Promise<FavoriteCompetition> {
+    // Use upsert to prevent race conditions - insert or do nothing if already exists
+    const [result] = await db
+      .insert(favoriteCompetitions)
+      .values(favorite)
+      .onConflictDoNothing()
+      .returning();
+    
+    // If no result from insert (conflict), get the existing record
+    if (!result) {
+      const [existing] = await db
+        .select()
+        .from(favoriteCompetitions)
+        .where(
+          and(
+            eq(favoriteCompetitions.userId, favorite.userId),
+            eq(favoriteCompetitions.competitionId, favorite.competitionId)
+          )
+        );
+      return existing;
+    }
+    
+    return result;
+  }
+
+  async removeFavoriteCompetition(userId: string, competitionId: string): Promise<void> {
+    await db
+      .delete(favoriteCompetitions)
+      .where(
+        and(
+          eq(favoriteCompetitions.userId, userId),
+          eq(favoriteCompetitions.competitionId, competitionId)
+        )
+      );
+  }
+
+  async getUserFavoriteTeams(userId: string): Promise<(FavoriteTeam & { team: Team & { competition: Competition } })[]> {
+    return db
+      .select()
+      .from(favoriteTeams)
+      .leftJoin(teams, eq(favoriteTeams.teamId, teams.id))
+      .leftJoin(competitions, eq(teams.competitionId, competitions.id))
+      .where(eq(favoriteTeams.userId, userId))
+      .then(results => 
+        results.map(result => ({
+          ...result.favorite_teams,
+          team: {
+            ...result.teams!,
+            competition: result.competitions!
+          }
+        }))
+      );
+  }
+
+  async addFavoriteTeam(favorite: InsertFavoriteTeam): Promise<FavoriteTeam> {
+    // Use upsert to prevent race conditions - insert or do nothing if already exists
+    const [result] = await db
+      .insert(favoriteTeams)
+      .values(favorite)
+      .onConflictDoNothing()
+      .returning();
+    
+    // If no result from insert (conflict), get the existing record
+    if (!result) {
+      const [existing] = await db
+        .select()
+        .from(favoriteTeams)
+        .where(
+          and(
+            eq(favoriteTeams.userId, favorite.userId),
+            eq(favoriteTeams.teamId, favorite.teamId)
+          )
+        );
+      return existing;
+    }
+    
+    return result;
+  }
+
+  async removeFavoriteTeam(userId: string, teamId: string): Promise<void> {
+    await db
+      .delete(favoriteTeams)
+      .where(
+        and(
+          eq(favoriteTeams.userId, userId),
+          eq(favoriteTeams.teamId, teamId)
+        )
+      );
+  }
+
+  // Notification preferences operations
+  async getUserNotificationPreferences(userId: string): Promise<NotificationPreferences> {
+    // Use upsert - try to insert defaults, or return existing if already exists
+    const [result] = await db
+      .insert(notificationPreferences)
+      .values({
+        userId,
+        allCatches: true,
+        favoriteCompetitions: true,
+        favoriteTeams: true,
+        biggestFish: true,
+        officialAnnouncements: true,
+        leaderboardChanges: false,
+        pushNotifications: false,
+      })
+      .onConflictDoNothing()
+      .returning();
+    
+    if (result) {
+      return result;
+    }
+    
+    // Get existing preferences if insert was skipped due to conflict
+    const [existing] = await db
+      .select()
+      .from(notificationPreferences)
+      .where(eq(notificationPreferences.userId, userId));
+    
+    return existing;
+  }
+
+  async updateUserNotificationPreferences(userId: string, preferences: UpdateNotificationPreferences): Promise<NotificationPreferences> {
+    // Use upsert pattern - update if exists, create with defaults + updates if doesn't exist
+    const [result] = await db
+      .insert(notificationPreferences)
+      .values({
+        userId,
+        allCatches: true,
+        favoriteCompetitions: true,
+        favoriteTeams: true,
+        biggestFish: true,
+        officialAnnouncements: true,
+        leaderboardChanges: false,
+        pushNotifications: false,
+        ...preferences,
+      })
+      .onConflictDoUpdate({
+        target: notificationPreferences.userId,
+        set: {
+          ...preferences,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    
+    return result;
   }
 }
 

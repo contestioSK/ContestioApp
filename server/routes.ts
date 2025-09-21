@@ -14,6 +14,10 @@ import {
   insertSponsorSchema,
   createTeamStatusValidationSchema,
   createCatchValidationSchema,
+  insertFavoriteCompetitionSchema,
+  insertFavoriteTeamSchema,
+  insertNotificationPreferencesSchema,
+  updateNotificationPreferencesSchema,
 } from "@shared/schema";
 import { z } from "zod";
 import { canUseFeature } from "@shared/plan-capabilities";
@@ -88,6 +92,121 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("[AUTH] Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // User favorites endpoints
+  app.get('/api/users/favorites/competitions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const favorites = await storage.getUserFavoriteCompetitions(userId);
+      res.json(favorites);
+    } catch (error) {
+      console.error("[FAVORITES] Error fetching favorite competitions:", error);
+      res.status(500).json({ message: "Chyba pri načítaní obľúbených súťaží" });
+    }
+  });
+
+  app.post('/api/users/favorites/competitions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const validatedData = insertFavoriteCompetitionSchema.parse({ 
+        ...req.body, 
+        userId 
+      });
+      
+      const favorite = await storage.addFavoriteCompetition(validatedData);
+      res.status(201).json(favorite);
+    } catch (error) {
+      console.error("[FAVORITES] Error adding favorite competition:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Neplatné dáta", errors: error.errors });
+      }
+      res.status(500).json({ message: "Chyba pri pridávaní obľúbenej súťaže" });
+    }
+  });
+
+  app.delete('/api/users/favorites/competitions/:competitionId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { competitionId } = req.params;
+      
+      await storage.removeFavoriteCompetition(userId, competitionId);
+      res.status(204).send();
+    } catch (error) {
+      console.error("[FAVORITES] Error removing favorite competition:", error);
+      res.status(500).json({ message: "Chyba pri odstraňovaní obľúbenej súťaže" });
+    }
+  });
+
+  app.get('/api/users/favorites/teams', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const favorites = await storage.getUserFavoriteTeams(userId);
+      res.json(favorites);
+    } catch (error) {
+      console.error("[FAVORITES] Error fetching favorite teams:", error);
+      res.status(500).json({ message: "Chyba pri načítaní obľúbených tímov" });
+    }
+  });
+
+  app.post('/api/users/favorites/teams', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const validatedData = insertFavoriteTeamSchema.parse({ 
+        ...req.body, 
+        userId 
+      });
+      
+      const favorite = await storage.addFavoriteTeam(validatedData);
+      res.status(201).json(favorite);
+    } catch (error) {
+      console.error("[FAVORITES] Error adding favorite team:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Neplatné dáta", errors: error.errors });
+      }
+      res.status(500).json({ message: "Chyba pri pridávaní obľúbeného tímu" });
+    }
+  });
+
+  app.delete('/api/users/favorites/teams/:teamId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { teamId } = req.params;
+      
+      await storage.removeFavoriteTeam(userId, teamId);
+      res.status(204).send();
+    } catch (error) {
+      console.error("[FAVORITES] Error removing favorite team:", error);
+      res.status(500).json({ message: "Chyba pri odstraňovaní obľúbeného tímu" });
+    }
+  });
+
+  // Notification preferences endpoints
+  app.get('/api/users/notification-preferences', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const preferences = await storage.getUserNotificationPreferences(userId);
+      res.json(preferences);
+    } catch (error) {
+      console.error("[NOTIFICATIONS] Error fetching notification preferences:", error);
+      res.status(500).json({ message: "Chyba pri načítaní nastavení notifikácií" });
+    }
+  });
+
+  app.put('/api/users/notification-preferences', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const validatedData = updateNotificationPreferencesSchema.parse(req.body);
+      
+      const preferences = await storage.updateUserNotificationPreferences(userId, validatedData);
+      res.json(preferences);
+    } catch (error) {
+      console.error("[NOTIFICATIONS] Error updating notification preferences:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Neplatné dáta", errors: error.errors });
+      }
+      res.status(500).json({ message: "Chyba pri aktualizácii nastavení notifikácií" });
     }
   });
 

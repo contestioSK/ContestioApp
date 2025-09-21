@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import {
   index,
+  uniqueIndex,
   jsonb,
   pgTable,
   timestamp,
@@ -182,10 +183,53 @@ export const sponsors = pgTable("sponsors", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// User favorite competitions table
+export const favoriteCompetitions = pgTable("favorite_competitions", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  competitionId: uuid("competition_id").notNull().references(() => competitions.id),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  // Unique constraint to prevent duplicate favorites
+  uniqueUserCompetition: uniqueIndex("unique_user_competition").on(table.userId, table.competitionId),
+}));
+
+// User favorite teams table
+export const favoriteTeams = pgTable("favorite_teams", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  teamId: uuid("team_id").notNull().references(() => teams.id),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  // Unique constraint to prevent duplicate favorites
+  uniqueUserTeam: uniqueIndex("unique_user_team").on(table.userId, table.teamId),
+}));
+
+// User notification preferences table
+export const notificationPreferences = pgTable("notification_preferences", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  allCatches: boolean("all_catches").default(true), // Všetky nové úlovky
+  favoriteCompetitions: boolean("favorite_competitions").default(true), // Len obľúbené súťaže
+  favoriteTeams: boolean("favorite_teams").default(true), // Len obľúbené tímy
+  biggestFish: boolean("biggest_fish").default(true), // Najväčšie ryby (top 3)
+  officialAnnouncements: boolean("official_announcements").default(true), // Oficiálne oznamy
+  leaderboardChanges: boolean("leaderboard_changes").default(false), // Zmeny v rebríčku
+  pushNotifications: boolean("push_notifications").default(false), // Push notifikácie
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  // Unique constraint to enforce 1:1 user:preferences relationship
+  uniqueUserId: uniqueIndex("unique_notification_user_id").on(table.userId),
+}));
+
 // Relations
-export const usersRelations = relations(users, ({ many }) => ({
+export const usersRelations = relations(users, ({ one, many }) => ({
   organizedCompetitions: many(competitions),
   refereeAssignments: many(referees),
+  favoriteCompetitions: many(favoriteCompetitions),
+  favoriteTeams: many(favoriteTeams),
+  notificationPreferences: one(notificationPreferences),
 }));
 
 export const competitionsRelations = relations(competitions, ({ one, many }) => ({
@@ -213,6 +257,7 @@ export const teamsRelations = relations(teams, ({ one, many }) => ({
   }),
   members: many(teamMembers),
   catches: many(catches),
+  favoriteByUsers: many(favoriteTeams),
 }));
 
 export const teamMembersRelations = relations(teamMembers, ({ one }) => ({
@@ -253,6 +298,35 @@ export const sponsorsRelations = relations(sponsors, ({ one }) => ({
   competition: one(competitions, {
     fields: [sponsors.competitionId],
     references: [competitions.id],
+  }),
+}));
+
+export const favoriteCompetitionsRelations = relations(favoriteCompetitions, ({ one }) => ({
+  user: one(users, {
+    fields: [favoriteCompetitions.userId],
+    references: [users.id],
+  }),
+  competition: one(competitions, {
+    fields: [favoriteCompetitions.competitionId],
+    references: [competitions.id],
+  }),
+}));
+
+export const favoriteTeamsRelations = relations(favoriteTeams, ({ one }) => ({
+  user: one(users, {
+    fields: [favoriteTeams.userId],
+    references: [users.id],
+  }),
+  team: one(teams, {
+    fields: [favoriteTeams.teamId],
+    references: [teams.id],
+  }),
+}));
+
+export const notificationPreferencesRelations = relations(notificationPreferences, ({ one }) => ({
+  user: one(users, {
+    fields: [notificationPreferences.userId],
+    references: [users.id],
   }),
 }));
 
@@ -403,6 +477,30 @@ export const insertSponsorSchema = createInsertSchema(sponsors).omit({
   })
 });
 
+// User favorites schemas
+export const insertFavoriteCompetitionSchema = createInsertSchema(favoriteCompetitions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertFavoriteTeamSchema = createInsertSchema(favoriteTeams).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertNotificationPreferencesSchema = createInsertSchema(notificationPreferences).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const updateNotificationPreferencesSchema = createInsertSchema(notificationPreferences).omit({
+  id: true,
+  userId: true, // Cannot change user
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Team status update schema
 export const updateTeamStatusSchema = z.object({
   status: z.enum(["pending", "approved", "rejected"], {
@@ -471,3 +569,12 @@ export type InsertSponsor = z.infer<typeof insertSponsorSchema>;
 export type UpdateTeamStatus = z.infer<typeof updateTeamStatusSchema>;
 export type CompetitionRegistration = typeof competitionRegistrations.$inferSelect;
 export type InsertCompetitionRegistration = typeof competitionRegistrations.$inferInsert;
+
+// User preferences types
+export type FavoriteCompetition = typeof favoriteCompetitions.$inferSelect;
+export type InsertFavoriteCompetition = z.infer<typeof insertFavoriteCompetitionSchema>;
+export type FavoriteTeam = typeof favoriteTeams.$inferSelect;
+export type InsertFavoriteTeam = z.infer<typeof insertFavoriteTeamSchema>;
+export type NotificationPreferences = typeof notificationPreferences.$inferSelect;
+export type InsertNotificationPreferences = z.infer<typeof insertNotificationPreferencesSchema>;
+export type UpdateNotificationPreferences = z.infer<typeof updateNotificationPreferencesSchema>;
