@@ -183,6 +183,8 @@ export default function AdminPanel() {
   const [isEditRefereeDialogOpen, setIsEditRefereeDialogOpen] = useState(false);
   const [isDeleteRefereeDialogOpen, setIsDeleteRefereeDialogOpen] = useState(false);
   const [refereeToDelete, setRefereeToDelete] = useState<string | null>(null);
+  const [isDeleteSponsorDialogOpen, setIsDeleteSponsorDialogOpen] = useState(false);
+  const [sponsorToDelete, setSponsorToDelete] = useState<string | null>(null);
 
   const isAdmin = user?.role === 'admin';
 
@@ -385,82 +387,7 @@ export default function AdminPanel() {
     }
   }, [editingReferee, isEditRefereeDialogOpen, editRefereeForm]);
 
-  // Helper function to export teams to CSV
-  const exportTeamsToCSV = () => {
-    if (!teams || teams.length === 0) {
-      toast({
-        title: "Upozornenie",
-        description: "Žiadne tímy na export",
-        variant: "destructive"
-      });
-      return;
-    }
 
-    const headers = [
-      "Názov tímu",
-      "Status",
-      "Krajina",
-      "Sektor",
-      "Miesto",
-      "Počet členov",
-      "Počet úlovkov",
-      "Celková hmotnosť (kg)",
-      "Kapitán",
-      "Email kapitána",
-      "Telefón"
-    ];
-
-    const csvContent = [
-      headers.join(","),
-      ...teams.map(team => {
-        const captain = team.members?.find(member => member.role === 'captain');
-        return [
-          `"${team.name || ''}"`,
-          team.status === 'approved' ? 'Schválený' : team.status === 'pending' ? 'Čaká na schválenie' : 'Zamietnutý',
-          team.country || 'SK',
-          `"${team.sectorName || ''}"`,
-          `"${team.placeName || ''}"`,
-          team.members?.length || 0,
-          team.fishCount || 0,
-          team.totalWeight || 0,
-          `"${captain?.name || ''}"`,
-          `"${captain?.email || ''}"`,
-          `"${captain?.phone || ''}"`
-        ].join(",");
-      })
-    ].join("\n");
-
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute("download", `timy-${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    toast({
-      title: "Úspech",
-      description: "Tímy boli exportované do CSV súboru"
-    });
-  };
-
-  // Helper function to get available sectors and places
-  const getAvailableSectorPlaces = () => {
-    const selectedComp = competitions?.find((c: Competition) => c.id === selectedCompetition);
-    if (!selectedComp?.sectorPlaces) return [];
-    
-    const occupiedPairs = teams?.map(team => `${team.sectorName}|${team.placeName}`).filter(Boolean) || [];
-    
-    return selectedComp.sectorPlaces.flatMap(sector => 
-      sector.places.map(place => ({
-        sectorName: sector.sectorName,
-        placeName: place,
-        isOccupied: occupiedPairs.includes(`${sector.sectorName}|${place}`)
-      }))
-    );
-  };
 
   // Team edit submit handler with enhanced validation
   const onEditTeamSubmit = async (data: EditTeamForm) => {
@@ -602,6 +529,83 @@ export default function AdminPanel() {
     queryKey: ["/api/competitions", selectedCompetition, "sponsors"],
     enabled: isAuthenticated && !!selectedCompetition,
   });
+
+  // Helper function to get available sectors and places
+  const getAvailableSectorPlaces = () => {
+    const selectedComp = competitions?.find((c: Competition) => c.id === selectedCompetition);
+    if (!selectedComp?.sectorPlaces) return [];
+    
+    const occupiedPairs = teams?.map(team => `${team.sectorName}|${team.placeName}`).filter(Boolean) || [];
+    
+    return selectedComp.sectorPlaces.flatMap(sector => 
+      sector.places.map(place => ({
+        sectorName: sector.sectorName,
+        placeName: place,
+        isOccupied: occupiedPairs.includes(`${sector.sectorName}|${place}`)
+      }))
+    );
+  };
+
+  // Helper function to export teams to CSV
+  const exportTeamsToCSV = () => {
+    if (!teams || teams.length === 0) {
+      toast({
+        title: "Upozornenie",
+        description: "Žiadne tímy na export",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const headers = [
+      "Názov tímu",
+      "Status",
+      "Krajina",
+      "Sektor",
+      "Miesto",
+      "Počet členov",
+      "Počet úlovkov",
+      "Celková hmotnosť (kg)",
+      "Kapitán",
+      "Email kapitána",
+      "Telefón"
+    ];
+
+    const csvContent = [
+      headers.join(","),
+      ...teams.map(team => {
+        const captain = team.members?.find(member => member.role === 'captain');
+        return [
+          `"${team.name || ''}"`,
+          team.status === 'approved' ? 'Schválený' : team.status === 'pending' ? 'Čaká na schválenie' : 'Zamietnutý',
+          team.country || 'SK',
+          `"${team.sectorName || ''}"`,
+          `"${team.placeName || ''}"`,
+          team.members?.length || 0,
+          team.fishCount || 0,
+          team.totalWeight || 0,
+          `"${captain?.name || ''}"`,
+          `"${captain?.email || ''}"`,
+          `"${captain?.phone || ''}"`
+        ].join(",");
+      })
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `timy-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: "Úspech",
+      description: "Tímy boli exportované do CSV súboru"
+    });
+  };
 
   // Dashboard stats query
   const { data: dashboardStats, isLoading: dashboardLoading } = useQuery<DashboardStats>({
@@ -838,6 +842,9 @@ export default function AdminPanel() {
         title: "Sponzor odstránený",
         description: "Sponzor bol úspešne odstránený."
       });
+      // Close dialog and reset state
+      setIsDeleteSponsorDialogOpen(false);
+      setSponsorToDelete(null);
     },
     onError: (error) => {
       console.error("Error deleting sponsor:", error);
@@ -3815,7 +3822,10 @@ export default function AdminPanel() {
                                   <Button 
                                     size="sm" 
                                     variant="destructive"
-                                    onClick={() => deleteSponsorMutation.mutate(sponsor.id)}
+                                    onClick={() => {
+                                      setSponsorToDelete(sponsor.id);
+                                      setIsDeleteSponsorDialogOpen(true);
+                                    }}
                                     disabled={deleteSponsorMutation.isPending}
                                     data-testid={`button-delete-sponsor-${sponsor.id}`}
                                   >
@@ -4029,8 +4039,41 @@ export default function AdminPanel() {
                         </DialogContent>
                       </Dialog>
 
-
-
+                      {/* Delete Sponsor Confirmation Dialog */}
+                      <Dialog open={isDeleteSponsorDialogOpen} onOpenChange={setIsDeleteSponsorDialogOpen}>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Odstránenie sponzora</DialogTitle>
+                          </DialogHeader>
+                          <p className="text-muted-foreground">
+                            Ste si istí, že chcete odstrániť tohto sponzora? Táto akcia sa nedá vrátiť späť.
+                          </p>
+                          <div className="flex justify-end space-x-2">
+                            <Button
+                              variant="outline"
+                              onClick={() => {
+                                setIsDeleteSponsorDialogOpen(false);
+                                setSponsorToDelete(null);
+                              }}
+                              data-testid="button-cancel-delete-sponsor"
+                            >
+                              Zrušiť
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              onClick={() => {
+                                if (sponsorToDelete) {
+                                  deleteSponsorMutation.mutate(sponsorToDelete);
+                                }
+                              }}
+                              disabled={deleteSponsorMutation.isPending}
+                              data-testid="button-confirm-delete-sponsor"
+                            >
+                              {deleteSponsorMutation.isPending ? "Odstraňujem..." : "Odstrániť"}
+                            </Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
 
                     </div>
                   </TabsContent>
