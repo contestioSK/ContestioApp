@@ -45,6 +45,11 @@ function Router() {
       <Route path="/competition/:id/catches" component={CompetitionCatches} />
       <Route path="/competition/:competitionId/sector/:sector" component={SectorDetail} />
       <Route path="/team/:teamId" component={TeamDetail} />
+      <Route path="/admin">
+        <ProtectedRoute roles={["organizer", "admin"]}>
+          <AdminPanel />
+        </ProtectedRoute>
+      </Route>
       <Route path="/admin-panel">
         <ProtectedRoute roles={["organizer", "admin"]}>
           <AdminPanel />
