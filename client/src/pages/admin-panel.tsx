@@ -42,7 +42,12 @@ import {
   X,
   Shield,
   Building2,
-  ExternalLink
+  ExternalLink,
+  Trash2,
+  RefreshCw,
+  Play,
+  Square,
+  ArrowRight
 } from "lucide-react";
 import type { Competition, Team, TeamMember, CompetitionRegistration, InsertSponsor, Sponsor, SponsorLevel, Catch } from "@shared/schema";
 import { getSideCompetitionLabel } from "@/lib/utils";
@@ -152,8 +157,47 @@ export default function AdminPanel() {
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [isTeamDetailsDialogOpen, setIsTeamDetailsDialogOpen] = useState(false);
   const [isEditTeamDialogOpen, setIsEditTeamDialogOpen] = useState(false);
+  const [deleteCompetitionId, setDeleteCompetitionId] = useState<string>("");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [resetCatchesCompetitionId, setResetCatchesCompetitionId] = useState<string>("");
+  const [isResetCatchesDialogOpen, setIsResetCatchesDialogOpen] = useState(false);
 
   const isAdmin = user?.role === 'admin';
+
+  // Helper functions for status transitions
+  const getValidStatusTransitions = (currentStatus: string) => {
+    switch (currentStatus) {
+      case 'registration':
+        return [
+          { value: 'live', label: 'Prebiehajúca', icon: Play },
+          { value: 'finished', label: 'Ukončená', icon: Square }
+        ];
+      case 'live':
+        return [
+          { value: 'finished', label: 'Ukončená', icon: Square }
+        ];
+      case 'finished':
+        return []; // Cannot transition from finished status
+      default:
+        return [
+          { value: 'registration', label: 'Registrácie', icon: Users },
+          { value: 'live', label: 'Prebiehajúca', icon: Play }
+        ];
+    }
+  };
+
+  const getStatusBadgeStyle = (status: string) => {
+    switch (status) {
+      case 'live':
+        return 'bg-green-100 text-green-800 border-green-300 dark:bg-green-900 dark:text-green-100';
+      case 'registration':
+        return 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900 dark:text-blue-100';
+      case 'finished':
+        return 'bg-gray-100 text-gray-800 border-gray-300 dark:bg-gray-800 dark:text-gray-100';
+      default:
+        return 'bg-red-100 text-red-800 border-red-300 dark:bg-red-900 dark:text-red-100';
+    }
+  };
 
   // Initialize WebSocket connection for real-time updates
   const { isConnected } = useWebSocket();
@@ -623,16 +667,17 @@ export default function AdminPanel() {
 
   // Competition mutations
   const resetCatchesMutation = useMutation({
-    mutationFn: async () => {
-      const response = await apiRequest("DELETE", `/api/competitions/${selectedCompetition}/catches`);
+    mutationFn: async (competitionId: string) => {
+      const response = await apiRequest("DELETE", `/api/competitions/${competitionId}/catches`);
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data, competitionId) => {
       // Invalidate multiple cache keys affected by resetting catches
-      queryClient.invalidateQueries({ queryKey: ["/api/competitions", selectedCompetition] });
-      queryClient.invalidateQueries({ queryKey: ["/api/competitions", selectedCompetition, "teams"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/competitions", selectedCompetition, "catches"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/competitions", selectedCompetition, "leaderboard"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/competitions", competitionId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/competitions", competitionId, "teams"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/competitions", competitionId, "catches"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/competitions", competitionId, "leaderboard"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/competitions"] });
       toast({
         title: "Úlovky resetované",
         description: "Všetky úlovky súťaže boli úspešne odstránené."
@@ -649,13 +694,15 @@ export default function AdminPanel() {
   });
 
   const deleteCompetitionMutation = useMutation({
-    mutationFn: async () => {
-      const response = await apiRequest("DELETE", `/api/competitions/${selectedCompetition}`);
+    mutationFn: async (competitionId: string) => {
+      const response = await apiRequest("DELETE", `/api/competitions/${competitionId}`);
       return response.json();
     },
     onSuccess: () => {
-      setSelectedCompetition('');
       queryClient.invalidateQueries({ queryKey: ["/api/competitions"] });
+      if (selectedCompetition) {
+        setSelectedCompetition('');
+      }
       toast({
         title: "Súťaž zmazaná",
         description: "Súťaž bola úspešne zmazaná."
@@ -666,6 +713,28 @@ export default function AdminPanel() {
       toast({
         title: "Chyba",
         description: "Nepodarilo sa zmazať súťaž",
+        variant: "destructive"
+      });
+    }
+  });
+
+  const updateCompetitionStatusMutation = useMutation({
+    mutationFn: async ({ competitionId, status }: { competitionId: string; status: string }) => {
+      const response = await apiRequest("PATCH", `/api/competitions/${competitionId}/status`, { status });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/competitions"] });
+      toast({
+        title: "Status súťaže zmenený",
+        description: "Status súťaže bol úspešne zmenený."
+      });
+    },
+    onError: (error) => {
+      console.error("Error updating competition status:", error);
+      toast({
+        title: "Chyba",
+        description: "Nepodarilo sa zmeniť status súťaže",
         variant: "destructive"
       });
     }
@@ -1844,11 +1913,11 @@ export default function AdminPanel() {
                                       <h3 className="font-semibold text-lg text-foreground" data-testid={`text-competition-name-${competition.id}`}>
                                         {competition.name}
                                       </h3>
-                                      <Badge variant={
-                                        competition.status === 'live' ? 'default' :
-                                        competition.status === 'registration' ? 'secondary' :
-                                        competition.status === 'finished' ? 'outline' : 'destructive'
-                                      } data-testid={`badge-competition-status-${competition.id}`}>
+                                      <Badge 
+                                        variant="outline"
+                                        className={getStatusBadgeStyle(competition.status)}
+                                        data-testid={`badge-competition-status-${competition.id}`}
+                                      >
                                         {competition.status === 'live' ? 'Prebiehajúca' :
                                          competition.status === 'registration' ? 'Registrácie' :
                                          competition.status === 'finished' ? 'Ukončená' : 'Pozastavená'}
@@ -1886,7 +1955,7 @@ export default function AdminPanel() {
                                     </div>
                                   </div>
 
-                                  <div className="flex items-center space-x-2">
+                                  <div className="flex items-center space-x-2 flex-wrap">
                                     <Button 
                                       size="sm" 
                                       variant="outline"
@@ -1911,6 +1980,66 @@ export default function AdminPanel() {
                                       <Edit className="w-4 h-4 mr-1" />
                                       Upraviť
                                     </Button>
+
+                                    {/* Status Transition Buttons */}
+                                    {getValidStatusTransitions(competition.status).map((transition) => {
+                                      const IconComponent = transition.icon;
+                                      return (
+                                        <Button
+                                          key={transition.value}
+                                          size="sm"
+                                          variant="outline"
+                                          className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+                                          onClick={() => updateCompetitionStatusMutation.mutate({
+                                            competitionId: competition.id,
+                                            status: transition.value
+                                          })}
+                                          disabled={updateCompetitionStatusMutation.isPending}
+                                          data-testid={`button-status-${transition.value}-${competition.id}`}
+                                        >
+                                          {updateCompetitionStatusMutation.isPending ? (
+                                            <RefreshCw className="w-4 h-4 mr-1 animate-spin" />
+                                          ) : (
+                                            <IconComponent className="w-4 h-4 mr-1" />
+                                          )}
+                                          {transition.label}
+                                        </Button>
+                                      );
+                                    })}
+
+                                    {/* Reset Catches Button - only for live competitions */}
+                                    {competition.status === 'live' && (
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="border-orange-500 text-orange-600 hover:bg-orange-500 hover:text-white"
+                                        onClick={() => {
+                                          setResetCatchesCompetitionId(competition.id);
+                                          setIsResetCatchesDialogOpen(true);
+                                        }}
+                                        data-testid={`button-reset-catches-${competition.id}`}
+                                      >
+                                        <RefreshCw className="w-4 h-4 mr-1" />
+                                        Reset úlovky
+                                      </Button>
+                                    )}
+
+                                    {/* Delete Button - only for admin/owner */}
+                                    {(isAdmin || competition.organizerId === user?.id) && (
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="border-red-500 text-red-600 hover:bg-red-500 hover:text-white"
+                                        onClick={() => {
+                                          setDeleteCompetitionId(competition.id);
+                                          setIsDeleteDialogOpen(true);
+                                        }}
+                                        data-testid={`button-delete-competition-${competition.id}`}
+                                      >
+                                        <Trash2 className="w-4 h-4 mr-1" />
+                                        Zmazať
+                                      </Button>
+                                    )}
                                   </div>
                                 </div>
                               </CardContent>
@@ -2273,6 +2402,134 @@ export default function AdminPanel() {
                               </form>
                             </Form>
                           )}
+                        </DialogContent>
+                      </Dialog>
+
+                      {/* Delete Competition Confirmation Dialog */}
+                      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                        <DialogContent className="max-w-md">
+                          <DialogHeader>
+                            <DialogTitle className="flex items-center space-x-2">
+                              <Trash2 className="w-5 h-5 text-red-600" />
+                              <span>Zmazať súťaž</span>
+                            </DialogTitle>
+                            <DialogDescription>
+                              Táto akcia je nevratná. Zmaže sa súťaž aj všetky súvisiace údaje.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="py-4">
+                            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                              <div className="flex items-start space-x-3">
+                                <XCircle className="w-5 h-5 text-red-600 mt-0.5" />
+                                <div>
+                                  <h4 className="text-sm font-medium text-red-800 dark:text-red-200 mb-2">
+                                    Budú zmazané tieto údaje:
+                                  </h4>
+                                  <ul className="text-sm text-red-700 dark:text-red-300 space-y-1">
+                                    <li>• Všetky registrované tímy</li>
+                                    <li>• Všetky úlovky a záznamy</li>
+                                    <li>• Všetci rozhodcovia</li>
+                                    <li>• Všetci sponzori</li>
+                                    <li>• Kompletná história súťaže</li>
+                                  </ul>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex justify-end space-x-2">
+                            <Button 
+                              variant="outline" 
+                              onClick={() => setIsDeleteDialogOpen(false)}
+                              data-testid="button-cancel-delete"
+                            >
+                              Zrušiť
+                            </Button>
+                            <Button 
+                              variant="destructive"
+                              onClick={() => {
+                                deleteCompetitionMutation.mutate(deleteCompetitionId);
+                                setIsDeleteDialogOpen(false);
+                              }}
+                              disabled={deleteCompetitionMutation.isPending}
+                              data-testid="button-confirm-delete"
+                            >
+                              {deleteCompetitionMutation.isPending ? (
+                                <>
+                                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                                  Mazanie...
+                                </>
+                              ) : (
+                                <>
+                                  <Trash2 className="w-4 h-4 mr-2" />
+                                  Zmazať súťaž
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+
+                      {/* Reset Catches Confirmation Dialog */}
+                      <Dialog open={isResetCatchesDialogOpen} onOpenChange={setIsResetCatchesDialogOpen}>
+                        <DialogContent className="max-w-md">
+                          <DialogHeader>
+                            <DialogTitle className="flex items-center space-x-2">
+                              <RefreshCw className="w-5 h-5 text-orange-600" />
+                              <span>Reset všetkých úlovkov</span>
+                            </DialogTitle>
+                            <DialogDescription>
+                              Táto akcia zmaže všetky úlovky zo súťaže. Akcia je nevratná.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="py-4">
+                            <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
+                              <div className="flex items-start space-x-3">
+                                <XCircle className="w-5 h-5 text-orange-600 mt-0.5" />
+                                <div>
+                                  <h4 className="text-sm font-medium text-orange-800 dark:text-orange-200 mb-2">
+                                    Potvrdenie resetovania:
+                                  </h4>
+                                  <ul className="text-sm text-orange-700 dark:text-orange-300 space-y-1">
+                                    <li>• Všetky úlovky budú zmazané</li>
+                                    <li>• Rebríčky budú vynulované</li>
+                                    <li>• Štatistiky tímov sa resetujú</li>
+                                    <li>• Akcia je nevratná</li>
+                                  </ul>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex justify-end space-x-2">
+                            <Button 
+                              variant="outline" 
+                              onClick={() => setIsResetCatchesDialogOpen(false)}
+                              data-testid="button-cancel-reset"
+                            >
+                              Zrušiť
+                            </Button>
+                            <Button 
+                              variant="destructive"
+                              className="bg-orange-600 hover:bg-orange-700"
+                              onClick={() => {
+                                resetCatchesMutation.mutate(resetCatchesCompetitionId);
+                                setIsResetCatchesDialogOpen(false);
+                              }}
+                              disabled={resetCatchesMutation.isPending}
+                              data-testid="button-confirm-reset"
+                            >
+                              {resetCatchesMutation.isPending ? (
+                                <>
+                                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                                  Resetovanie...
+                                </>
+                              ) : (
+                                <>
+                                  <RefreshCw className="w-4 h-4 mr-2" />
+                                  Reset úlovky
+                                </>
+                              )}
+                            </Button>
+                          </div>
                         </DialogContent>
                       </Dialog>
                     </div>
