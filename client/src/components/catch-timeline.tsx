@@ -127,15 +127,15 @@ export default function CatchTimeline({ catches, isLoading, competitionId }: Cat
             {sortedCatches.slice(0, 10).map((catch_) => (
               <div 
                 key={catch_.id} 
-                className="p-4 border-b border-border hover:bg-muted/20 transition-colors"
+                className="py-3 px-4 border-b border-border hover:bg-muted/20 transition-colors"
                 data-testid={`catch-timeline-item-${catch_.id}`}
               >
-                <div className="flex space-x-3">
+                <div className="flex space-x-3 items-center">
                   {/* Fish photo placeholder - would show actual photo if available */}
-                  <div className="w-12 h-12 rounded-lg bg-muted/20 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-muted/20 flex items-center justify-center flex-shrink-0">
                     {catch_.photoUrl ? (
                       <div 
-                        className="w-12 h-12 rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all transform hover:scale-105"
+                        className="w-8 h-8 rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all transform hover:scale-105"
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
@@ -161,42 +161,36 @@ export default function CatchTimeline({ catches, isLoading, competitionId }: Cat
                       </div>
                     ) : (
                       <div className="text-xs text-muted-foreground text-center leading-tight">
-                        Žiadna<br />fotka
+                        No<br/>img
                       </div>
                     )}
                   </div>
                   
-                  <div className="flex-1 min-w-0">
-                    {/* First row: Team name with flag and weight */}
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="flex items-center gap-2" data-testid={`catch-team-${catch_.id}`}>
-                        <img 
-                          src={getCountryFlag(catch_.team?.country || 'SK')} 
-                          alt={`Vlajka ${catch_.team?.country || 'SK'}`}
-                          className="w-5 h-4 object-cover rounded-sm border border-gray-200"
-                          title={`Krajina: ${catch_.team?.country || 'SK'}`}
-                          onError={(e) => {
-                            // Fallback to emoji if image fails to load
-                            e.currentTarget.style.display = 'none';
-                            const span = document.createElement('span');
-                            span.textContent = '🏳️';
-                            span.className = 'text-sm';
-                            e.currentTarget.parentNode?.insertBefore(span, e.currentTarget);
-                          }}
-                        />
-                        <span className="font-medium text-foreground text-sm">
-                          {catch_.team?.name || 'Neznámy tím'}
-                        </span>
-                      </div>
-                      <div className="font-mono font-bold text-accent text-lg" data-testid={`catch-weight-${catch_.id}`}>
-                        {parseFloat(catch_.weight).toFixed(2)} kg
-                      </div>
+                  <div className="flex-1 min-w-0 flex items-center justify-between">
+                    <div className="flex items-center gap-2" data-testid={`catch-team-${catch_.id}`}>
+                      <img 
+                        src={getCountryFlag(catch_.team?.country || 'SK')} 
+                        alt={`Vlajka ${catch_.team?.country || 'SK'}`}
+                        className="w-5 h-4 object-cover rounded-sm border border-gray-200"
+                        title={`Krajina: ${catch_.team?.country || 'SK'}`}
+                        onError={(e) => {
+                          // Fallback to emoji if image fails to load
+                          e.currentTarget.style.display = 'none';
+                          const span = document.createElement('span');
+                          span.textContent = '🏳️';
+                          span.className = 'text-sm';
+                          e.currentTarget.parentNode?.insertBefore(span, e.currentTarget);
+                        }}
+                      />
+                      <span className="font-medium text-foreground text-sm">
+                        {catch_.team?.name || 'Neznámy tím'}
+                      </span>
                     </div>
                     
-                    {/* Second row: Sector and time */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        {getSectorBadge(catch_.sector)}
+                    <div className="flex items-center gap-3">
+                      {getSectorBadge(catch_.sector)}
+                      <div className="font-mono font-bold text-accent" data-testid={`catch-weight-${catch_.id}`}>
+                        {parseFloat(catch_.weight).toFixed(2)} kg
                       </div>
                       <div className="text-xs text-muted-foreground" data-testid={`catch-time-${catch_.id}`}>
                         {formatTimeAgo(catch_.submittedAt!)}
