@@ -43,8 +43,13 @@ import {
   Shield,
   Building2,
   ExternalLink,
-  Trash2,
+  Download,
+  Filter,
+  MoreHorizontal,
+  CheckSquare,
+  Square as SquareIcon,
   RefreshCw,
+  Trash2,
   Play,
   Square,
   ArrowRight
@@ -161,6 +166,16 @@ export default function AdminPanel() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [resetCatchesCompetitionId, setResetCatchesCompetitionId] = useState<string>("");
   const [isResetCatchesDialogOpen, setIsResetCatchesDialogOpen] = useState(false);
+  
+  // New state for enhanced teams management
+  const [isApproveConfirmOpen, setIsApproveConfirmOpen] = useState(false);
+  const [isRejectConfirmOpen, setIsRejectConfirmOpen] = useState(false);
+  const [teamToUpdate, setTeamToUpdate] = useState<string | null>(null);
+  const [teamsFilter, setTeamsFilter] = useState<string>("all");
+  const [teamsSearchTerm, setTeamsSearchTerm] = useState("");
+  const [selectedTeamsForBulk, setSelectedTeamsForBulk] = useState<string[]>([]);
+  const [isBulkActionOpen, setIsBulkActionOpen] = useState(false);
+  const [bulkAction, setBulkAction] = useState<'approve' | 'reject' | null>(null);
 
   const isAdmin = user?.role === 'admin';
 
@@ -343,11 +358,109 @@ export default function AdminPanel() {
     }
   }, [selectedTeamDetails, isEditTeamDialogOpen, editTeamForm]);
 
-  // Team edit submit handler
+  // Helper function to export teams to CSV
+  const exportTeamsToCSV = () => {
+    if (!teams || teams.length === 0) {
+      toast({
+        title: "Upozornenie",
+        description: "Žiadne tímy na export",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const headers = [
+      "Názov tímu",
+      "Status",
+      "Krajina",
+      "Sektor",
+      "Miesto",
+      "Počet členov",
+      "Počet úlovkov",
+      "Celková hmotnosť (kg)",
+      "Kapitán",
+      "Email kapitána",
+      "Telefón"
+    ];
+
+    const csvContent = [
+      headers.join(","),
+      ...teams.map(team => {
+        const captain = team.members?.find(member => member.role === 'captain');
+        return [
+          `"${team.name || ''}"`,
+          team.status === 'approved' ? 'Schválený' : team.status === 'pending' ? 'Čaká na schválenie' : 'Zamietnutý',
+          team.country || 'SK',
+          `"${team.sectorName || ''}"`,
+          `"${team.placeName || ''}"`,
+          team.members?.length || 0,
+          team.fishCount || 0,
+          team.totalWeight || 0,
+          `"${captain?.name || ''}"`,
+          `"${captain?.email || ''}"`,
+          `"${captain?.phone || ''}"`
+        ].join(",");
+      })
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `timy-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: "Úspech",
+      description: "Tímy boli exportované do CSV súboru"
+    });
+  };
+
+  // Helper function to get available sectors and places
+  const getAvailableSectorPlaces = () => {
+    const selectedComp = competitions?.find((c: Competition) => c.id === selectedCompetition);
+    if (!selectedComp?.sectorPlaces) return [];
+    
+    const occupiedPairs = teams?.map(team => `${team.sectorName}|${team.placeName}`).filter(Boolean) || [];
+    
+    return selectedComp.sectorPlaces.flatMap(sector => 
+      sector.places.map(place => ({
+        sectorName: sector.sectorName,
+        placeName: place,
+        isOccupied: occupiedPairs.includes(`${sector.sectorName}|${place}`)
+      }))
+    );
+  };
+
+  // Team edit submit handler with enhanced validation
   const onEditTeamSubmit = async (data: EditTeamForm) => {
     if (!selectedTeamId) return;
     
     try {
+      // Check if sector/place combination is already taken
+      if (data.sectorName && data.placeName) {
+        const availablePlaces = getAvailableSectorPlaces();
+        const selectedPlace = availablePlaces.find(
+          place => place.sectorName === data.sectorName && place.placeName === data.placeName
+        );
+        
+        if (selectedPlace?.isOccupied) {
+          // Check if it's the same team editing its own place
+          const currentTeam = teams?.find(t => t.id === selectedTeamId);
+          if (currentTeam?.sectorName !== data.sectorName || currentTeam?.placeName !== data.placeName) {
+            toast({
+              title: "Chyba",
+              description: `Miesto ${data.sectorName} - ${data.placeName} je už obsadené iným tímom`,
+              variant: "destructive"
+            });
+            return;
+          }
+        }
+      }
+      
       // Transform data to prevent clearing existing sector/place assignments with empty strings
       const cleanData: Partial<EditTeamForm> = {
         name: data.name,
@@ -358,6 +471,10 @@ export default function AdminPanel() {
       if (data.sectorName && data.sectorName.trim() && data.placeName && data.placeName.trim()) {
         cleanData.sectorName = data.sectorName.trim();
         cleanData.placeName = data.placeName.trim();
+      } else if (!data.sectorName && !data.placeName) {
+        // Allow clearing both sector and place
+        cleanData.sectorName = null;
+        cleanData.placeName = null;
       }
       
       await updateTeamMutation.mutateAsync({
@@ -374,6 +491,35 @@ export default function AdminPanel() {
         variant: "destructive"
       });
     }
+  };
+
+  // Filter teams based on status and search term
+  const filteredTeams = teams?.filter(team => {
+    const matchesFilter = teamsFilter === "all" || team.status === teamsFilter;
+    const matchesSearch = !teamsSearchTerm || 
+      team.name?.toLowerCase().includes(teamsSearchTerm.toLowerCase()) ||
+      team.members?.some(member => 
+        member.name?.toLowerCase().includes(teamsSearchTerm.toLowerCase())
+      );
+    return matchesFilter && matchesSearch;
+  }) || [];
+
+  // Helper function to handle team selection for bulk actions
+  const toggleTeamSelection = (teamId: string) => {
+    setSelectedTeamsForBulk(prev => 
+      prev.includes(teamId) 
+        ? prev.filter(id => id !== teamId)
+        : [...prev, teamId]
+    );
+  };
+
+  const selectAllTeams = () => {
+    const pendingTeams = filteredTeams.filter(team => team.status === 'pending').map(team => team.id);
+    setSelectedTeamsForBulk(pendingTeams);
+  };
+
+  const clearTeamSelection = () => {
+    setSelectedTeamsForBulk([]);
   };
 
   // Watch form values for dynamic behavior
@@ -579,6 +725,9 @@ export default function AdminPanel() {
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["/api/competitions", selectedCompetition, "teams"] });
+      setIsApproveConfirmOpen(false);
+      setIsRejectConfirmOpen(false);
+      setTeamToUpdate(null);
       toast({
         title: "Úspech",
         description: `Tím bol ${variables.status === 'approved' ? 'schválený' : 'zamietnutý'}`
@@ -590,6 +739,36 @@ export default function AdminPanel() {
         variant: "destructive",
         title: "Chyba",
         description: "Nepodarilo sa zmeniť status tímu"
+      });
+    },
+  });
+
+  // Bulk team status update mutation
+  const bulkUpdateTeamStatusMutation = useMutation({
+    mutationFn: async ({ teamIds, status }: { teamIds: string[]; status: 'approved' | 'rejected' }) => {
+      const responses = await Promise.all(
+        teamIds.map(teamId => 
+          apiRequest("PATCH", `/api/teams/${teamId}/status`, { status })
+        )
+      );
+      return responses;
+    },
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/competitions", selectedCompetition, "teams"] });
+      setSelectedTeamsForBulk([]);
+      setIsBulkActionOpen(false);
+      setBulkAction(null);
+      toast({
+        title: "Úspech",
+        description: `${variables.teamIds.length} tímov bolo ${variables.status === 'approved' ? 'schválených' : 'zamietnutých'}`
+      });
+    },
+    onError: (error) => {
+      console.error("Error bulk updating team status:", error);
+      toast({
+        variant: "destructive",
+        title: "Chyba",
+        description: "Nepodarilo sa zmeniť status tímov"
       });
     },
   });
@@ -2766,6 +2945,75 @@ export default function AdminPanel() {
                             Spravujte tímy prihlásenej súťaže
                           </p>
                         </div>
+                        <div className="flex items-center space-x-2">
+                          {filteredTeams.length > 0 && (
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={exportTeamsToCSV}
+                              data-testid="button-export-teams"
+                            >
+                              <Download className="w-4 h-4 mr-2" />
+                              Export CSV
+                            </Button>
+                          )}
+                          {selectedTeamsForBulk.length > 0 && (
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => setIsBulkActionOpen(true)}
+                              data-testid="button-bulk-actions"
+                            >
+                              <MoreHorizontal className="w-4 h-4 mr-2" />
+                              Hromadné akcie ({selectedTeamsForBulk.length})
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Filters and Search */}
+                      <div className="flex items-center space-x-4">
+                        <div className="flex items-center space-x-2">
+                          <Filter className="w-4 h-4 text-muted-foreground" />
+                          <Select value={teamsFilter} onValueChange={setTeamsFilter}>
+                            <SelectTrigger className="w-40" data-testid="select-teams-filter">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">Všetky</SelectItem>
+                              <SelectItem value="pending">Čakajúce</SelectItem>
+                              <SelectItem value="approved">Schválené</SelectItem>
+                              <SelectItem value="rejected">Zamietnuté</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="flex-1 relative">
+                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            placeholder="Vyhľadať tím alebo člena..."
+                            value={teamsSearchTerm}
+                            onChange={(e) => setTeamsSearchTerm(e.target.value)}
+                            className="pl-9"
+                            data-testid="input-search-teams"
+                          />
+                        </div>
+                        {filteredTeams.filter(team => team.status === 'pending').length > 0 && (
+                          <div className="flex items-center space-x-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={selectedTeamsForBulk.length === filteredTeams.filter(t => t.status === 'pending').length ? clearTeamSelection : selectAllTeams}
+                              data-testid="button-select-all-teams"
+                            >
+                              {selectedTeamsForBulk.length === filteredTeams.filter(t => t.status === 'pending').length ? (
+                                <SquareIcon className="w-4 h-4 mr-2" />
+                              ) : (
+                                <CheckSquare className="w-4 h-4 mr-2" />
+                              )}
+                              {selectedTeamsForBulk.length === filteredTeams.filter(t => t.status === 'pending').length ? 'Zrušiť výber' : 'Vybrať všetky'}
+                            </Button>
+                          </div>
+                        )}
                       </div>
 
                       {teamsLoading ? (
@@ -2777,16 +3025,24 @@ export default function AdminPanel() {
                             </div>
                           ))}
                         </div>
-                      ) : teams && teams.length > 0 ? (
+                      ) : filteredTeams && filteredTeams.length > 0 ? (
                         <div className="grid gap-4">
-                          {teams.map((team) => (
+                          {filteredTeams.map((team) => (
                             <div key={team.id} className="border border-border rounded-lg p-4 hover:bg-accent/50 transition-colors">
                               <div className="flex items-center justify-between">
-                                <div className="flex-1">
-                                  <div className="flex items-center space-x-3">
-                                    <h4 className="text-base font-medium text-foreground" data-testid={`text-team-name-${team.id}`}>
-                                      {team.name}
-                                    </h4>
+                                <div className="flex items-center space-x-3 flex-1">
+                                  {team.status === 'pending' && (
+                                    <Checkbox
+                                      checked={selectedTeamsForBulk.includes(team.id)}
+                                      onCheckedChange={() => toggleTeamSelection(team.id)}
+                                      data-testid={`checkbox-team-${team.id}`}
+                                    />
+                                  )}
+                                  <div className="flex-1">
+                                    <div className="flex items-center space-x-3">
+                                      <h4 className="text-base font-medium text-foreground" data-testid={`text-team-name-${team.id}`}>
+                                        {team.name}
+                                      </h4>
                                     <Badge 
                                       variant={team.status === 'approved' ? 'default' : team.status === 'pending' ? 'secondary' : 'destructive'}
                                       data-testid={`badge-team-status-${team.id}`}
@@ -2829,7 +3085,10 @@ export default function AdminPanel() {
                                       <Button 
                                         size="sm" 
                                         variant="default"
-                                        onClick={() => updateTeamStatusMutation.mutate({ teamId: team.id, status: 'approved' })}
+                                        onClick={() => {
+                                          setTeamToUpdate(team.id);
+                                          setIsApproveConfirmOpen(true);
+                                        }}
                                         disabled={updateTeamStatusMutation.isPending}
                                         data-testid={`button-approve-team-${team.id}`}
                                       >
@@ -2839,7 +3098,10 @@ export default function AdminPanel() {
                                       <Button 
                                         size="sm" 
                                         variant="destructive"
-                                        onClick={() => updateTeamStatusMutation.mutate({ teamId: team.id, status: 'rejected' })}
+                                        onClick={() => {
+                                          setTeamToUpdate(team.id);
+                                          setIsRejectConfirmOpen(true);
+                                        }}
                                         disabled={updateTeamStatusMutation.isPending}
                                         data-testid={`button-reject-team-${team.id}`}
                                       >
@@ -2852,7 +3114,10 @@ export default function AdminPanel() {
                                     <Button 
                                       size="sm" 
                                       variant="default"
-                                      onClick={() => updateTeamStatusMutation.mutate({ teamId: team.id, status: 'approved' })}
+                                      onClick={() => {
+                                        setTeamToUpdate(team.id);
+                                        setIsApproveConfirmOpen(true);
+                                      }}
                                       disabled={updateTeamStatusMutation.isPending}
                                       data-testid={`button-approve-team-${team.id}`}
                                     >
@@ -3880,33 +4145,78 @@ export default function AdminPanel() {
                   )}
                 />
 
+                {/* Sector Selection with Available Options */}
                 <FormField
                   control={editTeamForm.control}
                   name="sectorName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Sektor</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Napr. Sektor A" {...field} data-testid="input-edit-team-sector" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  render={({ field }) => {
+                    const availablePlaces = getAvailableSectorPlaces();
+                    const availableSectors = [...new Set(availablePlaces.map(p => p.sectorName))];
+                    return (
+                      <FormItem>
+                        <FormLabel>Sektor</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value || ""}>
+                          <FormControl>
+                            <SelectTrigger data-testid="select-edit-team-sector">
+                              <SelectValue placeholder="Vyberte sektor" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="">Bez sektoru</SelectItem>
+                            {availableSectors.map(sector => (
+                              <SelectItem key={sector} value={sector}>
+                                {sector}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
 
-                <FormField
-                  control={editTeamForm.control}
-                  name="placeName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Miesto</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Napr. Miesto 1" {...field} data-testid="input-edit-team-place" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {/* Place Selection - only show if sector is selected */}
+                {editTeamForm.watch("sectorName") && (
+                  <FormField
+                    control={editTeamForm.control}
+                    name="placeName"
+                    render={({ field }) => {
+                      const selectedSector = editTeamForm.watch("sectorName");
+                      const availablePlaces = getAvailableSectorPlaces();
+                      const placesInSector = availablePlaces.filter(p => p.sectorName === selectedSector);
+                      
+                      return (
+                        <FormItem>
+                          <FormLabel>Miesto</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value || ""}>
+                            <FormControl>
+                              <SelectTrigger data-testid="select-edit-team-place">
+                                <SelectValue placeholder="Vyberte miesto" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="">Bez miesta</SelectItem>
+                              {placesInSector.map(place => (
+                                <SelectItem 
+                                  key={place.placeName} 
+                                  value={place.placeName}
+                                  disabled={place.isOccupied && selectedTeamDetails?.placeName !== place.placeName}
+                                >
+                                  {place.placeName} {place.isOccupied && selectedTeamDetails?.placeName !== place.placeName ? '(obsadené)' : ''}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                          <FormDescription>
+                            {selectedSector && `Dostupné miesta v ${selectedSector}: ${placesInSector.filter(p => !p.isOccupied || selectedTeamDetails?.placeName === p.placeName).length}`}
+                          </FormDescription>
+                        </FormItem>
+                      );
+                    }}
+                  />
+                )}
 
                 <div className="flex justify-end space-x-2 pt-4">
                   <Button
@@ -3927,6 +4237,179 @@ export default function AdminPanel() {
                 </div>
               </form>
             </Form>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Team Approve Confirmation Dialog */}
+      <Dialog open={isApproveConfirmOpen} onOpenChange={setIsApproveConfirmOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <CheckCircle className="w-5 h-5 text-green-600" />
+              <span>Schváliť tím</span>
+            </DialogTitle>
+            <DialogDescription>
+              Naozaj chcete schváliť tento tím? Tím bude môcť začať súťažiť.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end space-x-2 pt-4">
+            <Button 
+              variant="outline" 
+              onClick={() => setIsApproveConfirmOpen(false)}
+              data-testid="button-cancel-approve"
+            >
+              Zrušiť
+            </Button>
+            <Button 
+              onClick={() => {
+                if (teamToUpdate) {
+                  updateTeamStatusMutation.mutate({ teamId: teamToUpdate, status: 'approved' });
+                }
+              }}
+              disabled={updateTeamStatusMutation.isPending}
+              data-testid="button-confirm-approve"
+            >
+              {updateTeamStatusMutation.isPending ? (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  Schvaľujem...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Schváliť
+                </>
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Team Reject Confirmation Dialog */}
+      <Dialog open={isRejectConfirmOpen} onOpenChange={setIsRejectConfirmOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <XCircle className="w-5 h-5 text-red-600" />
+              <span>Zamietnuť tím</span>
+            </DialogTitle>
+            <DialogDescription>
+              Naozaj chcete zamietnuť tento tím? Tím nebude môcť súťažiť.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end space-x-2 pt-4">
+            <Button 
+              variant="outline" 
+              onClick={() => setIsRejectConfirmOpen(false)}
+              data-testid="button-cancel-reject"
+            >
+              Zrušiť
+            </Button>
+            <Button 
+              variant="destructive"
+              onClick={() => {
+                if (teamToUpdate) {
+                  updateTeamStatusMutation.mutate({ teamId: teamToUpdate, status: 'rejected' });
+                }
+              }}
+              disabled={updateTeamStatusMutation.isPending}
+              data-testid="button-confirm-reject"
+            >
+              {updateTeamStatusMutation.isPending ? (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  Zamietam...
+                </>
+              ) : (
+                <>
+                  <XCircle className="w-4 h-4 mr-2" />
+                  Zamietnuť
+                </>
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Actions Dialog */}
+      <Dialog open={isBulkActionOpen} onOpenChange={setIsBulkActionOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Hromadné akcie</DialogTitle>
+            <DialogDescription>
+              Vyberte akciu pre {selectedTeamsForBulk.length} vybraných tímov
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <Button
+              variant="outline"
+              className="w-full justify-start"
+              onClick={() => setBulkAction('approve')}
+              data-testid="button-bulk-approve"
+            >
+              <CheckCircle className="w-4 h-4 mr-2" />
+              Schváliť všetky vybrané tímy
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full justify-start"
+              onClick={() => setBulkAction('reject')}
+              data-testid="button-bulk-reject"
+            >
+              <XCircle className="w-4 h-4 mr-2" />
+              Zamietnuť všetky vybrané tímy
+            </Button>
+          </div>
+          {bulkAction && (
+            <div className="border-t pt-4">
+              <div className="bg-muted/30 p-3 rounded-lg mb-4">
+                <p className="text-sm">
+                  {bulkAction === 'approve' 
+                    ? `Chystáte sa schváliť ${selectedTeamsForBulk.length} tímov`
+                    : `Chystáte sa zamietnuť ${selectedTeamsForBulk.length} tímov`
+                  }
+                </p>
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setBulkAction(null);
+                    setIsBulkActionOpen(false);
+                  }}
+                >
+                  Zrušiť
+                </Button>
+                <Button 
+                  variant={bulkAction === 'approve' ? 'default' : 'destructive'}
+                  onClick={() => {
+                    bulkUpdateTeamStatusMutation.mutate({
+                      teamIds: selectedTeamsForBulk,
+                      status: bulkAction
+                    });
+                  }}
+                  disabled={bulkUpdateTeamStatusMutation.isPending}
+                  data-testid="button-confirm-bulk-action"
+                >
+                  {bulkUpdateTeamStatusMutation.isPending ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                      Spracovávam...
+                    </>
+                  ) : (
+                    <>
+                      {bulkAction === 'approve' ? (
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                      ) : (
+                        <XCircle className="w-4 h-4 mr-2" />
+                      )}
+                      {bulkAction === 'approve' ? 'Schváliť' : 'Zamietnuť'}
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
           )}
         </DialogContent>
       </Dialog>
