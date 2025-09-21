@@ -128,7 +128,7 @@ export default function LiveLeaderboard({ teams, isLoading, competitionId }: Liv
   };
 
   return (
-    <Card>
+    <Card className="min-h-[600px] flex flex-col">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex flex-col space-y-2">
@@ -149,7 +149,7 @@ export default function LiveLeaderboard({ teams, isLoading, competitionId }: Liv
         </div>
       </CardHeader>
       
-      <CardContent className="p-0">
+      <CardContent className="p-0 flex-1 flex flex-col">
         {sortedTeams.length === 0 ? (
           <div className="text-center py-12 px-6">
             <p className="text-muted-foreground text-lg">Zatiaľ žiadne schválené tímy</p>

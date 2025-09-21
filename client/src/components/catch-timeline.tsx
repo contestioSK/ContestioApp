@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Clock, X } from "lucide-react";
+import { Clock, X, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Catch, Team, Referee } from "@shared/schema";
 import { getCountryFlag } from "@/lib/countries";
@@ -93,16 +93,27 @@ export default function CatchTimeline({ catches, isLoading, competitionId }: Cat
   );
 
   return (
-    <Card>
+    <Card className="min-h-[600px] flex flex-col">
       <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <Clock className="w-5 h-5" />
-          <span>Posledné úlovky</span>
-        </CardTitle>
-        <p className="text-sm text-muted-foreground">Najnovšie príspevky rozhodcov</p>
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col space-y-2">
+            <div className="flex items-center gap-2">
+              <CardTitle className="flex items-center space-x-2">
+                <Clock className="w-5 h-5" />
+                <span>Posledné úlovky</span>
+              </CardTitle>
+              {sortedCatches.length > 10 && (
+                <Badge variant="secondary" className="text-xs">
+                  Top 10 z {sortedCatches.length}
+                </Badge>
+              )}
+            </div>
+            <p className="text-sm text-muted-foreground">Najnovšie príspevky rozhodcov</p>
+          </div>
+        </div>
       </CardHeader>
       
-      <CardContent className="p-0">
+      <CardContent className="p-0 flex-1 flex flex-col">
         {sortedCatches.length === 0 ? (
           <div className="text-center py-12 px-6">
             <Clock className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
@@ -112,8 +123,8 @@ export default function CatchTimeline({ catches, isLoading, competitionId }: Cat
             </p>
           </div>
         ) : (
-          <div className="h-[900px] overflow-y-auto">
-            {sortedCatches.map((catch_) => (
+          <div>
+            {sortedCatches.slice(0, 10).map((catch_) => (
               <div 
                 key={catch_.id} 
                 className="p-4 border-b border-border hover:bg-muted/20 transition-colors"
@@ -195,7 +206,14 @@ export default function CatchTimeline({ catches, isLoading, competitionId }: Cat
                 </div>
               </div>
             ))}
-            
+          </div>
+        )}
+        
+        {sortedCatches.length > 0 && (
+          <div className="p-4 border-t border-border">
+            <Button variant="ghost" className="text-primary hover:text-primary/80" data-testid="button-view-all-catches">
+              Zobraziť všetky úlovky <ArrowRight className="ml-1 w-4 h-4" />
+            </Button>
           </div>
         )}
       </CardContent>
