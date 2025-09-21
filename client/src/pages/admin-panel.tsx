@@ -2860,7 +2860,7 @@ export default function AdminPanel() {
                                     <FormItem>
                                       <FormLabel>Logo sponzora</FormLabel>
                                       <FormDescription>
-                                        Odporúčaný rozmer: 300x150 px (maximálne 10MB)
+                                        Nahrajte obrázok vášho loga (maximálne 5MB). Podporujeme PNG, JPG a SVG súbory.
                                       </FormDescription>
                                       <div className="space-y-3">
                                         {/* File upload */}

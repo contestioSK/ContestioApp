@@ -24,7 +24,7 @@ import fs from "fs";
 const upload = multer({
   dest: "uploads/",
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit - zvýšil som z 5MB
+    fileSize: 5 * 1024 * 1024, // 5MB limit
   },
   fileFilter: (req, file, cb) => {
     const allowedTypes = /jpeg|jpg|png|gif/;
