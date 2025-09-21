@@ -624,12 +624,16 @@ export default function AdminPanel() {
     mutationFn: async (file: File) => {
       const formData = new FormData();
       formData.append('logo', file);
+      
+      // Use fetch with credentials for authentication
       const response = await fetch('/api/sponsors/upload-logo', {
         method: 'POST',
         body: formData,
+        credentials: 'include', // Include cookies for authentication
       });
+      
       if (!response.ok) {
-        const error = await response.json();
+        const error = await response.json().catch(() => ({ message: 'Upload failed' }));
         throw new Error(error.message || 'Upload failed');
       }
       return response.json();
@@ -2855,6 +2859,9 @@ export default function AdminPanel() {
                                   render={({ field }) => (
                                     <FormItem>
                                       <FormLabel>Logo sponzora</FormLabel>
+                                      <FormDescription>
+                                        Odporúčaný rozmer: 300x150 px (maximálne 10MB)
+                                      </FormDescription>
                                       <div className="space-y-3">
                                         {/* File upload */}
                                         <div>
