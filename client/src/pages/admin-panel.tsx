@@ -102,16 +102,14 @@ export default function AdminPanel() {
 
   const isAdmin = user?.role === 'admin';
 
-  // Set initial active tab based on user role and selected competition
+  // Set initial active tab based on selected competition
   useEffect(() => {
-    if (isAdmin) {
-      setActiveTab("dashboard");
-    } else if (selectedCompetition) {
+    if (selectedCompetition) {
       setActiveTab("teams");
     } else {
       setActiveTab("dashboard");
     }
-  }, [isAdmin, selectedCompetition]);
+  }, [selectedCompetition]);
 
   const form = useForm<CompetitionForm>({
     resolver: zodResolver(competitionSchema),
