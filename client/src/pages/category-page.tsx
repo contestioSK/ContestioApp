@@ -181,9 +181,21 @@ export default function CategoryPage({ category, title, description }: CategoryP
                   <Card key={competition.id} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden border-0 shadow-lg">
                     <div className="relative">
                       <img 
-                        src={competitionImages[index % competitionImages.length]}
+                        src={competition.imageUrl || competitionImages[index % competitionImages.length]}
                         alt={competition.name}
-                        className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" 
+                        className={`w-full h-48 rounded-t-lg group-hover:scale-105 transition-transform duration-300 ${
+                          competition.imageUrl 
+                            ? 'object-contain bg-white' // Pre nahrané logá - zobrazí celé logo s bielym pozadím
+                            : 'object-cover' // Pre predvolené obrázky - pokryje celú plochu
+                        }`}
+                        onError={(e) => {
+                          // Ak sa custom obrázok nepodarí načítať, použije fallback
+                          if (competition.imageUrl) {
+                            console.error('Failed to load custom image, using fallback:', competition.imageUrl);
+                            e.currentTarget.src = competitionImages[index % competitionImages.length];
+                            e.currentTarget.className = e.currentTarget.className.replace('object-contain bg-white', 'object-cover');
+                          }
+                        }}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                       <div className="absolute top-3 left-3">

@@ -136,32 +136,11 @@ export default function CompetitionCard({ competition }: CompetitionCardProps) {
               className={`w-full h-48 rounded-t-lg cursor-pointer hover:opacity-90 transition-opacity object-cover`}
               onError={(e) => {
                 // Ak sa custom obrázok nepodarí načítať, použije fallback
-                console.error('🔴 FAILED to load image:', e.currentTarget.src);
-                if (competition.name === "CUP CUP CUP") {
-                  alert(`🔴 CHYBA: Nepodarilo sa načítať obrázok pre ${competition.name}: ${e.currentTarget.src}`);
-                }
                 e.currentTarget.src = getCompetitionImage(competition.status);
                 e.currentTarget.className = e.currentTarget.className.replace('object-contain bg-white', 'object-cover');
               }}
-              onLoad={() => {
-                console.log('✅ SUCCESS: Image loaded:', competition.imageUrl || 'fallback image');
-                if (competition.name === "CUP CUP CUP") {
-                  alert(`✅ Obrázok pre ${competition.name} sa načítal úspešne!`);
-                }
-              }}
               data-testid={`img-competition-${competition.id}`}
             />
-            {/* DEBUG INFO - pre všetky súťaže */}
-            <div className="absolute top-0 left-0 bg-blue-500 text-white p-1 text-xs z-50 max-w-[250px] overflow-hidden">
-              NAME: "{competition.name}" | IMG: {competition.imageUrl ? "YES" : "NO"}
-            </div>
-            
-            {/* EXTRA DEBUG pre CUP CUP CUP */}
-            {competition.name === "CUP CUP CUP" && (
-              <div className="absolute top-5 left-0 bg-red-500 text-white p-1 text-xs z-50">
-                ✅ FOUND CUP CUP CUP!
-              </div>
-            )}
           </div>
         </Link>
         <div className="absolute top-3 left-3">
