@@ -3189,18 +3189,9 @@ export default function AdminPanel() {
                                       >
                                         {/* Member Photo */}
                                         <div className="flex-shrink-0">
-                                          {member.photoUrl ? (
-                                            <img 
-                                              src={member.photoUrl} 
-                                              alt={`Fotka ${member.name}`}
-                                              className="w-12 h-12 object-cover rounded-full border-2 border-muted"
-                                              data-testid={`img-member-${index}`}
-                                            />
-                                          ) : (
-                                            <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center">
-                                              <Users className="w-6 h-6 text-muted-foreground" />
-                                            </div>
-                                          )}
+                                          <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center">
+                                            <Users className="w-6 h-6 text-muted-foreground" />
+                                          </div>
                                         </div>
                                         
                                         {/* Member Info */}
