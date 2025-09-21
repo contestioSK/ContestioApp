@@ -39,7 +39,10 @@ import {
   Activity,
   Search,
   Check,
-  X
+  X,
+  Shield,
+  Building2,
+  ExternalLink
 } from "lucide-react";
 import type { Competition, Team, TeamMember } from "@shared/schema";
 import { getSideCompetitionLabel } from "@/lib/utils";
@@ -211,6 +214,16 @@ export default function AdminPanel() {
 
   const { data: teams, isLoading: teamsLoading } = useQuery<(Team & { members: TeamMember[] })[]>({
     queryKey: ["/api/competitions", selectedCompetition, "teams"],
+    enabled: isAuthenticated && !!selectedCompetition,
+  });
+
+  const { data: referees, isLoading: refereesLoading } = useQuery<any[]>({
+    queryKey: ["/api/competitions", selectedCompetition, "referees"],
+    enabled: isAuthenticated && !!selectedCompetition,
+  });
+
+  const { data: sponsors, isLoading: sponsorsLoading } = useQuery<any[]>({
+    queryKey: ["/api/competitions", selectedCompetition, "sponsors"],
     enabled: isAuthenticated && !!selectedCompetition,
   });
 
@@ -1912,20 +1925,445 @@ export default function AdminPanel() {
                   </TabsContent>
                   
                   <TabsContent value="referees" className="p-6">
-                    <div className="text-center py-12">
-                      <p className="text-muted-foreground">Správa rozhodcov príde skôr</p>
+                    <div className="space-y-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="text-lg font-medium text-foreground">Správa rozhodcov</h3>
+                          <p className="text-muted-foreground">
+                            Spravujte rozhodcov priradených k súťaži
+                          </p>
+                        </div>
+                        <Button 
+                          variant="default"
+                          onClick={() => {
+                            toast({
+                              title: "Pridanie rozhodcu",
+                              description: "Funkcia pridania rozhodcu bude implementovaná neskôr"
+                            });
+                          }}
+                          data-testid="button-add-referee"
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          Pridať rozhodcu
+                        </Button>
+                      </div>
+
+                      {refereesLoading ? (
+                        <div className="grid gap-4">
+                          {[...Array(2)].map((_, i) => (
+                            <div key={i} className="border border-border rounded-lg p-4">
+                              <Skeleton className="h-6 w-48 mb-2" />
+                              <Skeleton className="h-4 w-32" />
+                            </div>
+                          ))}
+                        </div>
+                      ) : referees && referees.length > 0 ? (
+                        <div className="grid gap-4">
+                          {referees.map((referee) => (
+                            <div key={referee.id} className="border border-border rounded-lg p-4 hover:bg-accent/50 transition-colors">
+                              <div className="flex items-center justify-between">
+                                <div className="flex-1">
+                                  <div className="flex items-center space-x-3">
+                                    <h4 className="text-base font-medium text-foreground" data-testid={`text-referee-name-${referee.id}`}>
+                                      {referee.user?.email || "Neznámy rozhodca"}
+                                    </h4>
+                                    <Badge 
+                                      variant={referee.isActive ? 'default' : 'secondary'}
+                                      data-testid={`badge-referee-status-${referee.id}`}
+                                    >
+                                      {referee.isActive ? 'Aktívny' : 'Neaktívny'}
+                                    </Badge>
+                                  </div>
+                                  <div className="mt-2 flex items-center space-x-4 text-sm text-muted-foreground">
+                                    <span>Sektor: {referee.assignedSector}</span>
+                                    <span>Priradený: {new Date(referee.createdAt).toLocaleDateString('sk-SK')}</span>
+                                  </div>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    onClick={() => {
+                                      toast({
+                                        title: "Úprava rozhodcu",
+                                        description: "Funkcia úpravy rozhodcu bude implementovaná neskôr"
+                                      });
+                                    }}
+                                    data-testid={`button-edit-referee-${referee.id}`}
+                                  >
+                                    <Edit className="w-4 h-4 mr-1" />
+                                    Upraviť
+                                  </Button>
+                                  <Button 
+                                    size="sm" 
+                                    variant={referee.isActive ? "secondary" : "default"}
+                                    onClick={() => {
+                                      toast({
+                                        title: "Zmena statusu",
+                                        description: "Funkcia zmeny statusu bude implementovaná neskôr"
+                                      });
+                                    }}
+                                    data-testid={`button-toggle-referee-${referee.id}`}
+                                  >
+                                    {referee.isActive ? (
+                                      <>
+                                        <UserX className="w-4 h-4 mr-1" />
+                                        Deaktivovať
+                                      </>
+                                    ) : (
+                                      <>
+                                        <UserCheck className="w-4 h-4 mr-1" />
+                                        Aktivovať
+                                      </>
+                                    )}
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-12">
+                          <Shield className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                          <h3 className="text-lg font-medium text-foreground mb-2">
+                            Žiadni rozhodcovia
+                          </h3>
+                          <p className="text-muted-foreground">
+                            Pre túto súťaž zatiaľ nie sú priradení žiadni rozhodcovia.
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </TabsContent>
                   
                   <TabsContent value="sponsors" className="p-6">
-                    <div className="text-center py-12">
-                      <p className="text-muted-foreground">Správa sponzorov príde skôr</p>
+                    <div className="space-y-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="text-lg font-medium text-foreground">Správa sponzorov</h3>
+                          <p className="text-muted-foreground">
+                            Spravujte sponzorov súťaže
+                          </p>
+                        </div>
+                        <Button 
+                          variant="default"
+                          onClick={() => {
+                            toast({
+                              title: "Pridanie sponzora",
+                              description: "Funkcia pridania sponzora bude implementovaná neskôr"
+                            });
+                          }}
+                          data-testid="button-add-sponsor"
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          Pridať sponzora
+                        </Button>
+                      </div>
+
+                      {sponsorsLoading ? (
+                        <div className="grid gap-4">
+                          {[...Array(3)].map((_, i) => (
+                            <div key={i} className="border border-border rounded-lg p-4">
+                              <Skeleton className="h-6 w-48 mb-2" />
+                              <Skeleton className="h-4 w-32" />
+                            </div>
+                          ))}
+                        </div>
+                      ) : sponsors && sponsors.length > 0 ? (
+                        <div className="grid gap-4">
+                          {sponsors.map((sponsor) => (
+                            <div key={sponsor.id} className="border border-border rounded-lg p-4 hover:bg-accent/50 transition-colors">
+                              <div className="flex items-center justify-between">
+                                <div className="flex-1">
+                                  <div className="flex items-center space-x-3">
+                                    <Building2 className="w-5 h-5 text-muted-foreground" />
+                                    <h4 className="text-base font-medium text-foreground" data-testid={`text-sponsor-name-${sponsor.id}`}>
+                                      {sponsor.name}
+                                    </h4>
+                                    <Badge 
+                                      variant="outline"
+                                      data-testid={`badge-sponsor-tier-${sponsor.id}`}
+                                    >
+                                      {sponsor.tier}
+                                    </Badge>
+                                  </div>
+                                  <div className="mt-2 flex items-center space-x-4 text-sm text-muted-foreground">
+                                    {sponsor.description && (
+                                      <span>{sponsor.description}</span>
+                                    )}
+                                    {sponsor.contactEmail && (
+                                      <span>Email: {sponsor.contactEmail}</span>
+                                    )}
+                                  </div>
+                                  {sponsor.website && (
+                                    <div className="mt-2">
+                                      <a 
+                                        href={sponsor.website} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center text-sm text-primary hover:underline"
+                                        data-testid={`link-sponsor-website-${sponsor.id}`}
+                                      >
+                                        <ExternalLink className="w-3 h-3 mr-1" />
+                                        {sponsor.website}
+                                      </a>
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    onClick={() => {
+                                      toast({
+                                        title: "Úprava sponzora",
+                                        description: "Funkcia úpravy sponzora bude implementovaná neskôr"
+                                      });
+                                    }}
+                                    data-testid={`button-edit-sponsor-${sponsor.id}`}
+                                  >
+                                    <Edit className="w-4 h-4 mr-1" />
+                                    Upraviť
+                                  </Button>
+                                  <Button 
+                                    size="sm" 
+                                    variant="destructive"
+                                    onClick={() => {
+                                      toast({
+                                        title: "Odstránenie sponzora",
+                                        description: "Funkcia odstránenia sponzora bude implementovaná neskôr"
+                                      });
+                                    }}
+                                    data-testid={`button-delete-sponsor-${sponsor.id}`}
+                                  >
+                                    <X className="w-4 h-4 mr-1" />
+                                    Odstrániť
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-12">
+                          <Building2 className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                          <h3 className="text-lg font-medium text-foreground mb-2">
+                            Žiadni sponzori
+                          </h3>
+                          <p className="text-muted-foreground">
+                            Pre túto súťaž zatiaľ nie sú pridaní žiadni sponzori.
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </TabsContent>
                   
                   <TabsContent value="settings" className="p-6">
-                    <div className="text-center py-12">
-                      <p className="text-muted-foreground">Nastavenia súťaže príde skôr</p>
+                    <div className="space-y-6">
+                      <div>
+                        <h3 className="text-lg font-medium text-foreground">Nastavenia súťaže</h3>
+                        <p className="text-muted-foreground">
+                          Spravujte nastavenia a konfiguráciu súťaže
+                        </p>
+                      </div>
+
+                      <div className="grid gap-6">
+                        {/* Competition Status */}
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="text-base flex items-center">
+                              <Settings className="w-5 h-5 mr-2" />
+                              Status súťaže
+                            </CardTitle>
+                            <CardDescription>
+                              Upravte aktuálny status súťaže
+                            </CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="font-medium">Aktuálny status:</p>
+                                <Badge variant="outline" className="mt-1">
+                                  {competitions?.find(c => c.id === selectedCompetition)?.status === 'registration' ? 'Registrácia' :
+                                   competitions?.find(c => c.id === selectedCompetition)?.status === 'live' ? 'Prebieha' :
+                                   competitions?.find(c => c.id === selectedCompetition)?.status === 'completed' ? 'Ukončená' : 'Neznámy'}
+                                </Badge>
+                              </div>
+                              <Button 
+                                variant="outline"
+                                onClick={() => {
+                                  toast({
+                                    title: "Zmena statusu",
+                                    description: "Funkcia zmeny statusu bude implementovaná neskôr"
+                                  });
+                                }}
+                                data-testid="button-change-competition-status"
+                              >
+                                Zmeniť status
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        {/* Export Options */}
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="text-base flex items-center">
+                              <FileText className="w-5 h-5 mr-2" />
+                              Export údajov
+                            </CardTitle>
+                            <CardDescription>
+                              Exportujte údaje súťaže do rôznych formátov
+                            </CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="flex flex-wrap gap-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => {
+                                  toast({
+                                    title: "Export tímov",
+                                    description: "Funkcia exportu tímov bude implementovaná neskôr"
+                                  });
+                                }}
+                                data-testid="button-export-teams"
+                              >
+                                <FileText className="w-4 h-4 mr-1" />
+                                Export tímov
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => {
+                                  toast({
+                                    title: "Export úlovkov",
+                                    description: "Funkcia exportu úlovkov bude implementovaná neskôr"
+                                  });
+                                }}
+                                data-testid="button-export-catches"
+                              >
+                                <FileText className="w-4 h-4 mr-1" />
+                                Export úlovkov
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => {
+                                  toast({
+                                    title: "Export výsledkov",
+                                    description: "Funkcia exportu výsledkov bude implementovaná neskôr"
+                                  });
+                                }}
+                                data-testid="button-export-results"
+                              >
+                                <Trophy className="w-4 h-4 mr-1" />
+                                Export výsledkov
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        {/* Competition Statistics */}
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="text-base flex items-center">
+                              <BarChart3 className="w-5 h-5 mr-2" />
+                              Štatistiky súťaže
+                            </CardTitle>
+                            <CardDescription>
+                              Prehľad kľúčových štatistík
+                            </CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                              <div className="text-center">
+                                <p className="text-2xl font-bold text-foreground">
+                                  {teams?.length || 0}
+                                </p>
+                                <p className="text-sm text-muted-foreground">Tímy</p>
+                              </div>
+                              <div className="text-center">
+                                <p className="text-2xl font-bold text-foreground">
+                                  {teams?.filter(t => t.status === 'approved').length || 0}
+                                </p>
+                                <p className="text-sm text-muted-foreground">Schválené</p>
+                              </div>
+                              <div className="text-center">
+                                <p className="text-2xl font-bold text-foreground">
+                                  {referees?.length || 0}
+                                </p>
+                                <p className="text-sm text-muted-foreground">Rozhodcovia</p>
+                              </div>
+                              <div className="text-center">
+                                <p className="text-2xl font-bold text-foreground">
+                                  {sponsors?.length || 0}
+                                </p>
+                                <p className="text-sm text-muted-foreground">Sponzori</p>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        {/* Danger Zone */}
+                        <Card className="border-destructive">
+                          <CardHeader>
+                            <CardTitle className="text-base flex items-center text-destructive">
+                              <XCircle className="w-5 h-5 mr-2" />
+                              Nebezpečná zóna
+                            </CardTitle>
+                            <CardDescription>
+                              Akcie, ktoré nie je možné vrátiť späť
+                            </CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="flex flex-col space-y-3">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="font-medium">Resetovať všetky úlovky</p>
+                                  <p className="text-sm text-muted-foreground">
+                                    Odstráni všetky úlovky zo súťaže
+                                  </p>
+                                </div>
+                                <Button 
+                                  variant="destructive" 
+                                  size="sm"
+                                  onClick={() => {
+                                    toast({
+                                      title: "Reset úlovkov",
+                                      description: "Funkcia resetovania úlovkov bude implementovaná neskôr"
+                                    });
+                                  }}
+                                  data-testid="button-reset-catches"
+                                >
+                                  Reset úlovkov
+                                </Button>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="font-medium">Zmazať súťaž</p>
+                                  <p className="text-sm text-muted-foreground">
+                                    Úplne odstráni súťaž a všetky súvisiace údaje
+                                  </p>
+                                </div>
+                                <Button 
+                                  variant="destructive" 
+                                  size="sm"
+                                  onClick={() => {
+                                    toast({
+                                      title: "Zmazanie súťaže",
+                                      description: "Funkcia zmazania súťaže bude implementovaná neskôr"
+                                    });
+                                  }}
+                                  data-testid="button-delete-competition"
+                                >
+                                  Zmazať súťaž
+                                </Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </div>
                     </div>
                   </TabsContent>
                 </>
