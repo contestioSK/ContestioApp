@@ -26,7 +26,7 @@ import {
   type InsertSponsor,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, sql, ne, count, gt, gte } from "drizzle-orm";
+import { eq, desc, and, sql, ne, count, gt, gte, inArray } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (required for Replit Auth)
@@ -263,7 +263,6 @@ export class DatabaseStorage implements IStorage {
     await db
       .update(teams)
       .set({ 
-        totalPoints: 0, 
         totalWeight: "0", 
         fishCount: 0, 
         updatedAt: new Date() 
@@ -586,7 +585,7 @@ export class DatabaseStorage implements IStorage {
   async updateReferee(refereeId: string, updates: Partial<InsertReferee>): Promise<Referee> {
     const [updatedReferee] = await db
       .update(referees)
-      .set({ ...updates, updatedAt: new Date() })
+      .set({ ...updates })
       .where(eq(referees.id, refereeId))
       .returning();
     return updatedReferee;
@@ -650,7 +649,7 @@ export class DatabaseStorage implements IStorage {
   async updateSponsor(sponsorId: string, updates: Partial<InsertSponsor>): Promise<Sponsor> {
     const [updatedSponsor] = await db
       .update(sponsors)
-      .set({ ...updates, updatedAt: new Date() })
+      .set({ ...updates })
       .where(eq(sponsors.id, sponsorId))
       .returning();
     return updatedSponsor;
@@ -802,8 +801,12 @@ export class DatabaseStorage implements IStorage {
         .limit(5)
       )
     ]
-      .filter(activity => activity.timestamp) // Filter out null timestamps
-      .sort((a, b) => new Date(b.timestamp!).getTime() - new Date(a.timestamp!).getTime())
+      .filter(activity => activity.timestamp !== null) // Filter out null timestamps
+      .map(activity => ({
+        ...activity,
+        timestamp: activity.timestamp as Date // Cast to Date since we filtered out nulls
+      }))
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
       .slice(0, 10);
 
     return {

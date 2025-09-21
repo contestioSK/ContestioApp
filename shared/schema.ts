@@ -270,7 +270,13 @@ export const insertCompetitionSchema = createInsertSchema(competitions).omit({
     sectorName: z.string().min(1, "Názov sektoru je povinný"),
     places: z.array(z.string().min(1, "Názov miesta je povinný")).min(1, "Sektor musí mať aspoň jedno miesto")
   })).optional(),
-  minWeight: z.number().min(2, "Minimálna hmotnosť musí byť aspoň 2 kg").max(15, "Maximálna hmotnosť môže byť 15 kg").default(2),
+  sideCompetitions: z.array(z.string()).nullable().optional().default(null),
+  branding: z.object({
+    primaryColor: z.string().optional(),
+    secondaryColor: z.string().optional(),
+    subdomain: z.string().optional(),
+  }).nullable().optional(),
+  minWeight: z.string().or(z.number().transform(val => val.toString())).default("2.00"),
 });
 
 export const insertCompetitionRegistrationSchema = createInsertSchema(competitionRegistrations).omit({
@@ -290,7 +296,8 @@ export const insertCompetitionRegistrationSchema = createInsertSchema(competitio
     sectorName: z.string().min(1, "Názov sektoru je povinný"),
     places: z.array(z.string().min(1, "Názov miesta je povinný")).min(1, "Sektor musí mať aspoň jedno miesto")
   })).optional(),
-  minWeight: z.number().min(2, "Minimálna hmotnosť musí byť aspoň 2 kg").max(15, "Maximálna hmotnosť môže byť 15 kg").default(2),
+  sideCompetitions: z.array(z.string()).nullable().optional().default(null),
+  minWeight: z.string().or(z.number().transform(val => val.toString())).default("2.00"),
   selectedPlan: z.enum(["basic", "pro", "premium", "enterprise"]).default("basic"),
   requestedSubdomain: z.string().min(3, "Subdoména musí mať aspoň 3 znaky").max(20, "Subdoména môže mať maximálne 20 znakov").regex(/^[a-z0-9-]+$/, "Subdoména môže obsahovať len malé písmená, čísla a pomlčky").optional(),
   branding: z.object({
