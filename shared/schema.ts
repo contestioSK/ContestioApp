@@ -262,6 +262,9 @@ export const announcements = pgTable("announcements", {
   attachmentUrl: varchar("attachment_url"), // Optional file attachment
   attachmentName: varchar("attachment_name"), // Original file name for display
   
+  // Notification tracking
+  notifiedAt: timestamp("notified_at"), // When notifications were sent (for scheduled announcements)
+  
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 }, (table) => [
