@@ -1567,7 +1567,7 @@ export default function AdminPanel() {
                       <div className="relative">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
-                          placeholder="Vyhľadať používateľa podľa emailovej adresy..."
+                          placeholder="Vyhľadať používateľa podľa mena, priezviska alebo emailu..."
                           value={userSearchTerm}
                           onChange={(e) => setUserSearchTerm(e.target.value)}
                           className="pl-9"
@@ -1595,10 +1595,15 @@ export default function AdminPanel() {
                           <p className="text-muted-foreground text-lg">Žiadni používatelia nenájdení</p>
                         </div>
                       ) : (() => {
-                        // Filter users based on search term
-                        const filteredUsers = allUsers?.filter((user: any) => 
-                          user.email.toLowerCase().includes(userSearchTerm.toLowerCase())
-                        ) || [];
+                        // Filter users based on search term (name, lastname, or email)
+                        const filteredUsers = allUsers?.filter((user: any) => {
+                          const searchLower = userSearchTerm.toLowerCase();
+                          return user.email.toLowerCase().includes(searchLower) ||
+                                 (user.firstName && user.firstName.toLowerCase().includes(searchLower)) ||
+                                 (user.lastName && user.lastName.toLowerCase().includes(searchLower)) ||
+                                 (user.firstName && user.lastName && 
+                                  `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchLower))
+                        }) || [];
                         
                         return filteredUsers.length === 0 && userSearchTerm ? (
                           <div className="text-center py-12">
