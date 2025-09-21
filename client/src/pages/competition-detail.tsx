@@ -240,28 +240,6 @@ export default function CompetitionDetail() {
               </p>
             )}
             
-            {/* Side Competitions */}
-            {competition.sideCompetitions && competition.sideCompetitions.length > 0 && (
-              <div className="mt-4 max-w-2xl mx-auto" data-testid="section-side-competitions">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <Award className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-muted-foreground">Špeciálne súťaže</span>
-                </div>
-                <div className="flex flex-wrap justify-center gap-2">
-                  {getSideCompetitionLabels(competition.sideCompetitions).map((label, index) => (
-                    <Badge 
-                      key={index} 
-                      variant="outline" 
-                      className="bg-muted/20 text-foreground border-muted"
-                      data-testid={`badge-side-competition-${index}`}
-                    >
-                      {label}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-            
             {/* Action Buttons */}
             <div className="mt-6 flex flex-wrap justify-center gap-4">
               
