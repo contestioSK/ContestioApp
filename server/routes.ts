@@ -838,7 +838,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const csvHeader = 'ID,Name,Captain,Members,Status,Registration Date\n';
       const csvData = teams.map(team => {
         const members = team.members?.map(m => `${m.name} (${m.email})`).join('; ') || '';
-        return `${team.id},"${team.name}","${team.captainName}","${members}",${team.status},${team.createdAt}`;
+        const captainName = team.members?.find(m => m.role === 'captain')?.name || 'N/A';
+        return `${team.id},"${team.name}","${captainName}","${members}",${team.status},${team.updatedAt || team.createdAt || 'N/A'}`;
       }).join('\n');
       
       res.setHeader('Content-Type', 'text/csv');
@@ -873,7 +874,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Convert to CSV format
       const csvHeader = 'ID,Team,Fish Species,Weight,Length,Points,Catch Time,Verified\n';
       const csvData = catches.map(c => {
-        return `${c.id},"${c.team?.name || 'Unknown'}","${c.fishSpecies}",${c.weight},${c.length || ''},${c.points},${c.createdAt},${c.isVerified ? 'Yes' : 'No'}`;
+        return `${c.id},"${c.team?.name || 'Unknown'}","${c.fishType}",${c.weight},,${c.weight},${c.submittedAt || 'N/A'},${c.isVerified ? 'Yes' : 'No'}`;
       }).join('\n');
       
       res.setHeader('Content-Type', 'text/csv');
@@ -905,13 +906,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const teams = await storage.getTeamsByCompetition(req.params.id);
       
-      // Sort by total points descending
-      const sortedTeams = teams.sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0));
+      // Sort by total weight descending
+      const sortedTeams = teams.sort((a, b) => (parseFloat(b.totalWeight || '0') || 0) - (parseFloat(a.totalWeight || '0') || 0));
       
       // Convert to CSV format
       const csvHeader = 'Position,Team Name,Captain,Total Points,Total Weight,Fish Count\n';
       const csvData = sortedTeams.map((team, index) => {
-        return `${index + 1},"${team.name}","${team.captainName}",${team.totalPoints || 0},${team.totalWeight || 0},${team.fishCount || 0}`;
+        const captainName = team.members?.find(m => m.role === 'captain')?.name || 'N/A';
+        return `${index + 1},"${team.name}","${captainName}",${team.totalWeight || 0},${team.totalWeight || 0},${team.fishCount || 0}`;
       }).join('\n');
       
       res.setHeader('Content-Type', 'text/csv');
