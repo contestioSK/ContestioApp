@@ -58,7 +58,7 @@ import {
 import type { Competition, Team, TeamMember, CompetitionRegistration, InsertSponsor, Sponsor, SponsorLevel, Catch, Referee, InsertReferee } from "@shared/schema";
 import { getSideCompetitionLabel } from "@/lib/utils";
 import { insertSponsorSchema, sponsorLevels } from "@shared/schema";
-import { getMaxReferees } from "@shared/plan-capabilities";
+import { getMaxReferees, getMaxTeams } from "@shared/plan-capabilities";
 import { useWebSocket } from "@/hooks/useWebSocket";
 
 // Type for team with members and catches
@@ -152,17 +152,30 @@ const editCompetitionSchema = z.object({
   mediaAccess: z.boolean().default(false),
   prioritySupport: z.boolean().default(false),
 }).refine((data) => {
-  // Enforce plan constraints
-  const plan = data.selectedPlan;
-  if (data.maxReferees && data.maxReferees > getMaxReferees(plan)) {
-    return false;
-  }
-  if ((data.mediaAccess || data.prioritySupport) && !['premium', 'enterprise'].includes(plan)) {
-    return false;
-  }
-  return true;
+  // Validácia rozhodcov
+  const maxRefs = getMaxReferees(data.selectedPlan);
+  return !data.maxReferees || !maxRefs || data.maxReferees <= maxRefs;
 }, {
-  message: "Nastavenia nie sú kompatibilné s vybraným plánom",
+  message: (data) => {
+    const maxRefs = getMaxReferees(data.selectedPlan);
+    return `Balík ${data.selectedPlan} povoľuje maximálne ${maxRefs} rozhodcov`;
+  },
+  path: ["maxReferees"]
+}).refine((data) => {
+  // Validácia tímov
+  const maxTeams = getMaxTeams(data.selectedPlan);
+  return !data.maxTeams || !maxTeams || data.maxTeams <= maxTeams;
+}, {
+  message: (data) => {
+    const maxTeams = getMaxTeams(data.selectedPlan);
+    return `Balík ${data.selectedPlan} povoľuje maximálne ${maxTeams} tímov`;
+  },
+  path: ["maxTeams"]
+}).refine((data) => {
+  // Validácia premium funkcií
+  return !(data.mediaAccess || data.prioritySupport) || ['premium', 'enterprise'].includes(data.selectedPlan);
+}, {
+  message: "Pokročilé funkcie sú dostupné len v Premium a Enterprise plánoch",
   path: ["selectedPlan"]
 });
 
