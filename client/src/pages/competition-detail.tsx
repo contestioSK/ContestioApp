@@ -10,6 +10,7 @@ import NavigationHeader from "@/components/navigation-header";
 import LiveLeaderboard from "@/components/live-leaderboard";
 import CatchTimeline from "@/components/catch-timeline";
 import CompetitionMap from "@/components/competition-map";
+import CompetitionStatsBar from "@/components/competition-stats-bar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -133,8 +134,9 @@ export default function CompetitionDetail() {
   // WebSocket for real-time updates
   useWebSocket((data) => {
     if (data.type === 'new_catch' && data.competitionId === id) {
-      // Invalidate and refetch relevant queries
-      // This would typically be handled by the WebSocket hook
+      // Invalidate and refetch relevant queries for real-time stats updates
+      queryClient.invalidateQueries({ queryKey: ["/api/competitions", id, "catches"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/competitions", id, "teams"] });
     }
   });
 
@@ -445,6 +447,18 @@ export default function CompetitionDetail() {
             </div>
           </div>
           
+        </div>
+        
+        {/* Competition Statistics Bar */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <CompetitionStatsBar 
+            catches={(catches || []).map(c => ({ ...c, team: c.team }))} 
+            isLoading={catchesLoading} 
+          />
+        </div>
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
           {/* Tabs Container */}
           <Tabs defaultValue="overview" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
@@ -590,7 +604,7 @@ export default function CompetitionDetail() {
               </Card>
               
               {/* Live Catch Timeline */}
-              <CatchTimeline catches={(catches || []).map(c => ({ ...c, team: c.team || { id: '', name: 'Neznámy tím', status: '', createdAt: null, updatedAt: null, competitionId: '', sector: null, sectorName: null, placeName: null, position: null, totalWeight: null, fishCount: null, photoUrl: null }, referee: c.referee || { id: '', userId: '', competitionId: '', assignedSector: '', isActive: true, createdAt: null } }))} isLoading={catchesLoading} competitionId={id!} />
+              <CatchTimeline catches={(catches || []).map(c => ({ ...c, team: c.team || { id: '', name: 'Neznámy tím', status: '', createdAt: null, updatedAt: null, competitionId: '', sector: null, sectorName: null, placeName: null, position: null, totalWeight: null, fishCount: null, photoUrl: null, country: null }, referee: c.referee || { id: '', userId: '', competitionId: '', assignedSector: '', isActive: true, createdAt: null } }))} isLoading={catchesLoading} competitionId={id!} />
               
             </div>
           </div>
