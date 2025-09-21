@@ -151,10 +151,15 @@ export default function CompetitionCard({ competition }: CompetitionCardProps) {
               }}
               data-testid={`img-competition-${competition.id}`}
             />
-            {/* DEBUG INFO - iba pre CUP CUP CUP */}
+            {/* DEBUG INFO - pre všetky súťaže */}
+            <div className="absolute top-0 left-0 bg-blue-500 text-white p-1 text-xs z-50 max-w-[250px] overflow-hidden">
+              NAME: "{competition.name}" | IMG: {competition.imageUrl ? "YES" : "NO"}
+            </div>
+            
+            {/* EXTRA DEBUG pre CUP CUP CUP */}
             {competition.name === "CUP CUP CUP" && (
-              <div className="absolute top-0 left-0 bg-red-500 text-white p-1 text-xs z-50 max-w-[200px] overflow-hidden">
-                IMG SRC: {competition.imageUrl || getCompetitionImage(competition.status)}
+              <div className="absolute top-5 left-0 bg-red-500 text-white p-1 text-xs z-50">
+                ✅ FOUND CUP CUP CUP!
               </div>
             )}
           </div>
