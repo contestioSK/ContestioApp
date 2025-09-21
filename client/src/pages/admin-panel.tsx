@@ -94,12 +94,24 @@ export default function AdminPanel() {
   const { toast } = useToast();
   const { user, isAuthenticated, isLoading } = useAuth();
   const [selectedCompetition, setSelectedCompetition] = useState<string>("");
+  const [activeTab, setActiveTab] = useState<string>("dashboard");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingCompetition, setEditingCompetition] = useState<Competition | null>(null);
   const [userSearchTerm, setUserSearchTerm] = useState("");
 
   const isAdmin = user?.role === 'admin';
+
+  // Set initial active tab based on user role and selected competition
+  useEffect(() => {
+    if (isAdmin) {
+      setActiveTab("dashboard");
+    } else if (selectedCompetition) {
+      setActiveTab("teams");
+    } else {
+      setActiveTab("dashboard");
+    }
+  }, [isAdmin, selectedCompetition]);
 
   const form = useForm<CompetitionForm>({
     resolver: zodResolver(competitionSchema),
@@ -440,7 +452,7 @@ export default function AdminPanel() {
               </p>
             </div>
           ) : (
-            <Tabs defaultValue={isAdmin ? "dashboard" : (selectedCompetition ? "teams" : "dashboard")} className="w-full">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               
               {/* Tab Navigation */}
               <div className="border-b border-border">
@@ -1352,7 +1364,10 @@ export default function AdminPanel() {
                                     <Button 
                                       size="sm" 
                                       variant="outline"
-                                      onClick={() => setSelectedCompetition(competition.id)}
+                                      onClick={() => {
+                                        setSelectedCompetition(competition.id);
+                                        setActiveTab("teams");
+                                      }}
                                       data-testid={`button-select-competition-${competition.id}`}
                                     >
                                       <Eye className="w-4 h-4 mr-1" />
