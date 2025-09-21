@@ -143,13 +143,6 @@ export default function CompetitionCard({ competition }: CompetitionCardProps) {
         <div className="absolute top-3 left-3">
           {getStatusBadge(competition.status)}
         </div>
-        {competition.status === 'live' && (
-          <div className="absolute top-3 right-3">
-            <span className="bg-black/50 text-white px-2 py-1 rounded text-sm font-mono">
-              Práve teraz naživo
-            </span>
-          </div>
-        )}
         {competition.status === 'registration' && (
           <div className="absolute top-3 right-3">
             <span className="bg-black/50 text-white px-2 py-1 rounded text-sm">
