@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -42,6 +42,7 @@ interface CatchSubmissionFormProps {
 function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetitionDetails, teams, onSuccess }: CatchSubmissionFormProps) {
   const { toast } = useToast();
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
+  const [recentTeams, setRecentTeams] = useState<string[]>([]);
   const [currentSchema, setCurrentSchema] = useState(() => {
     const minWeight = selectedCompetitionDetails?.minWeight ? parseFloat(selectedCompetitionDetails.minWeight) : 2;
     return createCatchSubmissionSchema(minWeight);
@@ -156,30 +157,77 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           
-          {/* Team Selection */}
+          {/* Team Selection with Quick Access */}
           <FormField
             control={form.control}
             name="teamId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Vybrať tím</FormLabel>
-                <FormControl>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger data-testid="select-team" className="h-12 text-base">
-                      <SelectValue placeholder="Vyberte tím" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {teams?.filter((team: Team) => team.status === 'approved').map((team: Team) => (
-                        <SelectItem key={team.id} value={team.id} className="h-12 text-base py-3">
-                          {team.name} - {formatSectorPlace(team) || `Sektor ${team.sector}`}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            render={({ field }) => {
+              const approvedTeams = teams?.filter((team: Team) => team.status === 'approved') || [];
+              const quickSelectTeams = recentTeams.length > 0 
+                ? approvedTeams.filter(team => recentTeams.includes(team.id)).slice(0, 3)
+                : approvedTeams.slice(0, 3);
+                
+              return (
+                <FormItem>
+                  <FormLabel>Vybrať tím</FormLabel>
+                  
+                  {/* Quick Select Buttons */}
+                  {quickSelectTeams.length > 0 && (
+                    <div className="space-y-2">
+                      <div className="text-xs text-muted-foreground font-medium">Rýchly výber:</div>
+                      <div className="grid grid-cols-1 gap-2">
+                        {quickSelectTeams.map((team) => (
+                          <Button
+                            key={team.id}
+                            type="button"
+                            variant={field.value === team.id ? "default" : "outline"}
+                            className={`h-12 text-left text-base justify-start ${field.value === team.id ? 'bg-primary text-primary-foreground' : ''}`}
+                            onClick={() => {
+                              field.onChange(team.id);
+                              // Update recent teams
+                              setRecentTeams(prev => {
+                                const updated = [team.id, ...prev.filter(id => id !== team.id)];
+                                return updated.slice(0, 5);
+                              });
+                            }}
+                            data-testid={`quick-select-team-${team.id}`}
+                          >
+                            <div className="truncate">
+                              <div className="font-medium">{team.name}</div>
+                              <div className="text-xs opacity-80">{formatSectorPlace(team) || `Sektor ${team.sector}`}</div>
+                            </div>
+                          </Button>
+                        ))}
+                      </div>
+                      <div className="text-xs text-muted-foreground text-center">alebo vyberte zo všetkých:</div>
+                    </div>
+                  )}
+                  
+                  <FormControl>
+                    <Select onValueChange={(value) => {
+                      field.onChange(value);
+                      // Update recent teams
+                      setRecentTeams(prev => {
+                        const updated = [value, ...prev.filter(id => id !== value)];
+                        return updated.slice(0, 5);
+                      });
+                    }} value={field.value}>
+                      <SelectTrigger data-testid="select-team" className="h-12 text-base">
+                        <SelectValue placeholder="Vyberte tím" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {approvedTeams.map((team: Team) => (
+                          <SelectItem key={team.id} value={team.id} className="h-12 text-base py-3">
+                            {team.name} - {formatSectorPlace(team) || `Sektor ${team.sector}`}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              );
+            }}
           />
           
           {/* Weight Input */}
@@ -201,6 +249,7 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
                       inputMode="decimal"
                       placeholder={placeholderWeight.toString()} 
                       className="font-mono pr-12 h-12 text-base"
+                      autoFocus
                       {...field}
                       onChange={(e) => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value) || 0)}
                       data-testid="input-weight"
@@ -257,26 +306,29 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
           <div>
             <Label className="block text-sm font-medium text-foreground mb-2">Fotka ryby</Label>
             <div 
-              className="border-2 border-dashed border-border rounded-lg p-6 text-center cursor-pointer hover:bg-muted/10 min-h-[72px] flex items-center justify-center"
+              className="border-2 border-dashed border-border rounded-lg p-6 text-center cursor-pointer hover:bg-muted/10 active:bg-muted/20 min-h-[72px] flex items-center justify-center transition-colors"
               onClick={() => document.getElementById('photo-input')?.click()}
             >
               <input
                 id="photo-input"
                 type="file"
                 accept="image/*"
+                capture="environment"
                 className="hidden"
                 onChange={handlePhotoSelect}
                 data-testid="input-photo"
               />
               {selectedPhoto ? (
                 <div className="space-y-2">
-                  <Check className="mx-auto h-6 w-6 text-secondary" />
-                  <div className="text-sm text-foreground">Fotka vybraná: {selectedPhoto.name}</div>
+                  <Check className="mx-auto h-8 w-8 text-green-600" />
+                  <div className="text-base font-medium text-foreground">Fotka pripravená</div>
+                  <div className="text-xs text-muted-foreground">{selectedPhoto.name}</div>
                 </div>
               ) : (
-                <div className="space-y-2">
-                  <Camera className="mx-auto h-6 w-6 text-muted-foreground" />
-                  <div className="text-sm text-muted-foreground">Kliknite pre vytvorenie fotky</div>
+                <div className="space-y-3">
+                  <Camera className="mx-auto h-8 w-8 text-muted-foreground" />
+                  <div className="text-base font-medium text-muted-foreground">Otvoriť fotoaparát</div>
+                  <div className="text-xs text-muted-foreground/80">Kliknite pre vytvorenie fotky ryby</div>
                 </div>
               )}
             </div>
