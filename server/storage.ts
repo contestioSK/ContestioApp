@@ -15,6 +15,7 @@ import {
   type InsertCompetitionRegistration,
   type Team,
   type InsertTeam,
+  type UpdateTeam,
   type TeamMember,
   type InsertTeamMember,
   type Referee,
@@ -74,6 +75,7 @@ export interface IStorage {
   getTeamsByCompetition(competitionId: string): Promise<(Team & { members: TeamMember[] })[]>;
   getTeam(id: string): Promise<(Team & { members: TeamMember[], catches: Catch[] }) | undefined>;
   createTeam(team: InsertTeam): Promise<Team>;
+  updateTeam(id: string, data: UpdateTeam): Promise<Team>;
   updateTeamStatus(id: string, status: string, sector?: string, sectorName?: string, placeName?: string): Promise<void>;
   updateTeamStats(teamId: string): Promise<void>;
   checkSectorPlaceAvailability(competitionId: string, sectorName: string, placeName: string, excludeTeamId?: string): Promise<boolean>;
@@ -443,6 +445,21 @@ export class DatabaseStorage implements IStorage {
       .update(teams)
       .set(updateData)
       .where(eq(teams.id, id));
+  }
+
+  async updateTeam(id: string, data: UpdateTeam): Promise<Team> {
+    const updateData = {
+      ...data,
+      updatedAt: new Date()
+    };
+
+    const [updatedTeam] = await db
+      .update(teams)
+      .set(updateData)
+      .where(eq(teams.id, id))
+      .returning();
+
+    return updatedTeam;
   }
 
   async updateTeamStats(teamId: string): Promise<void> {

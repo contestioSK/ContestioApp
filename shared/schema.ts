@@ -323,6 +323,33 @@ export const insertTeamSchema = createInsertSchema(teams).omit({
   message: "Ak je definovaný sektor, musí byť definované aj miesto"
 });
 
+export const updateTeamSchema = createInsertSchema(teams).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  totalWeight: true,
+  fishCount: true,
+  competitionId: true, // Cannot change competition
+}).extend({
+  name: z.string().optional(),
+  status: z.string().optional(),
+  sectorName: z.string().optional(),
+  placeName: z.string().optional(),
+  country: z.string().length(2, "Kód krajiny musí mať presne 2 znaky").optional(),
+}).refine((data) => {
+  // If sectorName is provided, placeName must also be provided
+  if (data.sectorName && !data.placeName) {
+    return false;
+  }
+  if (data.placeName && !data.sectorName) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Ak je definovaný sektor, musí byť definované aj miesto",
+  path: ["sectorName"]
+});
+
 export const insertTeamMemberSchema = createInsertSchema(teamMembers).omit({
   id: true,
   createdAt: true,
@@ -425,6 +452,7 @@ export type Competition = typeof competitions.$inferSelect;
 export type InsertCompetition = typeof competitions.$inferInsert;
 export type Team = typeof teams.$inferSelect;
 export type InsertTeam = z.infer<typeof insertTeamSchema>;
+export type UpdateTeam = z.infer<typeof updateTeamSchema>;
 export type TeamMember = typeof teamMembers.$inferSelect;
 export type InsertTeamMember = z.infer<typeof insertTeamMemberSchema>;
 export type Referee = typeof referees.$inferSelect;
