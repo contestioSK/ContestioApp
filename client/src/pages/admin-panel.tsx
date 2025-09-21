@@ -60,6 +60,7 @@ import { getSideCompetitionLabel } from "@/lib/utils";
 import { insertSponsorSchema, sponsorLevels } from "@shared/schema";
 import { getMaxReferees, getMaxTeams } from "@shared/plan-capabilities";
 import { useWebSocket } from "@/hooks/useWebSocket";
+import NavigationHeader from "@/components/navigation-header";
 
 // Type for team with members and catches
 type TeamWithDetails = Team & {
@@ -1358,6 +1359,7 @@ export default function AdminPanel() {
 
   return (
     <div className="min-h-screen bg-background">
+      <NavigationHeader />
       <div className="container mx-auto py-8 px-4">
         <Card className="w-full">
           {/* Header */}
