@@ -156,9 +156,8 @@ export default function LiveLeaderboard({ teams, isLoading, competitionId }: Liv
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <div className="max-h-[400px] overflow-y-auto">
-              <table className="w-full">
-                <thead className="bg-muted/20 sticky top-0">
+            <table className="w-full">
+              <thead className="bg-muted/20">
                   <tr>
                     <th className="text-left p-4 text-sm font-medium text-muted-foreground">Poradie</th>
                     <th className="text-left p-4 text-sm font-medium text-muted-foreground">Tím</th>
@@ -220,7 +219,6 @@ export default function LiveLeaderboard({ teams, isLoading, competitionId }: Liv
                 ))}
               </tbody>
             </table>
-          </div>
           </div>
         )}
         
