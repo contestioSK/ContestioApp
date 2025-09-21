@@ -146,73 +146,130 @@ export default function Home() {
               
               {/* Live Competitions Card */}
               <div 
-                className="group bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 rounded-2xl shadow-lg border border-red-200 dark:border-red-800 overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer"
+                className="group relative rounded-2xl shadow-2xl overflow-hidden hover:shadow-3xl transition-all duration-500 hover:scale-105 cursor-pointer h-80"
                 onClick={() => setLocation("/categories/live")}
                 data-testid="card-category-live"
               >
-                <div className="p-8 text-center">
-                  <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                    <Eye className="w-8 h-8 text-white" />
+                {/* Background Image */}
+                <div className="absolute inset-0">
+                  <img 
+                    src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+                    alt="Live fishing competition"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-red-900/90 via-red-800/60 to-red-600/40"></div>
+                </div>
+                
+                {/* Content */}
+                <div className="relative z-10 p-8 h-full flex flex-col justify-between text-white">
+                  <div className="flex items-center justify-between">
+                    <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                      <Eye className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold animate-pulse">
+                      NAŽIVO
+                    </div>
                   </div>
-                  <div className="text-3xl font-bold text-red-600 dark:text-red-400 mb-2">
-                    {(competitions?.filter((c: Competition) => c.status === 'live')?.length ?? 0)}
+                  
+                  <div className="text-center">
+                    <div className="text-4xl font-bold mb-2 drop-shadow-lg">
+                      {(competitions?.filter((c: Competition) => c.status === 'live')?.length ?? 0)}
+                    </div>
+                    <h3 className="text-2xl font-bold mb-3 drop-shadow-lg">Súťaže naživo</h3>
+                    <p className="text-red-100 mb-6 drop-shadow">Sledujte priebeh a výsledky v reálnom čase</p>
+                    <Button 
+                      className="w-full bg-white/90 hover:bg-white text-red-700 font-semibold backdrop-blur-sm border-0 group-hover:scale-105 transition-transform"
+                      data-testid="button-view-live"
+                    >
+                      Sledovať naživo
+                    </Button>
                   </div>
-                  <h3 className="text-xl font-bold text-foreground mb-3">Súťaže naživo</h3>
-                  <p className="text-muted-foreground mb-6">Sledujte priebeh a výsledky v reálnom čase</p>
-                  <Button 
-                    className="w-full bg-red-600 hover:bg-red-700 text-white"
-                    data-testid="button-view-live"
-                  >
-                    Sledovať naživo
-                  </Button>
                 </div>
               </div>
 
               {/* Registration Open Card */}
               <div 
-                className="group bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-2xl shadow-lg border border-green-200 dark:border-green-800 overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer"
+                className="group relative rounded-2xl shadow-2xl overflow-hidden hover:shadow-3xl transition-all duration-500 hover:scale-105 cursor-pointer h-80"
                 onClick={() => setLocation("/categories/registration-open")}
                 data-testid="card-category-registration"
               >
-                <div className="p-8 text-center">
-                  <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                    <UserPlus className="w-8 h-8 text-white" />
+                {/* Background Image */}
+                <div className="absolute inset-0">
+                  <img 
+                    src="https://images.unsplash.com/photo-1559827260-dc66d52bef19?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+                    alt="Fishing registration"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-green-900/90 via-green-800/60 to-green-600/40"></div>
+                </div>
+                
+                {/* Content */}
+                <div className="relative z-10 p-8 h-full flex flex-col justify-between text-white">
+                  <div className="flex items-center justify-between">
+                    <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                      <UserPlus className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                      OTVORENÉ
+                    </div>
                   </div>
-                  <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">
-                    {(competitions?.filter((c: Competition) => c.status === 'registration')?.length ?? 0)}
+                  
+                  <div className="text-center">
+                    <div className="text-4xl font-bold mb-2 drop-shadow-lg">
+                      {(competitions?.filter((c: Competition) => c.status === 'registration')?.length ?? 0)}
+                    </div>
+                    <h3 className="text-2xl font-bold mb-3 drop-shadow-lg">Môžete sa prihlásiť</h3>
+                    <p className="text-green-100 mb-6 drop-shadow">Zaregistrujte váš tím do nadchádzajúcich súťaží</p>
+                    <Button 
+                      className="w-full bg-white/90 hover:bg-white text-green-700 font-semibold backdrop-blur-sm border-0 group-hover:scale-105 transition-transform"
+                      data-testid="button-view-registration"
+                    >
+                      Prihlásiť sa
+                    </Button>
                   </div>
-                  <h3 className="text-xl font-bold text-foreground mb-3">Môžete sa prihlásiť</h3>
-                  <p className="text-muted-foreground mb-6">Zaregistrujte váš tím do nadchádzajúcich súťaží</p>
-                  <Button 
-                    className="w-full bg-green-600 hover:bg-green-700 text-white"
-                    data-testid="button-view-registration"
-                  >
-                    Prihlásiť sa
-                  </Button>
                 </div>
               </div>
 
               {/* Finished Competitions Card */}
               <div 
-                className="group bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-2xl shadow-lg border border-blue-200 dark:border-blue-800 overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer"
+                className="group relative rounded-2xl shadow-2xl overflow-hidden hover:shadow-3xl transition-all duration-500 hover:scale-105 cursor-pointer h-80"
                 onClick={() => setLocation("/categories/finished")}
                 data-testid="card-category-finished"
               >
-                <div className="p-8 text-center">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                    <Trophy className="w-8 h-8 text-white" />
+                {/* Background Image */}
+                <div className="absolute inset-0">
+                  <img 
+                    src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+                    alt="Fishing trophy and awards"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-blue-900/90 via-blue-800/60 to-blue-600/40"></div>
+                </div>
+                
+                {/* Content */}
+                <div className="relative z-10 p-8 h-full flex flex-col justify-between text-white">
+                  <div className="flex items-center justify-between">
+                    <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                      <Trophy className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                      ARCHÍV
+                    </div>
                   </div>
-                  <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">
-                    {(competitions?.filter((c: Competition) => c.status === 'finished')?.length ?? 0)}
+                  
+                  <div className="text-center">
+                    <div className="text-4xl font-bold mb-2 drop-shadow-lg">
+                      {(competitions?.filter((c: Competition) => c.status === 'finished')?.length ?? 0)}
+                    </div>
+                    <h3 className="text-2xl font-bold mb-3 drop-shadow-lg">Ukončené súťaže</h3>
+                    <p className="text-blue-100 mb-6 drop-shadow">Prezrite si výsledky a štatistiky</p>
+                    <Button 
+                      className="w-full bg-white/90 hover:bg-white text-blue-700 font-semibold backdrop-blur-sm border-0 group-hover:scale-105 transition-transform"
+                      data-testid="button-view-finished"
+                    >
+                      Zobraziť výsledky
+                    </Button>
                   </div>
-                  <h3 className="text-xl font-bold text-foreground mb-3">Ukončené súťaže</h3>
-                  <p className="text-muted-foreground mb-6">Prezrite si výsledky a štatistiky</p>
-                  <Button 
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                    data-testid="button-view-finished"
-                  >
-                    Zobraziť výsledky
-                  </Button>
                 </div>
               </div>
 
