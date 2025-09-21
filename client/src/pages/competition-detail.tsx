@@ -186,23 +186,6 @@ export default function CompetitionDetail() {
     );
   }
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'live':
-        return (
-          <Badge className="bg-secondary text-secondary-foreground">
-            <span className="w-2 h-2 bg-secondary-foreground rounded-full mr-2 animate-pulse"></span>
-            ŽIVO
-          </Badge>
-        );
-      case 'registration':
-        return <Badge className="bg-accent text-accent-foreground">REGISTRÁCIA OTVORENÁ</Badge>;
-      case 'finished':
-        return <Badge className="bg-muted text-muted-foreground">UKONČENÁ</Badge>;
-      default:
-        return <Badge>{status.toUpperCase()}</Badge>;
-    }
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -212,9 +195,6 @@ export default function CompetitionDetail() {
       <section className="py-16 bg-muted/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <div className="mb-4">
-              {getStatusBadge(competition.status)}
-            </div>
             
             {/* Competition Logo */}
             {competition.imageUrl && (
