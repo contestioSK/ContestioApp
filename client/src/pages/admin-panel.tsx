@@ -262,6 +262,7 @@ export default function AdminPanel() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingCompetition, setEditingCompetition] = useState<Competition | null>(null);
+  const [competitionLogo, setCompetitionLogo] = useState<File | null>(null);
   const [userSearchTerm, setUserSearchTerm] = useState("");
   const [competitionsSearchTerm, setCompetitionsSearchTerm] = useState("");
   const [refereeSearchTerm, setRefereeSearchTerm] = useState("");
@@ -299,6 +300,37 @@ export default function AdminPanel() {
   const [sponsorToDelete, setSponsorToDelete] = useState<string | null>(null);
 
   const isAdmin = user?.role === 'admin';
+
+  // Helper functions for competition logo upload
+  const handleLogoSelect = (file: File | null) => {
+    if (!file) return;
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Neplatný súbor",
+        description: "Môžete nahrať len obrázky (JPEG, PNG, GIF).",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Validate file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Súbor je príliš veľký",
+        description: "Maximálna veľkosť súboru je 5MB.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setCompetitionLogo(file);
+  };
+
+  const removeLogo = () => {
+    setCompetitionLogo(null);
+  };
 
   // Helper functions for status transitions
   const getValidStatusTransitions = (currentStatus: string) => {
@@ -842,9 +874,34 @@ export default function AdminPanel() {
 
   // Competition edit mutation
   const editCompetitionMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      const response = await apiRequest("PUT", `/api/competitions/${id}`, data);
-      return response.json();
+    mutationFn: async ({ id, data, file }: { id: string; data: any; file?: File | null }) => {
+      // If there's a file to upload, use FormData
+      if (file) {
+        const formData = new FormData();
+        formData.append('competitionImage', file);
+        
+        // Add all other form data
+        Object.keys(data).forEach(key => {
+          if (data[key] !== null && data[key] !== undefined) {
+            formData.append(key, data[key]);
+          }
+        });
+        
+        const response = await fetch(`/api/competitions/${id}`, {
+          method: 'PUT',
+          body: formData,
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to update competition');
+        }
+        
+        return response.json();
+      } else {
+        // Regular JSON request if no file
+        const response = await apiRequest("PUT", `/api/competitions/${id}`, data);
+        return response.json();
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/competitions"] });
@@ -2586,7 +2643,12 @@ export default function AdminPanel() {
                       })()}
 
                       {/* Edit Competition Dialog */}
-                      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+                      <Dialog open={isEditDialogOpen} onOpenChange={(open) => {
+                        setIsEditDialogOpen(open);
+                        if (!open) {
+                          setCompetitionLogo(null); // Clear logo when dialog closes
+                        }
+                      }}>
                         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                           <DialogHeader>
                             <DialogTitle>Upraviť súťaž</DialogTitle>
@@ -2626,7 +2688,11 @@ export default function AdminPanel() {
                                   };
                                   
                                   console.log('Edit competition data:', competitionData);
-                                  await editCompetitionMutation.mutateAsync({id: editingCompetition.id, data: competitionData});
+                                  await editCompetitionMutation.mutateAsync({
+                                    id: editingCompetition.id, 
+                                    data: competitionData,
+                                    file: competitionLogo
+                                  });
                                 } catch (error) {
                                   console.error("Error editing competition:", error);
                                   toast({
@@ -2748,19 +2814,72 @@ export default function AdminPanel() {
                                       </FormItem>
                                     )}
                                   />
-                                  <FormField
-                                    control={form.control}
-                                    name="imageUrl"
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormLabel>URL obrázka súťaže</FormLabel>
-                                        <FormControl>
-                                          <Input placeholder="https://example.com/image.jpg" {...field} data-testid="input-edit-competition-image" />
-                                        </FormControl>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
+                                  {/* Competition Logo Upload */}
+                                  <div>
+                                    <FormLabel>Logo súťaže</FormLabel>
+                                    <div className="mt-2">
+                                      {competitionLogo ? (
+                                        <div className="flex items-center justify-between p-4 border-2 border-dashed border-muted rounded-lg bg-muted/10">
+                                          <div className="flex items-center space-x-3">
+                                            <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center">
+                                              <Trophy className="w-8 h-8 text-primary" />
+                                            </div>
+                                            <div>
+                                              <p className="text-sm font-medium text-foreground">{competitionLogo.name}</p>
+                                              <p className="text-xs text-muted-foreground">
+                                                {Math.round(competitionLogo.size / 1024)} KB
+                                              </p>
+                                            </div>
+                                          </div>
+                                          <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={removeLogo}
+                                            data-testid="button-remove-edit-competition-logo"
+                                          >
+                                            <X className="w-4 h-4" />
+                                          </Button>
+                                        </div>
+                                      ) : (
+                                        <label
+                                          htmlFor="edit-competition-logo-input"
+                                          className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-muted rounded-lg cursor-pointer hover:border-primary/50 transition-colors bg-muted/10 hover:bg-muted/20"
+                                          data-testid="label-edit-competition-logo-upload"
+                                        >
+                                          <input
+                                            id="edit-competition-logo-input"
+                                            type="file"
+                                            accept="image/*"
+                                            className="hidden"
+                                            onChange={(e) => {
+                                              const file = e.target.files?.[0] || null;
+                                              handleLogoSelect(file);
+                                            }}
+                                            data-testid="input-edit-competition-logo"
+                                          />
+                                          <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center mb-3">
+                                            <Trophy className="w-8 h-8 text-primary" />
+                                          </div>
+                                          <p className="text-sm font-medium text-foreground mb-1">
+                                            Pridať logo súťaže
+                                          </p>
+                                          <p className="text-xs text-muted-foreground text-center">
+                                            Kliknite pre výber súboru
+                                            <br />
+                                            <span className="text-xs">JPG, PNG, GIF (max 5MB)</span>
+                                          </p>
+                                        </label>
+                                      )}
+                                      {editingCompetition?.imageUrl && !competitionLogo && (
+                                        <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                          <p className="text-xs text-muted-foreground">
+                                            Aktuálne logo: <span className="text-foreground">{editingCompetition.imageUrl}</span>
+                                          </p>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
                                 </div>
 
                                 <FormField

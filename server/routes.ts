@@ -666,7 +666,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put('/api/competitions/:id', isAuthenticated, async (req: any, res) => {
+  app.put('/api/competitions/:id', isAuthenticated, upload.single('competitionImage'), async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
@@ -691,10 +691,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ? [...req.body.sideCompetitions] 
         : (req.body.sideCompetitions ? [req.body.sideCompetitions] : []);
 
+      // Handle uploaded image
+      let imageUrl = req.body.imageUrl;
+      if (req.file) {
+        imageUrl = `/uploads/${req.file.filename}`;
+      }
+
       // Parse and validate the update data using the same schema as creation
       const { sideCompetitions: _, organizerId: __, selectedPlan, branding: ___, ...bodyData } = req.body;
       const updateData = insertCompetitionSchema.partial().parse({
         ...bodyData,
+        imageUrl,
         sideCompetitions: sideCompetitions.length > 0 ? sideCompetitions : null,
         planTier: selectedPlan, // Map selectedPlan to planTier for competitions table
       });
