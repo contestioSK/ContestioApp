@@ -154,7 +154,7 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
       </div>
       
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           
           {/* Team Selection */}
           <FormField
@@ -165,12 +165,12 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
                 <FormLabel>Vybrať tím</FormLabel>
                 <FormControl>
                   <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger data-testid="select-team">
+                    <SelectTrigger data-testid="select-team" className="h-12 text-base">
                       <SelectValue placeholder="Vyberte tím" />
                     </SelectTrigger>
                     <SelectContent>
                       {teams?.filter((team: Team) => team.status === 'approved').map((team: Team) => (
-                        <SelectItem key={team.id} value={team.id}>
+                        <SelectItem key={team.id} value={team.id} className="h-12 text-base py-3">
                           {team.name} - {formatSectorPlace(team) || `Sektor ${team.sector}`}
                         </SelectItem>
                       ))}
@@ -198,10 +198,11 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
                     <Input 
                       type="number" 
                       step="0.1"
+                      inputMode="decimal"
                       placeholder={placeholderWeight.toString()} 
-                      className="font-mono pr-12"
+                      className="font-mono pr-12 h-12 text-base"
                       {...field}
-                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                      onChange={(e) => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value) || 0)}
                       data-testid="input-weight"
                     />
                     <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-sm">
@@ -226,11 +227,11 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
               <FormItem>
                 <FormLabel>Typ ryby</FormLabel>
                 <FormControl>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-3">
                     <Button
                       type="button"
                       variant={field.value === "scaly" ? "default" : "outline"}
-                      className={field.value === "scaly" ? "bg-primary text-primary-foreground" : ""}
+                      className={`h-12 text-base font-medium ${field.value === "scaly" ? "bg-primary text-primary-foreground" : ""}`}
                       onClick={() => field.onChange("scaly")}
                       data-testid="button-scaly-carp"
                     >
@@ -239,7 +240,7 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
                     <Button
                       type="button"
                       variant={field.value === "mirror" ? "default" : "outline"}
-                      className={field.value === "mirror" ? "bg-primary text-primary-foreground" : ""}
+                      className={`h-12 text-base font-medium ${field.value === "mirror" ? "bg-primary text-primary-foreground" : ""}`}
                       onClick={() => field.onChange("mirror")}
                       data-testid="button-mirror-carp"
                     >
@@ -256,7 +257,7 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
           <div>
             <Label className="block text-sm font-medium text-foreground mb-2">Fotka ryby</Label>
             <div 
-              className="border-2 border-dashed border-border rounded-lg p-4 text-center cursor-pointer hover:bg-muted/10"
+              className="border-2 border-dashed border-border rounded-lg p-6 text-center cursor-pointer hover:bg-muted/10 min-h-[72px] flex items-center justify-center"
               onClick={() => document.getElementById('photo-input')?.click()}
             >
               <input
@@ -282,14 +283,16 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
           </div>
           
           {/* Submit Button */}
-          <Button 
-            type="submit" 
-            className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90"
-            disabled={submitCatchMutation.isPending}
-            data-testid="button-submit-catch"
-          >
-            {submitCatchMutation.isPending ? "Odosíla sa..." : "Odoslať záber"}
-          </Button>
+          <div className="sticky bottom-0 bg-background pt-4 -mx-6 px-6 pb-6">
+            <Button 
+              type="submit" 
+              className="w-full h-14 text-base font-semibold bg-secondary text-secondary-foreground hover:bg-secondary/90"
+              disabled={submitCatchMutation.isPending}
+              data-testid="button-submit-catch"
+            >
+              {submitCatchMutation.isPending ? "Odosíla sa..." : "Odoslať záber"}
+            </Button>
+          </div>
           
         </form>
       </Form>
@@ -363,7 +366,7 @@ export default function RefereeInterface() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-md mx-auto px-4 py-8">
+      <div className="max-w-md mx-auto px-4 py-4 pb-safe">
         <Card className="shadow-lg border border-border overflow-hidden">
           
           {/* Header */}
@@ -375,7 +378,7 @@ export default function RefereeInterface() {
                   Peter Rozhodca - {
                     refereeAssignment?.assignedSector && selectedCompetition ? (
                       <Link href={`/competition/${selectedCompetition}/sector/${refereeAssignment.assignedSector}`} data-testid="link-referee-sector">
-                        <span className="underline hover:text-primary-foreground cursor-pointer transition-colors">
+                        <span className="underline hover:text-primary-foreground cursor-pointer transition-colors inline-block py-1 px-2 -mx-2 min-h-[44px] flex items-center">
                           Sektor {refereeAssignment.assignedSector}
                         </span>
                       </Link>
@@ -388,7 +391,7 @@ export default function RefereeInterface() {
               <Button 
                 variant="ghost" 
                 size="sm"
-                className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10"
+                className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-12 w-12 p-0"
                 onClick={() => window.location.href = '/api/logout'}
                 data-testid="button-logout"
               >
@@ -398,7 +401,7 @@ export default function RefereeInterface() {
           </CardHeader>
           
           {/* Competition Selection */}
-          <CardContent className="p-6">
+          <CardContent className="p-4">
             {activeCompetitions.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-muted-foreground text-lg">Žiadne aktívne súťaže nie sú pridelené</p>
@@ -410,12 +413,12 @@ export default function RefereeInterface() {
                     Vybrať súťaž
                   </Label>
                   <Select value={selectedCompetition} onValueChange={setSelectedCompetition}>
-                    <SelectTrigger data-testid="select-competition">
+                    <SelectTrigger data-testid="select-competition" className="h-12 text-base">
                       <SelectValue placeholder="Vyberte súťaž" />
                     </SelectTrigger>
                     <SelectContent>
                       {activeCompetitions.map((competition: Competition) => (
-                        <SelectItem key={competition.id} value={competition.id}>
+                        <SelectItem key={competition.id} value={competition.id} className="h-12 text-base py-3">
                           {competition.name}
                         </SelectItem>
                       ))}
