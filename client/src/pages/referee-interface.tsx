@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -55,9 +55,10 @@ interface CatchSubmissionFormProps {
   selectedCompetitionDetails: Competition | undefined;
   teams: Team[] | undefined;
   onSuccess: () => void;
+  onSubmitFormRef: (submitHandle: { submit: () => void; isPending: boolean }) => void;
 }
 
-function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetitionDetails, teams, onSuccess }: CatchSubmissionFormProps) {
+function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetitionDetails, teams, onSuccess, onSubmitFormRef }: CatchSubmissionFormProps) {
   const { toast } = useToast();
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
   const [recentTeams, setRecentTeams] = useState<string[]>([]);
@@ -156,9 +157,21 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
     }
   }, [selectedCompetition, form]);
 
-  const onSubmit = (data: CatchSubmissionForm) => {
+  const onSubmit = useCallback((data: CatchSubmissionForm) => {
     submitCatchMutation.mutate({ ...data, photo: selectedPhoto || undefined });
-  };
+  }, [submitCatchMutation, selectedPhoto]);
+
+  const handleSubmitForm = useCallback(() => {
+    form.handleSubmit(onSubmit)();
+  }, [form, onSubmit]);
+
+  // Expose form submission to parent with loading state
+  useEffect(() => {
+    onSubmitFormRef({
+      submit: handleSubmitForm,
+      isPending: submitCatchMutation.isPending
+    });
+  }, [onSubmitFormRef, handleSubmitForm, submitCatchMutation.isPending]);
 
   const handlePhotoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -171,8 +184,8 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
   return (
     <>
       <div className="text-center mb-6">
-        <h3 className="text-lg font-semibold text-foreground mb-2">Odoslať nový záber</h3>
-        <p className="text-sm text-muted-foreground">Zadajte detaily záberu a nahrajte fotku</p>
+        <h3 className="text-2xl font-bold text-foreground mb-2">Odoslať nový záber</h3>
+        <p className="text-base text-foreground/80 font-medium">Zadajte detaily záberu a nahrajte fotku</p>
       </div>
       
       <Form {...form}>
@@ -190,12 +203,12 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
                 
               return (
                 <FormItem>
-                  <FormLabel>Vybrať tím</FormLabel>
+                  <FormLabel className="text-lg font-semibold text-foreground">Vybrať tím</FormLabel>
                   
                   {/* Quick Select Buttons */}
                   {quickSelectTeams.length > 0 && (
                     <div className="space-y-2">
-                      <div className="text-xs text-muted-foreground font-medium">Rýchly výber:</div>
+                      <div className="text-sm text-foreground font-semibold">Rýchly výber:</div>
                       <div className="grid grid-cols-1 gap-2">
                         {quickSelectTeams.map((team) => (
                           <Button
@@ -221,7 +234,7 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
                           </Button>
                         ))}
                       </div>
-                      <div className="text-xs text-muted-foreground text-center">alebo vyberte zo všetkých:</div>
+                      <div className="text-sm text-foreground/70 text-center font-medium">alebo vyberte zo všetkých:</div>
                     </div>
                   )}
                   
@@ -235,12 +248,12 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
                         return updated.slice(0, 5);
                       });
                     }} value={field.value}>
-                      <SelectTrigger data-testid="select-team" className="h-12 text-base">
+                      <SelectTrigger data-testid="select-team" className="h-14 text-lg font-medium">
                         <SelectValue placeholder="Vyberte tím" />
                       </SelectTrigger>
                       <SelectContent>
                         {approvedTeams.map((team: Team) => (
-                          <SelectItem key={team.id} value={team.id} className="h-12 text-base py-3">
+                          <SelectItem key={team.id} value={team.id} className="h-14 text-lg font-medium py-4">
                             {team.name} - {formatSectorPlace(team) || `Sektor ${team.sector}`}
                           </SelectItem>
                         ))}
@@ -263,7 +276,7 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
               
               return (
               <FormItem>
-                <FormLabel>Váha (kg) - min. {minWeightKg} kg</FormLabel>
+                <FormLabel className="text-lg font-semibold text-foreground">Váha (kg) - min. {minWeightKg} kg</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Input 
@@ -271,18 +284,18 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
                       step="0.1"
                       inputMode="decimal"
                       placeholder={placeholderWeight.toString()} 
-                      className="font-mono pr-12 h-12 text-base"
+                      className="font-mono pr-12 h-14 text-lg font-semibold"
                       autoFocus
                       {...field}
                       onChange={(e) => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value) || 0)}
                       data-testid="input-weight"
                     />
-                    <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-sm">
+                    <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-foreground/60 text-base font-medium">
                       kg
                     </span>
                   </div>
                 </FormControl>
-                <FormDescription className="text-xs">
+                <FormDescription className="text-sm font-medium text-foreground/70">
                   Úlovky pod {minWeightKg} kg nebudú započítané do výsledkov
                 </FormDescription>
                 <FormMessage />
@@ -297,13 +310,13 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
             name="fishType"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Typ ryby</FormLabel>
+                <FormLabel className="text-lg font-semibold text-foreground">Typ ryby</FormLabel>
                 <FormControl>
                   <div className="grid grid-cols-2 gap-3">
                     <Button
                       type="button"
                       variant={field.value === "scaly" ? "default" : "outline"}
-                      className={`h-12 text-base font-medium ${field.value === "scaly" ? "bg-primary text-primary-foreground" : ""}`}
+                      className={`h-14 text-lg font-bold ${field.value === "scaly" ? "bg-primary text-primary-foreground" : ""}`}
                       onClick={() => {
                         field.onChange("scaly");
                         triggerHaptic('selection');
@@ -315,7 +328,7 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
                     <Button
                       type="button"
                       variant={field.value === "mirror" ? "default" : "outline"}
-                      className={`h-12 text-base font-medium ${field.value === "mirror" ? "bg-primary text-primary-foreground" : ""}`}
+                      className={`h-14 text-lg font-bold ${field.value === "mirror" ? "bg-primary text-primary-foreground" : ""}`}
                       onClick={() => {
                         field.onChange("mirror");
                         triggerHaptic('selection');
@@ -333,9 +346,9 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
           
           {/* Photo Upload */}
           <div>
-            <Label className="block text-sm font-medium text-foreground mb-2">Fotka ryby</Label>
+            <Label className="block text-lg font-semibold text-foreground mb-3">Fotka ryby</Label>
             <div 
-              className="border-2 border-dashed border-border rounded-lg p-6 text-center cursor-pointer hover:bg-muted/10 active:bg-muted/20 min-h-[72px] flex items-center justify-center transition-colors"
+              className="border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer hover:bg-muted/10 active:bg-muted/20 min-h-[80px] flex items-center justify-center transition-colors"
               onClick={() => document.getElementById('photo-input')?.click()}
             >
               <input
@@ -350,37 +363,19 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
               {selectedPhoto ? (
                 <div className="space-y-2">
                   <Check className="mx-auto h-8 w-8 text-green-600" />
-                  <div className="text-base font-medium text-foreground">Fotka pripravená</div>
-                  <div className="text-xs text-muted-foreground">{selectedPhoto.name}</div>
+                  <div className="text-lg font-bold text-green-700">Fotka pripravená</div>
+                  <div className="text-sm text-foreground/70 font-medium">{selectedPhoto.name}</div>
                 </div>
               ) : (
                 <div className="space-y-3">
                   <Camera className="mx-auto h-8 w-8 text-muted-foreground" />
-                  <div className="text-base font-medium text-muted-foreground">Otvoriť fotoaparát</div>
-                  <div className="text-xs text-muted-foreground/80">Kliknite pre vytvorenie fotky ryby</div>
+                  <div className="text-lg font-bold text-foreground">Otvoriť fotoaparát</div>
+                  <div className="text-sm text-foreground/70 font-medium">Kliknite pre vytvorenie fotky ryby</div>
                 </div>
               )}
             </div>
           </div>
           
-          {/* Submit Button */}
-          <div className="sticky bottom-0 bg-background pt-4 -mx-6 px-6 pb-6">
-            <Button 
-              type="submit" 
-              className="w-full h-14 text-base font-semibold bg-secondary text-secondary-foreground hover:bg-secondary/90"
-              disabled={submitCatchMutation.isPending}
-              data-testid="button-submit-catch"
-            >
-              {submitCatchMutation.isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Odosíla sa...
-                </>
-              ) : (
-                "Odoslať záber"
-              )}
-            </Button>
-          </div>
           
         </form>
       </Form>
@@ -392,6 +387,7 @@ export default function RefereeInterface() {
   const { toast } = useToast();
   const { user, isAuthenticated, isLoading } = useAuth();
   const [selectedCompetition, setSelectedCompetition] = useState<string>("");
+  const [submitHandle, setSubmitHandle] = useState<{ submit: () => void; isPending: boolean } | null>(null);
 
   // DEMO MODE - Temporarily disabled for demonstration
   // Redirect if not authenticated or not referee
@@ -455,7 +451,9 @@ export default function RefereeInterface() {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-md mx-auto px-4 py-4 pb-safe">
-        <Card className="shadow-lg border border-border overflow-hidden">
+        {/* Add bottom padding when submit button is present to prevent overlap */}
+        <div className={`${selectedCompetition ? 'pb-24' : ''}`}>
+          <Card className="shadow-lg border border-border overflow-hidden">
           
           {/* Header */}
           <CardHeader className="bg-primary text-primary-foreground">
@@ -497,19 +495,19 @@ export default function RefereeInterface() {
             ) : (
               <>
                 <div className="mb-6">
-                  <Label className="text-sm font-medium text-foreground mb-2 block">
+                  <Label className="text-lg font-semibold text-foreground mb-3 block">
                     Vybrať súťaž
                   </Label>
                   <Select value={selectedCompetition} onValueChange={(value) => {
                     setSelectedCompetition(value);
                     triggerHaptic('selection');
                   }}>
-                    <SelectTrigger data-testid="select-competition" className="h-12 text-base">
+                    <SelectTrigger data-testid="select-competition" className="h-14 text-lg font-medium">
                       <SelectValue placeholder="Vyberte súťaž" />
                     </SelectTrigger>
                     <SelectContent>
                       {activeCompetitions.map((competition: Competition) => (
-                        <SelectItem key={competition.id} value={competition.id} className="h-12 text-base py-3">
+                        <SelectItem key={competition.id} value={competition.id} className="h-14 text-lg font-medium py-4">
                           {competition.name}
                         </SelectItem>
                       ))}
@@ -526,6 +524,7 @@ export default function RefereeInterface() {
                     onSuccess={() => {
                       queryClient.invalidateQueries({ queryKey: ["/api/competitions", selectedCompetition, "catches"] });
                     }}
+                    onSubmitFormRef={setSubmitHandle}
                   />
                 )}
               </>
@@ -558,6 +557,30 @@ export default function RefereeInterface() {
           )}
           
         </Card>
+        </div>
+        
+        {/* Sticky Submit Button - Outside Card for proper positioning */}
+        {selectedCompetition && submitHandle && (
+          <div className="fixed bottom-0 left-0 right-0 p-4 pb-safe bg-background/95 backdrop-blur-sm border-t border-border">
+            <div className="max-w-md mx-auto">
+              <Button 
+                onClick={submitHandle.submit}
+                className="w-full h-16 text-lg font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg"
+                disabled={submitHandle.isPending}
+                data-testid="button-submit-catch"
+              >
+                {submitHandle.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Odosíla sa...
+                  </>
+                ) : (
+                  "Odoslať záber"
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
