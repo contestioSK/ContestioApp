@@ -2451,10 +2451,8 @@ export default function AdminPanel() {
                                     size="sm" 
                                     variant="outline"
                                     onClick={() => {
-                                      console.log("Details button clicked for team:", team.id);
                                       setSelectedTeamId(team.id);
                                       setIsTeamDetailsDialogOpen(true);
-                                      console.log("State set - selectedTeamId:", team.id, "isTeamDetailsDialogOpen:", true);
                                     }}
                                     data-testid={`button-view-team-${team.id}`}
                                   >
@@ -3067,92 +3065,6 @@ export default function AdminPanel() {
 
 
 
-                                )}
-
-                                {selectedTeamDetails.totalWeight !== undefined && selectedTeamDetails.totalWeight > 0 && (
-                                  <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                      <Label className="text-sm font-medium text-muted-foreground">Celková váha</Label>
-                                      <p className="text-foreground font-medium" data-testid="team-total-weight">
-                                        {selectedTeamDetails.totalWeight} kg
-                                      </p>
-                                    </div>
-                                    <div>
-                                      <Label className="text-sm font-medium text-muted-foreground">Počet rýb</Label>
-                                      <p className="text-foreground font-medium" data-testid="team-fish-count">
-                                        {selectedTeamDetails.fishCount || 0}
-                                      </p>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-
-                              {/* Team Photo */}
-                              {selectedTeamDetails.photoUrl && (
-                                <div>
-                                  <Label className="text-sm font-medium text-muted-foreground">Fotka tímu</Label>
-                                  <div className="mt-2">
-                                    <img 
-                                      src={selectedTeamDetails.photoUrl} 
-                                      alt={`Fotka tímu ${selectedTeamDetails.name}`}
-                                      className="w-full max-w-md h-48 object-cover rounded-lg border"
-                                      data-testid="team-photo"
-                                    />
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* Team Members */}
-                              <div>
-                                <Label className="text-sm font-medium text-muted-foreground">
-                                  Členovia tímu ({selectedTeamDetails.members?.length || 0})
-                                </Label>
-                                <div className="mt-3 space-y-3">
-                                  {selectedTeamDetails.members?.length > 0 ? (
-                                    selectedTeamDetails.members.map((member: TeamMember, index: number) => (
-                                      <div 
-                                        key={member.id || index} 
-                                        className="flex items-center space-x-3 p-3 bg-muted/20 rounded-lg border"
-                                        data-testid={`member-${index}`}
-                                      >
-                                        {/* Member Photo */}
-                                        <div className="flex-shrink-0">
-                                          <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center">
-                                            <Users className="w-6 h-6 text-muted-foreground" />
-                                          </div>
-                                        </div>
-                                        
-                                        {/* Member Info */}
-                                        <div className="flex-1 min-w-0">
-                                          <div className="font-medium text-foreground" data-testid={`member-name-${index}`}>
-                                            {member.name}
-                                          </div>
-                                          {member.email && (
-                                            <div className="text-sm text-muted-foreground truncate" data-testid={`member-email-${index}`}>
-                                              {member.email}
-                                            </div>
-                                          )}
-                                          {member.phone && (
-                                            <div className="text-sm text-muted-foreground" data-testid={`member-phone-${index}`}>
-                                              {member.phone}
-                                            </div>
-                                          )}
-                                        </div>
-                                      </div>
-                                    ))
-                                  ) : (
-                                    <p className="text-muted-foreground">Žiadni členovia tímu.</p>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="text-center py-8 text-muted-foreground">
-                              Nepodarilo sa načítať detaily tímu.
-                            </div>
-                          )}
-                        </DialogContent>
-                      </Dialog>
                     </div>
                   </TabsContent>
                   
