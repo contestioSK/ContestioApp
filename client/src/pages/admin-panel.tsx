@@ -1490,8 +1490,8 @@ export default function AdminPanel() {
               {/* Admin-only Tabs */}
               {isAdmin && (
                 <>
-                  <TabsContent value="dashboard" className="p-6">
-                    <div className="space-y-6">
+                  <TabsContent value="dashboard" className="p-6 flex flex-col min-h-0">
+                    <div className="space-y-6 flex-1 min-h-0">
                       <div>
                         <h2 className="text-2xl font-bold text-foreground mb-2">Prehľad systému</h2>
                         <p className="text-muted-foreground">Komplexný prehľad platformy a kľúčových metrík</p>
@@ -1628,108 +1628,116 @@ export default function AdminPanel() {
                           </div>
 
                           {/* Recent Activity - 4 Columns */}
-                          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
+                          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6 min-h-0">
                             {/* New Users Column */}
-                            <Card className="p-4">
-                              <CardHeader className="pb-3">
+                            <Card className="p-4 flex flex-col min-h-0">
+                              <CardHeader className="pb-3 flex-shrink-0">
                                 <CardTitle className="text-base font-semibold flex items-center">
                                   <Users className="h-4 w-4 mr-2 text-blue-600" />
                                   Noví používatelia
                                 </CardTitle>
                               </CardHeader>
-                              <CardContent>
-                                <div className="h-80 overflow-y-auto space-y-3 pr-2">
-                                  {dashboardStats?.newUsers?.length ? (
-                                    dashboardStats.newUsers.map((user) => (
-                                      <div key={user.id} className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                                        <p className="text-xs font-medium text-foreground truncate">{user.description}</p>
-                                        <p className="text-xs text-muted-foreground">
-                                          {new Date(user.timestamp).toLocaleDateString('sk-SK')}
-                                        </p>
-                                      </div>
-                                    ))
-                                  ) : (
-                                    <p className="text-xs text-muted-foreground text-center py-4">Žiadni noví používatelia</p>
-                                  )}
+                              <CardContent className="flex-1 min-h-0 p-0">
+                                <div className="max-h-80 overflow-y-auto pr-2" data-testid="list-new-users">
+                                  <div className="space-y-3">
+                                    {dashboardStats?.newUsers?.length ? (
+                                      dashboardStats.newUsers.map((user) => (
+                                        <div key={user.id} className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                                          <p className="text-xs font-medium text-foreground truncate">{user.description}</p>
+                                          <p className="text-xs text-muted-foreground">
+                                            {new Date(user.timestamp).toLocaleDateString('sk-SK')}
+                                          </p>
+                                        </div>
+                                      ))
+                                    ) : (
+                                      <p className="text-xs text-muted-foreground text-center py-4">Žiadni noví používatelia</p>
+                                    )}
+                                  </div>
                                 </div>
                               </CardContent>
                             </Card>
 
                             {/* New Competitions Column */}
-                            <Card className="p-4">
-                              <CardHeader className="pb-3">
+                            <Card className="p-4 flex flex-col min-h-0">
+                              <CardHeader className="pb-3 flex-shrink-0">
                                 <CardTitle className="text-base font-semibold flex items-center">
                                   <Trophy className="h-4 w-4 mr-2 text-green-600" />
                                   Nové súťaže
                                 </CardTitle>
                               </CardHeader>
-                              <CardContent>
-                                <div className="h-80 overflow-y-auto space-y-3 pr-2">
-                                  {dashboardStats?.newCompetitions?.length ? (
-                                    dashboardStats.newCompetitions.map((competition) => (
-                                      <div key={competition.id} className="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                                        <p className="text-xs font-medium text-foreground truncate">{competition.description}</p>
-                                        <p className="text-xs text-muted-foreground">
-                                          {new Date(competition.timestamp).toLocaleDateString('sk-SK')}
-                                        </p>
-                                      </div>
-                                    ))
-                                  ) : (
-                                    <p className="text-xs text-muted-foreground text-center py-4">Žiadne nové súťaže</p>
-                                  )}
+                              <CardContent className="flex-1 min-h-0 p-0">
+                                <div className="max-h-80 overflow-y-auto pr-2" data-testid="list-new-competitions">
+                                  <div className="space-y-3">
+                                    {dashboardStats?.newCompetitions?.length ? (
+                                      dashboardStats.newCompetitions.map((competition) => (
+                                        <div key={competition.id} className="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                                          <p className="text-xs font-medium text-foreground truncate">{competition.description}</p>
+                                          <p className="text-xs text-muted-foreground">
+                                            {new Date(competition.timestamp).toLocaleDateString('sk-SK')}
+                                          </p>
+                                        </div>
+                                      ))
+                                    ) : (
+                                      <p className="text-xs text-muted-foreground text-center py-4">Žiadne nové súťaže</p>
+                                    )}
+                                  </div>
                                 </div>
                               </CardContent>
                             </Card>
 
                             {/* New Catches Column */}
-                            <Card className="p-4">
-                              <CardHeader className="pb-3">
+                            <Card className="p-4 flex flex-col min-h-0">
+                              <CardHeader className="pb-3 flex-shrink-0">
                                 <CardTitle className="text-base font-semibold flex items-center">
                                   <Award className="h-4 w-4 mr-2 text-orange-600" />
                                   Nové úlovky
                                 </CardTitle>
                               </CardHeader>
-                              <CardContent>
-                                <div className="h-80 overflow-y-auto space-y-3 pr-2">
-                                  {dashboardStats?.newCatches?.length ? (
-                                    dashboardStats.newCatches.map((catch_) => (
-                                      <div key={catch_.id} className="p-2 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
-                                        <p className="text-xs font-medium text-foreground truncate">{catch_.description}</p>
-                                        <p className="text-xs text-muted-foreground">
-                                          {new Date(catch_.timestamp).toLocaleDateString('sk-SK')}
-                                        </p>
-                                      </div>
-                                    ))
-                                  ) : (
-                                    <p className="text-xs text-muted-foreground text-center py-4">Žiadne nové úlovky</p>
-                                  )}
+                              <CardContent className="flex-1 min-h-0 p-0">
+                                <div className="max-h-80 overflow-y-auto pr-2" data-testid="list-new-catches">
+                                  <div className="space-y-3">
+                                    {dashboardStats?.newCatches?.length ? (
+                                      dashboardStats.newCatches.map((catch_) => (
+                                        <div key={catch_.id} className="p-2 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                                          <p className="text-xs font-medium text-foreground truncate">{catch_.description}</p>
+                                          <p className="text-xs text-muted-foreground">
+                                            {new Date(catch_.timestamp).toLocaleDateString('sk-SK')}
+                                          </p>
+                                        </div>
+                                      ))
+                                    ) : (
+                                      <p className="text-xs text-muted-foreground text-center py-4">Žiadne nové úlovky</p>
+                                    )}
+                                  </div>
                                 </div>
                               </CardContent>
                             </Card>
 
                             {/* System Changes Column */}
-                            <Card className="p-4">
-                              <CardHeader className="pb-3">
+                            <Card className="p-4 flex flex-col min-h-0">
+                              <CardHeader className="pb-3 flex-shrink-0">
                                 <CardTitle className="text-base font-semibold flex items-center">
                                   <Settings className="h-4 w-4 mr-2 text-purple-600" />
                                   Zmeny v systéme
                                 </CardTitle>
                               </CardHeader>
-                              <CardContent>
-                                <div className="h-80 overflow-y-auto space-y-3 pr-2">
-                                  {dashboardStats?.systemChanges?.length ? (
-                                    dashboardStats.systemChanges.map((change) => (
-                                      <div key={change.id} className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                                        <p className="text-xs font-medium text-foreground truncate">{change.description}</p>
-                                        <p className="text-xs text-muted-foreground">
-                                          {new Date(change.timestamp).toLocaleDateString('sk-SK')}
-                                          {change.user && ` • ${change.user}`}
-                                        </p>
-                                      </div>
-                                    ))
-                                  ) : (
-                                    <p className="text-xs text-muted-foreground text-center py-4">Žiadne zmeny</p>
-                                  )}
+                              <CardContent className="flex-1 min-h-0 p-0">
+                                <div className="max-h-80 overflow-y-auto pr-2" data-testid="list-system-changes">
+                                  <div className="space-y-3">
+                                    {dashboardStats?.systemChanges?.length ? (
+                                      dashboardStats.systemChanges.map((change) => (
+                                        <div key={change.id} className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                                          <p className="text-xs font-medium text-foreground truncate">{change.description}</p>
+                                          <p className="text-xs text-muted-foreground">
+                                            {new Date(change.timestamp).toLocaleDateString('sk-SK')}
+                                            {change.user && ` • ${change.user}`}
+                                          </p>
+                                        </div>
+                                      ))
+                                    ) : (
+                                      <p className="text-xs text-muted-foreground text-center py-4">Žiadne zmeny</p>
+                                    )}
+                                  </div>
                                 </div>
                               </CardContent>
                             </Card>
