@@ -44,7 +44,7 @@ import {
   Building2,
   ExternalLink
 } from "lucide-react";
-import type { Competition, Team, TeamMember } from "@shared/schema";
+import type { Competition, Team, TeamMember, CompetitionRegistration } from "@shared/schema";
 import { getSideCompetitionLabel } from "@/lib/utils";
 
 // Schema for competition creation
@@ -104,6 +104,9 @@ export default function AdminPanel() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingCompetition, setEditingCompetition] = useState<Competition | null>(null);
   const [userSearchTerm, setUserSearchTerm] = useState("");
+  const [registrationFilter, setRegistrationFilter] = useState<string>("all");
+  const [selectedRegistration, setSelectedRegistration] = useState<CompetitionRegistration | null>(null);
+  const [isRegistrationDetailOpen, setIsRegistrationDetailOpen] = useState(false);
 
   const isAdmin = user?.role === 'admin';
 
@@ -236,6 +239,12 @@ export default function AdminPanel() {
   // Users query for user management
   const { data: allUsers, isLoading: usersLoading, refetch: refetchUsers } = useQuery({
     queryKey: ["/api/admin/users"],
+    enabled: isAuthenticated && isAdmin,
+  });
+
+  // Registrations queries
+  const { data: registrations, isLoading: registrationsLoading, refetch: refetchRegistrations } = useQuery({
+    queryKey: ["/api/admin/registrations", registrationFilter === "all" ? undefined : registrationFilter],
     enabled: isAuthenticated && isAdmin,
   });
 
@@ -478,6 +487,52 @@ export default function AdminPanel() {
         variant: "destructive"
       });
     }
+  });
+
+  // Registration management mutations
+  const approveRegistrationMutation = useMutation({
+    mutationFn: async (registrationId: string) => {
+      const response = await apiRequest("PATCH", `/api/admin/registrations/${registrationId}/approve`);
+      return response.json();
+    },
+    onSuccess: () => {
+      refetchRegistrations();
+      queryClient.invalidateQueries({ queryKey: ["/api/competitions"] });
+      setIsRegistrationDetailOpen(false);
+      toast({
+        title: "Úspech",
+        description: "Registrácia bola schválená a súťaž vytvorená",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Chyba",
+        description: "Nepodarilo sa schváliť registráciu",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const declineRegistrationMutation = useMutation({
+    mutationFn: async (registrationId: string) => {
+      const response = await apiRequest("PATCH", `/api/admin/registrations/${registrationId}/decline`);
+      return response.json();
+    },
+    onSuccess: () => {
+      refetchRegistrations();
+      setIsRegistrationDetailOpen(false);
+      toast({
+        title: "Úspech",
+        description: "Registrácia bola zamietnutá",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Chyba",
+        description: "Nepodarilo sa zamietnuť registráciu",
+        variant: "destructive",
+      });
+    },
   });
 
   // Export functions
@@ -1902,8 +1957,219 @@ export default function AdminPanel() {
                   </TabsContent>
 
                   <TabsContent value="registrations" className="p-6">
-                    <div className="text-center py-12">
-                      <p className="text-muted-foreground">Registrácie súťaží budú implementované neskôr</p>
+                    <div className="space-y-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h2 className="text-2xl font-bold text-foreground mb-2">Správa registrácií</h2>
+                          <p className="text-muted-foreground">Spracovávajte žiadosti o registráciu súťaží</p>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Label htmlFor="registration-filter">Filter:</Label>
+                          <Select value={registrationFilter} onValueChange={setRegistrationFilter}>
+                            <SelectTrigger className="w-40">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">Všetky</SelectItem>
+                              <SelectItem value="submitted">Čakajúce</SelectItem>
+                              <SelectItem value="approved">Schválené</SelectItem>
+                              <SelectItem value="declined">Zamietnuté</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      {registrationsLoading ? (
+                        <div className="grid gap-4">
+                          {[...Array(3)].map((_, i) => (
+                            <div key={i} className="border border-border rounded-lg p-4">
+                              <Skeleton className="h-6 w-48 mb-2" />
+                              <Skeleton className="h-4 w-32" />
+                            </div>
+                          ))}
+                        </div>
+                      ) : registrations && registrations.length > 0 ? (
+                        <div className="grid gap-4">
+                          {registrations.map((registration: CompetitionRegistration) => (
+                            <div key={registration.id} className="border border-border rounded-lg p-4 hover:bg-accent/50 transition-colors">
+                              <div className="flex items-center justify-between">
+                                <div className="flex-1">
+                                  <div className="flex items-center space-x-3">
+                                    <h4 className="text-base font-medium text-foreground" data-testid={`text-registration-name-${registration.id}`}>
+                                      {registration.name}
+                                    </h4>
+                                    <Badge 
+                                      variant={
+                                        registration.status === 'approved' ? 'default' : 
+                                        registration.status === 'submitted' ? 'secondary' : 'destructive'
+                                      }
+                                      data-testid={`badge-registration-status-${registration.id}`}
+                                    >
+                                      {registration.status === 'approved' ? 'Schválená' : 
+                                       registration.status === 'submitted' ? 'Čaká na schválenie' : 'Zamietnutá'}
+                                    </Badge>
+                                    <Badge variant="outline" data-testid={`badge-registration-plan-${registration.id}`}>
+                                      {registration.selectedPlan?.toUpperCase()}
+                                    </Badge>
+                                  </div>
+                                  <div className="mt-2 flex items-center space-x-4 text-sm text-muted-foreground">
+                                    <span>Miesto: {registration.location}</span>
+                                    <span>Kontakt: {registration.contactEmail}</span>
+                                    <span>Organizácia: {registration.organizationName || 'N/A'}</span>
+                                    <span>Odoslané: {new Date(registration.createdAt || '').toLocaleDateString('sk-SK')}</span>
+                                  </div>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    onClick={() => {
+                                      setSelectedRegistration(registration);
+                                      setIsRegistrationDetailOpen(true);
+                                    }}
+                                    data-testid={`button-view-registration-${registration.id}`}
+                                  >
+                                    <Eye className="w-4 h-4 mr-1" />
+                                    Detail
+                                  </Button>
+                                  {registration.status === 'submitted' && (
+                                    <>
+                                      <Button 
+                                        size="sm"
+                                        onClick={() => approveRegistrationMutation.mutate(registration.id)}
+                                        disabled={approveRegistrationMutation.isPending}
+                                        data-testid={`button-approve-registration-${registration.id}`}
+                                      >
+                                        <CheckCircle className="w-4 h-4 mr-1" />
+                                        Schváliť
+                                      </Button>
+                                      <Button 
+                                        size="sm" 
+                                        variant="destructive"
+                                        onClick={() => declineRegistrationMutation.mutate(registration.id)}
+                                        disabled={declineRegistrationMutation.isPending}
+                                        data-testid={`button-decline-registration-${registration.id}`}
+                                      >
+                                        <XCircle className="w-4 h-4 mr-1" />
+                                        Zamietnuť
+                                      </Button>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-12">
+                          <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                          <h3 className="text-lg font-medium text-foreground mb-2">
+                            {registrationFilter === "all" ? "Žiadne registrácie" : `Žiadne ${registrationFilter === "submitted" ? "čakajúce" : registrationFilter === "approved" ? "schválené" : "zamietnuté"} registrácie`}
+                          </h3>
+                          <p className="text-muted-foreground">
+                            {registrationFilter === "all" ? "Zatiaľ neboli odoslané žiadne registrácie súťaží." : "Zmeňte filter na zobrazenie iných registrácií."}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Registration Detail Dialog */}
+                      <Dialog open={isRegistrationDetailOpen} onOpenChange={setIsRegistrationDetailOpen}>
+                        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                          <DialogHeader>
+                            <DialogTitle>Detail registrácie súťaže</DialogTitle>
+                          </DialogHeader>
+                          {selectedRegistration && (
+                            <div className="space-y-6">
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <Label className="text-sm font-medium text-muted-foreground">Názov súťaže</Label>
+                                  <p className="text-foreground">{selectedRegistration.name}</p>
+                                </div>
+                                <div>
+                                  <Label className="text-sm font-medium text-muted-foreground">Status</Label>
+                                  <div className="mt-1">
+                                    <Badge 
+                                      variant={
+                                        selectedRegistration.status === 'approved' ? 'default' : 
+                                        selectedRegistration.status === 'submitted' ? 'secondary' : 'destructive'
+                                      }
+                                    >
+                                      {selectedRegistration.status === 'approved' ? 'Schválená' : 
+                                       selectedRegistration.status === 'submitted' ? 'Čaká na schválenie' : 'Zamietnutá'}
+                                    </Badge>
+                                  </div>
+                                </div>
+                                <div>
+                                  <Label className="text-sm font-medium text-muted-foreground">Miesto konania</Label>
+                                  <p className="text-foreground">{selectedRegistration.location}</p>
+                                </div>
+                                <div>
+                                  <Label className="text-sm font-medium text-muted-foreground">Vybraný plán</Label>
+                                  <p className="text-foreground">{selectedRegistration.selectedPlan?.toUpperCase()}</p>
+                                </div>
+                                <div>
+                                  <Label className="text-sm font-medium text-muted-foreground">Začiatok súťaže</Label>
+                                  <p className="text-foreground">{new Date(selectedRegistration.startDate).toLocaleDateString('sk-SK')}</p>
+                                </div>
+                                <div>
+                                  <Label className="text-sm font-medium text-muted-foreground">Koniec súťaže</Label>
+                                  <p className="text-foreground">{new Date(selectedRegistration.endDate).toLocaleDateString('sk-SK')}</p>
+                                </div>
+                              </div>
+
+                              <div>
+                                <Label className="text-sm font-medium text-muted-foreground">Popis</Label>
+                                <p className="text-foreground">{selectedRegistration.description || 'Žiadny popis'}</p>
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <Label className="text-sm font-medium text-muted-foreground">Kontaktná osoba</Label>
+                                  <p className="text-foreground">{selectedRegistration.contactName}</p>
+                                </div>
+                                <div>
+                                  <Label className="text-sm font-medium text-muted-foreground">Email</Label>
+                                  <p className="text-foreground">{selectedRegistration.contactEmail}</p>
+                                </div>
+                                <div>
+                                  <Label className="text-sm font-medium text-muted-foreground">Telefón</Label>
+                                  <p className="text-foreground">{selectedRegistration.contactPhone || 'Neuvedené'}</p>
+                                </div>
+                                <div>
+                                  <Label className="text-sm font-medium text-muted-foreground">Organizácia</Label>
+                                  <p className="text-foreground">{selectedRegistration.organizationName || 'Neuvedené'}</p>
+                                </div>
+                              </div>
+
+                              {selectedRegistration.status === 'submitted' && (
+                                <div className="flex justify-end space-x-2 pt-4 border-t">
+                                  <Button 
+                                    variant="outline"
+                                    onClick={() => setIsRegistrationDetailOpen(false)}
+                                  >
+                                    Zatvoriť
+                                  </Button>
+                                  <Button 
+                                    variant="destructive"
+                                    onClick={() => declineRegistrationMutation.mutate(selectedRegistration.id)}
+                                    disabled={declineRegistrationMutation.isPending}
+                                  >
+                                    <XCircle className="w-4 h-4 mr-1" />
+                                    Zamietnuť
+                                  </Button>
+                                  <Button 
+                                    onClick={() => approveRegistrationMutation.mutate(selectedRegistration.id)}
+                                    disabled={approveRegistrationMutation.isPending}
+                                  >
+                                    <CheckCircle className="w-4 h-4 mr-1" />
+                                    Schváliť a vytvoriť súťaž
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </DialogContent>
+                      </Dialog>
                     </div>
                   </TabsContent>
                 </>
