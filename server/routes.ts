@@ -18,6 +18,8 @@ import {
   insertFavoriteTeamSchema,
   insertNotificationPreferencesSchema,
   updateNotificationPreferencesSchema,
+  insertAnnouncementSchema,
+  updateAnnouncementSchema,
 } from "@shared/schema";
 import { z } from "zod";
 import { canUseFeature } from "@shared/plan-capabilities";
@@ -356,6 +358,248 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("[PUSH] Error removing push subscription:", error);
       res.status(500).json({ message: "Chyba pri odstraňovaní push subscription" });
+    }
+  });
+
+  // Announcement routes
+  app.get('/api/announcements', async (req, res) => {
+    try {
+      const { competitionId, limit } = req.query;
+      
+      const announcements = await storage.getPublishedAnnouncements({
+        competitionId: competitionId as string,
+        limit: limit ? parseInt(limit as string) : undefined,
+      });
+      
+      res.json(announcements);
+    } catch (error) {
+      console.error("Error fetching announcements:", error);
+      res.status(500).json({ message: "Failed to fetch announcements" });
+    }
+  });
+
+  app.get('/api/announcements/:id', async (req: any, res) => {
+    try {
+      const announcement = await storage.getAnnouncement(req.params.id);
+      
+      if (!announcement) {
+        return res.status(404).json({ message: "Announcement not found" });
+      }
+      
+      // Check if announcement is live (published and publishAt <= now)
+      const isLive = announcement.published && (!announcement.publishAt || new Date(announcement.publishAt) <= new Date());
+      
+      // If not live, require authentication and proper authorization
+      if (!isLive) {
+        try {
+          await new Promise<void>((resolve, reject) => {
+            isAuthenticated(req, res, (err?: any) => {
+              if (err) reject(err);
+              else resolve();
+            });
+          });
+          
+          const userId = req.user.claims.sub;
+          const user = await storage.getUser(userId);
+          
+          if (!user) {
+            return res.status(404).json({ message: "Announcement not found" });
+          }
+          
+          // Allow access if user is admin, or organizer who owns the announcement, or organizer of the related competition
+          const canAccess = user.role === 'admin' || 
+                           announcement.authorId === userId ||
+                           (user.role === 'organizer' && announcement.competitionId && 
+                            (await storage.getCompetition(announcement.competitionId))?.organizerId === userId);
+          
+          if (!canAccess) {
+            return res.status(404).json({ message: "Announcement not found" });
+          }
+        } catch (authError) {
+          return res.status(404).json({ message: "Announcement not found" });
+        }
+      }
+      
+      res.json(announcement);
+    } catch (error) {
+      console.error("Error fetching announcement:", error);
+      res.status(500).json({ message: "Failed to fetch announcement" });
+    }
+  });
+
+  app.post('/api/announcements', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'organizer' && user?.role !== 'admin') {
+        return res.status(403).json({ message: "Only organizers and admins can create announcements" });
+      }
+
+      // Validate request body
+      const announcementData = insertAnnouncementSchema.parse({
+        ...req.body,
+        authorId: userId,
+      });
+      
+      // For organizers (non-admins), they can only create announcements for their own competitions
+      if (user?.role === 'organizer' && announcementData.competitionId) {
+        const competition = await storage.getCompetition(announcementData.competitionId);
+        if (!competition || competition.organizerId !== userId) {
+          return res.status(403).json({ message: "You can only create announcements for your own competitions" });
+        }
+      }
+      
+      const announcement = await storage.createAnnouncement(announcementData);
+      
+      // Broadcast announcement creation in real-time
+      broadcast({ 
+        type: 'announcement_created', 
+        announcementId: announcement.id,
+        competitionId: announcement.competitionId || null,
+        payload: announcement 
+      });
+      
+      // Check if announcement is now live (published and publishAt <= now or null)
+      const isNowLive = announcement.published && (!announcement.publishAt || new Date(announcement.publishAt) <= new Date());
+      
+      // Send notifications if announcement is live (for newly created announcements, always send if live)
+      if (isNowLive) {
+        try {
+          await notificationService.notifyOfficialAnnouncement(
+            announcement.title,
+            announcement.content,
+            announcement.competitionId || undefined
+          );
+          // Mark as notified after successful notification
+          await storage.markAnnouncementNotified(announcement.id);
+        } catch (notificationError) {
+          console.error("Error sending announcement notifications:", notificationError);
+          // Don't fail the request if notifications fail
+        }
+      }
+      
+      res.status(201).json(announcement);
+    } catch (error) {
+      console.error("Error creating announcement:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ message: "Failed to create announcement" });
+    }
+  });
+
+  app.put('/api/announcements/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'organizer' && user?.role !== 'admin') {
+        return res.status(403).json({ message: "Only organizers and admins can update announcements" });
+      }
+
+      // Get existing announcement
+      const existingAnnouncement = await storage.getAnnouncement(req.params.id);
+      if (!existingAnnouncement) {
+        return res.status(404).json({ message: "Announcement not found" });
+      }
+      
+      // Check ownership for non-admin users
+      if (user?.role === 'organizer' && existingAnnouncement.authorId !== userId) {
+        return res.status(403).json({ message: "You can only update your own announcements" });
+      }
+      
+      // For organizers, verify competition ownership if changing competition
+      if (user?.role === 'organizer' && req.body.competitionId && req.body.competitionId !== existingAnnouncement.competitionId) {
+        const competition = await storage.getCompetition(req.body.competitionId);
+        if (!competition || competition.organizerId !== userId) {
+          return res.status(403).json({ message: "You can only assign announcements to your own competitions" });
+        }
+      }
+
+      // Validate request body
+      const updateData = updateAnnouncementSchema.parse(req.body);
+      
+      const updatedAnnouncement = await storage.updateAnnouncement(req.params.id, updateData);
+      
+      // Broadcast announcement update
+      broadcast({ 
+        type: 'announcement_updated', 
+        announcementId: req.params.id,
+        competitionId: updatedAnnouncement.competitionId || null,
+        payload: updatedAnnouncement 
+      });
+      
+      // Check if announcement just became live (was not live before, but is live now)
+      const wasLive = existingAnnouncement.published && (!existingAnnouncement.publishAt || new Date(existingAnnouncement.publishAt) <= new Date());
+      const isNowLive = updatedAnnouncement.published && (!updatedAnnouncement.publishAt || new Date(updatedAnnouncement.publishAt) <= new Date());
+      
+      // Send notifications if announcement just became live or is being published for first time
+      if (isNowLive && (!wasLive || !existingAnnouncement.published)) {
+        try {
+          await notificationService.notifyOfficialAnnouncement(
+            updatedAnnouncement.title,
+            updatedAnnouncement.content,
+            updatedAnnouncement.competitionId || undefined
+          );
+          // Mark as notified after successful notification
+          await storage.markAnnouncementNotified(updatedAnnouncement.id);
+        } catch (notificationError) {
+          console.error("Error sending announcement notifications:", notificationError);
+          // Don't fail the request if notifications fail
+        }
+      }
+      
+      res.json(updatedAnnouncement);
+    } catch (error) {
+      console.error("Error updating announcement:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ message: "Failed to update announcement" });
+    }
+  });
+
+  app.delete('/api/announcements/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'organizer' && user?.role !== 'admin') {
+        return res.status(403).json({ message: "Only organizers and admins can delete announcements" });
+      }
+
+      // Get existing announcement
+      const existingAnnouncement = await storage.getAnnouncement(req.params.id);
+      if (!existingAnnouncement) {
+        return res.status(404).json({ message: "Announcement not found" });
+      }
+      
+      // Check ownership for non-admin users
+      if (user?.role === 'organizer' && existingAnnouncement.authorId !== userId) {
+        return res.status(403).json({ message: "You can only delete your own announcements" });
+      }
+      
+      await storage.deleteAnnouncement(req.params.id);
+      
+      // Broadcast announcement deletion
+      broadcast({ 
+        type: 'announcement_deleted', 
+        announcementId: req.params.id,
+        competitionId: existingAnnouncement.competitionId || null,
+        payload: { id: req.params.id } 
+      });
+      
+      res.json({ message: "Announcement deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting announcement:", error);
+      res.status(500).json({ message: "Failed to delete announcement" });
     }
   });
 

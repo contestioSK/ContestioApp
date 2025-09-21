@@ -12,6 +12,7 @@ import {
   favoriteTeams,
   notificationPreferences,
   pushSubscriptions,
+  announcements,
   type User,
   type UpsertUser,
   type Competition,
@@ -38,6 +39,9 @@ import {
   type UpdateNotificationPreferences,
   type PushSubscription,
   type InsertPushSubscription,
+  type Announcement,
+  type InsertAnnouncement,
+  type UpdateAnnouncement,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql, ne, count, gt, gte, inArray } from "drizzle-orm";
@@ -179,6 +183,16 @@ export interface IStorage {
   savePushSubscription(userId: string, subscription: any): Promise<void>;
   removePushSubscription(userId: string): Promise<void>;
   getUserPushSubscriptions(userIds: string[]): Promise<Array<{ userId: string; subscription: any }>>;
+  
+  // Announcement operations
+  getAnnouncements(options?: { competitionId?: string; published?: boolean; limit?: number }): Promise<Announcement[]>;
+  getAnnouncement(id: string): Promise<Announcement | undefined>;
+  createAnnouncement(announcement: InsertAnnouncement): Promise<Announcement>;
+  updateAnnouncement(id: string, announcement: UpdateAnnouncement): Promise<Announcement>;
+  deleteAnnouncement(id: string): Promise<void>;
+  getPublishedAnnouncements(options?: { competitionId?: string; limit?: number }): Promise<Announcement[]>;
+  getUnnotifiedLiveAnnouncements(): Promise<Announcement[]>;
+  markAnnouncementNotified(id: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1275,6 +1289,129 @@ export class DatabaseStorage implements IStorage {
         },
       },
     }));
+  }
+
+  // Announcement operations
+  async getAnnouncements(options?: { competitionId?: string; published?: boolean; limit?: number }): Promise<Announcement[]> {
+    const conditions = [];
+    
+    if (options?.competitionId) {
+      conditions.push(eq(announcements.competitionId, options.competitionId));
+    }
+    
+    if (options?.published !== undefined) {
+      conditions.push(eq(announcements.published, options.published));
+    }
+    
+    // For published announcements, only show those where publishAt <= now (or publishAt is null)
+    if (options?.published === true) {
+      conditions.push(sql`(${announcements.publishAt} IS NULL OR ${announcements.publishAt} <= now())`);
+    }
+    
+    // Build query with all conditions
+    const baseQuery = db
+      .select()
+      .from(announcements)
+      .orderBy(desc(announcements.publishAt), desc(announcements.createdAt));
+    
+    // Apply conditions and limit in one go
+    if (conditions.length > 0 && options?.limit) {
+      return await baseQuery.where(and(...conditions)).limit(options.limit);
+    } else if (conditions.length > 0) {
+      return await baseQuery.where(and(...conditions));
+    } else if (options?.limit) {
+      return await baseQuery.limit(options.limit);
+    } else {
+      return await baseQuery;
+    }
+  }
+
+  async getAnnouncement(id: string): Promise<Announcement | undefined> {
+    const result = await db
+      .select()
+      .from(announcements)
+      .where(eq(announcements.id, id))
+      .limit(1);
+    
+    return result[0];
+  }
+
+  async createAnnouncement(announcement: InsertAnnouncement): Promise<Announcement> {
+    const result = await db
+      .insert(announcements)
+      .values({
+        ...announcement,
+        // Keep published as specified by user - don't override based on publishAt
+        published: announcement.published ?? true,
+      })
+      .returning();
+    
+    console.log(`[Storage] Created announcement: ${result[0].title}`);
+    return result[0];
+  }
+
+  async updateAnnouncement(id: string, announcement: UpdateAnnouncement): Promise<Announcement> {
+    // Don't override published based on publishAt - let user control visibility
+    const result = await db
+      .update(announcements)
+      .set({
+        ...announcement,
+        updatedAt: new Date(),
+      })
+      .where(eq(announcements.id, id))
+      .returning();
+    
+    if (result.length === 0) {
+      throw new Error(`Announcement with ID ${id} not found`);
+    }
+    
+    console.log(`[Storage] Updated announcement: ${result[0].title}`);
+    return result[0];
+  }
+
+  async deleteAnnouncement(id: string): Promise<void> {
+    const result = await db
+      .delete(announcements)
+      .where(eq(announcements.id, id))
+      .returning({ title: announcements.title });
+    
+    if (result.length === 0) {
+      throw new Error(`Announcement with ID ${id} not found`);
+    }
+    
+    console.log(`[Storage] Deleted announcement: ${result[0].title}`);
+  }
+
+  // Find announcements that are live but haven't been notified yet
+  async getUnnotifiedLiveAnnouncements(): Promise<Announcement[]> {
+    return await db
+      .select()
+      .from(announcements)
+      .where(
+        and(
+          eq(announcements.published, true), // Published
+          sql`(${announcements.publishAt} IS NULL OR ${announcements.publishAt} <= now())`, // Live (publishAt is null or in the past)
+          sql`${announcements.notifiedAt} IS NULL` // Not yet notified
+        )
+      )
+      .orderBy(desc(announcements.publishAt), desc(announcements.createdAt));
+  }
+  
+  // Mark announcement as notified
+  async markAnnouncementNotified(id: string): Promise<void> {
+    await db
+      .update(announcements)
+      .set({ notifiedAt: new Date() })
+      .where(eq(announcements.id, id));
+    
+    console.log(`[Storage] Marked announcement ${id} as notified`);
+  }
+
+  async getPublishedAnnouncements(options?: { competitionId?: string; limit?: number }): Promise<Announcement[]> {
+    return this.getAnnouncements({
+      ...options,
+      published: true,
+    });
   }
 }
 

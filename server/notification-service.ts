@@ -2,22 +2,39 @@ import { storage } from './storage';
 import { type Competition, type Team, type Catch } from '@shared/schema';
 import webpush from 'web-push';
 
-// Configure web-push with VAPID keys from environment variables (required)
+// Configure web-push with VAPID keys from environment variables (REQUIRED)
 const vapidPublicKey = process.env.VAPID_PUBLIC_KEY;
 const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
 
 if (!vapidPublicKey || !vapidPrivateKey) {
   console.error('[SECURITY] VAPID keys are required! Set VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY environment variables.');
   console.error('[SECURITY] Generate keys with: npx web-push generate-vapid-keys');
-  console.error('[SECURITY] For development, create a .env file or set environment variables.');
+  console.error('[SETUP] For development, create a .env file or set environment variables:');
+  console.error('[SETUP] export VAPID_PUBLIC_KEY="your-public-key"');
+  console.error('[SETUP] export VAPID_PRIVATE_KEY="your-private-key"');
+  
+  // Exit only after logging helpful setup instructions
   process.exit(1);
 }
 
-webpush.setVapidDetails(
-  'mailto:admin@contestio.app',
-  vapidPublicKey,
-  vapidPrivateKey
-);
+try {
+  webpush.setVapidDetails(
+    'mailto:admin@contestio.app',
+    vapidPublicKey,
+    vapidPrivateKey
+  );
+  console.log('[NotificationService] VAPID keys configured successfully');
+} catch (error) {
+  console.error('[SECURITY] Invalid VAPID keys format! Please regenerate keys with: npx web-push generate-vapid-keys --json');
+  console.error('[SECURITY] Current public key length:', vapidPublicKey?.length || 0);
+  console.error('[SECURITY] Current private key length:', vapidPrivateKey?.length || 0);
+  console.error('[SECURITY] Error details:', error);
+  
+  console.error('[SECURITY] Please generate new VAPID keys with: npx web-push generate-vapid-keys --json');
+  console.error('[SECURITY] Then set both VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY in your environment variables');
+  
+  process.exit(1);
+}
 interface PushPayload {
   title: string;
   body: string;
@@ -35,7 +52,7 @@ interface NotificationBroadcaster {
 }
 
 export class NotificationService {
-  private broadcaster: NotificationBroadcaster;
+  private broadcaster?: NotificationBroadcaster;
   
   // Rate limiting and spam protection
   private readonly catchNotificationCache = new Map<string, number>(); // competitionId:teamId -> lastNotification timestamp
@@ -52,7 +69,7 @@ export class NotificationService {
   // Cache cleanup interval (24 hours)
   private readonly CACHE_CLEANUP_INTERVAL = 24 * 60 * 60 * 1000;
 
-  constructor(broadcaster: NotificationBroadcaster) {
+  constructor(broadcaster?: NotificationBroadcaster) {
     this.broadcaster = broadcaster;
     
     // Setup periodic cache cleanup
@@ -217,18 +234,20 @@ export class NotificationService {
       );
 
       if (usersToNotify.length > 0) {
-        // Emit targeted notification
-        this.broadcaster.broadcastToUsers(usersToNotify, {
-          type: 'targeted_catch_notification',
-          competitionId: competition.id,
-          competitionName: competition.name,
-          teamId: team.id,
-          teamName: team.name,
-          catchId: catch_.id,
-          species: catch_.fishType,
-          weight: catch_.weight,
-          timestamp: catch_.submittedAt
-        });
+        // Emit targeted notification via WebSocket (if broadcaster available)
+        if (this.broadcaster) {
+          this.broadcaster.broadcastToUsers(usersToNotify, {
+            type: 'targeted_catch_notification',
+            competitionId: competition.id,
+            competitionName: competition.name,
+            teamId: team.id,
+            teamName: team.name,
+            catchId: catch_.id,
+            species: catch_.fishType,
+            weight: catch_.weight,
+            timestamp: catch_.submittedAt
+          });
+        }
         
         console.log(`[NotificationService] Sent catch notification to ${usersToNotify.length} users`);
         
@@ -276,17 +295,19 @@ export class NotificationService {
       );
 
       if (usersToNotify.length > 0) {
-        // Emit targeted notification
-        this.broadcaster.broadcastToUsers(usersToNotify, {
-          type: 'targeted_leaderboard_change',
-          competitionId: competition.id,
-          competitionName: competition.name,
-          teamId: team.id,
-          teamName: team.name,
-          position: newPosition,
-          previousPosition,
-          timestamp: new Date()
-        });
+        // Emit targeted notification via WebSocket (if broadcaster available)
+        if (this.broadcaster) {
+          this.broadcaster.broadcastToUsers(usersToNotify, {
+            type: 'targeted_leaderboard_change',
+            competitionId: competition.id,
+            competitionName: competition.name,
+            teamId: team.id,
+            teamName: team.name,
+            position: newPosition,
+            previousPosition,
+            timestamp: new Date()
+          });
+        }
         
         console.log(`[NotificationService] Sent leaderboard change to ${usersToNotify.length} users`);
         
@@ -332,19 +353,21 @@ export class NotificationService {
       const usersToNotify = await storage.getUsersToNotifyForBiggestFish();
 
       if (usersToNotify.length > 0) {
-        // Emit targeted notification
-        this.broadcaster.broadcastToUsers(usersToNotify, {
-          type: 'targeted_biggest_fish',
-          competitionId: competition.id,
-          competitionName: competition.name,
-          teamId: team.id,
-          teamName: team.name,
-          catchId: catch_.id,
-          species: catch_.fishType,
-          weight: catch_.weight,
-          isNewRecord,
-          timestamp: catch_.submittedAt
-        });
+        // Emit targeted notification via WebSocket (if broadcaster available)
+        if (this.broadcaster) {
+          this.broadcaster.broadcastToUsers(usersToNotify, {
+            type: 'targeted_biggest_fish',
+            competitionId: competition.id,
+            competitionName: competition.name,
+            teamId: team.id,
+            teamName: team.name,
+            catchId: catch_.id,
+            species: catch_.fishType,
+            weight: catch_.weight,
+            isNewRecord,
+            timestamp: catch_.submittedAt
+          });
+        }
         
         console.log(`[NotificationService] Sent biggest fish notification to ${usersToNotify.length} users`);
         
@@ -390,16 +413,21 @@ export class NotificationService {
       const usersToNotify = await storage.getUsersToNotifyForOfficialAnnouncement();
 
       if (usersToNotify.length > 0) {
-        // Emit targeted notification
-        this.broadcaster.broadcastToUsers(usersToNotify, {
-          type: 'targeted_official_announcement',
-          title,
-          message,
-          competitionId,
-          timestamp: new Date()
-        });
+        // Emit targeted notification via WebSocket (if broadcaster available)
+        if (this.broadcaster) {
+          this.broadcaster.broadcastToUsers(usersToNotify, {
+            type: 'targeted_official_announcement',
+            title,
+            message,
+            competitionId,
+            timestamp: new Date()
+          });
+          console.log(`[NotificationService] Sent WebSocket announcement to ${usersToNotify.length} users`);
+        } else {
+          console.log(`[NotificationService] Skipping WebSocket broadcast (no broadcaster available)`);
+        }
         
-        console.log(`[NotificationService] Sent official announcement to ${usersToNotify.length} users`);
+        console.log(`[NotificationService] Processing push notifications for official announcement to ${usersToNotify.length} users`);
         
         // Send push notifications for official announcements
         await this.sendPushNotifications(usersToNotify, {
