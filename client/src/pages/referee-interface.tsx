@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import { Camera, LogOut, Check, Clock, Loader2 } from "lucide-react";
+import { Camera, LogOut, Check, Clock, Loader2, Wifi, WifiOff, Upload } from "lucide-react";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -56,9 +56,11 @@ interface CatchSubmissionFormProps {
   teams: Team[] | undefined;
   onSuccess: () => void;
   onSubmitFormRef: (submitHandle: { submit: () => void; isPending: boolean }) => void;
+  isOffline: boolean;
+  onSaveDraft: (data: any) => Promise<string>;
 }
 
-function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetitionDetails, teams, onSuccess, onSubmitFormRef }: CatchSubmissionFormProps) {
+function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetitionDetails, teams, onSuccess, onSubmitFormRef, isOffline, onSaveDraft }: CatchSubmissionFormProps) {
   const { toast } = useToast();
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
   const [recentTeams, setRecentTeams] = useState<string[]>([]);
@@ -157,9 +159,32 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
     }
   }, [selectedCompetition, form]);
 
-  const onSubmit = useCallback((data: CatchSubmissionForm) => {
-    submitCatchMutation.mutate({ ...data, photo: selectedPhoto || undefined });
-  }, [submitCatchMutation, selectedPhoto]);
+  const onSubmit = useCallback(async (data: CatchSubmissionForm) => {
+    if (isOffline) {
+      // Save as draft when offline
+      try {
+        const draftId = await onSaveDraft({ ...data, photo: selectedPhoto || undefined });
+        triggerHaptic('success');
+        toast({
+          title: "Uložené offline",
+          description: "Záber sa odošle automaticky po obnovení pripojenia",
+          variant: "default",
+        });
+        form.reset();
+        setSelectedPhoto(null);
+        onSuccess();
+      } catch (error) {
+        console.error('Failed to save draft:', error);
+        toast({
+          title: "Chyba",
+          description: "Nepodarilo sa uložiť záber offline",
+          variant: "destructive",
+        });
+      }
+    } else {
+      submitCatchMutation.mutate({ ...data, photo: selectedPhoto || undefined });
+    }
+  }, [submitCatchMutation, selectedPhoto, isOffline, onSaveDraft, toast, form, onSuccess]);
 
   const handleSubmitForm = useCallback(() => {
     form.handleSubmit(onSubmit)();
@@ -383,11 +408,242 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
   );
 }
 
+// IndexedDB for photo storage
+const openDB = () => {
+  return new Promise<IDBDatabase>((resolve, reject) => {
+    const request = indexedDB.open('CatchPhotos', 1);
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve(request.result);
+    request.onupgradeneeded = (event) => {
+      const db = (event.target as IDBOpenDBRequest).result;
+      if (!db.objectStoreNames.contains('photos')) {
+        db.createObjectStore('photos', { keyPath: 'id' });
+      }
+    };
+  });
+};
+
+const savePhotoToDB = async (id: string, photo: File) => {
+  const db = await openDB();
+  const tx = db.transaction(['photos'], 'readwrite');
+  return new Promise<void>((resolve, reject) => {
+    const request = tx.objectStore('photos').put({ id, photo });
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+  });
+};
+
+const getPhotoFromDB = async (id: string): Promise<File | null> => {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(['photos'], 'readonly');
+    return new Promise<File | null>((resolve, reject) => {
+      const request = tx.objectStore('photos').get(id);
+      request.onsuccess = () => {
+        const result = request.result;
+        resolve(result?.photo || null);
+      };
+      request.onerror = () => reject(request.error);
+    });
+  } catch (e) {
+    console.error('Failed to get photo from DB:', e);
+    return null;
+  }
+};
+
+const removePhotoFromDB = async (id: string) => {
+  const db = await openDB();
+  const tx = db.transaction(['photos'], 'readwrite');
+  return new Promise<void>((resolve, reject) => {
+    const request = tx.objectStore('photos').delete(id);
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+  });
+};
+
+// Offline capabilities
+const useOffline = () => {
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  const [pendingCatches, setPendingCatches] = useState<any[]>([]);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+    
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    // Load pending catches from localStorage and reconcile photos
+    const stored = localStorage.getItem('pendingCatches');
+    if (stored) {
+      try {
+        const parsedCatches = JSON.parse(stored);
+        setPendingCatches(parsedCatches);
+        
+        // Reconcile with IndexedDB for missing photos
+        parsedCatches.forEach(async (catch_: any) => {
+          if (catch_.hasPhoto && !catch_.photoMissing) {
+            const photo = await getPhotoFromDB(catch_.id);
+            if (!photo) {
+              // Photo is missing, update the state
+              setPendingCatches(prev => prev.map(c => 
+                c.id === catch_.id ? { ...c, photoMissing: true } : c
+              ));
+            }
+          }
+        });
+      } catch (e) {
+        console.error('Failed to parse pending catches:', e);
+      }
+    }
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  const saveDraft = useCallback(async (catchData: any) => {
+    const draftId = Date.now().toString();
+    const { photo, ...metadataOnly } = catchData;
+    
+    const draft = {
+      id: draftId,
+      timestamp: new Date().toISOString(),
+      hasPhoto: !!photo,
+      photoMissing: false,
+      ...metadataOnly
+    };
+    
+    // Save photo to IndexedDB if present
+    if (photo instanceof File) {
+      try {
+        await savePhotoToDB(draftId, photo);
+      } catch (e) {
+        console.error('Failed to save photo to IndexedDB:', e);
+      }
+    }
+    
+    // Use functional setState to avoid race conditions
+    setPendingCatches(prev => {
+      const updated = [...prev, draft];
+      localStorage.setItem('pendingCatches', JSON.stringify(updated));
+      return updated;
+    });
+    
+    return draftId;
+  }, []);
+
+  const removeDraft = useCallback(async (draftId: string) => {
+    // Remove photo from IndexedDB
+    try {
+      await removePhotoFromDB(draftId);
+    } catch (e) {
+      console.error('Failed to remove photo from IndexedDB:', e);
+    }
+    
+    // Use functional setState
+    setPendingCatches(prev => {
+      const updated = prev.filter(c => c.id !== draftId);
+      localStorage.setItem('pendingCatches', JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
+  const updateDraft = useCallback((draftId: string, patch: any) => {
+    setPendingCatches(prev => {
+      const updated = prev.map(c => c.id === draftId ? { ...c, ...patch } : c);
+      localStorage.setItem('pendingCatches', JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
+  return { isOffline, pendingCatches, saveDraft, removeDraft, updateDraft };
+};
+
 export default function RefereeInterface() {
   const { toast } = useToast();
   const { user, isAuthenticated, isLoading } = useAuth();
   const [selectedCompetition, setSelectedCompetition] = useState<string>("");
   const [submitHandle, setSubmitHandle] = useState<{ submit: () => void; isPending: boolean } | null>(null);
+  const { isOffline, pendingCatches, saveDraft, removeDraft, updateDraft } = useOffline();
+
+  // Sync pending catches when back online
+  const syncPendingCatches = useCallback(async () => {
+    if (isOffline || pendingCatches.length === 0) return;
+    
+    for (const catchData of pendingCatches) {
+      try {
+        const formData = new FormData();
+        formData.append('teamId', catchData.teamId);
+        formData.append('competitionId', catchData.competitionId);
+        formData.append('weight', catchData.weight.toString());
+        formData.append('fishType', catchData.fishType);
+        
+        // Get photo from IndexedDB if it was supposed to have one
+        if (catchData.hasPhoto) {
+          const photo = await getPhotoFromDB(catchData.id);
+          if (photo instanceof File) {
+            formData.append('photo', photo);
+          } else {
+            // Mark as photo missing for UI feedback
+            updateDraft(catchData.id, { photoMissing: true });
+            continue; // Skip this draft until photo is resolved
+          }
+        }
+        
+        const response = await fetch('/api/catches', {
+          method: 'POST',
+          body: formData,
+          credentials: 'include',
+        });
+        
+        if (response.ok) {
+          await removeDraft(catchData.id);
+          toast({
+            title: "Úspech",
+            description: `Záber z ${new Date(catchData.timestamp).toLocaleTimeString()} bol úspešne synchronizovaný`,
+          });
+        } else if (response.status === 401) {
+          // Handle unauthorized - redirect to login like online mutation
+          toast({
+            title: "Neautorizovaný",
+            description: "Ste odhlásený. Prihlasujem znovu...",
+            variant: "destructive",
+          });
+          setTimeout(() => {
+            window.location.href = "/api/login";
+          }, 500);
+          return; // Stop syncing
+        } else {
+          // Handle other errors with user feedback
+          const errorText = await response.text();
+          toast({
+            title: "Chyba synchronizácie",
+            description: `Záber z ${new Date(catchData.timestamp).toLocaleTimeString()}: ${errorText}`,
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error('Failed to sync catch:', error);
+        toast({
+          title: "Chyba synchronizácie", 
+          description: `Problém s pripojením. Skúste neskôr.`,
+          variant: "destructive",
+        });
+      }
+    }
+  }, [isOffline, pendingCatches, removeDraft, toast]);
+
+  // Auto-sync when connection is restored
+  useEffect(() => {
+    if (!isOffline && pendingCatches.length > 0) {
+      const timeout = setTimeout(() => {
+        syncPendingCatches();
+      }, 1000); // Wait 1s after reconnection
+      return () => clearTimeout(timeout);
+    }
+  }, [isOffline, pendingCatches.length, syncPendingCatches]);
 
   // DEMO MODE - Temporarily disabled for demonstration
   // Redirect if not authenticated or not referee
@@ -459,7 +715,23 @@ export default function RefereeInterface() {
           <CardHeader className="bg-primary text-primary-foreground">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="font-semibold">Rozhranie rozhodcu</CardTitle>
+                <div className="flex items-center gap-2">
+                  <CardTitle className="font-semibold">Rozhranie rozhodcu</CardTitle>
+                  {/* Offline/Online Status */}
+                  <div className="flex items-center gap-1">
+                    {isOffline ? (
+                      <WifiOff className="w-4 h-4 text-yellow-300" />
+                    ) : (
+                      <Wifi className="w-4 h-4 text-green-300" />
+                    )}
+                    {pendingCatches.length > 0 && (
+                      <div className="flex items-center gap-1 bg-yellow-500/20 px-2 py-1 rounded text-xs">
+                        <Upload className="w-3 h-3" />
+                        {pendingCatches.length}
+                      </div>
+                    )}
+                  </div>
+                </div>
                 <p className="text-sm text-primary-foreground/80">
                   Peter Rozhodca - {
                     refereeAssignment?.assignedSector && selectedCompetition ? (
@@ -525,12 +797,58 @@ export default function RefereeInterface() {
                       queryClient.invalidateQueries({ queryKey: ["/api/competitions", selectedCompetition, "catches"] });
                     }}
                     onSubmitFormRef={setSubmitHandle}
+                    isOffline={isOffline}
+                    onSaveDraft={saveDraft}
                   />
                 )}
               </>
             )}
           </CardContent>
           
+          {/* Pending Catches (Offline) */}
+          {pendingCatches.length > 0 && (
+            <div className="border-t border-border p-4 bg-yellow-50 dark:bg-yellow-900/10">
+              <h4 className="font-medium text-foreground mb-3 flex items-center gap-2">
+                <Upload className="w-4 h-4" />
+                Čakajúce na odoslanie ({pendingCatches.length})
+              </h4>
+              <div className="space-y-2 max-h-32 overflow-y-auto">
+                {pendingCatches.map((catch_) => (
+                  <div key={catch_.id} className="flex items-center justify-between text-sm" data-testid={`pending-catch-${catch_.id}`}>
+                    <span className="text-foreground">
+                      {catch_.weight}kg - {catch_.fishType === 'scaly' ? 'Šupináč' : 'Lysec'}
+                      {catch_.hasPhoto && catch_.photoMissing && (
+                        <span className="text-red-500 ml-2 text-xs">(foto chýba)</span>
+                      )}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      {catch_.hasPhoto && catch_.photoMissing && (
+                        <Badge className="bg-red-500 text-red-50">
+                          <Camera className="w-3 h-3 mr-1" />
+                          Foto?
+                        </Badge>
+                      )}
+                      <Badge className="bg-yellow-500 text-yellow-50">
+                        <Clock className="w-3 h-3 mr-1" />
+                        Offline
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {!isOffline && (
+                <Button 
+                  onClick={syncPendingCatches} 
+                  size="sm" 
+                  className="w-full mt-3"
+                  data-testid="button-sync-pending"
+                >
+                  Synchronizovať teraz
+                </Button>
+              )}
+            </div>
+          )}
+
           {/* Recent Submissions */}
           {selectedCompetition && recentCatches && (
             <div className="border-t border-border p-4">
