@@ -117,12 +117,12 @@ export function usePushNotifications() {
       const registration = await navigator.serviceWorker.ready;
       
       // Subscribe to push notifications
-      // VAPID public key from environment variable (required)
+      // VAPID public key from environment variable (required) 
       const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
       
       if (!vapidPublicKey) {
         toast({
-          title: "Push notifikácie nedostupné",
+          title: "Push notifikácie nedostupné", 
           description: "VAPID konfiguracie chýbajú. Kontaktujte administrátora.",
           variant: "destructive",
         });
