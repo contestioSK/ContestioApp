@@ -154,6 +154,7 @@ export default function AdminPanel() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingCompetition, setEditingCompetition] = useState<Competition | null>(null);
   const [userSearchTerm, setUserSearchTerm] = useState("");
+  const [competitionsSearchTerm, setCompetitionsSearchTerm] = useState("");
   const [registrationFilter, setRegistrationFilter] = useState<string>("all");
   const [selectedRegistration, setSelectedRegistration] = useState<CompetitionRegistration | null>(null);
   const [isRegistrationDetailOpen, setIsRegistrationDetailOpen] = useState(false);
@@ -2186,10 +2187,41 @@ export default function AdminPanel() {
                         </Dialog>
                       </div>
 
+                      {/* Search Competitions */}
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Vyhľadať súťaž podľa názvu alebo lokality..."
+                          value={competitionsSearchTerm}
+                          onChange={(e) => setCompetitionsSearchTerm(e.target.value)}
+                          className="pl-9"
+                          data-testid="input-search-competitions"
+                        />
+                      </div>
+
                       {/* Competitions List */}
-                      {competitions ? (
+                      {(() => {
+                        // Filter competitions based on search term
+                        const filteredCompetitions = competitions?.filter((competition: Competition) => {
+                          const searchLower = competitionsSearchTerm.toLowerCase();
+                          return competition.name.toLowerCase().includes(searchLower) ||
+                                 (competition.location && competition.location.toLowerCase().includes(searchLower)) ||
+                                 (competition.description && competition.description.toLowerCase().includes(searchLower));
+                        }) || [];
+                        
+                        return filteredCompetitions.length === 0 && competitionsSearchTerm ? (
+                          <div className="text-center py-12">
+                            <Trophy className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                            <p className="text-muted-foreground text-lg">
+                              Žiadne súťaže pre "{competitionsSearchTerm}" nenájdené
+                            </p>
+                            <p className="text-muted-foreground text-sm">
+                              Skúste upraviť vyhľadávací výraz
+                            </p>
+                          </div>
+                        ) : filteredCompetitions.length > 0 ? (
                         <div className="space-y-4">
-                          {competitions.map((competition: Competition) => (
+                          {filteredCompetitions.map((competition: Competition) => (
                             <Card key={competition.id} className="hover:shadow-md transition-shadow">
                               <CardContent className="p-6">
                                 <div className="flex items-center justify-between">
@@ -2331,12 +2363,13 @@ export default function AdminPanel() {
                             </Card>
                           ))}
                         </div>
-                      ) : (
-                        <div className="text-center py-12">
-                          <Trophy className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                          <p className="text-muted-foreground text-lg">Žiadne súťaže nenájdené</p>
-                        </div>
-                      )}
+                        ) : (
+                          <div className="text-center py-12">
+                            <Trophy className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                            <p className="text-muted-foreground text-lg">Žiadne súťaže nenájdené</p>
+                          </div>
+                        );
+                      })()}
 
                       {/* Edit Competition Dialog */}
                       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
