@@ -47,6 +47,7 @@ import {
 import type { Competition, Team, TeamMember, CompetitionRegistration, InsertSponsor, Sponsor, SponsorLevel, Catch } from "@shared/schema";
 import { getSideCompetitionLabel } from "@/lib/utils";
 import { insertSponsorSchema, sponsorLevels } from "@shared/schema";
+import { useWebSocket } from "@/hooks/useWebSocket";
 
 // Type for team with members and catches
 type TeamWithDetails = Team & {
@@ -153,6 +154,9 @@ export default function AdminPanel() {
   const [isEditTeamDialogOpen, setIsEditTeamDialogOpen] = useState(false);
 
   const isAdmin = user?.role === 'admin';
+
+  // Initialize WebSocket connection for real-time updates
+  const { isConnected } = useWebSocket();
 
   // Set initial active tab based on selected competition
   useEffect(() => {

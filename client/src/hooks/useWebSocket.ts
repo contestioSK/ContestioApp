@@ -36,36 +36,126 @@ export function useWebSocket(onMessage?: (data: WebSocketMessage) => void) {
         try {
           const data = JSON.parse(event.data) as WebSocketMessage;
           
-          // Handle common real-time updates
+          // Handle real-time updates with comprehensive admin panel support
           switch (data.type) {
-            case 'new_catch':
-              // Invalidate catches and leaderboard queries
-              queryClient.invalidateQueries({ 
-                queryKey: ['/api/competitions', data.competitionId, 'catches'] 
-              });
-              queryClient.invalidateQueries({ 
-                queryKey: ['/api/competitions', data.competitionId, 'teams'] 
-              });
-              queryClient.invalidateQueries({ 
-                queryKey: ['/api/competitions', data.competitionId, 'leaderboard'] 
-              });
-              break;
-              
-            case 'team_status_update':
-              // Invalidate team queries
-              queryClient.invalidateQueries({ 
-                queryKey: ['/api/competitions', data.competitionId, 'teams'] 
-              });
-              break;
-              
+            // Competition events
+            case 'competition_created':
+            case 'competition_updated':
+            case 'competition_deleted':
             case 'competition_status_update':
-              // Invalidate competition queries
+              console.log(`WebSocket: ${data.type} received for competition ${data.competitionId}`);
               queryClient.invalidateQueries({ 
                 queryKey: ['/api/competitions'] 
               });
+              if (data.competitionId) {
+                queryClient.invalidateQueries({ 
+                  queryKey: ['/api/competitions', data.competitionId] 
+                });
+              }
+              // Invalidate admin dashboard stats
               queryClient.invalidateQueries({ 
-                queryKey: ['/api/competitions', data.competitionId] 
+                queryKey: ['/api/admin/dashboard'] 
               });
+              break;
+              
+            // Team events
+            case 'team_created':
+            case 'team_updated':
+            case 'team_deleted':
+            case 'team_status_update':
+              console.log(`WebSocket: ${data.type} received for team ${data.teamId} in competition ${data.competitionId}`);
+              if (data.competitionId) {
+                queryClient.invalidateQueries({ 
+                  queryKey: ['/api/competitions', data.competitionId, 'teams'] 
+                });
+              }
+              if (data.teamId) {
+                queryClient.invalidateQueries({ 
+                  queryKey: ['/api/teams', data.teamId] 
+                });
+              }
+              // Invalidate admin dashboard stats
+              queryClient.invalidateQueries({ 
+                queryKey: ['/api/admin/dashboard'] 
+              });
+              break;
+              
+            // Referee events
+            case 'referee_created':
+            case 'referee_updated':
+            case 'referee_deleted':
+              console.log(`WebSocket: ${data.type} received for competition ${data.competitionId}`);
+              if (data.competitionId) {
+                queryClient.invalidateQueries({ 
+                  queryKey: ['/api/competitions', data.competitionId, 'referees'] 
+                });
+              }
+              break;
+              
+            // Sponsor events
+            case 'sponsor_created':
+            case 'sponsor_updated':
+            case 'sponsor_deleted':
+              console.log(`WebSocket: ${data.type} received for competition ${data.competitionId}`);
+              if (data.competitionId) {
+                queryClient.invalidateQueries({ 
+                  queryKey: ['/api/competitions', data.competitionId, 'sponsors'] 
+                });
+              }
+              break;
+              
+            // Catch events
+            case 'new_catch':
+            case 'catch_updated':
+            case 'catch_deleted':
+              console.log(`WebSocket: ${data.type} received for competition ${data.competitionId}`);
+              if (data.competitionId) {
+                // Invalidate catches and leaderboard queries
+                queryClient.invalidateQueries({ 
+                  queryKey: ['/api/competitions', data.competitionId, 'catches'] 
+                });
+                queryClient.invalidateQueries({ 
+                  queryKey: ['/api/competitions', data.competitionId, 'teams'] 
+                });
+                queryClient.invalidateQueries({ 
+                  queryKey: ['/api/competitions', data.competitionId, 'leaderboard'] 
+                });
+              }
+              // Invalidate admin dashboard stats
+              queryClient.invalidateQueries({ 
+                queryKey: ['/api/admin/dashboard'] 
+              });
+              break;
+              
+            // Registration events
+            case 'registration_created':
+            case 'registration_updated':
+            case 'registration_approved':
+            case 'registration_rejected':
+              console.log(`WebSocket: ${data.type} received`);
+              queryClient.invalidateQueries({ 
+                queryKey: ['/api/admin/registrations'] 
+              });
+              queryClient.invalidateQueries({ 
+                queryKey: ['/api/admin/dashboard'] 
+              });
+              break;
+              
+            // User events
+            case 'user_updated':
+            case 'user_role_changed':
+            case 'user_status_changed':
+              console.log(`WebSocket: ${data.type} received`);
+              queryClient.invalidateQueries({ 
+                queryKey: ['/api/admin/users'] 
+              });
+              queryClient.invalidateQueries({ 
+                queryKey: ['/api/admin/dashboard'] 
+              });
+              break;
+              
+            default:
+              console.log(`WebSocket: Unhandled event type: ${data.type}`);
               break;
           }
 
