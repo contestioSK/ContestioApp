@@ -1702,6 +1702,7 @@ export default function AdminPanel() {
                                           <p className="text-xs font-medium text-foreground truncate">{catch_.description}</p>
                                           <p className="text-xs text-muted-foreground">
                                             {new Date(catch_.timestamp).toLocaleDateString('sk-SK')}
+                                            {catch_.user && ` • ${catch_.user}`}
                                           </p>
                                         </div>
                                       ))

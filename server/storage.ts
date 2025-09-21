@@ -826,16 +826,17 @@ export class DatabaseStorage implements IStorage {
         timestamp: comp.timestamp as Date
       }));
       
-    // New Catches (recent catch submissions)
+    // New Catches (recent catch submissions with competition info)
     const newCatchesRaw = await db
       .select({
         id: catches.id,
         type: sql<string>`'catch_submission'`,
         description: sql<string>`CONCAT('Nový úlovok: ', CAST(${catches.weight} AS TEXT), 'kg')`,
         timestamp: catches.submittedAt,
-        user: sql<string>`NULL`,
+        user: competitions.name,
       })
       .from(catches)
+      .innerJoin(competitions, eq(catches.competitionId, competitions.id))
       .where(gte(catches.submittedAt, thirtyDaysAgo))
       .orderBy(desc(catches.submittedAt))
       .limit(30);
