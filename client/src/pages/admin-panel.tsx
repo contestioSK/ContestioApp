@@ -105,7 +105,21 @@ const editCompetitionSchema = z.object({
   startDate: z.string().min(1, "Dátum začiatku je povinný"),
   endDate: z.string().min(1, "Dátum konca je povinný"),
   status: z.enum(["registration", "live", "finished"]).default("registration"),
-  imageUrl: z.string().url("Neplatná URL adresa").optional().or(z.literal("")),
+  imageUrl: z.string()
+    .optional()
+    .or(z.literal(""))
+    .refine((val) => {
+      if (!val || val === "") return true;
+      // Accept local paths starting with /uploads/
+      if (val.startsWith("/uploads/")) return true;
+      // Accept valid URLs
+      try {
+        new URL(val);
+        return true;
+      } catch {
+        return false;
+      }
+    }, { message: "Neplatná URL adresa alebo cesta k súboru" }),
   firstPlacePrize: z.preprocess(v => v === "" || v == null ? undefined : v, z.coerce.number().positive("Cena musí byť kladná")).optional(),
   secondPlacePrize: z.preprocess(v => v === "" || v == null ? undefined : v, z.coerce.number().positive("Cena musí byť kladná")).optional(),
   thirdPlacePrize: z.preprocess(v => v === "" || v == null ? undefined : v, z.coerce.number().positive("Cena musí byť kladná")).optional(),
