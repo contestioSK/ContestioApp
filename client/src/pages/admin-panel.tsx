@@ -1621,7 +1621,9 @@ export default function AdminPanel() {
                                 </div>
                                 <div>
                                   <p className="font-medium text-foreground" data-testid={`text-user-name-${user.id}`}>
-                                    {user.name || user.email}
+                                    {user.firstName && user.lastName 
+                                      ? `${user.firstName} ${user.lastName}` 
+                                      : user.firstName || user.lastName || user.email}
                                   </p>
                                   <p className="text-sm text-muted-foreground">{user.email}</p>
                                   {user.createdAt && (
