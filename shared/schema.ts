@@ -223,6 +223,20 @@ export const notificationPreferences = pgTable("notification_preferences", {
   uniqueUserId: uniqueIndex("unique_notification_user_id").on(table.userId),
 }));
 
+// Push subscriptions table for Web Push API
+export const pushSubscriptions = pgTable("push_subscriptions", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  endpoint: text("endpoint").notNull(),
+  p256dhKey: text("p256dh_key").notNull(),
+  authKey: text("auth_key").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  // Unique constraint to prevent duplicate subscriptions per user
+  uniqueUserSubscription: uniqueIndex("unique_user_push_subscription").on(table.userId),
+}));
+
 // Relations
 export const usersRelations = relations(users, ({ one, many }) => ({
   organizedCompetitions: many(competitions),
@@ -578,3 +592,7 @@ export type InsertFavoriteTeam = z.infer<typeof insertFavoriteTeamSchema>;
 export type NotificationPreferences = typeof notificationPreferences.$inferSelect;
 export type InsertNotificationPreferences = z.infer<typeof insertNotificationPreferencesSchema>;
 export type UpdateNotificationPreferences = z.infer<typeof updateNotificationPreferencesSchema>;
+
+// Push subscription types
+export type PushSubscription = typeof pushSubscriptions.$inferSelect;
+export type InsertPushSubscription = typeof pushSubscriptions.$inferInsert;
