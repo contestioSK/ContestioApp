@@ -87,8 +87,22 @@ export default function LiveLeaderboard({ teams, isLoading, competitionId }: Liv
   const getRankBadge = (rank: number) => {
     if (rank === 1) {
       return (
-        <div className="w-6 h-6 bg-accent text-accent-foreground rounded-full flex items-center justify-center text-xs font-bold">
-          {rank}
+        <div className="w-7 h-7 bg-gradient-to-br from-amber-400 to-amber-600 text-amber-950 rounded-full flex items-center justify-center text-sm font-bold shadow-lg ring-2 ring-amber-300">
+          🥇
+        </div>
+      );
+    }
+    if (rank === 2) {
+      return (
+        <div className="w-7 h-7 bg-gradient-to-br from-slate-300 to-slate-500 text-slate-900 rounded-full flex items-center justify-center text-sm font-bold shadow-lg ring-2 ring-slate-200">
+          🥈
+        </div>
+      );
+    }
+    if (rank === 3) {
+      return (
+        <div className="w-7 h-7 bg-gradient-to-br from-orange-400 to-orange-600 text-orange-950 rounded-full flex items-center justify-center text-sm font-bold shadow-lg ring-2 ring-orange-300">
+          🥉
         </div>
       );
     }
@@ -169,10 +183,18 @@ export default function LiveLeaderboard({ teams, isLoading, competitionId }: Liv
                   </tr>
                 </thead>
                 <tbody>
-                  {sortedTeams.slice(0, 10).map((team, index) => (
+                  {sortedTeams.slice(0, 10).map((team, index) => {
+                    const getRankRowStyle = (rank: number) => {
+                      if (rank === 1) return "border-b border-border hover:bg-amber-50 dark:hover:bg-amber-900/20 bg-gradient-to-r from-amber-50/30 to-amber-100/30 dark:from-amber-900/10 dark:to-amber-800/10 transition-colors cursor-pointer group";
+                      if (rank === 2) return "border-b border-border hover:bg-slate-50 dark:hover:bg-slate-900/20 bg-gradient-to-r from-slate-50/30 to-slate-100/30 dark:from-slate-900/10 dark:to-slate-800/10 transition-colors cursor-pointer group";
+                      if (rank === 3) return "border-b border-border hover:bg-orange-50 dark:hover:bg-orange-900/20 bg-gradient-to-r from-orange-50/30 to-orange-100/30 dark:from-orange-900/10 dark:to-orange-800/10 transition-colors cursor-pointer group";
+                      return "border-b border-border hover:bg-muted/20 transition-colors cursor-pointer group";
+                    };
+                    
+                    return (
                   <tr 
                     key={team.id}
-                    className="border-b border-border hover:bg-muted/20 transition-colors cursor-pointer group"
+                    className={getRankRowStyle(index + 1)}
                     data-testid={`row-leaderboard-${team.id}`}
                   >
                     <td className="p-4">
@@ -216,7 +238,8 @@ export default function LiveLeaderboard({ teams, isLoading, competitionId }: Liv
                       </span>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
