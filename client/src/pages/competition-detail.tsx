@@ -447,14 +447,14 @@ export default function CompetitionDetail() {
             <TabsContent value="overview" className="mt-6">
               <div className="grid lg:grid-cols-3 gap-8">
             
-            {/* Left Column: Interactive Map & Leaderboard */}
+            {/* Left Column: Leaderboard & Interactive Map */}
             <div className="lg:col-span-2 space-y-6">
-              
-              {/* Interactive Map */}
-              <CompetitionMap competitionId={id!} teams={(teams || []).map(team => ({ ...team, members: team.members || [] }))} />
               
               {/* Live Leaderboard */}
               <LiveLeaderboard teams={(teams || []).map(team => ({ ...team, members: team.members || [] }))} isLoading={teamsLoading} competitionId={id!} />
+              
+              {/* Interactive Map */}
+              <CompetitionMap competitionId={id!} teams={(teams || []).map(team => ({ ...team, members: team.members || [] }))} />
               
             </div>
             
