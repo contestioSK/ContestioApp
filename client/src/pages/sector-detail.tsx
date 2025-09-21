@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Users, Trophy, Fish, MapPin, Target } from "lucide-react";
+import { ArrowLeft, Users, Trophy, Fish, MapPin, Target, Scale, TrendingUp } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Team, TeamMember, Catch } from "@shared/schema";
 import { formatSectorPlace, getSectorLetter } from "@/lib/utils";
@@ -86,6 +86,55 @@ export default function SectorDetail() {
             {sectorName}
           </h1>
           <p className="text-muted-foreground">Výsledky a štatistiky sektora</p>
+        </div>
+
+        {/* Sector Statistics Bar */}
+        <div className="mb-6 border-0 shadow-md bg-gradient-to-r from-background to-muted/20 rounded-lg p-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {/* Total Weight */}
+            <div className="text-center" data-testid="stat-sector-total-weight">
+              <div className="w-8 h-8 bg-gradient-to-br from-accent/20 to-accent/10 rounded-lg flex items-center justify-center mx-auto mb-2">
+                <Scale className="w-4 h-4 text-accent" />
+              </div>
+              <p className="text-xs text-muted-foreground mb-1">Celková váha</p>
+              <p className="text-lg font-bold text-foreground">
+                {sectorStats.teams.reduce((sum, team) => sum + parseFloat(team.totalWeight || '0'), 0).toFixed(2)} kg
+              </p>
+            </div>
+            
+            {/* Fish Count */}
+            <div className="text-center" data-testid="stat-sector-fish-count">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500/20 to-blue-500/10 rounded-lg flex items-center justify-center mx-auto mb-2">
+                <Fish className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              </div>
+              <p className="text-xs text-muted-foreground mb-1">Počet rýb</p>
+              <p className="text-lg font-bold text-foreground">
+                {sectorStats.teams.reduce((sum, team) => sum + (team.fishCount || 0), 0)}
+              </p>
+            </div>
+            
+            {/* Biggest Fish */}
+            <div className="text-center" data-testid="stat-sector-biggest-fish">
+              <div className="w-8 h-8 bg-gradient-to-br from-yellow-500/20 to-yellow-500/10 rounded-lg flex items-center justify-center mx-auto mb-2">
+                <Trophy className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
+              </div>
+              <p className="text-xs text-muted-foreground mb-1">Najväčšia ryba</p>
+              <p className="text-lg font-bold text-foreground">
+                {sectorStats.biggestFish ? Number(sectorStats.biggestFish.weight).toFixed(2) : '0.00'} kg
+              </p>
+            </div>
+            
+            {/* Average Weight */}
+            <div className="text-center" data-testid="stat-sector-average-weight">
+              <div className="w-8 h-8 bg-gradient-to-br from-green-500/20 to-green-500/10 rounded-lg flex items-center justify-center mx-auto mb-2">
+                <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />
+              </div>
+              <p className="text-xs text-muted-foreground mb-1">Priemerná váha</p>
+              <p className="text-lg font-bold text-foreground">
+                {sectorStats.averageWeight.toFixed(2)} kg
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Sector Leaderboard */}
@@ -197,134 +246,6 @@ export default function SectorDetail() {
                   </table>
                 </div>
               )}
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-
-          {/* Biggest Fish Overall */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Trophy className="w-5 h-5 mr-2" />
-                Najväčšia ryba
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {!sectorStats.biggestFish ? (
-                <p className="text-muted-foreground text-sm">Žiadne úlovky v tomto sektore</p>
-              ) : (
-                <div className="space-y-2" data-testid="card-biggest-fish">
-                  <div className="text-2xl font-bold text-primary">
-                    {Number(sectorStats.biggestFish.weight).toFixed(2)} kg
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    Typ: {sectorStats.biggestFish.fishType === 'scaly' ? 'Šupinkatý kapor' : 'Zrkadlový kapor'}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {sectorStats.biggestFish.submittedAt ? new Date(sectorStats.biggestFish.submittedAt).toLocaleString('sk-SK') : 'Neznámy čas'}
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Biggest Scaly Carp */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Fish className="w-5 h-5 mr-2" />
-                Najväčší šupinkatý kapor
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {!sectorStats.biggestScalyCarp ? (
-                <p className="text-muted-foreground text-sm">Žiadne šupinkaté kapry v tomto sektore</p>
-              ) : (
-                <div className="space-y-2" data-testid="card-biggest-scaly">
-                  <div className="text-2xl font-bold text-green-600">
-                    {Number(sectorStats.biggestScalyCarp.weight).toFixed(2)} kg
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {sectorStats.biggestScalyCarp.submittedAt ? new Date(sectorStats.biggestScalyCarp.submittedAt).toLocaleString('sk-SK') : 'Neznámy čas'}
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Biggest Mirror Carp */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Fish className="w-5 h-5 mr-2" />
-                Najväčší zrkadlový kapor
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {!sectorStats.biggestMirrorCarp ? (
-                <p className="text-muted-foreground text-sm">Žiadne zrkadlové kapry v tomto sektore</p>
-              ) : (
-                <div className="space-y-2" data-testid="card-biggest-mirror">
-                  <div className="text-2xl font-bold text-blue-600">
-                    {Number(sectorStats.biggestMirrorCarp.weight).toFixed(2)} kg
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {sectorStats.biggestMirrorCarp.submittedAt ? new Date(sectorStats.biggestMirrorCarp.submittedAt).toLocaleString('sk-SK') : 'Neznámy čas'}
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Average Weight */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Target className="w-5 h-5 mr-2" />
-                Priemerná hmotnosť
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2" data-testid="card-average-weight">
-                <div className="text-2xl font-bold text-accent">
-                  {sectorStats.averageWeight.toFixed(2)} kg
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  Za všetky úlovky v sektore
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Summary Stats */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <MapPin className="w-5 h-5 mr-2" />
-                Súhrn sektora
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3" data-testid="card-sector-summary">
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Počet tímov:</span>
-                  <span className="font-medium">{sectorStats.teams.length}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Celková hmotnosť:</span>
-                  <span className="font-medium">
-                    {sectorStats.teams.reduce((sum, team) => sum + parseFloat(team.totalWeight || '0'), 0).toFixed(2)} kg
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Celkový počet rýb:</span>
-                  <span className="font-medium">
-                    {sectorStats.teams.reduce((sum, team) => sum + (team.fishCount || 0), 0)}
-                  </span>
-                </div>
-              </div>
             </CardContent>
           </Card>
         </div>
