@@ -277,6 +277,12 @@ export default function AdminPanel() {
     }
   }, [editingCompetition, isEditDialogOpen, form]);
 
+  // Team details query - moved here before useEffect that uses it
+  const { data: selectedTeamDetails, isLoading: teamDetailsLoading } = useQuery<TeamWithDetails>({
+    queryKey: ["/api/teams", selectedTeamId],
+    enabled: !!selectedTeamId && isTeamDetailsDialogOpen,
+  });
+
   // Prefill team edit form when editing team
   useEffect(() => {
     if (selectedTeamDetails && isEditTeamDialogOpen) {
@@ -394,11 +400,6 @@ export default function AdminPanel() {
     enabled: isAuthenticated && isAdmin,
   });
 
-  // Team details query
-  const { data: selectedTeamDetails, isLoading: teamDetailsLoading } = useQuery<TeamWithDetails>({
-    queryKey: ["/api/teams", selectedTeamId],
-    enabled: !!selectedTeamId && isTeamDetailsDialogOpen,
-  });
 
   // Update editingCompetition when competitions data changes
   useEffect(() => {

@@ -126,18 +126,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Ensure sideCompetitions is properly typed
       const sideCompetitions: string[] = Array.isArray(req.body.sideCompetitions) 
-        ? req.body.sideCompetitions 
+        ? [...req.body.sideCompetitions] 
         : (req.body.sideCompetitions ? [req.body.sideCompetitions] : []);
 
-      const { sideCompetitions: _, ...bodyData } = req.body;
+      const { sideCompetitions: _, branding: __, ...bodyData } = req.body;
       const competitionData = insertCompetitionSchema.parse({
         ...bodyData,
-        sideCompetitions,
+        sideCompetitions: sideCompetitions.length > 0 ? sideCompetitions : null,
         organizerId: userId,
-        minWeight: req.body.minWeight ?? "2.00",
+        minWeight: req.body.minWeight ? req.body.minWeight.toString() : "2.00",
       });
       
       const competition = await storage.createCompetition(competitionData);
+      
+      // Broadcast competition creation
+      broadcast({ 
+        type: 'competition_created', 
+        competitionId: competition.id, 
+        payload: competition 
+      });
+      
       res.status(201).json(competition);
     } catch (error) {
       console.error("Error creating competition:", error);
@@ -167,22 +175,172 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Ensure sideCompetitions is properly typed
       const sideCompetitions: string[] = Array.isArray(req.body.sideCompetitions) 
-        ? req.body.sideCompetitions 
+        ? [...req.body.sideCompetitions] 
         : (req.body.sideCompetitions ? [req.body.sideCompetitions] : []);
 
       // Parse and validate the update data using the same schema as creation
-      const { sideCompetitions: _, organizerId: __, selectedPlan, ...bodyData } = req.body;
+      const { sideCompetitions: _, organizerId: __, selectedPlan, branding: ___, ...bodyData } = req.body;
       const updateData = insertCompetitionSchema.partial().parse({
         ...bodyData,
-        sideCompetitions,
+        sideCompetitions: sideCompetitions.length > 0 ? sideCompetitions : null,
         planTier: selectedPlan, // Map selectedPlan to planTier for competitions table
       });
       
       const updatedCompetition = await storage.updateCompetition(req.params.id, updateData);
+      
+      // Broadcast competition update
+      broadcast({ 
+        type: 'competition_updated', 
+        competitionId: req.params.id, 
+        payload: updatedCompetition 
+      });
+      
       res.json(updatedCompetition);
     } catch (error) {
       console.error("Error updating competition:", error);
       res.status(500).json({ message: "Failed to update competition" });
+    }
+  });
+
+  // DELETE competition endpoint
+  app.delete('/api/competitions/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'organizer' && user?.role !== 'admin') {
+        return res.status(403).json({ message: "Only organizers and admins can delete competitions" });
+      }
+
+      // Verify competition exists
+      const existingCompetition = await storage.getCompetition(req.params.id);
+      if (!existingCompetition) {
+        return res.status(404).json({ message: "Competition not found" });
+      }
+
+      // Verify competition ownership for non-admin users
+      if (user?.role === 'organizer' && existingCompetition.organizerId !== userId) {
+        return res.status(403).json({ message: "You can only delete your own competitions" });
+      }
+
+      await storage.deleteCompetition(req.params.id);
+      
+      // Broadcast competition deletion
+      broadcast({ 
+        type: 'competition_deleted', 
+        competitionId: req.params.id, 
+        payload: { id: req.params.id } 
+      });
+      
+      res.json({ message: "Competition deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting competition:", error);
+      res.status(500).json({ message: "Failed to delete competition" });
+    }
+  });
+
+  // PATCH competition status endpoint
+  app.patch('/api/competitions/:id/status', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'organizer' && user?.role !== 'admin') {
+        return res.status(403).json({ message: "Only organizers and admins can update competition status" });
+      }
+
+      // Verify competition exists
+      const existingCompetition = await storage.getCompetition(req.params.id);
+      if (!existingCompetition) {
+        return res.status(404).json({ message: "Competition not found" });
+      }
+
+      // Verify competition ownership for non-admin users
+      if (user?.role === 'organizer' && existingCompetition.organizerId !== userId) {
+        return res.status(403).json({ message: "You can only update status of your own competitions" });
+      }
+
+      // Validate status transitions using Zod
+      const statusSchema = z.object({
+        status: z.enum(['registration', 'live', 'finished'])
+      });
+      
+      const validationResult = statusSchema.safeParse(req.body);
+      if (!validationResult.success) {
+        return res.status(400).json({ 
+          message: "Invalid status. Must be: registration, live, or finished",
+          errors: validationResult.error.errors 
+        });
+      }
+
+      const { status } = validationResult.data;
+
+      // Validate status transition logic
+      const validTransitions: Record<string, string[]> = {
+        'registration': ['live'],
+        'live': ['finished'],
+        'finished': []
+      };
+
+      const allowedNextStates = validTransitions[existingCompetition.status] || [];
+      if (!allowedNextStates.includes(status)) {
+        return res.status(409).json({ 
+          message: `Invalid status transition from ${existingCompetition.status} to ${status}`,
+          currentStatus: existingCompetition.status,
+          allowedTransitions: allowedNextStates
+        });
+      }
+
+      await storage.updateCompetitionStatus(req.params.id, status);
+      
+      // Broadcast status update
+      broadcast({ 
+        type: 'competition_status_updated', 
+        competitionId: req.params.id, 
+        payload: { id: req.params.id, status } 
+      });
+      
+      res.json({ message: "Competition status updated successfully", status });
+    } catch (error) {
+      console.error("Error updating competition status:", error);
+      res.status(500).json({ message: "Failed to update competition status" });
+    }
+  });
+
+  // DELETE all catches for competition (reset catches)
+  app.delete('/api/competitions/:id/catches', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'organizer' && user?.role !== 'admin') {
+        return res.status(403).json({ message: "Only organizers and admins can reset catches" });
+      }
+
+      // Verify competition exists
+      const existingCompetition = await storage.getCompetition(req.params.id);
+      if (!existingCompetition) {
+        return res.status(404).json({ message: "Competition not found" });
+      }
+
+      // Verify competition ownership for non-admin users
+      if (user?.role === 'organizer' && existingCompetition.organizerId !== userId) {
+        return res.status(403).json({ message: "You can only reset catches for your own competitions" });
+      }
+
+      await storage.resetCompetitionCatches(req.params.id);
+      
+      // Broadcast catches reset
+      broadcast({ 
+        type: 'catches_reset', 
+        competitionId: req.params.id, 
+        payload: { competitionId: req.params.id } 
+      });
+      
+      res.json({ message: "Competition catches reset successfully" });
+    } catch (error) {
+      console.error("Error resetting catches:", error);
+      res.status(500).json({ message: "Failed to reset catches" });
     }
   });
 
@@ -257,6 +415,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
+      // Broadcast team creation
+      broadcast({ 
+        type: 'team_created', 
+        teamId: team.id, 
+        competitionId: req.params.id, 
+        payload: team 
+      });
+      
       res.status(201).json(team);
     } catch (error) {
       console.error("Error creating team:", error);
@@ -323,6 +489,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Update team status
       await storage.updateTeamStatus(req.params.id, status, sector, sectorName, placeName);
+      
+      // Broadcast team status update
+      broadcast({ 
+        type: 'team_status_updated', 
+        teamId: req.params.id, 
+        competitionId: team.competitionId, 
+        payload: { id: req.params.id, status, sector, sectorName, placeName } 
+      });
+      
       res.json({ message: "Team status updated successfully" });
     } catch (error) {
       console.error("Error updating team status:", error);
@@ -389,6 +564,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Update team
       const updatedTeam = await storage.updateTeam(req.params.id, updateData);
+      
+      // Broadcast team update
+      broadcast({ 
+        type: 'team_updated', 
+        teamId: req.params.id, 
+        competitionId: updatedTeam.competitionId, 
+        payload: updatedTeam 
+      });
+      
       res.json(updatedTeam);
     } catch (error) {
       console.error("Error updating team:", error);
@@ -445,6 +629,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       const referee = await storage.createReferee(refereeData);
+      
+      // Broadcast referee creation
+      broadcast({ 
+        type: 'referee_created', 
+        competitionId: req.params.id, 
+        payload: referee 
+      });
+      
       res.status(201).json(referee);
     } catch (error) {
       console.error("Error creating referee:", error);
@@ -477,6 +669,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching referee assignment:", error);
       res.status(500).json({ message: "Failed to fetch referee assignment" });
+    }
+  });
+
+  // PATCH referee endpoint (update referee)
+  app.patch('/api/competitions/:id/referees/:refereeId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'organizer' && user?.role !== 'admin') {
+        return res.status(403).json({ message: "Only organizers and admins can update referees" });
+      }
+
+      // Verify competition exists and ownership for non-admin users
+      if (user?.role === 'organizer') {
+        const competition = await storage.getCompetition(req.params.id);
+        if (!competition || competition.organizerId !== userId) {
+          return res.status(403).json({ message: "You can only update referees in your own competitions" });
+        }
+      }
+
+      // Validate the request data using partial referee schema
+      const updateSchema = insertRefereeSchema.partial();
+      const validationResult = updateSchema.safeParse(req.body);
+      
+      if (!validationResult.success) {
+        return res.status(400).json({ 
+          message: "Invalid request data",
+          errors: validationResult.error.errors 
+        });
+      }
+
+      const updatedReferee = await storage.updateReferee(req.params.refereeId, validationResult.data);
+      
+      // Broadcast referee update
+      broadcast({ 
+        type: 'referee_updated', 
+        competitionId: req.params.id, 
+        payload: updatedReferee 
+      });
+      
+      res.json(updatedReferee);
+    } catch (error) {
+      console.error("Error updating referee:", error);
+      if (error instanceof Error && error.message.includes('not found')) {
+        return res.status(404).json({ message: "Referee not found" });
+      }
+      res.status(500).json({ message: "Failed to update referee" });
+    }
+  });
+
+  // DELETE referee endpoint
+  app.delete('/api/competitions/:id/referees/:refereeId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'organizer' && user?.role !== 'admin') {
+        return res.status(403).json({ message: "Only organizers and admins can delete referees" });
+      }
+
+      // Verify competition exists and ownership for non-admin users
+      if (user?.role === 'organizer') {
+        const competition = await storage.getCompetition(req.params.id);
+        if (!competition || competition.organizerId !== userId) {
+          return res.status(403).json({ message: "You can only delete referees from your own competitions" });
+        }
+      }
+
+      await storage.deleteReferee(req.params.refereeId);
+      
+      // Broadcast referee deletion
+      broadcast({ 
+        type: 'referee_deleted', 
+        competitionId: req.params.id, 
+        payload: { id: req.params.refereeId } 
+      });
+      
+      res.json({ message: "Referee deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting referee:", error);
+      res.status(500).json({ message: "Failed to delete referee" });
     }
   });
 
@@ -691,6 +965,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       const sponsor = await storage.createSponsor(sponsorData);
+      
+      // Broadcast sponsor creation
+      broadcast({ 
+        type: 'sponsor_created', 
+        competitionId: req.params.id, 
+        payload: sponsor 
+      });
+      
       res.status(201).json(sponsor);
     } catch (error) {
       console.error("Error creating sponsor:", error);
@@ -735,6 +1017,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const sponsorData = insertSponsorSchema.omit({ competitionId: true }).parse(req.body);
       
       const sponsor = await storage.updateSponsor(req.params.sponsorId, sponsorData);
+      
+      // Broadcast sponsor update
+      broadcast({ 
+        type: 'sponsor_updated', 
+        competitionId: req.params.id, 
+        payload: sponsor 
+      });
+      
       res.json(sponsor);
     } catch (error) {
       console.error("Error updating sponsor:", error);
@@ -857,6 +1147,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const sponsor = await storage.updateSponsor(req.params.sponsorId, validation.data);
+      
+      // Broadcast sponsor update
+      broadcast({ 
+        type: 'sponsor_updated', 
+        competitionId: req.params.id, 
+        payload: sponsor 
+      });
+      
       res.json(sponsor);
     } catch (error) {
       console.error("Error updating sponsor:", error);
@@ -890,6 +1188,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       await storage.deleteSponsor(req.params.sponsorId);
+      
+      // Broadcast sponsor deletion
+      broadcast({ 
+        type: 'sponsor_deleted', 
+        competitionId: req.params.id, 
+        payload: { id: req.params.sponsorId } 
+      });
+      
       res.json({ message: "Sponsor deleted successfully" });
     } catch (error) {
       console.error("Error deleting sponsor:", error);
@@ -1350,7 +1656,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         startDate: new Date(req.body.startDate),
         endDate: new Date(req.body.endDate),
         maxTeams: req.body.maxTeams ? parseInt(req.body.maxTeams) : null,
-        minWeight: req.body.minWeight ? parseFloat(req.body.minWeight) : 2,
+        minWeight: req.body.minWeight ? req.body.minWeight.toString() : "2.00",
         hasSectors: req.body.hasSectors === 'true',
         sectorPlaces,
         sideCompetitions,
@@ -1369,8 +1675,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { sideCompetitions: _sideComps, sectorPlaces: _sectorPlaces, ...validationData } = dataToValidate;
       const registrationData = insertCompetitionRegistrationSchema.parse({
         ...validationData,
-        sideCompetitions: sideCompetitions as string[],
-        sectorPlaces: sectorPlaces as Array<{ sectorName: string; places: string[] }>,
+        sideCompetitions: sideCompetitions.length > 0 ? [...sideCompetitions] : null,
+        sectorPlaces,
       });
       
       const registration = await storage.createCompetitionRegistration(registrationData);
