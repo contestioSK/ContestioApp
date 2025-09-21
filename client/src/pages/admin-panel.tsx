@@ -44,7 +44,7 @@ import {
   Building2,
   ExternalLink
 } from "lucide-react";
-import type { Competition, Team, TeamMember, CompetitionRegistration, InsertSponsor, SponsorLevel } from "@shared/schema";
+import type { Competition, Team, TeamMember, CompetitionRegistration, InsertSponsor, Sponsor, SponsorLevel } from "@shared/schema";
 import { getSideCompetitionLabel } from "@/lib/utils";
 import { insertSponsorSchema, sponsorLevels } from "@shared/schema";
 
