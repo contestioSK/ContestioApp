@@ -948,6 +948,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin registrations management endpoints
+  app.get('/api/admin/registrations', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!isAdmin(user)) {
+        return res.status(403).json({ message: "Only admins can manage registrations" });
+      }
+
+      const status = req.query.status as string | undefined;
+      const registrations = await storage.getCompetitionRegistrations(status);
+      res.json(registrations);
+    } catch (error) {
+      console.error("Error fetching registrations:", error);
+      res.status(500).json({ message: "Failed to fetch registrations" });
+    }
+  });
+
+  app.get('/api/admin/registrations/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!isAdmin(user)) {
+        return res.status(403).json({ message: "Only admins can view registration details" });
+      }
+
+      const registration = await storage.getCompetitionRegistration(req.params.id);
+      if (!registration) {
+        return res.status(404).json({ message: "Registration not found" });
+      }
+      
+      res.json(registration);
+    } catch (error) {
+      console.error("Error fetching registration:", error);
+      res.status(500).json({ message: "Failed to fetch registration" });
+    }
+  });
+
+  app.patch('/api/admin/registrations/:id/approve', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!isAdmin(user)) {
+        return res.status(403).json({ message: "Only admins can approve registrations" });
+      }
+
+      const result = await storage.approveCompetitionRegistration(req.params.id, userId);
+      res.json({ 
+        message: "Registration approved and competition created successfully",
+        registration: result.registration,
+        competition: result.competition
+      });
+    } catch (error) {
+      console.error("Error approving registration:", error);
+      const message = error instanceof Error ? error.message : "Failed to approve registration";
+      res.status(400).json({ message });
+    }
+  });
+
+  app.patch('/api/admin/registrations/:id/decline', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!isAdmin(user)) {
+        return res.status(403).json({ message: "Only admins can decline registrations" });
+      }
+
+      const registration = await storage.declineCompetitionRegistration(req.params.id);
+      res.json({ 
+        message: "Registration declined successfully",
+        registration
+      });
+    } catch (error) {
+      console.error("Error declining registration:", error);
+      const message = error instanceof Error ? error.message : "Failed to decline registration";
+      res.status(400).json({ message });
+    }
+  });
+
   // Admin user management endpoints
   app.get('/api/admin/users', isAuthenticated, async (req: any, res) => {
     try {
