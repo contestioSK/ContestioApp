@@ -21,6 +21,7 @@ import {
 } from "@shared/schema";
 import { z } from "zod";
 import { canUseFeature } from "@shared/plan-capabilities";
+import { NotificationService } from "./notification-service";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -171,6 +172,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     });
   }
+
+  // Create NotificationService instance with WebSocket broadcaster
+  const notificationService = new NotificationService({
+    broadcastToUsers,
+    broadcastToAuthenticated
+  });
 
   // Get all connected user IDs
   function getConnectedUsers(): string[] {
@@ -1067,7 +1074,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update team stats
       await storage.updateTeamStats(catchData.teamId);
       
-      // Broadcast real-time update
+      // Get team and competition data for targeted notifications
+      const team = await storage.getTeam(catchData.teamId);
+      
+      if (team) {
+        // Send targeted catch notification to users based on preferences and favorites
+        await notificationService.notifyCatchCreated(newCatch, team, competition);
+        
+        // Check if this is a potential biggest fish record (arbitrary threshold of 20kg)
+        const weightKg = parseFloat(newCatch.weight);
+        if (weightKg >= 20) {
+          await notificationService.notifyBiggestFish(newCatch, team, competition, false);
+        }
+      }
+      
+      // Keep global broadcast for immediate UI updates (non-targeted real-time sync)
       broadcast({
         type: 'new_catch',
         catch: newCatch,

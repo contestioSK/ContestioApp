@@ -165,6 +165,12 @@ export interface IStorage {
   // Notification preferences operations
   getUserNotificationPreferences(userId: string): Promise<NotificationPreferences>;
   updateUserNotificationPreferences(userId: string, preferences: UpdateNotificationPreferences): Promise<NotificationPreferences>;
+  
+  // Notification filtering operations for targeted WebSocket broadcasts
+  getUsersToNotifyForCatch(competitionId: string, teamId: string): Promise<string[]>;
+  getUsersToNotifyForLeaderboardChange(competitionId: string): Promise<string[]>;
+  getUsersToNotifyForBiggestFish(): Promise<string[]>;
+  getUsersToNotifyForOfficialAnnouncement(): Promise<string[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1132,6 +1138,80 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return result;
+  }
+
+  // Notification filtering operations for targeted WebSocket broadcasts
+  async getUsersToNotifyForCatch(competitionId: string, teamId: string): Promise<string[]> {
+    // Get users who should be notified about catch events
+    // Based on notification preferences and favorite competitions/teams
+    const result = await db
+      .select({ userId: notificationPreferences.userId })
+      .from(notificationPreferences)
+      .where(
+        and(
+          // Either all catches enabled OR (favorite competitions enabled AND user favorited this competition) OR (favorite teams enabled AND user favorited this team)
+          sql`(
+            ${notificationPreferences.allCatches} = true 
+            OR (
+              ${notificationPreferences.favoriteCompetitions} = true 
+              AND EXISTS (
+                SELECT 1 FROM ${favoriteCompetitions} 
+                WHERE ${favoriteCompetitions.userId} = ${notificationPreferences.userId} 
+                AND ${favoriteCompetitions.competitionId} = ${competitionId}
+              )
+            )
+            OR (
+              ${notificationPreferences.favoriteTeams} = true 
+              AND EXISTS (
+                SELECT 1 FROM ${favoriteTeams} 
+                WHERE ${favoriteTeams.userId} = ${notificationPreferences.userId} 
+                AND ${favoriteTeams.teamId} = ${teamId}
+              )
+            )
+          )`
+        )
+      );
+    
+    return result.map(r => r.userId);
+  }
+
+  async getUsersToNotifyForLeaderboardChange(competitionId: string): Promise<string[]> {
+    // Get users who should be notified about leaderboard changes
+    // Users with leaderboardChanges enabled AND who favorited this competition
+    const result = await db
+      .select({ userId: notificationPreferences.userId })
+      .from(notificationPreferences)
+      .leftJoin(favoriteCompetitions, eq(notificationPreferences.userId, favoriteCompetitions.userId))
+      .where(
+        and(
+          eq(notificationPreferences.leaderboardChanges, true),
+          eq(favoriteCompetitions.competitionId, competitionId)
+        )
+      );
+    
+    return result.map(r => r.userId);
+  }
+
+  async getUsersToNotifyForBiggestFish(): Promise<string[]> {
+    // Get users who should be notified about biggest fish records
+    // Users with biggestFish preference enabled
+    const result = await db
+      .select({ userId: notificationPreferences.userId })
+      .from(notificationPreferences)
+      .where(eq(notificationPreferences.biggestFish, true));
+    
+    return result.map(r => r.userId);
+  }
+
+  async getUsersToNotifyForOfficialAnnouncement(): Promise<string[]> {
+    // Get users who should be notified about official announcements
+    // Users with officialAnnouncements preference enabled
+    const result = await db
+      .select({ userId: notificationPreferences.userId })
+      .from(notificationPreferences)
+      .where(eq(notificationPreferences.officialAnnouncements, true));
+    
+    return result.map(r => r.userId);
   }
 }
 
