@@ -4,7 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import NavigationHeader from "@/components/navigation-header";
-import ContestCategories from "@/components/contest-categories";
+import { ContestCategories } from "@/components/contest-categories";
 import { Button } from "@/components/ui/button";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { PlusCircle } from "lucide-react";
