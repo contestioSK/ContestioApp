@@ -796,7 +796,7 @@ export class DatabaseStorage implements IStorage {
       .from(users)
       .where(gte(users.createdAt, thirtyDaysAgo))
       .orderBy(desc(users.createdAt))
-      .limit(5);
+      .limit(30);
       
     const newUsers = newUsersRaw
       .filter(user => user.timestamp !== null)
@@ -817,7 +817,7 @@ export class DatabaseStorage implements IStorage {
       .from(competitions)
       .where(gte(competitions.createdAt, thirtyDaysAgo))
       .orderBy(desc(competitions.createdAt))
-      .limit(5);
+      .limit(30);
       
     const newCompetitions = newCompetitionsRaw
       .filter(comp => comp.timestamp !== null)
@@ -838,7 +838,7 @@ export class DatabaseStorage implements IStorage {
       .from(catches)
       .where(gte(catches.submittedAt, thirtyDaysAgo))
       .orderBy(desc(catches.submittedAt))
-      .limit(5);
+      .limit(30);
       
     const newCatches = newCatchesRaw
       .filter(catch_ => catch_.timestamp !== null)
@@ -861,7 +861,7 @@ export class DatabaseStorage implements IStorage {
         .from(teams)
         .where(gte(teams.createdAt, thirtyDaysAgo))
         .orderBy(desc(teams.createdAt))
-        .limit(3)
+        .limit(20)
       ),
       
       // Recent competition registration requests
@@ -876,7 +876,7 @@ export class DatabaseStorage implements IStorage {
         .from(competitionRegistrations)
         .where(gte(competitionRegistrations.createdAt, thirtyDaysAgo))
         .orderBy(desc(competitionRegistrations.createdAt))
-        .limit(2)
+        .limit(10)
       )
     ]
       .filter(activity => activity.timestamp !== null)
@@ -885,7 +885,7 @@ export class DatabaseStorage implements IStorage {
         timestamp: activity.timestamp as Date
       }))
       .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-      .slice(0, 5);
+      .slice(0, 30);
 
     // Legacy combined activity for backward compatibility
     const recentActivity = [...newUsers, ...newCompetitions, ...newCatches, ...systemChanges]

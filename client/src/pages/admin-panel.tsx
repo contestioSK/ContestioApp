@@ -1638,7 +1638,7 @@ export default function AdminPanel() {
                                 </CardTitle>
                               </CardHeader>
                               <CardContent>
-                                <div className="space-y-3">
+                                <div className="h-80 overflow-y-auto space-y-3 pr-2">
                                   {dashboardStats?.newUsers?.length ? (
                                     dashboardStats.newUsers.map((user) => (
                                       <div key={user.id} className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
@@ -1649,7 +1649,7 @@ export default function AdminPanel() {
                                       </div>
                                     ))
                                   ) : (
-                                    <p className="text-xs text-muted-foreground text-center py-4">Žiadni nový užívatelia</p>
+                                    <p className="text-xs text-muted-foreground text-center py-4">Žiadni noví používatelia</p>
                                   )}
                                 </div>
                               </CardContent>
@@ -1664,7 +1664,7 @@ export default function AdminPanel() {
                                 </CardTitle>
                               </CardHeader>
                               <CardContent>
-                                <div className="space-y-3">
+                                <div className="h-80 overflow-y-auto space-y-3 pr-2">
                                   {dashboardStats?.newCompetitions?.length ? (
                                     dashboardStats.newCompetitions.map((competition) => (
                                       <div key={competition.id} className="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
@@ -1690,7 +1690,7 @@ export default function AdminPanel() {
                                 </CardTitle>
                               </CardHeader>
                               <CardContent>
-                                <div className="space-y-3">
+                                <div className="h-80 overflow-y-auto space-y-3 pr-2">
                                   {dashboardStats?.newCatches?.length ? (
                                     dashboardStats.newCatches.map((catch_) => (
                                       <div key={catch_.id} className="p-2 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
@@ -1716,7 +1716,7 @@ export default function AdminPanel() {
                                 </CardTitle>
                               </CardHeader>
                               <CardContent>
-                                <div className="space-y-3">
+                                <div className="h-80 overflow-y-auto space-y-3 pr-2">
                                   {dashboardStats?.systemChanges?.length ? (
                                     dashboardStats.systemChanges.map((change) => (
                                       <div key={change.id} className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
