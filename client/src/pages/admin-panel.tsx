@@ -384,6 +384,119 @@ export default function AdminPanel() {
     },
   });
 
+  // Referee mutations
+  const toggleRefereeMutation = useMutation({
+    mutationFn: async ({ refereeId, isActive }: { refereeId: string; isActive: boolean }) => {
+      const response = await apiRequest("PATCH", `/api/competitions/${selectedCompetition}/referees/${refereeId}`, { isActive });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/competitions", selectedCompetition, "referees"] });
+      toast({
+        title: "Status rozhodcu zmenený",
+        description: "Status rozhodcu bol úspešne zmenený."
+      });
+    },
+    onError: (error) => {
+      console.error("Error updating referee:", error);
+      toast({
+        title: "Chyba",
+        description: "Nepodarilo sa zmeniť status rozhodcu",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Sponsor mutations
+  const deleteSponsorMutation = useMutation({
+    mutationFn: async (sponsorId: string) => {
+      const response = await apiRequest("DELETE", `/api/competitions/${selectedCompetition}/sponsors/${sponsorId}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/competitions", selectedCompetition, "sponsors"] });
+      toast({
+        title: "Sponzor odstránený",
+        description: "Sponzor bol úspešne odstránený."
+      });
+    },
+    onError: (error) => {
+      console.error("Error deleting sponsor:", error);
+      toast({
+        title: "Chyba",
+        description: "Nepodarilo sa odstrániť sponzora",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Competition mutations
+  const resetCatchesMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("DELETE", `/api/competitions/${selectedCompetition}/catches`);
+      return response.json();
+    },
+    onSuccess: () => {
+      // Invalidate multiple cache keys affected by resetting catches
+      queryClient.invalidateQueries({ queryKey: ["/api/competitions", selectedCompetition] });
+      queryClient.invalidateQueries({ queryKey: ["/api/competitions", selectedCompetition, "teams"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/competitions", selectedCompetition, "catches"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/competitions", selectedCompetition, "leaderboard"] });
+      toast({
+        title: "Úlovky resetované",
+        description: "Všetky úlovky súťaže boli úspešne odstránené."
+      });
+    },
+    onError: (error) => {
+      console.error("Error resetting catches:", error);
+      toast({
+        title: "Chyba",
+        description: "Nepodarilo sa resetovať úlovky",
+        variant: "destructive"
+      });
+    }
+  });
+
+  const deleteCompetitionMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("DELETE", `/api/competitions/${selectedCompetition}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      setSelectedCompetition('');
+      queryClient.invalidateQueries({ queryKey: ["/api/competitions"] });
+      toast({
+        title: "Súťaž zmazaná",
+        description: "Súťaž bola úspešne zmazaná."
+      });
+    },
+    onError: (error) => {
+      console.error("Error deleting competition:", error);
+      toast({
+        title: "Chyba",
+        description: "Nepodarilo sa zmazať súťaž",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Export functions
+  const exportData = (type: 'teams' | 'catches' | 'results') => {
+    if (!selectedCompetition) return;
+    
+    const link = document.createElement('a');
+    link.href = `/api/competitions/${selectedCompetition}/export/${type}`;
+    link.download = `${type}-${selectedCompetition}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast({
+      title: "Export spustený",
+      description: `Export ${type === 'teams' ? 'tímov' : type === 'catches' ? 'úlovkov' : 'výsledkov'} sa sťahuje.`
+    });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto py-8 px-4">
@@ -1997,12 +2110,11 @@ export default function AdminPanel() {
                                   <Button 
                                     size="sm" 
                                     variant={referee.isActive ? "secondary" : "default"}
-                                    onClick={() => {
-                                      toast({
-                                        title: "Zmena statusu",
-                                        description: "Funkcia zmeny statusu bude implementovaná neskôr"
-                                      });
-                                    }}
+                                    onClick={() => toggleRefereeMutation.mutate({ 
+                                      refereeId: referee.id, 
+                                      isActive: !referee.isActive 
+                                    })}
+                                    disabled={toggleRefereeMutation.isPending}
                                     data-testid={`button-toggle-referee-${referee.id}`}
                                   >
                                     {referee.isActive ? (
@@ -2128,12 +2240,8 @@ export default function AdminPanel() {
                                   <Button 
                                     size="sm" 
                                     variant="destructive"
-                                    onClick={() => {
-                                      toast({
-                                        title: "Odstránenie sponzora",
-                                        description: "Funkcia odstránenia sponzora bude implementovaná neskôr"
-                                      });
-                                    }}
+                                    onClick={() => deleteSponsorMutation.mutate(sponsor.id)}
+                                    disabled={deleteSponsorMutation.isPending}
                                     data-testid={`button-delete-sponsor-${sponsor.id}`}
                                   >
                                     <X className="w-4 h-4 mr-1" />
@@ -2221,12 +2329,7 @@ export default function AdminPanel() {
                               <Button 
                                 variant="outline" 
                                 size="sm"
-                                onClick={() => {
-                                  toast({
-                                    title: "Export tímov",
-                                    description: "Funkcia exportu tímov bude implementovaná neskôr"
-                                  });
-                                }}
+                                onClick={() => exportData('teams')}
                                 data-testid="button-export-teams"
                               >
                                 <FileText className="w-4 h-4 mr-1" />
@@ -2235,12 +2338,7 @@ export default function AdminPanel() {
                               <Button 
                                 variant="outline" 
                                 size="sm"
-                                onClick={() => {
-                                  toast({
-                                    title: "Export úlovkov",
-                                    description: "Funkcia exportu úlovkov bude implementovaná neskôr"
-                                  });
-                                }}
+                                onClick={() => exportData('catches')}
                                 data-testid="button-export-catches"
                               >
                                 <FileText className="w-4 h-4 mr-1" />
@@ -2249,12 +2347,7 @@ export default function AdminPanel() {
                               <Button 
                                 variant="outline" 
                                 size="sm"
-                                onClick={() => {
-                                  toast({
-                                    title: "Export výsledkov",
-                                    description: "Funkcia exportu výsledkov bude implementovaná neskôr"
-                                  });
-                                }}
+                                onClick={() => exportData('results')}
                                 data-testid="button-export-results"
                               >
                                 <Trophy className="w-4 h-4 mr-1" />
@@ -2329,11 +2422,11 @@ export default function AdminPanel() {
                                   variant="destructive" 
                                   size="sm"
                                   onClick={() => {
-                                    toast({
-                                      title: "Reset úlovkov",
-                                      description: "Funkcia resetovania úlovkov bude implementovaná neskôr"
-                                    });
+                                    if (confirm('Naozaj chcete resetovať všetky úlovky? Táto akcia sa nedá vrátiť späť.')) {
+                                      resetCatchesMutation.mutate();
+                                    }
                                   }}
+                                  disabled={resetCatchesMutation.isPending}
                                   data-testid="button-reset-catches"
                                 >
                                   Reset úlovkov
@@ -2350,11 +2443,11 @@ export default function AdminPanel() {
                                   variant="destructive" 
                                   size="sm"
                                   onClick={() => {
-                                    toast({
-                                      title: "Zmazanie súťaže",
-                                      description: "Funkcia zmazania súťaže bude implementovaná neskôr"
-                                    });
+                                    if (confirm('Naozaj chcete zmazať túto súťaž? Odstránia sa všetky súvisiace údaje a táto akcia sa nedá vrátiť späť.')) {
+                                      deleteCompetitionMutation.mutate();
+                                    }
                                   }}
+                                  disabled={deleteCompetitionMutation.isPending}
                                   data-testid="button-delete-competition"
                                 >
                                   Zmazať súťaž
