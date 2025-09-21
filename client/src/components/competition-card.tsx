@@ -2,8 +2,10 @@ import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Users, MapPin, Trophy, Share, Award } from "lucide-react";
+import { Users, MapPin, Trophy, Share, Award, Heart } from "lucide-react";
 import { getSideCompetitionLabels } from "@/lib/utils";
+import { useFavoriteCompetitions, useToggleFavoriteCompetition } from "@/hooks/useFavorites";
+import { useAuth } from "@/hooks/useAuth";
 import type { Competition } from "@shared/schema";
 
 interface CompetitionCardProps {
@@ -11,6 +13,24 @@ interface CompetitionCardProps {
 }
 
 export default function CompetitionCard({ competition }: CompetitionCardProps) {
+  const { isAuthenticated } = useAuth();
+  const { data: favoriteCompetitions } = useFavoriteCompetitions();
+  const { addFavorite, removeFavorite, isAdding, isRemoving } = useToggleFavoriteCompetition();
+  
+  // Check if this competition is in user's favorites
+  const isFavorite = favoriteCompetitions?.some(fav => fav.competitionId === competition.id) || false;
+  const isLoading = isAdding || isRemoving;
+  
+  const handleFavoriteToggle = () => {
+    if (!isAuthenticated) return;
+    
+    if (isFavorite) {
+      removeFavorite(competition.id);
+    } else {
+      addFavorite(competition.id);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'live':
@@ -242,6 +262,18 @@ export default function CompetitionCard({ competition }: CompetitionCardProps) {
         
         <div className="flex space-x-2">
           {getActionButton()}
+          {isAuthenticated && (
+            <Button 
+              variant="outline" 
+              size="icon"
+              onClick={handleFavoriteToggle}
+              disabled={isLoading}
+              className={isFavorite ? "text-red-500 hover:text-red-600" : ""}
+              data-testid={`button-favorite-${competition.id}`}
+            >
+              <Heart className={`h-4 w-4 ${isFavorite ? 'fill-current' : ''}`} />
+            </Button>
+          )}
           <Button 
             variant="outline" 
             size="icon"
