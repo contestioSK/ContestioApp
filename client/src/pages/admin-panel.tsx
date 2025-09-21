@@ -2451,8 +2451,10 @@ export default function AdminPanel() {
                                     size="sm" 
                                     variant="outline"
                                     onClick={() => {
+                                      console.log("Details button clicked for team:", team.id);
                                       setSelectedTeamId(team.id);
                                       setIsTeamDetailsDialogOpen(true);
+                                      console.log("State set - selectedTeamId:", team.id, "isTeamDetailsDialogOpen:", true);
                                     }}
                                     data-testid={`button-view-team-${team.id}`}
                                   >
