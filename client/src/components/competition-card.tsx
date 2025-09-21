@@ -37,7 +37,7 @@ export default function CompetitionCard({ competition }: CompetitionCardProps) {
         return (
           <Badge className="bg-secondary text-secondary-foreground">
             <span className="w-2 h-2 bg-secondary-foreground rounded-full mr-2 animate-pulse"></span>
-            ŽIVO
+            NAŽIVO
           </Badge>
         );
       case 'registration':
