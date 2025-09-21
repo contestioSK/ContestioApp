@@ -44,8 +44,9 @@ import {
   Building2,
   ExternalLink
 } from "lucide-react";
-import type { Competition, Team, TeamMember, CompetitionRegistration } from "@shared/schema";
+import type { Competition, Team, TeamMember, CompetitionRegistration, InsertSponsor, SponsorLevel } from "@shared/schema";
 import { getSideCompetitionLabel } from "@/lib/utils";
+import { insertSponsorSchema, sponsorLevels } from "@shared/schema";
 
 // Schema for competition creation
 const competitionSchema = z.object({
@@ -117,6 +118,7 @@ export default function AdminPanel() {
   const [selectedRegistration, setSelectedRegistration] = useState<CompetitionRegistration | null>(null);
   const [isRegistrationDetailOpen, setIsRegistrationDetailOpen] = useState(false);
   const [isAddRefereeDialogOpen, setIsAddRefereeDialogOpen] = useState(false);
+  const [isAddSponsorDialogOpen, setIsAddSponsorDialogOpen] = useState(false);
 
   const isAdmin = user?.role === 'admin';
 
@@ -164,6 +166,17 @@ export default function AdminPanel() {
       userId: "",
       assignedSector: "",
       isActive: true,
+    },
+  });
+
+  const sponsorForm = useForm<InsertSponsor>({
+    resolver: zodResolver(insertSponsorSchema),
+    defaultValues: {
+      name: "",
+      logoUrl: "",
+      websiteUrl: "",
+      sponsorshipLevel: "regular",
+      competitionId: "",
     },
   });
 
@@ -574,6 +587,34 @@ export default function AdminPanel() {
       toast({
         title: "Chyba",
         description: "Nepodarilo sa pridať rozhodcu",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Create sponsor mutation
+  const createSponsorMutation = useMutation({
+    mutationFn: async (sponsorData: InsertSponsor) => {
+      if (!selectedCompetition) throw new Error("No competition selected");
+      const response = await apiRequest("POST", `/api/competitions/${selectedCompetition}/sponsors`, {
+        ...sponsorData,
+        competitionId: selectedCompetition
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/competitions", selectedCompetition, "sponsors"] });
+      sponsorForm.reset();
+      setIsAddSponsorDialogOpen(false);
+      toast({
+        title: "Úspech",
+        description: "Sponzor bol úspešne pridaný",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Chyba",
+        description: "Nepodarilo sa pridať sponzora",
         variant: "destructive",
       });
     },
@@ -2558,10 +2599,19 @@ export default function AdminPanel() {
                         <Button 
                           variant="default"
                           onClick={() => {
-                            toast({
-                              title: "Pridanie sponzora",
-                              description: "Funkcia pridania sponzora bude implementovaná neskôr"
-                            });
+                            const competition = competitions?.find(c => c.id === selectedCompetition);
+                            const planTier = competition?.planTier;
+                            
+                            if (!planTier || !['pro', 'premium', 'enterprise'].includes(planTier)) {
+                              toast({
+                                title: "Obmedzenie plánu",
+                                description: "Funkcia sponzorov je dostupná len v Pro, Premium a Enterprise plánoch",
+                                variant: "destructive"
+                              });
+                              return;
+                            }
+                            
+                            setIsAddSponsorDialogOpen(true);
                           }}
                           data-testid="button-add-sponsor"
                         >
@@ -2594,7 +2644,9 @@ export default function AdminPanel() {
                                       variant="outline"
                                       data-testid={`badge-sponsor-tier-${sponsor.id}`}
                                     >
-                                      {sponsor.tier}
+                                      {sponsor.sponsorshipLevel === 'main' ? 'Hlavný sponzor' : 
+                                       sponsor.sponsorshipLevel === 'regular' ? 'Sponzor' : 
+                                       sponsor.sponsorshipLevel === 'media' ? 'Mediálny partner' : sponsor.sponsorshipLevel}
                                     </Badge>
                                   </div>
                                   <div className="mt-2 flex items-center space-x-4 text-sm text-muted-foreground">
@@ -2661,6 +2713,103 @@ export default function AdminPanel() {
                           </p>
                         </div>
                       )}
+
+                      {/* Add Sponsor Dialog */}
+                      <Dialog open={isAddSponsorDialogOpen} onOpenChange={setIsAddSponsorDialogOpen}>
+                        <DialogContent className="max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>Pridať sponzora</DialogTitle>
+                          </DialogHeader>
+                          <Form {...sponsorForm}>
+                            <form
+                              onSubmit={sponsorForm.handleSubmit((data) => createSponsorMutation.mutate(data))}
+                              className="space-y-4"
+                            >
+                              <FormField
+                                control={sponsorForm.control}
+                                name="name"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Názov sponzora</FormLabel>
+                                    <FormControl>
+                                      <Input placeholder="Zadajte názov sponzora" data-testid="input-sponsor-name" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+
+                              <FormField
+                                control={sponsorForm.control}
+                                name="sponsorshipLevel"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Typ sponzorstva</FormLabel>
+                                    <FormControl>
+                                      <Select onValueChange={field.onChange} value={field.value}>
+                                        <SelectTrigger data-testid="select-sponsor-level">
+                                          <SelectValue placeholder="Vyberte typ sponzorstva" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="main">Hlavný sponzor</SelectItem>
+                                          <SelectItem value="regular">Sponzor</SelectItem>
+                                          <SelectItem value="media">Mediálny partner</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={sponsorForm.control}
+                                name="logoUrl"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>URL loga (nepovinné)</FormLabel>
+                                    <FormControl>
+                                      <Input placeholder="https://example.com/logo.png" data-testid="input-sponsor-logo" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+
+                              <FormField
+                                control={sponsorForm.control}
+                                name="websiteUrl"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Webová stránka (nepovinné)</FormLabel>
+                                    <FormControl>
+                                      <Input placeholder="https://example.com" data-testid="input-sponsor-website" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+
+                              <div className="flex justify-end space-x-2">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  onClick={() => setIsAddSponsorDialogOpen(false)}
+                                >
+                                  Zrušiť
+                                </Button>
+                                <Button
+                                  type="submit"
+                                  disabled={createSponsorMutation.isPending}
+                                  data-testid="button-submit-sponsor"
+                                >
+                                  {createSponsorMutation.isPending ? "Pridávam..." : "Pridať sponzora"}
+                                </Button>
+                              </div>
+                            </form>
+                          </Form>
+                        </DialogContent>
+                      </Dialog>
                     </div>
                   </TabsContent>
                   

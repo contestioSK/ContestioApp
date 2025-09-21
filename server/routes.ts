@@ -559,12 +559,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Only organizers and admins can add sponsors" });
       }
 
+      // Get competition to check plan tier and ownership
+      const competition = await storage.getCompetition(req.params.id);
+      if (!competition) {
+        return res.status(404).json({ message: "Competition not found" });
+      }
+
       // Verify competition ownership for non-admin users
-      if (user?.role === 'organizer') {
-        const competition = await storage.getCompetition(req.params.id);
-        if (!competition || competition.organizerId !== userId) {
-          return res.status(403).json({ message: "You can only add sponsors to your own competitions" });
-        }
+      if (user?.role === 'organizer' && competition.organizerId !== userId) {
+        return res.status(403).json({ message: "You can only add sponsors to your own competitions" });
+      }
+
+      // Check if plan supports sponsors
+      if (!competition.planTier || !['pro', 'premium', 'enterprise'].includes(competition.planTier)) {
+        return res.status(403).json({ message: "Sponsor functionality is only available in Pro, Premium, and Enterprise plans" });
       }
 
       const sponsorData = insertSponsorSchema.parse({
