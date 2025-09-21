@@ -2571,7 +2571,7 @@ export default function AdminPanel() {
                                           <SelectValue placeholder="Vyberte používateľa" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                          {allUsers?.filter(u => u.role === 'referee').map((u) => (
+                                          {(allUsers || []).filter((u: any) => u.role === 'referee').map((u: any) => (
                                             <SelectItem key={u.id} value={u.id}>
                                               {u.email}
                                             </SelectItem>
@@ -2849,7 +2849,10 @@ export default function AdminPanel() {
                                             <Input 
                                               placeholder="https://example.com/logo.png" 
                                               data-testid="input-sponsor-logo-url" 
-                                              {...field} 
+                                              value={field.value || ""}
+                                              onChange={field.onChange}
+                                              onBlur={field.onBlur}
+                                              name={field.name}
                                             />
                                           </FormControl>
                                         </div>
@@ -2860,7 +2863,7 @@ export default function AdminPanel() {
                                             <Label className="text-sm text-muted-foreground">Náhľad:</Label>
                                             <div className="mt-1 border rounded-lg p-2 bg-muted/50">
                                               <img 
-                                                src={logoPreview || field.value} 
+                                                src={logoPreview || field.value || ""} 
                                                 alt="Logo preview" 
                                                 className="max-h-20 max-w-full object-contain"
                                               />
@@ -2880,7 +2883,14 @@ export default function AdminPanel() {
                                   <FormItem>
                                     <FormLabel>Webová stránka (nepovinné)</FormLabel>
                                     <FormControl>
-                                      <Input placeholder="https://example.com" data-testid="input-sponsor-website" {...field} />
+                                      <Input 
+                                        placeholder="https://example.com" 
+                                        data-testid="input-sponsor-website" 
+                                        value={field.value || ""}
+                                        onChange={field.onChange}
+                                        onBlur={field.onBlur}
+                                        name={field.name}
+                                      />
                                     </FormControl>
                                     <FormMessage />
                                   </FormItem>

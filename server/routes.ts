@@ -573,6 +573,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   }, async (req: any, res) => {
     try {
+      // Check authorization
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'organizer' && user?.role !== 'admin') {
+        return res.status(403).json({ message: "Only organizers and admins can upload sponsor logos" });
+      }
+
       if (!req.file) {
         return res.status(400).json({ message: "Žiaden súbor nebol nahratý" });
       }
