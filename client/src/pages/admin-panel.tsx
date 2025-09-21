@@ -156,20 +156,14 @@ const editCompetitionSchema = z.object({
   const maxRefs = getMaxReferees(data.selectedPlan);
   return !data.maxReferees || !maxRefs || data.maxReferees <= maxRefs;
 }, {
-  message: (data) => {
-    const maxRefs = getMaxReferees(data.selectedPlan);
-    return `Balík ${data.selectedPlan} povoľuje maximálne ${maxRefs} rozhodcov`;
-  },
+  message: "Počet rozhodcov presahuje limit pre váš plán",
   path: ["maxReferees"]
 }).refine((data) => {
   // Validácia tímov
   const maxTeams = getMaxTeams(data.selectedPlan);
   return !data.maxTeams || !maxTeams || data.maxTeams <= maxTeams;
 }, {
-  message: (data) => {
-    const maxTeams = getMaxTeams(data.selectedPlan);
-    return `Balík ${data.selectedPlan} povoľuje maximálne ${maxTeams} tímov`;
-  },
+  message: "Balík basic povoľuje maximálne 10 tímov",
   path: ["maxTeams"]
 }).refine((data) => {
   // Validácia premium funkcií
