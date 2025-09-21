@@ -24,6 +24,7 @@ import {
 import { z } from "zod";
 import { canUseFeature } from "@shared/plan-capabilities";
 import { NotificationService } from "./notification-service";
+import { checkResultBlocking, checkPartialResultBlocking, checkPartialResultBlockingByTeam } from "./middleware/result-blocking";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -857,10 +858,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Team routes
-  app.get('/api/competitions/:id/teams', async (req, res) => {
+  app.get('/api/competitions/:id/teams', checkPartialResultBlocking, async (req, res) => {
     try {
       const teams = await storage.getTeamsByCompetition(req.params.id);
-      res.json(teams);
+      
+      // Apply partial blocking filter if active
+      if ((req as any).partialBlocking) {
+        console.log(`[ResultBlocking] Applying partial blocking to teams data`);
+        
+        // Return sanitized team data - show basic info but hide scores/statistics
+        const sanitizedTeams = teams.map(team => ({
+          id: team.id,
+          name: team.name,
+          competitionId: team.competitionId,
+          status: team.status,
+          sector: team.sector,
+          sectorName: team.sectorName,
+          placeName: team.placeName,
+          photoUrl: team.photoUrl,
+          country: team.country,
+          createdAt: team.createdAt,
+          updatedAt: team.updatedAt,
+          // Explicitly hide scoring/ranking fields during blocking
+          totalWeight: null,
+          fishCount: null,
+          position: null
+        }));
+        
+        res.json(sanitizedTeams);
+      } else {
+        res.json(teams);
+      }
     } catch (error) {
       console.error("Error fetching teams:", error);
       res.status(500).json({ message: "Failed to fetch teams" });
@@ -868,7 +896,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get team details and their catches
-  app.get('/api/teams/:id', async (req, res) => {
+  app.get('/api/teams/:id', checkPartialResultBlockingByTeam, async (req, res) => {
     try {
       const team = await storage.getTeam(req.params.id);
       if (!team) {
@@ -876,7 +904,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const catches = await storage.getCatchesByTeam(req.params.id);
-      res.json({ ...team, catches });
+      
+      // Apply partial blocking filter if active
+      if ((req as any).partialBlocking) {
+        console.log(`[ResultBlocking] Applying partial blocking to team detail data`);
+        
+        // Return sanitized team and catch data
+        const sanitizedTeam = {
+          id: team.id,
+          name: team.name,
+          competitionId: team.competitionId,
+          status: team.status,
+          sector: team.sector,
+          sectorName: team.sectorName,
+          placeName: team.placeName,
+          photoUrl: team.photoUrl,
+          country: team.country,
+          createdAt: team.createdAt,
+          updatedAt: team.updatedAt,
+          // Hide scores/statistics during blocking
+          totalWeight: null,
+          fishCount: null,
+          position: null
+        };
+        
+        // Hide detailed catch information during blocking - just show count
+        const sanitizedCatches = catches.map(catch_ => ({
+          id: catch_.id,
+          submittedAt: catch_.submittedAt,
+          // Hide detailed catch data during blocking
+          fishType: null,
+          weight: null,
+          length: null,
+          photoUrl: null
+        }));
+        
+        res.json({ ...sanitizedTeam, catches: sanitizedCatches });
+      } else {
+        res.json({ ...team, catches });
+      }
     } catch (error) {
       console.error("Error fetching team details:", error);
       res.status(500).json({ message: "Failed to fetch team details" });
@@ -1267,7 +1333,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Catch routes
-  app.get('/api/competitions/:id/catches', async (req, res) => {
+  app.get('/api/competitions/:id/catches', checkResultBlocking, async (req, res) => {
     try {
       const catches = await storage.getCatchesByCompetition(req.params.id);
       res.json(catches);
@@ -1384,7 +1450,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Leaderboard routes
-  app.get('/api/competitions/:id/leaderboard', async (req, res) => {
+  app.get('/api/competitions/:id/leaderboard', checkResultBlocking, async (req, res) => {
     try {
       const leaderboard = await storage.getLeaderboard(req.params.id);
       res.json(leaderboard);
@@ -1395,7 +1461,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Sector statistics route
-  app.get('/api/competitions/:id/sectors/:sector/statistics', async (req, res) => {
+  app.get('/api/competitions/:id/sectors/:sector/statistics', checkResultBlocking, async (req, res) => {
     try {
       const { id: competitionId, sector } = req.params;
       const statistics = await storage.getSectorStatistics(competitionId, sector);

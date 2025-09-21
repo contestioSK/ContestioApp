@@ -70,6 +70,11 @@ export const competitions = pgTable("competitions", {
   mediaAccess: boolean("media_access").notNull().default(false), // Premium/Enterprise feature
   prioritySupport: boolean("priority_support").notNull().default(false), // Premium/Enterprise feature
   
+  // Result blocking fields
+  resultBlocking: varchar("result_blocking").notNull().default("none"), // "none", "12h", "24h"
+  resultBlockStartTime: timestamp("result_block_start_time"), // Automatically calculated when competition is created/updated
+  resultBlockActive: boolean("result_block_active").notNull().default(false), // Cache for performance - whether blocking is currently active
+  
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
