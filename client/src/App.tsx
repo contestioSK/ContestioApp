@@ -23,6 +23,7 @@ import RegistrationOpenPage from "@/pages/registration-open";
 import UpcomingPage from "@/pages/upcoming";
 import LivePage from "@/pages/live";
 import FinishedPage from "@/pages/finished";
+import NotificationPreferences from "@/pages/notification-preferences";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 function Router() {
@@ -56,6 +57,11 @@ function Router() {
         </ProtectedRoute>
       </Route>
       <Route path="/referee-interface" component={RefereeInterface} />
+      <Route path="/notification-preferences">
+        <ProtectedRoute>
+          <NotificationPreferences />
+        </ProtectedRoute>
+      </Route>
       {!isLoading && <Route component={NotFound} />}
     </Switch>
   );

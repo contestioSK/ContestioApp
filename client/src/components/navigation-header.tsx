@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Fish, Menu, DollarSign } from "lucide-react";
+import { Fish, Menu, DollarSign, Bell } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export default function NavigationHeader() {
@@ -152,6 +152,15 @@ export default function NavigationHeader() {
                     data-testid="img-profile"
                   />
                 )}
+                <Button 
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setLocation('/notification-preferences')}
+                  data-testid="button-notification-preferences"
+                  title="Nastavenia notifikácií"
+                >
+                  <Bell className="h-4 w-4" />
+                </Button>
                 <Button 
                   variant="outline"
                   onClick={() => window.location.href = '/api/logout'}
