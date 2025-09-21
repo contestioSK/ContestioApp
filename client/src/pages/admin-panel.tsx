@@ -214,6 +214,8 @@ export default function AdminPanel() {
   const [editingCompetition, setEditingCompetition] = useState<Competition | null>(null);
   const [userSearchTerm, setUserSearchTerm] = useState("");
   const [competitionsSearchTerm, setCompetitionsSearchTerm] = useState("");
+  const [refereeSearchTerm, setRefereeSearchTerm] = useState("");
+  const [isRefereeDropdownOpen, setIsRefereeDropdownOpen] = useState(false);
   const [registrationFilter, setRegistrationFilter] = useState<string>("all");
   const [selectedRegistration, setSelectedRegistration] = useState<CompetitionRegistration | null>(null);
   const [isRegistrationDetailOpen, setIsRegistrationDetailOpen] = useState(false);
@@ -294,6 +296,21 @@ export default function AdminPanel() {
       setActiveTab("dashboard");
     }
   }, [selectedCompetition]);
+
+  // Close referee dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (isRefereeDropdownOpen && !target.closest('[data-testid="input-search-referee"]') && !target.closest('.referee-dropdown')) {
+        setIsRefereeDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isRefereeDropdownOpen]);
 
   const form = useForm<EditCompetitionForm>({
     resolver: zodResolver(editCompetitionSchema),
@@ -1090,6 +1107,8 @@ export default function AdminPanel() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/competitions", selectedCompetition, "referees"] });
       refereeForm.reset();
+      setRefereeSearchTerm("");
+      setIsRefereeDropdownOpen(false);
       setIsAddRefereeDialogOpen(false);
       toast({
         title: "Úspech",
@@ -3756,7 +3775,13 @@ export default function AdminPanel() {
                       )}
 
                       {/* Add Referee Dialog */}
-                      <Dialog open={isAddRefereeDialogOpen} onOpenChange={setIsAddRefereeDialogOpen}>
+                      <Dialog open={isAddRefereeDialogOpen} onOpenChange={(open) => {
+                        if (!open) {
+                          setRefereeSearchTerm("");
+                          setIsRefereeDropdownOpen(false);
+                        }
+                        setIsAddRefereeDialogOpen(open);
+                      }}>
                         <DialogContent className="max-w-md">
                           <DialogHeader>
                             <DialogTitle>Pridať rozhodcu</DialogTitle>
@@ -3769,26 +3794,94 @@ export default function AdminPanel() {
                               <FormField
                                 control={refereeForm.control}
                                 name="userId"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Používateľ</FormLabel>
-                                    <FormControl>
-                                      <Select onValueChange={field.onChange} value={field.value}>
-                                        <SelectTrigger data-testid="select-referee-user">
-                                          <SelectValue placeholder="Vyberte používateľa" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                          {(allUsers || []).filter((u: any) => u.role === 'referee').map((u: any) => (
-                                            <SelectItem key={u.id} value={u.id}>
-                                              {u.email}
-                                            </SelectItem>
-                                          ))}
-                                        </SelectContent>
-                                      </Select>
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
+                                render={({ field }) => {
+                                  // Filter referees based on search term
+                                  const availableReferees = (allUsers || [])
+                                    .filter((u: any) => u.role === 'referee')
+                                    .filter((u: any) => {
+                                      const searchLower = refereeSearchTerm.toLowerCase();
+                                      return u.email.toLowerCase().includes(searchLower) ||
+                                             (u.firstName && u.firstName.toLowerCase().includes(searchLower)) ||
+                                             (u.lastName && u.lastName.toLowerCase().includes(searchLower)) ||
+                                             (u.firstName && u.lastName && 
+                                              `${u.firstName} ${u.lastName}`.toLowerCase().includes(searchLower))
+                                    });
+                                  
+                                  const selectedUser = availableReferees.find((u: any) => u.id === field.value);
+                                  
+                                  return (
+                                    <FormItem>
+                                      <FormLabel>Používateľ</FormLabel>
+                                      <FormControl>
+                                        <div className="relative">
+                                          <div className="flex">
+                                            <div className="flex-1 relative">
+                                              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                              <Input
+                                                placeholder="Vyhľadať rozhodcu podľa mena alebo emailu..."
+                                                value={selectedUser ? (selectedUser.firstName && selectedUser.lastName ? `${selectedUser.firstName} ${selectedUser.lastName} (${selectedUser.email})` : selectedUser.email) : refereeSearchTerm}
+                                                onChange={(e) => {
+                                                  setRefereeSearchTerm(e.target.value);
+                                                  setIsRefereeDropdownOpen(true);
+                                                  if (!e.target.value) {
+                                                    field.onChange("");
+                                                  }
+                                                }}
+                                                onFocus={() => setIsRefereeDropdownOpen(true)}
+                                                className="pl-9"
+                                                data-testid="input-search-referee"
+                                              />
+                                              {field.value && (
+                                                <Button
+                                                  type="button"
+                                                  variant="ghost"
+                                                  size="sm"
+                                                  className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+                                                  onClick={() => {
+                                                    field.onChange("");
+                                                    setRefereeSearchTerm("");
+                                                  }}
+                                                >
+                                                  <X className="h-3 w-3" />
+                                                </Button>
+                                              )}
+                                            </div>
+                                          </div>
+                                          
+                                          {/* Dropdown Results */}
+                                          {isRefereeDropdownOpen && refereeSearchTerm && (
+                                            <div className="referee-dropdown absolute z-10 w-full mt-1 bg-background border border-border rounded-md shadow-lg max-h-40 overflow-y-auto">
+                                              {availableReferees.length > 0 ? (
+                                                availableReferees.map((referee: any) => (
+                                                  <div
+                                                    key={referee.id}
+                                                    className="px-3 py-2 hover:bg-muted cursor-pointer border-b border-border last:border-0"
+                                                    onClick={() => {
+                                                      field.onChange(referee.id);
+                                                      setRefereeSearchTerm("");
+                                                      setIsRefereeDropdownOpen(false);
+                                                    }}
+                                                    data-testid={`option-referee-${referee.id}`}
+                                                  >
+                                                    <div className="text-sm font-medium">
+                                                      {referee.firstName && referee.lastName ? `${referee.firstName} ${referee.lastName}` : referee.email}
+                                                    </div>
+                                                    <div className="text-xs text-muted-foreground">{referee.email}</div>
+                                                  </div>
+                                                ))
+                                              ) : (
+                                                <div className="px-3 py-2 text-sm text-muted-foreground">
+                                                  Žiadni rozhodcovia nenájdení pre "{refereeSearchTerm}"
+                                                </div>
+                                              )}
+                                            </div>
+                                          )}
+                                        </div>
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  );
+                                }}
                               />
                               
                               <FormField
@@ -3862,7 +3955,11 @@ export default function AdminPanel() {
                                 <Button
                                   type="button"
                                   variant="outline"
-                                  onClick={() => setIsAddRefereeDialogOpen(false)}
+                                  onClick={() => {
+                                    setRefereeSearchTerm("");
+                                    setIsRefereeDropdownOpen(false);
+                                    setIsAddRefereeDialogOpen(false);
+                                  }}
                                 >
                                   Zrušiť
                                 </Button>
