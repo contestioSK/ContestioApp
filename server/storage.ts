@@ -72,7 +72,7 @@ export interface IStorage {
   
   // Team operations
   getTeamsByCompetition(competitionId: string): Promise<(Team & { members: TeamMember[] })[]>;
-  getTeam(id: string): Promise<Team | undefined>;
+  getTeam(id: string): Promise<(Team & { members: TeamMember[], catches: Catch[] }) | undefined>;
   createTeam(team: InsertTeam): Promise<Team>;
   updateTeamStatus(id: string, status: string, sector?: string, sectorName?: string, placeName?: string): Promise<void>;
   updateTeamStats(teamId: string): Promise<void>;
@@ -385,9 +385,35 @@ export class DatabaseStorage implements IStorage {
     return Array.from(teamMap.values());
   }
 
-  async getTeam(id: string): Promise<Team | undefined> {
-    const [team] = await db.select().from(teams).where(eq(teams.id, id));
-    return team;
+  async getTeam(id: string): Promise<(Team & { members: TeamMember[], catches: Catch[] }) | undefined> {
+    // Get team with members
+    const teamWithMembers = await db
+      .select()
+      .from(teams)
+      .leftJoin(teamMembers, eq(teams.id, teamMembers.teamId))
+      .where(eq(teams.id, id));
+
+    if (teamWithMembers.length === 0) {
+      return undefined;
+    }
+
+    // Get team catches
+    const teamCatches = await db
+      .select()
+      .from(catches)
+      .where(eq(catches.teamId, id));
+
+    // Build the team object with members and catches
+    const team = teamWithMembers[0].teams;
+    const members = teamWithMembers
+      .filter(row => row.team_members !== null)
+      .map(row => row.team_members!);
+
+    return {
+      ...team,
+      members,
+      catches: teamCatches
+    };
   }
 
   async createTeam(team: InsertTeam): Promise<Team> {
