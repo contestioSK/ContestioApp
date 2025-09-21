@@ -145,12 +145,10 @@ export default function CompetitionCard({ competition }: CompetitionCardProps) {
               }}
               data-testid={`img-competition-${competition.id}`}
             />
-            {/* DEBUG INFO */}
-            {competition.name === "CUP CUP CUP" && (
-              <div className="absolute top-0 left-0 bg-red-500 text-white p-1 text-xs z-50">
-                DEBUG: {competition.imageUrl ? `Custom: ${competition.imageUrl}` : `Fallback: ${getCompetitionImage(competition.status)}`}
-              </div>
-            )}
+            {/* DEBUG INFO - pre všetky súťaže */}
+            <div className="absolute top-0 left-0 bg-red-500 text-white p-1 text-xs z-50 max-w-[200px] overflow-hidden">
+              {competition.name.slice(0, 15)}... | IMG: {competition.imageUrl ? "YES" : "NO"}
+            </div>
           </div>
         </Link>
         <div className="absolute top-3 left-3">
