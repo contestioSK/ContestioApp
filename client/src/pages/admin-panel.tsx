@@ -54,9 +54,10 @@ import {
   Square,
   ArrowRight
 } from "lucide-react";
-import type { Competition, Team, TeamMember, CompetitionRegistration, InsertSponsor, Sponsor, SponsorLevel, Catch } from "@shared/schema";
+import type { Competition, Team, TeamMember, CompetitionRegistration, InsertSponsor, Sponsor, SponsorLevel, Catch, Referee, InsertReferee } from "@shared/schema";
 import { getSideCompetitionLabel } from "@/lib/utils";
 import { insertSponsorSchema, sponsorLevels } from "@shared/schema";
+import { getMaxReferees } from "@shared/plan-capabilities";
 import { useWebSocket } from "@/hooks/useWebSocket";
 
 // Type for team with members and catches
@@ -176,6 +177,12 @@ export default function AdminPanel() {
   const [selectedTeamsForBulk, setSelectedTeamsForBulk] = useState<string[]>([]);
   const [isBulkActionOpen, setIsBulkActionOpen] = useState(false);
   const [bulkAction, setBulkAction] = useState<'approve' | 'reject' | null>(null);
+  
+  // Referee state
+  const [editingReferee, setEditingReferee] = useState<Referee | null>(null);
+  const [isEditRefereeDialogOpen, setIsEditRefereeDialogOpen] = useState(false);
+  const [isDeleteRefereeDialogOpen, setIsDeleteRefereeDialogOpen] = useState(false);
+  const [refereeToDelete, setRefereeToDelete] = useState<string | null>(null);
 
   const isAdmin = user?.role === 'admin';
 
@@ -285,6 +292,15 @@ export default function AdminPanel() {
     },
   });
 
+  const editRefereeForm = useForm<RefereeForm>({
+    resolver: zodResolver(refereeSchema),
+    defaultValues: {
+      userId: "",
+      assignedSector: "",
+      isActive: true,
+    },
+  });
+
   // Logo upload state
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>("");
@@ -357,6 +373,17 @@ export default function AdminPanel() {
       });
     }
   }, [selectedTeamDetails, isEditTeamDialogOpen, editTeamForm]);
+
+  // Prefill referee edit form when editing referee
+  useEffect(() => {
+    if (editingReferee && isEditRefereeDialogOpen) {
+      editRefereeForm.reset({
+        userId: editingReferee.userId || "",
+        assignedSector: editingReferee.assignedSector || "",
+        isActive: editingReferee.isActive,
+      });
+    }
+  }, [editingReferee, isEditRefereeDialogOpen, editRefereeForm]);
 
   // Helper function to export teams to CSV
   const exportTeamsToCSV = () => {
@@ -798,28 +825,6 @@ export default function AdminPanel() {
     },
   });
 
-  // Referee mutations
-  const toggleRefereeMutation = useMutation({
-    mutationFn: async ({ refereeId, isActive }: { refereeId: string; isActive: boolean }) => {
-      const response = await apiRequest("PATCH", `/api/competitions/${selectedCompetition}/referees/${refereeId}`, { isActive });
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/competitions", selectedCompetition, "referees"] });
-      toast({
-        title: "Status rozhodcu zmenený",
-        description: "Status rozhodcu bol úspešne zmenený."
-      });
-    },
-    onError: (error) => {
-      console.error("Error updating referee:", error);
-      toast({
-        title: "Chyba",
-        description: "Nepodarilo sa zmeniť status rozhodcu",
-        variant: "destructive"
-      });
-    }
-  });
 
   // Sponsor mutations
   const deleteSponsorMutation = useMutation({
@@ -965,10 +970,44 @@ export default function AdminPanel() {
     },
   });
 
-  // Create referee mutation
+  // Helper function to check referee plan limits
+  const checkRefereePlanLimits = () => {
+    const competition = competitions?.find((c: Competition) => c.id === selectedCompetition);
+    if (!competition) return { canAdd: false, message: "Súťaž nebola nájdená" };
+    
+    const planTier = competition.planTier || "basic";
+    const maxReferees = getMaxReferees(planTier);
+    const currentRefereeCount = referees?.length || 0;
+    
+    if (maxReferees !== null && currentRefereeCount >= maxReferees) {
+      return {
+        canAdd: false,
+        message: `Váš ${planTier} plán povoľuje maximálne ${maxReferees} rozhodcov. Momentálne máte ${currentRefereeCount}.`,
+        planLimit: maxReferees,
+        currentCount: currentRefereeCount
+      };
+    }
+    
+    return { canAdd: true, message: "", planLimit: maxReferees, currentCount: currentRefereeCount };
+  };
+
+  // Create referee mutation with plan enforcement
   const createRefereeMutation = useMutation({
     mutationFn: async (refereeData: RefereeForm) => {
       if (!selectedCompetition) throw new Error("No competition selected");
+      
+      // Check plan limits
+      const limitsCheck = checkRefereePlanLimits();
+      if (!limitsCheck.canAdd) {
+        throw new Error(limitsCheck.message);
+      }
+      
+      // Check if user is already a referee in this competition
+      const existingReferee = referees?.find(r => r.userId === refereeData.userId);
+      if (existingReferee) {
+        throw new Error("Tento používateľ je už rozhodcom v tejto súťaži");
+      }
+      
       const response = await apiRequest("POST", `/api/competitions/${selectedCompetition}/referees`, refereeData);
       return response.json();
     },
@@ -984,7 +1023,58 @@ export default function AdminPanel() {
     onError: (error: any) => {
       toast({
         title: "Chyba",
-        description: "Nepodarilo sa pridať rozhodcu",
+        description: error.message || "Nepodarilo sa pridať rozhodcu",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Update referee mutation
+  const updateRefereeMutation = useMutation({
+    mutationFn: async ({ refereeId, refereeData }: { refereeId: string, refereeData: Partial<RefereeForm> }) => {
+      if (!selectedCompetition) throw new Error("No competition selected");
+      const response = await apiRequest("PATCH", `/api/competitions/${selectedCompetition}/referees/${refereeId}`, refereeData);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/competitions", selectedCompetition, "referees"] });
+      editRefereeForm.reset();
+      setEditingReferee(null);
+      setIsEditRefereeDialogOpen(false);
+      toast({
+        title: "Úspech",
+        description: "Rozhodca bol úspešne aktualizovaný",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Chyba",
+        description: "Nepodarilo sa aktualizovať rozhodcu",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete referee mutation  
+  const deleteRefereeMutation = useMutation({
+    mutationFn: async (refereeId: string) => {
+      if (!selectedCompetition) throw new Error("No competition selected");
+      const response = await apiRequest("DELETE", `/api/competitions/${selectedCompetition}/referees/${refereeId}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/competitions", selectedCompetition, "referees"] });
+      setRefereeToDelete(null);
+      setIsDeleteRefereeDialogOpen(false);
+      toast({
+        title: "Úspech",
+        description: "Rozhodca bol úspešne odstránený",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Chyba",
+        description: "Nepodarilo sa odstrániť rozhodcu",
         variant: "destructive",
       });
     },
@@ -3043,28 +3133,29 @@ export default function AdminPanel() {
                                       <h4 className="text-base font-medium text-foreground" data-testid={`text-team-name-${team.id}`}>
                                         {team.name}
                                       </h4>
-                                    <Badge 
-                                      variant={team.status === 'approved' ? 'default' : team.status === 'pending' ? 'secondary' : 'destructive'}
-                                      data-testid={`badge-team-status-${team.id}`}
-                                    >
-                                      {team.status === 'approved' ? 'Schválený' : team.status === 'pending' ? 'Čaká na schválenie' : 'Zamietnutý'}
-                                    </Badge>
-                                    {team.country && (
-                                      <Badge variant="outline" data-testid={`badge-team-country-${team.id}`}>
-                                        {team.country}
+                                      <Badge 
+                                        variant={team.status === 'approved' ? 'default' : team.status === 'pending' ? 'secondary' : 'destructive'}
+                                        data-testid={`badge-team-status-${team.id}`}
+                                      >
+                                        {team.status === 'approved' ? 'Schválený' : team.status === 'pending' ? 'Čaká na schválenie' : 'Zamietnutý'}
                                       </Badge>
-                                    )}
-                                  </div>
-                                  <div className="mt-2 flex items-center space-x-4 text-sm text-muted-foreground">
-                                    <span>Členovia: {team.members?.length || 0}</span>
-                                    <span>Úlovky: {team.fishCount || 0}</span>
-                                    <span>Celková hmotnosť: {team.totalWeight || 0} kg</span>
-                                    {team.sectorName && (
-                                      <span>Sektor: {team.sectorName}</span>
-                                    )}
-                                    {team.placeName && (
-                                      <span>Miesto: {team.placeName}</span>
-                                    )}
+                                      {team.country && (
+                                        <Badge variant="outline" data-testid={`badge-team-country-${team.id}`}>
+                                          {team.country}
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    <div className="mt-2 flex items-center space-x-4 text-sm text-muted-foreground">
+                                      <span>Členovia: {team.members?.length || 0}</span>
+                                      <span>Úlovky: {team.fishCount || 0}</span>
+                                      <span>Celková hmotnosť: {team.totalWeight || 0} kg</span>
+                                      {team.sectorName && (
+                                        <span>Sektor: {team.sectorName}</span>
+                                      )}
+                                      {team.placeName && (
+                                        <span>Miesto: {team.placeName}</span>
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
                                 <div className="flex items-center space-x-2">
@@ -3152,10 +3243,50 @@ export default function AdminPanel() {
                           <p className="text-muted-foreground">
                             Spravujte rozhodcov priradených k súťaži
                           </p>
+                          {/* Plan limits indicator */}
+                          {selectedCompetition && (() => {
+                            const limitsCheck = checkRefereePlanLimits();
+                            return (
+                              <div className="mt-2 text-sm text-muted-foreground">
+                                Rozhodcovia: {limitsCheck.currentCount} / {limitsCheck.planLimit === null ? '∞' : limitsCheck.planLimit}
+                                {limitsCheck.planLimit !== null && limitsCheck.currentCount >= limitsCheck.planLimit && (
+                                  <span className="text-red-600 dark:text-red-400 ml-2">
+                                    (Limit dosiahnutý)
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })()}
                         </div>
                         <Button 
                           variant="default"
-                          onClick={() => setIsAddRefereeDialogOpen(true)}
+                          onClick={() => {
+                            if (!selectedCompetition) {
+                              toast({
+                                title: "Chyba",
+                                description: "Najprv vyberte súťaž",
+                                variant: "destructive"
+                              });
+                              return;
+                            }
+
+                            const limitsCheck = checkRefereePlanLimits();
+                            if (!limitsCheck.canAdd) {
+                              toast({
+                                title: "Obmedzenie plánu",
+                                description: limitsCheck.message,
+                                variant: "destructive"
+                              });
+                              return;
+                            }
+
+                            refereeForm.reset({
+                              userId: "",
+                              assignedSector: "",
+                              isActive: true,
+                            });
+                            setIsAddRefereeDialogOpen(true);
+                          }}
                           data-testid="button-add-referee"
                         >
                           <Plus className="w-4 h-4 mr-2" />
@@ -3199,10 +3330,8 @@ export default function AdminPanel() {
                                     size="sm" 
                                     variant="outline"
                                     onClick={() => {
-                                      toast({
-                                        title: "Úprava rozhodcu",
-                                        description: "Funkcia úpravy rozhodcu bude implementovaná neskôr"
-                                      });
+                                      setEditingReferee(referee);
+                                      setIsEditRefereeDialogOpen(true);
                                     }}
                                     data-testid={`button-edit-referee-${referee.id}`}
                                   >
@@ -3212,11 +3341,11 @@ export default function AdminPanel() {
                                   <Button 
                                     size="sm" 
                                     variant={referee.isActive ? "secondary" : "default"}
-                                    onClick={() => toggleRefereeMutation.mutate({ 
+                                    onClick={() => updateRefereeMutation.mutate({ 
                                       refereeId: referee.id, 
-                                      isActive: !referee.isActive 
+                                      refereeData: { isActive: !referee.isActive }
                                     })}
-                                    disabled={toggleRefereeMutation.isPending}
+                                    disabled={updateRefereeMutation.isPending}
                                     data-testid={`button-toggle-referee-${referee.id}`}
                                   >
                                     {referee.isActive ? (
@@ -3230,6 +3359,18 @@ export default function AdminPanel() {
                                         Aktivovať
                                       </>
                                     )}
+                                  </Button>
+                                  <Button 
+                                    size="sm" 
+                                    variant="destructive"
+                                    onClick={() => {
+                                      setRefereeToDelete(referee.id);
+                                      setIsDeleteRefereeDialogOpen(true);
+                                    }}
+                                    data-testid={`button-delete-referee-${referee.id}`}
+                                  >
+                                    <Trash2 className="w-4 h-4 mr-1" />
+                                    Odstrániť
                                   </Button>
                                 </div>
                               </div>
@@ -3287,15 +3428,46 @@ export default function AdminPanel() {
                               <FormField
                                 control={refereeForm.control}
                                 name="assignedSector"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Priradený sektor</FormLabel>
-                                    <FormControl>
-                                      <Input placeholder="Zadajte sektor" data-testid="input-referee-sector" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
+                                render={({ field }) => {
+                                  const competition = competitions?.find((c: Competition) => c.id === selectedCompetition);
+                                  const hasSectors = competition?.hasSectors && competition?.sectorPlaces?.length > 0;
+                                  
+                                  if (hasSectors) {
+                                    // Dropdown for sector assignment
+                                    const sectors = competition.sectorPlaces?.map(s => s.sectorName) || [];
+                                    return (
+                                      <FormItem>
+                                        <FormLabel>Priradený sektor</FormLabel>
+                                        <FormControl>
+                                          <Select onValueChange={field.onChange} value={field.value}>
+                                            <SelectTrigger data-testid="select-referee-sector">
+                                              <SelectValue placeholder="Vyberte sektor" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              {sectors.map((sector) => (
+                                                <SelectItem key={sector} value={sector}>
+                                                  {sector}
+                                                </SelectItem>
+                                              ))}
+                                            </SelectContent>
+                                          </Select>
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    );
+                                  } else {
+                                    // Text input for free text sector
+                                    return (
+                                      <FormItem>
+                                        <FormLabel>Priradený sektor</FormLabel>
+                                        <FormControl>
+                                          <Input placeholder="Zadajte sektor" data-testid="input-referee-sector" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    );
+                                  }
+                                }}
                               />
 
                               <FormField
@@ -3338,6 +3510,171 @@ export default function AdminPanel() {
                               </div>
                             </form>
                           </Form>
+                        </DialogContent>
+                      </Dialog>
+
+                      {/* Edit Referee Dialog */}
+                      <Dialog open={isEditRefereeDialogOpen} onOpenChange={setIsEditRefereeDialogOpen}>
+                        <DialogContent className="max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>Upraviť rozhodcu</DialogTitle>
+                            <DialogDescription>
+                              Upravte detaily rozhodcu priradenia k súťaži
+                            </DialogDescription>
+                          </DialogHeader>
+                          <Form {...editRefereeForm}>
+                            <form
+                              onSubmit={editRefereeForm.handleSubmit((data) => {
+                                if (editingReferee) {
+                                  updateRefereeMutation.mutate({
+                                    refereeId: editingReferee.id,
+                                    refereeData: data
+                                  });
+                                }
+                              })}
+                              className="space-y-4"
+                            >
+                              <FormField
+                                control={editRefereeForm.control}
+                                name="assignedSector"
+                                render={({ field }) => {
+                                  const competition = competitions?.find((c: Competition) => c.id === selectedCompetition);
+                                  const hasSectors = competition?.hasSectors && competition?.sectorPlaces?.length > 0;
+                                  
+                                  if (hasSectors) {
+                                    // Dropdown for sector assignment
+                                    const sectors = competition.sectorPlaces?.map(s => s.sectorName) || [];
+                                    return (
+                                      <FormItem>
+                                        <FormLabel>Priradený sektor</FormLabel>
+                                        <FormControl>
+                                          <Select onValueChange={field.onChange} value={field.value}>
+                                            <SelectTrigger data-testid="select-edit-referee-sector">
+                                              <SelectValue placeholder="Vyberte sektor" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              {sectors.map((sector) => (
+                                                <SelectItem key={sector} value={sector}>
+                                                  {sector}
+                                                </SelectItem>
+                                              ))}
+                                            </SelectContent>
+                                          </Select>
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    );
+                                  } else {
+                                    // Text input for free text sector
+                                    return (
+                                      <FormItem>
+                                        <FormLabel>Priradený sektor</FormLabel>
+                                        <FormControl>
+                                          <Input placeholder="Zadajte sektor" data-testid="input-edit-referee-sector" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    );
+                                  }
+                                }}
+                              />
+
+                              <FormField
+                                control={editRefereeForm.control}
+                                name="isActive"
+                                render={({ field }) => (
+                                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                                    <div className="space-y-0.5">
+                                      <FormLabel>Aktívny rozhodca</FormLabel>
+                                      <FormDescription>
+                                        Rozhodca bude aktívny a pripravený na prácu
+                                      </FormDescription>
+                                    </div>
+                                    <FormControl>
+                                      <Switch
+                                        checked={field.value}
+                                        onCheckedChange={field.onChange}
+                                        data-testid="switch-edit-referee-active"
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+
+                              <div className="flex justify-end space-x-2">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setIsEditRefereeDialogOpen(false);
+                                    setEditingReferee(null);
+                                  }}
+                                >
+                                  Zrušiť
+                                </Button>
+                                <Button
+                                  type="submit"
+                                  disabled={updateRefereeMutation.isPending}
+                                  data-testid="button-submit-edit-referee"
+                                >
+                                  {updateRefereeMutation.isPending ? "Aktualizujem..." : "Aktualizovať"}
+                                </Button>
+                              </div>
+                            </form>
+                          </Form>
+                        </DialogContent>
+                      </Dialog>
+
+                      {/* Delete Referee Confirmation Dialog */}
+                      <Dialog open={isDeleteRefereeDialogOpen} onOpenChange={setIsDeleteRefereeDialogOpen}>
+                        <DialogContent className="max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>Odstrániť rozhodcu</DialogTitle>
+                            <DialogDescription>
+                              Ste si istí, že chcete odstrániť tohto rozhodcu zo súťaže? Táto akcia sa nedá vrátiť späť.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                            <div className="flex items-start space-x-3">
+                              <div className="text-yellow-600 dark:text-yellow-400">
+                                <svg className="w-5 h-5 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                </svg>
+                              </div>
+                              <div>
+                                <h4 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                                  Dôležité upozornenie
+                                </h4>
+                                <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-1">
+                                  Ak má rozhodca neschválené úlovky, budú prevedené na organizátora súťaže.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex justify-end space-x-2 mt-4">
+                            <Button
+                              variant="outline"
+                              onClick={() => {
+                                setIsDeleteRefereeDialogOpen(false);
+                                setRefereeToDelete(null);
+                              }}
+                              data-testid="button-cancel-delete-referee"
+                            >
+                              Zrušiť
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              onClick={() => {
+                                if (refereeToDelete) {
+                                  deleteRefereeMutation.mutate(refereeToDelete);
+                                }
+                              }}
+                              disabled={deleteRefereeMutation.isPending}
+                              data-testid="button-confirm-delete-referee"
+                            >
+                              {deleteRefereeMutation.isPending ? "Odstraňujem..." : "Odstrániť"}
+                            </Button>
+                          </div>
                         </DialogContent>
                       </Dialog>
                     </div>
