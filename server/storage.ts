@@ -41,6 +41,8 @@ export interface IStorage {
   createCompetition(competition: InsertCompetition): Promise<Competition>;
   updateCompetition(id: string, competition: Partial<InsertCompetition>): Promise<Competition>;
   updateCompetitionStatus(id: string, status: string): Promise<void>;
+  deleteCompetition(id: string): Promise<void>;
+  resetCompetitionCatches(competitionId: string): Promise<void>;
   
   // Competition registration operations
   getCompetitionRegistrations(status?: string): Promise<CompetitionRegistration[]>;
@@ -83,6 +85,8 @@ export interface IStorage {
   getRefereesByCompetition(competitionId: string): Promise<Referee[]>;
   getRefereeByUserAndCompetition(userId: string, competitionId: string): Promise<Referee | undefined>;
   createReferee(referee: InsertReferee): Promise<Referee>;
+  updateReferee(refereeId: string, updates: Partial<InsertReferee>): Promise<Referee>;
+  deleteReferee(refereeId: string): Promise<void>;
   
   // Catch operations
   getCatchesByCompetition(competitionId: string): Promise<(Catch & { team: Team; referee: Referee })[]>;
@@ -92,6 +96,8 @@ export interface IStorage {
   // Sponsor operations
   getSponsorsByCompetition(competitionId: string): Promise<Sponsor[]>;
   createSponsor(sponsor: InsertSponsor): Promise<Sponsor>;
+  updateSponsor(sponsorId: string, updates: Partial<InsertSponsor>): Promise<Sponsor>;
+  deleteSponsor(sponsorId: string): Promise<void>;
   
   // Leaderboard operations
   getLeaderboard(competitionId: string): Promise<(Team & { members: TeamMember[] })[]>;
@@ -229,6 +235,38 @@ export class DatabaseStorage implements IStorage {
       .update(competitions)
       .set({ status, updatedAt: new Date() })
       .where(eq(competitions.id, id));
+  }
+
+  async deleteCompetition(id: string): Promise<void> {
+    // Delete related data first (foreign key constraints)
+    await db.delete(catches).where(eq(catches.competitionId, id));
+    await db.delete(teamMembers).where(
+      inArray(teamMembers.teamId, 
+        db.select({ id: teams.id }).from(teams).where(eq(teams.competitionId, id))
+      )
+    );
+    await db.delete(teams).where(eq(teams.competitionId, id));
+    await db.delete(referees).where(eq(referees.competitionId, id));
+    await db.delete(sponsors).where(eq(sponsors.competitionId, id));
+    
+    // Finally delete the competition
+    await db.delete(competitions).where(eq(competitions.id, id));
+  }
+
+  async resetCompetitionCatches(competitionId: string): Promise<void> {
+    // Delete all catches for this competition
+    await db.delete(catches).where(eq(catches.competitionId, competitionId));
+    
+    // Reset team statistics for all teams in this competition
+    await db
+      .update(teams)
+      .set({ 
+        totalPoints: 0, 
+        totalWeight: "0", 
+        fishCount: 0, 
+        updatedAt: new Date() 
+      })
+      .where(eq(teams.competitionId, competitionId));
   }
 
   // Competition registration operations
@@ -502,6 +540,21 @@ export class DatabaseStorage implements IStorage {
     return newReferee;
   }
 
+  async updateReferee(refereeId: string, updates: Partial<InsertReferee>): Promise<Referee> {
+    const [updatedReferee] = await db
+      .update(referees)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(referees.id, refereeId))
+      .returning();
+    return updatedReferee;
+  }
+
+  async deleteReferee(refereeId: string): Promise<void> {
+    await db
+      .delete(referees)
+      .where(eq(referees.id, refereeId));
+  }
+
   // Catch operations
   async getCatchesByCompetition(competitionId: string): Promise<(Catch & { team: Team; referee: Referee })[]> {
     const catchesWithDetails = await db
@@ -549,6 +602,21 @@ export class DatabaseStorage implements IStorage {
       .values(sponsor)
       .returning();
     return newSponsor;
+  }
+
+  async updateSponsor(sponsorId: string, updates: Partial<InsertSponsor>): Promise<Sponsor> {
+    const [updatedSponsor] = await db
+      .update(sponsors)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(sponsors.id, sponsorId))
+      .returning();
+    return updatedSponsor;
+  }
+
+  async deleteSponsor(sponsorId: string): Promise<void> {
+    await db
+      .delete(sponsors)
+      .where(eq(sponsors.id, sponsorId));
   }
 
   // Leaderboard operations

@@ -159,6 +159,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Competition not found" });
       }
 
+      // Verify competition ownership for non-admin users
+      if (user?.role === 'organizer' && existingCompetition.organizerId !== userId) {
+        return res.status(403).json({ message: "You can only update your own competitions" });
+      }
+
       // Ensure sideCompetitions is properly typed
       const sideCompetitions: string[] = Array.isArray(req.body.sideCompetitions) 
         ? req.body.sideCompetitions 
@@ -279,6 +284,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Competition not found" });
       }
 
+      // Verify competition ownership for non-admin users
+      if (user?.role === 'organizer' && competition.organizerId !== userId) {
+        return res.status(403).json({ message: "You can only update teams in your own competitions" });
+      }
+
       // Validate the request data using competition-specific schema
       const validationSchema = createTeamStatusValidationSchema(competition);
       const validationResult = validationSchema.safeParse(req.body);
@@ -329,6 +339,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Only organizers and admins can view referees" });
       }
 
+      // Verify competition ownership for non-admin users
+      if (user?.role === 'organizer') {
+        const competition = await storage.getCompetition(req.params.id);
+        if (!competition || competition.organizerId !== userId) {
+          return res.status(403).json({ message: "You can only view referees from your own competitions" });
+        }
+      }
+
       const referees = await storage.getRefereesByCompetition(req.params.id);
       res.json(referees);
     } catch (error) {
@@ -344,6 +362,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (user?.role !== 'organizer' && user?.role !== 'admin') {
         return res.status(403).json({ message: "Only organizers and admins can create referees" });
+      }
+
+      // Verify competition ownership for non-admin users
+      if (user?.role === 'organizer') {
+        const competition = await storage.getCompetition(req.params.id);
+        if (!competition || competition.organizerId !== userId) {
+          return res.status(403).json({ message: "You can only create referees for your own competitions" });
+        }
       }
 
       const refereeData = insertRefereeSchema.parse({
@@ -533,6 +559,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Only organizers and admins can add sponsors" });
       }
 
+      // Verify competition ownership for non-admin users
+      if (user?.role === 'organizer') {
+        const competition = await storage.getCompetition(req.params.id);
+        if (!competition || competition.organizerId !== userId) {
+          return res.status(403).json({ message: "You can only add sponsors to your own competitions" });
+        }
+      }
+
       const sponsorData = insertSponsorSchema.parse({
         ...req.body,
         competitionId: req.params.id,
@@ -543,6 +577,349 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error creating sponsor:", error);
       res.status(500).json({ message: "Failed to create sponsor" });
+    }
+  });
+
+  // Update referee status
+  app.patch('/api/competitions/:id/referees/:refereeId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'organizer' && user?.role !== 'admin') {
+        return res.status(403).json({ message: "Only organizers and admins can update referees" });
+      }
+
+      // Verify competition ownership for non-admin users
+      if (user?.role === 'organizer') {
+        const competition = await storage.getCompetition(req.params.id);
+        if (!competition || competition.organizerId !== userId) {
+          return res.status(403).json({ message: "You can only update referees for your own competitions" });
+        }
+      }
+
+      // Validate request body
+      const updateSchema = z.object({
+        isActive: z.boolean().optional(),
+        assignedSector: z.string().optional()
+      });
+      
+      const validation = updateSchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ message: "Invalid request data", errors: validation.error.errors });
+      }
+
+      // Verify the referee belongs to this competition (prevent IDOR)
+      const referees = await storage.getRefereesByCompetition(req.params.id);
+      const targetReferee = referees.find(r => r.id === req.params.refereeId);
+      if (!targetReferee) {
+        return res.status(404).json({ message: "Referee not found in this competition" });
+      }
+
+      const { isActive, assignedSector } = validation.data;
+      const referee = await storage.updateReferee(req.params.refereeId, { 
+        isActive,
+        assignedSector
+      });
+      
+      res.json(referee);
+    } catch (error) {
+      console.error("Error updating referee:", error);
+      res.status(500).json({ message: "Failed to update referee" });
+    }
+  });
+
+  // Delete referee
+  app.delete('/api/competitions/:id/referees/:refereeId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'organizer' && user?.role !== 'admin') {
+        return res.status(403).json({ message: "Only organizers and admins can delete referees" });
+      }
+
+      // Verify competition ownership for non-admin users
+      if (user?.role === 'organizer') {
+        const competition = await storage.getCompetition(req.params.id);
+        if (!competition || competition.organizerId !== userId) {
+          return res.status(403).json({ message: "You can only delete referees from your own competitions" });
+        }
+      }
+
+      // Verify the referee belongs to this competition (prevent IDOR)
+      const referees = await storage.getRefereesByCompetition(req.params.id);
+      const targetReferee = referees.find(r => r.id === req.params.refereeId);
+      if (!targetReferee) {
+        return res.status(404).json({ message: "Referee not found in this competition" });
+      }
+
+      await storage.deleteReferee(req.params.refereeId);
+      res.json({ message: "Referee deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting referee:", error);
+      res.status(500).json({ message: "Failed to delete referee" });
+    }
+  });
+
+  // Update sponsor
+  app.put('/api/competitions/:id/sponsors/:sponsorId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'organizer' && user?.role !== 'admin') {
+        return res.status(403).json({ message: "Only organizers and admins can update sponsors" });
+      }
+
+      // Verify competition ownership for non-admin users
+      if (user?.role === 'organizer') {
+        const competition = await storage.getCompetition(req.params.id);
+        if (!competition || competition.organizerId !== userId) {
+          return res.status(403).json({ message: "You can only update sponsors in your own competitions" });
+        }
+      }
+
+      // Validate request body with partial sponsor schema
+      const updateSchema = insertSponsorSchema.partial().omit({ competitionId: true });
+      const validation = updateSchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ message: "Invalid sponsor data", errors: validation.error.errors });
+      }
+
+      // Verify the sponsor belongs to this competition (prevent IDOR)
+      const sponsors = await storage.getSponsorsByCompetition(req.params.id);
+      const targetSponsor = sponsors.find(s => s.id === req.params.sponsorId);
+      if (!targetSponsor) {
+        return res.status(404).json({ message: "Sponsor not found in this competition" });
+      }
+
+      const sponsor = await storage.updateSponsor(req.params.sponsorId, validation.data);
+      res.json(sponsor);
+    } catch (error) {
+      console.error("Error updating sponsor:", error);
+      res.status(500).json({ message: "Failed to update sponsor" });
+    }
+  });
+
+  // Delete sponsor
+  app.delete('/api/competitions/:id/sponsors/:sponsorId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'organizer' && user?.role !== 'admin') {
+        return res.status(403).json({ message: "Only organizers and admins can delete sponsors" });
+      }
+
+      // Verify competition ownership for non-admin users
+      if (user?.role === 'organizer') {
+        const competition = await storage.getCompetition(req.params.id);
+        if (!competition || competition.organizerId !== userId) {
+          return res.status(403).json({ message: "You can only delete sponsors from your own competitions" });
+        }
+      }
+
+      // Verify the sponsor belongs to this competition (prevent IDOR)
+      const sponsors = await storage.getSponsorsByCompetition(req.params.id);
+      const targetSponsor = sponsors.find(s => s.id === req.params.sponsorId);
+      if (!targetSponsor) {
+        return res.status(404).json({ message: "Sponsor not found in this competition" });
+      }
+
+      await storage.deleteSponsor(req.params.sponsorId);
+      res.json({ message: "Sponsor deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting sponsor:", error);
+      res.status(500).json({ message: "Failed to delete sponsor" });
+    }
+  });
+
+  // Delete competition
+  app.delete('/api/competitions/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'organizer' && user?.role !== 'admin') {
+        return res.status(403).json({ message: "Only organizers and admins can delete competitions" });
+      }
+
+      // Verify competition ownership for non-admin users
+      const competition = await storage.getCompetition(req.params.id);
+      if (!competition) {
+        return res.status(404).json({ message: "Competition not found" });
+      }
+      
+      if (user?.role === 'organizer' && competition.organizerId !== userId) {
+        return res.status(403).json({ message: "You can only delete your own competitions" });
+      }
+
+      await storage.deleteCompetition(req.params.id);
+      res.json({ message: "Competition deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting competition:", error);
+      res.status(500).json({ message: "Failed to delete competition" });
+    }
+  });
+
+  // Reset competition catches
+  app.delete('/api/competitions/:id/catches', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'organizer' && user?.role !== 'admin') {
+        return res.status(403).json({ message: "Only organizers and admins can reset catches" });
+      }
+
+      // Verify competition ownership for non-admin users
+      const competition = await storage.getCompetition(req.params.id);
+      if (!competition) {
+        return res.status(404).json({ message: "Competition not found" });
+      }
+      
+      if (user?.role === 'organizer' && competition.organizerId !== userId) {
+        return res.status(403).json({ message: "You can only reset catches for your own competitions" });
+      }
+
+      await storage.resetCompetitionCatches(req.params.id);
+      res.json({ message: "Competition catches reset successfully" });
+    } catch (error) {
+      console.error("Error resetting catches:", error);
+      res.status(500).json({ message: "Failed to reset catches" });
+    }
+  });
+
+  // Update competition status
+  app.patch('/api/competitions/:id/status', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'organizer' && user?.role !== 'admin') {
+        return res.status(403).json({ message: "Only organizers and admins can update competition status" });
+      }
+
+      const { status } = req.body;
+      if (!['registration', 'live', 'completed'].includes(status)) {
+        return res.status(400).json({ message: "Invalid status" });
+      }
+
+      const competition = await storage.updateCompetitionStatus(req.params.id, status);
+      res.json(competition);
+    } catch (error) {
+      console.error("Error updating competition status:", error);
+      res.status(500).json({ message: "Failed to update competition status" });
+    }
+  });
+
+  // Export teams
+  app.get('/api/competitions/:id/export/teams', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'organizer' && user?.role !== 'admin') {
+        return res.status(403).json({ message: "Only organizers and admins can export data" });
+      }
+
+      // Verify competition ownership for non-admin users
+      if (user?.role === 'organizer') {
+        const competition = await storage.getCompetition(req.params.id);
+        if (!competition || competition.organizerId !== userId) {
+          return res.status(403).json({ message: "You can only export data from your own competitions" });
+        }
+      }
+
+      const teams = await storage.getTeamsByCompetition(req.params.id);
+      
+      // Convert to CSV format
+      const csvHeader = 'ID,Name,Captain,Members,Status,Registration Date\n';
+      const csvData = teams.map(team => {
+        const members = team.members?.map(m => `${m.name} (${m.email})`).join('; ') || '';
+        return `${team.id},"${team.name}","${team.captainName}","${members}",${team.status},${team.createdAt}`;
+      }).join('\n');
+      
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename="teams-${req.params.id}.csv"`);
+      res.send(csvHeader + csvData);
+    } catch (error) {
+      console.error("Error exporting teams:", error);
+      res.status(500).json({ message: "Failed to export teams" });
+    }
+  });
+
+  // Export catches
+  app.get('/api/competitions/:id/export/catches', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'organizer' && user?.role !== 'admin') {
+        return res.status(403).json({ message: "Only organizers and admins can export data" });
+      }
+
+      // Verify competition ownership for non-admin users
+      if (user?.role === 'organizer') {
+        const competition = await storage.getCompetition(req.params.id);
+        if (!competition || competition.organizerId !== userId) {
+          return res.status(403).json({ message: "You can only export data from your own competitions" });
+        }
+      }
+
+      const catches = await storage.getCatchesByCompetition(req.params.id);
+      
+      // Convert to CSV format
+      const csvHeader = 'ID,Team,Fish Species,Weight,Length,Points,Catch Time,Verified\n';
+      const csvData = catches.map(c => {
+        return `${c.id},"${c.team?.name || 'Unknown'}","${c.fishSpecies}",${c.weight},${c.length || ''},${c.points},${c.createdAt},${c.isVerified ? 'Yes' : 'No'}`;
+      }).join('\n');
+      
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename="catches-${req.params.id}.csv"`);
+      res.send(csvHeader + csvData);
+    } catch (error) {
+      console.error("Error exporting catches:", error);
+      res.status(500).json({ message: "Failed to export catches" });
+    }
+  });
+
+  // Export results
+  app.get('/api/competitions/:id/export/results', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'organizer' && user?.role !== 'admin') {
+        return res.status(403).json({ message: "Only organizers and admins can export data" });
+      }
+
+      // Verify competition ownership for non-admin users
+      if (user?.role === 'organizer') {
+        const competition = await storage.getCompetition(req.params.id);
+        if (!competition || competition.organizerId !== userId) {
+          return res.status(403).json({ message: "You can only export data from your own competitions" });
+        }
+      }
+
+      const teams = await storage.getTeamsByCompetition(req.params.id);
+      
+      // Sort by total points descending
+      const sortedTeams = teams.sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0));
+      
+      // Convert to CSV format
+      const csvHeader = 'Position,Team Name,Captain,Total Points,Total Weight,Fish Count\n';
+      const csvData = sortedTeams.map((team, index) => {
+        return `${index + 1},"${team.name}","${team.captainName}",${team.totalPoints || 0},${team.totalWeight || 0},${team.fishCount || 0}`;
+      }).join('\n');
+      
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename="results-${req.params.id}.csv"`);
+      res.send(csvHeader + csvData);
+    } catch (error) {
+      console.error("Error exporting results:", error);
+      res.status(500).json({ message: "Failed to export results" });
     }
   });
 
