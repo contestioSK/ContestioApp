@@ -137,6 +137,11 @@ export default function CompetitionCard({ competition }: CompetitionCardProps) {
                 ? 'object-contain bg-white' // Pre nahrané logá - zobrazí celé logo s bielym pozadím
                 : 'object-cover' // Pre predvolené obrázky - pokryje celú plochu
             }`}
+            onError={(e) => {
+              // Ak sa custom obrázok nepodarí načítať, použije fallback
+              e.currentTarget.src = getCompetitionImage(competition.status);
+              e.currentTarget.className = e.currentTarget.className.replace('object-contain bg-white', 'object-cover');
+            }}
             data-testid={`img-competition-${competition.id}`}
           />
         </Link>
