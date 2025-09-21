@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import { Camera, LogOut, Check, Clock } from "lucide-react";
+import { Camera, LogOut, Check, Clock, Loader2 } from "lucide-react";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,6 +30,24 @@ const createCatchSubmissionSchema = (minWeight: number = 2) => z.object({
 const defaultCatchSubmissionSchema = createCatchSubmissionSchema(2);
 
 type CatchSubmissionForm = z.infer<typeof defaultCatchSubmissionSchema>;
+
+// Haptic feedback function for mobile devices - shared across components
+const triggerHaptic = (type: 'success' | 'warning' | 'selection' = 'selection') => {
+  if ('vibrate' in navigator) {
+    switch (type) {
+      case 'success':
+        navigator.vibrate([100, 50, 100]); // Double pulse for success
+        break;
+      case 'warning':
+        navigator.vibrate([200]); // Single long pulse for warning
+        break;
+      case 'selection':
+      default:
+        navigator.vibrate([50]); // Quick pulse for selection
+        break;
+    }
+  }
+};
 
 // Separate form component that can be remounted with key prop
 interface CatchSubmissionFormProps {
@@ -101,6 +119,7 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
       return response.json();
     },
     onSuccess: () => {
+      triggerHaptic('success');
       toast({
         title: "Úspech",
         description: "Záber bol úspešne odoslaný",
@@ -122,6 +141,7 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
         }, 500);
         return;
       }
+      triggerHaptic('warning');
       toast({
         title: "Chyba",
         description: "Nepodarilo sa odoslať záber",
@@ -144,6 +164,7 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
     const file = event.target.files?.[0];
     if (file) {
       setSelectedPhoto(file);
+      triggerHaptic('success');
     }
   };
 
@@ -184,6 +205,7 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
                             className={`h-12 text-left text-base justify-start ${field.value === team.id ? 'bg-primary text-primary-foreground' : ''}`}
                             onClick={() => {
                               field.onChange(team.id);
+                              triggerHaptic('selection');
                               // Update recent teams
                               setRecentTeams(prev => {
                                 const updated = [team.id, ...prev.filter(id => id !== team.id)];
@@ -206,6 +228,7 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
                   <FormControl>
                     <Select onValueChange={(value) => {
                       field.onChange(value);
+                      triggerHaptic('selection');
                       // Update recent teams
                       setRecentTeams(prev => {
                         const updated = [value, ...prev.filter(id => id !== value)];
@@ -281,7 +304,10 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
                       type="button"
                       variant={field.value === "scaly" ? "default" : "outline"}
                       className={`h-12 text-base font-medium ${field.value === "scaly" ? "bg-primary text-primary-foreground" : ""}`}
-                      onClick={() => field.onChange("scaly")}
+                      onClick={() => {
+                        field.onChange("scaly");
+                        triggerHaptic('selection');
+                      }}
                       data-testid="button-scaly-carp"
                     >
                       Šupináč
@@ -290,7 +316,10 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
                       type="button"
                       variant={field.value === "mirror" ? "default" : "outline"}
                       className={`h-12 text-base font-medium ${field.value === "mirror" ? "bg-primary text-primary-foreground" : ""}`}
-                      onClick={() => field.onChange("mirror")}
+                      onClick={() => {
+                        field.onChange("mirror");
+                        triggerHaptic('selection');
+                      }}
                       data-testid="button-mirror-carp"
                     >
                       Lysec
@@ -342,7 +371,14 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
               disabled={submitCatchMutation.isPending}
               data-testid="button-submit-catch"
             >
-              {submitCatchMutation.isPending ? "Odosíla sa..." : "Odoslať záber"}
+              {submitCatchMutation.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Odosíla sa...
+                </>
+              ) : (
+                "Odoslať záber"
+              )}
             </Button>
           </div>
           
@@ -464,7 +500,10 @@ export default function RefereeInterface() {
                   <Label className="text-sm font-medium text-foreground mb-2 block">
                     Vybrať súťaž
                   </Label>
-                  <Select value={selectedCompetition} onValueChange={setSelectedCompetition}>
+                  <Select value={selectedCompetition} onValueChange={(value) => {
+                    setSelectedCompetition(value);
+                    triggerHaptic('selection');
+                  }}>
                     <SelectTrigger data-testid="select-competition" className="h-12 text-base">
                       <SelectValue placeholder="Vyberte súťaž" />
                     </SelectTrigger>
