@@ -42,6 +42,16 @@ export default function StatsDashboard({ competitionId }: StatsDashboardProps) {
   // Check which special contests are enabled
   const hasTop3Contest = competition?.sideCompetitions?.includes("best-3-fish") ?? false;
   const hasTop5Contest = competition?.sideCompetitions?.includes("best-5-fish") ?? false;
+  
+  // Debug logging
+  console.log('Dashboard Debug:', {
+    competitionLoaded: !!competition,
+    sideCompetitions: competition?.sideCompetitions,
+    hasTop5Contest,
+    hasTop3Contest,
+    teamTop5AverageCount: stats?.teamTop5Average?.length,
+    teamTop3AverageCount: stats?.teamTop3Average?.length
+  });
 
   if (isLoading) {
     return (
@@ -81,6 +91,13 @@ export default function StatsDashboard({ competitionId }: StatsDashboardProps) {
       <div className="flex items-center gap-2 mb-6">
         <BarChart3 className="w-6 h-6" />
         <h2 className="text-2xl font-bold">Analytiky súťaže</h2>
+      </div>
+      
+      {/* DEBUG: Temporary debug info */}
+      <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
+        <strong>DEBUG:</strong> hasTop5: {hasTop5Contest.toString()}, hasTop3: {hasTop3Contest.toString()}, 
+        top5Data: {stats?.teamTop5Average?.length || 0}, 
+        sideComps: {competition?.sideCompetitions?.join(', ') || 'none'}
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
