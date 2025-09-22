@@ -7,7 +7,7 @@ import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import type { Team, TeamMember } from "@shared/schema";
-import { getCountryFlagEmoji } from "@/lib/countries";
+import { getCountryFlag } from "@/lib/countries";
 
 interface SectorLeaderboardsProps {
   competitionId: string;
@@ -182,9 +182,21 @@ export default function SectorLeaderboards({ competitionId }: SectorLeaderboards
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
-                              <span className="text-lg" data-testid={`flag-${team.id}`}>
-                                {getCountryFlagEmoji(team.country || 'SK')}
-                              </span>
+                              <img 
+                                src={getCountryFlag(team.country || 'SK')} 
+                                alt={`Vlajka ${team.country || 'SK'}`}
+                                className="w-5 h-4 object-cover rounded-sm border border-gray-200"
+                                title={`Krajina: ${team.country || 'SK'}`}
+                                data-testid={`flag-${team.id}`}
+                                onError={(e) => {
+                                  // Fallback to emoji if image fails to load
+                                  e.currentTarget.style.display = 'none';
+                                  const span = document.createElement('span');
+                                  span.textContent = '🏳️';
+                                  span.className = 'text-sm';
+                                  e.currentTarget.parentNode?.insertBefore(span, e.currentTarget);
+                                }}
+                              />
                               <span className="font-medium text-foreground" data-testid={`text-team-name-${team.id}`}>
                                 {team.name}
                               </span>
