@@ -1210,6 +1210,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
       });
 
+      // Hourly Distribution (catches by hour of day)
+      const hourlyDistribution = Array.from({ length: 24 }, (_, hour) => {
+        const hourCatches = catches.filter(catch_ => {
+          if (!catch_.submittedAt) return false;
+          const catchHour = new Date(catch_.submittedAt).getHours();
+          return catchHour === hour;
+        });
+        
+        return {
+          hour,
+          hourLabel: `${hour.toString().padStart(2, '0')}:00`,
+          count: hourCatches.length,
+          totalWeight: Math.round(hourCatches.reduce((sum, c) => sum + Number(c.weight), 0) * 10) / 10
+        };
+      });
+
       const stats = {
         timeline,
         weightCategories: weightCategories.filter(cat => cat.total > 0),
@@ -1223,6 +1239,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // New sector data
         sectorTimeline,
         sectorFishTypes: Object.values(sectorFishTypes).filter(s => s.scaly > 0 || s.mirror > 0),
+        // New hourly data
+        hourlyDistribution,
         specialMilestones: [],
         dailyBigFish: [],
         recordProgression: [],
