@@ -20,6 +20,7 @@ import {
   updateNotificationPreferencesSchema,
   insertAnnouncementSchema,
   updateAnnouncementSchema,
+  insertDiaryBattleSchema,
 } from "@shared/schema";
 import { z } from "zod";
 import { canUseFeature } from "@shared/plan-capabilities";
@@ -2964,6 +2965,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     });
   }
+
+  // Diary Battle endpoints
+  app.post('/api/diary/battles', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Check if user has access to battle features (PREMIUM gating)
+      const canAccessBattles = await storage.canAccessBattleFeatures(userId);
+      if (!canAccessBattles) {
+        return res.status(403).json({ 
+          message: "Battle functionality is only available for Premium users",
+          code: "PREMIUM_REQUIRED"
+        });
+      }
+
+      // Validate request data
+      const battleData = insertDiaryBattleSchema.parse(req.body);
+      
+      // TODO: In production, validate tripId ownership instead of using stub
+      // For now, we'll create a basic trip if needed or use provided tripId
+      if (battleData.tripId === "temp-trip-id-for-battle") {
+        // Create a basic trip for this battle
+        const tempTrip = await storage.createDiaryTrip({
+          name: `Battle Trip: ${battleData.name}`,
+          location: "Battle Location", 
+          startDate: battleData.startAt,
+          endDate: battleData.endAt,
+          ownerUserId: userId,
+          visibility: "private",
+          notes: `Auto-generated trip for battle: ${battleData.name}`
+        }, userId);
+        battleData.tripId = tempTrip.id;
+      } else {
+        // Verify trip ownership
+        const hasAccess = await storage.checkTripOwnership(battleData.tripId, userId);
+        if (!hasAccess) {
+          return res.status(403).json({ message: "You can only create battles for your own trips" });
+        }
+      }
+
+      // Create battle
+      const battle = await storage.createDiaryBattle(battleData, userId);
+      
+      // Broadcast battle creation only to the owner for real-time updates
+      // TODO: Later extend to include invited participants when that feature is added
+      broadcastToUsers([userId], {
+        type: 'diary_battle_created',
+        battleId: battle.id,
+        payload: battle
+      });
+      
+      res.status(201).json(battle);
+    } catch (error) {
+      console.error("Error creating diary battle:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid battle data", 
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ message: "Failed to create battle" });
+    }
+  });
 
   // Serve uploaded files securely
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
