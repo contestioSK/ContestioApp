@@ -76,15 +76,16 @@ export function HourlyDistributionChart({ data }: HourlyDistributionChartProps) 
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
-                dataKey="hourLabel" 
+                dataKey="hour" 
                 tick={{ fontSize: 11 }}
                 angle={-45}
                 textAnchor="end"
                 height={80}
+                tickFormatter={(hour) => String(hour).padStart(2, '0') + ':00'}
               />
               <YAxis 
                 tick={{ fontSize: 12 }}
-                label={{ value: 'Počet úlovkov', angle: -90, position: 'insideLeft' }}
+                label={{ value: 'Počet úlovkov', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle' } }}
               />
               <ChartTooltip 
                 content={
