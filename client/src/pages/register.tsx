@@ -42,31 +42,31 @@ export default function Register() {
                   <BookOpen className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
                   <div>
                     <h4 className="font-medium text-foreground">Rybársky denník</h4>
-                    <p className="text-sm text-muted-foreground">Zaznamenávajte svoje úlovky, miesta a štatistiky</p>
+                    <p className="text-sm text-muted-foreground">Zaznamenávajte svoje úlovky a miesta</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Trophy className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
                   <div>
-                    <h4 className="font-medium text-foreground">Osobné súťaže</h4>
-                    <p className="text-sm text-muted-foreground">Súťažte s kamarátmi a sledujte pokrok</p>
+                    <h4 className="font-medium text-foreground">Fishing battles</h4>
+                    <p className="text-sm text-muted-foreground">Súťažte s priateľmi v osobných výzvach</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Users className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
                   <div>
-                    <h4 className="font-medium text-foreground">Pripojenie k tímom</h4>
-                    <p className="text-sm text-muted-foreground">Zaregistrujte sa do existujúcich súťaží</p>
+                    <h4 className="font-medium text-foreground">Pripojenie k súťažiam</h4>
+                    <p className="text-sm text-muted-foreground">Zaregistrujte sa do verejných súťaží</p>
                   </div>
                 </div>
               </div>
               <Button 
-                onClick={() => window.location.href = '/api/login?account_type=individual'}
+                onClick={() => window.location.href = '/api/login'}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium"
                 size="lg"
                 data-testid="button-register-individual"
               >
-                Zaregistrovať individuálny účet
+                Prihlásiť sa / Registrovať
               </Button>
               <p className="text-xs text-muted-foreground text-center mt-3">
                 Začnite bezplatne s freemium verziou
