@@ -991,32 +991,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       });
 
-      // Timeline data (hourly aggregation for now)
+      // Timeline data (daily aggregation)
       const timeline = [];
-      const catchesByHour = catches.reduce((acc, catch_) => {
+      const competitionStart = new Date(competition.startDate);
+      const competitionEnd = new Date(competition.endDate);
+      const currentDate = new Date();
+      
+      // Calculate the actual end date (either competition end or current date, whichever is earlier)
+      const actualEndDate = currentDate < competitionEnd ? currentDate : competitionEnd;
+      
+      // Group catches by day
+      const catchesByDay = catches.reduce((acc, catch_) => {
         if (!catch_.submittedAt) return acc;
-        const hour = new Date(catch_.submittedAt).getHours();
-        if (!acc[hour]) {
-          acc[hour] = { weight: 0, count: 0 };
+        const catchDate = new Date(catch_.submittedAt);
+        const daysSinceStart = Math.floor((catchDate.getTime() - competitionStart.getTime()) / (1000 * 60 * 60 * 24));
+        const dayKey = Math.max(0, daysSinceStart); // Ensure non-negative
+        
+        if (!acc[dayKey]) {
+          acc[dayKey] = { weight: 0, count: 0 };
         }
-        acc[hour].weight += Number(catch_.weight);
-        acc[hour].count += 1;
+        acc[dayKey].weight += Number(catch_.weight);
+        acc[dayKey].count += 1;
         return acc;
       }, {} as Record<number, { weight: number; count: number }>);
 
-      // Create cumulative timeline
+      // Create cumulative timeline for each day
       let cumulativeWeight = 0;
       let cumulativeCount = 0;
-      for (let hour = 0; hour < 24; hour++) {
-        const hourData = catchesByHour[hour] || { weight: 0, count: 0 };
-        cumulativeWeight += hourData.weight;
-        cumulativeCount += hourData.count;
+      const totalDays = Math.ceil((actualEndDate.getTime() - competitionStart.getTime()) / (1000 * 60 * 60 * 24));
+      
+      for (let day = 0; day < Math.max(1, totalDays); day++) {
+        const dayData = catchesByDay[day] || { weight: 0, count: 0 };
+        cumulativeWeight += dayData.weight;
+        cumulativeCount += dayData.count;
+        
+        const dayDate = new Date(competitionStart);
+        dayDate.setDate(dayDate.getDate() + day);
         
         timeline.push({
-          time: `2025-09-21T${hour.toString().padStart(2, '0')}:00:00Z`,
+          time: dayDate.toISOString(),
           totalWeight: Math.round(cumulativeWeight * 10) / 10,
           totalCount: cumulativeCount,
-          hour: hour
+          hour: day * 24 // Convert day to hour equivalent for compatibility
         });
       }
 

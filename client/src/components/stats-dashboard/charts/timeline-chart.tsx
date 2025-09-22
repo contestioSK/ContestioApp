@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
-import { ComposedChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
+import { ComposedChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Cell } from "recharts";
 import type { TimelineData } from "../types";
 
 interface TimelineChartProps {
@@ -17,6 +17,28 @@ const chartConfig = {
     color: "hsl(var(--chart-2))",
   },
 };
+
+// Farby pre jednotlivé dni
+const getDayColors = (dayIndex: number) => ({
+  weight: [
+    'hsl(220, 70%, 60%)',  // modrá - Deň 1
+    'hsl(160, 70%, 50%)',  // tyrkysová - Deň 2  
+    'hsl(120, 70%, 50%)',  // zelená - Deň 3
+    'hsl(80, 70%, 55%)',   // svetlo zelená - Deň 4
+    'hsl(40, 70%, 60%)',   // oranžová - Deň 5
+    'hsl(0, 70%, 60%)',    // červená - Deň 6
+    'hsl(280, 70%, 60%)',  // fialová - Deň 7
+  ][dayIndex % 7],
+  count: [
+    'hsl(220, 50%, 75%)',  // svetlá modrá - Deň 1
+    'hsl(160, 50%, 65%)',  // svetlá tyrkysová - Deň 2
+    'hsl(120, 50%, 65%)',  // svetlá zelená - Deň 3
+    'hsl(80, 50%, 70%)',   // svetlo svetlo zelená - Deň 4
+    'hsl(40, 50%, 75%)',   // svetlá oranžová - Deň 5
+    'hsl(0, 50%, 75%)',    // svetlá červená - Deň 6
+    'hsl(280, 50%, 75%)',  // svetlá fialová - Deň 7
+  ][dayIndex % 7]
+});
 
 export function TimelineChart({ data }: TimelineChartProps) {
   // Group data by day and take the latest cumulative value per day
@@ -93,17 +115,23 @@ export function TimelineChart({ data }: TimelineChartProps) {
               <Bar
                 yAxisId="weight"
                 dataKey="totalWeight"
-                fill="var(--color-totalWeight)"
                 name="totalWeight"
                 radius={[2, 2, 0, 0]}
-              />
+              >
+                {formattedData.map((entry, index) => (
+                  <Cell key={`weight-${index}`} fill={getDayColors(index).weight} />
+                ))}
+              </Bar>
               <Bar
                 yAxisId="count"
                 dataKey="totalCount"
-                fill="var(--color-totalCount)"
                 name="totalCount"
                 radius={[2, 2, 0, 0]}
-              />
+              >
+                {formattedData.map((entry, index) => (
+                  <Cell key={`count-${index}`} fill={getDayColors(index).count} />
+                ))}
+              </Bar>
             </ComposedChart>
           </ResponsiveContainer>
         </ChartContainer>
