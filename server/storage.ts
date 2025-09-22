@@ -859,10 +859,31 @@ export class DatabaseStorage implements IStorage {
       team.status === 'approved' && (team.sector || team.sectorName)
     );
 
+    // Calculate real-time total weights for each team from catches table
+    const teamsWithRealWeights = await Promise.all(
+      approvedTeamsWithSector.map(async (team) => {
+        const stats = await db
+          .select({
+            totalWeight: sql<number>`COALESCE(SUM(CAST(${catches.weight} AS DECIMAL)), 0)`,
+            fishCount: sql<number>`COALESCE(COUNT(*), 0)`,
+          })
+          .from(catches)
+          .where(and(eq(catches.teamId, team.id), eq(catches.isVerified, true)));
+
+        const { totalWeight, fishCount } = stats[0];
+        
+        return {
+          ...team,
+          totalWeight: totalWeight.toString(),
+          fishCount
+        };
+      })
+    );
+
     // Group teams by sector
     const teamsBySector: Record<string, (Team & { members: TeamMember[] })[]> = {};
     
-    approvedTeamsWithSector.forEach(team => {
+    teamsWithRealWeights.forEach(team => {
       // Normalize sector - prefer team.sector, fallback to first letter of sectorName
       let sectorCode = team.sector;
       if (!sectorCode && team.sectorName) {
