@@ -11,6 +11,7 @@ import LiveLeaderboard from "@/components/live-leaderboard";
 import CatchTimeline from "@/components/catch-timeline";
 import SectorLeaderboards from "@/components/sector-leaderboards";
 import CompetitionStatsBar from "@/components/competition-stats-bar";
+import SideCompetitionStatsBar from "@/components/side-competition-stats-bar";
 import StatsDashboard from "@/components/stats-dashboard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -406,6 +407,16 @@ export default function CompetitionDetail() {
           <CompetitionStatsBar 
             catches={(catches || []).map(c => ({ ...c, team: c.team }))} 
             isLoading={catchesLoading} 
+          />
+        </div>
+
+        {/* Side Competition Statistics Bar */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <SideCompetitionStatsBar 
+            catches={(catches || []).map(c => ({ ...c, team: c.team }))} 
+            teams={teams || []}
+            competition={competition}
+            isLoading={catchesLoading || competitionLoading} 
           />
         </div>
         
