@@ -107,11 +107,6 @@ export default function StatsDashboard({ competitionId }: StatsDashboardProps) {
             <WeightCategoryChart data={stats.weightCategories} />
             <FishTypeDistributionChart data={stats.fishTypeDistribution} />
             
-            {/* Hodinový graf na celú šírku */}
-            <div className="lg:col-span-2">
-              <HourlyDistributionChart data={stats.hourlyDistribution || []} />
-            </div>
-            
             {/* Conditionally show team average charts based on side competitions - moved down */}
             {hasTop5Contest && (
               <TeamAverageChart 
@@ -133,6 +128,11 @@ export default function StatsDashboard({ competitionId }: StatsDashboardProps) {
             {!hasTop5Contest && !hasTop3Contest && (
               <TopFishChart data={stats.topFish} />
             )}
+            
+            {/* Hodinový graf na celú šírku - umiestnený úplne dole */}
+            <div className="lg:col-span-2">
+              <HourlyDistributionChart data={stats.hourlyDistribution || []} />
+            </div>
           </div>
         </TabsContent>
 
