@@ -436,6 +436,8 @@ export default function DiaryCatches() {
 
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+                  {/* Disable all form fields during submission */}
+                  <fieldset disabled={createCatchMutation.isPending || updateCatchMutation.isPending} className="space-y-6">
                   <FormField
                     control={form.control}
                     name="tripId"
@@ -793,6 +795,7 @@ export default function DiaryCatches() {
                       {editingCatch ? "Uložiť zmeny" : "Pridať úlovok"}
                     </Button>
                   </div>
+                  </fieldset>
                 </form>
               </Form>
             </DialogContent>
@@ -916,15 +919,75 @@ export default function DiaryCatches() {
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
-              <Card key={i} className="animate-pulse">
+              <Card key={i} className="animate-pulse" data-testid="skeleton-catch-card">
                 <CardHeader>
-                  <div className="h-4 bg-muted rounded w-3/4"></div>
-                  <div className="h-3 bg-muted rounded w-1/2"></div>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      {/* Weight and fish icon */}
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 bg-muted rounded"></div>
+                        <div className="h-5 bg-muted rounded w-20"></div>
+                      </div>
+                      {/* Angler name */}
+                      <div className="flex items-center gap-2 mt-2">
+                        <div className="w-3 h-3 bg-muted rounded"></div>
+                        <div className="h-3 bg-muted rounded w-24"></div>
+                      </div>
+                    </div>
+                    {/* Badges */}
+                    <div className="flex gap-1">
+                      <div className="h-5 bg-muted rounded w-16"></div>
+                      {i % 3 === 0 && <div className="h-5 bg-muted rounded w-12"></div>}
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2">
-                    <div className="h-3 bg-muted rounded"></div>
-                    <div className="h-3 bg-muted rounded w-2/3"></div>
+                  <div className="space-y-3">
+                    {/* Date/time */}
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 bg-muted rounded"></div>
+                      <div className="h-3 bg-muted rounded w-32"></div>
+                    </div>
+                    {/* Trip location */}
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 bg-muted rounded"></div>
+                      <div className="h-3 bg-muted rounded w-28"></div>
+                    </div>
+                    {/* Additional details */}
+                    {i % 2 === 0 && (
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 bg-muted rounded"></div>
+                        <div className="h-3 bg-muted rounded w-20"></div>
+                      </div>
+                    )}
+                    {/* Notes */}
+                    {i % 3 === 1 && (
+                      <div className="space-y-1">
+                        <div className="h-3 bg-muted rounded w-full"></div>
+                        <div className="h-3 bg-muted rounded w-3/4"></div>
+                      </div>
+                    )}
+                    {/* Photo skeleton */}
+                    {i % 4 === 0 && (
+                      <div className="mt-3">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-4 h-4 bg-muted rounded"></div>
+                          <div className="h-3 bg-muted rounded w-20"></div>
+                        </div>
+                        <div className="grid grid-cols-3 gap-1">
+                          <div className="aspect-square bg-muted rounded"></div>
+                          <div className="aspect-square bg-muted rounded"></div>
+                          <div className="aspect-square bg-muted rounded"></div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  {/* Separator */}
+                  <div className="h-px bg-muted my-4"></div>
+                  {/* Action buttons */}
+                  <div className="flex justify-end gap-2">
+                    <div className="w-8 h-8 bg-muted rounded"></div>
+                    <div className="w-8 h-8 bg-muted rounded"></div>
                   </div>
                 </CardContent>
               </Card>
