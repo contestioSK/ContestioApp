@@ -26,7 +26,7 @@ interface StatsDashboardProps {
 }
 
 export default function StatsDashboard({ competitionId }: StatsDashboardProps) {
-  const { data: stats, isLoading, error } = useCompetitionStats(competitionId);
+  const { data: stats, isLoading, error } = useCompetitionStats(competitionId, true);
 
   if (isLoading) {
     return (
