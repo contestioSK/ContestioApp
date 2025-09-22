@@ -197,9 +197,9 @@ export default function SectorLeaderboards({ competitionId }: SectorLeaderboards
                                   e.currentTarget.parentNode?.insertBefore(span, e.currentTarget);
                                 }}
                               />
-                              <span className="font-medium text-foreground" data-testid={`text-team-name-${team.id}`}>
+                              <Link href={`/team/${team.id}`} className="font-medium text-foreground hover:text-primary transition-colors" data-testid={`text-team-name-${team.id}`}>
                                 {team.name}
-                              </span>
+                              </Link>
                             </div>
                           </TableCell>
                           <TableCell className="text-right">
