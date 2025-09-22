@@ -396,18 +396,6 @@ export default function CompetitionDetail() {
                 </Dialog>
               )}
               
-              {/* View All Catches Button */}
-              <Button 
-                size="lg" 
-                variant="outline" 
-                className="hover:bg-primary/10"
-                onClick={() => window.location.href = `/competition/${id}/catches`}
-                data-testid="button-view-all-catches"
-              >
-                <Fish className="w-4 h-4 mr-2" />
-                Zobraziť všetky úlovky
-              </Button>
-              
             </div>
           </div>
           
@@ -425,14 +413,28 @@ export default function CompetitionDetail() {
           
           {/* Tabs Container */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="overview" data-testid="tab-overview">Priebežné výsledky</TabsTrigger>
-              <TabsTrigger value="analytics" data-testid="tab-analytics">
-                <BarChart3 className="w-4 h-4 mr-2" />
-                Štatistiky súťaže
-              </TabsTrigger>
-              <TabsTrigger value="rules" data-testid="tab-rules">Pravidlá</TabsTrigger>
-            </TabsList>
+            <div className="flex items-center justify-between mb-6">
+              <TabsList className="grid grid-cols-3">
+                <TabsTrigger value="overview" data-testid="tab-overview">Priebežné výsledky</TabsTrigger>
+                <TabsTrigger value="analytics" data-testid="tab-analytics">
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  Štatistiky súťaže
+                </TabsTrigger>
+                <TabsTrigger value="rules" data-testid="tab-rules">Pravidlá</TabsTrigger>
+              </TabsList>
+              
+              {/* View All Catches Button */}
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="hover:bg-primary/10"
+                onClick={() => window.location.href = `/competition/${id}/catches`}
+                data-testid="button-view-all-catches"
+              >
+                <Fish className="w-4 h-4 mr-2" />
+                Zobraziť všetky úlovky
+              </Button>
+            </div>
             
             <TabsContent value="overview" className="mt-6">
               <div className="grid lg:grid-cols-3 gap-8">
