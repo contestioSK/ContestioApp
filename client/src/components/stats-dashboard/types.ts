@@ -22,6 +22,13 @@ export interface TopFishData {
   catchTime: string;
 }
 
+export interface TeamTopAverageData {
+  teamName: string;
+  averageWeight: number;
+  fishCount: number; // actual number of fish used for average (may be less than 3/5 for teams with fewer catches)
+  maxFish: number; // 3 or 5 depending on competition type
+}
+
 export interface TeamPerformanceData {
   teamName: string;
   totalCount: number;
@@ -103,6 +110,8 @@ export interface CompetitionStats {
   fishTypeDistribution: FishTypeData[];
   sectorPerformance: SectorData[];
   averageWeights: AverageWeightData[];
+  teamTop3Average: TeamTopAverageData[];
+  teamTop5Average: TeamTopAverageData[];
   specialMilestones: SpecialMilestoneData[];
   dailyBigFish: DailyBigFishData[];
   recordProgression: RecordProgressionData[];
