@@ -35,19 +35,20 @@ export function TeamAverageChart({ data, title, description }: TeamAverageChartP
           <ResponsiveContainer width="100%" height={300}>
             <BarChart 
               data={formattedData} 
-              layout="horizontal"
-              margin={{ left: 60, right: 20, top: 20, bottom: 20 }}
+              margin={{ left: 20, right: 20, top: 20, bottom: 60 }}
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
-                type="number"
-                tick={{ fontSize: 12 }}
-              />
-              <YAxis 
                 type="category"
                 dataKey="displayName"
                 tick={{ fontSize: 11 }}
-                width={80}
+                interval={0}
+                height={80}
+              />
+              <YAxis 
+                type="number"
+                tick={{ fontSize: 12 }}
+                label={{ value: 'Priemerná váha (kg)', angle: -90, position: 'insideLeft' }}
               />
               <ChartTooltip 
                 content={
@@ -73,7 +74,7 @@ export function TeamAverageChart({ data, title, description }: TeamAverageChartP
               <Bar
                 dataKey="averageWeight"
                 fill="var(--color-averageWeight)"
-                radius={[0, 4, 4, 0]}
+                radius={[4, 4, 0, 0]}
               />
             </BarChart>
           </ResponsiveContainer>
