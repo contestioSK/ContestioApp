@@ -1,0 +1,281 @@
+import nodemailer from 'nodemailer';
+import type { Transporter } from 'nodemailer';
+
+// Email configuration from environment variables (all required)
+const SMTP_CONFIG = {
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT) : undefined,
+  secure: process.env.SMTP_PORT === '465', // true for 465 (SSL), false for other ports (STARTTLS)
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASSWORD,
+  },
+};
+
+const FROM_EMAIL = process.env.SMTP_FROM || 'noreply@contestio.app';
+const APP_ORIGIN = process.env.APP_ORIGIN || 'https://contestio.app'; // Use HTTPS by default
+
+interface EmailOptions {
+  to: string;
+  subject: string;
+  html: string;
+  text?: string;
+}
+
+class EmailService {
+  private transporter: Transporter | null = null;
+  private isConfigured = false;
+
+  constructor() {
+    this.initializeTransporter();
+  }
+
+  private initializeTransporter() {
+    // Check if all required SMTP configuration is provided
+    if (!SMTP_CONFIG.host || !SMTP_CONFIG.port || !SMTP_CONFIG.auth.user || !SMTP_CONFIG.auth.pass) {
+      console.warn('[EmailService] SMTP configuration incomplete. Email functionality will be disabled.');
+      console.warn('[EmailService] Required environment variables: SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD');
+      console.warn('[EmailService] Optional: SMTP_FROM, APP_ORIGIN');
+      return;
+    }
+
+    try {
+      this.transporter = nodemailer.createTransport(SMTP_CONFIG);
+      this.isConfigured = true;
+      console.log('[EmailService] SMTP transporter configured successfully');
+      
+      // Verify connection on startup
+      this.verifyConnection().catch(error => {
+        console.error('[EmailService] SMTP connection verification failed:', error);
+        this.isConfigured = false;
+      });
+    } catch (error) {
+      console.error('[EmailService] Failed to configure SMTP transporter:', error);
+    }
+  }
+
+  /**
+   * Verify SMTP connection
+   * @returns Promise<boolean> - True if connection is successful
+   */
+  async verifyConnection(): Promise<boolean> {
+    if (!this.transporter) {
+      return false;
+    }
+
+    try {
+      await this.transporter.verify();
+      console.log('[EmailService] SMTP connection verified successfully');
+      return true;
+    } catch (error) {
+      console.error('[EmailService] SMTP connection failed:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Send an email
+   * @param options - Email options (to, subject, html, text)
+   * @returns Promise<boolean> - True if email was sent successfully
+   */
+  async sendEmail(options: EmailOptions): Promise<boolean> {
+    if (!this.isConfigured || !this.transporter) {
+      console.error('[EmailService] Email service not configured. Cannot send email.');
+      return false;
+    }
+
+    try {
+      const mailOptions = {
+        from: FROM_EMAIL,
+        to: options.to,
+        subject: options.subject,
+        html: options.html,
+        text: options.text || this.stripHtml(options.html),
+      };
+
+      const result = await this.transporter.sendMail(mailOptions);
+      console.log('[EmailService] Email sent successfully:', result.messageId);
+      return true;
+    } catch (error) {
+      console.error('[EmailService] Failed to send email:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Send email verification email
+   * @param email - Recipient email address
+   * @param firstName - User's first name
+   * @param verificationToken - Verification token
+   * @returns Promise<boolean> - True if email was sent successfully
+   */
+  async sendVerificationEmail(
+    email: string,
+    firstName: string,
+    verificationToken: string
+  ): Promise<boolean> {
+    const encodedToken = encodeURIComponent(verificationToken);
+    const verificationUrl = `${APP_ORIGIN}/verify-email?token=${encodedToken}`;
+    
+    const subject = 'Verify your Contestio account';
+    const html = this.generateVerificationEmailTemplate(firstName, verificationUrl);
+
+    return this.sendEmail({
+      to: email,
+      subject,
+      html,
+    });
+  }
+
+  /**
+   * Send password reset email
+   * @param email - Recipient email address
+   * @param firstName - User's first name
+   * @param resetToken - Password reset token
+   * @returns Promise<boolean> - True if email was sent successfully
+   */
+  async sendPasswordResetEmail(
+    email: string,
+    firstName: string,
+    resetToken: string
+  ): Promise<boolean> {
+    const encodedToken = encodeURIComponent(resetToken);
+    const resetUrl = `${APP_ORIGIN}/reset-password?token=${encodedToken}`;
+    
+    const subject = 'Reset your Contestio password';
+    const html = this.generatePasswordResetEmailTemplate(firstName, resetUrl);
+
+    return this.sendEmail({
+      to: email,
+      subject,
+      html,
+    });
+  }
+
+  /**
+   * Escape HTML characters to prevent injection
+   */
+  private escapeHtml(text: string): string {
+    const htmlEscapes: { [key: string]: string } = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#x27;',
+      '/': '&#x2F;'
+    };
+    return text.replace(/[&<>"'\/]/g, (char) => htmlEscapes[char]);
+  }
+
+  /**
+   * Generate HTML template for email verification
+   */
+  private generateVerificationEmailTemplate(firstName: string, verificationUrl: string): string {
+    const escapedFirstName = this.escapeHtml(firstName);
+    return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <title>Verify your Contestio account</title>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+            .content { background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; }
+            .button { display: inline-block; background: #0ea5e9; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0; }
+            .footer { background: #f8fafc; padding: 20px; text-align: center; color: #6b7280; border-radius: 0 0 8px 8px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🎣 Welcome to Contestio!</h1>
+            </div>
+            <div class="content">
+              <h2>Hi ${escapedFirstName}!</h2>
+              <p>Thank you for joining Contestio, the premier platform for live fishing competitions!</p>
+              <p>To complete your registration and start participating in exciting fishing tournaments, please verify your email address by clicking the button below:</p>
+              <a href="${verificationUrl}" class="button">Verify Email Address</a>
+              <p>If the button doesn't work, you can also copy and paste this link into your browser:</p>
+              <p style="word-break: break-all; color: #0ea5e9;">${verificationUrl}</p>
+              <p><strong>This verification link will expire in 24 hours.</strong></p>
+              <p>If you didn't create an account with Contestio, you can safely ignore this email.</p>
+            </div>
+            <div class="footer">
+              <p>© 2024 Contestio. All rights reserved.</p>
+              <p>This is an automated email, please do not reply.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+  }
+
+  /**
+   * Generate HTML template for password reset
+   */
+  private generatePasswordResetEmailTemplate(firstName: string, resetUrl: string): string {
+    const escapedFirstName = this.escapeHtml(firstName);
+    return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <title>Reset your Contestio password</title>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+            .content { background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; }
+            .button { display: inline-block; background: #ef4444; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0; }
+            .footer { background: #f8fafc; padding: 20px; text-align: center; color: #6b7280; border-radius: 0 0 8px 8px; }
+            .warning { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px; margin: 16px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🔐 Password Reset Request</h1>
+            </div>
+            <div class="content">
+              <h2>Hi ${escapedFirstName}!</h2>
+              <p>We received a request to reset your Contestio account password.</p>
+              <div class="warning">
+                <strong>⚠️ Security Notice:</strong> If you didn't request this password reset, please ignore this email and your password will remain unchanged.
+              </div>
+              <p>To reset your password, click the button below:</p>
+              <a href="${resetUrl}" class="button">Reset Password</a>
+              <p>If the button doesn't work, you can also copy and paste this link into your browser:</p>
+              <p style="word-break: break-all; color: #ef4444;">${resetUrl}</p>
+              <p><strong>This reset link will expire in 24 hours for security reasons.</strong></p>
+            </div>
+            <div class="footer">
+              <p>© 2024 Contestio. All rights reserved.</p>
+              <p>This is an automated email, please do not reply.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+  }
+
+  /**
+   * Strip HTML tags from text (simple implementation)
+   */
+  private stripHtml(html: string): string {
+    return html.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+  }
+
+  /**
+   * Check if email service is configured and ready
+   */
+  isReady(): boolean {
+    return this.isConfigured;
+  }
+}
+
+// Export singleton instance
+export const emailService = new EmailService();
