@@ -2,7 +2,18 @@ import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { format, startOfMonth, endOfMonth, eachMonthOfInterval, subMonths } from "date-fns";
+import { format, startOfMonth, endOfMonth, subMonths } from "date-fns";
+import { 
+  getPeriodComparison, 
+  formatTrendIndicator, 
+  formatWeightTrendIndicator, 
+  formatSuccessRateTrendIndicator,
+  getMonthsForPeriod,
+  filterCatchesByMonths,
+  filterTripsByMonths,
+  getBiggestCatch,
+  getBestCatch
+} from "@/lib/periodComparison";
 import { sk } from "date-fns/locale";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -96,26 +107,14 @@ export default function DiaryStats() {
   const totalTrips = trips.length;
   const activeTripCount = trips.filter(trip => new Date(trip.endDate) >= new Date()).length;
 
-  // Calculate monthly stats for the selected period
-  const getMonthsForPeriod = (months: 3 | 6 | 12 | 24) => {
-    const endDate = new Date();
-    const startDate = subMonths(endDate, months - 1);
-    return eachMonthOfInterval({ start: startDate, end: endDate });
-  };
+  // Use centralized utility for month period calculation
 
   const monthlyStats: MonthlyStats[] = getMonthsForPeriod(selectedPeriodMonths).map(month => {
     const monthStart = startOfMonth(month);
     const monthEnd = endOfMonth(month);
     
-    const monthCatches = catches.filter(catch_ => {
-      const catchDate = new Date(catch_.capturedAt);
-      return catchDate >= monthStart && catchDate <= monthEnd;
-    });
-    
-    const monthTrips = trips.filter(trip => {
-      const tripStart = new Date(trip.startDate);
-      return tripStart >= monthStart && tripStart <= monthEnd;
-    });
+    const monthCatches = filterCatchesByMonths(catches, [month]);
+    const monthTrips = filterTripsByMonths(trips, [month]);
 
     return {
       month: format(month, "MMM yyyy", { locale: sk }),
@@ -163,14 +162,7 @@ export default function DiaryStats() {
   
   // Weight progression data (monthly aggregations with weight trends)
   const weightProgressionData = monthlyStats.map(month => {
-    // Use proper date boundaries for filtering
-    const monthStart = new Date(month.monthStart);
-    const monthEnd = new Date(month.monthEnd);
-    
-    const monthCatches = catches.filter(catch_ => {
-      const catchDate = new Date(catch_.capturedAt);
-      return catchDate >= monthStart && catchDate <= monthEnd;
-    });
+    const monthCatches = filterCatchesByMonths(catches, [new Date(month.monthDate)]);
 
     return {
       date: month.monthDate, // Use canonical date
@@ -178,7 +170,7 @@ export default function DiaryStats() {
       averageWeight: month.catches > 0 ? month.totalWeight / month.catches : 0,
       totalWeight: month.totalWeight,
       catchCount: month.catches,
-      biggestCatch: monthCatches.length > 0 ? Math.max(...monthCatches.map(c => parseFloat(c.weight))) : 0
+      biggestCatch: getBiggestCatch(monthCatches)
     };
   });
 
@@ -466,18 +458,7 @@ export default function DiaryStats() {
     // Monthly/yearly records
     monthlyRecords: monthlyStats.map(month => ({
       month: month.month,
-      bestCatch: (() => {
-        const monthStart = new Date(month.monthStart);
-        const monthEnd = new Date(month.monthEnd);
-        const monthCatches = catches.filter(c => {
-          const catchDate = new Date(c.capturedAt);
-          return catchDate >= monthStart && catchDate <= monthEnd;
-        });
-        return monthCatches.reduce((max, catch_) => {
-          const weight = parseFloat(catch_.weight);
-          return weight > parseFloat(max?.weight || '0') ? catch_ : max;
-        }, monthCatches[0] || null);
-      })(),
+      bestCatch: getBestCatch(filterCatchesByMonths(catches, [new Date(month.monthDate)])),
       totalCatches: month.catches,
       totalWeight: month.totalWeight
     })).filter(record => record.bestCatch)
@@ -707,255 +688,74 @@ export default function DiaryStats() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center">
-                    {(() => {
-                      // Calculate current period catches  
-                      const currentMonths = getMonthsForPeriod(selectedPeriodMonths);
-                      const currentCatches = catches.filter(catch_ => {
-                        const catchDate = new Date(catch_.capturedAt);
-                        return currentMonths.some(month => {
-                          const monthStart = startOfMonth(month);
-                          const monthEnd = endOfMonth(month);
-                          return catchDate >= monthStart && catchDate <= monthEnd;
-                        });
-                      }).length;
-                      return <div className="text-2xl font-bold text-blue-600">{currentCatches}</div>;
-                    })()}
-                    <div className="text-xs text-muted-foreground">Úlovky za obdobie</div>
-                    <div className="text-xs font-medium flex items-center justify-center gap-1">
-                      {(() => {
-                        // Calculate current and previous period catches
-                        const currentMonths = getMonthsForPeriod(selectedPeriodMonths);
-                        const currentCatches = catches.filter(catch_ => {
-                          const catchDate = new Date(catch_.capturedAt);
-                          return currentMonths.some(month => {
-                            const monthStart = startOfMonth(month);
-                            const monthEnd = endOfMonth(month);
-                            return catchDate >= monthStart && catchDate <= monthEnd;
-                          });
-                        }).length;
-                        
-                        const previousMonths = getMonthsForPeriod(selectedPeriodMonths)
-                          .map(month => subMonths(month, selectedPeriodMonths));
-                        const prevCatches = catches.filter(catch_ => {
-                          const catchDate = new Date(catch_.capturedAt);
-                          return previousMonths.some(month => {
-                            const monthStart = startOfMonth(month);
-                            const monthEnd = endOfMonth(month);
-                            return catchDate >= monthStart && catchDate <= monthEnd;
-                          });
-                        }).length;
-                        
-                        const change = currentCatches - prevCatches;
-                        const percentage = prevCatches > 0 ? ((change / prevCatches) * 100) : 0;
-                        const isPositive = change >= 0;
-                        return (
-                          <>
-                            <span className={isPositive ? "text-green-600" : "text-red-600"}>
-                              {isPositive ? "↗" : "↘"}
-                            </span>
-                            <span className={isPositive ? "text-green-600" : "text-red-600"}>
-                              {isPositive ? "+" : ""}{change} ({percentage.toFixed(0)}%)
-                            </span>
-                          </>
-                        );
-                      })()}
+                {(() => {
+                  // Get comprehensive period comparison using utility
+                  const comparison = getPeriodComparison(catches, trips, selectedPeriodMonths);
+                  const catchesTrend = formatTrendIndicator(comparison.changes.catches);
+                  const tripsTrend = formatTrendIndicator(comparison.changes.trips);
+                  const weightTrend = formatWeightTrendIndicator(comparison.changes.weight);
+                  const successRateTrend = formatSuccessRateTrendIndicator(comparison.changes.successRate);
+
+                  return (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {/* Catches */}
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-blue-600">{comparison.current.catches}</div>
+                        <div className="text-xs text-muted-foreground">Úlovky za obdobie</div>
+                        <div className="text-xs font-medium flex items-center justify-center gap-1">
+                          <span className={catchesTrend.colorClass}>
+                            {catchesTrend.arrow}
+                          </span>
+                          <span className={catchesTrend.colorClass}>
+                            {catchesTrend.text} ({comparison.changes.catches.percentage.toFixed(0)}%)
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {/* Trips */}
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-green-600">{comparison.current.trips}</div>
+                        <div className="text-xs text-muted-foreground">Výpravy za obdobie</div>
+                        <div className="text-xs font-medium flex items-center justify-center gap-1">
+                          <span className={tripsTrend.colorClass}>
+                            {tripsTrend.arrow}
+                          </span>
+                          <span className={tripsTrend.colorClass}>
+                            {tripsTrend.text} ({comparison.changes.trips.percentage.toFixed(0)}%)
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {/* Weight */}
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-purple-600">{comparison.current.weight.toFixed(1)} kg</div>
+                        <div className="text-xs text-muted-foreground">Váha za obdobie</div>
+                        <div className="text-xs font-medium flex items-center justify-center gap-1">
+                          <span className={weightTrend.colorClass}>
+                            {weightTrend.arrow}
+                          </span>
+                          <span className={weightTrend.colorClass}>
+                            {weightTrend.text} ({comparison.changes.weight.percentage.toFixed(0)}%)
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {/* Success Rate */}
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-orange-600">{comparison.current.successRate.toFixed(1)}</div>
+                        <div className="text-xs text-muted-foreground">Úspešnosť za obdobie</div>
+                        <div className="text-xs font-medium flex items-center justify-center gap-1">
+                          <span className={successRateTrend.colorClass}>
+                            {successRateTrend.arrow}
+                          </span>
+                          <span className={successRateTrend.colorClass}>
+                            {successRateTrend.text} ({comparison.changes.successRate.percentage.toFixed(0)}%)
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div className="text-center">
-                    {(() => {
-                      // Calculate current period trips
-                      const currentMonths = getMonthsForPeriod(selectedPeriodMonths);
-                      const currentTrips = trips.filter(trip => {
-                        const tripDate = new Date(trip.startDate);
-                        return currentMonths.some(month => {
-                          const monthStart = startOfMonth(month);
-                          const monthEnd = endOfMonth(month);
-                          return tripDate >= monthStart && tripDate <= monthEnd;
-                        });
-                      }).length;
-                      return <div className="text-2xl font-bold text-green-600">{currentTrips}</div>;
-                    })()}
-                    <div className="text-xs text-muted-foreground">Výpravy za obdobie</div>
-                    <div className="text-xs font-medium flex items-center justify-center gap-1">
-                      {(() => {
-                        // Calculate current and previous period trips
-                        const currentMonths = getMonthsForPeriod(selectedPeriodMonths);
-                        const currentTrips = trips.filter(trip => {
-                          const tripDate = new Date(trip.startDate);
-                          return currentMonths.some(month => {
-                            const monthStart = startOfMonth(month);
-                            const monthEnd = endOfMonth(month);
-                            return tripDate >= monthStart && tripDate <= monthEnd;
-                          });
-                        }).length;
-                        
-                        const previousMonths = getMonthsForPeriod(selectedPeriodMonths)
-                          .map(month => subMonths(month, selectedPeriodMonths));
-                        const prevTrips = trips.filter(trip => {
-                          const tripDate = new Date(trip.startDate);
-                          return previousMonths.some(month => {
-                            const monthStart = startOfMonth(month);
-                            const monthEnd = endOfMonth(month);
-                            return tripDate >= monthStart && tripDate <= monthEnd;
-                          });
-                        }).length;
-                        
-                        const change = currentTrips - prevTrips;
-                        const percentage = prevTrips > 0 ? ((change / prevTrips) * 100) : 0;
-                        const isPositive = change >= 0;
-                        return (
-                          <>
-                            <span className={isPositive ? "text-green-600" : "text-red-600"}>
-                              {isPositive ? "↗" : "↘"}
-                            </span>
-                            <span className={isPositive ? "text-green-600" : "text-red-600"}>
-                              {isPositive ? "+" : ""}{change} ({percentage.toFixed(0)}%)
-                            </span>
-                          </>
-                        );
-                      })()}
-                    </div>
-                  </div>
-                  <div className="text-center">
-                    {(() => {
-                      // Calculate current period weight
-                      const currentMonths = getMonthsForPeriod(selectedPeriodMonths);
-                      const currentWeight = catches.filter(catch_ => {
-                        const catchDate = new Date(catch_.capturedAt);
-                        return currentMonths.some(month => {
-                          const monthStart = startOfMonth(month);
-                          const monthEnd = endOfMonth(month);
-                          return catchDate >= monthStart && catchDate <= monthEnd;
-                        });
-                      }).reduce((sum, catch_) => sum + parseFloat(catch_.weight), 0);
-                      return <div className="text-2xl font-bold text-purple-600">{currentWeight.toFixed(1)} kg</div>;
-                    })()}
-                    <div className="text-xs text-muted-foreground">Váha za obdobie</div>
-                    <div className="text-xs font-medium flex items-center justify-center gap-1">
-                      {(() => {
-                        // Calculate current and previous period weight
-                        const currentMonths = getMonthsForPeriod(selectedPeriodMonths);
-                        const currentWeight = catches.filter(catch_ => {
-                          const catchDate = new Date(catch_.capturedAt);
-                          return currentMonths.some(month => {
-                            const monthStart = startOfMonth(month);
-                            const monthEnd = endOfMonth(month);
-                            return catchDate >= monthStart && catchDate <= monthEnd;
-                          });
-                        }).reduce((sum, catch_) => sum + parseFloat(catch_.weight), 0);
-                        
-                        const previousMonths = getMonthsForPeriod(selectedPeriodMonths)
-                          .map(month => subMonths(month, selectedPeriodMonths));
-                        const prevWeight = catches.filter(catch_ => {
-                          const catchDate = new Date(catch_.capturedAt);
-                          return previousMonths.some(month => {
-                            const monthStart = startOfMonth(month);
-                            const monthEnd = endOfMonth(month);
-                            return catchDate >= monthStart && catchDate <= monthEnd;
-                          });
-                        }).reduce((sum, catch_) => sum + parseFloat(catch_.weight), 0);
-                        
-                        const change = currentWeight - prevWeight;
-                        const percentage = prevWeight > 0 ? ((change / prevWeight) * 100) : 0;
-                        const isPositive = change >= 0;
-                        return (
-                          <>
-                            <span className={isPositive ? "text-green-600" : "text-red-600"}>
-                              {isPositive ? "↗" : "↘"}
-                            </span>
-                            <span className={isPositive ? "text-green-600" : "text-red-600"}>
-                              {isPositive ? "+" : ""}{change.toFixed(1)} kg ({percentage.toFixed(0)}%)
-                            </span>
-                          </>
-                        );
-                      })()}
-                    </div>
-                  </div>
-                  <div className="text-center">
-                    {(() => {
-                      // Calculate current period success rate
-                      const currentMonths = getMonthsForPeriod(selectedPeriodMonths);
-                      const currentCatches = catches.filter(catch_ => {
-                        const catchDate = new Date(catch_.capturedAt);
-                        return currentMonths.some(month => {
-                          const monthStart = startOfMonth(month);
-                          const monthEnd = endOfMonth(month);
-                          return catchDate >= monthStart && catchDate <= monthEnd;
-                        });
-                      }).length;
-                      const currentTrips = trips.filter(trip => {
-                        const tripDate = new Date(trip.startDate);
-                        return currentMonths.some(month => {
-                          const monthStart = startOfMonth(month);
-                          const monthEnd = endOfMonth(month);
-                          return tripDate >= monthStart && tripDate <= monthEnd;
-                        });
-                      }).length;
-                      const currentSuccessRate = currentTrips > 0 ? (currentCatches / currentTrips).toFixed(1) : "0.0";
-                      return <div className="text-2xl font-bold text-orange-600">{currentSuccessRate}</div>;
-                    })()}
-                    <div className="text-xs text-muted-foreground">Úspešnosť za obdobie</div>
-                    <div className="text-xs font-medium flex items-center justify-center gap-1">
-                      {(() => {
-                        // Calculate current and previous period success rates
-                        const currentMonths = getMonthsForPeriod(selectedPeriodMonths);
-                        const currentCatches = catches.filter(catch_ => {
-                          const catchDate = new Date(catch_.capturedAt);
-                          return currentMonths.some(month => {
-                            const monthStart = startOfMonth(month);
-                            const monthEnd = endOfMonth(month);
-                            return catchDate >= monthStart && catchDate <= monthEnd;
-                          });
-                        }).length;
-                        const currentTrips = trips.filter(trip => {
-                          const tripDate = new Date(trip.startDate);
-                          return currentMonths.some(month => {
-                            const monthStart = startOfMonth(month);
-                            const monthEnd = endOfMonth(month);
-                            return tripDate >= monthStart && tripDate <= monthEnd;
-                          });
-                        }).length;
-                        const currentRate = currentTrips > 0 ? currentCatches / currentTrips : 0;
-                        
-                        const previousMonths = getMonthsForPeriod(selectedPeriodMonths)
-                          .map(month => subMonths(month, selectedPeriodMonths));
-                        const prevCatches = catches.filter(catch_ => {
-                          const catchDate = new Date(catch_.capturedAt);
-                          return previousMonths.some(month => {
-                            const monthStart = startOfMonth(month);
-                            const monthEnd = endOfMonth(month);
-                            return catchDate >= monthStart && catchDate <= monthEnd;
-                          });
-                        }).length;
-                        const prevTrips = trips.filter(trip => {
-                          const tripDate = new Date(trip.startDate);
-                          return previousMonths.some(month => {
-                            const monthStart = startOfMonth(month);
-                            const monthEnd = endOfMonth(month);
-                            return tripDate >= monthStart && tripDate <= monthEnd;
-                          });
-                        }).length;
-                        const prevRate = prevTrips > 0 ? prevCatches / prevTrips : 0;
-                        
-                        const change = currentRate - prevRate;
-                        const percentage = prevRate > 0 ? ((change / prevRate) * 100) : 0;
-                        const isPositive = change >= 0;
-                        return (
-                          <>
-                            <span className={isPositive ? "text-green-600" : "text-red-600"}>
-                              {isPositive ? "↗" : "↘"}
-                            </span>
-                            <span className={isPositive ? "text-green-600" : "text-red-600"}>
-                              {isPositive ? "+" : ""}{change.toFixed(1)} ({percentage.toFixed(0)}%)
-                            </span>
-                          </>
-                        );
-                      })()}
-                    </div>
-                  </div>
-                </div>
+                  );
+                })()}
               </CardContent>
             </Card>
 
