@@ -857,8 +857,29 @@ export class DatabaseStorage implements IStorage {
 
     // Get teams in this sector - match by both legacy sector and new sectorName
     const allTeams = await this.getTeamsByCompetition(competitionId);
-    const sectorTeams = allTeams.filter(team => 
+    const baseSectorTeams = allTeams.filter(team => 
       team.sector === sectorCode || team.sectorName === fullSectorName
+    );
+
+    // Calculate real-time total weights and fish counts for each team from catches table
+    const sectorTeams = await Promise.all(
+      baseSectorTeams.map(async (team) => {
+        const stats = await db
+          .select({
+            totalWeight: sql<number>`COALESCE(SUM(CAST(${catches.weight} AS DECIMAL)), 0)`,
+            fishCount: sql<number>`COALESCE(COUNT(*), 0)`,
+          })
+          .from(catches)
+          .where(and(eq(catches.teamId, team.id), eq(catches.isVerified, true)));
+
+        const { totalWeight, fishCount } = stats[0];
+        
+        return {
+          ...team,
+          totalWeight: totalWeight.toString(),
+          fishCount
+        };
+      })
     );
 
     // Get all verified catches for this sector
