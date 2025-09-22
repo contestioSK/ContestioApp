@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
+import { ComposedChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
 import type { TimelineData } from "../types";
 
 interface TimelineChartProps {
@@ -19,10 +19,36 @@ const chartConfig = {
 };
 
 export function TimelineChart({ data }: TimelineChartProps) {
-  const formattedData = data.map(item => ({
-    ...item,
-    timeLabel: `${item.hour}:00`,
-  }));
+  // Group data by day and take the latest cumulative value per day
+  interface DailyPoint {
+    timeLabel: string;
+    totalWeight: number;
+    totalCount: number;
+    day: number;
+  }
+  
+  const dailyData = data.reduce((acc, item) => {
+    const day = Math.floor(item.hour / 24) + 1;
+    const dayKey = `Deň ${day}`;
+    
+    // Since data is cumulative, take the latest (highest) value for each day
+    if (!acc[dayKey] || item.hour > acc[dayKey].hour) {
+      acc[dayKey] = {
+        timeLabel: dayKey,
+        totalWeight: item.totalWeight,
+        totalCount: item.totalCount,
+        day: day,
+        hour: item.hour
+      };
+    }
+    
+    return acc;
+  }, {} as Record<string, DailyPoint & { hour: number }>);
+  
+  // Sort by day number to ensure correct ordering
+  const formattedData = Object.values(dailyData)
+    .map(({ hour, ...rest }) => rest) // Remove the temporary hour field
+    .sort((a, b) => a.day - b.day);
 
   return (
     <Card>
@@ -35,7 +61,7 @@ export function TimelineChart({ data }: TimelineChartProps) {
       <CardContent>
         <ChartContainer config={chartConfig}>
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={formattedData}>
+            <ComposedChart data={formattedData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="timeLabel" 
@@ -45,11 +71,13 @@ export function TimelineChart({ data }: TimelineChartProps) {
                 yAxisId="weight"
                 orientation="left"
                 tick={{ fontSize: 12 }}
+                label={{ value: 'Váha (kg)', angle: -90, position: 'insideLeft' }}
               />
               <YAxis 
                 yAxisId="count"
                 orientation="right"
                 tick={{ fontSize: 12 }}
+                label={{ value: 'Počet (ks)', angle: 90, position: 'insideRight' }}
               />
               <ChartTooltip 
                 content={
@@ -61,23 +89,22 @@ export function TimelineChart({ data }: TimelineChartProps) {
                   />
                 }
               />
-              <Line
+              <ChartLegend content={<ChartLegendContent />} />
+              <Bar
                 yAxisId="weight"
-                type="monotone"
                 dataKey="totalWeight"
-                stroke="var(--color-totalWeight)"
-                strokeWidth={3}
-                dot={{ r: 4 }}
+                fill="var(--color-totalWeight)"
+                name="totalWeight"
+                radius={[2, 2, 0, 0]}
               />
-              <Line
+              <Bar
                 yAxisId="count"
-                type="monotone"
                 dataKey="totalCount"
-                stroke="var(--color-totalCount)"
-                strokeWidth={3}
-                dot={{ r: 4 }}
+                fill="var(--color-totalCount)"
+                name="totalCount"
+                radius={[2, 2, 0, 0]}
               />
-            </LineChart>
+            </ComposedChart>
           </ResponsiveContainer>
         </ChartContainer>
       </CardContent>
