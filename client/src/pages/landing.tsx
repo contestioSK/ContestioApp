@@ -299,6 +299,19 @@ export default function Landing() {
           <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-white/60 to-white/10 blur-sm"></div>
         </div>
         
+        {/* Decorative floating elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {/* Left section bubbles */}
+          <div className="absolute top-20 left-8 w-2 h-2 bg-white/10 rounded-full animate-bounce" style={{animationDelay: '0s', animationDuration: '3s'}}></div>
+          <div className="absolute top-32 left-16 w-1 h-1 bg-blue-300/20 rounded-full animate-bounce" style={{animationDelay: '1s', animationDuration: '4s'}}></div>
+          <div className="absolute bottom-24 left-12 w-3 h-3 bg-white/10 rounded-full animate-bounce" style={{animationDelay: '2s', animationDuration: '5s'}}></div>
+          
+          {/* Right section bubbles */}
+          <div className="absolute top-16 right-10 w-2 h-2 bg-white/10 rounded-full animate-bounce" style={{animationDelay: '0.5s', animationDuration: '3.5s'}}></div>
+          <div className="absolute top-28 right-6 w-1 h-1 bg-green-300/20 rounded-full animate-bounce" style={{animationDelay: '1.5s', animationDuration: '4.5s'}}></div>
+          <div className="absolute bottom-20 right-14 w-3 h-3 bg-white/10 rounded-full animate-bounce" style={{animationDelay: '2.5s', animationDuration: '6s'}}></div>
+        </div>
+
         {/* Content Container */}
         <div className="relative z-10 h-full flex flex-col md:flex-row min-h-[520px] md:min-h-[640px]">
           {/* Competition Section */}
@@ -311,15 +324,15 @@ export default function Landing() {
             <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-transparent to-transparent"></div>
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-900/10 to-blue-900/30"></div>
             <div className="relative z-10 max-w-sm text-center md:text-left">
-              {/* Competition Icons */}
+              {/* Competition Icons with floating animation */}
               <div className="flex justify-center md:justify-start gap-3 mb-4 md:mb-6">
-                <div className="p-2 md:p-3 bg-white/20 rounded-full">
+                <div className="p-2 md:p-3 bg-white/20 rounded-full transition-all duration-500 hover:bg-white/30 hover:scale-110 hover:shadow-lg hover:shadow-yellow-300/20 animate-pulse">
                   <Trophy className="w-5 h-5 md:w-6 md:h-6 text-yellow-300" />
                 </div>
-                <div className="p-2 md:p-3 bg-white/20 rounded-full">
+                <div className="p-2 md:p-3 bg-white/20 rounded-full transition-all duration-500 hover:bg-white/30 hover:scale-110 hover:shadow-lg hover:shadow-blue-200/20 animate-pulse" style={{animationDelay: '0.5s'}}>
                   <BarChart3 className="w-5 h-5 md:w-6 md:h-6 text-blue-200" />
                 </div>
-                <div className="p-2 md:p-3 bg-white/20 rounded-full">
+                <div className="p-2 md:p-3 bg-white/20 rounded-full transition-all duration-500 hover:bg-white/30 hover:scale-110 hover:shadow-lg hover:shadow-orange-300/20 animate-pulse" style={{animationDelay: '1s'}}>
                   <Target className="w-5 h-5 md:w-6 md:h-6 text-orange-300" />
                 </div>
               </div>
@@ -336,10 +349,12 @@ export default function Landing() {
                 <Link href="/live">
                   <Button 
                     size="lg"
-                    className="w-full bg-white text-blue-800 hover:bg-blue-50 font-semibold transition-all duration-300 transform hover:scale-105"
+                    className="w-full bg-white text-blue-800 hover:bg-blue-50 font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-blue-500/25 relative overflow-hidden group"
                     data-testid="button-view-competitions"
                   >
-                    <Zap className="w-5 h-5 mr-2" />
+                    {/* Shine effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out"></div>
+                    <Zap className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform duration-300" />
                     Prehľad súťaží
                   </Button>
                 </Link>
@@ -347,10 +362,12 @@ export default function Landing() {
                   <Button
                     size="lg"
                     variant="outline"
-                    className="w-full border-2 border-white text-white hover:bg-white hover:text-blue-800 font-semibold transition-all duration-300"
+                    className="w-full border-2 border-white text-white hover:bg-white hover:text-blue-800 font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-white/25 relative overflow-hidden group"
                     data-testid="button-register-competition-hero"
                   >
-                    <PlusCircle className="w-5 h-5 mr-2" />
+                    {/* Shine effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out"></div>
+                    <PlusCircle className="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform duration-300" />
                     Zaregistruj súťaž
                   </Button>
                 </Link>
@@ -368,15 +385,15 @@ export default function Landing() {
             <div className="absolute inset-0 bg-gradient-to-l from-green-400/20 via-transparent to-transparent"></div>
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-green-700/10 to-green-800/30"></div>
             <div className="relative z-10 max-w-sm text-center md:text-left">
-              {/* Diary Icons */}
+              {/* Diary Icons with floating animation */}
               <div className="flex justify-center md:justify-start gap-3 mb-4 md:mb-6">
-                <div className="p-2 md:p-3 bg-white/20 rounded-full">
+                <div className="p-2 md:p-3 bg-white/20 rounded-full transition-all duration-500 hover:bg-white/30 hover:scale-110 hover:shadow-lg hover:shadow-green-100/20 animate-pulse">
                   <BookOpen className="w-5 h-5 md:w-6 md:h-6 text-green-100" />
                 </div>
-                <div className="p-2 md:p-3 bg-white/20 rounded-full">
+                <div className="p-2 md:p-3 bg-white/20 rounded-full transition-all duration-500 hover:bg-white/30 hover:scale-110 hover:shadow-lg hover:shadow-blue-200/20 animate-pulse" style={{animationDelay: '0.5s'}}>
                   <Fish className="w-5 h-5 md:w-6 md:h-6 text-blue-200" />
                 </div>
-                <div className="p-2 md:p-3 bg-white/20 rounded-full">
+                <div className="p-2 md:p-3 bg-white/20 rounded-full transition-all duration-500 hover:bg-white/30 hover:scale-110 hover:shadow-lg hover:shadow-yellow-300/20 animate-pulse" style={{animationDelay: '1s'}}>
                   <Crown className="w-5 h-5 md:w-6 md:h-6 text-yellow-300" />
                 </div>
               </div>
@@ -393,10 +410,12 @@ export default function Landing() {
                 <Link href="/diary">
                   <Button 
                     size="lg"
-                    className="w-full bg-white text-green-800 hover:bg-green-50 font-semibold transition-all duration-300 transform hover:scale-105"
+                    className="w-full bg-white text-green-800 hover:bg-green-50 font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-green-500/25 relative overflow-hidden group"
                     data-testid="button-start-diary"
                   >
-                    <BookOpen className="w-5 h-5 mr-2" />
+                    {/* Shine effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out"></div>
+                    <BookOpen className="w-5 h-5 mr-2 group-hover:-rotate-12 transition-transform duration-300" />
                     Začať zapisovať
                   </Button>
                 </Link>
@@ -404,10 +423,12 @@ export default function Landing() {
                   <Button
                     size="lg"
                     variant="outline"
-                    className="w-full border-2 border-white text-white hover:bg-white hover:text-green-800 font-semibold transition-all duration-300"
+                    className="w-full border-2 border-white text-white hover:bg-white hover:text-green-800 font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-white/25 relative overflow-hidden group"
                     data-testid="button-try-battle"
                   >
-                    <Trophy className="w-5 h-5 mr-2" />
+                    {/* Shine effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out"></div>
+                    <Trophy className="w-5 h-5 mr-2 group-hover:rotate-12 group-hover:scale-110 transition-transform duration-300" />
                     Vyskúšať Battle
                   </Button>
                 </a>
