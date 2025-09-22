@@ -438,7 +438,7 @@ export default function CompetitionDetail() {
             <Button
               variant="outline"
               size="lg"
-              className="h-auto flex-col gap-2 p-4 hover:bg-secondary/10"
+              className="h-auto flex-col gap-2 p-4"
               onClick={() => window.location.href = `/competition/${id}/catches`}
               data-testid="button-catches"
             >
