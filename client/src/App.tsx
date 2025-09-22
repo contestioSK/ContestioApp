@@ -28,6 +28,7 @@ import DiaryIndex from "@/pages/diary/index";
 import BattlePaywall from "@/pages/diary/battle-paywall";
 import BattleCreate from "@/pages/diary/battle-create";
 import BattleDetail from "@/pages/diary/battle-detail";
+import BattleArchive from "@/pages/diary/battle-archive";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 function Router() {
@@ -80,6 +81,11 @@ function Router() {
       <Route path="/diary/battle/:id">
         <ProtectedRoute>
           <BattleDetail />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/diary/battle/archive">
+        <ProtectedRoute>
+          <BattleArchive />
         </ProtectedRoute>
       </Route>
       {!isLoading && <Route component={NotFound} />}
