@@ -425,7 +425,7 @@ export default function CompetitionDetail() {
           {/* Tabs Container */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="overview" data-testid="tab-overview">Prehľad</TabsTrigger>
+              <TabsTrigger value="overview" data-testid="tab-overview">Priebežné výsledky</TabsTrigger>
               <TabsTrigger value="analytics" data-testid="tab-analytics">
                 <BarChart3 className="w-4 h-4 mr-2" />
                 Štatistiky súťaže
