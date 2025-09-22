@@ -412,29 +412,25 @@ export default function CompetitionDetail() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* Tabs Container */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="flex items-center justify-between mb-6">
-              <TabsList className="grid grid-cols-3">
-                <TabsTrigger value="overview" data-testid="tab-overview">Priebežné výsledky</TabsTrigger>
-                <TabsTrigger value="analytics" data-testid="tab-analytics">
-                  <BarChart3 className="w-4 h-4 mr-2" />
-                  Štatistiky súťaže
-                </TabsTrigger>
-                <TabsTrigger value="rules" data-testid="tab-rules">Pravidlá</TabsTrigger>
-              </TabsList>
-              
-              {/* View All Catches Button */}
-              <Button 
-                size="lg" 
-                variant="outline" 
-                className="hover:bg-primary/10"
-                onClick={() => window.location.href = `/competition/${id}/catches`}
-                data-testid="button-view-all-catches"
-              >
+          <Tabs value={activeTab} onValueChange={(value) => {
+            if (value === "catches") {
+              window.location.href = `/competition/${id}/catches`;
+            } else {
+              setActiveTab(value);
+            }
+          }} className="w-full">
+            <TabsList className="grid w-full grid-cols-4 mb-6">
+              <TabsTrigger value="overview" data-testid="tab-overview">Priebežné výsledky</TabsTrigger>
+              <TabsTrigger value="analytics" data-testid="tab-analytics">
+                <BarChart3 className="w-4 h-4 mr-2" />
+                Štatistiky súťaže
+              </TabsTrigger>
+              <TabsTrigger value="rules" data-testid="tab-rules">Pravidlá</TabsTrigger>
+              <TabsTrigger value="catches" data-testid="tab-catches">
                 <Fish className="w-4 h-4 mr-2" />
                 Zobraziť všetky úlovky
-              </Button>
-            </div>
+              </TabsTrigger>
+            </TabsList>
             
             <TabsContent value="overview" className="mt-6">
               <div className="grid lg:grid-cols-3 gap-8">
