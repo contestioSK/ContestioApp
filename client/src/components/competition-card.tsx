@@ -6,6 +6,7 @@ import { Users, MapPin, Trophy, Share, Award, Heart } from "lucide-react";
 import { getSideCompetitionLabels } from "@/lib/utils";
 import { useFavoriteCompetitions, useToggleFavoriteCompetition } from "@/hooks/useFavorites";
 import { useAuth } from "@/hooks/useAuth";
+import OptimizedImage from "@/components/optimized-image";
 import type { Competition } from "@shared/schema";
 
 interface CompetitionCardProps {
@@ -130,16 +131,13 @@ export default function CompetitionCard({ competition }: CompetitionCardProps) {
       <div className="relative">
         <Link href={`/competition/${competition.id}`}>
           <div className="relative">
-            <img 
+            <OptimizedImage 
               src={competition.imageUrl || getCompetitionImage(competition.status)} 
               alt={`Súťaž ${competition.name}`}
-              className={`w-full h-48 rounded-t-lg cursor-pointer hover:opacity-90 transition-opacity object-cover`}
-              onError={(e) => {
-                // Ak sa custom obrázok nepodarí načítať, použije fallback
-                e.currentTarget.src = getCompetitionImage(competition.status);
-                e.currentTarget.className = e.currentTarget.className.replace('object-contain bg-white', 'object-cover');
-              }}
-              data-testid={`img-competition-${competition.id}`}
+              className="w-full h-48 rounded-t-lg cursor-pointer hover:opacity-90 transition-opacity"
+              aspectRatio="16/9"
+              sizes="(min-width: 1024px) 320px, (min-width: 768px) 280px, (min-width: 640px) 240px, 200px"
+              fallbackSrc={getCompetitionImage(competition.status)}
             />
           </div>
         </Link>
