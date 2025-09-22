@@ -1,0 +1,123 @@
+Nový modul: Rybársky denník
+Cieľ
+
+Poskytnúť rybárom možnosť evidencie vlastných úlovkov a výprav, sledovať štatistiky, fotky a poznámky, a pridať interaktívny súťažný element Fishing Battle medzi priateľmi alebo členmi výpravy.
+
+Rozdelenie verzií
+FREE verzia
+
+Počet výprav: 1 aktívna výprava
+
+Počet úlovkov: max. 20 úlovkov
+
+Fotky a poznámky: ✔
+
+Evidencia nástrah a lovných miest: ✔
+
+Štatistiky: ❌
+
+Fishing Battle: ❌
+
+Porovnávanie výprav: ❌
+
+Export dát: ❌
+
+Technická podpora: Základná
+
+PREMIUM verzia
+
+Počet výprav: neobmedzene
+
+Počet úlovkov: neobmedzene
+
+Fotky a poznámky: ✔
+
+Evidencia nástrah a lovných miest: ✔
+
+Štatistiky a prehľad úlovkov: ✔
+
+Fishing Battle: ✔
+
+Porovnávanie výprav v čase: ✔
+
+Export dát (PDF): ✔
+
+Technická podpora: Prioritná
+
+Hlavné funkcie Rybárskeho denníka
+
+Záznam výpravy
+
+Názov, dátumy, lokalita
+
+Možnosť pridať poznámky k výprave
+
+Záznam úlovkov
+
+Váha v gramoch / kg
+
+Typ kapra (šupináč / lysček)
+
+Fotografie rýb
+
+Nástraha, miesto úlovku, poznámky
+
+Štatistiky a grafy (PREMIUM)
+
+Počet ulovených rýb podľa výpravy a celého roka
+
+Priemer najväčších 3 alebo 5 rýb
+
+Podiel šupináčov a lysčekov
+
+Fishing Battle – porovnanie medzi rybármi vo výprave
+
+Interaktívna súťaž Fishing Battle (PREMIUM)
+
+Porovnanie úlovkov medzi 2 alebo viacerými rybármi počas jednej výpravy
+
+Dynamický rebríček podľa hmotnosti, počtu úlovkov alebo priemernej váhy 3/5 najväčších rýb
+
+Export dát
+
+PDF pre prehľad a zdieľanie výsledkov
+
+CSV je zrušený – nepotrebné pre 99% užívateľov
+
+Notifikácie
+
+Užívateľ si môže zapnúť notifikácie iba pre svoje obľúbené výpravy alebo Fishing Battle súťaže
+
+Pri zapnutej funkcii blokovania výsledkov 12 a 24 hodín pred koncom pretekov neprichádzajú notifikácie
+
+Integrácia do landing page / hero sekcie
+
+Hero sekcia rozdelená na dve časti:
+
+Súťaže – prehľad súťaží, live výsledky, registrácia súťaže
+
+Rybársky denník – evidencia vlastných úlovkov, Fishing Battle, štatistiky
+
+Grafické oddelenie:
+
+Diagonálna čiara v strede, uhol cca 75°
+
+Ľavá časť: modro-zelená, dynamická, motív súťaží
+
+Pravá časť: zeleno-žltá, svieža, motív denníka
+
+CTA tlačidlá:
+
+Súťaže: „Zaregistrovať súťaž“
+
+Rybársky denník: „Vyskúšať denník (FREE)“
+
+Cieľ a výhody modulu
+
+Prístupný pre každého rybára, nielen účastníkov súťaží
+
+Motivuje k PREMIUM upgrade cez limity FREE verzie (1 výprava, max 20 úlovkov)
+
+Poskytuje interaktívny a súťažný zážitok aj mimo oficiálnych súťaží
+
+Umožňuje sledovať progres a štatistiky individuálne alebo medzi priateľmi
