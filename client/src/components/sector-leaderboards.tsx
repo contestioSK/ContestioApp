@@ -7,7 +7,7 @@ import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import type { Team, TeamMember } from "@shared/schema";
-import { getCountryFlag } from "@/lib/countries";
+import { getCountryFlagEmoji } from "@/lib/countries";
 
 interface SectorLeaderboardsProps {
   competitionId: string;
@@ -183,7 +183,7 @@ export default function SectorLeaderboards({ competitionId }: SectorLeaderboards
                           <TableCell>
                             <div className="flex items-center gap-2">
                               <span className="text-lg" data-testid={`flag-${team.id}`}>
-                                {getCountryFlag(team.country || 'SK')}
+                                {getCountryFlagEmoji(team.country || 'SK')}
                               </span>
                               <span className="font-medium text-foreground" data-testid={`text-team-name-${team.id}`}>
                                 {team.name}
