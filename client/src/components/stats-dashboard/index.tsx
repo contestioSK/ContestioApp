@@ -79,7 +79,7 @@ export default function StatsDashboard({ competitionId }: StatsDashboardProps) {
     <div className="space-y-6">
       <div className="flex items-center gap-2 mb-6">
         <BarChart3 className="w-6 h-6" />
-        <h2 className="text-2xl font-bold">Analytiky súťaže</h2>
+        <h2 className="text-2xl font-bold">Štatistiky súťaže</h2>
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
