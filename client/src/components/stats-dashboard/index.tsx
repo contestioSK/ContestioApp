@@ -5,7 +5,8 @@ import { BarChart3, TrendingUp, Award, Users, Fish, Target, Trophy, Activity } f
 import { useQuery } from "@tanstack/react-query";
 
 // Chart components
-import { TimelineChart } from "./charts/timeline-chart";
+import { TimelineWeightChart } from "./charts/timeline-weight-chart";
+import { TimelineCountChart } from "./charts/timeline-count-chart";
 import { WeightCategoryChart } from "./charts/weight-category-chart";
 import { TopFishChart } from "./charts/top-fish-chart";
 import { TeamAverageChart } from "./charts/team-average-chart";
@@ -105,11 +106,14 @@ export default function StatsDashboard({ competitionId }: StatsDashboardProps) {
 
         <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <TimelineChart data={stats.timeline} />
-            <FishTypeDistributionChart data={stats.fishTypeDistribution} />
-            <WeightCategoryChart data={stats.weightCategories} />
+            {/* Nove grafy vedľa seba - váha a počet */}
+            <TimelineWeightChart data={stats.timeline} />
+            <TimelineCountChart data={stats.timeline} />
             
-            {/* Conditionally show team average charts based on side competitions */}
+            <WeightCategoryChart data={stats.weightCategories} />
+            <FishTypeDistributionChart data={stats.fishTypeDistribution} />
+            
+            {/* Conditionally show team average charts based on side competitions - moved down */}
             {hasTop5Contest && (
               <TeamAverageChart 
                 data={stats.teamTop5Average} 
