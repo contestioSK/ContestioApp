@@ -945,7 +945,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Competition statistics endpoint
-  app.get('/api/competitions/:id/stats', async (req, res) => {
+  app.get('/api/competitions/:id/stats', checkPartialResultBlocking, async (req, res) => {
     try {
       const competitionId = req.params.id;
       
