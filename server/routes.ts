@@ -1032,7 +1032,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           time: dayDate.toISOString(),
           totalWeight: Math.round(cumulativeWeight * 10) / 10,
           totalCount: cumulativeCount,
-          hour: day * 24 // Convert day to hour equivalent for compatibility
+          dayIndex: day,
+          date: dayDate.toISOString().split('T')[0] // YYYY-MM-DD format
         });
       }
 
@@ -1054,17 +1055,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const fishTypeDistribution = [
         {
           type: 'Common Carp' as const,
-          weight: catches.filter(c => c.fishType === 'scaly').reduce((sum, c) => sum + Number(c.weight), 0),
+          weight: Math.round(catches.filter(c => c.fishType === 'scaly').reduce((sum, c) => sum + Number(c.weight), 0) * 10) / 10,
           count: fishTypes.scaly,
           percentage: totalFish > 0 ? Math.round((fishTypes.scaly / totalFish) * 100) : 0
         },
         {
           type: 'Mirror Carp' as const,
-          weight: catches.filter(c => c.fishType === 'mirror').reduce((sum, c) => sum + Number(c.weight), 0),
+          weight: Math.round(catches.filter(c => c.fishType === 'mirror').reduce((sum, c) => sum + Number(c.weight), 0) * 10) / 10,
           count: fishTypes.mirror,
           percentage: totalFish > 0 ? Math.round((fishTypes.mirror / totalFish) * 100) : 0
         }
-      ];
+      ].filter(item => item.count > 0 || item.weight > 0); // Only return types that have data
 
       // Top fish
       const topFish = catches
