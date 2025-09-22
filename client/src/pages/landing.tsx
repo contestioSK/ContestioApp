@@ -26,6 +26,7 @@ export default function Landing() {
   const rightSectionRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLElement>(null);
   const animationFrameRef = useRef<number>();
+  const [hoveredSection, setHoveredSection] = useState<'left' | 'right' | null>(null);
   
   // Fetch real competitions from API
   const { data: competitions = [], isLoading } = useQuery<Competition[]>({
@@ -314,34 +315,46 @@ export default function Landing() {
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/60 to-transparent transform -skew-x-12"></div>
             <div className="absolute inset-0 bg-gradient-to-b from-white/20 via-white/80 to-white/20 blur-md transform -skew-x-12"></div>
             {/* Flowing water effect */}
-            <div className="absolute top-1/4 left-1/2 w-6 h-6 bg-white/30 rounded-full animate-ping"></div>
-            <div className="absolute top-1/2 left-1/2 w-4 h-4 bg-white/40 rounded-full animate-pulse"></div>
-            <div className="absolute top-3/4 left-1/2 w-5 h-5 bg-white/25 rounded-full animate-bounce"></div>
+            <div className="absolute top-1/4 left-1/2 w-6 h-6 bg-white/30 rounded-full motion-safe:animate-ping"></div>
+            <div className="absolute top-1/2 left-1/2 w-4 h-4 bg-white/40 rounded-full motion-safe:animate-pulse"></div>
+            <div className="absolute top-3/4 left-1/2 w-5 h-5 bg-white/25 rounded-full motion-safe:animate-bounce"></div>
           </div>
         </div>
         
-        {/* Enhanced Connecting Visual Elements */}
+        {/* Enhanced Connecting Visual Elements with Cross-Section Effects */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {/* Cross-section connecting elements */}
-          <div className="absolute top-1/2 left-[20%] w-32 h-px bg-gradient-to-r from-blue-300/60 via-white/80 to-transparent animate-pulse"></div>
-          <div className="absolute top-1/3 right-[15%] w-24 h-px bg-gradient-to-l from-green-300/60 via-white/80 to-transparent animate-pulse" style={{animationDelay: '1s'}}></div>
+          {/* Dynamic cross-section connecting elements that react to section hover */}
+          <div className={`absolute top-1/2 left-[20%] h-px bg-gradient-to-r from-blue-300/60 via-white/80 to-transparent motion-safe:animate-pulse transition-all duration-700 ${
+            hoveredSection === 'left' ? 'w-48 from-blue-400/80 via-white/90' : 'w-32'
+          }`}></div>
+          <div className={`absolute top-1/3 right-[15%] h-px bg-gradient-to-l from-green-300/60 via-white/80 to-transparent motion-safe:animate-pulse transition-all duration-700 ${
+            hoveredSection === 'right' ? 'w-40 from-green-400/80 via-white/90' : 'w-24'
+          }`} style={{animationDelay: '1s'}}></div>
+          
+          {/* Cross-section flow lines that extend when opposite section is hovered */}
+          <div className={`absolute top-[45%] left-[50%] h-px bg-white/40 transform -rotate-12 transition-all duration-500 ${
+            hoveredSection === 'right' ? 'w-16 bg-white/70' : 'w-8'
+          }`}></div>
+          <div className={`absolute top-[55%] left-[55%] h-px bg-white/30 transform rotate-12 transition-all duration-500 ${
+            hoveredSection === 'left' ? 'w-12 bg-white/60' : 'w-6'
+          }`}></div>
           
           {/* Swimming fish elements crossing sections */}
-          <div className="absolute top-1/4 left-[10%] text-2xl text-white/40 animate-bounce">🐟</div>
-          <div className="absolute bottom-1/3 right-[10%] text-xl text-white/30 animate-pulse" style={{animationDelay: '2s'}}>🎣</div>
+          <div className="absolute top-1/4 left-[10%] text-2xl text-white/40 motion-safe:animate-bounce">🐟</div>
+          <div className="absolute bottom-1/3 right-[10%] text-xl text-white/30 motion-safe:animate-pulse" style={{animationDelay: '2s'}}>🎣</div>
           
           {/* Dynamic floating elements */}
-          <div className="absolute top-20 left-[15%] w-3 h-3 bg-blue-400/30 rounded-full animate-ping" style={{animationDelay: '0s', animationDuration: '4s'}}></div>
-          <div className="absolute top-40 left-[45%] w-2 h-2 bg-white/40 rounded-full animate-bounce" style={{animationDelay: '1s', animationDuration: '3s'}}></div>
-          <div className="absolute bottom-32 left-[25%] w-4 h-4 bg-blue-300/20 rounded-full animate-pulse" style={{animationDelay: '2s', animationDuration: '5s'}}></div>
+          <div className="absolute top-20 left-[15%] w-3 h-3 bg-blue-400/30 rounded-full motion-safe:animate-ping" style={{animationDelay: '0s', animationDuration: '4s'}}></div>
+          <div className="absolute top-40 left-[45%] w-2 h-2 bg-white/40 rounded-full motion-safe:animate-bounce" style={{animationDelay: '1s', animationDuration: '3s'}}></div>
+          <div className="absolute bottom-32 left-[25%] w-4 h-4 bg-blue-300/20 rounded-full motion-safe:animate-pulse" style={{animationDelay: '2s', animationDuration: '5s'}}></div>
           
-          <div className="absolute top-24 right-[20%] w-2 h-2 bg-green-400/30 rounded-full animate-ping" style={{animationDelay: '0.5s', animationDuration: '3.5s'}}></div>
-          <div className="absolute top-48 right-[5%] w-3 h-3 bg-white/30 rounded-full animate-bounce" style={{animationDelay: '1.5s', animationDuration: '4s'}}></div>
-          <div className="absolute bottom-28 right-[30%] w-3 h-3 bg-green-300/25 rounded-full animate-pulse" style={{animationDelay: '3s', animationDuration: '6s'}}></div>
+          <div className="absolute top-24 right-[20%] w-2 h-2 bg-green-400/30 rounded-full motion-safe:animate-ping" style={{animationDelay: '0.5s', animationDuration: '3.5s'}}></div>
+          <div className="absolute top-48 right-[5%] w-3 h-3 bg-white/30 rounded-full motion-safe:animate-bounce" style={{animationDelay: '1.5s', animationDuration: '4s'}}></div>
+          <div className="absolute bottom-28 right-[30%] w-3 h-3 bg-green-300/25 rounded-full motion-safe:animate-pulse" style={{animationDelay: '3s', animationDuration: '6s'}}></div>
           
           {/* Water ripple effects */}
-          <div className="absolute top-[60%] left-[55%] w-16 h-16 border border-white/20 rounded-full animate-ping" style={{animationDelay: '0s', animationDuration: '4s'}}></div>
-          <div className="absolute top-[65%] left-[58%] w-12 h-12 border border-white/15 rounded-full animate-ping" style={{animationDelay: '1s', animationDuration: '3s'}}></div>
+          <div className="absolute top-[60%] left-[55%] w-16 h-16 border border-white/20 rounded-full motion-safe:animate-ping" style={{animationDelay: '0s', animationDuration: '4s'}}></div>
+          <div className="absolute top-[65%] left-[58%] w-12 h-12 border border-white/15 rounded-full motion-safe:animate-ping" style={{animationDelay: '1s', animationDuration: '3s'}}></div>
         </div>
 
         {/* Content Container with Asymmetric Split */}
@@ -349,13 +362,15 @@ export default function Landing() {
           {/* Competition Section - 60% width */}
           <div 
             ref={leftSectionRef}
-            className="relative md:w-[60%] flex items-center justify-center md:justify-start text-white px-4 sm:px-6 md:px-8 py-8 md:py-12"
+            className="relative md:w-[60%] flex items-center justify-center md:justify-start text-white px-4 sm:px-6 md:px-8 py-8 md:py-12 group transition-all duration-500 hover:scale-[1.02] hover:z-20"
             style={{
               backgroundImage: `url(${heroImage})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center left',
               backgroundRepeat: 'no-repeat'
             }}
+            onMouseEnter={() => setHoveredSection('left')}
+            onMouseLeave={() => setHoveredSection(null)}
             data-testid="hero-competitions-section"
           >
             {/* Background overlays for text readability */}
@@ -365,13 +380,13 @@ export default function Landing() {
             <div className="relative z-10 max-w-sm text-center md:text-left">
               {/* Competition Icons with floating animation */}
               <div className="flex justify-center md:justify-start gap-3 mb-4 md:mb-6">
-                <div className="p-2 md:p-3 bg-white/20 rounded-full transition-all duration-500 hover:bg-white/30 hover:scale-110 hover:shadow-lg hover:shadow-yellow-300/20 animate-pulse">
+                <div className="p-2 md:p-3 bg-white/20 rounded-full transition-all duration-500 hover:bg-white/30 hover:scale-110 hover:shadow-lg hover:shadow-yellow-300/20 motion-safe:animate-pulse">
                   <Trophy className="w-5 h-5 md:w-6 md:h-6 text-yellow-300" />
                 </div>
-                <div className="p-2 md:p-3 bg-white/20 rounded-full transition-all duration-500 hover:bg-white/30 hover:scale-110 hover:shadow-lg hover:shadow-blue-200/20 animate-pulse" style={{animationDelay: '0.5s'}}>
+                <div className="p-2 md:p-3 bg-white/20 rounded-full transition-all duration-500 hover:bg-white/30 hover:scale-110 hover:shadow-lg hover:shadow-blue-200/20 motion-safe:animate-pulse" style={{animationDelay: '0.5s'}}>
                   <BarChart3 className="w-5 h-5 md:w-6 md:h-6 text-blue-200" />
                 </div>
-                <div className="p-2 md:p-3 bg-white/20 rounded-full transition-all duration-500 hover:bg-white/30 hover:scale-110 hover:shadow-lg hover:shadow-orange-300/20 animate-pulse" style={{animationDelay: '1s'}}>
+                <div className="p-2 md:p-3 bg-white/20 rounded-full transition-all duration-500 hover:bg-white/30 hover:scale-110 hover:shadow-lg hover:shadow-orange-300/20 motion-safe:animate-pulse" style={{animationDelay: '1s'}}>
                   <Target className="w-5 h-5 md:w-6 md:h-6 text-orange-300" />
                 </div>
               </div>
@@ -388,7 +403,7 @@ export default function Landing() {
                 <Link href="/live">
                   <Button 
                     size="lg"
-                    className="w-full bg-white text-blue-800 hover:bg-blue-50 font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-blue-500/25 relative overflow-hidden group"
+                    className="w-full bg-white text-blue-800 hover:bg-blue-50 font-semibold transition-all duration-300 transform hover:scale-110 hover:shadow-2xl hover:shadow-blue-500/40 hover:-translate-y-1 relative overflow-hidden group magnetic-button"
                     data-testid="button-view-competitions"
                   >
                     {/* Shine effect */}
@@ -401,7 +416,7 @@ export default function Landing() {
                   <Button
                     size="lg"
                     variant="outline"
-                    className="w-full border-2 border-white text-blue-800 bg-white/90 hover:bg-white hover:text-blue-800 font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-white/25 relative overflow-hidden group"
+                    className="w-full border-2 border-white text-blue-800 bg-white/90 hover:bg-white hover:text-blue-800 font-semibold transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:shadow-white/40 hover:-translate-y-1 relative overflow-hidden group magnetic-button"
                     data-testid="button-register-competition-hero"
                   >
                     {/* Shine effect */}
@@ -417,13 +432,15 @@ export default function Landing() {
           {/* Fishing Diary Section - 40% width */}
           <div 
             ref={rightSectionRef}
-            className="relative md:w-[40%] flex items-center justify-center md:justify-end text-white px-4 sm:px-6 md:px-8 py-8 md:py-12"
+            className="relative md:w-[40%] flex items-center justify-center md:justify-end text-white px-4 sm:px-6 md:px-8 py-8 md:py-12 group transition-all duration-500 hover:scale-[1.02] hover:z-20"
             style={{
               backgroundImage: `url(${lakeImage})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center right',
               backgroundRepeat: 'no-repeat'
             }}
+            onMouseEnter={() => setHoveredSection('right')}
+            onMouseLeave={() => setHoveredSection(null)}
             data-testid="hero-diary-section"
           >
             {/* Background overlays for text readability */}
@@ -433,13 +450,13 @@ export default function Landing() {
             <div className="relative z-10 max-w-sm text-center md:text-left">
               {/* Diary Icons with floating animation */}
               <div className="flex justify-center md:justify-start gap-3 mb-4 md:mb-6">
-                <div className="p-2 md:p-3 bg-white/20 rounded-full transition-all duration-500 hover:bg-white/30 hover:scale-110 hover:shadow-lg hover:shadow-green-100/20 animate-pulse">
+                <div className="p-2 md:p-3 bg-white/20 rounded-full transition-all duration-500 hover:bg-white/30 hover:scale-110 hover:shadow-lg hover:shadow-green-100/20 motion-safe:animate-pulse">
                   <BookOpen className="w-5 h-5 md:w-6 md:h-6 text-green-100" />
                 </div>
-                <div className="p-2 md:p-3 bg-white/20 rounded-full transition-all duration-500 hover:bg-white/30 hover:scale-110 hover:shadow-lg hover:shadow-blue-200/20 animate-pulse" style={{animationDelay: '0.5s'}}>
+                <div className="p-2 md:p-3 bg-white/20 rounded-full transition-all duration-500 hover:bg-white/30 hover:scale-110 hover:shadow-lg hover:shadow-blue-200/20 motion-safe:animate-pulse" style={{animationDelay: '0.5s'}}>
                   <Fish className="w-5 h-5 md:w-6 md:h-6 text-blue-200" />
                 </div>
-                <div className="p-2 md:p-3 bg-white/20 rounded-full transition-all duration-500 hover:bg-white/30 hover:scale-110 hover:shadow-lg hover:shadow-yellow-300/20 animate-pulse" style={{animationDelay: '1s'}}>
+                <div className="p-2 md:p-3 bg-white/20 rounded-full transition-all duration-500 hover:bg-white/30 hover:scale-110 hover:shadow-lg hover:shadow-yellow-300/20 motion-safe:animate-pulse" style={{animationDelay: '1s'}}>
                   <Crown className="w-5 h-5 md:w-6 md:h-6 text-yellow-300" />
                 </div>
               </div>
@@ -456,7 +473,7 @@ export default function Landing() {
                 <Link href="/diary">
                   <Button 
                     size="lg"
-                    className="w-full bg-white text-green-800 hover:bg-green-50 font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-green-500/25 relative overflow-hidden group"
+                    className="w-full bg-white text-green-800 hover:bg-green-50 font-semibold transition-all duration-300 transform hover:scale-110 hover:shadow-2xl hover:shadow-green-500/40 hover:-translate-y-1 relative overflow-hidden group magnetic-button"
                     data-testid="button-start-diary"
                   >
                     {/* Shine effect */}
@@ -469,7 +486,7 @@ export default function Landing() {
                   <Button
                     size="lg"
                     variant="outline"
-                    className="w-full border-2 border-white text-green-800 bg-white/90 hover:bg-white hover:text-green-800 font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-white/25 relative overflow-hidden group"
+                    className="w-full border-2 border-white text-green-800 bg-white/90 hover:bg-white hover:text-green-800 font-semibold transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:shadow-white/40 hover:-translate-y-1 relative overflow-hidden group magnetic-button"
                     data-testid="button-try-battle"
                   >
                     {/* Shine effect */}
