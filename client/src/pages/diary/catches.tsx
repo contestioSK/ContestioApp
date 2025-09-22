@@ -82,6 +82,85 @@ type FreemiumLimits = {
   limit: number;
 };
 
+// Type for photo upload response
+type PhotoUploadResponse = {
+  id: string;
+  originalName: string;
+  url: string;
+  variants: Array<{
+    format: string;
+    width: number;
+    url: string;
+  }>;
+  placeholder: string;
+  width: number;
+  height: number;
+};
+
+// Helper function to upload photos
+async function uploadPhotos(files: File[]): Promise<PhotoUploadResponse[]> {
+  if (files.length === 0) return [];
+  
+  const formData = new FormData();
+  files.forEach((file) => {
+    formData.append('photos', file);
+  });
+  
+  const response = await fetch('/api/diary/photos/upload', {
+    method: 'POST',
+    body: formData,
+    credentials: 'include',
+  });
+  
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Chyba pri nahrávaní fotiek: ${errorText}`);
+  }
+  
+  const result = await response.json();
+  
+  // Handle different response shapes flexibly
+  let photos: PhotoUploadResponse[] = [];
+  
+  if (result.photos && Array.isArray(result.photos)) {
+    // Standard response shape: { photos: [{ url, id, ... }] }
+    photos = result.photos;
+  } else if (result.urls && Array.isArray(result.urls)) {
+    // Alternative shape: { urls: ["url1", "url2"] }
+    photos = result.urls.map((url: string, index: number) => ({
+      id: `temp-${index}`,
+      originalName: files[index]?.name || `photo-${index}`,
+      url,
+      variants: [],
+      placeholder: '',
+      width: 0,
+      height: 0
+    }));
+  } else if (Array.isArray(result)) {
+    // Direct array response: ["url1", "url2"]
+    photos = result.map((url: string, index: number) => ({
+      id: `temp-${index}`,
+      originalName: files[index]?.name || `photo-${index}`,
+      url,
+      variants: [],
+      placeholder: '',
+      width: 0,
+      height: 0
+    }));
+  }
+  
+  // Validate that we have valid URLs
+  const validPhotos = photos.filter(photo => 
+    photo && typeof photo === 'object' && typeof photo.url === 'string' && photo.url.trim() !== ''
+  );
+  
+  if (validPhotos.length === 0 && files.length > 0) {
+    throw new Error('Server nevrátil žiadne platné URL fotiek');
+  }
+  
+  return validPhotos;
+}
+
 export default function DiaryCatches() {
   const { user } = useAuth();
   const [location, setLocation] = useLocation();
@@ -93,6 +172,7 @@ export default function DiaryCatches() {
   const [selectedTrip, setSelectedTrip] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState("");
   const [carpTypeFilter, setCarpTypeFilter] = useState<string>("all");
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
   // Get tripId from URL params if present
   const urlParams = new URLSearchParams(location.split('?')[1] || '');
@@ -142,13 +222,16 @@ export default function DiaryCatches() {
   // Create catch mutation
   const createCatchMutation = useMutation({
     mutationFn: async (data: CatchFormData) => {
+      // First upload photos if any
+      const uploadedPhotos = await uploadPhotos(data.photos || []);
+      
       // Server will set userId and verified status
       const catchData = {
         ...data,
         angler: {
           name: data.angler.name
         },
-        photos: [] // Photo upload to be implemented with backend
+        photos: uploadedPhotos.map(photo => photo.url) // Convert to URL strings
       };
       const response = await apiRequest("POST", "/api/diary/catches", catchData);
       return response.json();
@@ -156,8 +239,7 @@ export default function DiaryCatches() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/diary/catches"] });
       queryClient.invalidateQueries({ queryKey: ["/api/diary/catch-limits"] });
-      setIsCreateDialogOpen(false);
-      form.reset();
+      handleCloseDialog(); // This clears selectedFiles and resets form
       toast({
         title: "Úlovok pridaný!",
         description: "Váš úlovok bol úspešne pridaný do denníka.",
@@ -175,13 +257,27 @@ export default function DiaryCatches() {
   // Update catch mutation
   const updateCatchMutation = useMutation({
     mutationFn: async (data: CatchFormData) => {
-      const response = await apiRequest("PUT", `/api/diary/catches/${editingCatch!.id}`, data);
+      // First upload new photos if any
+      const uploadedPhotos = await uploadPhotos(data.photos || []);
+      
+      // Convert uploaded photos to URLs and combine with existing photos
+      const newPhotoUrls = uploadedPhotos.map(photo => photo.url);
+      const existingPhotoUrls = editingCatch?.photos || [];
+      const allPhotoUrls = [...existingPhotoUrls, ...newPhotoUrls];
+      
+      const updateData = {
+        ...data,
+        angler: {
+          name: data.angler.name
+        },
+        photos: allPhotoUrls
+      };
+      const response = await apiRequest("PUT", `/api/diary/catches/${editingCatch!.id}`, updateData);
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/diary/catches"] });
-      setEditingCatch(null);
-      form.reset();
+      handleCloseDialog(); // This clears selectedFiles and resets form
       toast({
         title: "Úlovok aktualizovaný!",
         description: "Váš úlovok bol úspešne aktualizovaný.",
@@ -248,7 +344,14 @@ export default function DiaryCatches() {
   const handleCloseDialog = () => {
     setIsCreateDialogOpen(false);
     setEditingCatch(null);
+    setSelectedFiles([]);
     form.reset();
+  };
+  
+  const removeFile = (index: number) => {
+    const newFiles = selectedFiles.filter((_, i) => i !== index);
+    setSelectedFiles(newFiles);
+    form.setValue('photos', newFiles);
   };
 
   const getCarpTypeLabel = (type: string) => {
@@ -300,7 +403,16 @@ export default function DiaryCatches() {
             </div>
           </div>
 
-          <Dialog open={isCreateDialogOpen || !!editingCatch} onOpenChange={handleCloseDialog}>
+          <Dialog 
+            open={isCreateDialogOpen || !!editingCatch} 
+            onOpenChange={(open) => {
+              if (open) {
+                setIsCreateDialogOpen(true);
+              } else {
+                handleCloseDialog();
+              }
+            }}
+          >
             <DialogTrigger asChild>
               <Button 
                 className="gap-2"
@@ -560,15 +672,23 @@ export default function DiaryCatches() {
                             multiple
                             onChange={(e) => {
                               const files = Array.from(e.target.files || []);
-                              if (files.length > 5) {
+                              const existingPhotosCount = editingCatch?.photos?.length || 0;
+                              const totalFiles = existingPhotosCount + selectedFiles.length + files.length;
+                              
+                              if (totalFiles > 5) {
                                 toast({
                                   title: "Príliš veľa súborov",
-                                  description: "Môžete nahrať maximálne 5 fotografií.",
+                                  description: `Maximálne 5 fotografií. Už máte ${existingPhotosCount} existujúcich a ${selectedFiles.length} vybraných.`,
                                   variant: "destructive"
                                 });
                                 return;
                               }
-                              field.onChange(files);
+                              
+                              const newFiles = [...selectedFiles, ...files];
+                              setSelectedFiles(newFiles);
+                              field.onChange(newFiles);
+                              // Clear the input value so same file can be selected again
+                              e.target.value = '';
                             }}
                             data-testid="input-photos"
                           />
@@ -576,6 +696,63 @@ export default function DiaryCatches() {
                         <FormDescription>
                           Podporované formáty: JPEG, PNG, GIF. Maximálne 5 fotografií.
                         </FormDescription>
+                        
+                        {/* Photo Preview */}
+                        {selectedFiles.length > 0 && (
+                          <div className="mt-4">
+                            <div className="text-sm font-medium mb-2">Vybrané fotografie:</div>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                              {selectedFiles.map((file, index) => {
+                                const previewUrl = URL.createObjectURL(file);
+                                return (
+                                  <div key={index} className="relative group">
+                                    <img
+                                      src={previewUrl}
+                                      alt={file.name}
+                                      className="w-full h-20 object-cover rounded border"
+                                      onLoad={() => URL.revokeObjectURL(previewUrl)}
+                                    />
+                                    <Button
+                                      type="button"
+                                      variant="destructive"
+                                      size="sm"
+                                      className="absolute top-1 right-1 w-6 h-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                      onClick={() => removeFile(index)}
+                                      data-testid={`button-remove-photo-${index}`}
+                                    >
+                                      <Trash2 className="w-3 h-3" />
+                                    </Button>
+                                    <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1 rounded-b truncate">
+                                      {file.name}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Existing Photos for Edit Mode */}
+                        {editingCatch && editingCatch.photos && editingCatch.photos.length > 0 && (
+                          <div className="mt-4">
+                            <div className="text-sm font-medium mb-2">Existujúce fotografie:</div>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                              {editingCatch.photos.map((photoUrl, index) => (
+                                <div key={index} className="relative">
+                                  <img
+                                    src={photoUrl}
+                                    alt={`Fotografia ${index + 1}`}
+                                    className="w-full h-20 object-cover rounded border"
+                                  />
+                                  <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1 rounded-b truncate">
+                                    Fotografia {index + 1}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        
                         <FormMessage />
                       </FormItem>
                     )}
