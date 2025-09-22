@@ -293,33 +293,63 @@ export default function Landing() {
         </div>
       </header>
 
-      {/* Left/Right Split Hero Section */}
-      <section ref={heroRef} className="relative min-h-[520px] md:min-h-[640px] overflow-hidden">
-        {/* Vertical Gradient Divider */}
-        <div className="hidden md:block absolute top-0 bottom-0 left-1/2 w-1 transform -translate-x-1/2 z-20">
-          <div className="h-full bg-gradient-to-b from-transparent via-white/40 to-transparent"></div>
-          <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-white/60 to-white/10 blur-sm"></div>
-        </div>
-        
-        {/* Decorative floating elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {/* Left section bubbles */}
-          <div className="absolute top-20 left-8 w-2 h-2 bg-white/10 rounded-full animate-bounce" style={{animationDelay: '0s', animationDuration: '3s'}}></div>
-          <div className="absolute top-32 left-16 w-1 h-1 bg-blue-300/20 rounded-full animate-bounce" style={{animationDelay: '1s', animationDuration: '4s'}}></div>
-          <div className="absolute bottom-24 left-12 w-3 h-3 bg-white/10 rounded-full animate-bounce" style={{animationDelay: '2s', animationDuration: '5s'}}></div>
-          
-          {/* Right section bubbles */}
-          <div className="absolute top-16 right-10 w-2 h-2 bg-white/10 rounded-full animate-bounce" style={{animationDelay: '0.5s', animationDuration: '3.5s'}}></div>
-          <div className="absolute top-28 right-6 w-1 h-1 bg-green-300/20 rounded-full animate-bounce" style={{animationDelay: '1.5s', animationDuration: '4.5s'}}></div>
-          <div className="absolute bottom-20 right-14 w-3 h-3 bg-white/10 rounded-full animate-bounce" style={{animationDelay: '2.5s', animationDuration: '6s'}}></div>
+      {/* Revolutionary Hero Section */}
+      <section ref={heroRef} className="relative min-h-[600px] md:min-h-[720px] overflow-hidden">
+        {/* Central Hero Text */}
+        <div className="absolute top-0 left-0 right-0 z-30 pt-8 md:pt-12 pb-6">
+          <div className="text-center text-white px-4">
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-4 bg-gradient-to-r from-blue-100 via-white to-green-100 bg-clip-text text-transparent">
+              Zažite rybolov naplno
+            </h1>
+            <p className="text-lg md:text-xl lg:text-2xl text-white/90 max-w-3xl mx-auto font-medium">
+              Každý úlovok má svoj príbeh
+            </p>
+          </div>
         </div>
 
-        {/* Content Container */}
-        <div className="relative z-10 h-full flex flex-col md:flex-row min-h-[520px] md:min-h-[640px]">
-          {/* Competition Section */}
+        {/* Flowing Diagonal Divider */}
+        <div className="hidden md:block absolute top-0 bottom-0 left-[60%] z-20 transform -translate-x-1/2">
+          {/* Main flowing line */}
+          <div className="relative h-full w-4">
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/60 to-transparent transform -skew-x-12"></div>
+            <div className="absolute inset-0 bg-gradient-to-b from-white/20 via-white/80 to-white/20 blur-md transform -skew-x-12"></div>
+            {/* Flowing water effect */}
+            <div className="absolute top-1/4 left-1/2 w-6 h-6 bg-white/30 rounded-full animate-ping"></div>
+            <div className="absolute top-1/2 left-1/2 w-4 h-4 bg-white/40 rounded-full animate-pulse"></div>
+            <div className="absolute top-3/4 left-1/2 w-5 h-5 bg-white/25 rounded-full animate-bounce"></div>
+          </div>
+        </div>
+        
+        {/* Enhanced Connecting Visual Elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {/* Cross-section connecting elements */}
+          <div className="absolute top-1/2 left-[20%] w-32 h-px bg-gradient-to-r from-blue-300/60 via-white/80 to-transparent animate-pulse"></div>
+          <div className="absolute top-1/3 right-[15%] w-24 h-px bg-gradient-to-l from-green-300/60 via-white/80 to-transparent animate-pulse" style={{animationDelay: '1s'}}></div>
+          
+          {/* Swimming fish elements crossing sections */}
+          <div className="absolute top-1/4 left-[10%] text-2xl text-white/40 animate-bounce">🐟</div>
+          <div className="absolute bottom-1/3 right-[10%] text-xl text-white/30 animate-pulse" style={{animationDelay: '2s'}}>🎣</div>
+          
+          {/* Dynamic floating elements */}
+          <div className="absolute top-20 left-[15%] w-3 h-3 bg-blue-400/30 rounded-full animate-ping" style={{animationDelay: '0s', animationDuration: '4s'}}></div>
+          <div className="absolute top-40 left-[45%] w-2 h-2 bg-white/40 rounded-full animate-bounce" style={{animationDelay: '1s', animationDuration: '3s'}}></div>
+          <div className="absolute bottom-32 left-[25%] w-4 h-4 bg-blue-300/20 rounded-full animate-pulse" style={{animationDelay: '2s', animationDuration: '5s'}}></div>
+          
+          <div className="absolute top-24 right-[20%] w-2 h-2 bg-green-400/30 rounded-full animate-ping" style={{animationDelay: '0.5s', animationDuration: '3.5s'}}></div>
+          <div className="absolute top-48 right-[5%] w-3 h-3 bg-white/30 rounded-full animate-bounce" style={{animationDelay: '1.5s', animationDuration: '4s'}}></div>
+          <div className="absolute bottom-28 right-[30%] w-3 h-3 bg-green-300/25 rounded-full animate-pulse" style={{animationDelay: '3s', animationDuration: '6s'}}></div>
+          
+          {/* Water ripple effects */}
+          <div className="absolute top-[60%] left-[55%] w-16 h-16 border border-white/20 rounded-full animate-ping" style={{animationDelay: '0s', animationDuration: '4s'}}></div>
+          <div className="absolute top-[65%] left-[58%] w-12 h-12 border border-white/15 rounded-full animate-ping" style={{animationDelay: '1s', animationDuration: '3s'}}></div>
+        </div>
+
+        {/* Content Container with Asymmetric Split */}
+        <div className="relative z-10 h-full flex flex-col md:flex-row min-h-[600px] md:min-h-[720px] pt-32 md:pt-40">
+          {/* Competition Section - 60% width */}
           <div 
             ref={leftSectionRef}
-            className="relative flex-1 flex items-center justify-center text-white px-4 sm:px-6 md:px-8 py-8 md:py-12"
+            className="relative md:w-[60%] flex items-center justify-center md:justify-start text-white px-4 sm:px-6 md:px-8 py-8 md:py-12"
             style={{
               backgroundImage: `url(${heroImage})`,
               backgroundSize: 'cover',
@@ -384,10 +414,10 @@ export default function Landing() {
             </div>
           </div>
 
-          {/* Fishing Diary Section */}
+          {/* Fishing Diary Section - 40% width */}
           <div 
             ref={rightSectionRef}
-            className="relative flex-1 flex items-center justify-center text-white px-4 sm:px-6 md:px-8 py-8 md:py-12"
+            className="relative md:w-[40%] flex items-center justify-center md:justify-end text-white px-4 sm:px-6 md:px-8 py-8 md:py-12"
             style={{
               backgroundImage: `url(${lakeImage})`,
               backgroundSize: 'cover',
