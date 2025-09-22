@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Fish, Users, Trophy, MapPin, PlusCircle, Menu, X, Info, DollarSign, HelpCircle, BarChart3, Target, Zap, BookOpen, Crown } from "lucide-react";
 import { ContestCategories } from "@/components/contest-categories";
 import { Link, useLocation } from "wouter";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import heroImage from "@assets/Carp_Fishing_1600x500_crop_center_6bc11ee9-9096-425e-8946-560290a33987_2016x630_1758061236097.webp";
 interface Competition {
@@ -20,21 +20,59 @@ interface Competition {
 export default function Landing() {
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [scrollY, setScrollY] = useState(0);
+  const leftSectionRef = useRef<HTMLDivElement>(null);
+  const rightSectionRef = useRef<HTMLDivElement>(null);
+  const heroRef = useRef<HTMLElement>(null);
+  const animationFrameRef = useRef<number>();
   
   // Fetch real competitions from API
   const { data: competitions = [], isLoading } = useQuery<Competition[]>({
     queryKey: ["/api/competitions"]
   });
 
-  // Parallax scroll effect
+  // RequestAnimationFrame-based parallax effect
   useEffect(() => {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    
+    if (prefersReducedMotion) return;
+
     const handleScroll = () => {
-      setScrollY(window.scrollY);
+      if (!leftSectionRef.current || !rightSectionRef.current || !heroRef.current) return;
+      
+      const heroRect = heroRef.current.getBoundingClientRect();
+      const isHeroVisible = heroRect.bottom >= 0 && heroRect.top <= window.innerHeight;
+      
+      if (!isHeroVisible) return;
+      
+      const scrollProgress = Math.max(0, Math.min(1, (window.innerHeight - heroRect.top) / (window.innerHeight + heroRect.height)));
+      const leftOffset = Math.max(-80, Math.min(80, scrollProgress * window.scrollY * -0.25));
+      const rightOffset = Math.max(-80, Math.min(80, scrollProgress * window.scrollY * 0.18));
+      
+      leftSectionRef.current.style.transform = `translate3d(0, ${leftOffset}px, 0)`;
+      rightSectionRef.current.style.transform = `translate3d(0, ${rightOffset}px, 0)`;
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    const onScroll = () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      animationFrameRef.current = requestAnimationFrame(handleScroll);
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    
+    // Set will-change property
+    if (leftSectionRef.current) leftSectionRef.current.style.willChange = 'transform';
+    if (rightSectionRef.current) rightSectionRef.current.style.willChange = 'transform';
+    
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      if (leftSectionRef.current) leftSectionRef.current.style.willChange = 'auto';
+      if (rightSectionRef.current) rightSectionRef.current.style.willChange = 'auto';
+    };
   }, []);
 
   // Navigation items
@@ -253,32 +291,26 @@ export default function Landing() {
         </div>
       </header>
 
-      {/* Diagonal Hero Section */}
-      <section className="relative h-[480px] sm:h-[560px] md:h-[600px] lg:h-[640px] overflow-hidden">
-        {/* Background with 75° diagonal split */}
-        <div 
-          className="absolute inset-0"
-          style={{
-            background: `linear-gradient(165deg, 
-              rgb(29, 78, 216) 0%, 
-              rgb(29, 78, 216) 49.8%, 
-              rgb(34, 197, 94) 50.2%, 
-              rgb(34, 197, 94) 100%
-            )`
-          }}
-        />
+      {/* Left/Right Split Hero Section */}
+      <section ref={heroRef} className="relative min-h-[520px] md:min-h-[640px] overflow-hidden">
+        {/* Vertical Gradient Divider */}
+        <div className="hidden md:block absolute top-0 bottom-0 left-1/2 w-1 transform -translate-x-1/2 z-20">
+          <div className="h-full bg-gradient-to-b from-transparent via-white/40 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-white/60 to-white/10 blur-sm"></div>
+        </div>
         
         {/* Content Container */}
-        <div className="relative z-10 h-full flex flex-col md:flex-row">
+        <div className="relative z-10 h-full flex flex-col md:flex-row min-h-[520px] md:min-h-[640px]">
           {/* Competition Section */}
           <div 
-            className="flex-1 flex items-center justify-center md:justify-start text-white px-4 sm:px-6 md:px-8 py-8"
-            style={{
-              transform: `translateY(${scrollY * -0.3}px)`,
-            }}
+            ref={leftSectionRef}
+            className="relative flex-1 flex items-center justify-center text-white px-4 sm:px-6 md:px-8 py-8 md:py-12 bg-gradient-to-br from-blue-700 via-blue-800 to-blue-900"
             data-testid="hero-competitions-section"
           >
-            <div className="max-w-sm text-center md:text-left">
+            {/* Enhanced gradient overlays */}
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-transparent to-transparent"></div>
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-900/10 to-blue-900/30"></div>
+            <div className="relative z-10 max-w-sm text-center md:text-left">
               {/* Competition Icons */}
               <div className="flex justify-center md:justify-start gap-3 mb-4 md:mb-6">
                 <div className="p-2 md:p-3 bg-white/20 rounded-full">
@@ -328,13 +360,14 @@ export default function Landing() {
 
           {/* Fishing Diary Section */}
           <div 
-            className="flex-1 flex items-center justify-center md:justify-end text-white px-4 sm:px-6 md:px-8 py-8"
-            style={{
-              transform: `translateY(${scrollY * 0.2}px)`,
-            }}
+            ref={rightSectionRef}
+            className="relative flex-1 flex items-center justify-center text-white px-4 sm:px-6 md:px-8 py-8 md:py-12 bg-gradient-to-bl from-green-500 via-green-600 to-green-700"
             data-testid="hero-diary-section"
           >
-            <div className="max-w-sm text-center md:text-left">
+            {/* Enhanced gradient overlays */}
+            <div className="absolute inset-0 bg-gradient-to-l from-green-400/20 via-transparent to-transparent"></div>
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-green-700/10 to-green-800/30"></div>
+            <div className="relative z-10 max-w-sm text-center md:text-left">
               {/* Diary Icons */}
               <div className="flex justify-center md:justify-start gap-3 mb-4 md:mb-6">
                 <div className="p-2 md:p-3 bg-white/20 rounded-full">
@@ -382,14 +415,6 @@ export default function Landing() {
             </div>
           </div>
         </div>
-
-        {/* Diagonal Highlight Overlay */}
-        <div 
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: 'linear-gradient(165deg, transparent 49%, rgba(255,255,255,0.1) 49.8%, rgba(255,255,255,0.2) 50.2%, transparent 51%)',
-          }}
-        />
       </section>
 
       {/* Contest Categories */}
