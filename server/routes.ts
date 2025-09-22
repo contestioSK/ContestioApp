@@ -991,16 +991,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       });
 
-      // Timeline data (daily aggregation)
+      // Timeline data (daily aggregation for entire competition duration)
       const timeline = [];
       const competitionStart = new Date(competition.startDate);
       const competitionEnd = new Date(competition.endDate);
       const currentDate = new Date();
       
-      // Calculate the actual end date (either competition end or current date, whichever is earlier)
-      const actualEndDate = currentDate < competitionEnd ? currentDate : competitionEnd;
-      
-      // Group catches by day
+      // Group catches by day (only for days that have already passed)
       const catchesByDay = catches.reduce((acc, catch_) => {
         if (!catch_.submittedAt) return acc;
         const catchDate = new Date(catch_.submittedAt);
@@ -1015,18 +1012,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return acc;
       }, {} as Record<number, { weight: number; count: number }>);
 
-      // Create cumulative timeline for each day
+      // Create cumulative timeline for ALL days of competition (including future days)
       let cumulativeWeight = 0;
       let cumulativeCount = 0;
-      const totalDays = Math.ceil((actualEndDate.getTime() - competitionStart.getTime()) / (1000 * 60 * 60 * 24));
+      const totalCompetitionDays = Math.ceil((competitionEnd.getTime() - competitionStart.getTime()) / (1000 * 60 * 60 * 24));
       
-      for (let day = 0; day < Math.max(1, totalDays); day++) {
-        const dayData = catchesByDay[day] || { weight: 0, count: 0 };
-        cumulativeWeight += dayData.weight;
-        cumulativeCount += dayData.count;
-        
+      for (let day = 0; day < Math.max(1, totalCompetitionDays); day++) {
         const dayDate = new Date(competitionStart);
         dayDate.setDate(dayDate.getDate() + day);
+        
+        // Only add catches for days that have already passed
+        const isFutureDay = dayDate > currentDate;
+        const dayData = isFutureDay ? { weight: 0, count: 0 } : (catchesByDay[day] || { weight: 0, count: 0 });
+        
+        // Only accumulate data for past/current days
+        if (!isFutureDay) {
+          cumulativeWeight += dayData.weight;
+          cumulativeCount += dayData.count;
+        }
         
         timeline.push({
           time: dayDate.toISOString(),
