@@ -67,6 +67,30 @@ export interface IStorage {
   updateUserStatus(userId: string, active: boolean): Promise<User>;
   getUserFromSession(sessionId: string): Promise<User | null>;
   
+  // New auth methods
+  getUserByEmail(email: string): Promise<User | undefined>;
+  getUserByGoogleId(googleId: string): Promise<User | undefined>;
+  createGoogleUser(userData: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    profileImageUrl?: string | null;
+    googleId: string;
+    emailVerified: boolean;
+  }): Promise<User>;
+  linkGoogleAccount(userId: string, googleId: string): Promise<User>;
+  createEmailUser(userData: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    password: string;
+    verificationToken: string;
+    verificationTokenExpires: Date;
+  }): Promise<User>;
+  verifyUserEmail(token: string): Promise<User | null>;
+  updateUserPassword(userId: string, hashedPassword: string): Promise<User>;
+  updateUserEmailVerification(userId: string, emailVerified: boolean): Promise<User>;
+  
   // Competition operations
   getCompetitions(): Promise<Competition[]>;
   getCompetition(id: string): Promise<Competition | undefined>;
@@ -357,9 +381,15 @@ export class DatabaseStorage implements IStorage {
       const sessData = sessionData.sess as any;
       
       // Extract user ID from passport session data
-      const userId = sessData?.passport?.user?.claims?.sub;
+      // Handle both new format (string id) and old format (OIDC claims)
+      let userId = sessData?.passport?.user;
       
-      if (!userId) {
+      // If it's the old Replit/OIDC format, extract from claims
+      if (typeof userId === 'object' && userId?.claims?.sub) {
+        userId = userId.claims.sub;
+      }
+      
+      if (!userId || typeof userId !== 'string') {
         return null;
       }
 
@@ -370,6 +400,159 @@ export class DatabaseStorage implements IStorage {
       console.error('[STORAGE] Error getting user from session:', error);
       return null;
     }
+  }
+
+  // New auth methods implementation
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const normalizedEmail = email.toLowerCase().trim();
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, normalizedEmail));
+    return user;
+  }
+
+  async getUserByGoogleId(googleId: string): Promise<User | undefined> {
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.googleId, googleId));
+    return user;
+  }
+
+  async createGoogleUser(userData: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    profileImageUrl?: string | null;
+    googleId: string;
+    emailVerified: boolean;
+  }): Promise<User> {
+    const normalizedEmail = userData.email.toLowerCase().trim();
+    const [newUser] = await db
+      .insert(users)
+      .values({
+        email: normalizedEmail,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        profileImageUrl: userData.profileImageUrl,
+        googleId: userData.googleId,
+        emailVerified: userData.emailVerified,
+        role: 'public',
+        active: true,
+      })
+      .returning();
+    return newUser;
+  }
+
+  async linkGoogleAccount(userId: string, googleId: string): Promise<User> {
+    const [updatedUser] = await db
+      .update(users)
+      .set({
+        googleId,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId))
+      .returning();
+
+    if (!updatedUser) {
+      throw new Error('User not found');
+    }
+    return updatedUser;
+  }
+
+  async createEmailUser(userData: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    password: string;
+    verificationToken: string;
+    verificationTokenExpires: Date;
+  }): Promise<User> {
+    const normalizedEmail = userData.email.toLowerCase().trim();
+    const [newUser] = await db
+      .insert(users)
+      .values({
+        email: normalizedEmail,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        password: userData.password,
+        verificationToken: userData.verificationToken,
+        verificationTokenExpires: userData.verificationTokenExpires,
+        emailVerified: false,
+        role: 'public',
+        active: true,
+      })
+      .returning();
+    return newUser;
+  }
+
+  async verifyUserEmail(token: string): Promise<User | null> {
+    try {
+      // Find user with matching verification token that hasn't expired
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(
+          and(
+            eq(users.verificationToken, token),
+            gt(users.verificationTokenExpires, new Date())
+          )
+        );
+
+      if (!user) {
+        return null; // Token not found or expired
+      }
+
+      // Mark email as verified and clear verification token
+      const [verifiedUser] = await db
+        .update(users)
+        .set({
+          emailVerified: true,
+          verificationToken: null,
+          verificationTokenExpires: null,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, user.id))
+        .returning();
+
+      return verifiedUser;
+    } catch (error) {
+      console.error('[STORAGE] Error verifying user email:', error);
+      return null;
+    }
+  }
+
+  async updateUserPassword(userId: string, hashedPassword: string): Promise<User> {
+    const [updatedUser] = await db
+      .update(users)
+      .set({
+        password: hashedPassword,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId))
+      .returning();
+
+    if (!updatedUser) {
+      throw new Error('User not found');
+    }
+    return updatedUser;
+  }
+
+  async updateUserEmailVerification(userId: string, emailVerified: boolean): Promise<User> {
+    const [updatedUser] = await db
+      .update(users)
+      .set({
+        emailVerified,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId))
+      .returning();
+
+    if (!updatedUser) {
+      throw new Error('User not found');
+    }
+    return updatedUser;
   }
 
   // Competition operations
