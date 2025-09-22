@@ -1,11 +1,25 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Cell } from "recharts";
 import type { SectorData } from "../types";
 
 interface SectorPerformanceChartProps {
   data: SectorData[];
 }
+
+// Farby pre rôzne sektory
+const getSectorColor = (index: number) => {
+  const colors = [
+    'hsl(220, 70%, 60%)',  // modrá - Sektor A
+    'hsl(160, 70%, 50%)',  // tyrkysová - Sektor B
+    'hsl(120, 70%, 50%)',  // zelená - Sektor C
+    'hsl(40, 70%, 60%)',   // oranžová - Sektor D
+    'hsl(0, 70%, 60%)',    // červená - Sektor E
+    'hsl(280, 70%, 60%)',  // fialová - Sektor F
+    'hsl(200, 70%, 60%)',  // svetlá modrá - Sektor G
+  ];
+  return colors[index % colors.length];
+};
 
 const chartConfig = {
   totalWeight: {
@@ -19,6 +33,9 @@ const chartConfig = {
 };
 
 export function SectorPerformanceChart({ data }: SectorPerformanceChartProps) {
+  // Sort data by total weight descending
+  const sortedData = data.sort((a, b) => b.totalWeight - a.totalWeight);
+  
   return (
     <Card>
       <CardHeader>
@@ -30,7 +47,7 @@ export function SectorPerformanceChart({ data }: SectorPerformanceChartProps) {
       <CardContent>
         <ChartContainer config={chartConfig}>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={data}>
+            <BarChart data={sortedData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="sector" 
@@ -67,9 +84,12 @@ export function SectorPerformanceChart({ data }: SectorPerformanceChartProps) {
               <Bar
                 yAxisId="weight"
                 dataKey="totalWeight"
-                fill="var(--color-totalWeight)"
                 radius={[4, 4, 0, 0]}
-              />
+              >
+                {sortedData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={getSectorColor(index)} />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </ChartContainer>
