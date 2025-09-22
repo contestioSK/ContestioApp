@@ -3,7 +3,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Fish, Users, Trophy, MapPin, PlusCircle, Menu, X, Info, DollarSign, HelpCircle, BarChart3, Target, Zap, BookOpen, Crown } from "lucide-react";
 import { ContestCategories } from "@/components/contest-categories";
-import LiveLeaderboard from "@/components/live-leaderboard";
 import { Link, useLocation } from "wouter";
 import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -29,15 +28,6 @@ export default function Landing() {
   // Fetch real competitions from API
   const { data: competitions = [], isLoading } = useQuery<Competition[]>({
     queryKey: ["/api/competitions"]
-  });
-  
-  // Get first live competition for leaderboard
-  const liveCompetition = competitions.find(comp => comp.status === 'live');
-  
-  // Fetch teams for live leaderboard
-  const { data: teams = [], isLoading: teamsLoading } = useQuery({
-    queryKey: ["/api/competitions", liveCompetition?.id, "teams"],
-    enabled: !!liveCompetition?.id,
   });
 
 
@@ -108,10 +98,10 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-background">
 
-      {/* Full-Screen Hero Section */}
+      {/* Hero Section */}
       <section 
         ref={heroRef} 
-        className="relative min-h-screen overflow-hidden"
+        className="relative h-[600px] overflow-hidden"
         style={{
           backgroundImage: `url(${heroBackgroundImage})`,
           backgroundSize: 'cover',
@@ -229,110 +219,45 @@ export default function Landing() {
         </div>
         
         {/* Hero Content */}
-        <div className="relative z-10 flex-1 flex items-center min-h-screen pt-8 pb-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
-              {/* Left Content */}
-              <div className="text-white">
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight" data-testid="hero-title">
-                  Súťaže na Slovensku
-                </h1>
-                <p className="text-lg md:text-xl text-white/90 mb-4 leading-relaxed" data-testid="hero-subtitle">
-                  Vytvor si svoj osobný rybársky denník
-                </p>
-                <p className="text-lg md:text-xl text-white/90 mb-8 leading-relaxed" data-testid="hero-subtitle-2">
-                  - všetko na jednom mieste
-                </p>
-                
-                <p className="text-base md:text-lg text-white/80 mb-6" data-testid="hero-description">
-                  Sleduj live úlovky a rebríčky tímov, alebo
-                </p>
-                <p className="text-base md:text-lg text-white/80 mb-8" data-testid="hero-description-2">
-                  si zapisuj svoje úlovky a súťaž s kamarátmi.
-                </p>
-                
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <Link href="/live">
-                    <Button 
-                      className="bg-white text-blue-900 hover:bg-white/90 font-semibold px-6 py-3 w-full sm:w-auto"
-                      size="lg"
-                      data-testid="button-view-live-competitions"
-                    >
-                      Pozrieť prebiehajúce súťaže
-                    </Button>
-                  </Link>
-                  <Link href="/diary">
-                    <Button 
-                      variant="outline"
-                      className="border-2 border-white text-white hover:bg-white hover:text-blue-900 font-semibold px-6 py-3 w-full sm:w-auto"
-                      size="lg"
-                      data-testid="button-start-diary-hero"
-                    >
-                      Začať zapisovať úlovky
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-              
-              {/* Right Content - Live Leaderboard */}
-              <div className="relative">
-                <div className="bg-white/95 backdrop-blur-sm border-0 shadow-xl rounded-lg overflow-hidden">
-                  <div className="p-4 border-b bg-white/50">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-bold text-gray-900" data-testid="live-leaderboard-title">Live Rebríček</h3>
-                      {liveCompetition && (
-                        <Badge variant="destructive" className="bg-red-600 text-white" data-testid="live-badge">
-                          LIVE
-                        </Badge>
-                      )}
-                    </div>
-                    {liveCompetition && (
-                      <p className="text-sm text-gray-600 mt-1" data-testid="live-competition-name">
-                        {liveCompetition.name}
-                      </p>
-                    )}
-                  </div>
-                  
-                  <div className="max-h-80 overflow-hidden">
-                    {liveCompetition ? (
-                      <LiveLeaderboard 
-                        teams={teams} 
-                        isLoading={teamsLoading} 
-                        competitionId={liveCompetition.id}
-                        compact={true}
-                        showTop={3}
-                      />
-                    ) : (
-                      <div className="p-6">
-                        {isLoading ? (
-                          <div className="space-y-3">
-                            {[1,2,3].map(i => (
-                              <div key={i} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg animate-pulse">
-                                <div className="w-8 h-8 bg-gray-300 rounded-full"></div>
-                                <div className="flex-1">
-                                  <div className="h-4 bg-gray-300 rounded w-3/4"></div>
-                                </div>
-                                <div className="w-16 h-4 bg-gray-300 rounded"></div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="text-center py-4 text-gray-500">
-                            <Trophy className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                            <p className="text-sm" data-testid="no-live-competitions-message">Momentálne neprebieha žiadna súťaž</p>
-                            <p className="text-xs mt-1" data-testid="upcoming-competitions-hint">Pozrite si nadchádzajúce súťaže</p>
-                            <Link href="/" className="mt-3 inline-block">
-                              <Button variant="outline" size="sm" data-testid="button-view-upcoming">
-                                Pozrieť súťaže
-                              </Button>
-                            </Link>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
+        <div className="relative z-10 flex items-center h-full">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight text-white" data-testid="hero-title">
+              Súťaže na Slovensku
+            </h1>
+            <p className="text-lg md:text-xl text-white/90 mb-4 leading-relaxed" data-testid="hero-subtitle">
+              Vytvor si svoj osobný rybársky denník
+            </p>
+            <p className="text-lg md:text-xl text-white/90 mb-8 leading-relaxed" data-testid="hero-subtitle-2">
+              - všetko na jednom mieste
+            </p>
+            
+            <p className="text-base md:text-lg text-white/80 mb-6" data-testid="hero-description">
+              Sleduj live úlovky a rebríčky tímov, alebo
+            </p>
+            <p className="text-base md:text-lg text-white/80 mb-8" data-testid="hero-description-2">
+              si zapisuj svoje úlovky a súťaž s kamarátmi.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/live">
+                <Button 
+                  className="bg-white text-blue-900 hover:bg-white/90 font-semibold px-6 py-3 w-full sm:w-auto"
+                  size="lg"
+                  data-testid="button-view-live-competitions"
+                >
+                  Pozrieť prebiehajúce súťaže
+                </Button>
+              </Link>
+              <Link href="/diary">
+                <Button 
+                  variant="outline"
+                  className="border-2 border-white text-white hover:bg-white hover:text-blue-900 font-semibold px-6 py-3 w-full sm:w-auto"
+                  size="lg"
+                  data-testid="button-start-diary-hero"
+                >
+                  Začať zapisovať úlovky
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
