@@ -10,11 +10,11 @@ interface SectorFishTypeChartProps {
 const chartConfig = {
   scaly: {
     label: "Šupináč",
-    color: "hsl(var(--chart-1))",
+    color: "hsl(220, 70%, 50%)",
   },
   mirror: {
-    label: "Zrkadláč", 
-    color: "hsl(var(--chart-2))",
+    label: "Lysec", 
+    color: "hsl(160, 70%, 45%)",
   },
 };
 
@@ -83,7 +83,7 @@ export function SectorFishTypeChart({ data }: SectorFishTypeChartProps) {
                       } else if (name === 'mirror') {
                         return [
                           `${value} ks (${payload.mirrorWeight} kg)`, 
-                          "Zrkadláč"
+                          "Lysec"
                         ];
                       }
                       return [`${value}`, name];
