@@ -28,6 +28,7 @@ import { checkResultBlocking, checkPartialResultBlocking, checkPartialResultBloc
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import { ImageService, type ProcessedImageResult } from "./image-service";
 
 // Configure multer for file uploads
 const upload = multer({
@@ -686,10 +687,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "You can only update your own competitions" });
       }
 
-      // Handle uploaded image
+      // Handle uploaded image with optimization
       let imageUrl = req.body.imageUrl;
+      let imageMetadata: ProcessedImageResult | null = null;
+      
       if (req.file) {
-        imageUrl = `/uploads/${req.file.filename}`;
+        try {
+          // Process image with multiple sizes and formats
+          const originalFilename = path.parse(req.file.originalname).name;
+          const competitionDir = path.join('uploads', 'competitions', req.params.id);
+          const outputBasePath = path.join(competitionDir, 'logo');
+          
+          // Create directory if it doesn't exist
+          if (!fs.existsSync(competitionDir)) {
+            fs.mkdirSync(competitionDir, { recursive: true });
+          }
+          
+          imageMetadata = await ImageService.processImage(
+            req.file.path,
+            outputBasePath,
+            `logo-${Date.now()}`
+          );
+          
+          // Use the best WebP variant for the database URL, fall back to JPEG
+          const bestVariant = ImageService.getBestVariantForWidth(imageMetadata.variants, 640, 'webp') ||
+                              ImageService.getBestVariantForWidth(imageMetadata.variants, 640, 'jpeg') ||
+                              imageMetadata.variants[0];
+          
+          imageUrl = bestVariant?.url || `/uploads/${req.file.filename}`;
+          
+          // Clean up the original uploaded file
+          await ImageService.cleanupTempFile(req.file.path);
+        } catch (error) {
+          console.error("Error processing competition image:", error);
+          // Fall back to original file if processing fails
+          imageUrl = `/uploads/${req.file.filename}`;
+        }
       }
 
       // When file is uploaded, FormData sends everything as strings - need to parse
