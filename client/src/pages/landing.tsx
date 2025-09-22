@@ -251,7 +251,7 @@ export default function Landing() {
               <Link href="/diary">
                 <Button 
                   variant="outline"
-                  className="border-2 border-white text-white hover:bg-white hover:text-blue-900 font-semibold px-6 py-3 w-full sm:w-auto"
+                  className="border-2 border-white bg-white text-blue-900 hover:bg-white/90 hover:text-blue-900 font-semibold px-6 py-3 w-full sm:w-auto"
                   size="lg"
                   data-testid="button-start-diary-hero"
                 >
