@@ -19,17 +19,17 @@ const chartConfig = {
 };
 
 export function FishTypeDistributionChart({ data }: FishTypeDistributionChartProps) {
-  const COLORS = [
-    "hsl(var(--chart-1))",
-    "hsl(var(--chart-2))",
-  ];
+  const COLORS = {
+    "Common Carp": "hsl(34, 84%, 60%)",  // oranžová pre šupináča
+    "Mirror Carp": "hsl(220, 70%, 60%)", // modrá pre lysca
+  };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Distribúcia typov rýb</CardTitle>
+        <CardTitle>Druh Ryby:</CardTitle>
         <CardDescription>
-          Podiel šupináčov a lysčekov na celkovej váhe úlovkov
+          Rozdelenie úlovkov podľa typu kapra (šupináč vs lysec)
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -46,27 +46,27 @@ export function FishTypeDistributionChart({ data }: FishTypeDistributionChartPro
                 dataKey="weight"
               >
                 {data.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  <Cell key={`cell-${index}`} fill={COLORS[entry.type as keyof typeof COLORS]} />
                 ))}
               </Pie>
               <ChartTooltip 
-                content={
-                  <ChartTooltipContent 
-                    formatter={(value, name, props) => {
-                      const entry = props.payload;
-                      const label = chartConfig[entry.type as keyof typeof chartConfig]?.label || entry.type;
-                      return [
-                        <div key="content" className="space-y-1">
-                          <div className="font-medium">{label}</div>
-                          <div>Váha: {entry.weight} kg</div>
+                content={({ active, payload }) => {
+                  if (active && payload && payload.length > 0) {
+                    const entry = payload[0].payload;
+                    const label = chartConfig[entry.type as keyof typeof chartConfig]?.label || entry.type;
+                    return (
+                      <div className="bg-background border rounded-lg p-3 shadow-lg">
+                        <div className="font-medium text-sm mb-2">{label}</div>
+                        <div className="space-y-1 text-xs">
+                          <div>Váha: {entry.weight.toFixed(1)} kg</div>
                           <div>Počet: {entry.count} ks</div>
                           <div>Podiel: {entry.percentage.toFixed(1)}%</div>
                         </div>
-                      ];
-                    }}
-                    hideLabel
-                  />
-                }
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
               />
             </PieChart>
           </ResponsiveContainer>
@@ -78,7 +78,7 @@ export function FishTypeDistributionChart({ data }: FishTypeDistributionChartPro
             <div key={entry.type} className="flex items-center gap-2">
               <div 
                 className="w-3 h-3 rounded-full" 
-                style={{ backgroundColor: COLORS[index] }}
+                style={{ backgroundColor: COLORS[entry.type as keyof typeof COLORS] }}
               />
               <span className="text-sm">
                 {chartConfig[entry.type as keyof typeof chartConfig]?.label || entry.type} 
