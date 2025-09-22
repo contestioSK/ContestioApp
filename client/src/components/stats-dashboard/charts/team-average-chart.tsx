@@ -68,7 +68,7 @@ export function TeamAverageChart({ data, title, description }: TeamAverageChartP
               <ChartTooltip 
                 content={
                   <ChartTooltipContent 
-                    formatter={(value) => [`${value} kg`, "Priemerná váha"]}
+                    formatter={() => []} 
                     labelFormatter={(label, payload) => {
                       const item = payload?.[0]?.payload;
                       return item ? (
