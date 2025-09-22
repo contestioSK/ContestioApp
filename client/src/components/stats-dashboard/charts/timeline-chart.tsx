@@ -41,36 +41,13 @@ const getDayColors = (dayIndex: number) => ({
 });
 
 export function TimelineChart({ data }: TimelineChartProps) {
-  // Group data by day and take the latest cumulative value per day
-  interface DailyPoint {
-    timeLabel: string;
-    totalWeight: number;
-    totalCount: number;
-    day: number;
-  }
-  
-  const dailyData = data.reduce((acc, item) => {
-    const day = Math.floor(item.hour / 24) + 1;
-    const dayKey = `Deň ${day}`;
-    
-    // Since data is cumulative, take the latest (highest) value for each day
-    if (!acc[dayKey] || item.hour > acc[dayKey].hour) {
-      acc[dayKey] = {
-        timeLabel: dayKey,
-        totalWeight: item.totalWeight,
-        totalCount: item.totalCount,
-        day: day,
-        hour: item.hour
-      };
-    }
-    
-    return acc;
-  }, {} as Record<string, DailyPoint & { hour: number }>);
-  
-  // Sort by day number to ensure correct ordering
-  const formattedData = Object.values(dailyData)
-    .map(({ hour, ...rest }) => rest) // Remove the temporary hour field
-    .sort((a, b) => a.day - b.day);
+  // Format data for display (data is already daily aggregated from API)
+  const formattedData = data.map(item => ({
+    timeLabel: `Deň ${item.dayIndex + 1}`,
+    totalWeight: item.totalWeight,
+    totalCount: item.totalCount,
+    dayIndex: item.dayIndex
+  })).sort((a, b) => a.dayIndex - b.dayIndex);
 
   return (
     <Card>
@@ -118,8 +95,8 @@ export function TimelineChart({ data }: TimelineChartProps) {
                 name="totalWeight"
                 radius={[2, 2, 0, 0]}
               >
-                {formattedData.map((entry, index) => (
-                  <Cell key={`weight-${index}`} fill={getDayColors(index).weight} />
+                {formattedData.map((entry) => (
+                  <Cell key={`weight-${entry.dayIndex}`} fill={getDayColors(entry.dayIndex).weight} />
                 ))}
               </Bar>
               <Bar
@@ -128,8 +105,8 @@ export function TimelineChart({ data }: TimelineChartProps) {
                 name="totalCount"
                 radius={[2, 2, 0, 0]}
               >
-                {formattedData.map((entry, index) => (
-                  <Cell key={`count-${index}`} fill={getDayColors(index).count} />
+                {formattedData.map((entry) => (
+                  <Cell key={`count-${entry.dayIndex}`} fill={getDayColors(entry.dayIndex).count} />
                 ))}
               </Bar>
             </ComposedChart>

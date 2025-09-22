@@ -4,7 +4,8 @@ export interface TimelineData {
   time: string;
   totalWeight: number;
   totalCount: number;
-  hour: number;
+  dayIndex: number;
+  date: string;
 }
 
 export interface WeightCategoryData {
