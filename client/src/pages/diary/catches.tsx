@@ -1010,23 +1010,80 @@ export default function DiaryCatches() {
             ))}
           </div>
         ) : filteredCatches.length === 0 ? (
-          <Card className="text-center py-12">
+          <Card className={`text-center ${catches.length === 0 ? 'py-16 bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-950/20 dark:to-blue-950/20 border-dashed border-2' : 'py-12'}`}>
             <CardContent>
-              <Fish className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">
-                {catches.length === 0 ? "Žiadne úlovky" : "Žiadne výsledky"}
-              </h3>
-              <p className="text-muted-foreground mb-4">
-                {catches.length === 0 
-                  ? "Pridajte svoj prvý úlovok a začnite viesť rybársky denník."
-                  : "Skúste zmeniť filtre alebo vyhľadávací termín."
-                }
-              </p>
-              {catches.length === 0 && (
-                <Button onClick={() => setIsCreateDialogOpen(true)} disabled={!canCreateCatch} data-testid="button-create-first-catch">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Pridať prvý úlovok
-                </Button>
+              {catches.length === 0 ? (
+                /* Enhanced empty state for first-time users */
+                <>
+                  <div className="relative mb-6">
+                    <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <Fish className="w-10 h-10 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div className="absolute -top-2 -right-4 w-8 h-8 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center">
+                      <Camera className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                    </div>
+                  </div>
+                  
+                  <h3 className="text-xl font-bold mb-3 text-gray-900 dark:text-gray-100">
+                    Zaznamenajte svoj prvý úlovok
+                  </h3>
+                  <p className="text-muted-foreground mb-6 max-w-md mx-auto leading-relaxed">
+                    Pridajte úlovok do svojho denníka s hmotnosťou, druhou kapra, miestom chytenia a fotkami. 
+                    Sledujte svoj pokrok a vytvárajte si spomienky na najlepšie chvíle pri vode.
+                  </p>
+                  
+                  <div className="space-y-3">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span 
+                            className="inline-flex" 
+                            tabIndex={(!canCreateCatch || limitsLoading) ? 0 : -1}
+                          >
+                            <Button 
+                              onClick={() => setIsCreateDialogOpen(true)} 
+                              disabled={!canCreateCatch}
+                              size="lg"
+                              className="gap-2 bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700"
+                              data-testid="button-create-first-catch"
+                            >
+                              <Plus className="w-5 h-5" />
+                              Pridať prvý úlovok
+                            </Button>
+                          </span>
+                        </TooltipTrigger>
+                        {!canCreateCatch && (
+                          <TooltipContent>
+                            <p>
+                              {limitsLoading 
+                                ? "Načítavam limity..." 
+                                : `Dosiahli ste limit ${limits?.limit} úlovkov. Prejdite na PREMIUM pre neobmedzené úlovky.`
+                              }
+                            </p>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    </TooltipProvider>
+                    
+                    <p className="text-sm text-muted-foreground">
+                      📸 Môžete pridať až 5 fotiek k úlovku
+                    </p>
+                  </div>
+                </>
+              ) : (
+                /* Simple no-results state for filtered searches */
+                <>
+                  <Search className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
+                    Žiadne výsledky
+                  </h3>
+                  <p className="text-muted-foreground mb-4">
+                    Skúste zmeniť filtre alebo vyhľadávací termín.
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    💡 Tip: Skúste hľadať podľa typu kapra alebo hmotnosti
+                  </p>
+                </>
               )}
             </CardContent>
           </Card>
