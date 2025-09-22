@@ -37,12 +37,7 @@ export default function Landing() {
     { href: "/faq", label: "FAQ", icon: HelpCircle },
     { href: "/pricing", label: "Cenník", icon: DollarSign },
     { href: "/contact", label: "Kontakt", icon: Phone },
-  ];
-  
-  // Action items
-  const actionItems = [
     { href: "/register-competition", label: "Zaregistrovať súťaž", icon: Trophy },
-    { href: "/register-team", label: "Zaregistrovať tím", icon: Users },
   ];
 
   // Sample contests data to showcase different categories
@@ -147,30 +142,25 @@ export default function Landing() {
                   );
                 })}
                 
-                {/* Separator */}
-                <div className="w-px h-4 bg-white/30"></div>
-                
-                {/* Action Items */}
-                {actionItems.map((item) => {
-                  const IconComponent = item.icon;
-                  return (
-                    <Link key={item.href} href={item.href}>
-                      <div className="flex items-center space-x-1 text-white/90 hover:text-white transition-colors cursor-pointer" data-testid={`nav-${item.href.slice(1)}`}>
-                        <IconComponent className="w-4 h-4" />
-                        <span className="text-sm font-medium">{item.label}</span>
-                      </div>
-                    </Link>
-                  );
-                })}
-                
-                <Button 
-                  onClick={() => window.location.href = '/api/login'}
-                  className="bg-white text-blue-900 hover:bg-white/90 font-medium"
-                  size="sm"
-                  data-testid="button-login"
-                >
-                  Prihlásiť sa
-                </Button>
+                {/* CTA Buttons */}
+                <div className="flex items-center space-x-3">
+                  <Button 
+                    onClick={() => window.location.href = '/api/register'}
+                    className="bg-blue-600 text-white hover:bg-blue-700 font-medium"
+                    size="sm"
+                    data-testid="button-register"
+                  >
+                    Zaregistrovať sa
+                  </Button>
+                  <Button 
+                    onClick={() => window.location.href = '/api/login'}
+                    className="bg-white text-blue-900 hover:bg-white/90 font-medium"
+                    size="sm"
+                    data-testid="button-login"
+                  >
+                    Prihlásiť sa
+                  </Button>
+                </div>
               </div>
 
               {/* Mobile menu button */}
@@ -208,37 +198,31 @@ export default function Landing() {
                     );
                   })}
                   
-                  <div className="border-t border-white/20 my-3"></div>
-                  
-                  {/* Action Items */}
-                  {actionItems.map((item) => {
-                    const IconComponent = item.icon;
-                    return (
-                      <Link key={item.href} href={item.href}>
-                        <div 
-                          className="flex items-center space-x-3 px-3 py-3 rounded-lg text-white/90 hover:text-white hover:bg-white/10 cursor-pointer transition-all duration-200"
-                          onClick={() => setIsMobileMenuOpen(false)}
-                          data-testid={`mobile-nav-${item.href.slice(1)}`}
-                        >
-                          <IconComponent className="w-5 h-5" />
-                          <span className="text-sm font-medium">{item.label}</span>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                  
                   <div className="border-t border-white/20 my-4"></div>
                   
-                  <Button 
-                    onClick={() => {
-                      window.location.href = '/api/login';
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="w-full bg-white text-blue-900 hover:bg-white/90 font-medium"
-                    data-testid="mobile-button-login"
-                  >
-                    Prihlásiť sa
-                  </Button>
+                  {/* CTA Buttons */}
+                  <div className="space-y-2">
+                    <Button 
+                      onClick={() => {
+                        window.location.href = '/api/register';
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full bg-blue-600 text-white hover:bg-blue-700 font-medium"
+                      data-testid="mobile-button-register"
+                    >
+                      Zaregistrovať sa
+                    </Button>
+                    <Button 
+                      onClick={() => {
+                        window.location.href = '/api/login';
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full bg-white text-blue-900 hover:bg-white/90 font-medium"
+                      data-testid="mobile-button-login"
+                    >
+                      Prihlásiť sa
+                    </Button>
+                  </div>
                 </div>
               </div>
             )}
