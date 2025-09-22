@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Cell } from "recharts";
 import type { TeamTopAverageData } from "../types";
 
 interface TeamAverageChartProps {
@@ -14,6 +14,21 @@ const chartConfig = {
     label: "Priemerná váha",
     color: "hsl(var(--chart-1))",
   },
+};
+
+// Farby pre jednotlivé tímy
+const getTeamColor = (index: number) => {
+  const colors = [
+    'hsl(220, 70%, 60%)',     // modrá
+    'hsl(160, 70%, 50%)',     // tyrkysová
+    'hsl(120, 70%, 50%)',     // zelená
+    'hsl(40, 70%, 60%)',      // oranžová
+    'hsl(0, 70%, 60%)',       // červená
+    'hsl(280, 70%, 60%)',     // fialová
+    'hsl(200, 70%, 55%)',     // svetlá modrá
+    'hsl(80, 70%, 55%)',      // svetlo zelená
+  ];
+  return colors[index % colors.length];
 };
 
 export function TeamAverageChart({ data, title, description }: TeamAverageChartProps) {
@@ -32,7 +47,7 @@ export function TeamAverageChart({ data, title, description }: TeamAverageChartP
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height={450}>
             <BarChart 
               data={formattedData} 
               margin={{ left: 20, right: 20, top: 20, bottom: 60 }}
@@ -73,9 +88,12 @@ export function TeamAverageChart({ data, title, description }: TeamAverageChartP
               />
               <Bar
                 dataKey="averageWeight"
-                fill="var(--color-averageWeight)"
                 radius={[4, 4, 0, 0]}
-              />
+              >
+                {formattedData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={getTeamColor(index)} />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </ChartContainer>
