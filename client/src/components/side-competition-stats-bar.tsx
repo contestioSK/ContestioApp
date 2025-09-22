@@ -26,7 +26,7 @@ export default function SideCompetitionStatsBar({
       <Card className="mb-6 border-0 shadow-md bg-gradient-to-r from-background to-muted/20">
         <CardContent className="p-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[...Array(Math.min(competition.sideCompetitions.length, 4))].map((_, i) => (
+            {[...Array(Math.min(getOrganizedSideCompetitions(competition.sideCompetitions).length, 4))].map((_, i) => (
               <div key={i} className="text-center">
                 <div className="w-8 h-8 bg-muted rounded-full mx-auto mb-2 animate-pulse"></div>
                 <div className="h-3 bg-muted rounded w-12 mx-auto mb-1 animate-pulse"></div>
@@ -44,7 +44,7 @@ export default function SideCompetitionStatsBar({
       <Card className="mb-6 border-0 shadow-md bg-gradient-to-r from-background to-muted/20">
         <CardContent className="p-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {competition.sideCompetitions.map((sideCompetitionId, index) => (
+            {getOrganizedSideCompetitions(competition.sideCompetitions).map((sideCompetitionId, index) => (
               <div key={sideCompetitionId} className="text-center" data-testid={`side-competition-${sideCompetitionId}`}>
                 <div className="w-8 h-8 bg-gradient-to-br from-secondary/20 to-secondary/10 rounded-lg flex items-center justify-center mx-auto mb-2">
                   {getSideCompetitionIcon(sideCompetitionId)}
@@ -59,13 +59,15 @@ export default function SideCompetitionStatsBar({
     );
   }
 
-  const sideCompetitionResults = calculateSideCompetitions(catches, teams, competition.sideCompetitions);
+  // Filter and reorganize side competitions according to user requirements
+  const organizedSideCompetitions = getOrganizedSideCompetitions(competition.sideCompetitions);
+  const sideCompetitionResults = calculateSideCompetitions(catches, teams, organizedSideCompetitions);
 
   return (
     <Card className="mb-6 border-0 shadow-md bg-gradient-to-r from-background to-muted/20" data-testid="side-competition-stats-bar">
       <CardContent className="p-4">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {competition.sideCompetitions.map((sideCompetitionId) => {
+          {organizedSideCompetitions.map((sideCompetitionId) => {
             const result = sideCompetitionResults[sideCompetitionId];
             if (!result) return null;
 
@@ -315,4 +317,44 @@ function calculateSideCompetitions(
   }
 
   return results;
+}
+
+function getOrganizedSideCompetitions(sideCompetitions: string[]): string[] {
+  const organized: string[] = [];
+  
+  // Group 1: Fish types (big-common-carp, big-mirror-carp)
+  if (sideCompetitions.includes('big-common-carp')) {
+    organized.push('big-common-carp');
+  }
+  if (sideCompetitions.includes('big-mirror-carp')) {
+    organized.push('big-mirror-carp');
+  }
+  
+  // Group 2: Time-based (first-catch, last-catch)  
+  if (sideCompetitions.includes('first-catch')) {
+    organized.push('first-catch');
+  }
+  if (sideCompetitions.includes('last-catch')) {
+    organized.push('last-catch');
+  }
+  
+  // Group 3: Weight milestones (15kg, 20kg, 25kg in order)
+  if (sideCompetitions.includes('first-fish-over-15kg')) {
+    organized.push('first-fish-over-15kg');
+  }
+  if (sideCompetitions.includes('first-fish-over-20kg')) {
+    organized.push('first-fish-over-20kg');
+  }
+  if (sideCompetitions.includes('first-fish-over-25kg')) {
+    organized.push('first-fish-over-25kg');
+  }
+  
+  // Add any other side competitions that are not excluded
+  const excludedIds = ['big-fish-overall', 'daily-big-fish'];
+  const otherCompetitions = sideCompetitions.filter(id => 
+    !organized.includes(id) && !excludedIds.includes(id)
+  );
+  organized.push(...otherCompetitions);
+  
+  return organized;
 }
