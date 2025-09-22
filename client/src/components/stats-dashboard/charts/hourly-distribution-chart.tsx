@@ -64,19 +64,23 @@ export function HourlyDistributionChart({ data }: HourlyDistributionChartProps) 
       <CardHeader>
         <CardTitle>Úlovky podľa hodín</CardTitle>
         <CardDescription>
-          Hodina 00:00 - 23:00
+          Rozdelenie úlovkov podľa hodín dňa s farebným označením časových období
         </CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={data}>
+            <BarChart 
+              data={data}
+              margin={{ bottom: 60 }}
+            >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="hourLabel" 
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: 11 }}
                 angle={-45}
                 textAnchor="end"
+                height={80}
               />
               <YAxis 
                 tick={{ fontSize: 12 }}
