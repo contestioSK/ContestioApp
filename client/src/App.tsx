@@ -25,6 +25,9 @@ import LivePage from "@/pages/live";
 import FinishedPage from "@/pages/finished";
 import NotificationPreferences from "@/pages/notification-preferences";
 import DiaryIndex from "@/pages/diary/index";
+import DiaryTrips from "@/pages/diary/trips";
+import DiaryCatches from "@/pages/diary/catches";
+import DiaryStats from "@/pages/diary/stats";
 import BattlePaywall from "@/pages/diary/battle-paywall";
 import BattleCreate from "@/pages/diary/battle-create";
 import BattleDetail from "@/pages/diary/battle-detail";
@@ -81,6 +84,21 @@ function Router() {
       <Route path="/diary">
         <ProtectedRoute>
           <DiaryIndex />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/diary/trips">
+        <ProtectedRoute>
+          <DiaryTrips />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/diary/catches">
+        <ProtectedRoute>
+          <DiaryCatches />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/diary/stats">
+        <ProtectedRoute>
+          <DiaryStats />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/battle/paywall" component={BattlePaywall} />
