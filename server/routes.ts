@@ -370,7 +370,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }));
 
   app.get('/api/auth/google/callback', 
-    passport.authenticate('google', { failureRedirect: '/login?error=google_auth_failed' }),
+    passport.authenticate('google', { failureRedirect: '/auth/login?error=google_auth_failed' }),
     (req, res) => {
       // Successful authentication, redirect to dashboard or home
       res.redirect('/');
