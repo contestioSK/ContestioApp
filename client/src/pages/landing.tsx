@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import heroImage from "@assets/Carp_Fishing_1600x500_crop_center_6bc11ee9-9096-425e-8946-560290a33987_2016x630_1758061236097.webp";
 import fishingImage2 from "@assets/360_F_381579894_CiNFCkD3dVWVjOm5WzxGeYlD9B1Go1sr_1758061127573.jpg";
 import lakeImage from "@assets/zemplinska-sirava-6_1758098736505.avif";
+import heroBackgroundImage from "@assets/stock_images/fishing_lake_landsca_8a0b7214.jpg";
 interface Competition {
   id: string;
   name: string;
@@ -293,233 +294,223 @@ export default function Landing() {
           )}
         </div>
       </header>
+      
+      {/* Ensure header doesn't overlap hero */}
+      <div className="h-0"></div>
 
-      {/* Revolutionary Hero Section */}
-      <section ref={heroRef} className="relative min-h-[600px] md:min-h-[720px] overflow-hidden">
-        {/* Central Hero Text */}
-        <div className="absolute top-0 left-0 right-0 z-30 pt-8 md:pt-12 pb-6">
-          <div className="text-center text-white px-4">
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-4 bg-gradient-to-r from-blue-100 via-white to-green-100 bg-clip-text text-transparent">
-              Zažite rybolov naplno
-            </h1>
-            <p className="text-lg md:text-xl lg:text-2xl text-white/90 max-w-4xl mx-auto font-medium leading-relaxed">
-              Live výsledky, rybársky denník a priateľské súboje na jednom mieste.
-            </p>
-          </div>
-        </div>
+      {/* Full-Screen Hero Section */}
+      <section 
+        ref={heroRef} 
+        className="relative min-h-screen overflow-hidden"
+        style={{
+          backgroundImage: `url(${heroBackgroundImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
+        {/* Background Overlay */}
+        <div className="absolute inset-0 bg-black/20"></div>
+        
+        {/* Integrated Navigation */}
+        <div className="relative z-20 w-full">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              {/* Logo */}
+              <Link href="/">
+                <div className="flex items-center space-x-2 text-white">
+                  <Fish className="text-2xl" />
+                  <span className="text-xl font-bold">Contestio</span>
+                </div>
+              </Link>
 
-        {/* Flowing Diagonal Divider */}
-        <div className="hidden md:block absolute top-0 bottom-0 left-[60%] z-20 transform -translate-x-1/2">
-          {/* Main flowing line */}
-          <div className="relative h-full w-4">
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/60 to-transparent transform -skew-x-12"></div>
-            <div className="absolute inset-0 bg-gradient-to-b from-white/20 via-white/80 to-white/20 blur-md transform -skew-x-12"></div>
-            {/* Flowing water effect */}
-            <div className="absolute top-1/4 left-1/2 w-6 h-6 bg-white/30 rounded-full motion-safe:animate-ping"></div>
-            <div className="absolute top-1/2 left-1/2 w-4 h-4 bg-white/40 rounded-full motion-safe:animate-pulse"></div>
-            <div className="absolute top-3/4 left-1/2 w-5 h-5 bg-white/25 rounded-full motion-safe:animate-bounce"></div>
+              {/* Desktop Navigation */}
+              <div className="hidden md:flex items-center space-x-8">
+                {navItems.map((item) => {
+                  const IconComponent = item.icon;
+                  return (
+                    <Link key={item.href} href={item.href}>
+                      <div className="flex items-center space-x-2 text-white/90 hover:text-white transition-colors cursor-pointer">
+                        <IconComponent className="w-4 h-4" />
+                        <span className="text-sm font-medium">{item.label}</span>
+                      </div>
+                    </Link>
+                  );
+                })}
+                
+                <Link href="/about-us">
+                  <div className="flex items-center space-x-2 text-white/90 hover:text-white transition-colors cursor-pointer">
+                    <Info className="w-4 h-4" />
+                    <span className="text-sm font-medium">O nás</span>
+                  </div>
+                </Link>
+                
+                <Button 
+                  onClick={() => window.location.href = '/api/login'}
+                  className="bg-white text-blue-900 hover:bg-white/90 font-medium"
+                  size="sm"
+                >
+                  Prihlásiť sa
+                </Button>
+              </div>
+
+              {/* Mobile menu button */}
+              <div className="md:hidden">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                  className="text-white hover:bg-white/10"
+                >
+                  {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                </Button>
+              </div>
+            </div>
+
+            {/* Mobile Navigation Menu */}
+            {isMobileMenuOpen && (
+              <div className="md:hidden border-t border-white/20 mt-2 pt-4 pb-6">
+                <div className="space-y-2">
+                  {navItems.map((item) => {
+                    const IconComponent = item.icon;
+                    return (
+                      <Link key={item.href} href={item.href}>
+                        <div 
+                          className="flex items-center space-x-3 px-3 py-3 rounded-lg text-white/90 hover:text-white hover:bg-white/10 cursor-pointer transition-all duration-200"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          <IconComponent className="w-5 h-5" />
+                          <span className="text-sm font-medium">{item.label}</span>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                  
+                  <Link href="/about-us">
+                    <div 
+                      className="flex items-center space-x-3 px-3 py-3 rounded-lg text-white/90 hover:text-white hover:bg-white/10 cursor-pointer transition-all duration-200"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Info className="w-5 h-5" />
+                      <span className="text-sm font-medium">O nás</span>
+                    </div>
+                  </Link>
+                  
+                  <div className="border-t border-white/20 my-4"></div>
+                  
+                  <Button 
+                    onClick={() => {
+                      window.location.href = '/api/login';
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full bg-white text-blue-900 hover:bg-white/90 font-medium"
+                  >
+                    Prihlásiť sa
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
         
-        {/* Enhanced Connecting Visual Elements with Cross-Section Effects */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {/* Dynamic cross-section connecting elements that react to section hover */}
-          <div className={`absolute top-1/2 left-[20%] h-px bg-gradient-to-r from-blue-300/60 via-white/80 to-transparent motion-safe:animate-pulse transition-all duration-300 ${
-            hoveredSection === 'left' ? 'w-48 from-blue-400/80 via-white/90' : 'w-32'
-          }`}></div>
-          <div className={`absolute top-1/3 right-[15%] h-px bg-gradient-to-l from-green-300/60 via-white/80 to-transparent motion-safe:animate-pulse transition-all duration-300 ${
-            hoveredSection === 'right' ? 'w-40 from-green-400/80 via-white/90' : 'w-24'
-          }`} style={{animationDelay: '1s'}}></div>
-          
-          {/* Cross-section flow lines that extend when opposite section is hovered */}
-          <div className={`absolute top-[45%] left-[50%] h-px bg-white/40 transform -rotate-12 transition-all duration-300 ${
-            hoveredSection === 'right' ? 'w-16 bg-white/70' : 'w-8'
-          }`}></div>
-          <div className={`absolute top-[55%] left-[55%] h-px bg-white/30 transform rotate-12 transition-all duration-300 ${
-            hoveredSection === 'left' ? 'w-12 bg-white/60' : 'w-6'
-          }`}></div>
-          
-          {/* Swimming fish elements crossing sections */}
-          <div className="absolute top-1/4 left-[10%] text-2xl text-white/40 motion-safe:animate-bounce">🐟</div>
-          <div className="absolute bottom-1/3 right-[10%] text-xl text-white/30 motion-safe:animate-pulse" style={{animationDelay: '2s'}}>🎣</div>
-          
-          {/* Dynamic floating elements */}
-          <div className="absolute top-20 left-[15%] w-3 h-3 bg-blue-400/30 rounded-full motion-safe:animate-ping" style={{animationDelay: '0s', animationDuration: '4s'}}></div>
-          <div className="absolute top-40 left-[45%] w-2 h-2 bg-white/40 rounded-full motion-safe:animate-bounce" style={{animationDelay: '1s', animationDuration: '3s'}}></div>
-          <div className="absolute bottom-32 left-[25%] w-4 h-4 bg-blue-300/20 rounded-full motion-safe:animate-pulse" style={{animationDelay: '2s', animationDuration: '5s'}}></div>
-          
-          <div className="absolute top-24 right-[20%] w-2 h-2 bg-green-400/30 rounded-full motion-safe:animate-ping" style={{animationDelay: '0.5s', animationDuration: '3.5s'}}></div>
-          <div className="absolute top-48 right-[5%] w-3 h-3 bg-white/30 rounded-full motion-safe:animate-bounce" style={{animationDelay: '1.5s', animationDuration: '4s'}}></div>
-          <div className="absolute bottom-28 right-[30%] w-3 h-3 bg-green-300/25 rounded-full motion-safe:animate-pulse" style={{animationDelay: '3s', animationDuration: '6s'}}></div>
-          
-          {/* Water ripple effects */}
-          <div className="absolute top-[60%] left-[55%] w-16 h-16 border border-white/20 rounded-full motion-safe:animate-ping" style={{animationDelay: '0s', animationDuration: '4s'}}></div>
-          <div className="absolute top-[65%] left-[58%] w-12 h-12 border border-white/15 rounded-full motion-safe:animate-ping" style={{animationDelay: '1s', animationDuration: '3s'}}></div>
-        </div>
-
-        {/* Content Container with Asymmetric Split */}
-        <div className="relative z-10 h-full flex flex-col md:flex-row min-h-[600px] md:min-h-[720px] pt-32 md:pt-40">
-          {/* Competition Section - 60% width */}
-          <div 
-            ref={leftSectionRef}
-            className="relative md:w-[60%] flex items-center justify-center md:justify-start text-white px-4 sm:px-6 md:px-8 py-8 md:py-12 group transition-all duration-300 hover:scale-[1.02] hover:z-20"
-            style={{
-              backgroundImage: `url(${heroImage})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center left',
-              backgroundRepeat: 'no-repeat'
-            }}
-            onMouseEnter={() => setHoveredSection('left')}
-            onMouseLeave={() => setHoveredSection(null)}
-            data-testid="hero-competitions-section"
-          >
-            {/* Background overlays for text readability */}
-            <div className="absolute inset-0 bg-blue-900/45"></div>
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-800/40 via-blue-700/20 to-transparent"></div>
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-900/10 to-blue-900/30"></div>
-            <div className="relative z-10 max-w-sm text-center md:text-left">
-              {/* Competition Icons with floating animation */}
-              <div className="flex justify-center md:justify-start gap-3 mb-4 md:mb-6">
-                <div className="p-2 md:p-3 bg-white/20 rounded-full transition-all duration-200 hover:bg-white/30 hover:scale-110 hover:shadow-md hover:shadow-yellow-300/15 motion-safe:animate-pulse">
-                  <Trophy className="w-5 h-5 md:w-6 md:h-6 text-yellow-300" />
-                </div>
-                <div className="p-2 md:p-3 bg-white/20 rounded-full transition-all duration-200 hover:bg-white/30 hover:scale-110 hover:shadow-md hover:shadow-blue-200/15 motion-safe:animate-pulse" style={{animationDelay: '0.5s'}}>
-                  <BarChart3 className="w-5 h-5 md:w-6 md:h-6 text-blue-200" />
-                </div>
-                <div className="p-2 md:p-3 bg-white/20 rounded-full transition-all duration-200 hover:bg-white/30 hover:scale-110 hover:shadow-md hover:shadow-orange-300/15 motion-safe:animate-pulse" style={{animationDelay: '1s'}}>
-                  <Target className="w-5 h-5 md:w-6 md:h-6 text-orange-300" />
-                </div>
-              </div>
-              
-              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 md:mb-4">
-                🏆 SÚŤAŽTE S NAJLEPŠÍMI
-              </h2>
-              <p className="text-blue-100 text-base md:text-lg mb-6 md:mb-8 leading-relaxed">
-                Vstúpte do sveta profesionálnych rybárskych súťaží. Sledujte live výsledky, 
-                porovnávajte techniky majstrov a zažite adrenalín skutočnej súťaže.
-              </p>
-              
-              <div className="flex flex-col gap-3 md:gap-4">
-                <Link href="/live">
+        {/* Hero Content */}
+        <div className="relative z-10 flex-1 flex items-center min-h-[calc(100vh-4rem)] pt-8 pb-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+              {/* Left Content */}
+              <div className="text-white">
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+                  Súťaže na Slovensku
+                </h1>
+                <p className="text-lg md:text-xl text-white/90 mb-4 leading-relaxed">
+                  Vytvor si svoj osobný rybársky denník
+                </p>
+                <p className="text-lg md:text-xl text-white/90 mb-8 leading-relaxed">
+                  - všetko na jednom mieste
+                </p>
+                
+                <p className="text-base md:text-lg text-white/80 mb-6">
+                  Sleduj live úlovky a rebríčky tímov, alebo
+                </p>
+                <p className="text-base md:text-lg text-white/80 mb-8">
+                  si zapisuj svoje úlovky a súťaž s kamarátmi.
+                </p>
+                
+                <div className="flex flex-col sm:flex-row gap-4">
                   <Button 
+                    className="bg-white text-blue-900 hover:bg-white/90 font-semibold px-6 py-3"
                     size="lg"
-                    className="w-full bg-white text-blue-800 hover:bg-blue-50 font-semibold transition-all duration-200 transform hover:scale-110 hover:shadow-lg md:hover:shadow-xl hover:shadow-blue-500/25 hover:-translate-y-1 relative overflow-hidden group magnetic-button"
-                    data-testid="button-view-competitions"
                   >
-                    {/* Shine effect */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-400 ease-out"></div>
-                    <Zap className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform duration-300" />
-                    Pozrieť live výsledky
+                    Pozrieť prebiehajúce súťaže
                   </Button>
-                </Link>
-                <Link href="/register-competition">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="w-full border-2 border-white text-blue-800 bg-white/90 hover:bg-white hover:text-blue-800 font-semibold transition-all duration-200 hover:scale-110 hover:shadow-lg md:hover:shadow-xl hover:shadow-white/25 hover:-translate-y-1 relative overflow-hidden group magnetic-button"
-                    data-testid="button-register-competition-hero"
-                  >
-                    {/* Shine effect */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-400 ease-out"></div>
-                    <PlusCircle className="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform duration-300" />
-                    Organizovať súťaž
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          {/* Fishing Diary Section - 40% width */}
-          <div 
-            ref={rightSectionRef}
-            className="relative md:w-[40%] flex items-center justify-center md:justify-end text-white px-4 sm:px-6 md:px-8 py-8 md:py-12 group transition-all duration-300 hover:scale-[1.02] hover:z-20"
-            style={{
-              backgroundImage: `url(${lakeImage})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center right',
-              backgroundRepeat: 'no-repeat'
-            }}
-            onMouseEnter={() => setHoveredSection('right')}
-            onMouseLeave={() => setHoveredSection(null)}
-            data-testid="hero-diary-section"
-          >
-            {/* Background overlays for text readability */}
-            <div className="absolute inset-0 bg-green-800/45"></div>
-            <div className="absolute inset-0 bg-gradient-to-l from-green-700/40 via-green-600/20 to-transparent"></div>
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-green-800/10 to-green-900/30"></div>
-            <div className="relative z-10 max-w-sm text-center md:text-left">
-              {/* Diary Icons with floating animation */}
-              <div className="flex justify-center md:justify-start gap-3 mb-4 md:mb-6">
-                <div className="p-2 md:p-3 bg-white/20 rounded-full transition-all duration-200 hover:bg-white/30 hover:scale-110 hover:shadow-md hover:shadow-green-100/15 motion-safe:animate-pulse">
-                  <BookOpen className="w-5 h-5 md:w-6 md:h-6 text-green-100" />
-                </div>
-                <div className="p-2 md:p-3 bg-white/20 rounded-full transition-all duration-200 hover:bg-white/30 hover:scale-110 hover:shadow-md hover:shadow-blue-200/15 motion-safe:animate-pulse" style={{animationDelay: '0.5s'}}>
-                  <Fish className="w-5 h-5 md:w-6 md:h-6 text-blue-200" />
-                </div>
-                <div className="p-2 md:p-3 bg-white/20 rounded-full transition-all duration-200 hover:bg-white/30 hover:scale-110 hover:shadow-md hover:shadow-yellow-300/15 motion-safe:animate-pulse" style={{animationDelay: '1s'}}>
-                  <Crown className="w-5 h-5 md:w-6 md:h-6 text-yellow-300" />
-                </div>
-              </div>
-              
-              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 md:mb-4">
-                📖 VÁŠ RYBÁRSKY ODKAZ
-              </h2>
-              <p className="text-green-100 text-base md:text-lg mb-6 md:mb-8 leading-relaxed">
-                Zachytávajte momenty, ktoré sa nedajú opakovať. Vytvorte si digitálny 
-                denník úlovkov a súťažte s priateľmi o tie najlepšie príbehy.
-              </p>
-              
-              <div className="flex flex-col gap-3 md:gap-4">
-                <Link href="/diary">
                   <Button 
-                    size="lg"
-                    className="w-full bg-white text-green-800 hover:bg-green-50 font-semibold transition-all duration-200 transform hover:scale-110 hover:shadow-lg md:hover:shadow-xl hover:shadow-green-500/25 hover:-translate-y-1 relative overflow-hidden group magnetic-button"
-                    data-testid="button-start-diary"
-                  >
-                    {/* Shine effect */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-400 ease-out"></div>
-                    <BookOpen className="w-5 h-5 mr-2 group-hover:-rotate-12 transition-transform duration-300" />
-                    Začať denník
-                  </Button>
-                </Link>
-                <a href="/api/login">
-                  <Button
-                    size="lg"
                     variant="outline"
-                    className="w-full border-2 border-white text-green-800 bg-white/90 hover:bg-white hover:text-green-800 font-semibold transition-all duration-200 hover:scale-110 hover:shadow-lg md:hover:shadow-xl hover:shadow-white/25 hover:-translate-y-1 relative overflow-hidden group magnetic-button"
-                    data-testid="button-try-battle"
+                    className="border-2 border-blue-600 text-blue-600 bg-blue-600 hover:bg-blue-700 font-semibold px-6 py-3"
+                    size="lg"
                   >
-                    {/* Shine effect */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-400 ease-out"></div>
-                    <Trophy className="w-5 h-5 mr-2 group-hover:rotate-12 group-hover:scale-110 transition-transform duration-300" />
-                    Vyzvať kamarátov
+                    Začať zapisovať úlovky
                   </Button>
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Social Proof Band */}
-        <div className="absolute bottom-0 left-0 right-0 bg-black/20 backdrop-blur-sm border-t border-white/10 py-4 px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="flex flex-col md:flex-row items-center justify-center md:justify-between gap-4 text-center md:text-left">
-              <div className="flex flex-col sm:flex-row items-center gap-6 text-white/80 text-sm">
-                <div className="flex items-center gap-2">
-                  <Trophy className="w-4 h-4 text-yellow-400" />
-                  <span className="font-semibold">120+ tímov</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-blue-400" />
-                  <span className="font-semibold">30+ súťaží naživo</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Fish className="w-4 h-4 text-green-400" />
-                  <span className="font-semibold">50k+ zaznamenaných úlovkov</span>
                 </div>
               </div>
-              <div className="text-white/90 text-sm italic">
-                "Najlepšia platforma pre rybárske súťaže" - Slovak Fishing Federation
+              
+              {/* Right Content - Live Leaderboard */}
+              <div className="relative">
+                <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-xl">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-bold text-gray-900">Live Rebríček</h3>
+                      <Badge variant="destructive" className="bg-red-600 text-white">
+                        LIVE
+                      </Badge>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      {/* Simulated live data */}
+                      <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                        <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                          <span className="text-white text-sm font-bold">TA</span>
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-semibold text-gray-900">Tyes´A</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-bold text-gray-900">12,2 kg</div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                        <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
+                          <span className="text-white text-sm font-bold">TB</span>
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-semibold text-gray-900">Team B</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-bold text-gray-900">65,1 kg</div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                        <div className="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center">
+                          <span className="text-white text-sm font-bold">TC</span>
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-semibold text-gray-900">Team C</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-bold text-gray-900">57,8 kg</div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Chart placeholder */}
+                    <div className="mt-6 h-20 bg-gradient-to-r from-blue-100 to-green-100 rounded-lg flex items-center justify-center">
+                      <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center">
+                        <div className="w-10 h-10 bg-green-500 rounded-full"></div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </div>
           </div>
