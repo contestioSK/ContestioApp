@@ -102,6 +102,17 @@ export default function NavigationHeader() {
             >
               Kontakt
             </Link>
+            {isAuthenticated && (
+              <Link 
+                href="/diary" 
+                className={`font-medium transition-colors ${
+                  location.startsWith('/diary') ? 'text-primary' : 'text-muted-foreground hover:text-primary'
+                }`}
+                data-testid="nav-diary"
+              >
+                Denník
+              </Link>
+            )}
           </nav>
           
           {/* User Actions */}
