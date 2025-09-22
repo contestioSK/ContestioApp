@@ -1121,30 +1121,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
       }).filter(team => team.fishCount > 0).sort((a, b) => b.averageWeight - a.averageWeight).slice(0, 5);
 
-      // Get all unique sectors from teams and catches (using only clean sector codes)
+      // Get all unique sectors from teams only (teams define valid sectors)
       const allSectors = new Set<string>();
-      
-      // Debug: log team sectors
-      console.log('[SECTOR DEBUG] Teams with sectors:');
       teams.forEach(team => {
-        if (team.sector) {
-          console.log(`  Team ${team.name}: sector="${team.sector}", sectorName="${team.sectorName}"`);
-          allSectors.add(team.sector);
-        }
+        if (team.sector) allSectors.add(team.sector);
       });
       
-      // Debug: log catch sectors
-      console.log('[SECTOR DEBUG] Catches with sectors:');
-      const catchSectors = new Set<string>();
-      catches.forEach(catch_ => {
-        if (catch_.sector) {
-          catchSectors.add(catch_.sector);
-          allSectors.add(catch_.sector);
-        }
-      });
-      console.log(`  Unique catch sectors: ${Array.from(catchSectors).join(', ')}`);
-      
-      console.log(`[SECTOR DEBUG] Final allSectors: ${Array.from(allSectors).join(', ')}`);
+      console.log(`[SECTOR DEBUG] Valid sectors from teams: ${Array.from(allSectors).join(', ')}`);
       console.log(`[SECTOR DEBUG] Total sectors found: ${allSectors.size}`);
 
       // Sector Performance (overall stats per sector)
