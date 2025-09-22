@@ -1084,6 +1084,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
           };
         });
 
+      // Team Top 3 and Top 5 average weights
+      const teamTop3Average = teams.map(team => {
+        const teamCatches = catches
+          .filter(catch_ => catch_.teamId === team.id)
+          .sort((a, b) => Number(b.weight) - Number(a.weight))
+          .slice(0, 3);
+        
+        const averageWeight = teamCatches.length > 0 
+          ? Math.round((teamCatches.reduce((sum, catch_) => sum + Number(catch_.weight), 0) / teamCatches.length) * 10) / 10
+          : 0;
+        
+        return {
+          teamName: team.name,
+          averageWeight,
+          fishCount: teamCatches.length,
+          maxFish: 3
+        };
+      }).filter(team => team.fishCount > 0).sort((a, b) => b.averageWeight - a.averageWeight).slice(0, 5);
+
+      const teamTop5Average = teams.map(team => {
+        const teamCatches = catches
+          .filter(catch_ => catch_.teamId === team.id)
+          .sort((a, b) => Number(b.weight) - Number(a.weight))
+          .slice(0, 5);
+        
+        const averageWeight = teamCatches.length > 0 
+          ? Math.round((teamCatches.reduce((sum, catch_) => sum + Number(catch_.weight), 0) / teamCatches.length) * 10) / 10
+          : 0;
+        
+        return {
+          teamName: team.name,
+          averageWeight,
+          fishCount: teamCatches.length,
+          maxFish: 5
+        };
+      }).filter(team => team.fishCount > 0).sort((a, b) => b.averageWeight - a.averageWeight).slice(0, 5);
+
       // Mock data for other charts (to be implemented later)
       const stats = {
         timeline,
@@ -1093,6 +1130,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         fishTypeDistribution,
         sectorPerformance: [],
         averageWeights: [],
+        teamTop3Average,
+        teamTop5Average,
         specialMilestones: [],
         dailyBigFish: [],
         recordProgression: [],

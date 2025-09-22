@@ -2,11 +2,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BarChart3, TrendingUp, Award, Users, Fish, Target, Trophy, Activity } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 // Chart components
 import { TimelineChart } from "./charts/timeline-chart";
 import { WeightCategoryChart } from "./charts/weight-category-chart";
 import { TopFishChart } from "./charts/top-fish-chart";
+import { TeamAverageChart } from "./charts/team-average-chart";
 import { TeamPerformanceChart } from "./charts/team-performance-chart";
 import { FishTypeDistributionChart } from "./charts/fish-type-distribution-chart";
 import { SectorPerformanceChart } from "./charts/sector-performance-chart";
@@ -21,12 +23,25 @@ import { TeamEfficiencyChart } from "./charts/team-efficiency-chart";
 // Hook
 import { useCompetitionStats } from "./hooks/use-competition-stats";
 
+// Types
+import type { Competition } from "@shared/schema";
+
 interface StatsDashboardProps {
   competitionId: string;
 }
 
 export default function StatsDashboard({ competitionId }: StatsDashboardProps) {
   const { data: stats, isLoading, error } = useCompetitionStats(competitionId, true);
+  
+  // Get competition details for side competitions info
+  const { data: competition } = useQuery<Competition>({
+    queryKey: ["/api/competitions", competitionId],
+    enabled: !!competitionId,
+  });
+  
+  // Check which special contests are enabled
+  const hasTop3Contest = competition?.sideCompetitions?.includes("best-3-fish") ?? false;
+  const hasTop5Contest = competition?.sideCompetitions?.includes("best-5-fish") ?? false;
 
   if (isLoading) {
     return (
@@ -93,7 +108,28 @@ export default function StatsDashboard({ competitionId }: StatsDashboardProps) {
             <TimelineChart data={stats.timeline} />
             <FishTypeDistributionChart data={stats.fishTypeDistribution} />
             <WeightCategoryChart data={stats.weightCategories} />
-            <TopFishChart data={stats.topFish} />
+            
+            {/* Conditionally show team average charts based on side competitions */}
+            {hasTop5Contest && (
+              <TeamAverageChart 
+                data={stats.teamTop5Average} 
+                title="Váhový priemer top 5 úlovkov"
+                description="TOP 5 tímov s najlepším priemernom váhy ich 5 najťažších úlovkov"
+              />
+            )}
+            
+            {hasTop3Contest && (
+              <TeamAverageChart 
+                data={stats.teamTop3Average} 
+                title="Váhový priemer top 3 úlovkov"
+                description="TOP 5 tímov s najlepším priemernom váhy ich 3 najťažších úlovkov"
+              />
+            )}
+            
+            {/* Show original top fish chart if no special contests are enabled */}
+            {!hasTop5Contest && !hasTop3Contest && (
+              <TopFishChart data={stats.topFish} />
+            )}
           </div>
         </TabsContent>
 
