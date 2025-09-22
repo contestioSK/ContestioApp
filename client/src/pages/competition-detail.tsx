@@ -419,17 +419,17 @@ export default function CompetitionDetail() {
               setActiveTab(value);
             }
           }} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-6">
-              <TabsTrigger value="overview" data-testid="tab-overview">Priebežné výsledky</TabsTrigger>
-              <TabsTrigger value="analytics" data-testid="tab-analytics">
+            <TabsList className="grid w-full grid-cols-4 mb-6 bg-gradient-to-r from-card via-background to-card border border-border/50 shadow-lg backdrop-blur-sm p-2 rounded-xl">
+              <TabsTrigger value="overview" data-testid="tab-overview" className="font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200 hover:bg-primary/10">Priebežné výsledky</TabsTrigger>
+              <TabsTrigger value="analytics" data-testid="tab-analytics" className="font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200 hover:bg-primary/10">
                 <BarChart3 className="w-4 h-4 mr-2" />
                 Štatistiky súťaže
               </TabsTrigger>
-              <TabsTrigger value="catches" data-testid="tab-catches">
+              <TabsTrigger value="catches" data-testid="tab-catches" className="font-semibold data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground data-[state=active]:shadow-md transition-all duration-200 hover:bg-secondary/10">
                 <Fish className="w-4 h-4 mr-2" />
                 Zobraziť všetky úlovky
               </TabsTrigger>
-              <TabsTrigger value="rules" data-testid="tab-rules">Pravidlá</TabsTrigger>
+              <TabsTrigger value="rules" data-testid="tab-rules" className="font-semibold data-[state=active]:bg-accent data-[state=active]:text-accent-foreground data-[state=active]:shadow-md transition-all duration-200 hover:bg-accent/10">Pravidlá</TabsTrigger>
             </TabsList>
             
             <TabsContent value="overview" className="mt-6">
