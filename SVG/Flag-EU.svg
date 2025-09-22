@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 27.2.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 1200 1200" style="enable-background:new 0 0 1200 1200;" xml:space="preserve">
+<style type="text/css">
+	.st0{clip-path:url(#SVGID_00000077282709617579094660000006737855402416255658_);}
+	.st1{fill:#024DA1;}
+	.st2{fill:#FFF100;}
+	.st3{opacity:0.3;fill:url(#SVGID_00000019668784618507691430000000765693837624462268_);}
+</style>
+<g>
+	<g>
+		<defs>
+			<circle id="SVGID_1_" cx="600" cy="600" r="550"/>
+		</defs>
+		<clipPath id="SVGID_00000150075314573164903940000015661478554578374307_">
+			<use xlink:href="#SVGID_1_"  style="overflow:visible;"/>
+		</clipPath>
+		<g style="clip-path:url(#SVGID_00000150075314573164903940000015661478554578374307_);">
+			<rect x="-176.5" y="50" class="st1" width="1552.9" height="1100"/>
+			<g>
+				<polygon class="st2" points="599.7,181.6 587.1,223.2 546.1,223.2 579.4,248.6 566.9,289.7 599.7,264.3 632.4,289.7 620,248.6 
+					653.3,223.2 612.2,223.2 				"/>
+				<polygon class="st2" points="736.8,338.1 769.6,312.7 802.3,338.1 789.9,297 823.2,271.6 782.1,271.6 769.6,230 757,271.7 
+					716,271.6 749.2,297 				"/>
+				<polygon class="st2" points="893.4,444.3 926.2,469.7 913.7,428.6 947,403.2 906,403.2 893.4,361.6 880.8,403.3 839.8,403.2 
+					873.1,428.6 860.6,469.7 				"/>
+				<polygon class="st2" points="938.4,624.2 971.2,649.7 958.7,608.6 992,583.2 951,583.2 938.4,541.5 925.9,583.2 884.8,583.2 
+					918.1,608.6 905.7,649.7 				"/>
+				<polygon class="st2" points="893.4,722.5 906,764.2 947,764.2 913.7,789.6 926.2,830.6 893.4,805.2 860.6,830.6 873.1,789.6 
+					839.8,764.2 880.8,764.2 				"/>
+				<polygon class="st2" points="769.1,854.6 781.6,896.2 822.6,896.2 789.4,921.6 801.9,962.7 769.1,937.3 736.3,962.7 
+					748.8,921.6 715.5,896.2 756.5,896.3 				"/>
+				<polygon class="st2" points="600,902.5 612.5,944.1 653.6,944.1 620.3,969.5 632.8,1010.6 600,985.2 567.2,1010.6 579.7,969.5 
+					546.4,944.1 587.4,944.1 				"/>
+				<polygon class="st2" points="430.3,854.6 442.9,896.2 483.9,896.2 450.6,921.6 463.1,962.7 430.3,937.3 397.6,962.7 410,921.6 
+					376.8,896.2 417.8,896.3 				"/>
+				<polygon class="st2" points="306,722.5 318.6,764.1 359.6,764.1 326.3,789.5 338.8,830.6 306,805.2 273.2,830.6 285.7,789.5 
+					252.5,764.1 293.4,764.2 				"/>
+				<polygon class="st2" points="260.5,542 273,583.6 314.1,583.6 280.8,609 293.3,650.1 260.5,624.7 227.7,650.1 240.2,609 
+					206.9,583.6 247.9,583.7 				"/>
+				<polygon class="st2" points="306,362.1 318.6,403.7 359.6,403.7 326.3,429.1 338.8,470.2 306,444.8 273.2,470.2 285.7,429.1 
+					252.5,403.7 293.4,403.7 				"/>
+				<polygon class="st2" points="430.1,230 442.6,271.6 483.6,271.6 450.4,297 462.9,338.1 430.1,312.6 397.3,338.1 409.8,297 
+					376.5,271.6 417.5,271.6 				"/>
+			</g>
+		</g>
+	</g>
+	
+		<radialGradient id="SVGID_00000160190946681191081690000010121644126201039236_" cx="600" cy="600" r="550" gradientUnits="userSpaceOnUse">
+		<stop  offset="0" style="stop-color:#FFFFFF"/>
+		<stop  offset="0.3561" style="stop-color:#FDFDFD"/>
+		<stop  offset="0.4844" style="stop-color:#F6F6F6"/>
+		<stop  offset="0.5759" style="stop-color:#EBEBEB"/>
+		<stop  offset="0.6499" style="stop-color:#DADADA"/>
+		<stop  offset="0.7132" style="stop-color:#C4C4C4"/>
+		<stop  offset="0.7693" style="stop-color:#A8A8A8"/>
+		<stop  offset="0.8201" style="stop-color:#888888"/>
+		<stop  offset="0.8667" style="stop-color:#626262"/>
+		<stop  offset="0.9101" style="stop-color:#373737"/>
+		<stop  offset="0.9487" style="stop-color:#090909"/>
+		<stop  offset="0.9557" style="stop-color:#000000"/>
+	</radialGradient>
+	<circle style="opacity:0.3;fill:url(#SVGID_00000160190946681191081690000010121644126201039236_);" cx="600" cy="600" r="550"/>
+</g>
+</svg>

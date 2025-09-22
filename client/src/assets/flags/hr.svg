@@ -1,0 +1,20 @@
+<svg viewBox="0 0 24 18" xmlns="http://www.w3.org/2000/svg">
+  <rect width="24" height="6" fill="#FF0000"/>
+  <rect y="6" width="24" height="6" fill="#FFFFFF"/>
+  <rect y="12" width="24" height="6" fill="#171796"/>
+  <!-- Simplified checkered coat of arms -->
+  <g transform="translate(8,3) scale(0.6)">
+    <rect x="0" y="0" width="2" height="2" fill="#FF0000"/>
+    <rect x="2" y="0" width="2" height="2" fill="#FFFFFF"/>
+    <rect x="4" y="0" width="2" height="2" fill="#FF0000"/>
+    <rect x="6" y="0" width="2" height="2" fill="#FFFFFF"/>
+    <rect x="0" y="2" width="2" height="2" fill="#FFFFFF"/>
+    <rect x="2" y="2" width="2" height="2" fill="#FF0000"/>
+    <rect x="4" y="2" width="2" height="2" fill="#FFFFFF"/>
+    <rect x="6" y="2" width="2" height="2" fill="#FF0000"/>
+    <rect x="0" y="4" width="2" height="2" fill="#FF0000"/>
+    <rect x="2" y="4" width="2" height="2" fill="#FFFFFF"/>
+    <rect x="4" y="4" width="2" height="2" fill="#FF0000"/>
+    <rect x="6" y="4" width="2" height="2" fill="#FFFFFF"/>
+  </g>
+</svg>

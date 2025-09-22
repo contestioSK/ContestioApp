@@ -44,9 +44,61 @@ export const COUNTRIES = [
 
 export type CountryCode = typeof COUNTRIES[number]['code'];
 
+// Import local flag SVGs
+import skFlag from "@/assets/flags/sk.svg";
+import czFlag from "@/assets/flags/cz.svg";
+import huFlag from "@/assets/flags/hu.svg";
+import plFlag from "@/assets/flags/pl.svg";
+import deFlag from "@/assets/flags/de.svg";
+import atFlag from "@/assets/flags/at.svg";
+import siFlag from "@/assets/flags/si.svg";
+import hrFlag from "@/assets/flags/hr.svg";
+import rsFlag from "@/assets/flags/rs.svg";
+import roFlag from "@/assets/flags/ro.svg";
+import uaFlag from "@/assets/flags/ua.svg";
+import itFlag from "@/assets/flags/it.svg";
+import frFlag from "@/assets/flags/fr.svg";
+import esFlag from "@/assets/flags/es.svg";
+import nlFlag from "@/assets/flags/nl.svg";
+import beFlag from "@/assets/flags/be.svg";
+import chFlag from "@/assets/flags/ch.svg";
+import gbFlag from "@/assets/flags/gb.svg";
+import seFlag from "@/assets/flags/se.svg";
+import noFlag from "@/assets/flags/no.svg";
+
+// Map of country codes to local flag imports
+const LOCAL_FLAGS: Record<string, string> = {
+  sk: skFlag,
+  cz: czFlag,
+  hu: huFlag,
+  pl: plFlag,
+  de: deFlag,
+  at: atFlag,
+  si: siFlag,
+  hr: hrFlag,
+  rs: rsFlag,
+  ro: roFlag,
+  ua: uaFlag,
+  it: itFlag,
+  fr: frFlag,
+  es: esFlag,
+  nl: nlFlag,
+  be: beFlag,
+  ch: chFlag,
+  gb: gbFlag,
+  se: seFlag,
+  no: noFlag,
+};
+
 export function getCountryFlag(countryCode: string): string {
-  // Return SVG flag URL instead of emoji
   const code = countryCode.toLowerCase();
+  
+  // Return local flag if available
+  if (LOCAL_FLAGS[code]) {
+    return LOCAL_FLAGS[code];
+  }
+  
+  // Fallback to external CDN for missing flags
   return `https://flagcdn.com/24x18/${code}.png`;
 }
 

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 27.2.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 120 120" style="enable-background:new 0 0 120 120;" xml:space="preserve">
+<style type="text/css">
+	.st0{clip-path:url(#SVGID_00000151537870381475073920000005314446890048263309_);}
+	.st1{fill:#FF0000;}
+	.st2{fill:#FFFFFF;}
+	.st3{opacity:0.3;fill:url(#SVGID_00000000924685239666535460000014532360711065312401_);}
+</style>
+<g>
+	<g>
+		<defs>
+			<circle id="SVGID_1_" cx="60" cy="60" r="50"/>
+		</defs>
+		<clipPath id="SVGID_00000135651944128989267880000006887380578228319927_">
+			<use xlink:href="#SVGID_1_"  style="overflow:visible;"/>
+		</clipPath>
+		<g style="clip-path:url(#SVGID_00000135651944128989267880000006887380578228319927_);">
+			<path class="st1" d="M10,10H110V110H10V10z"/>
+			<path class="st2" d="M50.6,28.8h18.7v21.9h21.9v18.7H69.4v21.9H50.6V69.4H28.8V50.6h21.9V28.8z"/>
+		</g>
+	</g>
+	
+		<radialGradient id="SVGID_00000180348794357695766560000015626821611957230772_" cx="60" cy="60" r="54.2714" gradientUnits="userSpaceOnUse">
+		<stop  offset="0" style="stop-color:#FFFFFF"/>
+		<stop  offset="0.3561" style="stop-color:#FDFDFD"/>
+		<stop  offset="0.4844" style="stop-color:#F6F6F6"/>
+		<stop  offset="0.5759" style="stop-color:#EBEBEB"/>
+		<stop  offset="0.6499" style="stop-color:#DADADA"/>
+		<stop  offset="0.7132" style="stop-color:#C4C4C4"/>
+		<stop  offset="0.7693" style="stop-color:#A8A8A8"/>
+		<stop  offset="0.8201" style="stop-color:#888888"/>
+		<stop  offset="0.8667" style="stop-color:#626262"/>
+		<stop  offset="0.9101" style="stop-color:#373737"/>
+		<stop  offset="0.9487" style="stop-color:#090909"/>
+		<stop  offset="0.9557" style="stop-color:#000000"/>
+	</radialGradient>
+	<circle style="opacity:0.3;fill:url(#SVGID_00000180348794357695766560000015626821611957230772_);" cx="60" cy="60" r="50"/>
+</g>
+</svg>
