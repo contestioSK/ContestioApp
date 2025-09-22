@@ -13,6 +13,10 @@ import {
   notificationPreferences,
   pushSubscriptions,
   announcements,
+  userSubscriptions,
+  diaryTrips,
+  diaryCatches,
+  diaryBattles,
   type User,
   type UpsertUser,
   type Competition,
@@ -42,6 +46,14 @@ import {
   type Announcement,
   type InsertAnnouncement,
   type UpdateAnnouncement,
+  type UserSubscription,
+  type InsertUserSubscription,
+  type DiaryTrip,
+  type InsertDiaryTrip,
+  type DiaryCatch,
+  type InsertDiaryCatch,
+  type DiaryBattle,
+  type InsertDiaryBattle,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql, ne, count, gt, gte, inArray } from "drizzle-orm";
@@ -199,6 +211,39 @@ export interface IStorage {
   updateResultBlockStatus(): Promise<void>;
   getActiveCompetitions(): Promise<Competition[]>;
   calculateAndUpdateResultBlockStartTime(competitionId: string): Promise<void>;
+  
+  // User subscription operations (for premium features)
+  getUserSubscription(userId: string, product?: string): Promise<UserSubscription | undefined>;
+  createOrUpdateSubscription(subscription: InsertUserSubscription): Promise<UserSubscription>;
+  cancelSubscription(userId: string, product: string): Promise<UserSubscription>;
+  
+  // Diary trip operations
+  getDiaryTrips(userId: string): Promise<DiaryTrip[]>;
+  getDiaryTrip(id: string): Promise<(DiaryTrip & { catches: DiaryCatch[]; battles: DiaryBattle[] }) | undefined>;
+  createDiaryTrip(trip: InsertDiaryTrip, userId: string): Promise<DiaryTrip>;
+  updateDiaryTrip(id: string, trip: Partial<InsertDiaryTrip>, userId: string): Promise<DiaryTrip>;
+  deleteDiaryTrip(id: string, userId: string): Promise<void>;
+  checkTripOwnership(tripId: string, userId: string): Promise<boolean>;
+  
+  // Diary catch operations
+  getDiaryCatches(tripId: string): Promise<DiaryCatch[]>;
+  getDiaryCatch(id: string): Promise<DiaryCatch | undefined>;
+  createDiaryCatch(catch_: InsertDiaryCatch, userId: string): Promise<DiaryCatch>;
+  updateDiaryCatch(id: string, catch_: Partial<InsertDiaryCatch>, userId: string): Promise<DiaryCatch>;
+  deleteDiaryCatch(id: string, userId: string): Promise<void>;
+  
+  // Diary battle operations
+  getDiaryBattles(tripId: string): Promise<DiaryBattle[]>;
+  getDiaryBattle(id: string): Promise<DiaryBattle | undefined>;
+  createDiaryBattle(battle: InsertDiaryBattle, userId: string): Promise<DiaryBattle>;
+  updateDiaryBattle(id: string, battle: Partial<InsertDiaryBattle>, userId: string): Promise<DiaryBattle>;
+  deleteDiaryBattle(id: string, userId: string): Promise<void>;
+  calculateBattleResults(battleId: string, userId: string): Promise<DiaryBattle>;
+  
+  // Freemium limit checks
+  checkDiaryTripLimit(userId: string): Promise<{ canCreate: boolean; currentCount: number; limit: number }>;
+  checkDiaryCatchLimit(userId: string): Promise<{ canCreate: boolean; currentCount: number; limit: number }>;
+  isUserPremium(userId: string): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1644,6 +1689,422 @@ export class DatabaseStorage implements IStorage {
       .where(eq(competitions.id, competitionId));
     
     console.log(`[Storage] Updated result block start time for competition ${competition.name}: ${blockStartTime.toISOString()}`);
+  }
+
+  // User subscription operations (for premium features)
+  async getUserSubscription(userId: string, product: string = "diary_premium"): Promise<UserSubscription | undefined> {
+    const [subscription] = await db
+      .select()
+      .from(userSubscriptions)
+      .where(and(
+        eq(userSubscriptions.userId, userId),
+        eq(userSubscriptions.product, product)
+      ));
+    return subscription;
+  }
+
+  async createOrUpdateSubscription(subscription: InsertUserSubscription): Promise<UserSubscription> {
+    const existing = await this.getUserSubscription(subscription.userId, subscription.product);
+    
+    if (existing) {
+      const [updated] = await db
+        .update(userSubscriptions)
+        .set({ ...subscription, updatedAt: new Date() })
+        .where(and(
+          eq(userSubscriptions.userId, subscription.userId),
+          eq(userSubscriptions.product, subscription.product)
+        ))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db
+        .insert(userSubscriptions)
+        .values(subscription as typeof userSubscriptions.$inferInsert)
+        .returning();
+      return created;
+    }
+  }
+
+  async cancelSubscription(userId: string, product: string): Promise<UserSubscription> {
+    const [cancelled] = await db
+      .update(userSubscriptions)
+      .set({ 
+        status: "canceled", 
+        updatedAt: new Date() 
+      })
+      .where(and(
+        eq(userSubscriptions.userId, userId),
+        eq(userSubscriptions.product, product)
+      ))
+      .returning();
+    
+    if (!cancelled) {
+      throw new Error("Predplatné nenájdené");
+    }
+    return cancelled;
+  }
+
+  // Diary trip operations
+  async getDiaryTrips(userId: string): Promise<DiaryTrip[]> {
+    return await db
+      .select()
+      .from(diaryTrips)
+      .where(eq(diaryTrips.ownerUserId, userId))
+      .orderBy(desc(diaryTrips.startDate));
+  }
+
+  async getDiaryTrip(id: string): Promise<(DiaryTrip & { catches: DiaryCatch[]; battles: DiaryBattle[] }) | undefined> {
+    const [trip] = await db
+      .select()
+      .from(diaryTrips)
+      .where(eq(diaryTrips.id, id));
+    
+    if (!trip) return undefined;
+
+    const catches = await this.getDiaryCatches(id);
+    const battles = await this.getDiaryBattles(id);
+    
+    return { ...trip, catches, battles };
+  }
+
+  async createDiaryTrip(trip: InsertDiaryTrip, userId: string): Promise<DiaryTrip> {
+    // Enforce ownership - ignore any incoming ownerUserId and use authenticated userId
+    const tripData = { ...trip, ownerUserId: userId };
+    
+    // Check freemium limits for the authenticated user
+    const tripLimit = await this.checkDiaryTripLimit(userId);
+    if (!tripLimit.canCreate) {
+      throw new Error(`Dosiahli ste limit ${tripLimit.limit} výprav pre FREE verziu. Prejdite na PREMIUM pre neobmedzene výpravy.`);
+    }
+    
+    const [newTrip] = await db
+      .insert(diaryTrips)
+      .values(tripData as typeof diaryTrips.$inferInsert)
+      .returning();
+    return newTrip;
+  }
+
+  async updateDiaryTrip(id: string, trip: Partial<InsertDiaryTrip>, userId: string): Promise<DiaryTrip> {
+    // Verify ownership (mandatory)
+    if (!(await this.checkTripOwnership(id, userId))) {
+      throw new Error("Nemáte oprávnenie na úpravu tejto výpravy");
+    }
+    
+    const [updated] = await db
+      .update(diaryTrips)
+      .set({ ...trip, updatedAt: new Date() })
+      .where(eq(diaryTrips.id, id))
+      .returning();
+    
+    if (!updated) {
+      throw new Error("Výprava nenájdená");
+    }
+    return updated;
+  }
+
+  async deleteDiaryTrip(id: string, userId: string): Promise<void> {
+    // Verify ownership (mandatory)
+    if (!(await this.checkTripOwnership(id, userId))) {
+      throw new Error("Nemáte oprávnenie na vymazanie tejto výpravy");
+    }
+    
+    // Use transaction for atomic cascade delete
+    await db.transaction(async (tx) => {
+      // Delete related catches and battles first
+      await tx.delete(diaryCatches).where(eq(diaryCatches.tripId, id));
+      await tx.delete(diaryBattles).where(eq(diaryBattles.tripId, id));
+      
+      // Delete the trip
+      await tx.delete(diaryTrips).where(eq(diaryTrips.id, id));
+    });
+  }
+
+  async checkTripOwnership(tripId: string, userId: string): Promise<boolean> {
+    const [trip] = await db
+      .select({ ownerUserId: diaryTrips.ownerUserId })
+      .from(diaryTrips)
+      .where(eq(diaryTrips.id, tripId));
+    
+    return trip?.ownerUserId === userId;
+  }
+
+  // Diary catch operations
+  async getDiaryCatches(tripId: string): Promise<DiaryCatch[]> {
+    return await db
+      .select()
+      .from(diaryCatches)
+      .where(eq(diaryCatches.tripId, tripId))
+      .orderBy(desc(diaryCatches.capturedAt));
+  }
+
+  async getDiaryCatch(id: string): Promise<DiaryCatch | undefined> {
+    const [catch_] = await db
+      .select()
+      .from(diaryCatches)
+      .where(eq(diaryCatches.id, id));
+    return catch_;
+  }
+
+  async createDiaryCatch(catch_: InsertDiaryCatch, userId: string): Promise<DiaryCatch> {
+    // Verify trip ownership (mandatory)
+    if (!(await this.checkTripOwnership(catch_.tripId, userId))) {
+      throw new Error("Nemáte oprávnenie na pridanie úlovku do tejto výpravy");
+    }
+    
+    // Check freemium limits for the authenticated user
+    const catchLimit = await this.checkDiaryCatchLimit(userId);
+    if (!catchLimit.canCreate) {
+      throw new Error(`Dosiahli ste limit ${catchLimit.limit} úlovkov pre FREE verziu. Prejdite na PREMIUM pre neobmedzene úlovky.`);
+    }
+    
+    const [newCatch] = await db
+      .insert(diaryCatches)
+      .values(catch_ as typeof diaryCatches.$inferInsert)
+      .returning();
+    return newCatch;
+  }
+
+  async updateDiaryCatch(id: string, catch_: Partial<InsertDiaryCatch>, userId: string): Promise<DiaryCatch> {
+    // Verify trip ownership (mandatory)
+    const existingCatch = await this.getDiaryCatch(id);
+    if (!existingCatch) {
+      throw new Error("Úlovok nenájdený");
+    }
+    if (!(await this.checkTripOwnership(existingCatch.tripId, userId))) {
+      throw new Error("Nemáte oprávnenie na úpravu tohto úlovku");
+    }
+    
+    const [updated] = await db
+      .update(diaryCatches)
+      .set({ ...catch_, updatedAt: new Date() } as any)
+      .where(eq(diaryCatches.id, id))
+      .returning();
+    
+    if (!updated) {
+      throw new Error("Úlovok nenájdený");
+    }
+    return updated;
+  }
+
+  async deleteDiaryCatch(id: string, userId: string): Promise<void> {
+    // Verify trip ownership (mandatory)
+    const existingCatch = await this.getDiaryCatch(id);
+    if (!existingCatch) {
+      throw new Error("Úlovok nenájdený");
+    }
+    if (!(await this.checkTripOwnership(existingCatch.tripId, userId))) {
+      throw new Error("Nemáte oprávnenie na vymazanie tohto úlovku");
+    }
+    
+    await db.delete(diaryCatches).where(eq(diaryCatches.id, id));
+  }
+
+  // Diary battle operations
+  async getDiaryBattles(tripId: string): Promise<DiaryBattle[]> {
+    return await db
+      .select()
+      .from(diaryBattles)
+      .where(eq(diaryBattles.tripId, tripId))
+      .orderBy(desc(diaryBattles.createdAt));
+  }
+
+  async getDiaryBattle(id: string): Promise<DiaryBattle | undefined> {
+    const [battle] = await db
+      .select()
+      .from(diaryBattles)
+      .where(eq(diaryBattles.id, id));
+    return battle;
+  }
+
+  async createDiaryBattle(battle: InsertDiaryBattle, userId: string): Promise<DiaryBattle> {
+    // Verify trip ownership (mandatory)
+    if (!(await this.checkTripOwnership(battle.tripId, userId))) {
+      throw new Error("Nemáte oprávnenie na vytvorenie battle v tejto výprave");
+    }
+    
+    const [newBattle] = await db
+      .insert(diaryBattles)
+      .values(battle as typeof diaryBattles.$inferInsert)
+      .returning();
+    return newBattle;
+  }
+
+  async updateDiaryBattle(id: string, battle: Partial<InsertDiaryBattle>, userId: string): Promise<DiaryBattle> {
+    // Verify trip ownership (mandatory)
+    const existingBattle = await this.getDiaryBattle(id);
+    if (!existingBattle) {
+      throw new Error("Battle nenájdené");
+    }
+    if (!(await this.checkTripOwnership(existingBattle.tripId, userId))) {
+      throw new Error("Nemáte oprávnenie na úpravu tohto battle");
+    }
+    
+    const [updated] = await db
+      .update(diaryBattles)
+      .set({ ...battle, updatedAt: new Date() })
+      .where(eq(diaryBattles.id, id))
+      .returning();
+    
+    if (!updated) {
+      throw new Error("Battle nenájdené");
+    }
+    return updated;
+  }
+
+  async deleteDiaryBattle(id: string, userId: string): Promise<void> {
+    // Verify trip ownership (mandatory)
+    const existingBattle = await this.getDiaryBattle(id);
+    if (!existingBattle) {
+      throw new Error("Battle nenájdené");
+    }
+    if (!(await this.checkTripOwnership(existingBattle.tripId, userId))) {
+      throw new Error("Nemáte oprávnenie na vymazanie tohto battle");
+    }
+    
+    await db.delete(diaryBattles).where(eq(diaryBattles.id, id));
+  }
+
+  async calculateBattleResults(battleId: string, userId: string): Promise<DiaryBattle> {
+    const battle = await this.getDiaryBattle(battleId);
+    if (!battle) {
+      throw new Error("Battle nenájdené");
+    }
+    
+    // Verify trip ownership (mandatory)
+    if (!(await this.checkTripOwnership(battle.tripId, userId))) {
+      throw new Error("Nemáte oprávnenie na výpočet výsledkov tohto battle");
+    }
+
+    const catches = await this.getDiaryCatches(battle.tripId);
+    const battleCatches = catches.filter(c => 
+      c.capturedAt >= battle.startAt && 
+      c.capturedAt <= battle.endAt &&
+      (!battle.rules.includeOnlyVerified || c.verified)
+    );
+
+    const results = battle.participants.map(participant => {
+      const participantCatches = battleCatches.filter(c => 
+        c.angler.userId === participant.userId || 
+        c.angler.name === participant.name
+      );
+
+      let score = 0;
+      
+      // Apply minimum weight filter if specified
+      const validCatches = battle.rules.minWeightKg 
+        ? participantCatches.filter(c => {
+            const weight = parseFloat(c.weight);
+            return !isNaN(weight) && weight >= battle.rules.minWeightKg!;
+          })
+        : participantCatches;
+      
+      // Calculate score based on battle mode
+      switch (battle.rules.mode) {
+        case 'most_fish':
+          score = validCatches.length;
+          break;
+        case 'total_weight':
+          score = validCatches.reduce((sum, c) => {
+            const weight = parseFloat(c.weight);
+            return sum + (isNaN(weight) ? 0 : weight);
+          }, 0);
+          break;
+        case 'biggest_fish':
+          const weights = validCatches.map(c => parseFloat(c.weight)).filter(w => !isNaN(w));
+          score = weights.length > 0 ? Math.max(...weights) : 0;
+          break;
+        case 'best_3_fish':
+          const top3Weights = validCatches
+            .map(c => parseFloat(c.weight))
+            .filter(w => !isNaN(w))
+            .sort((a, b) => b - a)
+            .slice(0, 3);
+          score = top3Weights.length >= 3 ? top3Weights.reduce((sum, w) => sum + w, 0) : 0;
+          break;
+        case 'best_5_fish':
+          const top5Weights = validCatches
+            .map(c => parseFloat(c.weight))
+            .filter(w => !isNaN(w))
+            .sort((a, b) => b - a)
+            .slice(0, 5);
+          score = top5Weights.length >= 5 ? top5Weights.reduce((sum, w) => sum + w, 0) : 0;
+          break;
+      }
+
+      return { participant, score, position: 0 };
+    });
+
+    // Sort by score and assign positions
+    results.sort((a, b) => b.score - a.score);
+    results.forEach((result, index) => {
+      result.position = index + 1;
+    });
+
+    // Update battle with results
+    const [updatedBattle] = await db
+      .update(diaryBattles)
+      .set({ 
+        results, 
+        status: "finished",
+        updatedAt: new Date() 
+      })
+      .where(eq(diaryBattles.id, battleId))
+      .returning();
+
+    return updatedBattle;
+  }
+
+  // Freemium limit checks
+  async checkDiaryTripLimit(userId: string): Promise<{ canCreate: boolean; currentCount: number; limit: number }> {
+    const isPremium = await this.isUserPremium(userId);
+    const limit = isPremium ? Infinity : 1; // FREE: 1 trip, PREMIUM: unlimited
+    
+    const currentCount = await db
+      .select({ count: count() })
+      .from(diaryTrips)
+      .where(eq(diaryTrips.ownerUserId, userId))
+      .then(result => result[0]?.count || 0);
+
+    return {
+      canCreate: isPremium || currentCount < limit,
+      currentCount,
+      limit: isPremium ? -1 : limit, // -1 indicates unlimited
+    };
+  }
+
+  async checkDiaryCatchLimit(userId: string): Promise<{ canCreate: boolean; currentCount: number; limit: number }> {
+    const isPremium = await this.isUserPremium(userId);
+    const limit = isPremium ? Infinity : 20; // FREE: 20 catches, PREMIUM: unlimited
+    
+    // Count all catches across all user trips
+    const currentCount = await db
+      .select({ count: count() })
+      .from(diaryCatches)
+      .innerJoin(diaryTrips, eq(diaryCatches.tripId, diaryTrips.id))
+      .where(eq(diaryTrips.ownerUserId, userId))
+      .then(result => result[0]?.count || 0);
+
+    return {
+      canCreate: isPremium || currentCount < limit,
+      currentCount,
+      limit: isPremium ? -1 : limit, // -1 indicates unlimited
+    };
+  }
+
+  async isUserPremium(userId: string): Promise<boolean> {
+    const subscription = await this.getUserSubscription(userId);
+    if (!subscription || subscription.status !== "active") {
+      return false;
+    }
+    
+    // Check if subscription is still valid (not expired)
+    if (subscription.currentPeriodEnd) {
+      const now = new Date();
+      const periodEnd = new Date(subscription.currentPeriodEnd);
+      return periodEnd > now;
+    }
+    
+    return false;
   }
 }
 
