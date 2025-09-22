@@ -70,14 +70,13 @@ export function HourlyDistributionChart({ data }: HourlyDistributionChartProps) 
       <CardContent>
         <ChartContainer config={chartConfig}>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <BarChart data={data}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="hourLabel" 
                 tick={{ fontSize: 12 }}
                 angle={-45}
                 textAnchor="end"
-                height={80}
               />
               <YAxis 
                 tick={{ fontSize: 12 }}
