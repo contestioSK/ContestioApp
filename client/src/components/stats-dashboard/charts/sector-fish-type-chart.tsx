@@ -23,7 +23,7 @@ export function SectorFishTypeChart({ data }: SectorFishTypeChartProps) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Druh rýb po sektoroch</CardTitle>
+          <CardTitle>Druhy rýby v jednotlivých sektoroch</CardTitle>
           <CardDescription>Žiadne dáta o druhoch rýb</CardDescription>
         </CardHeader>
         <CardContent>
@@ -49,9 +49,9 @@ export function SectorFishTypeChart({ data }: SectorFishTypeChartProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Druh rýb po sektoroch</CardTitle>
+        <CardTitle>Druhy rýby v jednotlivých sektoroch</CardTitle>
         <CardDescription>
-          Rozdelenie šupináčov a zrkadláčov v jednotlivých sektoroch
+          Aký typ kapra prevláda v jednotlivých sektoroch?
         </CardDescription>
       </CardHeader>
       <CardContent>
