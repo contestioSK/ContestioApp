@@ -173,6 +173,7 @@ export default function DiaryCatches() {
   const [searchTerm, setSearchTerm] = useState("");
   const [carpTypeFilter, setCarpTypeFilter] = useState<string>("all");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [lightboxPhoto, setLightboxPhoto] = useState<string | null>(null);
 
   // Get tripId from URL params if present
   const urlParams = new URLSearchParams(location.split('?')[1] || '');
@@ -1024,6 +1025,37 @@ export default function DiaryCatches() {
                           <p className="line-clamp-2">{catch_.notes}</p>
                         </div>
                       )}
+                      
+                      {/* Photo Gallery */}
+                      {catch_.photos && catch_.photos.length > 0 && (
+                        <div className="mt-3">
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                            <Camera className="w-4 h-4" />
+                            <span>{catch_.photos.length} fotografi{catch_.photos.length === 1 ? 'a' : 'í'}</span>
+                          </div>
+                          <div className="grid grid-cols-3 gap-1">
+                            {catch_.photos.slice(0, 3).map((photoUrl, index) => (
+                              <div key={index} className="relative aspect-square">
+                                <img
+                                  src={photoUrl}
+                                  alt={`Fotografia ${index + 1}`}
+                                  className="w-full h-full object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity"
+                                  onClick={() => setLightboxPhoto(photoUrl)}
+                                  data-testid={`thumbnail-photo-${catch_.id}-${index}`}
+                                />
+                                {index === 2 && catch_.photos.length > 3 && (
+                                  <div 
+                                    className="absolute inset-0 bg-black/50 rounded border flex items-center justify-center cursor-pointer hover:bg-black/60 transition-colors"
+                                    onClick={() => setLightboxPhoto(photoUrl)}
+                                  >
+                                    <span className="text-white text-sm font-medium">+{catch_.photos.length - 3}</span>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     <Separator className="my-4" />
@@ -1054,6 +1086,29 @@ export default function DiaryCatches() {
           </div>
         )}
       </div>
+
+      {/* Photo Lightbox Dialog */}
+      <Dialog open={!!lightboxPhoto} onOpenChange={() => setLightboxPhoto(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] p-2">
+          <div className="relative">
+            <img
+              src={lightboxPhoto || ""}
+              alt="Detail fotografie"
+              className="w-full h-auto max-h-[80vh] object-contain rounded"
+              data-testid="lightbox-photo"
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              className="absolute top-2 right-2 bg-white/80 hover:bg-white"
+              onClick={() => setLightboxPhoto(null)}
+              data-testid="button-close-lightbox"
+            >
+              <Eye className="w-4 h-4" />
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={!!deletingCatch} onOpenChange={() => setDeletingCatch(null)}>
