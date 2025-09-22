@@ -119,6 +119,13 @@ export interface SectorFishTypeData {
   mirrorWeight: number;
 }
 
+export interface HourlyDistributionData {
+  hour: number;           // 0-23
+  hourLabel: string;      // "00:00", "01:00", etc.
+  count: number;          // počet úlovkov v tejto hodine
+  totalWeight: number;    // celková váha úlovkov v tejto hodine
+}
+
 export interface CompetitionStats {
   timeline: TimelineData[];
   weightCategories: WeightCategoryData[];
@@ -132,6 +139,8 @@ export interface CompetitionStats {
   // New sector data
   sectorTimeline: Record<string, SectorTimelineData[]>;
   sectorFishTypes: SectorFishTypeData[];
+  // New hourly data  
+  hourlyDistribution: HourlyDistributionData[];
   specialMilestones: SpecialMilestoneData[];
   dailyBigFish: DailyBigFishData[];
   recordProgression: RecordProgressionData[];
