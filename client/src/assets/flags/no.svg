@@ -1,9 +1,45 @@
-<svg viewBox="0 0 24 18" xmlns="http://www.w3.org/2000/svg">
-  <rect width="24" height="18" fill="#EF2B2D"/>
-  <!-- White cross -->
-  <rect x="0" y="7" width="24" height="4" fill="#FFFFFF"/>
-  <rect x="6" y="0" width="4" height="18" fill="#FFFFFF"/>
-  <!-- Blue cross -->
-  <rect x="0" y="8" width="24" height="2" fill="#002868"/>
-  <rect x="7" y="0" width="2" height="18" fill="#002868"/>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 27.2.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 120 120" style="enable-background:new 0 0 120 120;" xml:space="preserve">
+<style type="text/css">
+	.st0{clip-path:url(#SVGID_00000015356874863939438600000013721542737832878979_);}
+	.st1{fill-rule:evenodd;clip-rule:evenodd;fill:#BA0C2F;}
+	.st2{fill-rule:evenodd;clip-rule:evenodd;fill:#FFFFFF;}
+	.st3{fill-rule:evenodd;clip-rule:evenodd;fill:#00205B;}
+	
+		.st4{opacity:0.3;clip-path:url(#SVGID_00000015356874863939438600000013721542737832878979_);fill:url(#SVGID_00000141446088944005333350000017074500871831571350_);}
+</style>
+<g>
+	<defs>
+		<circle id="SVGID_1_" cx="60" cy="60" r="50"/>
+	</defs>
+	<clipPath id="SVGID_00000036954213210241874170000007682608921525308083_">
+		<use xlink:href="#SVGID_1_"  style="overflow:visible;"/>
+	</clipPath>
+	<g style="clip-path:url(#SVGID_00000036954213210241874170000007682608921525308083_);">
+		<rect x="-1.1" y="10" class="st1" width="137.6" height="99.9"/>
+		<polygon class="st2" points="136.4,47.4 61.5,47.4 61.5,10 36.3,10 36.3,47.4 -1.1,47.4 -1.1,72.6 36.3,72.6 36.3,110 61.5,110 
+			61.5,72.6 136.4,72.6 		"/>
+		<polygon class="st3" points="136.4,53.7 55.4,53.7 55.4,10 42.8,10 42.8,53.7 -1.1,53.7 -1.1,66.3 42.8,66.3 42.8,110 55.4,110 
+			55.4,66.3 136.4,66.3 		"/>
+	</g>
+	
+		<radialGradient id="SVGID_00000112592952521209733200000001589080141843847062_" cx="60" cy="60" r="49.9535" gradientUnits="userSpaceOnUse">
+		<stop  offset="0" style="stop-color:#FFFFFF"/>
+		<stop  offset="0.3561" style="stop-color:#FDFDFD"/>
+		<stop  offset="0.4844" style="stop-color:#F6F6F6"/>
+		<stop  offset="0.5759" style="stop-color:#EBEBEB"/>
+		<stop  offset="0.6499" style="stop-color:#DADADA"/>
+		<stop  offset="0.7132" style="stop-color:#C4C4C4"/>
+		<stop  offset="0.7693" style="stop-color:#A8A8A8"/>
+		<stop  offset="0.8201" style="stop-color:#888888"/>
+		<stop  offset="0.8667" style="stop-color:#626262"/>
+		<stop  offset="0.9101" style="stop-color:#373737"/>
+		<stop  offset="0.9487" style="stop-color:#090909"/>
+		<stop  offset="0.9557" style="stop-color:#000000"/>
+	</radialGradient>
+	
+		<circle style="opacity:0.3;clip-path:url(#SVGID_00000036954213210241874170000007682608921525308083_);fill:url(#SVGID_00000112592952521209733200000001589080141843847062_);" cx="60" cy="60" r="50"/>
+</g>
 </svg>
