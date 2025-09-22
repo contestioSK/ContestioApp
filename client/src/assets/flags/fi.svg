@@ -3,27 +3,27 @@
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="0 0 120 120" style="enable-background:new 0 0 120 120;" xml:space="preserve">
 <style type="text/css">
-	.st0{clip-path:url(#SVGID_00000060723551443067475690000007233069727962473861_);}
-	.st1{fill:#002B7F;}
-	.st2{fill:#FCD116;}
-	.st3{fill:#CE1126;}
+	.st0{clip-path:url(#SVGID_00000085236297999613124030000004665370680394897296_);}
+	.st1{fill:#FFFFFF;}
+	.st2{fill:#002F6C;}
 	
-		.st4{opacity:0.3;clip-path:url(#SVGID_00000060723551443067475690000007233069727962473861_);fill:url(#SVGID_00000012459197520009055670000010379816520120652711_);}
+		.st3{opacity:0.3;clip-path:url(#SVGID_00000085236297999613124030000004665370680394897296_);fill:url(#SVGID_00000151519631096169717620000001128906886253849004_);}
 </style>
 <g>
 	<defs>
-		<circle id="SVGID_1_" cx="60" cy="60" r="56.2"/>
+		<circle id="SVGID_1_" cx="60" cy="60" r="50"/>
 	</defs>
-	<clipPath id="SVGID_00000085244230819201880250000014392062126299663520_">
+	<clipPath id="SVGID_00000154394147970433486300000015699266427528032166_">
 		<use xlink:href="#SVGID_1_"  style="overflow:visible;"/>
 	</clipPath>
-	<g style="clip-path:url(#SVGID_00000085244230819201880250000014392062126299663520_);">
-		<rect x="-24.3" y="3.8" class="st1" width="56.2" height="112.4"/>
-		<rect x="31.9" y="3.8" class="st2" width="56.2" height="112.4"/>
-		<rect x="88.2" y="3.8" class="st3" width="56.2" height="112.4"/>
+	<g style="clip-path:url(#SVGID_00000154394147970433486300000015699266427528032166_);">
+		<rect x="-12.7" y="10" class="st1" width="163.5" height="99.9"/>
+		<rect x="32.6" y="10" class="st2" width="27.4" height="99.9"/>
+		
+			<rect x="55.3" y="-21.8" transform="matrix(6.123234e-17 -1 1 6.123234e-17 9.0296 129.0296)" class="st2" width="27.4" height="163.5"/>
 	</g>
 	
-		<radialGradient id="SVGID_00000034087560910823227400000000609238969224630144_" cx="60" cy="60" r="56.1977" gradientUnits="userSpaceOnUse">
+		<radialGradient id="SVGID_00000085213833910104564900000002328029305880182656_" cx="60" cy="60" r="49.9535" gradientUnits="userSpaceOnUse">
 		<stop  offset="0" style="stop-color:#FFFFFF"/>
 		<stop  offset="0.3561" style="stop-color:#FDFDFD"/>
 		<stop  offset="0.4844" style="stop-color:#F6F6F6"/>
@@ -38,6 +38,6 @@
 		<stop  offset="0.9557" style="stop-color:#000000"/>
 	</radialGradient>
 	
-		<circle style="opacity:0.3;clip-path:url(#SVGID_00000085244230819201880250000014392062126299663520_);fill:url(#SVGID_00000034087560910823227400000000609238969224630144_);" cx="60" cy="60" r="56.2"/>
+		<circle style="opacity:0.3;clip-path:url(#SVGID_00000154394147970433486300000015699266427528032166_);fill:url(#SVGID_00000085213833910104564900000002328029305880182656_);" cx="60" cy="60" r="50"/>
 </g>
 </svg>

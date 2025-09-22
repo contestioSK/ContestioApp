@@ -44,7 +44,7 @@ export const COUNTRIES = [
 
 export type CountryCode = typeof COUNTRIES[number]['code'];
 
-// Import local flag SVGs
+// Import local flag SVGs (original high-quality graphics)
 import skFlag from "@/assets/flags/sk.svg";
 import czFlag from "@/assets/flags/cz.svg";
 import huFlag from "@/assets/flags/hu.svg";
@@ -65,8 +65,12 @@ import chFlag from "@/assets/flags/ch.svg";
 import gbFlag from "@/assets/flags/gb.svg";
 import seFlag from "@/assets/flags/se.svg";
 import noFlag from "@/assets/flags/no.svg";
+import bgFlag from "@/assets/flags/bg.svg";
+import dkFlag from "@/assets/flags/dk.svg";
+import fiFlag from "@/assets/flags/fi.svg";
+import ptFlag from "@/assets/flags/pt.svg";
 
-// Map of country codes to local flag imports
+// Map of country codes to local flag imports (original graphics preserved)
 const LOCAL_FLAGS: Record<string, string> = {
   sk: skFlag,
   cz: czFlag,
@@ -88,17 +92,22 @@ const LOCAL_FLAGS: Record<string, string> = {
   gb: gbFlag,
   se: seFlag,
   no: noFlag,
+  bg: bgFlag,
+  dk: dkFlag,
+  fi: fiFlag,
+  pt: ptFlag,
 };
 
 export function getCountryFlag(countryCode: string): string {
   const code = countryCode.toLowerCase();
   
-  // Primary: Use high-quality CDN SVG flags for consistent, crisp vectors
-  const cdnSvgUrl = `https://flagcdn.com/${code}.svg`;
+  // Primary: Use local high-quality flags (original graphics preserved)
+  if (LOCAL_FLAGS[code]) {
+    return LOCAL_FLAGS[code];
+  }
   
-  // Optional: Local override if high-quality local flag exists
-  // (Currently keeping local flags for potential future use)
-  return cdnSvgUrl;
+  // Fallback: CDN SVG flags for countries not available locally
+  return `https://flagcdn.com/${code}.svg`;
 }
 
 export function getCountryFlagEmoji(countryCode: string): string {
