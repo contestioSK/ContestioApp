@@ -21,6 +21,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
+import { showErrorToast } from "@/lib/errorUtils";
 
 import { 
   Calendar as CalendarIcon, 
@@ -123,11 +124,7 @@ export default function DiaryTrips() {
       });
     },
     onError: (error: Error) => {
-      toast({
-        title: "Chyba pri vytváraní výpravy",
-        description: error.message,
-        variant: "destructive",
-      });
+      showErrorToast(toast, error, 'trip');
     }
   });
 
@@ -147,11 +144,7 @@ export default function DiaryTrips() {
       });
     },
     onError: (error: Error) => {
-      toast({
-        title: "Chyba pri aktualizácii výpravy",
-        description: error.message,
-        variant: "destructive",
-      });
+      showErrorToast(toast, error, 'update');
     }
   });
 
@@ -170,11 +163,7 @@ export default function DiaryTrips() {
       });
     },
     onError: (error: Error) => {
-      toast({
-        title: "Chyba pri mazaní výpravy",
-        description: error.message,
-        variant: "destructive",
-      });
+      showErrorToast(toast, error, 'delete');
     }
   });
 
