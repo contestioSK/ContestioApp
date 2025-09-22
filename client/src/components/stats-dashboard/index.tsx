@@ -1,0 +1,198 @@
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { BarChart3, TrendingUp, Award, Users, Fish, Target, Trophy, Activity } from "lucide-react";
+
+// Chart components
+import { TimelineChart } from "./charts/timeline-chart";
+import { WeightCategoryChart } from "./charts/weight-category-chart";
+import { TopFishChart } from "./charts/top-fish-chart";
+import { TeamPerformanceChart } from "./charts/team-performance-chart";
+import { FishTypeDistributionChart } from "./charts/fish-type-distribution-chart";
+import { SectorPerformanceChart } from "./charts/sector-performance-chart";
+import { AverageWeightChart } from "./charts/average-weight-chart";
+import { SpecialMilestonesChart } from "./charts/special-milestones-chart";
+import { DailyBigFishChart } from "./charts/daily-big-fish-chart";
+import { RecordProgressionChart } from "./charts/record-progression-chart";
+import { WeightMilestonesChart } from "./charts/weight-milestones-chart";
+import { SpecialLeaderboard } from "./charts/special-leaderboard";
+import { TeamEfficiencyChart } from "./charts/team-efficiency-chart";
+
+// Hook
+import { useCompetitionStats } from "./hooks/use-competition-stats";
+
+interface StatsDashboardProps {
+  competitionId: string;
+}
+
+export default function StatsDashboard({ competitionId }: StatsDashboardProps) {
+  const { data: stats, isLoading, error } = useCompetitionStats(competitionId);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-full" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-[300px] w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !stats) {
+    return (
+      <Card>
+        <CardContent className="py-8">
+          <div className="text-center text-muted-foreground">
+            <BarChart3 className="w-12 h-12 mx-auto mb-4 opacity-50" />
+            <p>Nie je možné načítať štatistiky súťaže</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-2 mb-6">
+        <BarChart3 className="w-6 h-6" />
+        <h2 className="text-2xl font-bold">Analytiky súťaže</h2>
+      </div>
+
+      <Tabs defaultValue="overview" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="overview" className="flex items-center gap-2">
+            <TrendingUp className="w-4 h-4" />
+            Prehľad
+          </TabsTrigger>
+          <TabsTrigger value="teams" className="flex items-center gap-2">
+            <Users className="w-4 h-4" />
+            Tímy
+          </TabsTrigger>
+          <TabsTrigger value="special" className="flex items-center gap-2">
+            <Trophy className="w-4 h-4" />
+            Špeciálne
+          </TabsTrigger>
+          <TabsTrigger value="analysis" className="flex items-center gap-2">
+            <Activity className="w-4 h-4" />
+            Analýzy
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <TimelineChart data={stats.timeline} />
+            <FishTypeDistributionChart data={stats.fishTypeDistribution} />
+            <WeightCategoryChart data={stats.weightCategories} />
+            <TopFishChart data={stats.topFish} />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="teams" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <TeamPerformanceChart data={stats.teamPerformance} />
+            <AverageWeightChart data={stats.averageWeights} />
+            <TeamEfficiencyChart data={stats.teamEfficiency} />
+            <WeightMilestonesChart data={stats.weightMilestones} />
+          </div>
+          
+          {stats.sectorPerformance.length > 0 && (
+            <SectorPerformanceChart data={stats.sectorPerformance} />
+          )}
+        </TabsContent>
+
+        <TabsContent value="special" className="space-y-6">
+          <SpecialLeaderboard data={stats.specialCompetitions} />
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <SpecialMilestonesChart data={stats.specialMilestones} />
+            <RecordProgressionChart data={stats.recordProgression} />
+            <DailyBigFishChart data={stats.dailyBigFish} />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="analysis" className="space-y-6">
+          <div className="grid grid-cols-1 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="w-5 h-5" />
+                  Kľúčové poznatky
+                </CardTitle>
+                <CardDescription>
+                  Automaticky generované poznatky z analytických dát súťaže
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="p-4 border rounded-lg bg-muted/5">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Fish className="w-4 h-4 text-blue-500" />
+                      <span className="font-medium text-sm">Najaktívnejší sektor</span>
+                    </div>
+                    <p className="text-lg font-bold">
+                      {stats.sectorPerformance.length > 0 
+                        ? stats.sectorPerformance.reduce((max, sector) => 
+                            sector.totalCount > max.totalCount ? sector : max
+                          ).sector
+                        : 'N/A'
+                      }
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {stats.sectorPerformance.length > 0 
+                        ? `${stats.sectorPerformance.reduce((max, sector) => 
+                            sector.totalCount > max.totalCount ? sector : max
+                          ).totalCount} úlovkov`
+                        : 'Žiadne dáta'
+                      }
+                    </p>
+                  </div>
+
+                  <div className="p-4 border rounded-lg bg-muted/5">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Award className="w-4 h-4 text-yellow-500" />
+                      <span className="font-medium text-sm">Najefektívnejší tím</span>
+                    </div>
+                    <p className="text-lg font-bold">
+                      {stats.teamEfficiency.reduce((max, team) => 
+                        team.efficiency > max.efficiency ? team : max
+                      ).teamName}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {stats.teamEfficiency.reduce((max, team) => 
+                        team.efficiency > max.efficiency ? team : max
+                      ).efficiency.toFixed(1)} kg/h
+                    </p>
+                  </div>
+
+                  <div className="p-4 border rounded-lg bg-muted/5">
+                    <div className="flex items-center gap-2 mb-2">
+                      <TrendingUp className="w-4 h-4 text-green-500" />
+                      <span className="font-medium text-sm">Priemerná váha</span>
+                    </div>
+                    <p className="text-lg font-bold">
+                      {(stats.timeline[stats.timeline.length - 1]?.totalWeight / 
+                        stats.timeline[stats.timeline.length - 1]?.totalCount || 0).toFixed(1)} kg
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Na úlovok
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
