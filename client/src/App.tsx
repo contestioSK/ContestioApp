@@ -26,6 +26,8 @@ import FinishedPage from "@/pages/finished";
 import NotificationPreferences from "@/pages/notification-preferences";
 import DiaryIndex from "@/pages/diary/index";
 import BattlePaywall from "@/pages/diary/battle-paywall";
+import BattleCreate from "@/pages/diary/battle-create";
+import BattleDetail from "@/pages/diary/battle-detail";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 function Router() {
@@ -70,6 +72,16 @@ function Router() {
         </ProtectedRoute>
       </Route>
       <Route path="/diary/battle/paywall" component={BattlePaywall} />
+      <Route path="/diary/battle/create">
+        <ProtectedRoute>
+          <BattleCreate />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/diary/battle/:id">
+        <ProtectedRoute>
+          <BattleDetail />
+        </ProtectedRoute>
+      </Route>
       {!isLoading && <Route component={NotFound} />}
     </Switch>
   );
