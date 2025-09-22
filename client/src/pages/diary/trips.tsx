@@ -18,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
@@ -171,6 +172,11 @@ export default function DiaryTrips() {
     if (editingTrip) {
       updateTripMutation.mutate(data);
     } else {
+      // Client-side freemium guard - prevent bypassing disabled button
+      if (!canCreateTrip) {
+        showErrorToast(toast, new Error('403: Dosiahli ste limit výprav'), 'trip');
+        return;
+      }
       createTripMutation.mutate(data);
     }
   };
@@ -221,17 +227,38 @@ export default function DiaryTrips() {
             </div>
           </div>
 
-          <Dialog open={isCreateDialogOpen || !!editingTrip} onOpenChange={handleCloseDialog}>
-            <DialogTrigger asChild>
-              <Button 
-                className="gap-2"
-                disabled={!canCreateTrip}
-                data-testid="button-create-trip"
-              >
-                <Plus className="w-4 h-4" />
-                Nová výprava
-              </Button>
-            </DialogTrigger>
+          <Dialog open={isCreateDialogOpen || !!editingTrip} onOpenChange={(open) => { if (open) setIsCreateDialogOpen(true); else handleCloseDialog(); }}>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span 
+                    className="inline-flex" 
+                    tabIndex={(!canCreateTrip || limitsLoading) ? 0 : -1}
+                  >
+                    <DialogTrigger asChild>
+                      <Button 
+                        className="gap-2"
+                        disabled={!canCreateTrip}
+                        data-testid="button-create-trip"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Nová výprava
+                      </Button>
+                    </DialogTrigger>
+                  </span>
+                </TooltipTrigger>
+                {!canCreateTrip && (
+                  <TooltipContent>
+                    <p>
+                      {limitsLoading 
+                        ? "Načítavam limity..." 
+                        : `Dosiahli ste limit ${limits?.limit} výprav. Prejdite na PREMIUM pre neobmedzené výpravy.`
+                      }
+                    </p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>
