@@ -371,7 +371,7 @@ export default function Landing() {
                   <Button
                     size="lg"
                     variant="outline"
-                    className="w-full border-2 border-white text-white hover:bg-white hover:text-blue-800 font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-white/25 relative overflow-hidden group"
+                    className="w-full border-2 border-white text-blue-800 bg-white/90 hover:bg-white hover:text-blue-800 font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-white/25 relative overflow-hidden group"
                     data-testid="button-register-competition-hero"
                   >
                     {/* Shine effect */}
@@ -439,7 +439,7 @@ export default function Landing() {
                   <Button
                     size="lg"
                     variant="outline"
-                    className="w-full border-2 border-white text-white hover:bg-white hover:text-green-800 font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-white/25 relative overflow-hidden group"
+                    className="w-full border-2 border-white text-green-800 bg-white/90 hover:bg-white hover:text-green-800 font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-white/25 relative overflow-hidden group"
                     data-testid="button-try-battle"
                   >
                     {/* Shine effect */}
