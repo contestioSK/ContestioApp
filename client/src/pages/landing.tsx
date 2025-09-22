@@ -329,9 +329,9 @@ export default function Landing() {
             data-testid="hero-competitions-section"
           >
             {/* Background overlays for text readability */}
-            <div className="absolute inset-0 bg-blue-900/85"></div>
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-800/70 via-blue-700/40 to-transparent"></div>
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-900/20 to-blue-900/60"></div>
+            <div className="absolute inset-0 bg-blue-900/45"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-800/40 via-blue-700/20 to-transparent"></div>
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-900/10 to-blue-900/30"></div>
             <div className="relative z-10 max-w-sm text-center md:text-left">
               {/* Competition Icons with floating animation */}
               <div className="flex justify-center md:justify-start gap-3 mb-4 md:mb-6">
@@ -397,9 +397,9 @@ export default function Landing() {
             data-testid="hero-diary-section"
           >
             {/* Background overlays for text readability */}
-            <div className="absolute inset-0 bg-green-800/85"></div>
-            <div className="absolute inset-0 bg-gradient-to-l from-green-700/70 via-green-600/40 to-transparent"></div>
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-green-800/20 to-green-900/60"></div>
+            <div className="absolute inset-0 bg-green-800/45"></div>
+            <div className="absolute inset-0 bg-gradient-to-l from-green-700/40 via-green-600/20 to-transparent"></div>
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-green-800/10 to-green-900/30"></div>
             <div className="relative z-10 max-w-sm text-center md:text-left">
               {/* Diary Icons with floating animation */}
               <div className="flex justify-center md:justify-start gap-3 mb-4 md:mb-6">
