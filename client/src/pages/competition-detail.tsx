@@ -425,11 +425,11 @@ export default function CompetitionDetail() {
                 <BarChart3 className="w-4 h-4 mr-2" />
                 Štatistiky súťaže
               </TabsTrigger>
-              <TabsTrigger value="rules" data-testid="tab-rules">Pravidlá</TabsTrigger>
               <TabsTrigger value="catches" data-testid="tab-catches">
                 <Fish className="w-4 h-4 mr-2" />
                 Zobraziť všetky úlovky
               </TabsTrigger>
+              <TabsTrigger value="rules" data-testid="tab-rules">Pravidlá</TabsTrigger>
             </TabsList>
             
             <TabsContent value="overview" className="mt-6">
