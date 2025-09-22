@@ -144,21 +144,23 @@ export default function Landing() {
                 
                 {/* CTA Buttons */}
                 <div className="flex items-center space-x-3">
-                  <Button 
-                    onClick={() => window.location.href = '/api/register'}
+                  <Button asChild
                     className="bg-blue-600 text-white hover:bg-blue-700 font-medium"
                     size="sm"
                     data-testid="button-register"
                   >
-                    Zaregistrovať sa
+                    <Link href="/auth/register">
+                      Zaregistrovať sa
+                    </Link>
                   </Button>
-                  <Button 
-                    onClick={() => window.location.href = '/api/login'}
+                  <Button asChild
                     className="bg-white text-blue-900 hover:bg-white/90 font-medium"
                     size="sm"
                     data-testid="button-login"
                   >
-                    Prihlásiť sa
+                    <Link href="/auth/login">
+                      Prihlásiť sa
+                    </Link>
                   </Button>
                 </div>
               </div>
@@ -202,25 +204,23 @@ export default function Landing() {
                   
                   {/* CTA Buttons */}
                   <div className="space-y-2">
-                    <Button 
-                      onClick={() => {
-                        window.location.href = '/api/register';
-                        setIsMobileMenuOpen(false);
-                      }}
+                    <Button asChild
                       className="w-full bg-blue-600 text-white hover:bg-blue-700 font-medium"
                       data-testid="mobile-button-register"
+                      onClick={() => setIsMobileMenuOpen(false)}
                     >
-                      Zaregistrovať sa
+                      <Link href="/auth/register">
+                        Zaregistrovať sa
+                      </Link>
                     </Button>
-                    <Button 
-                      onClick={() => {
-                        window.location.href = '/api/login';
-                        setIsMobileMenuOpen(false);
-                      }}
+                    <Button asChild
                       className="w-full bg-white text-blue-900 hover:bg-white/90 font-medium"
                       data-testid="mobile-button-login"
+                      onClick={() => setIsMobileMenuOpen(false)}
                     >
-                      Prihlásiť sa
+                      <Link href="/auth/login">
+                        Prihlásiť sa
+                      </Link>
                     </Button>
                   </div>
                 </div>
