@@ -29,6 +29,7 @@ import BattlePaywall from "@/pages/diary/battle-paywall";
 import BattleCreate from "@/pages/diary/battle-create";
 import BattleDetail from "@/pages/diary/battle-detail";
 import BattleArchive from "@/pages/diary/battle-archive";
+import Register from "@/pages/register";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 function Router() {
@@ -37,6 +38,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={user ? Home : Landing} />
+      <Route path="/register" component={Register} />
       <Route path="/register-competition" component={RegisterCompetition} />
       <Route path="/register-team" component={RegisterTeam} />
       <Route path="/about-us" component={AboutUs} />
