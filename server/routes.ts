@@ -1126,9 +1126,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       teams.forEach(team => {
         if (team.sector) allSectors.add(team.sector);
       });
-      
-      console.log(`[SECTOR DEBUG] Valid sectors from teams: ${Array.from(allSectors).join(', ')}`);
-      console.log(`[SECTOR DEBUG] Total sectors found: ${allSectors.size}`);
 
       // Sector Performance (overall stats per sector)
       const sectorPerformance = Array.from(allSectors).map(sector => {
