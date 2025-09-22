@@ -1,0 +1,910 @@
+import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useLocation } from "wouter";
+import { format } from "date-fns";
+import { sk } from "date-fns/locale";
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
+
+import { 
+  Calendar as CalendarIcon, 
+  MapPin, 
+  Plus, 
+  Fish, 
+  Edit, 
+  Trash2, 
+  Camera,
+  Users,
+  ArrowLeft,
+  Weight,
+  Ruler,
+  Clock,
+  Award,
+  AlertCircle,
+  Filter,
+  Search,
+  Eye,
+  Download
+} from "lucide-react";
+
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import type { DiaryCatch, InsertDiaryCatch, DiaryTrip } from "@shared/schema";
+
+// Catch form validation schema
+const catchFormSchema = z.object({
+  tripId: z.string().min(1, "Výprava je povinná"),
+  angler: z.object({
+    name: z.string().min(1, "Meno rybára je povinné")
+  }),
+  capturedAt: z.date({ required_error: "Čas chytenia je povinný" }),
+  weight: z.string().min(1, "Váha je povinná").transform((val) => {
+    const weight = parseFloat(val);
+    if (isNaN(weight) || weight < 0) {
+      throw new Error("Neplatná váha");
+    }
+    return weight.toString();
+  }),
+  lengthCm: z.coerce.number().positive("Dĺžka musí byť kladné číslo").optional(),
+  carpType: z.enum(["common", "mirror", "grass", "other"], {
+    required_error: "Typ kapra je povinný"
+  }),
+  bait: z.string().optional(),
+  spot: z.string().optional(),
+  latitude: z.coerce.number().min(-90).max(90).optional(),
+  longitude: z.coerce.number().min(-180).max(180).optional(),
+  photos: z.array(z.instanceof(File)).max(5, "Maximálne 5 fotiek").optional(),
+  notes: z.string().optional()
+});
+
+type CatchFormData = z.infer<typeof catchFormSchema>;
+
+// Type for freemium limits response
+type FreemiumLimits = {
+  canCreate: boolean;
+  currentCount: number;
+  limit: number;
+};
+
+export default function DiaryCatches() {
+  const { user } = useAuth();
+  const [location, setLocation] = useLocation();
+  const { toast } = useToast();
+  
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [editingCatch, setEditingCatch] = useState<DiaryCatch | null>(null);
+  const [deletingCatch, setDeletingCatch] = useState<DiaryCatch | null>(null);
+  const [selectedTrip, setSelectedTrip] = useState<string>("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [carpTypeFilter, setCarpTypeFilter] = useState<string>("all");
+
+  // Get tripId from URL params if present
+  const urlParams = new URLSearchParams(location.split('?')[1] || '');
+  const urlTripId = urlParams.get('tripId');
+
+  useEffect(() => {
+    if (urlTripId) {
+      setSelectedTrip(urlTripId);
+    }
+  }, [urlTripId]);
+
+  // Fetch user's trips
+  const { data: trips = [] } = useQuery<DiaryTrip[]>({
+    queryKey: ["/api/diary/trips"],
+    enabled: !!user
+  });
+
+  // Fetch catches (filtered by trip if selected)
+  const { data: catches = [], isLoading } = useQuery<DiaryCatch[]>({
+    queryKey: ["/api/diary/catches", selectedTrip || "all"],
+    enabled: !!user
+  });
+
+  // Check freemium limits
+  const { data: limits } = useQuery<FreemiumLimits>({
+    queryKey: ["/api/diary/catch-limits"],
+    enabled: !!user
+  });
+
+  const form = useForm<CatchFormData>({
+    resolver: zodResolver(catchFormSchema),
+    defaultValues: {
+      tripId: selectedTrip || "",
+      angler: { name: user?.firstName + " " + user?.lastName || "" },
+      capturedAt: new Date(),
+      weight: "",
+      carpType: "common" as const,
+      bait: "",
+      spot: "",
+      latitude: undefined,
+      longitude: undefined,
+      photos: [],
+      notes: ""
+    }
+  });
+
+  // Create catch mutation
+  const createCatchMutation = useMutation({
+    mutationFn: async (data: CatchFormData) => {
+      // Server will set userId and verified status
+      const catchData = {
+        ...data,
+        angler: {
+          name: data.angler.name
+        },
+        photos: [] // Photo upload to be implemented with backend
+      };
+      const response = await apiRequest("POST", "/api/diary/catches", catchData);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/diary/catches"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/diary/catch-limits"] });
+      setIsCreateDialogOpen(false);
+      form.reset();
+      toast({
+        title: "Úlovok pridaný!",
+        description: "Váš úlovok bol úspešne pridaný do denníka.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Chyba pri pridávaní úlovku",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Update catch mutation
+  const updateCatchMutation = useMutation({
+    mutationFn: async (data: CatchFormData) => {
+      const response = await apiRequest("PUT", `/api/diary/catches/${editingCatch!.id}`, data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/diary/catches"] });
+      setEditingCatch(null);
+      form.reset();
+      toast({
+        title: "Úlovok aktualizovaný!",
+        description: "Váš úlovok bol úspešne aktualizovaný.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Chyba pri aktualizácii úlovku",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Delete catch mutation
+  const deleteCatchMutation = useMutation({
+    mutationFn: async (catchId: string) => {
+      await apiRequest("DELETE", `/api/diary/catches/${catchId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/diary/catches"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/diary/catch-limits"] });
+      setDeletingCatch(null);
+      toast({
+        title: "Úlovok zmazaný!",
+        description: "Úlovok bol úspešne zmazaný z denníka.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Chyba pri mazaní úlovku",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+
+  const handleSubmit = (data: CatchFormData) => {
+    if (editingCatch) {
+      updateCatchMutation.mutate(data);
+    } else {
+      createCatchMutation.mutate(data);
+    }
+  };
+
+  const handleEdit = (catch_: DiaryCatch) => {
+    setEditingCatch(catch_);
+    form.reset({
+      tripId: catch_.tripId,
+      angler: { name: catch_.angler.name },
+      capturedAt: new Date(catch_.capturedAt),
+      weight: catch_.weight,
+      lengthCm: catch_.lengthCm || undefined,
+      carpType: catch_.carpType as "common" | "mirror" | "grass" | "other",
+      bait: catch_.bait || "",
+      spot: catch_.spot || "",
+      latitude: catch_.latitude ? parseFloat(catch_.latitude.toString()) : undefined,
+      longitude: catch_.longitude ? parseFloat(catch_.longitude.toString()) : undefined,
+      photos: [], // Reset photos for editing
+      notes: catch_.notes || ""
+    });
+  };
+
+  const handleCloseDialog = () => {
+    setIsCreateDialogOpen(false);
+    setEditingCatch(null);
+    form.reset();
+  };
+
+  const getCarpTypeLabel = (type: string) => {
+    switch (type) {
+      case "common": return "Obyčajný";
+      case "mirror": return "Zrkadlový";
+      case "grass": return "Trávojedný";
+      case "other": return "Iný";
+      default: return type;
+    }
+  };
+
+  // Filter catches based on search and filters
+  const filteredCatches = catches.filter(catch_ => {
+    const matchesSearch = searchTerm === "" || 
+      catch_.angler.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      catch_.spot?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      catch_.bait?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesCarpType = carpTypeFilter === "all" || catch_.carpType === carpTypeFilter;
+    
+    return matchesSearch && matchesCarpType;
+  });
+
+  // Enforce strict freemium gating - don't allow bypass during loading
+  const canCreateCatch = limits?.canCreate === true;
+  const isAtLimit = limits && !limits.canCreate;
+  const limitsLoading = !limits;
+
+  return (
+    <div className="min-h-screen bg-background" data-testid="page-diary-catches">
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setLocation("/diary")}
+              className="gap-2"
+              data-testid="button-back-to-diary"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Späť do denníka
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">Úlovky</h1>
+              <p className="text-muted-foreground">Spravujte svoje úlovky a sledujte rybárske úspechy</p>
+            </div>
+          </div>
+
+          <Dialog open={isCreateDialogOpen || !!editingCatch} onOpenChange={handleCloseDialog}>
+            <DialogTrigger asChild>
+              <Button 
+                className="gap-2"
+                disabled={!canCreateCatch}
+                data-testid="button-create-catch"
+              >
+                <Plus className="w-4 h-4" />
+                Nový úlovok
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>
+                  {editingCatch ? "Upraviť úlovok" : "Nový úlovok"}
+                </DialogTitle>
+                <DialogDescription>
+                  {editingCatch ? "Aktualizujte informácie o úlovku" : "Pridajte nový úlovok do svojho rybárskeho denníka"}
+                </DialogDescription>
+              </DialogHeader>
+
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="tripId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Výprava</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value} data-testid="select-trip">
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Vyberte výpravu" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {trips.map((trip) => (
+                              <SelectItem key={trip.id} value={trip.id}>
+                                {trip.name} - {format(new Date(trip.startDate), "dd.MM.yyyy", { locale: sk })}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="angler.name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Rybár</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Meno rybára" {...field} data-testid="input-angler-name" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="capturedAt"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel>Čas chytenia</FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                className="w-full pl-3 text-left font-normal"
+                                data-testid="button-capture-time"
+                              >
+                                {field.value ? (
+                                  format(field.value, "PPp", { locale: sk })
+                                ) : (
+                                  <span>Vyberte dátum a čas</span>
+                                )}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="weight"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Váha (kg)</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              step="0.1" 
+                              min="0" 
+                              placeholder="napr. 2.5" 
+                              {...field} 
+                              data-testid="input-weight" 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="lengthCm"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Dĺžka (cm)</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              min="0" 
+                              placeholder="napr. 65" 
+                              {...field}
+                              value={field.value || ""}
+                              onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                              data-testid="input-length" 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="carpType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Typ kapra</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value} data-testid="select-carp-type">
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Vyberte typ kapra" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="common">Obyčajný</SelectItem>
+                            <SelectItem value="mirror">Zrkadlový</SelectItem>
+                            <SelectItem value="grass">Trávojedný</SelectItem>
+                            <SelectItem value="other">Iný</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="bait"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Návnada</FormLabel>
+                          <FormControl>
+                            <Input placeholder="napr. Boilies, kukurica" {...field} data-testid="input-bait" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="spot"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Miesto chytenia</FormLabel>
+                          <FormControl>
+                            <Input placeholder="napr. Sektor A, miesto 12" {...field} data-testid="input-spot" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {/* GPS Coordinates */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="latitude"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>GPS šírka</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number"
+                              step="any"
+                              placeholder="napr. 48.1486"
+                              {...field}
+                              value={field.value || ""}
+                              onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                              data-testid="input-latitude"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="longitude"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>GPS dĺžka</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number"
+                              step="any"
+                              placeholder="napr. 17.1077"
+                              {...field}
+                              value={field.value || ""}
+                              onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                              data-testid="input-longitude"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {/* Photo Upload */}
+                  <FormField
+                    control={form.control}
+                    name="photos"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Fotografie úlovku (max 5)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="file"
+                            accept="image/jpeg,image/png,image/gif"
+                            multiple
+                            onChange={(e) => {
+                              const files = Array.from(e.target.files || []);
+                              if (files.length > 5) {
+                                toast({
+                                  title: "Príliš veľa súborov",
+                                  description: "Môžete nahrať maximálne 5 fotografií.",
+                                  variant: "destructive"
+                                });
+                                return;
+                              }
+                              field.onChange(files);
+                            }}
+                            data-testid="input-photos"
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Podporované formáty: JPEG, PNG, GIF. Maximálne 5 fotografií.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="notes"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Poznámky</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Dodatočné poznámky o úlovku..."
+                            className="resize-none"
+                            {...field}
+                            data-testid="textarea-notes"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="flex justify-end gap-3">
+                    <Button type="button" variant="outline" onClick={handleCloseDialog} data-testid="button-cancel-catch">
+                      Zrušiť
+                    </Button>
+                    <Button 
+                      type="submit" 
+                      disabled={limitsLoading || !canCreateCatch || createCatchMutation.isPending || updateCatchMutation.isPending}
+                      data-testid="button-save-catch"
+                    >
+                      {(createCatchMutation.isPending || updateCatchMutation.isPending) && (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                      )}
+                      {editingCatch ? "Uložiť zmeny" : "Pridať úlovok"}
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        {/* Freemium Limit Alert */}
+        {isAtLimit && (
+          <Alert className="mb-6 border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/20">
+            <AlertCircle className="h-4 w-4 text-orange-600" />
+            <AlertDescription className="text-orange-800 dark:text-orange-200">
+              Dosiahli ste limit {limits.limit} úlovkov vo FREE verzii. 
+              <Button variant="link" className="p-0 h-auto font-medium text-orange-600" data-testid="link-upgrade-premium">
+                Prejdite na PREMIUM
+              </Button> pre neobmedzené úlovky.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Filters and Stats */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+          {/* Stats Cards */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Celkové úlovky</CardTitle>
+              <Fish className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{catches.length}</div>
+              <p className="text-xs text-muted-foreground">
+                {limits && `${limits.currentCount}/${limits.limit} použité`}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Celková váha</CardTitle>
+              <Weight className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {catches.reduce((sum, catch_) => sum + parseFloat(catch_.weight), 0).toFixed(1)} kg
+              </div>
+              <p className="text-xs text-muted-foreground">Všetky úlovky</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Najväčší úlovok</CardTitle>
+              <Award className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {catches.length > 0 
+                  ? Math.max(...catches.map(c => parseFloat(c.weight))).toFixed(1) + " kg"
+                  : "0 kg"
+                }
+              </div>
+              <p className="text-xs text-muted-foreground">Najťažší úlovok</p>
+            </CardContent>
+          </Card>
+
+          {/* Filters Card */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <Filter className="h-4 w-4" />
+                Filtre
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div>
+                <Input
+                  placeholder="Hľadať..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="h-8"
+                  data-testid="input-search"
+                />
+              </div>
+              <div>
+                <Select value={carpTypeFilter} onValueChange={setCarpTypeFilter} data-testid="select-carp-filter">
+                  <SelectTrigger className="h-8">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Všetky typy</SelectItem>
+                    <SelectItem value="common">Obyčajný</SelectItem>
+                    <SelectItem value="mirror">Zrkadlový</SelectItem>
+                    <SelectItem value="grass">Trávojedný</SelectItem>
+                    <SelectItem value="other">Iný</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Trip Filter */}
+        {trips.length > 0 && (
+          <div className="mb-6">
+            <Select value={selectedTrip} onValueChange={setSelectedTrip} data-testid="select-trip-filter">
+              <SelectTrigger className="w-full max-w-md">
+                <SelectValue placeholder="Filtrovať podľa výpravy" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Všetky výpravy</SelectItem>
+                {trips.map((trip) => (
+                  <SelectItem key={trip.id} value={trip.id}>
+                    {trip.name} - {format(new Date(trip.startDate), "dd.MM.yyyy", { locale: sk })}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
+        {/* Catches List */}
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <Card key={i} className="animate-pulse">
+                <CardHeader>
+                  <div className="h-4 bg-muted rounded w-3/4"></div>
+                  <div className="h-3 bg-muted rounded w-1/2"></div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <div className="h-3 bg-muted rounded"></div>
+                    <div className="h-3 bg-muted rounded w-2/3"></div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : filteredCatches.length === 0 ? (
+          <Card className="text-center py-12">
+            <CardContent>
+              <Fish className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">
+                {catches.length === 0 ? "Žiadne úlovky" : "Žiadne výsledky"}
+              </h3>
+              <p className="text-muted-foreground mb-4">
+                {catches.length === 0 
+                  ? "Pridajte svoj prvý úlovok a začnite viesť rybársky denník."
+                  : "Skúste zmeniť filtre alebo vyhľadávací termín."
+                }
+              </p>
+              {catches.length === 0 && (
+                <Button onClick={() => setIsCreateDialogOpen(true)} disabled={!canCreateCatch} data-testid="button-create-first-catch">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Pridať prvý úlovok
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredCatches.map((catch_) => {
+              const trip = trips.find(t => t.id === catch_.tripId);
+
+              return (
+                <Card key={catch_.id} className="hover:shadow-md transition-shadow" data-testid={`card-catch-${catch_.id}`}>
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          <Fish className="w-5 h-5" />
+                          {parseFloat(catch_.weight).toFixed(1)} kg
+                        </CardTitle>
+                        <CardDescription className="flex items-center gap-2 mt-1">
+                          <Users className="w-3 h-3" />
+                          {catch_.angler.name}
+                        </CardDescription>
+                      </div>
+                      <div className="flex gap-1">
+                        <Badge variant="secondary" className="text-xs">
+                          {getCarpTypeLabel(catch_.carpType)}
+                        </Badge>
+                        {catch_.verified && (
+                          <Badge variant="default" className="text-xs">
+                            <Award className="w-3 h-3 mr-1" />
+                            Overený
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Clock className="w-4 h-4" />
+                        <span>
+                          {format(new Date(catch_.capturedAt), "dd.MM.yyyy HH:mm", { locale: sk })}
+                        </span>
+                      </div>
+
+                      {trip && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <MapPin className="w-4 h-4" />
+                          <span className="line-clamp-1">{trip.name}</span>
+                        </div>
+                      )}
+
+                      {catch_.lengthCm && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Ruler className="w-4 h-4" />
+                          <span>{catch_.lengthCm} cm</span>
+                        </div>
+                      )}
+
+                      {catch_.bait && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <div className="w-4 h-4 rounded-full bg-yellow-500 flex-shrink-0"></div>
+                          <span className="line-clamp-1">{catch_.bait}</span>
+                        </div>
+                      )}
+
+                      {catch_.spot && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <MapPin className="w-4 h-4" />
+                          <span className="line-clamp-1">{catch_.spot}</span>
+                        </div>
+                      )}
+
+                      {catch_.notes && (
+                        <div className="text-sm text-muted-foreground">
+                          <p className="line-clamp-2">{catch_.notes}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    <Separator className="my-4" />
+
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEdit(catch_)}
+                        data-testid={`button-edit-catch-${catch_.id}`}
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setDeletingCatch(catch_)}
+                        className="text-destructive hover:text-destructive"
+                        data-testid={`button-delete-catch-${catch_.id}`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!deletingCatch} onOpenChange={() => setDeletingCatch(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Zmazať úlovok</DialogTitle>
+            <DialogDescription>
+              Naozaj chcete zmazať tento úlovok? Táto akcia je nevratná.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={() => setDeletingCatch(null)} data-testid="button-cancel-delete-catch">
+              Zrušiť
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => deletingCatch && deleteCatchMutation.mutate(deletingCatch.id)}
+              disabled={deleteCatchMutation.isPending}
+              data-testid="button-confirm-delete-catch"
+            >
+              {deleteCatchMutation.isPending && (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+              )}
+              Zmazať úlovok
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
