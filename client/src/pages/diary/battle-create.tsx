@@ -71,7 +71,8 @@ export default function BattleCreate() {
   const createBattleMutation = useMutation({
     mutationFn: async (data: CreateBattleForm) => {
       // TODO: For now creating a stub tripId - in production this should be selected by user
-      const tripId = "temp-trip-id-for-battle";
+      // Generate a UUID-like string for the stub to pass validation
+      const tripId = crypto.randomUUID();
       
       const battleData = {
         tripId,
