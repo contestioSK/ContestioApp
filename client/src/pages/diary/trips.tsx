@@ -575,17 +575,63 @@ export default function DiaryTrips() {
             ))}
           </div>
         ) : trips.length === 0 ? (
-          <Card className="text-center py-12">
+          <Card className="text-center py-16 bg-gradient-to-br from-blue-50 to-green-50 dark:from-blue-950/20 dark:to-green-950/20 border-dashed border-2">
             <CardContent>
-              <Fish className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Žiadne výpravy</h3>
-              <p className="text-muted-foreground mb-4">
-                Vytvorte svoju prvú rybársku výpravu a začnite zaznamenávať úlovky.
+              {/* Enhanced visual with multiple icons */}
+              <div className="relative mb-6">
+                <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-2">
+                  <Fish className="w-10 h-10 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div className="absolute -top-2 -right-4 w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                  <MapPin className="w-4 h-4 text-green-600 dark:text-green-400" />
+                </div>
+              </div>
+              
+              <h3 className="text-xl font-bold mb-3 text-gray-900 dark:text-gray-100">
+                Začnite svoj rybársky denník
+              </h3>
+              <p className="text-muted-foreground mb-6 max-w-md mx-auto leading-relaxed">
+                Vytvorte svoju prvú výpravu a začnite zaznamenávať úlovky, miesta a spomienky z rybačky. 
+                Váš digitálny denník vám pomôže sledovať pokrok a lepšie plánovať ďalšie výpravy.
               </p>
-              <Button onClick={() => setIsCreateDialogOpen(true)} disabled={!canCreateTrip} data-testid="button-create-first-trip">
-                <Plus className="w-4 h-4 mr-2" />
-                Vytvoriť prvú výpravu
-              </Button>
+              
+              <div className="space-y-3">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span 
+                        className="inline-flex" 
+                        tabIndex={(!canCreateTrip || limitsLoading) ? 0 : -1}
+                      >
+                        <Button 
+                          onClick={() => setIsCreateDialogOpen(true)} 
+                          disabled={!canCreateTrip}
+                          size="lg"
+                          className="gap-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700"
+                          data-testid="button-create-first-trip"
+                        >
+                          <Plus className="w-5 h-5" />
+                          Vytvoriť prvú výpravu
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    {!canCreateTrip && (
+                      <TooltipContent>
+                        <p>
+                          {limitsLoading 
+                            ? "Načítavam limity..." 
+                            : `Dosiahli ste limit ${limits?.limit} výprav. Prejdite na PREMIUM pre neobmedzené výpravy.`
+                          }
+                        </p>
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                </TooltipProvider>
+                
+                <p className="text-sm text-muted-foreground">
+                  ℹ️ Výprava obsahuje základné informácie ako miesto, dátum a účastníkov
+                </p>
+              </div>
             </CardContent>
           </Card>
         ) : (
