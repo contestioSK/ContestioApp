@@ -944,6 +944,150 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Competition statistics endpoint
+  app.get('/api/competitions/:id/stats', async (req, res) => {
+    try {
+      const competitionId = req.params.id;
+      
+      // Verify competition exists
+      const competition = await storage.getCompetition(competitionId);
+      if (!competition) {
+        return res.status(404).json({ message: "Competition not found" });
+      }
+
+      const catches = await storage.getCatchesByCompetition(competitionId);
+      const teams = await storage.getTeamsByCompetition(competitionId);
+      
+      // Weight categories analysis
+      const weightCategories = [
+        { category: '< 5 kg', commonCarp: 0, mirrorCarp: 0, total: 0 },
+        { category: '5-10 kg', commonCarp: 0, mirrorCarp: 0, total: 0 },
+        { category: '10-15 kg', commonCarp: 0, mirrorCarp: 0, total: 0 },
+        { category: '15-20 kg', commonCarp: 0, mirrorCarp: 0, total: 0 },
+        { category: '20-25 kg', commonCarp: 0, mirrorCarp: 0, total: 0 },
+        { category: '25-30 kg', commonCarp: 0, mirrorCarp: 0, total: 0 },
+        { category: '30+ kg', commonCarp: 0, mirrorCarp: 0, total: 0 },
+      ];
+
+      catches.forEach(catch_ => {
+        let categoryIndex = 0;
+        const weight = Number(catch_.weight);
+        
+        if (weight >= 30) categoryIndex = 6;
+        else if (weight >= 25) categoryIndex = 5;
+        else if (weight >= 20) categoryIndex = 4;
+        else if (weight >= 15) categoryIndex = 3;
+        else if (weight >= 10) categoryIndex = 2;
+        else if (weight >= 5) categoryIndex = 1;
+        else categoryIndex = 0;
+
+        const category = weightCategories[categoryIndex];
+        category.total += 1;
+        
+        if (catch_.fishType === 'scaly') {
+          category.commonCarp += 1;
+        } else if (catch_.fishType === 'mirror') {
+          category.mirrorCarp += 1;
+        }
+      });
+
+      // Timeline data (hourly aggregation for now)
+      const timeline = [];
+      const catchesByHour = catches.reduce((acc, catch_) => {
+        if (!catch_.submittedAt) return acc;
+        const hour = new Date(catch_.submittedAt).getHours();
+        if (!acc[hour]) {
+          acc[hour] = { weight: 0, count: 0 };
+        }
+        acc[hour].weight += Number(catch_.weight);
+        acc[hour].count += 1;
+        return acc;
+      }, {} as Record<number, { weight: number; count: number }>);
+
+      // Create cumulative timeline
+      let cumulativeWeight = 0;
+      let cumulativeCount = 0;
+      for (let hour = 0; hour < 24; hour++) {
+        const hourData = catchesByHour[hour] || { weight: 0, count: 0 };
+        cumulativeWeight += hourData.weight;
+        cumulativeCount += hourData.count;
+        
+        timeline.push({
+          time: `2025-09-21T${hour.toString().padStart(2, '0')}:00:00Z`,
+          totalWeight: Math.round(cumulativeWeight * 10) / 10,
+          totalCount: cumulativeCount,
+          hour: hour
+        });
+      }
+
+      // Team performance
+      const teamPerformance = teams.map(team => ({
+        teamName: team.name,
+        totalCount: team.fishCount || 0,
+        totalWeight: team.totalWeight || 0
+      }));
+
+      // Fish type distribution
+      const fishTypes = { scaly: 0, mirror: 0 };
+      catches.forEach(catch_ => {
+        if (catch_.fishType === 'scaly') fishTypes.scaly += 1;
+        else if (catch_.fishType === 'mirror') fishTypes.mirror += 1;
+      });
+
+      const totalFish = fishTypes.scaly + fishTypes.mirror;
+      const fishTypeDistribution = [
+        {
+          type: 'Common Carp' as const,
+          weight: catches.filter(c => c.fishType === 'scaly').reduce((sum, c) => sum + Number(c.weight), 0),
+          count: fishTypes.scaly,
+          percentage: totalFish > 0 ? Math.round((fishTypes.scaly / totalFish) * 100) : 0
+        },
+        {
+          type: 'Mirror Carp' as const,
+          weight: catches.filter(c => c.fishType === 'mirror').reduce((sum, c) => sum + Number(c.weight), 0),
+          count: fishTypes.mirror,
+          percentage: totalFish > 0 ? Math.round((fishTypes.mirror / totalFish) * 100) : 0
+        }
+      ];
+
+      // Top fish
+      const topFish = catches
+        .sort((a, b) => Number(b.weight) - Number(a.weight))
+        .slice(0, 5)
+        .map(catch_ => {
+          const team = teams.find(t => t.id === catch_.teamId);
+          return {
+            teamName: team?.name || 'Unknown Team',
+            weight: Number(catch_.weight),
+            fishType: catch_.fishType === 'scaly' ? 'Common Carp' as const : 'Mirror Carp' as const,
+            catchTime: catch_.submittedAt
+          };
+        });
+
+      // Mock data for other charts (to be implemented later)
+      const stats = {
+        timeline,
+        weightCategories: weightCategories.filter(cat => cat.total > 0),
+        topFish,
+        teamPerformance,
+        fishTypeDistribution,
+        sectorPerformance: [],
+        averageWeights: [],
+        specialMilestones: [],
+        dailyBigFish: [],
+        recordProgression: [],
+        weightMilestones: [],
+        specialCompetitions: [],
+        teamEfficiency: []
+      };
+
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching competition stats:", error);
+      res.status(500).json({ message: "Failed to fetch competition stats" });
+    }
+  });
+
   // Team routes
   app.get('/api/competitions/:id/teams', checkPartialResultBlocking, async (req, res) => {
     try {
