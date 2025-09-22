@@ -30,6 +30,9 @@ import BattleCreate from "@/pages/diary/battle-create";
 import BattleDetail from "@/pages/diary/battle-detail";
 import BattleArchive from "@/pages/diary/battle-archive";
 import Register from "@/pages/register";
+import AuthRegister from "@/pages/auth/register";
+import AuthLogin from "@/pages/auth/login";
+import VerifyEmail from "@/pages/auth/verify-email";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 function Router() {
@@ -39,6 +42,12 @@ function Router() {
     <Switch>
       <Route path="/" component={user ? Home : Landing} />
       <Route path="/register" component={Register} />
+      
+      {/* New authentication routes */}
+      <Route path="/auth/register" component={AuthRegister} />
+      <Route path="/auth/login" component={AuthLogin} />
+      <Route path="/auth/verify-email" component={VerifyEmail} />
+      
       <Route path="/register-competition" component={RegisterCompetition} />
       <Route path="/register-team" component={RegisterTeam} />
       <Route path="/about-us" component={AboutUs} />
