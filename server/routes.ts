@@ -2983,10 +2983,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Validate request data
       const battleData = insertDiaryBattleSchema.parse(req.body);
       
-      // TODO: In production, validate tripId ownership instead of using stub
-      // For now, we'll create a basic trip if needed or use provided tripId
-      if (battleData.tripId === "temp-trip-id-for-battle") {
-        // Create a basic trip for this battle
+      // Check if trip exists and user has access to it
+      const hasAccess = await storage.checkTripOwnership(battleData.tripId, userId);
+      
+      if (!hasAccess) {
+        // Trip doesn't exist or user doesn't own it
+        // For development, auto-create a trip for this battle
         const tempTrip = await storage.createDiaryTrip({
           name: `Battle Trip: ${battleData.name}`,
           location: "Battle Location", 
@@ -2997,12 +2999,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           notes: `Auto-generated trip for battle: ${battleData.name}`
         }, userId);
         battleData.tripId = tempTrip.id;
-      } else {
-        // Verify trip ownership
-        const hasAccess = await storage.checkTripOwnership(battleData.tripId, userId);
-        if (!hasAccess) {
-          return res.status(403).json({ message: "You can only create battles for your own trips" });
-        }
       }
 
       // Create battle
