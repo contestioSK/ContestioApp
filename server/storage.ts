@@ -219,22 +219,22 @@ export interface IStorage {
   
   // Diary trip operations
   getDiaryTrips(userId: string): Promise<DiaryTrip[]>;
-  getDiaryTrip(id: string): Promise<(DiaryTrip & { catches: DiaryCatch[]; battles: DiaryBattle[] }) | undefined>;
+  getDiaryTrip(id: string, userId: string): Promise<(DiaryTrip & { catches: DiaryCatch[]; battles: DiaryBattle[] }) | undefined>;
   createDiaryTrip(trip: InsertDiaryTrip, userId: string): Promise<DiaryTrip>;
   updateDiaryTrip(id: string, trip: Partial<InsertDiaryTrip>, userId: string): Promise<DiaryTrip>;
   deleteDiaryTrip(id: string, userId: string): Promise<void>;
   checkTripOwnership(tripId: string, userId: string): Promise<boolean>;
   
   // Diary catch operations
-  getDiaryCatches(tripId: string): Promise<DiaryCatch[]>;
-  getDiaryCatch(id: string): Promise<DiaryCatch | undefined>;
+  getDiaryCatches(tripId: string, userId: string): Promise<DiaryCatch[]>;
+  getDiaryCatch(id: string, userId: string): Promise<DiaryCatch | undefined>;
   createDiaryCatch(catch_: InsertDiaryCatch, userId: string): Promise<DiaryCatch>;
   updateDiaryCatch(id: string, catch_: Partial<InsertDiaryCatch>, userId: string): Promise<DiaryCatch>;
   deleteDiaryCatch(id: string, userId: string): Promise<void>;
   
   // Diary battle operations
-  getDiaryBattles(tripId: string): Promise<DiaryBattle[]>;
-  getDiaryBattle(id: string): Promise<DiaryBattle | undefined>;
+  getDiaryBattles(tripId: string, userId: string): Promise<DiaryBattle[]>;
+  getDiaryBattle(id: string, userId: string): Promise<DiaryBattle | undefined>;
   createDiaryBattle(battle: InsertDiaryBattle, userId: string): Promise<DiaryBattle>;
   updateDiaryBattle(id: string, battle: Partial<InsertDiaryBattle>, userId: string): Promise<DiaryBattle>;
   deleteDiaryBattle(id: string, userId: string): Promise<void>;
@@ -244,6 +244,10 @@ export interface IStorage {
   checkDiaryTripLimit(userId: string): Promise<{ canCreate: boolean; currentCount: number; limit: number }>;
   checkDiaryCatchLimit(userId: string): Promise<{ canCreate: boolean; currentCount: number; limit: number }>;
   isUserPremium(userId: string): Promise<boolean>;
+  
+  // Premium feature checks
+  canAccessAdvancedStats(userId: string): Promise<boolean>;
+  canAccessBattleFeatures(userId: string): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1753,16 +1757,26 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(diaryTrips.startDate));
   }
 
-  async getDiaryTrip(id: string): Promise<(DiaryTrip & { catches: DiaryCatch[]; battles: DiaryBattle[] }) | undefined> {
+  async getDiaryTrip(id: string, userId: string): Promise<(DiaryTrip & { catches: DiaryCatch[]; battles: DiaryBattle[] }) | undefined> {
     const [trip] = await db
       .select()
       .from(diaryTrips)
       .where(eq(diaryTrips.id, id));
     
     if (!trip) return undefined;
+    
+    // Verify ownership (mandatory)
+    if (!(await this.checkTripOwnership(id, userId))) {
+      throw new Error("Nemáte oprávnenie na zobrazenie tejto výpravy");
+    }
 
-    const catches = await this.getDiaryCatches(id);
-    const battles = await this.getDiaryBattles(id);
+    const catches = await this.getDiaryCatches(id, userId);
+    
+    // Battles are PREMIUM only - return empty array for FREE users
+    let battles: DiaryBattle[] = [];
+    if (await this.isUserPremium(userId)) {
+      battles = await this.getDiaryBattles(id, userId);
+    }
     
     return { ...trip, catches, battles };
   }
@@ -1829,7 +1843,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Diary catch operations
-  async getDiaryCatches(tripId: string): Promise<DiaryCatch[]> {
+  async getDiaryCatches(tripId: string, userId: string): Promise<DiaryCatch[]> {
+    // Verify trip ownership (mandatory)
+    if (!(await this.checkTripOwnership(tripId, userId))) {
+      throw new Error("Nemáte oprávnenie na zobrazenie úlovkov tejto výpravy");
+    }
+    
     return await db
       .select()
       .from(diaryCatches)
@@ -1837,11 +1856,21 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(diaryCatches.capturedAt));
   }
 
-  async getDiaryCatch(id: string): Promise<DiaryCatch | undefined> {
+  async getDiaryCatch(id: string, userId: string): Promise<DiaryCatch | undefined> {
     const [catch_] = await db
       .select()
       .from(diaryCatches)
       .where(eq(diaryCatches.id, id));
+    
+    if (!catch_) {
+      return undefined;
+    }
+    
+    // Verify trip ownership via catch's tripId (mandatory)
+    if (!(await this.checkTripOwnership(catch_.tripId, userId))) {
+      throw new Error("Nemáte oprávnenie na zobrazenie tohto úlovku");
+    }
+    
     return catch_;
   }
 
@@ -1865,13 +1894,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateDiaryCatch(id: string, catch_: Partial<InsertDiaryCatch>, userId: string): Promise<DiaryCatch> {
-    // Verify trip ownership (mandatory)
-    const existingCatch = await this.getDiaryCatch(id);
+    // Get catch with ownership check
+    const existingCatch = await this.getDiaryCatch(id, userId);
     if (!existingCatch) {
       throw new Error("Úlovok nenájdený");
-    }
-    if (!(await this.checkTripOwnership(existingCatch.tripId, userId))) {
-      throw new Error("Nemáte oprávnenie na úpravu tohto úlovku");
     }
     
     const [updated] = await db
@@ -1887,20 +1913,27 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteDiaryCatch(id: string, userId: string): Promise<void> {
-    // Verify trip ownership (mandatory)
-    const existingCatch = await this.getDiaryCatch(id);
+    // Get catch with ownership check
+    const existingCatch = await this.getDiaryCatch(id, userId);
     if (!existingCatch) {
       throw new Error("Úlovok nenájdený");
-    }
-    if (!(await this.checkTripOwnership(existingCatch.tripId, userId))) {
-      throw new Error("Nemáte oprávnenie na vymazanie tohto úlovku");
     }
     
     await db.delete(diaryCatches).where(eq(diaryCatches.id, id));
   }
 
   // Diary battle operations
-  async getDiaryBattles(tripId: string): Promise<DiaryBattle[]> {
+  async getDiaryBattles(tripId: string, userId: string): Promise<DiaryBattle[]> {
+    // Check PREMIUM access (mandatory for battles)
+    if (!(await this.isUserPremium(userId))) {
+      throw new Error("Fishing Battle je dostupný iba v PREMIUM verzii. Prejdite na PREMIUM pre súboje medzi kamarátmi!");
+    }
+    
+    // Verify trip ownership (mandatory)
+    if (!(await this.checkTripOwnership(tripId, userId))) {
+      throw new Error("Nemáte oprávnenie na zobrazenie battles tejto výpravy");
+    }
+    
     return await db
       .select()
       .from(diaryBattles)
@@ -1908,15 +1941,35 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(diaryBattles.createdAt));
   }
 
-  async getDiaryBattle(id: string): Promise<DiaryBattle | undefined> {
+  async getDiaryBattle(id: string, userId: string): Promise<DiaryBattle | undefined> {
+    // Check PREMIUM access (mandatory for battles)
+    if (!(await this.isUserPremium(userId))) {
+      throw new Error("Fishing Battle je dostupný iba v PREMIUM verzii. Prejdite na PREMIUM pre súboje medzi kamarátmi!");
+    }
+    
     const [battle] = await db
       .select()
       .from(diaryBattles)
       .where(eq(diaryBattles.id, id));
+    
+    if (!battle) {
+      return undefined;
+    }
+    
+    // Verify trip ownership (mandatory)
+    if (!(await this.checkTripOwnership(battle.tripId, userId))) {
+      throw new Error("Nemáte oprávnenie na zobrazenie tohto battle");
+    }
+    
     return battle;
   }
 
   async createDiaryBattle(battle: InsertDiaryBattle, userId: string): Promise<DiaryBattle> {
+    // Check PREMIUM access (mandatory for battles)
+    if (!(await this.isUserPremium(userId))) {
+      throw new Error("Fishing Battle je dostupný iba v PREMIUM verzii. Prejdite na PREMIUM pre súboje medzi kamarátmi!");
+    }
+    
     // Verify trip ownership (mandatory)
     if (!(await this.checkTripOwnership(battle.tripId, userId))) {
       throw new Error("Nemáte oprávnenie na vytvorenie battle v tejto výprave");
@@ -1930,13 +1983,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateDiaryBattle(id: string, battle: Partial<InsertDiaryBattle>, userId: string): Promise<DiaryBattle> {
-    // Verify trip ownership (mandatory)
-    const existingBattle = await this.getDiaryBattle(id);
+    // Check PREMIUM access (mandatory for battles)
+    if (!(await this.isUserPremium(userId))) {
+      throw new Error("Fishing Battle je dostupný iba v PREMIUM verzii. Prejdite na PREMIUM pre súboje medzi kamarátmi!");
+    }
+    
+    // Get battle with ownership and premium checks
+    const existingBattle = await this.getDiaryBattle(id, userId);
     if (!existingBattle) {
       throw new Error("Battle nenájdené");
-    }
-    if (!(await this.checkTripOwnership(existingBattle.tripId, userId))) {
-      throw new Error("Nemáte oprávnenie na úpravu tohto battle");
     }
     
     const [updated] = await db
@@ -1952,30 +2007,32 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteDiaryBattle(id: string, userId: string): Promise<void> {
-    // Verify trip ownership (mandatory)
-    const existingBattle = await this.getDiaryBattle(id);
+    // Check PREMIUM access (mandatory for battles)
+    if (!(await this.isUserPremium(userId))) {
+      throw new Error("Fishing Battle je dostupný iba v PREMIUM verzii. Prejdite na PREMIUM pre súboje medzi kamarátmi!");
+    }
+    
+    // Get battle with ownership and premium checks
+    const existingBattle = await this.getDiaryBattle(id, userId);
     if (!existingBattle) {
       throw new Error("Battle nenájdené");
-    }
-    if (!(await this.checkTripOwnership(existingBattle.tripId, userId))) {
-      throw new Error("Nemáte oprávnenie na vymazanie tohto battle");
     }
     
     await db.delete(diaryBattles).where(eq(diaryBattles.id, id));
   }
 
   async calculateBattleResults(battleId: string, userId: string): Promise<DiaryBattle> {
-    const battle = await this.getDiaryBattle(battleId);
+    // Check PREMIUM access (mandatory for battles)
+    if (!(await this.isUserPremium(userId))) {
+      throw new Error("Fishing Battle je dostupný iba v PREMIUM verzii. Prejdite na PREMIUM pre súboje medzi kamarátmi!");
+    }
+    
+    const battle = await this.getDiaryBattle(battleId, userId);
     if (!battle) {
       throw new Error("Battle nenájdené");
     }
-    
-    // Verify trip ownership (mandatory)
-    if (!(await this.checkTripOwnership(battle.tripId, userId))) {
-      throw new Error("Nemáte oprávnenie na výpočet výsledkov tohto battle");
-    }
 
-    const catches = await this.getDiaryCatches(battle.tripId);
+    const catches = await this.getDiaryCatches(battle.tripId, userId);
     const battleCatches = catches.filter(c => 
       c.capturedAt >= battle.startAt && 
       c.capturedAt <= battle.endAt &&
@@ -2054,6 +2111,16 @@ export class DatabaseStorage implements IStorage {
     return updatedBattle;
   }
 
+  // Check if user can access advanced statistics (PREMIUM feature)
+  async canAccessAdvancedStats(userId: string): Promise<boolean> {
+    return await this.isUserPremium(userId);
+  }
+  
+  // Check if user can access battle features (PREMIUM feature)
+  async canAccessBattleFeatures(userId: string): Promise<boolean> {
+    return await this.isUserPremium(userId);
+  }
+  
   // Freemium limit checks
   async checkDiaryTripLimit(userId: string): Promise<{ canCreate: boolean; currentCount: number; limit: number }> {
     const isPremium = await this.isUserPremium(userId);
