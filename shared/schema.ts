@@ -242,6 +242,79 @@ export const pushSubscriptions = pgTable("push_subscriptions", {
   uniqueUserSubscription: uniqueIndex("unique_user_push_subscription").on(table.userId),
 }));
 
+// User subscriptions for diary premium features
+export const userSubscriptions = pgTable("user_subscriptions", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  product: varchar("product").notNull().default("diary_premium"), // "diary_premium"
+  status: varchar("status").notNull().default("none"), // "none", "active", "canceled"
+  checkoutSessionId: varchar("checkout_session_id"), // Stripe session ID
+  currentPeriodEnd: timestamp("current_period_end"), // When current subscription ends
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  // Unique constraint to enforce 1:1 user:subscription relationship per product
+  uniqueUserProduct: uniqueIndex("unique_user_subscription_product").on(table.userId, table.product),
+}));
+
+// Diary trips table
+export const diaryTrips = pgTable("diary_trips", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  ownerUserId: varchar("owner_user_id").notNull().references(() => users.id),
+  name: varchar("name", { length: 255 }).notNull(),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date").notNull(),
+  location: text("location").notNull(),
+  notes: text("notes"),
+  participants: jsonb("participants").$type<Array<{ userId?: string; name: string }>>().default([]), // Array of participants
+  visibility: varchar("visibility").notNull().default("private"), // "private", "shared"
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Diary catches table (separate from competition catches)
+export const diaryCatches = pgTable("diary_catches", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  tripId: uuid("trip_id").notNull().references(() => diaryTrips.id),
+  angler: jsonb("angler").$type<{ userId?: string; name: string }>().notNull(), // Who caught the fish
+  capturedAt: timestamp("captured_at").notNull(),
+  weight: decimal("weight", { precision: 10, scale: 3 }).notNull(), // in kg
+  lengthCm: integer("length_cm"), // optional length in cm
+  carpType: varchar("carp_type").notNull(), // "common", "mirror", "grass", "other"
+  bait: text("bait"), // what bait was used
+  spot: text("spot"), // fishing spot description
+  latitude: decimal("latitude", { precision: 10, scale: 8 }), // GPS coordinates
+  longitude: decimal("longitude", { precision: 11, scale: 8 }), // GPS coordinates
+  photos: jsonb("photos").$type<string[]>().default([]), // Array of photo URLs
+  notes: text("notes"),
+  verified: boolean("verified").default(false).notNull(), // For battle verification
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Diary battles table (fishing competitions between friends)
+export const diaryBattles = pgTable("diary_battles", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  tripId: uuid("trip_id").notNull().references(() => diaryTrips.id),
+  name: varchar("name", { length: 255 }).notNull(),
+  rules: jsonb("rules").$type<{
+    mode: "most_fish" | "total_weight" | "biggest_fish" | "best_3_fish" | "best_5_fish";
+    minWeightKg?: number;
+    includeOnlyVerified?: boolean;
+  }>().notNull(),
+  participants: jsonb("participants").$type<Array<{ userId?: string; name: string }>>().notNull(),
+  startAt: timestamp("start_at").notNull(),
+  endAt: timestamp("end_at").notNull(),
+  status: varchar("status").notNull().default("active"), // "active", "finished", "canceled"
+  results: jsonb("results").$type<Array<{
+    participant: { userId?: string; name: string };
+    score: number;
+    position: number;
+  }>>(), // Cached results for performance
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Official announcements table
 export const announcements = pgTable("announcements", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -286,6 +359,8 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   favoriteTeams: many(favoriteTeams),
   notificationPreferences: one(notificationPreferences),
   announcements: many(announcements),
+  diaryTrips: many(diaryTrips),
+  subscriptions: many(userSubscriptions),
 }));
 
 export const competitionsRelations = relations(competitions, ({ one, many }) => ({
@@ -395,6 +470,37 @@ export const announcementsRelations = relations(announcements, ({ one }) => ({
   competition: one(competitions, {
     fields: [announcements.competitionId],
     references: [competitions.id],
+  }),
+}));
+
+// Diary relations
+export const userSubscriptionsRelations = relations(userSubscriptions, ({ one }) => ({
+  user: one(users, {
+    fields: [userSubscriptions.userId],
+    references: [users.id],
+  }),
+}));
+
+export const diaryTripsRelations = relations(diaryTrips, ({ one, many }) => ({
+  owner: one(users, {
+    fields: [diaryTrips.ownerUserId],
+    references: [users.id],
+  }),
+  catches: many(diaryCatches),
+  battles: many(diaryBattles),
+}));
+
+export const diaryCatchesRelations = relations(diaryCatches, ({ one }) => ({
+  trip: one(diaryTrips, {
+    fields: [diaryCatches.tripId],
+    references: [diaryTrips.id],
+  }),
+}));
+
+export const diaryBattlesRelations = relations(diaryBattles, ({ one }) => ({
+  trip: one(diaryTrips, {
+    fields: [diaryBattles.tripId],
+    references: [diaryTrips.id],
   }),
 }));
 
@@ -603,6 +709,98 @@ export const updateAnnouncementSchema = createInsertSchema(announcements).omit({
   published: z.boolean().optional(),
 });
 
+// Diary insert schemas
+export const insertUserSubscriptionSchema = createInsertSchema(userSubscriptions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  product: z.literal("diary_premium"),
+  status: z.enum(["none", "active", "canceled"]).default("none"),
+  currentPeriodEnd: z.string().or(z.date()).transform((val) => new Date(val)).optional(),
+  checkoutSessionId: z.string().optional(),
+});
+
+export const insertDiaryTripSchema = createInsertSchema(diaryTrips).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  startDate: z.string().or(z.date()).transform((val) => new Date(val)),
+  endDate: z.string().or(z.date()).transform((val) => new Date(val)),
+  name: z.string().min(1, "Názov výpravy je povinný").max(255, "Názov môže mať maximálne 255 znakov"),
+  location: z.string().min(1, "Lokalita je povinná"),
+  notes: z.string().optional(),
+  participants: z.array(z.object({
+    userId: z.string().optional(),
+    name: z.string().min(1, "Meno účastníka je povinné")
+  })).optional(),
+  visibility: z.enum(["private", "shared"]).default("private"),
+}).refine((data) => {
+  return data.endDate >= data.startDate;
+}, {
+  message: "Dátum ukončenia musí byť po dátume začiatku",
+  path: ["endDate"]
+});
+
+export const insertDiaryCatchSchema = createInsertSchema(diaryCatches).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  capturedAt: z.string().or(z.date()).transform((val) => new Date(val)),
+  weight: z.string().or(z.number()).transform((val) => {
+    const weight = typeof val === 'string' ? parseFloat(val) : val;
+    if (isNaN(weight) || weight < 0) {
+      throw new Error("Neplatná váha");
+    }
+    return weight.toString();
+  }),
+  lengthCm: z.number().positive("Dĺžka musí byť kladné číslo").optional(),
+  carpType: z.enum(["common", "mirror", "grass", "other"], {
+    required_error: "Typ kapra je povinný"
+  }),
+  angler: z.object({
+    userId: z.string().optional(),
+    name: z.string().min(1, "Meno rybára je povinné")
+  }),
+  bait: z.string().optional(),
+  spot: z.string().optional(),
+  latitude: z.number().min(-90).max(90).optional(), // GPS coordinate validation
+  longitude: z.number().min(-180).max(180).optional(), // GPS coordinate validation
+  notes: z.string().optional(),
+  photos: z.array(z.string().url("Neplatná URL fotky")).optional(),
+  verified: z.boolean().default(false),
+});
+
+export const insertDiaryBattleSchema = createInsertSchema(diaryBattles).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  results: true, // Results are calculated, not inserted
+}).extend({
+  startAt: z.string().or(z.date()).transform((val) => new Date(val)),
+  endAt: z.string().or(z.date()).transform((val) => new Date(val)),
+  name: z.string().min(1, "Názov battle je povinný").max(255, "Názov môže mať maximálne 255 znakov"),
+  rules: z.object({
+    mode: z.enum(["most_fish", "total_weight", "biggest_fish", "best_3_fish", "best_5_fish"], {
+      required_error: "Typ battle je povinný"
+    }),
+    minWeightKg: z.number().positive("Minimálna váha musí byť kladné číslo").optional(),
+    includeOnlyVerified: z.boolean().default(false).optional()
+  }),
+  participants: z.array(z.object({
+    userId: z.string().optional(),
+    name: z.string().min(1, "Meno účastníka je povinné")
+  })).min(2, "Battle musí mať aspoň 2 účastníkov"),
+  status: z.enum(["active", "finished", "canceled"]).default("active"),
+}).refine((data) => {
+  return data.endAt >= data.startAt;
+}, {
+  message: "Čas ukončenia musí byť po čase začiatku",
+  path: ["endAt"]
+});
+
 // Team status update schema
 export const updateTeamStatusSchema = z.object({
   status: z.enum(["pending", "approved", "rejected"], {
@@ -689,3 +887,13 @@ export type InsertPushSubscription = typeof pushSubscriptions.$inferInsert;
 export type Announcement = typeof announcements.$inferSelect;
 export type InsertAnnouncement = z.infer<typeof insertAnnouncementSchema>;
 export type UpdateAnnouncement = z.infer<typeof updateAnnouncementSchema>;
+
+// Diary types
+export type UserSubscription = typeof userSubscriptions.$inferSelect;
+export type InsertUserSubscription = z.infer<typeof insertUserSubscriptionSchema>;
+export type DiaryTrip = typeof diaryTrips.$inferSelect;
+export type InsertDiaryTrip = z.infer<typeof insertDiaryTripSchema>;
+export type DiaryCatch = typeof diaryCatches.$inferSelect;
+export type InsertDiaryCatch = z.infer<typeof insertDiaryCatchSchema>;
+export type DiaryBattle = typeof diaryBattles.$inferSelect;
+export type InsertDiaryBattle = z.infer<typeof insertDiaryBattleSchema>;
