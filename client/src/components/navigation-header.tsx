@@ -174,7 +174,15 @@ export default function NavigationHeader() {
                 </Button>
                 <Button 
                   variant="outline"
-                  onClick={() => window.location.href = '/api/logout'}
+                  onClick={async () => {
+                    try {
+                      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+                      window.location.href = '/';
+                    } catch (error) {
+                      console.error('Logout error:', error);
+                      window.location.href = '/';
+                    }
+                  }}
                   data-testid="button-logout"
                 >
                   Odhlásiť sa
@@ -184,7 +192,7 @@ export default function NavigationHeader() {
               <div className="flex items-center space-x-2">
                 <Button 
                   variant="outline"
-                  onClick={() => window.location.href = '/api/login'}
+                  onClick={() => window.location.href = '/auth/login'}
                   data-testid="button-login"
                 >
                   Prihlásiť sa

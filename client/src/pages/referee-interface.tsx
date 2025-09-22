@@ -140,7 +140,7 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
           variant: "destructive",
         });
         setTimeout(() => {
-          window.location.href = "/api/login";
+          window.location.href = "/auth/login";
         }, 500);
         return;
       }
@@ -612,7 +612,7 @@ export default function RefereeInterface() {
             variant: "destructive",
           });
           setTimeout(() => {
-            window.location.href = "/api/login";
+            window.location.href = "/auth/login";
           }, 500);
           return; // Stop syncing
         } else {
@@ -750,7 +750,15 @@ export default function RefereeInterface() {
                 variant="ghost" 
                 size="sm"
                 className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-12 w-12 p-0"
-                onClick={() => window.location.href = '/api/logout'}
+                onClick={async () => {
+                  try {
+                    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+                    window.location.href = '/';
+                  } catch (error) {
+                    console.error('Logout error:', error);
+                    window.location.href = '/';
+                  }
+                }}
                 data-testid="button-logout"
               >
                 <LogOut className="w-4 h-4" />
