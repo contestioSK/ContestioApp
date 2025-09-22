@@ -2,8 +2,37 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Trophy, Plus, Calendar, Fish, BarChart3 } from "lucide-react";
+import { BookOpen, Trophy, Plus, Calendar, Fish, BarChart3, Crown, Archive, Eye, Clock, Medal, Users } from "lucide-react";
 import { useLocation } from "wouter";
+
+// Mock battle data for integration
+const getMockBattleStats = () => ({
+  totalBattles: 4,
+  wins: 2,
+  podiums: 3,
+  winRate: 50
+});
+
+const getMockRecentBattles = () => [
+  {
+    id: "battle-1",
+    name: "Víkendový súboj kamarátov", 
+    status: "finished" as const,
+    userPosition: 3,
+    participants: 4,
+    winner: "Tomáš K.",
+    endedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000) // 2 days ago
+  },
+  {
+    id: "battle-2", 
+    name: "Ranný súboj na jazere",
+    status: "finished" as const,
+    userPosition: 1,
+    participants: 3,
+    winner: "Vy",
+    endedAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000) // 14 days ago
+  }
+];
 
 export default function DiaryIndex() {
   const { user } = useAuth();
@@ -11,6 +40,10 @@ export default function DiaryIndex() {
 
   // TODO: Replace with actual API call to check premium status
   const isPremium = true; // Temporarily set to true for development - will be connected to actual premium check
+  
+  // Mock battle data
+  const battleStats = getMockBattleStats();
+  const recentBattles = getMockRecentBattles();
 
   const diaryFeatures = [
     {
@@ -98,7 +131,7 @@ export default function DiaryIndex() {
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-primary">0</div>
+              <div className="text-2xl font-bold text-primary">{battleStats.totalBattles}</div>
               <div className="text-sm text-muted-foreground">Battles</div>
             </CardContent>
           </Card>
@@ -109,6 +142,163 @@ export default function DiaryIndex() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Battle Integration Section - Only for Premium users */}
+        {isPremium && (
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold flex items-center gap-2">
+                <Trophy className="w-6 h-6 text-yellow-500" />
+                Fishing Battle
+              </h2>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setLocation("/diary/battle/archive")}
+                data-testid="button-view-battle-archive"
+              >
+                <Archive className="w-4 h-4 mr-2" />
+                Archív
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              {/* Battle Stats */}
+              <Card className="bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-950/20 dark:to-amber-950/20 border-yellow-200 dark:border-yellow-800">
+                <CardContent className="p-4 text-center">
+                  <Crown className="w-6 h-6 text-yellow-500 mx-auto mb-2" />
+                  <div className="text-2xl font-bold text-yellow-700 dark:text-yellow-300">{battleStats.wins}</div>
+                  <div className="text-sm text-yellow-600 dark:text-yellow-400">Víťazstvá</div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 border-orange-200 dark:border-orange-800">
+                <CardContent className="p-4 text-center">
+                  <Medal className="w-6 h-6 text-orange-500 mx-auto mb-2" />
+                  <div className="text-2xl font-bold text-orange-700 dark:text-orange-300">{battleStats.podiums}</div>
+                  <div className="text-sm text-orange-600 dark:text-orange-400">Pódiá</div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 border-blue-200 dark:border-blue-800">
+                <CardContent className="p-4 text-center">
+                  <Users className="w-6 h-6 text-blue-500 mx-auto mb-2" />
+                  <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">{battleStats.totalBattles}</div>
+                  <div className="text-sm text-blue-600 dark:text-blue-400">Celkovo</div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200 dark:border-green-800">
+                <CardContent className="p-4 text-center">
+                  <BarChart3 className="w-6 h-6 text-green-500 mx-auto mb-2" />
+                  <div className="text-2xl font-bold text-green-700 dark:text-green-300">{battleStats.winRate}%</div>
+                  <div className="text-sm text-green-600 dark:text-green-400">Úspešnosť</div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Recent Battle Activity */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <Clock className="w-5 h-5" />
+                    Posledné súboje
+                  </CardTitle>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setLocation("/diary/battle/create")}
+                    data-testid="button-create-new-battle"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Nový súboj
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {recentBattles.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Trophy className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-muted-foreground mb-2">
+                      Žiadne súboje zatiaľ
+                    </h3>
+                    <p className="text-muted-foreground mb-4">
+                      Vytvorte svoj prvý Fishing Battle a súťažte s kamarátmi!
+                    </p>
+                    <Button onClick={() => setLocation("/diary/battle/create")} data-testid="button-first-battle">
+                      <Trophy className="w-4 h-4 mr-2" />
+                      Vytvoriť prvý súboj
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {recentBattles.map((battle) => {
+                      const positionColors = {
+                        1: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
+                        2: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200", 
+                        3: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200"
+                      };
+                      const defaultColor = "bg-muted text-muted-foreground";
+                      const positionColor = positionColors[battle.userPosition as keyof typeof positionColors] || defaultColor;
+                      
+                      return (
+                        <div 
+                          key={battle.id}
+                          className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/30 transition-colors"
+                          data-testid={`recent-battle-${battle.id}`}
+                        >
+                          <div className="flex items-center gap-4">
+                            <Badge className={positionColor}>
+                              {battle.userPosition === 1 && "🥇"}
+                              {battle.userPosition === 2 && "🥈"}
+                              {battle.userPosition === 3 && "🥉"}
+                              {battle.userPosition > 3 && `${battle.userPosition}.`}
+                              {" "}
+                              {battle.userPosition === 1 ? "Víťazstvo" : `${battle.userPosition}. miesto`}
+                            </Badge>
+                            
+                            <div>
+                              <div className="font-medium">{battle.name}</div>
+                              <div className="text-sm text-muted-foreground">
+                                {battle.participants} účastníkov • Víťaz: {battle.winner}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-muted-foreground">
+                              {Math.floor((Date.now() - battle.endedAt.getTime()) / (1000 * 60 * 60 * 24))} dní
+                            </span>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => setLocation(`/diary/battle/${battle.id}`)}
+                              data-testid={`button-view-battle-${battle.id}`}
+                            >
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    
+                    <div className="text-center pt-4">
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setLocation("/diary/battle/archive")}
+                        data-testid="button-view-all-battles"
+                      >
+                        <Archive className="w-4 h-4 mr-2" />
+                        Zobraziť všetky súboje
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Feature Cards */}
         <div className="grid md:grid-cols-2 gap-6">
