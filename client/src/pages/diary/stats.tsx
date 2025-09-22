@@ -34,6 +34,12 @@ import {
 
 import type { DiaryTrip, DiaryCatch } from "@shared/schema";
 
+// Import new chart components
+import { WeightProgressionChart } from "@/components/diary-charts/weight-progression-chart";
+import { CatchFrequencyChart } from "@/components/diary-charts/catch-frequency-chart";
+import { SeasonalTrendsChart } from "@/components/diary-charts/seasonal-trends-chart";
+import { MonthComparisonChart } from "@/components/diary-charts/month-comparison-chart";
+
 // Type for premium check
 type PremiumStatus = {
   isPremium: boolean;
@@ -42,6 +48,9 @@ type PremiumStatus = {
 // Monthly stats type
 type MonthlyStats = {
   month: string;
+  monthDate: string; // ISO date for calculations
+  monthStart: string; // Month start boundary
+  monthEnd: string; // Month end boundary
   catches: number;
   totalWeight: number;
   trips: number;
@@ -111,6 +120,9 @@ export default function DiaryStats() {
 
     return {
       month: format(month, "MMM yyyy", { locale: sk }),
+      monthDate: month.toISOString(), // Add canonical date for calculations
+      monthStart: monthStart.toISOString(), // Add month boundaries
+      monthEnd: monthEnd.toISOString(),
       catches: monthCatches.length,
       totalWeight: monthCatches.reduce((sum, catch_) => sum + parseFloat(catch_.weight), 0),
       trips: monthTrips.length
@@ -147,6 +159,89 @@ export default function DiaryStats() {
     .sort(([,a], [,b]) => b - a)
     .slice(0, 5)
     .map(([location, count]) => ({ location, count }));
+
+  // Advanced analytics data calculations for trends
+  
+  // Weight progression data (monthly aggregations with weight trends)
+  const weightProgressionData = monthlyStats.map(month => {
+    // Use proper date boundaries for filtering
+    const monthStart = new Date(month.monthStart);
+    const monthEnd = new Date(month.monthEnd);
+    
+    const monthCatches = catches.filter(catch_ => {
+      const catchDate = new Date(catch_.capturedAt);
+      return catchDate >= monthStart && catchDate <= monthEnd;
+    });
+
+    return {
+      date: month.monthDate, // Use canonical date
+      dateLabel: month.month, // Keep display label
+      averageWeight: month.catches > 0 ? month.totalWeight / month.catches : 0,
+      totalWeight: month.totalWeight,
+      catchCount: month.catches,
+      biggestCatch: monthCatches.length > 0 ? Math.max(...monthCatches.map(c => parseFloat(c.weight))) : 0
+    };
+  });
+
+  // Catch frequency data (monthly with efficiency metrics)
+  const catchFrequencyData = monthlyStats.map(month => ({
+    date: month.monthDate, // Use canonical date
+    dateLabel: month.month, // Keep display label
+    catches: month.catches,
+    trips: month.trips,
+    efficiency: month.trips > 0 ? month.catches / month.trips : 0
+  }));
+
+  // Seasonal trends data
+  const seasonalData = [
+    { season: 'spring', label: 'Jar', catches: 0, averageWeight: 0, trips: 0, efficiency: 0 },
+    { season: 'summer', label: 'Leto', catches: 0, averageWeight: 0, trips: 0, efficiency: 0 },
+    { season: 'autumn', label: 'Jeseň', catches: 0, averageWeight: 0, trips: 0, efficiency: 0 },
+    { season: 'winter', label: 'Zima', catches: 0, averageWeight: 0, trips: 0, efficiency: 0 }
+  ];
+
+  catches.forEach(catch_ => {
+    const month = new Date(catch_.capturedAt).getMonth();
+    let seasonIndex: number;
+    if (month >= 2 && month <= 4) seasonIndex = 0; // spring
+    else if (month >= 5 && month <= 7) seasonIndex = 1; // summer
+    else if (month >= 8 && month <= 10) seasonIndex = 2; // autumn
+    else seasonIndex = 3; // winter
+
+    seasonalData[seasonIndex].catches++;
+    seasonalData[seasonIndex].averageWeight += parseFloat(catch_.weight);
+  });
+
+  trips.forEach(trip => {
+    const month = new Date(trip.startDate).getMonth();
+    let seasonIndex: number;
+    if (month >= 2 && month <= 4) seasonIndex = 0; // spring
+    else if (month >= 5 && month <= 7) seasonIndex = 1; // summer
+    else if (month >= 8 && month <= 10) seasonIndex = 2; // autumn
+    else seasonIndex = 3; // winter
+
+    seasonalData[seasonIndex].trips++;
+  });
+
+  // Calculate averages and efficiency for seasons
+  seasonalData.forEach(season => {
+    if (season.catches > 0) {
+      season.averageWeight = season.averageWeight / season.catches;
+    }
+    if (season.trips > 0) {
+      season.efficiency = season.catches / season.trips;
+    }
+  });
+
+  // Month comparison data (enhanced version of monthlyStats)
+  const monthComparisonData = monthlyStats.map(month => ({
+    month: month.month, // Keep display label for X-axis
+    catches: month.catches,
+    totalWeight: month.totalWeight,
+    trips: month.trips,
+    averageWeight: month.catches > 0 ? month.totalWeight / month.catches : 0,
+    efficiency: month.trips > 0 ? month.catches / month.trips : 0
+  }));
 
   return (
     <div className="min-h-screen bg-background" data-testid="page-diary-stats">
@@ -388,19 +483,153 @@ export default function DiaryStats() {
 
           {/* Premium-only tabs */}
           <TabsContent value="trends" className="space-y-6">
-            <Card className="text-center py-12">
-              <CardContent>
-                <Lock className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Pokročilé trendy</h3>
-                <p className="text-muted-foreground mb-4">
-                  Detailné grafy trendov, sezónne analýzy a porovnania sú dostupné v PREMIUM verzii.
-                </p>
-                <Button className="gap-2" data-testid="button-upgrade-trends">
-                  <Crown className="w-4 h-4" />
-                  Prejsť na PREMIUM
-                </Button>
-              </CardContent>
-            </Card>
+            {!isPremium ? (
+              <Card className="text-center py-12">
+                <CardContent>
+                  <Lock className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Pokročilé trendy</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Detailné grafy trendov, sezónne analýzy a porovnania sú dostupné v PREMIUM verzii.
+                  </p>
+                  <Button className="gap-2" data-testid="button-upgrade-trends">
+                    <Crown className="w-4 h-4" />
+                    Prejsť na PREMIUM
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <>
+                {/* Period Selector for Trends */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold">Trendy a pokrok</h2>
+                    <p className="text-muted-foreground">Pokročilé analýzy vášho rybárskeho pokroku</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Obdobie:</span>
+                    <div className="flex rounded-lg border p-1">
+                      {(["3m", "6m", "1y"] as const).map((period) => (
+                        <Button
+                          key={period}
+                          variant={selectedPeriod === period ? "default" : "ghost"}
+                          size="sm"
+                          onClick={() => setSelectedPeriod(period)}
+                          className="text-xs"
+                          data-testid={`button-period-${period}`}
+                        >
+                          {period === "3m" ? "3 mes." : period === "6m" ? "6 mes." : "1 rok"}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Weight Progression and Catch Frequency Charts */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <WeightProgressionChart data={weightProgressionData} />
+                  <CatchFrequencyChart data={catchFrequencyData} />
+                </div>
+
+                {/* Seasonal Trends */}
+                <SeasonalTrendsChart data={seasonalData.filter(s => s.catches > 0)} />
+
+                {/* Monthly Comparison - Enhanced */}
+                <MonthComparisonChart 
+                  data={monthComparisonData} 
+                  title="Detailné mesačné porovnania"
+                  period={selectedPeriod === "3m" ? "posledných 3 mesiacov" : selectedPeriod === "6m" ? "posledných 6 mesiacov" : "posledného roka"}
+                />
+
+                {/* Additional Insights */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <TrendingUp className="w-5 h-5 text-green-600" />
+                        Najlepší mesiac
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {monthComparisonData.length > 0 ? (
+                        (() => {
+                          const bestMonth = monthComparisonData.reduce((best, month) => 
+                            month.catches > best.catches ? month : best
+                          );
+                          return (
+                            <div>
+                              <p className="text-2xl font-bold">{bestMonth.month}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {bestMonth.catches} úlovkov • {bestMonth.totalWeight.toFixed(1)} kg
+                              </p>
+                            </div>
+                          );
+                        })()
+                      ) : (
+                        <p className="text-muted-foreground">Žiadne dáta</p>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Target className="w-5 h-5 text-blue-600" />
+                        Najefektívnejšie obdobie
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {seasonalData.some(s => s.efficiency > 0) ? (
+                        (() => {
+                          const bestSeason = seasonalData.reduce((best, season) => 
+                            season.efficiency > best.efficiency ? season : best
+                          );
+                          return (
+                            <div>
+                              <p className="text-2xl font-bold">{bestSeason.label}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {bestSeason.efficiency.toFixed(1)} úlovkov/výpravu
+                              </p>
+                            </div>
+                          );
+                        })()
+                      ) : (
+                        <p className="text-muted-foreground">Žiadne dáta</p>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Crown className="w-5 h-5 text-yellow-600" />
+                        Trend váhy
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {weightProgressionData.length > 1 ? (
+                        (() => {
+                          const firstMonth = weightProgressionData[0];
+                          const lastMonth = weightProgressionData[weightProgressionData.length - 1];
+                          const trend = lastMonth.averageWeight - firstMonth.averageWeight;
+                          return (
+                            <div>
+                              <p className="text-2xl font-bold">
+                                {trend > 0 ? '+' : ''}{trend.toFixed(1)} kg
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                {trend > 0 ? 'Zlepšenie' : trend < 0 ? 'Pokles' : 'Stabilný'} priemernej váhy
+                              </p>
+                            </div>
+                          );
+                        })()
+                      ) : (
+                        <p className="text-muted-foreground">Žiadne dáta</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              </>
+            )}
           </TabsContent>
 
           <TabsContent value="analysis" className="space-y-6">
