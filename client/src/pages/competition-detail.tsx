@@ -9,7 +9,7 @@ import { z } from "zod";
 import NavigationHeader from "@/components/navigation-header";
 import LiveLeaderboard from "@/components/live-leaderboard";
 import CatchTimeline from "@/components/catch-timeline";
-import CompetitionMap from "@/components/competition-map";
+import SectorLeaderboards from "@/components/sector-leaderboards";
 import CompetitionStatsBar from "@/components/competition-stats-bar";
 import StatsDashboard from "@/components/stats-dashboard";
 import { Badge } from "@/components/ui/badge";
@@ -139,6 +139,7 @@ export default function CompetitionDetail() {
       // Invalidate and refetch relevant queries for real-time stats updates
       queryClient.invalidateQueries({ queryKey: ["/api/competitions", id, "catches"] });
       queryClient.invalidateQueries({ queryKey: ["/api/competitions", id, "teams"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/competitions", id, "sectors", "leaderboards"] });
     }
   });
 
@@ -442,9 +443,9 @@ export default function CompetitionDetail() {
               {/* Live Leaderboard */}
               <LiveLeaderboard teams={(teams || []).map(team => ({ ...team, members: team.members || [] }))} isLoading={teamsLoading} competitionId={id!} />
               
-              {/* Interactive Map - only show if competition has teams with sectors */}
+              {/* Sector Leaderboards - only show if competition has teams with sectors */}
               {teams && teams.some(team => team.sector && team.status === 'approved') && (
-                <CompetitionMap competitionId={id!} teams={(teams || []).map(team => ({ ...team, members: team.members || [] }))} />
+                <SectorLeaderboards competitionId={id!} />
               )}
               
             </div>

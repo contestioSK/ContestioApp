@@ -1871,6 +1871,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Sector leaderboards route
+  app.get('/api/competitions/:id/sectors/leaderboards', isAuthenticated, checkResultBlocking, async (req, res) => {
+    try {
+      const { id: competitionId } = req.params;
+      
+      // Validate limit parameter
+      const limitSchema = z.object({
+        limit: z.string().optional().transform((val) => {
+          if (!val) return 3;
+          const parsed = parseInt(val, 10);
+          if (isNaN(parsed) || parsed < 1 || parsed > 10) {
+            throw new Error('Limit must be a number between 1 and 10');
+          }
+          return parsed;
+        })
+      });
+
+      const { limit } = limitSchema.parse(req.query);
+      const leaderboards = await storage.getSectorLeaderboards(competitionId, limit);
+      res.json(leaderboards);
+    } catch (error) {
+      console.error("Error fetching sector leaderboards:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid limit parameter" });
+      }
+      res.status(500).json({ message: "Failed to fetch sector leaderboards" });
+    }
+  });
+
   // Sponsor routes
   app.get('/api/competitions/:id/sponsors', async (req, res) => {
     try {

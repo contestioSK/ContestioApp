@@ -845,6 +845,57 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
+  // Sector leaderboards operations
+  async getSectorLeaderboards(competitionId: string, limit: number = 3): Promise<{
+    sector: string;
+    teamCount: number;
+    topTeams: (Team & { members: TeamMember[] })[];
+  }[]> {
+    // Get all teams for this competition
+    const allTeams = await this.getTeamsByCompetition(competitionId);
+    
+    // Filter to only approved teams with a sector
+    const approvedTeamsWithSector = allTeams.filter(team => 
+      team.status === 'approved' && (team.sector || team.sectorName)
+    );
+
+    // Group teams by sector
+    const teamsBySector: Record<string, (Team & { members: TeamMember[] })[]> = {};
+    
+    approvedTeamsWithSector.forEach(team => {
+      // Normalize sector - prefer team.sector, fallback to first letter of sectorName
+      let sectorCode = team.sector;
+      if (!sectorCode && team.sectorName) {
+        sectorCode = team.sectorName.match(/[A-Z]/)?.[0] || '';
+      }
+      
+      if (sectorCode) {
+        if (!teamsBySector[sectorCode]) {
+          teamsBySector[sectorCode] = [];
+        }
+        teamsBySector[sectorCode].push(team);
+      }
+    });
+
+    // Sort teams within each sector by totalWeight descending and take top N
+    const sectorLeaderboards = Object.entries(teamsBySector).map(([sector, teams]) => {
+      const sortedTeams = teams.sort((a, b) => {
+        const weightA = parseFloat(a.totalWeight || '0');
+        const weightB = parseFloat(b.totalWeight || '0');
+        return weightB - weightA; // Descending order
+      });
+
+      return {
+        sector,
+        teamCount: teams.length,
+        topTeams: sortedTeams.slice(0, limit)
+      };
+    });
+
+    // Sort sectors alphabetically
+    return sectorLeaderboards.sort((a, b) => a.sector.localeCompare(b.sector));
+  }
+
   // Admin dashboard operations
   async getDashboardStats() {
     const now = new Date();
