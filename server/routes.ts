@@ -31,7 +31,8 @@ import { NotificationService } from "./notification-service";
 import { checkResultBlocking, checkPartialResultBlocking, checkPartialResultBlockingByTeam } from "./middleware/result-blocking";
 import multer from "multer";
 import path from "path";
-import fs from "fs";
+import fs, { existsSync } from "fs";
+import { promises as fsPromises } from "fs";
 import { ImageService, type ProcessedImageResult } from "./image-service";
 
 // Configure multer for file uploads
@@ -41,14 +42,14 @@ const upload = multer({
     fileSize: 5 * 1024 * 1024, // 5MB limit
   },
   fileFilter: (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|gif|svg/;
+    const allowedTypes = /jpeg|jpg|png|gif/;
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype) || file.mimetype === 'image/svg+xml';
+    const mimetype = allowedTypes.test(file.mimetype);
     
     if (mimetype && extname) {
       return cb(null, true);
     } else {
-      cb(new Error("Povolené sú len obrázkové súbory (JPEG, PNG, GIF, SVG)"));
+      cb(new Error("Povolené sú len obrázkové súbory (JPEG, PNG, GIF)"));
     }
   },
 });
@@ -3222,8 +3223,344 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Diary Photo Upload endpoint
+  app.post('/api/diary/photos/upload', isAuthenticated, (req: any, res, next) => {
+    // Handle multiple file upload (max 5 photos)
+    upload.array('photos', 5)(req, res, (err: any) => {
+      if (err) {
+        console.error("Multer error:", err);
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return res.status(400).json({ 
+            message: "Jeden alebo viac súborov je príliš veľkých. Maximálna veľkosť je 5MB." 
+          });
+        }
+        if (err.message === "Too many files" || err.code === 'LIMIT_UNEXPECTED_FILE') {
+          return res.status(400).json({ 
+            message: "Príliš veľa súborov. Maximálne 5 fotografií naraz." 
+          });
+        }
+        if (err.message === "Only image files are allowed" || err.message === "Povolené sú len obrázkové súbory (JPEG, PNG, GIF)") {
+          return res.status(400).json({ 
+            message: "Povolené sú len obrázkové súbory (JPEG, PNG, GIF)" 
+          });
+        }
+        return res.status(400).json({ 
+          message: "Chyba pri nahrávaní fotografií" 
+        });
+      }
+      next();
+    });
+  }, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      if (!req.files || req.files.length === 0) {
+        return res.status(400).json({ message: "Žiadne súbory neboli nahrané" });
+      }
+
+      const processedPhotos = [];
+      
+      // Create diary photos directory
+      const diaryPhotosDir = path.join('attached_assets', 'diary_photos', userId);
+      if (!existsSync(diaryPhotosDir)) {
+        await fsPromises.mkdir(diaryPhotosDir, { recursive: true });
+      }
+
+      // Process each uploaded photo
+      for (const file of req.files) {
+        try {
+          const fileExtension = path.extname(file.originalname).toLowerCase();
+          const baseFilename = `${randomUUID()}`;
+          const outputBasePath = path.join(diaryPhotosDir, baseFilename);
+          
+          // Process image with ImageService for optimization
+          const imageMetadata = await ImageService.processImage(
+            file.path,
+            outputBasePath,
+            baseFilename
+          );
+          
+          // Get best variant for display (prefer WebP 640w for diary)
+          const bestVariant = ImageService.getBestVariantForWidth(imageMetadata.variants, 640, 'webp') ||
+                              ImageService.getBestVariantForWidth(imageMetadata.variants, 640, 'jpeg') ||
+                              imageMetadata.variants[0];
+          
+          // Clean up the temporary uploaded file
+          await ImageService.cleanupTempFile(file.path);
+          
+          processedPhotos.push({
+            id: randomUUID(),
+            originalName: file.originalname,
+            url: bestVariant?.url || `/uploads/${file.filename}`,
+            variants: imageMetadata.variants,
+            placeholder: imageMetadata.placeholder,
+            width: imageMetadata.originalWidth,
+            height: imageMetadata.originalHeight
+          });
+          
+        } catch (error) {
+          console.error(`Error processing photo ${file.originalname}:`, error);
+          // Clean up temp file on error
+          await ImageService.cleanupTempFile(file.path);
+          
+          // Skip this file if processing failed
+          console.error(`Skipping file ${file.originalname} due to processing error`);
+        }
+      }
+      
+      res.json({ 
+        photos: processedPhotos,
+        message: `Úspešne nahrané ${processedPhotos.length} fotografií` 
+      });
+      
+    } catch (error) {
+      console.error("Error uploading diary photos:", error);
+      res.status(500).json({ message: "Chyba pri nahrávaní fotografií" });
+    }
+  });
+
+  // Diary Trips endpoints
+  app.get('/api/diary/trips', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const trips = await storage.getDiaryTrips(userId);
+      res.json(trips);
+    } catch (error) {
+      console.error("Error fetching diary trips:", error);
+      res.status(500).json({ message: "Failed to fetch trips" });
+    }
+  });
+
+  app.post('/api/diary/trips', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Check freemium limits
+      const tripLimit = await storage.checkDiaryTripLimit(userId);
+      if (!tripLimit.canCreate) {
+        return res.status(403).json({ 
+          message: "Dosiahli ste limit výprav. Prejdite na PREMIUM pre neobmedzené výpravy.",
+          code: "LIMIT_REACHED"
+        });
+      }
+      
+      // Server controls ownerUserId from session
+      const tripData = {
+        ...req.body,
+        ownerUserId: userId,
+        participants: req.body.participants || []
+      };
+      
+      const newTrip = await storage.createDiaryTrip(tripData, userId);
+      res.status(201).json(newTrip);
+    } catch (error) {
+      console.error("Error creating diary trip:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid trip data", 
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ message: "Failed to create trip" });
+    }
+  });
+
+  app.put('/api/diary/trips/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const tripId = req.params.id;
+      
+      // Check if user owns this trip
+      const trip = await storage.getDiaryTrip(tripId, userId);
+      if (!trip) {
+        return res.status(404).json({ message: "Trip not found" });
+      }
+      
+      const updatedTrip = await storage.updateDiaryTrip(tripId, req.body, userId);
+      res.json(updatedTrip);
+    } catch (error) {
+      console.error("Error updating diary trip:", error);
+      res.status(500).json({ message: "Failed to update trip" });
+    }
+  });
+
+  app.delete('/api/diary/trips/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const tripId = req.params.id;
+      
+      // Check if user owns this trip
+      const trip = await storage.getDiaryTrip(tripId, userId);
+      if (!trip) {
+        return res.status(404).json({ message: "Trip not found" });
+      }
+      
+      await storage.deleteDiaryTrip(tripId, userId);
+      res.json({ message: "Trip deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting diary trip:", error);
+      res.status(500).json({ message: "Failed to delete trip" });
+    }
+  });
+
+  // Diary Catches endpoints  
+  app.get('/api/diary/catches', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { tripId } = req.query;
+      
+      let catches;
+      if (tripId) {
+        catches = await storage.getDiaryCatches(tripId as string, userId);
+      } else {
+        // Get all user's trips and their catches
+        const trips = await storage.getDiaryTrips(userId);
+        catches = [];
+        for (const trip of trips) {
+          const tripCatches = await storage.getDiaryCatches(trip.id, userId);
+          catches.push(...tripCatches);
+        }
+        // Sort by capture date (newest first)
+        catches.sort((a, b) => new Date(b.capturedAt).getTime() - new Date(a.capturedAt).getTime());
+      }
+      
+      res.json(catches);
+    } catch (error) {
+      console.error("Error fetching diary catches:", error);
+      res.status(500).json({ message: "Failed to fetch catches" });
+    }
+  });
+
+  app.post('/api/diary/catches', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Check freemium limits
+      const catchLimit = await storage.checkDiaryCatchLimit(userId);
+      if (!catchLimit.canCreate) {
+        return res.status(403).json({ 
+          message: "Dosiahli ste limit úlovkov. Prejdite na PREMIUM pre neobmedzené úlovky.",
+          code: "LIMIT_REACHED"
+        });
+      }
+      
+      // Verify trip belongs to user
+      const trip = await storage.getDiaryTrip(req.body.tripId, userId);
+      if (!trip) {
+        return res.status(403).json({ message: "Invalid trip" });
+      }
+      
+      // Server controls angler.userId and verified status
+      const catchData = {
+        ...req.body,
+        angler: {
+          ...req.body.angler,
+          userId: userId
+        },
+        verified: false, // Only server can set verified status
+        photos: req.body.photos || [] // Photos will be uploaded separately
+      };
+      
+      const newCatch = await storage.createDiaryCatch(catchData, userId);
+      res.status(201).json(newCatch);
+    } catch (error) {
+      console.error("Error creating diary catch:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid catch data", 
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ message: "Failed to create catch" });
+    }
+  });
+
+  app.put('/api/diary/catches/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const catchId = req.params.id;
+      
+      // Check if user owns this catch through trip ownership
+      const catch_ = await storage.getDiaryCatch(catchId, userId);
+      if (!catch_) {
+        return res.status(404).json({ message: "Catch not found" });
+      }
+      
+      const updatedCatch = await storage.updateDiaryCatch(catchId, req.body, userId);
+      res.json(updatedCatch);
+    } catch (error) {
+      console.error("Error updating diary catch:", error);
+      res.status(500).json({ message: "Failed to update catch" });
+    }
+  });
+
+  app.delete('/api/diary/catches/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const catchId = req.params.id;
+      
+      // Check if user owns this catch through trip ownership
+      const catch_ = await storage.getDiaryCatch(catchId, userId);
+      if (!catch_) {
+        return res.status(404).json({ message: "Catch not found" });
+      }
+      
+      await storage.deleteDiaryCatch(catchId, userId);
+      res.json({ message: "Catch deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting diary catch:", error);
+      res.status(500).json({ message: "Failed to delete catch" });
+    }
+  });
+
+  // Diary Limits endpoints
+  app.get('/api/diary/trip-limits', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const limits = await storage.checkDiaryTripLimit(userId);
+      res.json(limits);
+    } catch (error) {
+      console.error("Error fetching diary trip limits:", error);
+      res.status(500).json({ message: "Failed to fetch trip limits" });
+    }
+  });
+
+  app.get('/api/diary/catch-limits', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const limits = await storage.checkDiaryCatchLimit(userId);
+      res.json(limits);
+    } catch (error) {
+      console.error("Error fetching diary catch limits:", error);
+      res.status(500).json({ message: "Failed to fetch catch limits" });
+    }
+  });
+
+  // Premium status endpoint
+  app.get('/api/auth/premium-status', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const subscription = await storage.getUserSubscription(userId, "diary_premium");
+      const isPremium = !!subscription && subscription.status === 'active';
+      res.json({ isPremium });
+    } catch (error) {
+      console.error("Error checking premium status:", error);
+      res.status(500).json({ message: "Failed to check premium status" });
+    }
+  });
+
   // Serve uploaded files securely
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+  
+  // Serve diary photos with proper cache headers
+  app.use('/attached_assets', (req, res, next) => {
+    // Set cache headers for images
+    res.set({
+      'Cache-Control': 'public, max-age=31536000, immutable', // 1 year cache
+      'Expires': new Date(Date.now() + 31536000000).toUTCString(), // 1 year from now
+    });
+    next();
+  }, express.static(path.join(process.cwd(), 'attached_assets')));
 
   return httpServer;
 }
