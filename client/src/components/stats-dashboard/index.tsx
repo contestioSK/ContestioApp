@@ -1,7 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { BarChart3, TrendingUp, Award, Users, Fish, Target, Trophy, Activity } from "lucide-react";
+import { BarChart3, TrendingUp, Award, Fish, Target, Trophy, Activity } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 // Chart components
@@ -10,16 +10,11 @@ import { TimelineCountChart } from "./charts/timeline-count-chart";
 import { WeightCategoryChart } from "./charts/weight-category-chart";
 import { TopFishChart } from "./charts/top-fish-chart";
 import { TeamAverageChart } from "./charts/team-average-chart";
-import { TeamPerformanceChart } from "./charts/team-performance-chart";
 import { FishTypeDistributionChart } from "./charts/fish-type-distribution-chart";
-import { SectorPerformanceChart } from "./charts/sector-performance-chart";
-import { AverageWeightChart } from "./charts/average-weight-chart";
 import { SpecialMilestonesChart } from "./charts/special-milestones-chart";
 import { DailyBigFishChart } from "./charts/daily-big-fish-chart";
 import { RecordProgressionChart } from "./charts/record-progression-chart";
-import { WeightMilestonesChart } from "./charts/weight-milestones-chart";
 import { SpecialLeaderboard } from "./charts/special-leaderboard";
-import { TeamEfficiencyChart } from "./charts/team-efficiency-chart";
 
 // Hook
 import { useCompetitionStats } from "./hooks/use-competition-stats";
@@ -85,14 +80,10 @@ export default function StatsDashboard({ competitionId }: StatsDashboardProps) {
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="overview" className="flex items-center gap-2">
             <TrendingUp className="w-4 h-4" />
             Prehľad
-          </TabsTrigger>
-          <TabsTrigger value="teams" className="flex items-center gap-2">
-            <Users className="w-4 h-4" />
-            Tímy
           </TabsTrigger>
           <TabsTrigger value="special" className="flex items-center gap-2">
             <Trophy className="w-4 h-4" />
@@ -137,18 +128,6 @@ export default function StatsDashboard({ competitionId }: StatsDashboardProps) {
           </div>
         </TabsContent>
 
-        <TabsContent value="teams" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <TeamPerformanceChart data={stats.teamPerformance} />
-            <AverageWeightChart data={stats.averageWeights} />
-            <TeamEfficiencyChart data={stats.teamEfficiency} />
-            <WeightMilestonesChart data={stats.weightMilestones} />
-          </div>
-          
-          {stats.sectorPerformance.length > 0 && (
-            <SectorPerformanceChart data={stats.sectorPerformance} />
-          )}
-        </TabsContent>
 
         <TabsContent value="special" className="space-y-6">
           <SpecialLeaderboard data={stats.specialCompetitions} />
