@@ -1121,14 +1121,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
       }).filter(team => team.fishCount > 0).sort((a, b) => b.averageWeight - a.averageWeight).slice(0, 5);
 
-      // Get all unique sectors from teams and catches
+      // Get all unique sectors from teams and catches (using only clean sector codes)
       const allSectors = new Set<string>();
       teams.forEach(team => {
         if (team.sector) allSectors.add(team.sector);
-        if (team.sectorName) {
-          const sectorCode = team.sectorName.match(/[A-Z]/)?.[0];
-          if (sectorCode) allSectors.add(sectorCode);
-        }
       });
       catches.forEach(catch_ => {
         if (catch_.sector) allSectors.add(catch_.sector);
