@@ -180,12 +180,12 @@ export default function CategoryPage({ category, title, description }: CategoryP
                 
                 return (
                   <Card key={competition.id} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden border-0 shadow-lg">
-                    <div className="relative">
-                      <Link href={`/competition/${competition.id}`}>
+                    <Link href={`/competition/${competition.id}`}>
+                      <div className="relative cursor-pointer">
                         <img 
                           src={competition.imageUrl || competitionImages[index % competitionImages.length]}
                           alt={competition.name}
-                          className={`w-full h-48 rounded-t-lg group-hover:scale-105 transition-transform duration-300 cursor-pointer ${
+                          className={`w-full h-48 rounded-t-lg group-hover:scale-105 transition-transform duration-300 ${
                             competition.imageUrl 
                               ? 'object-contain bg-white' // Pre nahrané logá - zobrazí celé logo s bielym pozadím
                               : 'object-cover' // Pre predvolené obrázky - pokryje celú plochu
@@ -199,21 +199,21 @@ export default function CategoryPage({ category, title, description }: CategoryP
                             }
                           }}
                         />
-                      </Link>
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                      {category !== 'live' && (
-                        <div className="absolute top-3 left-3">
-                          <Badge variant={statusBadge.variant} className="bg-white/90 text-black backdrop-blur-sm">
-                            {statusBadge.text}
-                          </Badge>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                        {category !== 'live' && (
+                          <div className="absolute top-3 left-3 pointer-events-none">
+                            <Badge variant={statusBadge.variant} className="bg-white/90 text-black backdrop-blur-sm">
+                              {statusBadge.text}
+                            </Badge>
+                          </div>
+                        )}
+                        <div className="absolute bottom-3 left-3 right-3 text-white pointer-events-none">
+                          <h3 className="font-bold text-lg mb-1" data-testid={`text-contest-title-${competition.id}`}>
+                            {competition.name}
+                          </h3>
                         </div>
-                      )}
-                      <div className="absolute bottom-3 left-3 right-3 text-white">
-                        <h3 className="font-bold text-lg mb-1" data-testid={`text-contest-title-${competition.id}`}>
-                          {competition.name}
-                        </h3>
                       </div>
-                    </div>
+                    </Link>
                     
                     <CardContent className="p-6">
                       <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
