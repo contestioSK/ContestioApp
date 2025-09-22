@@ -1,0 +1,318 @@
+import { Card, CardContent } from "@/components/ui/card";
+import { Fish, Scale, Trophy, TrendingUp, Medal, Timer, Calculator, Target, Award, Crown } from "lucide-react";
+import { getSideCompetitionLabel } from "@/lib/utils";
+import type { Catch, Team, Competition } from "@shared/schema";
+
+interface SideCompetitionStatsBarProps {
+  catches: (Catch & { team?: Team })[];
+  teams: Team[];
+  competition: Competition;
+  isLoading?: boolean;
+}
+
+export default function SideCompetitionStatsBar({ 
+  catches, 
+  teams, 
+  competition, 
+  isLoading 
+}: SideCompetitionStatsBarProps) {
+  // Don't show if no side competitions
+  if (!competition.sideCompetitions || competition.sideCompetitions.length === 0) {
+    return null;
+  }
+
+  if (isLoading) {
+    return (
+      <Card className="mb-6 border-0 shadow-md bg-gradient-to-r from-background to-muted/20">
+        <CardContent className="p-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[...Array(Math.min(competition.sideCompetitions.length, 4))].map((_, i) => (
+              <div key={i} className="text-center">
+                <div className="w-8 h-8 bg-muted rounded-full mx-auto mb-2 animate-pulse"></div>
+                <div className="h-3 bg-muted rounded w-12 mx-auto mb-1 animate-pulse"></div>
+                <div className="h-5 bg-muted rounded w-16 mx-auto animate-pulse"></div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!catches || catches.length === 0) {
+    return (
+      <Card className="mb-6 border-0 shadow-md bg-gradient-to-r from-background to-muted/20">
+        <CardContent className="p-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {competition.sideCompetitions.map((sideCompetitionId, index) => (
+              <div key={sideCompetitionId} className="text-center" data-testid={`side-competition-${sideCompetitionId}`}>
+                <div className="w-8 h-8 bg-gradient-to-br from-secondary/20 to-secondary/10 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  {getSideCompetitionIcon(sideCompetitionId)}
+                </div>
+                <p className="text-xs text-muted-foreground mb-1">{getSideCompetitionLabel(sideCompetitionId)}</p>
+                <p className="text-lg font-bold text-foreground">-</p>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const sideCompetitionResults = calculateSideCompetitions(catches, teams, competition.sideCompetitions);
+
+  return (
+    <Card className="mb-6 border-0 shadow-md bg-gradient-to-r from-background to-muted/20" data-testid="side-competition-stats-bar">
+      <CardContent className="p-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {competition.sideCompetitions.map((sideCompetitionId) => {
+            const result = sideCompetitionResults[sideCompetitionId];
+            if (!result) return null;
+
+            return (
+              <div key={sideCompetitionId} className="text-center" data-testid={`side-competition-${sideCompetitionId}`}>
+                <div className="w-8 h-8 bg-gradient-to-br from-secondary/20 to-secondary/10 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  {getSideCompetitionIcon(sideCompetitionId)}
+                </div>
+                <p className="text-xs text-muted-foreground mb-1">{getSideCompetitionLabel(sideCompetitionId)}</p>
+                <p className="text-lg font-bold text-foreground" data-testid={`value-${sideCompetitionId}`}>
+                  {result.value}
+                </p>
+                {result.teamName && (
+                  <p className="text-xs text-muted-foreground mt-0.5" data-testid={`team-${sideCompetitionId}`}>
+                    {result.teamName}
+                  </p>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function getSideCompetitionIcon(sideCompetitionId: string) {
+  const iconClass = "w-4 h-4 text-secondary";
+  
+  switch (sideCompetitionId) {
+    case 'big-fish-overall':
+      return <Trophy className={iconClass} />;
+    case 'big-common-carp':
+    case 'big-mirror-carp':
+      return <Fish className={iconClass} />;
+    case 'first-catch':
+    case 'last-catch':
+      return <Timer className={iconClass} />;
+    case 'most-fish-caught':
+      return <Award className={iconClass} />;
+    case 'best-5-fish':
+    case 'best-3-fish':
+      return <Calculator className={iconClass} />;
+    case 'daily-big-fish':
+      return <Crown className={iconClass} />;
+    case 'first-fish-over-15kg':
+    case 'first-fish-over-20kg':
+    case 'first-fish-over-25kg':
+      return <Target className={iconClass} />;
+    default:
+      return <Medal className={iconClass} />;
+  }
+}
+
+function calculateSideCompetitions(
+  catches: (Catch & { team?: Team })[], 
+  teams: Team[], 
+  sideCompetitions: string[]
+): Record<string, { value: string; teamName?: string }> {
+  const results: Record<string, { value: string; teamName?: string }> = {};
+
+  for (const sideCompetitionId of sideCompetitions) {
+    switch (sideCompetitionId) {
+      case 'big-fish-overall':
+        const biggestCatch = catches.reduce((max, current) => 
+          parseFloat(current.weight) > parseFloat(max.weight) ? current : max
+        );
+        results[sideCompetitionId] = {
+          value: `${parseFloat(biggestCatch.weight).toFixed(2)} kg`,
+          teamName: biggestCatch.team?.name
+        };
+        break;
+
+      case 'big-common-carp':
+        const scalyCatches = catches.filter(c => c.fishType === 'scaly');
+        if (scalyCatches.length > 0) {
+          const biggestScaly = scalyCatches.reduce((max, current) => 
+            parseFloat(current.weight) > parseFloat(max.weight) ? current : max
+          );
+          results[sideCompetitionId] = {
+            value: `${parseFloat(biggestScaly.weight).toFixed(2)} kg`,
+            teamName: biggestScaly.team?.name
+          };
+        } else {
+          results[sideCompetitionId] = { value: "0 kg" };
+        }
+        break;
+
+      case 'big-mirror-carp':
+        const mirrorCatches = catches.filter(c => c.fishType === 'mirror');
+        if (mirrorCatches.length > 0) {
+          const biggestMirror = mirrorCatches.reduce((max, current) => 
+            parseFloat(current.weight) > parseFloat(max.weight) ? current : max
+          );
+          results[sideCompetitionId] = {
+            value: `${parseFloat(biggestMirror.weight).toFixed(2)} kg`,
+            teamName: biggestMirror.team?.name
+          };
+        } else {
+          results[sideCompetitionId] = { value: "0 kg" };
+        }
+        break;
+
+      case 'first-catch':
+        const catchesWithTime = catches.filter(c => c.submittedAt);
+        if (catchesWithTime.length > 0) {
+          const sortedByTime = catchesWithTime.sort((a, b) => 
+            new Date(a.submittedAt!).getTime() - new Date(b.submittedAt!).getTime()
+          );
+          const firstCatch = sortedByTime[0];
+          results[sideCompetitionId] = {
+            value: `${parseFloat(firstCatch.weight).toFixed(2)} kg`,
+            teamName: firstCatch.team?.name
+          };
+        } else {
+          results[sideCompetitionId] = { value: "0 kg" };
+        }
+        break;
+
+      case 'last-catch':
+        const catchesWithTimeDesc = catches.filter(c => c.submittedAt);
+        if (catchesWithTimeDesc.length > 0) {
+          const sortedByTimeDesc = catchesWithTimeDesc.sort((a, b) => 
+            new Date(b.submittedAt!).getTime() - new Date(a.submittedAt!).getTime()
+          );
+          const lastCatch = sortedByTimeDesc[0];
+          results[sideCompetitionId] = {
+            value: `${parseFloat(lastCatch.weight).toFixed(2)} kg`,
+            teamName: lastCatch.team?.name
+          };
+        } else {
+          results[sideCompetitionId] = { value: "0 kg" };
+        }
+        break;
+
+      case 'most-fish-caught':
+        const teamCatchCounts = teams.map(team => ({
+          team,
+          count: catches.filter(c => c.teamId === team.id).length
+        }));
+        const mostFishTeam = teamCatchCounts.reduce((max, current) => 
+          current.count > max.count ? current : max, { team: null as Team | null, count: 0 }
+        );
+        results[sideCompetitionId] = {
+          value: mostFishTeam.count.toString(),
+          teamName: mostFishTeam.team?.name
+        };
+        break;
+
+      case 'best-5-fish':
+        const teamSum5 = teams.map(team => {
+          const teamCatches = catches
+            .filter(c => c.teamId === team.id)
+            .map(c => parseFloat(c.weight))
+            .sort((a, b) => b - a)
+            .slice(0, 5);
+          
+          const sum = teamCatches.length >= 5 ? 
+            teamCatches.reduce((sum, weight) => sum + weight, 0) : 0;
+          
+          return { team, sum, count: teamCatches.length };
+        }).filter(t => t.count >= 5);
+
+        const bestSum5Team = teamSum5.reduce((max, current) => 
+          current.sum > max.sum ? current : max, { team: null as Team | null, sum: 0, count: 0 }
+        );
+        
+        results[sideCompetitionId] = {
+          value: bestSum5Team.team ? `${bestSum5Team.sum.toFixed(2)} kg` : "0 kg",
+          teamName: bestSum5Team.team?.name
+        };
+        break;
+
+      case 'best-3-fish':
+        const teamSum3 = teams.map(team => {
+          const teamCatches = catches
+            .filter(c => c.teamId === team.id)
+            .map(c => parseFloat(c.weight))
+            .sort((a, b) => b - a)
+            .slice(0, 3);
+          
+          const sum = teamCatches.length >= 3 ? 
+            teamCatches.reduce((sum, weight) => sum + weight, 0) : 0;
+          
+          return { team, sum, count: teamCatches.length };
+        }).filter(t => t.count >= 3);
+
+        const bestSum3Team = teamSum3.reduce((max, current) => 
+          current.sum > max.sum ? current : max, { team: null as Team | null, sum: 0, count: 0 }
+        );
+        
+        results[sideCompetitionId] = {
+          value: bestSum3Team.team ? `${bestSum3Team.sum.toFixed(2)} kg` : "0 kg",
+          teamName: bestSum3Team.team?.name
+        };
+        break;
+
+      case 'daily-big-fish':
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        
+        const todayCatches = catches.filter(c => {
+          if (!c.submittedAt) return false;
+          const catchDate = new Date(c.submittedAt);
+          return catchDate >= today && catchDate < tomorrow;
+        });
+
+        if (todayCatches.length > 0) {
+          const dailyBiggest = todayCatches.reduce((max, current) => 
+            parseFloat(current.weight) > parseFloat(max.weight) ? current : max
+          );
+          results[sideCompetitionId] = {
+            value: `${parseFloat(dailyBiggest.weight).toFixed(2)} kg`,
+            teamName: dailyBiggest.team?.name
+          };
+        } else {
+          results[sideCompetitionId] = { value: "0 kg" };
+        }
+        break;
+
+      case 'first-fish-over-15kg':
+      case 'first-fish-over-20kg':
+      case 'first-fish-over-25kg':
+        const targetWeight = sideCompetitionId === 'first-fish-over-15kg' ? 15 :
+                            sideCompetitionId === 'first-fish-over-20kg' ? 20 : 25;
+        
+        const overWeightCatches = catches
+          .filter(c => parseFloat(c.weight) >= targetWeight && c.submittedAt)
+          .sort((a, b) => new Date(a.submittedAt!).getTime() - new Date(b.submittedAt!).getTime());
+
+        if (overWeightCatches.length > 0) {
+          const firstOverWeight = overWeightCatches[0];
+          results[sideCompetitionId] = {
+            value: `${parseFloat(firstOverWeight.weight).toFixed(2)} kg`,
+            teamName: firstOverWeight.team?.name
+          };
+        } else {
+          results[sideCompetitionId] = { value: "0 kg" };
+        }
+        break;
+
+      default:
+        results[sideCompetitionId] = { value: "-" };
+    }
+  }
+
+  return results;
+}
