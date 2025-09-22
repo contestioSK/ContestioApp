@@ -18,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -309,6 +310,11 @@ export default function DiaryCatches() {
     if (editingCatch) {
       updateCatchMutation.mutate(data);
     } else {
+      // Client-side freemium guard - prevent bypassing disabled button
+      if (!canCreateCatch) {
+        showErrorToast(toast, new Error('403: Dosiahli ste limit úlovkov'), 'catch');
+        return;
+      }
       createCatchMutation.mutate(data);
     }
   };
@@ -403,16 +409,37 @@ export default function DiaryCatches() {
               }
             }}
           >
-            <DialogTrigger asChild>
-              <Button 
-                className="gap-2"
-                disabled={!canCreateCatch}
-                data-testid="button-create-catch"
-              >
-                <Plus className="w-4 h-4" />
-                Nový úlovok
-              </Button>
-            </DialogTrigger>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span 
+                    className="inline-flex" 
+                    tabIndex={(!canCreateCatch || limitsLoading) ? 0 : -1}
+                  >
+                    <DialogTrigger asChild>
+                      <Button 
+                        className="gap-2"
+                        disabled={!canCreateCatch}
+                        data-testid="button-create-catch"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Nový úlovok
+                      </Button>
+                    </DialogTrigger>
+                  </span>
+                </TooltipTrigger>
+                {!canCreateCatch && (
+                  <TooltipContent>
+                    <p>
+                      {limitsLoading 
+                        ? "Načítavam limity..." 
+                        : `Dosiahli ste limit ${limits?.limit} úlovkov. Prejdite na PREMIUM pre neobmedzené úlovky.`
+                      }
+                    </p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>
