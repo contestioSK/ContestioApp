@@ -781,7 +781,39 @@ export class DatabaseStorage implements IStorage {
 
   // Leaderboard operations
   async getLeaderboard(competitionId: string): Promise<(Team & { members: TeamMember[] })[]> {
-    return this.getTeamsByCompetition(competitionId);
+    // Get all teams for this competition
+    const allTeams = await this.getTeamsByCompetition(competitionId);
+    
+    // Filter to only approved teams
+    const approvedTeams = allTeams.filter(team => team.status === 'approved');
+
+    // Calculate real-time total weights for each team from catches table
+    const teamsWithRealWeights = await Promise.all(
+      approvedTeams.map(async (team) => {
+        const stats = await db
+          .select({
+            totalWeight: sql<number>`COALESCE(SUM(CAST(${catches.weight} AS DECIMAL)), 0)`,
+            fishCount: sql<number>`COALESCE(COUNT(*), 0)`,
+          })
+          .from(catches)
+          .where(and(eq(catches.teamId, team.id), eq(catches.isVerified, true)));
+
+        const { totalWeight, fishCount } = stats[0];
+        
+        return {
+          ...team,
+          totalWeight: totalWeight.toString(),
+          fishCount
+        };
+      })
+    );
+
+    // Sort teams by totalWeight descending
+    return teamsWithRealWeights.sort((a, b) => {
+      const weightA = parseFloat(a.totalWeight || '0');
+      const weightB = parseFloat(b.totalWeight || '0');
+      return weightB - weightA; // Descending order
+    });
   }
 
   // Sector statistics operations
