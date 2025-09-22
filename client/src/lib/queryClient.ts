@@ -7,20 +7,70 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
+/**
+ * Enhanced API request with timeout, retry logic, and better error handling
+ */
 export async function apiRequest(
   method: string,
   url: string,
   data?: unknown | undefined,
+  options?: {
+    timeout?: number;
+    retries?: number;
+    retryDelay?: number;
+  }
 ): Promise<Response> {
-  const res = await fetch(url, {
-    method,
-    headers: data ? { "Content-Type": "application/json" } : {},
-    body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
-  });
-
-  await throwIfResNotOk(res);
-  return res;
+  const { timeout = 10000, retries = 2, retryDelay = 1000 } = options || {};
+  
+  let lastError: Error;
+  
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      // Create AbortController for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
+      
+      const res = await fetch(url, {
+        method,
+        headers: data ? { "Content-Type": "application/json" } : {},
+        body: data ? JSON.stringify(data) : undefined,
+        credentials: "include",
+        signal: controller.signal,
+      });
+      
+      clearTimeout(timeoutId);
+      await throwIfResNotOk(res);
+      return res;
+      
+    } catch (error) {
+      lastError = error as Error;
+      
+      // Don't retry on client errors (4xx) except for specific cases
+      if (lastError.message.includes('400') || 
+          lastError.message.includes('401') || 
+          lastError.message.includes('403') || 
+          lastError.message.includes('404')) {
+        throw lastError;
+      }
+      
+      // Don't retry on the last attempt
+      if (attempt === retries) {
+        throw lastError;
+      }
+      
+      // Add network error context for better error messages
+      if (lastError.name === 'AbortError') {
+        lastError = new Error('Network request timeout - please check your connection');
+      } else if (lastError.message.includes('Failed to fetch')) {
+        lastError = new Error('Network error - please check your internet connection');
+      }
+      
+      // Wait before retry with exponential backoff
+      await new Promise(resolve => setTimeout(resolve, retryDelay * Math.pow(2, attempt)));
+    }
+  }
+  
+  throw lastError!;
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";

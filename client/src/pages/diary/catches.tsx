@@ -22,6 +22,7 @@ import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { showErrorToast } from "@/lib/errorUtils";
 
 import { 
   Calendar as CalendarIcon, 
@@ -247,11 +248,7 @@ export default function DiaryCatches() {
       });
     },
     onError: (error: Error) => {
-      toast({
-        title: "Chyba pri pridávaní úlovku",
-        description: error.message,
-        variant: "destructive",
-      });
+      showErrorToast(toast, error, 'catch');
     }
   });
 
@@ -285,11 +282,7 @@ export default function DiaryCatches() {
       });
     },
     onError: (error: Error) => {
-      toast({
-        title: "Chyba pri aktualizácii úlovku",
-        description: error.message,
-        variant: "destructive",
-      });
+      showErrorToast(toast, error, 'update');
     }
   });
 
@@ -308,11 +301,7 @@ export default function DiaryCatches() {
       });
     },
     onError: (error: Error) => {
-      toast({
-        title: "Chyba pri mazaní úlovku",
-        description: error.message,
-        variant: "destructive",
-      });
+      showErrorToast(toast, error, 'delete');
     }
   });
 
