@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Fish, Users, Trophy, MapPin, PlusCircle, Menu, X, Info, DollarSign, HelpCircle } from "lucide-react";
+import { Fish, Users, Trophy, MapPin, PlusCircle, Menu, X, Info, DollarSign, HelpCircle, BarChart3, Target, Zap, BookOpen, Crown } from "lucide-react";
 import { ContestCategories } from "@/components/contest-categories";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
@@ -242,72 +242,137 @@ export default function Landing() {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="relative py-12 lg:py-20">
-        <div className="absolute inset-0 z-0">
-          <img 
-            src={heroImage} 
-            alt="Carp angler casting at sunset with dramatic sky reflection" 
-            className="w-full h-full object-cover opacity-40" 
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/40 to-secondary/40"></div>
-        </div>
+      {/* Diagonal Hero Section */}
+      <section className="relative h-[480px] sm:h-[560px] md:h-[600px] lg:h-[640px] overflow-hidden">
+        {/* Background with 75° diagonal split */}
+        <div 
+          className="absolute inset-0"
+          style={{
+            background: `linear-gradient(165deg, 
+              rgb(29, 78, 216) 0%, 
+              rgb(29, 78, 216) 49.8%, 
+              rgb(34, 197, 94) 50.2%, 
+              rgb(34, 197, 94) 100%
+            )`
+          }}
+        />
         
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6">
-              Rybárske <span className="text-primary">Súťaže</span> Naživo
-            </h1>
-            <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-              Organizujte rybárske súťaže jednoducho a profesionálne
-            </p>
-            
-            {/* Live Stats Banner */}
-            <div className="inline-flex items-center space-x-8 bg-white/90 backdrop-blur-sm rounded-2xl px-8 py-4 shadow-lg mb-8">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-primary" data-testid="text-live-competitions">3</div>
-                <div className="text-sm text-muted-foreground">Práve teraz</div>
+        {/* Content Container */}
+        <div className="relative z-10 h-full flex flex-col md:flex-row">
+          {/* Competition Section */}
+          <div 
+            className="flex-1 flex items-center justify-center md:justify-start text-white px-4 sm:px-6 md:px-8 py-8"
+            data-testid="hero-competitions-section"
+          >
+            <div className="max-w-sm text-center md:text-left">
+              {/* Competition Icons */}
+              <div className="flex justify-center md:justify-start gap-3 mb-4 md:mb-6">
+                <div className="p-2 md:p-3 bg-white/20 rounded-full">
+                  <Trophy className="w-5 h-5 md:w-6 md:h-6 text-yellow-300" />
+                </div>
+                <div className="p-2 md:p-3 bg-white/20 rounded-full">
+                  <BarChart3 className="w-5 h-5 md:w-6 md:h-6 text-blue-200" />
+                </div>
+                <div className="p-2 md:p-3 bg-white/20 rounded-full">
+                  <Target className="w-5 h-5 md:w-6 md:h-6 text-orange-300" />
+                </div>
               </div>
-              <div className="w-px h-8 bg-border"></div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-secondary" data-testid="text-active-teams">127</div>
-                <div className="text-sm text-muted-foreground">Aktívne tímy</div>
-              </div>
-              <div className="w-px h-8 bg-border"></div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-accent" data-testid="text-recent-catches">1,843</div>
-                <div className="text-sm text-muted-foreground">Úlovkov dnes</div>
-              </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button 
-                size="lg"
-                onClick={() => window.location.href = '/api/login'}
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
-                data-testid="button-get-started"
-              >
-                Začať
-              </Button>
               
-              <Button
-                size="lg"
-                variant="outline"
-                onClick={() => window.location.href = '/register-competition'}
-                className="border-2 border-secondary text-secondary hover:bg-secondary hover:text-secondary-foreground font-semibold"
-                data-testid="button-register-competition-landing"
-              >
-                <PlusCircle className="w-5 h-5 mr-2" />
-                Zaregistrovať súťaž
-              </Button>
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 md:mb-4">
+                Súťaže
+              </h2>
+              <p className="text-blue-100 text-base md:text-lg mb-6 md:mb-8 leading-relaxed">
+                Chceš organizovať alebo sledovať profesionálne rybárske súťaže na Slovensku? 
+                Sleduj live výsledky, rebríčky a úlovky tímov v reálnom čase.
+              </p>
+              
+              <div className="flex flex-col gap-3 md:gap-4">
+                <Link href="/live">
+                  <Button 
+                    size="lg"
+                    className="w-full bg-white text-blue-800 hover:bg-blue-50 font-semibold transition-all duration-300 transform hover:scale-105"
+                    data-testid="button-view-competitions"
+                  >
+                    <Zap className="w-5 h-5 mr-2" />
+                    Prehľad súťaží
+                  </Button>
+                </Link>
+                <Link href="/register-competition">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="w-full border-2 border-white text-white hover:bg-white hover:text-blue-800 font-semibold transition-all duration-300"
+                    data-testid="button-register-competition-hero"
+                  >
+                    <PlusCircle className="w-5 h-5 mr-2" />
+                    Zaregistruj súťaž
+                  </Button>
+                </Link>
+              </div>
             </div>
-            
-            <p className="text-sm text-muted-foreground mt-4 max-w-2xl mx-auto">
-              <strong>Organizujete rybársku súťaž?</strong> Zaregistrujte ju u nás a využite profesionálne nástroje 
-              pre sledovanie úlovkov, rebríčky a správu tímov v reálnom čase.
-            </p>
+          </div>
+
+          {/* Fishing Diary Section */}
+          <div 
+            className="flex-1 flex items-center justify-center md:justify-end text-white px-4 sm:px-6 md:px-8 py-8"
+            data-testid="hero-diary-section"
+          >
+            <div className="max-w-sm text-center md:text-left">
+              {/* Diary Icons */}
+              <div className="flex justify-center md:justify-start gap-3 mb-4 md:mb-6">
+                <div className="p-2 md:p-3 bg-white/20 rounded-full">
+                  <BookOpen className="w-5 h-5 md:w-6 md:h-6 text-green-100" />
+                </div>
+                <div className="p-2 md:p-3 bg-white/20 rounded-full">
+                  <Fish className="w-5 h-5 md:w-6 md:h-6 text-blue-200" />
+                </div>
+                <div className="p-2 md:p-3 bg-white/20 rounded-full">
+                  <Crown className="w-5 h-5 md:w-6 md:h-6 text-yellow-300" />
+                </div>
+              </div>
+              
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 md:mb-4">
+                Rybársky denník
+              </h2>
+              <p className="text-green-100 text-base md:text-lg mb-6 md:mb-8 leading-relaxed">
+                Zaznamenávaj svoje úlovky, porovnávaj ich s kamarátmi a súťažte medzi sebou 
+                o najlepšie výsledky v Fishing Battle.
+              </p>
+              
+              <div className="flex flex-col gap-3 md:gap-4">
+                <Link href="/diary">
+                  <Button 
+                    size="lg"
+                    className="w-full bg-white text-green-800 hover:bg-green-50 font-semibold transition-all duration-300 transform hover:scale-105"
+                    data-testid="button-start-diary"
+                  >
+                    <BookOpen className="w-5 h-5 mr-2" />
+                    Začať zapisovať
+                  </Button>
+                </Link>
+                <a href="/api/login">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="w-full border-2 border-white text-white hover:bg-white hover:text-green-800 font-semibold transition-all duration-300"
+                    data-testid="button-try-battle"
+                  >
+                    <Trophy className="w-5 h-5 mr-2" />
+                    Vyskúšať Battle
+                  </Button>
+                </a>
+              </div>
+            </div>
           </div>
         </div>
+
+        {/* Diagonal Highlight Overlay */}
+        <div 
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: 'linear-gradient(165deg, transparent 49%, rgba(255,255,255,0.1) 49.8%, rgba(255,255,255,0.2) 50.2%, transparent 51%)',
+          }}
+        />
       </section>
 
       {/* Contest Categories */}
