@@ -4,6 +4,8 @@ import { WebSocketServer, WebSocket } from "ws";
 import { randomUUID } from "crypto";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+import { hashPassword, validatePassword, generateVerificationToken, generateTokenExpiration } from "./utils/auth";
+import { emailService } from "./utils/email";
 import {
   insertCompetitionSchema,
   insertCompetitionRegistrationSchema,
@@ -64,6 +66,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Auth middleware
   await setupAuth(app);
+  
+  // Load new auth system after setupAuth to override serialize/deserialize functions
+  const passportModule = await import("./utils/passport");
+  const passport = passportModule.default;
 
   // Create HTTP server
   const httpServer = createServer(app);
@@ -206,20 +212,213 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return userIds;
   }
 
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+  // New auth middleware for the new auth system
+  const isNewAuthAuthenticated = (req: any, res: any, next: any) => {
+    if (req.isAuthenticated() && req.user?.id) {
+      return next();
+    }
+    return res.status(401).json({ message: "Unauthorized" });
+  };
+
+  // New auth endpoints for email/password + Google OAuth
+  app.post('/api/auth/register', async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
-      console.log('[AUTH] /api/auth/user - User ID from session:', userId);
+      const { email, firstName, lastName, password } = req.body;
+
+      // Validate required fields
+      if (!email || !firstName || !lastName || !password) {
+        return res.status(400).json({ 
+          message: 'All fields are required' 
+        });
+      }
+
+      // Validate password requirements
+      const passwordValidation = validatePassword(password);
+      if (!passwordValidation.isValid) {
+        return res.status(400).json({ 
+          message: passwordValidation.error 
+        });
+      }
+
+      // Normalize email and check if user already exists
+      const normalizedEmail = email.toLowerCase().trim();
+      const existingUser = await storage.getUserByEmail(normalizedEmail);
+      if (existingUser) {
+        return res.status(400).json({ 
+          message: 'Registration failed. Please try again.' // Generic message to avoid enumeration
+        });
+      }
+
+      // Hash password and generate verification token
+      const hashedPassword = await hashPassword(password);
+      const verificationToken = generateVerificationToken();
+      const verificationTokenExpires = generateTokenExpiration();
+
+      // Create user
+      const newUser = await storage.createEmailUser({
+        email: normalizedEmail,
+        firstName,
+        lastName,
+        password: hashedPassword,
+        verificationToken,
+        verificationTokenExpires,
+      });
+
+      // Send verification email
+      const emailSent = await emailService.sendVerificationEmail(
+        email,
+        firstName,
+        verificationToken
+      );
+
+      if (!emailSent) {
+        console.error('[AUTH] Failed to send verification email for user:', email);
+        // Note: We still create the user but inform them about email issue
+      }
+
+      res.status(201).json({
+        message: 'Account created successfully. Please check your email to verify your account.',
+        emailSent,
+        user: {
+          id: newUser.id,
+          email: newUser.email,
+          firstName: newUser.firstName,
+          lastName: newUser.lastName,
+          emailVerified: newUser.emailVerified
+        }
+      });
+
+    } catch (error) {
+      console.error('[AUTH] Registration error:', error);
+      res.status(500).json({ message: 'Registration failed. Please try again.' });
+    }
+  });
+
+  app.post('/api/auth/login', (req, res, next) => {
+    passport.authenticate('local', (err: any, user: any, info: any) => {
+      if (err) {
+        console.error('[AUTH] Login error:', err);
+        return res.status(500).json({ message: 'Login failed. Please try again.' });
+      }
+
+      if (!user) {
+        return res.status(401).json({ 
+          message: info?.message || 'Invalid credentials' 
+        });
+      }
+
+      // Log the user in
+      req.logIn(user, (err: any) => {
+        if (err) {
+          console.error('[AUTH] Session error:', err);
+          return res.status(500).json({ message: 'Login failed. Please try again.' });
+        }
+
+        res.json({
+          message: 'Login successful',
+          user: {
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            role: user.role,
+            emailVerified: user.emailVerified
+          }
+        });
+      });
+    })(req, res, next);
+  });
+
+  app.get('/api/auth/verify-email', async (req, res) => {
+    try {
+      const { token } = req.query;
+
+      if (!token || typeof token !== 'string') {
+        return res.status(400).json({ 
+          message: 'Verification token is required' 
+        });
+      }
+
+      const verifiedUser = await storage.verifyUserEmail(token);
+
+      if (!verifiedUser) {
+        return res.status(400).json({ 
+          message: 'Invalid or expired verification token' 
+        });
+      }
+
+      res.json({
+        message: 'Email verified successfully. You can now sign in.',
+        user: {
+          id: verifiedUser.id,
+          email: verifiedUser.email,
+          firstName: verifiedUser.firstName,
+          lastName: verifiedUser.lastName,
+          emailVerified: verifiedUser.emailVerified
+        }
+      });
+
+    } catch (error) {
+      console.error('[AUTH] Email verification error:', error);
+      res.status(500).json({ message: 'Email verification failed. Please try again.' });
+    }
+  });
+
+  // Google OAuth routes
+  app.get('/api/auth/google', passport.authenticate('google', {
+    scope: ['profile', 'email']
+  }));
+
+  app.get('/api/auth/google/callback', 
+    passport.authenticate('google', { failureRedirect: '/login?error=google_auth_failed' }),
+    (req, res) => {
+      // Successful authentication, redirect to dashboard or home
+      res.redirect('/');
+    }
+  );
+
+  // Logout endpoint
+  app.post('/api/auth/logout', (req, res) => {
+    req.logout((err) => {
+      if (err) {
+        console.error('[AUTH] Logout error:', err);
+        return res.status(500).json({ message: 'Logout failed' });
+      }
+      res.json({ message: 'Logged out successfully' });
+    });
+  });
+
+  // Auth routes - Updated to support both auth systems
+  app.get('/api/auth/user', async (req: any, res) => {
+    try {
+      let userId: string | undefined;
+
+      // Try new auth system first
+      if (req.isAuthenticated() && req.user?.id) {
+        userId = req.user.id;
+        console.log('[AUTH] /api/auth/user - User ID from new auth:', userId);
+      }
+      // Fallback to old auth system
+      else if (req.user?.claims?.sub) {
+        userId = req.user.claims.sub;
+        console.log('[AUTH] /api/auth/user - User ID from old auth:', userId);
+      }
+
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
       const user = await storage.getUser(userId);
       console.log('[AUTH] /api/auth/user - User retrieved from DB:', user ? `${user.email} (role: ${user.role})` : 'not found');
       
       if (!user) {
-        console.log('[AUTH] User not found in database, this should not happen after successful login');
+        console.log('[AUTH] User not found in database');
         return res.status(404).json({ message: "User not found in database" });
       }
       
-      res.json(user);
+      // Remove sensitive data
+      const { password: _, verificationToken: __, verificationTokenExpires: ___, ...safeUser } = user;
+      res.json(safeUser);
     } catch (error) {
       console.error("[AUTH] Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
