@@ -182,9 +182,12 @@ export default function CatchTimeline({ catches, isLoading, competitionId }: Cat
                           e.currentTarget.parentNode?.insertBefore(span, e.currentTarget);
                         }}
                       />
-                      <span className="font-medium text-foreground text-sm">
+                      <Link 
+                        href={catch_.teamId ? `/team/${catch_.teamId}` : '#'} 
+                        className="font-medium text-foreground text-sm hover:text-primary transition-colors"
+                      >
                         {catch_.team?.name || 'Neznámy tím'}
-                      </span>
+                      </Link>
                     </div>
                     
                     <div className="flex items-center gap-3">
