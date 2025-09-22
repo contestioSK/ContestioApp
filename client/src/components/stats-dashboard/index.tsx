@@ -11,10 +11,12 @@ import { WeightCategoryChart } from "./charts/weight-category-chart";
 import { TopFishChart } from "./charts/top-fish-chart";
 import { TeamAverageChart } from "./charts/team-average-chart";
 import { FishTypeDistributionChart } from "./charts/fish-type-distribution-chart";
-import { SpecialMilestonesChart } from "./charts/special-milestones-chart";
-import { DailyBigFishChart } from "./charts/daily-big-fish-chart";
-import { RecordProgressionChart } from "./charts/record-progression-chart";
-import { SpecialLeaderboard } from "./charts/special-leaderboard";
+import { SectorWeightTimelineChart } from "./charts/sector-weight-timeline-chart";
+import { SectorCountTimelineChart } from "./charts/sector-count-timeline-chart";
+import { SectorFishTypeChart } from "./charts/sector-fish-type-chart";
+import { SectorAverageWeightChart } from "./charts/sector-average-weight-chart";
+import { SectorActivityChart } from "./charts/sector-activity-chart";
+import { SectorPerformanceChart } from "./charts/sector-performance-chart";
 
 // Hook
 import { useCompetitionStats } from "./hooks/use-competition-stats";
@@ -85,9 +87,9 @@ export default function StatsDashboard({ competitionId }: StatsDashboardProps) {
             <TrendingUp className="w-4 h-4" />
             Prehľad
           </TabsTrigger>
-          <TabsTrigger value="special" className="flex items-center gap-2">
+          <TabsTrigger value="sectors" className="flex items-center gap-2">
             <Trophy className="w-4 h-4" />
-            Špeciálne
+            Štatistika sektorov
           </TabsTrigger>
           <TabsTrigger value="analysis" className="flex items-center gap-2">
             <Activity className="w-4 h-4" />
@@ -129,13 +131,19 @@ export default function StatsDashboard({ competitionId }: StatsDashboardProps) {
         </TabsContent>
 
 
-        <TabsContent value="special" className="space-y-6">
-          <SpecialLeaderboard data={stats.specialCompetitions} />
-          
+        <TabsContent value="sectors" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <SpecialMilestonesChart data={stats.specialMilestones} />
-            <RecordProgressionChart data={stats.recordProgression} />
-            <DailyBigFishChart data={stats.dailyBigFish} />
+            {/* Prvý riadok - Vývoj váhy a počtu */}
+            <SectorWeightTimelineChart data={stats.sectorTimeline || {}} />
+            <SectorCountTimelineChart data={stats.sectorTimeline || {}} />
+            
+            {/* Druhý riadok - Druh ryby a Top sektory */}
+            <SectorFishTypeChart data={stats.sectorFishTypes || []} />
+            <SectorPerformanceChart data={stats.sectorPerformance || []} />
+            
+            {/* Tretí riadok - Priemerná váha a Aktivita */}
+            <SectorAverageWeightChart data={stats.sectorPerformance || []} />
+            <SectorActivityChart data={stats.sectorTimeline || {}} />
           </div>
         </TabsContent>
 

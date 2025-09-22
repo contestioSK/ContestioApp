@@ -1121,17 +1121,115 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
       }).filter(team => team.fishCount > 0).sort((a, b) => b.averageWeight - a.averageWeight).slice(0, 5);
 
-      // Mock data for other charts (to be implemented later)
+      // Get all unique sectors from teams and catches
+      const allSectors = new Set<string>();
+      teams.forEach(team => {
+        if (team.sector) allSectors.add(team.sector);
+        if (team.sectorName) {
+          const sectorCode = team.sectorName.match(/[A-Z]/)?.[0];
+          if (sectorCode) allSectors.add(sectorCode);
+        }
+      });
+      catches.forEach(catch_ => {
+        if (catch_.sector) allSectors.add(catch_.sector);
+      });
+
+      // Sector Performance (overall stats per sector)
+      const sectorPerformance = Array.from(allSectors).map(sector => {
+        const sectorCatches = catches.filter(catch_ => catch_.sector === sector);
+        const totalWeight = sectorCatches.reduce((sum, catch_) => sum + Number(catch_.weight), 0);
+        const totalCount = sectorCatches.length;
+        const averageWeight = totalCount > 0 ? Math.round((totalWeight / totalCount) * 10) / 10 : 0;
+        
+        return {
+          sector: `Sektor ${sector}`,
+          totalWeight: Math.round(totalWeight * 10) / 10,
+          totalCount,
+          averageWeight
+        };
+      }).filter(s => s.totalCount > 0).sort((a, b) => b.totalWeight - a.totalWeight);
+
+      // Sector Timeline (daily aggregation by sector)
+      const sectorTimeline: Record<string, Array<{ time: string; totalWeight: number; totalCount: number; dayIndex: number; date: string; sector: string }>> = {};
+      
+      Array.from(allSectors).forEach(sector => {
+        const sectorCatches = catches.filter(catch_ => catch_.sector === sector);
+        
+        // Group sector catches by day
+        const sectorCatchesByDay = sectorCatches.reduce((acc, catch_) => {
+          if (!catch_.submittedAt) return acc;
+          const catchDate = new Date(catch_.submittedAt);
+          const daysSinceStart = Math.floor((catchDate.getTime() - competitionStart.getTime()) / (1000 * 60 * 60 * 24));
+          const dayKey = Math.max(0, daysSinceStart);
+          
+          if (!acc[dayKey]) {
+            acc[dayKey] = { weight: 0, count: 0 };
+          }
+          acc[dayKey].weight += Number(catch_.weight);
+          acc[dayKey].count += 1;
+          return acc;
+        }, {} as Record<number, { weight: number; count: number }>);
+
+        // Create timeline for this sector
+        let cumulativeWeight = 0;
+        let cumulativeCount = 0;
+        const sectorTimelineData = [];
+        
+        for (let day = 0; day < Math.max(1, totalCompetitionDays); day++) {
+          const dayDate = new Date(competitionStart);
+          dayDate.setDate(dayDate.getDate() + day);
+          
+          const isFutureDay = dayDate > currentDate;
+          const dayData = isFutureDay ? { weight: 0, count: 0 } : (sectorCatchesByDay[day] || { weight: 0, count: 0 });
+          
+          if (!isFutureDay) {
+            cumulativeWeight += dayData.weight;
+            cumulativeCount += dayData.count;
+          }
+          
+          sectorTimelineData.push({
+            time: dayDate.toISOString(),
+            totalWeight: Math.round(cumulativeWeight * 10) / 10,
+            totalCount: cumulativeCount,
+            dayIndex: day,
+            date: dayDate.toISOString().split('T')[0],
+            sector: `Sektor ${sector}`
+          });
+        }
+        
+        sectorTimeline[sector] = sectorTimelineData;
+      });
+
+      // Sector Fish Type Distribution
+      const sectorFishTypes: Record<string, { sector: string; scaly: number; mirror: number; scalyWeight: number; mirrorWeight: number }> = {};
+      
+      Array.from(allSectors).forEach(sector => {
+        const sectorCatches = catches.filter(catch_ => catch_.sector === sector);
+        const scalyCatches = sectorCatches.filter(c => c.fishType === 'scaly');
+        const mirrorCatches = sectorCatches.filter(c => c.fishType === 'mirror');
+        
+        sectorFishTypes[sector] = {
+          sector: `Sektor ${sector}`,
+          scaly: scalyCatches.length,
+          mirror: mirrorCatches.length,
+          scalyWeight: Math.round(scalyCatches.reduce((sum, c) => sum + Number(c.weight), 0) * 10) / 10,
+          mirrorWeight: Math.round(mirrorCatches.reduce((sum, c) => sum + Number(c.weight), 0) * 10) / 10
+        };
+      });
+
       const stats = {
         timeline,
         weightCategories: weightCategories.filter(cat => cat.total > 0),
         topFish,
         teamPerformance,
         fishTypeDistribution,
-        sectorPerformance: [],
+        sectorPerformance,
         averageWeights: [],
         teamTop3Average,
         teamTop5Average,
+        // New sector data
+        sectorTimeline,
+        sectorFishTypes: Object.values(sectorFishTypes).filter(s => s.scaly > 0 || s.mirror > 0),
         specialMilestones: [],
         dailyBigFish: [],
         recordProgression: [],

@@ -102,6 +102,23 @@ export interface TeamEfficiencyData {
   efficiency: number;
 }
 
+export interface SectorTimelineData {
+  time: string;
+  totalWeight: number;
+  totalCount: number;
+  dayIndex: number;
+  date: string;
+  sector: string;
+}
+
+export interface SectorFishTypeData {
+  sector: string;
+  scaly: number;
+  mirror: number;
+  scalyWeight: number;
+  mirrorWeight: number;
+}
+
 export interface CompetitionStats {
   timeline: TimelineData[];
   weightCategories: WeightCategoryData[];
@@ -112,6 +129,9 @@ export interface CompetitionStats {
   averageWeights: AverageWeightData[];
   teamTop3Average: TeamTopAverageData[];
   teamTop5Average: TeamTopAverageData[];
+  // New sector data
+  sectorTimeline: Record<string, SectorTimelineData[]>;
+  sectorFishTypes: SectorFishTypeData[];
   specialMilestones: SpecialMilestoneData[];
   dailyBigFish: DailyBigFishData[];
   recordProgression: RecordProgressionData[];
