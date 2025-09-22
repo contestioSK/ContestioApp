@@ -198,13 +198,15 @@ export default function CompetitionDetail() {
             
             {/* Competition Logo */}
             {competition.imageUrl && (
-              <div className="mb-6">
-                <img 
-                  src={competition.imageUrl} 
-                  alt={`Logo súťaže ${competition.name}`}
-                  className="w-24 h-24 object-cover rounded-lg border-2 border-muted mx-auto"
-                  data-testid="img-competition-logo"
-                />
+              <div className="mb-8">
+                <div className="w-40 h-40 mx-auto">
+                  <img 
+                    src={competition.imageUrl} 
+                    alt={`Logo súťaže ${competition.name}`}
+                    className="w-full h-full object-contain rounded-xl border-2 border-muted shadow-lg"
+                    data-testid="img-competition-logo"
+                  />
+                </div>
               </div>
             )}
             
