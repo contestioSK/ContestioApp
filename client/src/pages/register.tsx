@@ -61,7 +61,7 @@ export default function Register() {
                 </div>
               </div>
               <Button 
-                onClick={() => window.location.href = '/api/login'}
+                onClick={() => window.location.href = '/auth/login'}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium"
                 size="lg"
                 data-testid="button-register-individual"
@@ -135,7 +135,7 @@ export default function Register() {
           </p>
           <Button 
             variant="outline"
-            onClick={() => window.location.href = '/api/login'}
+            onClick={() => window.location.href = '/auth/login'}
             className="font-medium"
             data-testid="button-existing-login"
           >
