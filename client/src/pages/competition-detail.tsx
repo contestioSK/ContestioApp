@@ -24,7 +24,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Users, UserPlus, Trash2, Fish, Award, BarChart3 } from "lucide-react";
+import { Users, UserPlus, Trash2, Fish, Award, BarChart3, Trophy, FileText } from "lucide-react";
 import { getSideCompetitionLabels } from "@/lib/utils";
 import type { Competition, Team, Catch } from "@shared/schema";
 
@@ -411,26 +411,55 @@ export default function CompetitionDetail() {
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          {/* Tabs Container */}
-          <Tabs value={activeTab} onValueChange={(value) => {
-            if (value === "catches") {
-              window.location.href = `/competition/${id}/catches`;
-            } else {
-              setActiveTab(value);
-            }
-          }} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-6 bg-gradient-to-r from-card via-background to-card border border-border/50 shadow-lg backdrop-blur-sm p-2 rounded-xl">
-              <TabsTrigger value="overview" data-testid="tab-overview" className="font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200 hover:bg-primary/10">Priebežné výsledky</TabsTrigger>
-              <TabsTrigger value="analytics" data-testid="tab-analytics" className="font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all duration-200 hover:bg-primary/10">
-                <BarChart3 className="w-4 h-4 mr-2" />
-                Štatistiky súťaže
-              </TabsTrigger>
-              <TabsTrigger value="catches" data-testid="tab-catches" className="font-semibold data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground data-[state=active]:shadow-md transition-all duration-200 hover:bg-secondary/10">
-                <Fish className="w-4 h-4 mr-2" />
-                Zobraziť všetky úlovky
-              </TabsTrigger>
-              <TabsTrigger value="rules" data-testid="tab-rules" className="font-semibold data-[state=active]:bg-accent data-[state=active]:text-accent-foreground data-[state=active]:shadow-md transition-all duration-200 hover:bg-accent/10">Pravidlá</TabsTrigger>
-            </TabsList>
+          {/* Navigation Buttons */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <Button
+              variant={activeTab === "overview" ? "default" : "outline"}
+              size="lg"
+              className="h-auto flex-col gap-2 p-4"
+              onClick={() => setActiveTab("overview")}
+              data-testid="button-overview"
+            >
+              <Trophy className="w-5 h-5" />
+              <span className="text-sm font-medium">Priebežné výsledky</span>
+            </Button>
+            
+            <Button
+              variant={activeTab === "analytics" ? "default" : "outline"}
+              size="lg"
+              className="h-auto flex-col gap-2 p-4"
+              onClick={() => setActiveTab("analytics")}
+              data-testid="button-analytics"
+            >
+              <BarChart3 className="w-5 h-5" />
+              <span className="text-sm font-medium">Štatistiky súťaže</span>
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="lg"
+              className="h-auto flex-col gap-2 p-4 hover:bg-secondary/10"
+              onClick={() => window.location.href = `/competition/${id}/catches`}
+              data-testid="button-catches"
+            >
+              <Fish className="w-5 h-5" />
+              <span className="text-sm font-medium">Zobraziť všetky úlovky</span>
+            </Button>
+            
+            <Button
+              variant={activeTab === "rules" ? "default" : "outline"}
+              size="lg"
+              className="h-auto flex-col gap-2 p-4"
+              onClick={() => setActiveTab("rules")}
+              data-testid="button-rules"
+            >
+              <FileText className="w-5 h-5" />
+              <span className="text-sm font-medium">Pravidlá</span>
+            </Button>
+          </div>
+
+          {/* Content Sections */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             
             <TabsContent value="overview" className="mt-6">
               <div className="grid lg:grid-cols-3 gap-8">
