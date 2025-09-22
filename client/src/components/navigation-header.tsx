@@ -181,13 +181,23 @@ export default function NavigationHeader() {
                 </Button>
               </div>
             ) : (
-              <Button 
-                onClick={() => window.location.href = '/api/login'}
-                className="bg-accent text-accent-foreground hover:bg-accent/90"
-                data-testid="button-login"
-              >
-                Prihlásiť sa
-              </Button>
+              <div className="flex items-center space-x-2">
+                <Button 
+                  variant="outline"
+                  onClick={() => window.location.href = '/api/login'}
+                  data-testid="button-login"
+                >
+                  Prihlásiť sa
+                </Button>
+                <Link href="/register">
+                  <Button 
+                    className="bg-primary text-primary-foreground hover:bg-primary/90"
+                    data-testid="button-register"
+                  >
+                    Zaregistrovať sa
+                  </Button>
+                </Link>
+              </div>
             )}
             
             <Button variant="ghost" className="md:hidden" data-testid="button-menu">
