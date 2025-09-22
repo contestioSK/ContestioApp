@@ -33,10 +33,9 @@ export default function Landing() {
 
   // Main navigation items
   const navItems = [
-    { href: "/", label: "Súťaže", icon: Trophy },
-    { href: "/pricing", label: "Cenník", icon: DollarSign },
-    { href: "/faq", label: "FAQ", icon: HelpCircle },
     { href: "/about-us", label: "O nás", icon: Info },
+    { href: "/faq", label: "FAQ", icon: HelpCircle },
+    { href: "/pricing", label: "Cenník", icon: DollarSign },
     { href: "/contact", label: "Kontakt", icon: Phone },
   ];
   
