@@ -199,11 +199,12 @@ export default function CompetitionDetail() {
             {/* Competition Logo */}
             {competition.imageUrl && (
               <div className="mb-8">
-                <div className="w-40 h-40 mx-auto">
+                <div className="w-full max-w-md mx-auto">
                   <img 
                     src={competition.imageUrl} 
                     alt={`Logo súťaže ${competition.name}`}
-                    className="w-full h-full object-contain rounded-xl border-2 border-muted shadow-lg"
+                    className="w-full h-auto object-contain"
+                    style={{ maxHeight: '300px' }}
                     data-testid="img-competition-logo"
                   />
                 </div>
