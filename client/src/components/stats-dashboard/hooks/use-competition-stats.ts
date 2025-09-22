@@ -3,7 +3,7 @@ import type { CompetitionStats } from '../types';
 import { mockCompetitionStats } from '../mock-data';
 
 // API hook for fetching competition statistics
-export function useCompetitionStats(competitionId: string) {
+export function useCompetitionStats(competitionId: string, enabled: boolean = true) {
   return useQuery({
     queryKey: ['competition-stats', competitionId],
     queryFn: async (): Promise<CompetitionStats> => {
@@ -17,7 +17,8 @@ export function useCompetitionStats(competitionId: string) {
         setTimeout(() => resolve(mockCompetitionStats), 500);
       });
     },
-    refetchInterval: 30000, // Refresh every 30 seconds for live data
+    enabled: enabled && !!competitionId,
+    refetchInterval: enabled ? 30000 : false, // Only refresh when enabled
     staleTime: 10000, // Consider data stale after 10 seconds
   });
 }

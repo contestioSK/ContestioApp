@@ -11,6 +11,7 @@ import LiveLeaderboard from "@/components/live-leaderboard";
 import CatchTimeline from "@/components/catch-timeline";
 import CompetitionMap from "@/components/competition-map";
 import CompetitionStatsBar from "@/components/competition-stats-bar";
+import StatsDashboard from "@/components/stats-dashboard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,7 +24,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Users, UserPlus, Trash2, Fish, Award } from "lucide-react";
+import { Users, UserPlus, Trash2, Fish, Award, BarChart3 } from "lucide-react";
 import { getSideCompetitionLabels } from "@/lib/utils";
 import type { Competition, Team, Catch } from "@shared/schema";
 
@@ -46,6 +47,7 @@ export default function CompetitionDetail() {
   const { toast } = useToast();
   const [isRegistrationDialogOpen, setIsRegistrationDialogOpen] = useState(false);
   const { isAuthenticated, isLoading, user } = useAuth();
+  const [activeTab, setActiveTab] = useState("overview");
 
   // Team registration form
   const form = useForm<TeamRegistrationForm>({
@@ -421,9 +423,13 @@ export default function CompetitionDetail() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* Tabs Container */}
-          <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="overview" data-testid="tab-overview">Prehľad</TabsTrigger>
+              <TabsTrigger value="analytics" data-testid="tab-analytics">
+                <BarChart3 className="w-4 h-4 mr-2" />
+                Analytiky
+              </TabsTrigger>
               <TabsTrigger value="rules" data-testid="tab-rules">Pravidlá</TabsTrigger>
             </TabsList>
             
@@ -599,6 +605,10 @@ export default function CompetitionDetail() {
               
             </div>
           </div>
+            </TabsContent>
+            
+            <TabsContent value="analytics" className="mt-6">
+              {activeTab === "analytics" && <StatsDashboard competitionId={id!} />}
             </TabsContent>
             
             <TabsContent value="rules" className="mt-6">
