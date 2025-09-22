@@ -1,0 +1,14 @@
+<svg viewBox="0 0 24 18" xmlns="http://www.w3.org/2000/svg">
+  <rect width="24" height="18" fill="#012169"/>
+  <!-- Union Jack simplified -->
+  <polygon points="0,0 24,0 12,9" fill="#C8102E"/>
+  <polygon points="0,18 24,18 12,9" fill="#C8102E"/>
+  <polygon points="0,0 0,18 12,9" fill="#C8102E"/>
+  <polygon points="24,0 24,18 12,9" fill="#C8102E"/>
+  <!-- White cross -->
+  <rect x="10" y="0" width="4" height="18" fill="#FFFFFF"/>
+  <rect x="0" y="7" width="24" height="4" fill="#FFFFFF"/>
+  <!-- Red cross -->
+  <rect x="11" y="0" width="2" height="18" fill="#C8102E"/>
+  <rect x="0" y="8" width="24" height="2" fill="#C8102E"/>
+</svg>

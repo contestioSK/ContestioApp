@@ -1,0 +1,6 @@
+<svg viewBox="0 0 24 18" xmlns="http://www.w3.org/2000/svg">
+  <rect width="24" height="18" fill="#006AA7"/>
+  <!-- Yellow cross -->
+  <rect x="0" y="7" width="24" height="4" fill="#FECC00"/>
+  <rect x="6" y="0" width="4" height="18" fill="#FECC00"/>
+</svg>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 27.2.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 120 120" style="enable-background:new 0 0 120 120;" xml:space="preserve">
+<style type="text/css">
+	.st0{clip-path:url(#SVGID_00000013877418459856323370000000245721713703184548_);}
+	.st1{fill:#304AB7;}
+	.st2{fill:#FFFFFF;}
+	.st3{fill:#E22727;}
+	.st4{opacity:0.3;fill:url(#SVGID_00000103236294342923364030000002037800930209785475_);}
+</style>
+<g>
+	<g>
+		<defs>
+			<circle id="SVGID_1_" cx="60" cy="60" r="50"/>
+		</defs>
+		<clipPath id="SVGID_00000110442424177618239960000001670323033520060805_">
+			<use xlink:href="#SVGID_1_"  style="overflow:visible;"/>
+		</clipPath>
+		<g style="clip-path:url(#SVGID_00000110442424177618239960000001670323033520060805_);">
+			<rect x="-10.5" y="10" class="st1" width="47" height="99.9"/>
+			<rect x="36.5" y="10" class="st2" width="47" height="99.9"/>
+			<rect x="83.5" y="10" class="st3" width="47" height="99.9"/>
+		</g>
+	</g>
+	
+		<radialGradient id="SVGID_00000078742232959106709190000005577701805179726504_" cx="60" cy="60" r="49.9535" gradientUnits="userSpaceOnUse">
+		<stop  offset="0" style="stop-color:#FFFFFF"/>
+		<stop  offset="0.3561" style="stop-color:#FDFDFD"/>
+		<stop  offset="0.4844" style="stop-color:#F6F6F6"/>
+		<stop  offset="0.5759" style="stop-color:#EBEBEB"/>
+		<stop  offset="0.6499" style="stop-color:#DADADA"/>
+		<stop  offset="0.7132" style="stop-color:#C4C4C4"/>
+		<stop  offset="0.7693" style="stop-color:#A8A8A8"/>
+		<stop  offset="0.8201" style="stop-color:#888888"/>
+		<stop  offset="0.8667" style="stop-color:#626262"/>
+		<stop  offset="0.9101" style="stop-color:#373737"/>
+		<stop  offset="0.9487" style="stop-color:#090909"/>
+		<stop  offset="0.9557" style="stop-color:#000000"/>
+	</radialGradient>
+	<circle style="opacity:0.3;fill:url(#SVGID_00000078742232959106709190000005577701805179726504_);" cx="60" cy="60" r="50"/>
+</g>
+</svg>

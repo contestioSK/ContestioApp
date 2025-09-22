@@ -1,0 +1,6 @@
+<svg viewBox="0 0 24 18" xmlns="http://www.w3.org/2000/svg">
+  <rect width="24" height="18" fill="#FF0000"/>
+  <!-- White cross -->
+  <rect x="10" y="3" width="4" height="12" fill="#FFFFFF"/>
+  <rect x="6" y="7" width="12" height="4" fill="#FFFFFF"/>
+</svg>
