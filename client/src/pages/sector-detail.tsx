@@ -109,7 +109,7 @@ export default function SectorDetail() {
               </div>
               <p className="text-xs text-muted-foreground mb-1">Počet rýb</p>
               <p className="text-lg font-bold text-foreground">
-                {sectorStats.teams.reduce((sum, team) => sum + (team.fishCount || 0), 0)}
+                {sectorStats.teams.reduce((sum, team) => sum + (parseInt(team.fishCount?.toString() || '0') || 0), 0)}
               </p>
             </div>
             
