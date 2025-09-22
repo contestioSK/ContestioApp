@@ -243,6 +243,247 @@ export default function DiaryStats() {
     efficiency: month.trips > 0 ? month.catches / month.trips : 0
   }));
 
+  // ===== ADVANCED METRICS CALCULATIONS =====
+
+  // 1. ADVANCED SUCCESS RATE ANALYSIS
+  const advancedSuccessRate = {
+    // Overall rates
+    overallRate: totalTrips > 0 ? totalCatches / totalTrips : 0,
+    
+    // Time-based success rates
+    hourlyRates: Array.from({ length: 24 }, (_, hour) => {
+      const hourCatches = catches.filter(c => new Date(c.capturedAt).getHours() === hour);
+      const hourTrips = trips.filter(t => {
+        const startHour = new Date(t.startDate).getHours();
+        const endHour = new Date(t.endDate).getHours();
+        return startHour <= hour && hour <= endHour;
+      });
+      return {
+        hour,
+        catches: hourCatches.length,
+        trips: hourTrips.length,
+        rate: hourTrips.length > 0 ? hourCatches.length / hourTrips.length : 0
+      };
+    }),
+    
+    // Day of week rates
+    weeklyRates: Array.from({ length: 7 }, (_, day) => {
+      const dayCatches = catches.filter(c => new Date(c.capturedAt).getDay() === day);
+      const dayTrips = trips.filter(t => new Date(t.startDate).getDay() === day);
+      const dayNames = ['Nedeľa', 'Pondelok', 'Utorok', 'Streda', 'Štvrtok', 'Piatok', 'Sobota'];
+      return {
+        day: dayNames[day],
+        catches: dayCatches.length,
+        trips: dayTrips.length,
+        rate: dayTrips.length > 0 ? dayCatches.length / dayTrips.length : 0
+      };
+    }),
+    
+    // Monthly efficiency trends
+    monthlyEfficiency: monthlyStats.map(month => ({
+      month: month.month,
+      efficiency: month.trips > 0 ? month.catches / month.trips : 0,
+      catches: month.catches,
+      trips: month.trips
+    }))
+  };
+
+  // 2. CATCH QUALITY SCORES
+  const catchQualityScores = {
+    // Weight percentile calculations
+    weightPercentiles: (() => {
+      const weights = catches.map(c => parseFloat(c.weight)).sort((a, b) => a - b);
+      if (weights.length === 0) return { p25: 0, p50: 0, p75: 0, p90: 0, p95: 0 };
+      
+      const percentile = (p: number) => {
+        const index = Math.ceil(weights.length * p / 100) - 1;
+        return weights[Math.max(0, index)] || 0;
+      };
+      
+      return {
+        p25: percentile(25),
+        p50: percentile(50),
+        p75: percentile(75),
+        p90: percentile(90),
+        p95: percentile(95)
+      };
+    })(),
+    
+    // Quality distribution (based on weight)
+    qualityDistribution: (() => {
+      const weights = catches.map(c => parseFloat(c.weight));
+      const maxWeight = Math.max(...weights, 0);
+      const distribution = { poor: 0, average: 0, good: 0, excellent: 0 };
+      
+      weights.forEach(weight => {
+        const score = maxWeight > 0 ? weight / maxWeight : 0;
+        if (score >= 0.8) distribution.excellent++;
+        else if (score >= 0.6) distribution.good++;
+        else if (score >= 0.4) distribution.average++;
+        else distribution.poor++;
+      });
+      
+      return [
+        { quality: 'Slabé', label: 'Slabé (< 40%)', count: distribution.poor, color: '#ef4444' },
+        { quality: 'Priemerné', label: 'Priemerné (40-60%)', count: distribution.average, color: '#f59e0b' },
+        { quality: 'Dobré', label: 'Dobré (60-80%)', count: distribution.good, color: '#10b981' },
+        { quality: 'Výborné', label: 'Výborné (80%+)', count: distribution.excellent, color: '#3b82f6' }
+      ];
+    })(),
+    
+    // Size scoring for each catch
+    catchesWithScores: catches.map(catch_ => {
+      const weight = parseFloat(catch_.weight);
+      const maxWeight = Math.max(...catches.map(c => parseFloat(c.weight)), 0);
+      const weightScore = maxWeight > 0 ? (weight / maxWeight) * 100 : 0;
+      
+      // Length bonus if available
+      const lengthBonus = catch_.lengthCm ? Math.min(20, catch_.lengthCm / 5) : 0;
+      
+      // Type rarity bonus
+      const typeBonus = catch_.carpType === 'grass' ? 15 : 
+                       catch_.carpType === 'mirror' ? 10 : 
+                       catch_.carpType === 'common' ? 5 : 0;
+      
+      const totalScore = Math.min(100, weightScore + lengthBonus + typeBonus);
+      
+      return {
+        ...catch_,
+        weightScore: Math.round(weightScore),
+        lengthBonus: Math.round(lengthBonus),
+        typeBonus,
+        qualityScore: Math.round(totalScore)
+      };
+    }).sort((a, b) => b.qualityScore - a.qualityScore)
+  };
+
+  // 3. ENHANCED LOCATION PERFORMANCE ANALYTICS
+  const locationPerformance = {
+    // Detailed location stats
+    locationStats: (() => {
+      const stats: Record<string, {
+        location: string;
+        catches: number;
+        trips: number;
+        totalWeight: number;
+        averageWeight: number;
+        biggestCatch: number;
+        successRate: number;
+        quality: number;
+      }> = {};
+      
+      trips.forEach(trip => {
+        const tripCatches = catches.filter(c => c.tripId === trip.id);
+        const weights = tripCatches.map(c => parseFloat(c.weight));
+        const avgQuality = catchQualityScores.catchesWithScores
+          .filter(c => c.tripId === trip.id)
+          .reduce((sum, c) => sum + c.qualityScore, 0) / Math.max(1, tripCatches.length);
+        
+        if (!stats[trip.location]) {
+          stats[trip.location] = {
+            location: trip.location,
+            catches: 0,
+            trips: 0,
+            totalWeight: 0,
+            averageWeight: 0,
+            biggestCatch: 0,
+            successRate: 0,
+            quality: 0
+          };
+        }
+        
+        const stat = stats[trip.location];
+        stat.trips++;
+        stat.catches += tripCatches.length;
+        stat.totalWeight += weights.reduce((sum, w) => sum + w, 0);
+        stat.biggestCatch = Math.max(stat.biggestCatch, ...weights, 0);
+        stat.quality = (stat.quality * (stat.trips - 1) + avgQuality) / stat.trips;
+      });
+      
+      // Calculate derived metrics
+      Object.values(stats).forEach(stat => {
+        stat.averageWeight = stat.catches > 0 ? stat.totalWeight / stat.catches : 0;
+        stat.successRate = stat.trips > 0 ? stat.catches / stat.trips : 0;
+      });
+      
+      return Object.values(stats).sort((a, b) => b.successRate - a.successRate);
+    })(),
+    
+    // GPS-based hotspots (if coordinates available)
+    gpsHotspots: catches
+      .filter(c => c.latitude && c.longitude)
+      .map(c => ({
+        ...c,
+        coordinates: [parseFloat(c.longitude!), parseFloat(c.latitude!)]
+      }))
+  };
+
+  // 4. PERSONAL RECORDS TRACKING
+  const personalRecords = {
+    // Weight records
+    heaviestCatch: catches.reduce((max, catch_) => {
+      const weight = parseFloat(catch_.weight);
+      return weight > parseFloat(max?.weight || '0') ? catch_ : max;
+    }, catches[0] || null),
+    
+    // Length records (if available)
+    longestCatch: catches
+      .filter(c => c.lengthCm)
+      .reduce((max, catch_) => {
+        return (catch_.lengthCm || 0) > (max?.lengthCm || 0) ? catch_ : max;
+      }, null as any),
+    
+    // Most productive sessions
+    bestTrip: trips.map(trip => {
+      const tripCatches = catches.filter(c => c.tripId === trip.id);
+      const totalWeight = tripCatches.reduce((sum, c) => sum + parseFloat(c.weight), 0);
+      return {
+        ...trip,
+        catchCount: tripCatches.length,
+        totalWeight,
+        averageWeight: tripCatches.length > 0 ? totalWeight / tripCatches.length : 0
+      };
+    }).sort((a, b) => b.catchCount - a.catchCount)[0] || null,
+    
+    // Streak tracking
+    streaks: (() => {
+      const sortedTrips = trips.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+      let currentStreak = 0;
+      let maxStreak = 0;
+      
+      sortedTrips.forEach(trip => {
+        const tripCatches = catches.filter(c => c.tripId === trip.id);
+        if (tripCatches.length > 0) {
+          currentStreak++;
+          maxStreak = Math.max(maxStreak, currentStreak);
+        } else {
+          currentStreak = 0;
+        }
+      });
+      
+      return { current: currentStreak, longest: maxStreak };
+    })(),
+    
+    // Monthly/yearly records
+    monthlyRecords: monthlyStats.map(month => ({
+      month: month.month,
+      bestCatch: (() => {
+        const monthStart = new Date(month.monthStart);
+        const monthEnd = new Date(month.monthEnd);
+        const monthCatches = catches.filter(c => {
+          const catchDate = new Date(c.capturedAt);
+          return catchDate >= monthStart && catchDate <= monthEnd;
+        });
+        return monthCatches.reduce((max, catch_) => {
+          const weight = parseFloat(catch_.weight);
+          return weight > parseFloat(max?.weight || '0') ? catch_ : max;
+        }, monthCatches[0] || null);
+      })(),
+      totalCatches: month.catches,
+      totalWeight: month.totalWeight
+    })).filter(record => record.bestCatch)
+  };
+
   return (
     <div className="min-h-screen bg-background" data-testid="page-diary-stats">
       <div className="max-w-6xl mx-auto px-4 py-8">
@@ -633,35 +874,469 @@ export default function DiaryStats() {
           </TabsContent>
 
           <TabsContent value="analysis" className="space-y-6">
-            <Card className="text-center py-12">
-              <CardContent>
-                <PieChart className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Pokročilé analýzy</h3>
-                <p className="text-muted-foreground mb-4">
-                  Interaktívne grafy, korelačné analýzy a predikcie sú dostupné v PREMIUM verzii.
-                </p>
-                <Button className="gap-2" data-testid="button-upgrade-analysis">
-                  <Crown className="w-4 h-4" />
-                  Prejsť na PREMIUM
-                </Button>
-              </CardContent>
-            </Card>
+            {isPremium ? (
+              <>
+                {/* Advanced Success Rate Analysis */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Clock className="w-5 h-5" />
+                        Hodinová úspešnosť
+                      </CardTitle>
+                      <CardDescription>
+                        Najlepšie hodiny pre rybačku
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {advancedSuccessRate.hourlyRates
+                          .filter(h => h.trips > 0)
+                          .sort((a, b) => b.rate - a.rate)
+                          .slice(0, 5)
+                          .map(hour => (
+                            <div key={hour.hour} className="flex items-center justify-between">
+                              <span className="text-sm font-medium">
+                                {hour.hour}:00 - {hour.hour + 1}:00
+                              </span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm text-muted-foreground">
+                                  {hour.rate.toFixed(1)} úlovkov/výpravu
+                                </span>
+                                <Progress value={hour.rate * 20} className="w-16 h-2" />
+                              </div>
+                            </div>
+                          ))}
+                        {advancedSuccessRate.hourlyRates.filter(h => h.trips > 0).length === 0 && (
+                          <p className="text-muted-foreground text-center py-4">
+                            Žiadne dáta o hodinách
+                          </p>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Calendar className="w-5 h-5" />
+                        Týždenná úspešnosť
+                      </CardTitle>
+                      <CardDescription>
+                        Najproduktívnejšie dni v týždni
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {advancedSuccessRate.weeklyRates
+                          .filter(d => d.trips > 0)
+                          .sort((a, b) => b.rate - a.rate)
+                          .map(day => (
+                            <div key={day.day} className="flex items-center justify-between">
+                              <span className="text-sm font-medium">{day.day}</span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm text-muted-foreground">
+                                  {day.rate.toFixed(1)} úlovkov/výpravu
+                                </span>
+                                <Progress value={day.rate * 20} className="w-16 h-2" />
+                              </div>
+                            </div>
+                          ))}
+                        {advancedSuccessRate.weeklyRates.filter(d => d.trips > 0).length === 0 && (
+                          <p className="text-muted-foreground text-center py-4">
+                            Žiadne dáta o dňoch
+                          </p>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Catch Quality Analysis */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Award className="w-5 h-5" />
+                        Kvalita úlovkov
+                      </CardTitle>
+                      <CardDescription>
+                        Rozdelenie úlovkov podľa kvality
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        {catchQualityScores.qualityDistribution.map(quality => (
+                          <div key={quality.quality} className="space-y-2">
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="font-medium" style={{ color: quality.color }}>
+                                {quality.label}
+                              </span>
+                              <span className="text-muted-foreground">
+                                {quality.count} úlovkov
+                              </span>
+                            </div>
+                            <Progress 
+                              value={totalCatches > 0 ? (quality.count / totalCatches) * 100 : 0}
+                              className="h-2"
+                              style={{ 
+                                '--progress-background': quality.color
+                              } as any}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <BarChart3 className="w-5 h-5" />
+                        Váhové percentily
+                      </CardTitle>
+                      <CardDescription>
+                        Distribúcia váh vašich úlovkov
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <div className="flex justify-between text-sm">
+                          <span>25. percentil:</span>
+                          <span className="font-medium">{catchQualityScores.weightPercentiles.p25.toFixed(1)} kg</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span>Medián (50%):</span>
+                          <span className="font-medium">{catchQualityScores.weightPercentiles.p50.toFixed(1)} kg</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span>75. percentil:</span>
+                          <span className="font-medium">{catchQualityScores.weightPercentiles.p75.toFixed(1)} kg</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span>90. percentil:</span>
+                          <span className="font-medium">{catchQualityScores.weightPercentiles.p90.toFixed(1)} kg</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span>95. percentil:</span>
+                          <span className="font-medium text-blue-600">{catchQualityScores.weightPercentiles.p95.toFixed(1)} kg</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Enhanced Location Performance */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <MapPin className="w-5 h-5" />
+                      Výkonnosť lokalít
+                    </CardTitle>
+                    <CardDescription>
+                      Detailná analýza najlepších rybárskych miest
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {locationPerformance.locationStats.length > 0 ? (
+                      <div className="space-y-4">
+                        {locationPerformance.locationStats.slice(0, 5).map((location, index) => (
+                          <div key={location.location} className="border rounded-lg p-4">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-3">
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                                  index === 0 ? 'bg-yellow-100 text-yellow-800' : 
+                                  index === 1 ? 'bg-gray-100 text-gray-800' : 
+                                  index === 2 ? 'bg-orange-100 text-orange-800' : 
+                                  'bg-muted text-muted-foreground'
+                                }`}>
+                                  {index + 1}
+                                </div>
+                                <h4 className="font-medium">{location.location}</h4>
+                              </div>
+                              <Badge variant={location.successRate >= 2 ? "default" : "secondary"}>
+                                {location.successRate.toFixed(1)} úlovkov/výpravu
+                              </Badge>
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                              <div>
+                                <span className="text-muted-foreground">Úlovky:</span>
+                                <p className="font-medium">{location.catches}</p>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Výpravy:</span>
+                                <p className="font-medium">{location.trips}</p>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Priem. váha:</span>
+                                <p className="font-medium">{location.averageWeight.toFixed(1)} kg</p>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Najväčší:</span>
+                                <p className="font-medium">{location.biggestCatch.toFixed(1)} kg</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-muted-foreground text-center py-8">
+                        Žiadne dáta o lokalitách
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              </>
+            ) : (
+              <Card className="text-center py-12">
+                <CardContent>
+                  <PieChart className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Pokročilé analýzy</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Interaktívne grafy, korelačné analýzy a predikcie sú dostupné v PREMIUM verzii.
+                  </p>
+                  <Button className="gap-2" data-testid="button-upgrade-analysis">
+                    <Crown className="w-4 h-4" />
+                    Prejsť na PREMIUM
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="achievements" className="space-y-6">
-            <Card className="text-center py-12">
-              <CardContent>
-                <Award className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Rybárske úspechy</h3>
-                <p className="text-muted-foreground mb-4">
-                  Systém odznakov, míľnikov a gamifikácie je dostupný v PREMIUM verzii.
-                </p>
-                <Button className="gap-2" data-testid="button-upgrade-achievements">
-                  <Crown className="w-4 h-4" />
-                  Prejsť na PREMIUM
-                </Button>
-              </CardContent>
-            </Card>
+            {isPremium ? (
+              <>
+                {/* Personal Records */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Trophy className="w-5 h-5 text-yellow-600" />
+                        Najväčší úlovok
+                      </CardTitle>
+                      <CardDescription>
+                        Váhový rekord
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {personalRecords.heaviestCatch ? (
+                        <div className="space-y-2">
+                          <div className="text-2xl font-bold text-yellow-600">
+                            {parseFloat(personalRecords.heaviestCatch.weight).toFixed(1)} kg
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            <div>{personalRecords.heaviestCatch.carpType === 'common' ? 'Obyčajný kaprík' :
+                                personalRecords.heaviestCatch.carpType === 'mirror' ? 'Zrkadlový kaprík' :
+                                personalRecords.heaviestCatch.carpType === 'grass' ? 'Trávojedný kaprík' : 'Iný kaprík'}</div>
+                            <div>{format(new Date(personalRecords.heaviestCatch.capturedAt), "d. MMMM yyyy", { locale: sk })}</div>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-muted-foreground">Žiadne úlovky</p>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Target className="w-5 h-5 text-blue-600" />
+                        Najdlhší úlovok
+                      </CardTitle>
+                      <CardDescription>
+                        Dĺžkový rekord
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {personalRecords.longestCatch ? (
+                        <div className="space-y-2">
+                          <div className="text-2xl font-bold text-blue-600">
+                            {personalRecords.longestCatch.lengthCm} cm
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            <div>Váha: {parseFloat(personalRecords.longestCatch.weight).toFixed(1)} kg</div>
+                            <div>{format(new Date(personalRecords.longestCatch.capturedAt), "d. MMMM yyyy", { locale: sk })}</div>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-muted-foreground">Žiadne dáta o dĺžke</p>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Star className="w-5 h-5 text-green-600" />
+                        Najlepšia výprava
+                      </CardTitle>
+                      <CardDescription>
+                        Najviac úlovkov za výpravu
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {personalRecords.bestTrip ? (
+                        <div className="space-y-2">
+                          <div className="text-2xl font-bold text-green-600">
+                            {personalRecords.bestTrip.catchCount} úlovkov
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            <div className="font-medium line-clamp-1">{personalRecords.bestTrip.name}</div>
+                            <div>Celková váha: {personalRecords.bestTrip.totalWeight.toFixed(1)} kg</div>
+                            <div>{format(new Date(personalRecords.bestTrip.startDate), "d. MMMM yyyy", { locale: sk })}</div>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-muted-foreground">Žiadne výpravy</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Streak Tracking */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Zap className="w-5 h-5 text-orange-600" />
+                        Séria úspechov
+                      </CardTitle>
+                      <CardDescription>
+                        Počet po sebe idúcich úspešných výprav
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <div className="text-sm text-muted-foreground">Aktuálna séria</div>
+                          <div className="text-2xl font-bold text-orange-600">
+                            {personalRecords.streaks.current}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-sm text-muted-foreground">Najdlhšia séria</div>
+                          <div className="text-2xl font-bold">
+                            {personalRecords.streaks.longest}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <BarChart3 className="w-5 h-5" />
+                        Celkové štatistiky
+                      </CardTitle>
+                      <CardDescription>
+                        Súhrnné údaje o vašich úspechoch
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <div className="flex justify-between text-sm">
+                          <span>Celkové úlovky:</span>
+                          <span className="font-medium">{totalCatches}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span>Celkové výpravy:</span>
+                          <span className="font-medium">{totalTrips}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span>Úspešnosť:</span>
+                          <span className="font-medium">{successRate} úlovkov/výpravu</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span>Celková váha:</span>
+                          <span className="font-medium">{totalWeight.toFixed(1)} kg</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Monthly Records */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Calendar className="w-5 h-5" />
+                      Mesačné rekordy
+                    </CardTitle>
+                    <CardDescription>
+                      Najlepšie úlovky v jednotlivých mesiacoch
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {personalRecords.monthlyRecords.length > 0 ? (
+                      <div className="space-y-4">
+                        {personalRecords.monthlyRecords.slice(0, 6).map((record, index) => (
+                          <div key={record.month} className="border rounded-lg p-4">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-3">
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                                  index === 0 ? 'bg-yellow-100 text-yellow-800' : 
+                                  'bg-muted text-muted-foreground'
+                                }`}>
+                                  {index + 1}
+                                </div>
+                                <h4 className="font-medium">{record.month}</h4>
+                              </div>
+                              <Badge variant="secondary">
+                                {parseFloat(record.bestCatch.weight).toFixed(1)} kg
+                              </Badge>
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                              <div>
+                                <span className="text-muted-foreground">Typ:</span>
+                                <p className="font-medium">
+                                  {record.bestCatch.carpType === 'common' ? 'Obyčajný' :
+                                   record.bestCatch.carpType === 'mirror' ? 'Zrkadlový' :
+                                   record.bestCatch.carpType === 'grass' ? 'Trávojedný' : 'Iný'}
+                                </p>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Dátum:</span>
+                                <p className="font-medium">
+                                  {format(new Date(record.bestCatch.capturedAt), "d.M.", { locale: sk })}
+                                </p>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Úlovky:</span>
+                                <p className="font-medium">{record.totalCatches}</p>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Váha celkom:</span>
+                                <p className="font-medium">{record.totalWeight.toFixed(1)} kg</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-muted-foreground text-center py-8">
+                        Žiadne mesačné rekordy
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              </>
+            ) : (
+              <Card className="text-center py-12">
+                <CardContent>
+                  <Award className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Rybárske úspechy</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Systém odznakov, míľnikov a gamifikácie je dostupný v PREMIUM verzii.
+                  </p>
+                  <Button className="gap-2" data-testid="button-upgrade-achievements">
+                    <Crown className="w-4 h-4" />
+                    Prejsť na PREMIUM
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
         </Tabs>
       </div>
