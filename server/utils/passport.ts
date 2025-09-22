@@ -133,26 +133,51 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 }
 
 /**
- * Serialize user for session storage
+ * Hybrid serialize user for session storage
+ * Supports both new auth system (user.id) and old auth system (full user object)
  */
 passport.serializeUser((user: any, done) => {
-  done(null, user.id);
+  // If it's the new auth system with user.id, serialize just the ID
+  if (user.id && typeof user.id === 'string') {
+    done(null, { type: 'new', id: user.id });
+  }
+  // If it's the old auth system (Replit Auth), serialize the full object
+  else {
+    done(null, { type: 'old', user });
+  }
 });
 
 /**
- * Deserialize user from session storage
+ * Hybrid deserialize user from session storage
+ * Supports both new auth system and old auth system
  */
-passport.deserializeUser(async (id: string, done) => {
+passport.deserializeUser(async (sessionData: any, done) => {
   try {
-    const user = await storage.getUser(id);
-    
-    if (!user) {
-      return done(null, false);
-    }
+    // Handle new auth system
+    if (sessionData?.type === 'new' && sessionData.id) {
+      const user = await storage.getUser(sessionData.id);
+      
+      if (!user) {
+        return done(null, false);
+      }
 
-    // Return user without password for security
-    const { password: _, ...userWithoutPassword } = user;
-    done(null, userWithoutPassword);
+      // Return user without password for security
+      const { password: _, verificationToken: __, verificationTokenExpires: ___, ...userWithoutPassword } = user;
+      return done(null, userWithoutPassword);
+    }
+    
+    // Handle old auth system (Replit Auth)
+    if (sessionData?.type === 'old' && sessionData.user) {
+      return done(null, sessionData.user);
+    }
+    
+    // Fallback for any other format - treat as old system
+    if (typeof sessionData === 'object' && sessionData) {
+      return done(null, sessionData);
+    }
+    
+    // If nothing matches, no user
+    done(null, false);
     
   } catch (error) {
     console.error('[Auth] Deserialize user error:', error);
