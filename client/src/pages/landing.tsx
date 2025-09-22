@@ -324,18 +324,18 @@ export default function Landing() {
         {/* Enhanced Connecting Visual Elements with Cross-Section Effects */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {/* Dynamic cross-section connecting elements that react to section hover */}
-          <div className={`absolute top-1/2 left-[20%] h-px bg-gradient-to-r from-blue-300/60 via-white/80 to-transparent motion-safe:animate-pulse transition-all duration-700 ${
+          <div className={`absolute top-1/2 left-[20%] h-px bg-gradient-to-r from-blue-300/60 via-white/80 to-transparent motion-safe:animate-pulse transition-all duration-300 ${
             hoveredSection === 'left' ? 'w-48 from-blue-400/80 via-white/90' : 'w-32'
           }`}></div>
-          <div className={`absolute top-1/3 right-[15%] h-px bg-gradient-to-l from-green-300/60 via-white/80 to-transparent motion-safe:animate-pulse transition-all duration-700 ${
+          <div className={`absolute top-1/3 right-[15%] h-px bg-gradient-to-l from-green-300/60 via-white/80 to-transparent motion-safe:animate-pulse transition-all duration-300 ${
             hoveredSection === 'right' ? 'w-40 from-green-400/80 via-white/90' : 'w-24'
           }`} style={{animationDelay: '1s'}}></div>
           
           {/* Cross-section flow lines that extend when opposite section is hovered */}
-          <div className={`absolute top-[45%] left-[50%] h-px bg-white/40 transform -rotate-12 transition-all duration-500 ${
+          <div className={`absolute top-[45%] left-[50%] h-px bg-white/40 transform -rotate-12 transition-all duration-300 ${
             hoveredSection === 'right' ? 'w-16 bg-white/70' : 'w-8'
           }`}></div>
-          <div className={`absolute top-[55%] left-[55%] h-px bg-white/30 transform rotate-12 transition-all duration-500 ${
+          <div className={`absolute top-[55%] left-[55%] h-px bg-white/30 transform rotate-12 transition-all duration-300 ${
             hoveredSection === 'left' ? 'w-12 bg-white/60' : 'w-6'
           }`}></div>
           
@@ -362,7 +362,7 @@ export default function Landing() {
           {/* Competition Section - 60% width */}
           <div 
             ref={leftSectionRef}
-            className="relative md:w-[60%] flex items-center justify-center md:justify-start text-white px-4 sm:px-6 md:px-8 py-8 md:py-12 group transition-all duration-500 hover:scale-[1.02] hover:z-20"
+            className="relative md:w-[60%] flex items-center justify-center md:justify-start text-white px-4 sm:px-6 md:px-8 py-8 md:py-12 group transition-all duration-300 hover:scale-[1.02] hover:z-20"
             style={{
               backgroundImage: `url(${heroImage})`,
               backgroundSize: 'cover',
@@ -380,13 +380,13 @@ export default function Landing() {
             <div className="relative z-10 max-w-sm text-center md:text-left">
               {/* Competition Icons with floating animation */}
               <div className="flex justify-center md:justify-start gap-3 mb-4 md:mb-6">
-                <div className="p-2 md:p-3 bg-white/20 rounded-full transition-all duration-500 hover:bg-white/30 hover:scale-110 hover:shadow-lg hover:shadow-yellow-300/20 motion-safe:animate-pulse">
+                <div className="p-2 md:p-3 bg-white/20 rounded-full transition-all duration-200 hover:bg-white/30 hover:scale-110 hover:shadow-md hover:shadow-yellow-300/15 motion-safe:animate-pulse">
                   <Trophy className="w-5 h-5 md:w-6 md:h-6 text-yellow-300" />
                 </div>
-                <div className="p-2 md:p-3 bg-white/20 rounded-full transition-all duration-500 hover:bg-white/30 hover:scale-110 hover:shadow-lg hover:shadow-blue-200/20 motion-safe:animate-pulse" style={{animationDelay: '0.5s'}}>
+                <div className="p-2 md:p-3 bg-white/20 rounded-full transition-all duration-200 hover:bg-white/30 hover:scale-110 hover:shadow-md hover:shadow-blue-200/15 motion-safe:animate-pulse" style={{animationDelay: '0.5s'}}>
                   <BarChart3 className="w-5 h-5 md:w-6 md:h-6 text-blue-200" />
                 </div>
-                <div className="p-2 md:p-3 bg-white/20 rounded-full transition-all duration-500 hover:bg-white/30 hover:scale-110 hover:shadow-lg hover:shadow-orange-300/20 motion-safe:animate-pulse" style={{animationDelay: '1s'}}>
+                <div className="p-2 md:p-3 bg-white/20 rounded-full transition-all duration-200 hover:bg-white/30 hover:scale-110 hover:shadow-md hover:shadow-orange-300/15 motion-safe:animate-pulse" style={{animationDelay: '1s'}}>
                   <Target className="w-5 h-5 md:w-6 md:h-6 text-orange-300" />
                 </div>
               </div>
@@ -403,11 +403,11 @@ export default function Landing() {
                 <Link href="/live">
                   <Button 
                     size="lg"
-                    className="w-full bg-white text-blue-800 hover:bg-blue-50 font-semibold transition-all duration-300 transform hover:scale-110 hover:shadow-2xl hover:shadow-blue-500/40 hover:-translate-y-1 relative overflow-hidden group magnetic-button"
+                    className="w-full bg-white text-blue-800 hover:bg-blue-50 font-semibold transition-all duration-200 transform hover:scale-110 hover:shadow-lg md:hover:shadow-xl hover:shadow-blue-500/25 hover:-translate-y-1 relative overflow-hidden group magnetic-button"
                     data-testid="button-view-competitions"
                   >
                     {/* Shine effect */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out"></div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-400 ease-out"></div>
                     <Zap className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform duration-300" />
                     Pozrieť live výsledky
                   </Button>
@@ -416,11 +416,11 @@ export default function Landing() {
                   <Button
                     size="lg"
                     variant="outline"
-                    className="w-full border-2 border-white text-blue-800 bg-white/90 hover:bg-white hover:text-blue-800 font-semibold transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:shadow-white/40 hover:-translate-y-1 relative overflow-hidden group magnetic-button"
+                    className="w-full border-2 border-white text-blue-800 bg-white/90 hover:bg-white hover:text-blue-800 font-semibold transition-all duration-200 hover:scale-110 hover:shadow-lg md:hover:shadow-xl hover:shadow-white/25 hover:-translate-y-1 relative overflow-hidden group magnetic-button"
                     data-testid="button-register-competition-hero"
                   >
                     {/* Shine effect */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out"></div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-400 ease-out"></div>
                     <PlusCircle className="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform duration-300" />
                     Organizovať súťaž
                   </Button>
@@ -432,7 +432,7 @@ export default function Landing() {
           {/* Fishing Diary Section - 40% width */}
           <div 
             ref={rightSectionRef}
-            className="relative md:w-[40%] flex items-center justify-center md:justify-end text-white px-4 sm:px-6 md:px-8 py-8 md:py-12 group transition-all duration-500 hover:scale-[1.02] hover:z-20"
+            className="relative md:w-[40%] flex items-center justify-center md:justify-end text-white px-4 sm:px-6 md:px-8 py-8 md:py-12 group transition-all duration-300 hover:scale-[1.02] hover:z-20"
             style={{
               backgroundImage: `url(${lakeImage})`,
               backgroundSize: 'cover',
@@ -450,13 +450,13 @@ export default function Landing() {
             <div className="relative z-10 max-w-sm text-center md:text-left">
               {/* Diary Icons with floating animation */}
               <div className="flex justify-center md:justify-start gap-3 mb-4 md:mb-6">
-                <div className="p-2 md:p-3 bg-white/20 rounded-full transition-all duration-500 hover:bg-white/30 hover:scale-110 hover:shadow-lg hover:shadow-green-100/20 motion-safe:animate-pulse">
+                <div className="p-2 md:p-3 bg-white/20 rounded-full transition-all duration-200 hover:bg-white/30 hover:scale-110 hover:shadow-md hover:shadow-green-100/15 motion-safe:animate-pulse">
                   <BookOpen className="w-5 h-5 md:w-6 md:h-6 text-green-100" />
                 </div>
-                <div className="p-2 md:p-3 bg-white/20 rounded-full transition-all duration-500 hover:bg-white/30 hover:scale-110 hover:shadow-lg hover:shadow-blue-200/20 motion-safe:animate-pulse" style={{animationDelay: '0.5s'}}>
+                <div className="p-2 md:p-3 bg-white/20 rounded-full transition-all duration-200 hover:bg-white/30 hover:scale-110 hover:shadow-md hover:shadow-blue-200/15 motion-safe:animate-pulse" style={{animationDelay: '0.5s'}}>
                   <Fish className="w-5 h-5 md:w-6 md:h-6 text-blue-200" />
                 </div>
-                <div className="p-2 md:p-3 bg-white/20 rounded-full transition-all duration-500 hover:bg-white/30 hover:scale-110 hover:shadow-lg hover:shadow-yellow-300/20 motion-safe:animate-pulse" style={{animationDelay: '1s'}}>
+                <div className="p-2 md:p-3 bg-white/20 rounded-full transition-all duration-200 hover:bg-white/30 hover:scale-110 hover:shadow-md hover:shadow-yellow-300/15 motion-safe:animate-pulse" style={{animationDelay: '1s'}}>
                   <Crown className="w-5 h-5 md:w-6 md:h-6 text-yellow-300" />
                 </div>
               </div>
@@ -473,11 +473,11 @@ export default function Landing() {
                 <Link href="/diary">
                   <Button 
                     size="lg"
-                    className="w-full bg-white text-green-800 hover:bg-green-50 font-semibold transition-all duration-300 transform hover:scale-110 hover:shadow-2xl hover:shadow-green-500/40 hover:-translate-y-1 relative overflow-hidden group magnetic-button"
+                    className="w-full bg-white text-green-800 hover:bg-green-50 font-semibold transition-all duration-200 transform hover:scale-110 hover:shadow-lg md:hover:shadow-xl hover:shadow-green-500/25 hover:-translate-y-1 relative overflow-hidden group magnetic-button"
                     data-testid="button-start-diary"
                   >
                     {/* Shine effect */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out"></div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-400 ease-out"></div>
                     <BookOpen className="w-5 h-5 mr-2 group-hover:-rotate-12 transition-transform duration-300" />
                     Začať denník
                   </Button>
@@ -486,11 +486,11 @@ export default function Landing() {
                   <Button
                     size="lg"
                     variant="outline"
-                    className="w-full border-2 border-white text-green-800 bg-white/90 hover:bg-white hover:text-green-800 font-semibold transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:shadow-white/40 hover:-translate-y-1 relative overflow-hidden group magnetic-button"
+                    className="w-full border-2 border-white text-green-800 bg-white/90 hover:bg-white hover:text-green-800 font-semibold transition-all duration-200 hover:scale-110 hover:shadow-lg md:hover:shadow-xl hover:shadow-white/25 hover:-translate-y-1 relative overflow-hidden group magnetic-button"
                     data-testid="button-try-battle"
                   >
                     {/* Shine effect */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out"></div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-400 ease-out"></div>
                     <Trophy className="w-5 h-5 mr-2 group-hover:rotate-12 group-hover:scale-110 transition-transform duration-300" />
                     Vyzvať kamarátov
                   </Button>
