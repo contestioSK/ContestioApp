@@ -50,6 +50,16 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Serve uploads directory with proper cache headers
+  app.use('/uploads', (req, res, next) => {
+    // Set cache headers for images
+    res.set({
+      'Cache-Control': 'public, max-age=31536000, immutable', // 1 year cache
+      'Expires': new Date(Date.now() + 31536000000).toUTCString(), // 1 year from now
+    });
+    next();
+  }, express.static('uploads'));
+
   // Auth middleware
   await setupAuth(app);
 
