@@ -24,6 +24,8 @@ import UpcomingPage from "@/pages/upcoming";
 import LivePage from "@/pages/live";
 import FinishedPage from "@/pages/finished";
 import NotificationPreferences from "@/pages/notification-preferences";
+import DiaryIndex from "@/pages/diary/index";
+import BattlePaywall from "@/pages/diary/battle-paywall";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 function Router() {
@@ -62,6 +64,12 @@ function Router() {
           <NotificationPreferences />
         </ProtectedRoute>
       </Route>
+      <Route path="/diary">
+        <ProtectedRoute>
+          <DiaryIndex />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/diary/battle/paywall" component={BattlePaywall} />
       {!isLoading && <Route component={NotFound} />}
     </Switch>
   );
