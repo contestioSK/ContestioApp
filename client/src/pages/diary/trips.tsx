@@ -255,6 +255,8 @@ export default function DiaryTrips() {
 
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+                  {/* Disable all form fields during submission */}
+                  <fieldset disabled={createTripMutation.isPending || updateTripMutation.isPending} className="space-y-6">
                   <FormField
                     control={form.control}
                     name="name"
@@ -427,6 +429,7 @@ export default function DiaryTrips() {
                       {editingTrip ? "Uložiť zmeny" : "Vytvoriť výpravu"}
                     </Button>
                   </div>
+                  </fieldset>
                 </form>
               </Form>
             </DialogContent>
@@ -492,15 +495,64 @@ export default function DiaryTrips() {
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
-              <Card key={i} className="animate-pulse">
+              <Card key={i} className="animate-pulse" data-testid="skeleton-trip-card">
                 <CardHeader>
-                  <div className="h-4 bg-muted rounded w-3/4"></div>
-                  <div className="h-3 bg-muted rounded w-1/2"></div>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      {/* Trip name */}
+                      <div className="h-5 bg-muted rounded w-4/5 mb-2"></div>
+                      {/* Location with map pin */}
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 bg-muted rounded"></div>
+                        <div className="h-3 bg-muted rounded w-32"></div>
+                      </div>
+                    </div>
+                    {/* Badges */}
+                    <div className="flex gap-1">
+                      {i % 2 === 0 && <div className="h-5 bg-muted rounded w-16"></div>}
+                      {i % 3 === 0 && <div className="h-5 bg-muted rounded w-12"></div>}
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2">
-                    <div className="h-3 bg-muted rounded"></div>
-                    <div className="h-3 bg-muted rounded w-2/3"></div>
+                  <div className="space-y-3">
+                    {/* Date range */}
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 bg-muted rounded"></div>
+                      <div className="h-3 bg-muted rounded w-40"></div>
+                    </div>
+                    {/* Duration */}
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 bg-muted rounded"></div>
+                      <div className="h-3 bg-muted rounded w-16"></div>
+                    </div>
+                    {/* Participants (sometimes) */}
+                    {i % 3 === 1 && (
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 bg-muted rounded"></div>
+                        <div className="h-3 bg-muted rounded w-24"></div>
+                      </div>
+                    )}
+                    {/* Notes (sometimes) */}
+                    {i % 4 === 0 && (
+                      <div className="flex items-start gap-2">
+                        <div className="w-4 h-4 bg-muted rounded mt-0.5"></div>
+                        <div className="space-y-1 flex-1">
+                          <div className="h-3 bg-muted rounded w-full"></div>
+                          <div className="h-3 bg-muted rounded w-3/4"></div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  {/* Separator */}
+                  <div className="h-px bg-muted my-4"></div>
+                  {/* Action buttons */}
+                  <div className="flex justify-between">
+                    <div className="h-8 bg-muted rounded w-20"></div>
+                    <div className="flex gap-2">
+                      <div className="w-8 h-8 bg-muted rounded"></div>
+                      <div className="w-8 h-8 bg-muted rounded"></div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
