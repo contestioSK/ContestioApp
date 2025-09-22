@@ -428,7 +428,7 @@ export default function CompetitionDetail() {
               <TabsTrigger value="overview" data-testid="tab-overview">Prehľad</TabsTrigger>
               <TabsTrigger value="analytics" data-testid="tab-analytics">
                 <BarChart3 className="w-4 h-4 mr-2" />
-                Analytiky
+                Štatistiky súťaže
               </TabsTrigger>
               <TabsTrigger value="rules" data-testid="tab-rules">Pravidlá</TabsTrigger>
             </TabsList>
