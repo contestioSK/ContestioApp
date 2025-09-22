@@ -47,7 +47,7 @@ export function TeamAverageChart({ data, title, description }: TeamAverageChartP
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
-          <ResponsiveContainer width="100%" height={675}>
+          <ResponsiveContainer width="100%" height={600}>
             <BarChart 
               data={formattedData} 
               margin={{ left: 20, right: 20, top: 20, bottom: 60 }}
@@ -74,9 +74,6 @@ export function TeamAverageChart({ data, title, description }: TeamAverageChartP
                       return item ? (
                         <div className="space-y-1">
                           <div className="font-medium">{item.teamName}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {item.fishCount} z {item.maxFish} úlovkov
-                          </div>
                           <div className="text-xs text-muted-foreground">
                             Priemerná váha: {item.averageWeight} kg
                           </div>
