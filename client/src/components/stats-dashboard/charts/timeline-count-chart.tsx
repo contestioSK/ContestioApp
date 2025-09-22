@@ -14,16 +14,16 @@ const chartConfig = {
   },
 };
 
-// Farby pre jednotlivé dni - počet
+// Farby pre jednotlivé dni - počet (zladené s weight grafom)
 const getDayColor = (dayIndex: number) => {
   const colors = [
-    'hsl(220, 50%, 75%)',  // svetlá modrá - Deň 1
-    'hsl(160, 50%, 65%)',  // svetlá tyrkysová - Deň 2
-    'hsl(120, 50%, 65%)',  // svetlá zelená - Deň 3
-    'hsl(80, 50%, 70%)',   // svetlo svetlo zelená - Deň 4
-    'hsl(40, 50%, 75%)',   // svetlá oranžová - Deň 5
-    'hsl(0, 50%, 75%)',    // svetlá červená - Deň 6
-    'hsl(280, 50%, 75%)',  // svetlá fialová - Deň 7
+    'hsl(220, 70%, 60%)',  // modrá - Deň 1
+    'hsl(160, 70%, 50%)',  // tyrkysová - Deň 2  
+    'hsl(120, 70%, 50%)',  // zelená - Deň 3
+    'hsl(80, 70%, 55%)',   // svetlo zelená - Deň 4
+    'hsl(40, 70%, 60%)',   // oranžová - Deň 5
+    'hsl(0, 70%, 60%)',    // červená - Deň 6
+    'hsl(280, 70%, 60%)',  // fialová - Deň 7
   ];
   return colors[dayIndex % 7];
 };

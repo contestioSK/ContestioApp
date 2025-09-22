@@ -20,8 +20,8 @@ const chartConfig = {
 
 export function FishTypeDistributionChart({ data }: FishTypeDistributionChartProps) {
   const COLORS = {
-    "Common Carp": "hsl(34, 84%, 60%)",  // oranžová pre šupináča
-    "Mirror Carp": "hsl(220, 70%, 60%)", // modrá pre lysca
+    "Common Carp": "hsl(40, 70%, 60%)",  // oranžová pre šupináča (zladená)
+    "Mirror Carp": "hsl(220, 70%, 60%)", // modrá pre lysca (zladená)
   };
 
   return (
