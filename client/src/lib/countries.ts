@@ -93,13 +93,12 @@ const LOCAL_FLAGS: Record<string, string> = {
 export function getCountryFlag(countryCode: string): string {
   const code = countryCode.toLowerCase();
   
-  // Return local flag if available
-  if (LOCAL_FLAGS[code]) {
-    return LOCAL_FLAGS[code];
-  }
+  // Primary: Use high-quality CDN SVG flags for consistent, crisp vectors
+  const cdnSvgUrl = `https://flagcdn.com/${code}.svg`;
   
-  // Fallback to external CDN for missing flags
-  return `https://flagcdn.com/24x18/${code}.png`;
+  // Optional: Local override if high-quality local flag exists
+  // (Currently keeping local flags for potential future use)
+  return cdnSvgUrl;
 }
 
 export function getCountryFlagEmoji(countryCode: string): string {
