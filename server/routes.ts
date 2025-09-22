@@ -1123,12 +1123,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Get all unique sectors from teams and catches (using only clean sector codes)
       const allSectors = new Set<string>();
+      
+      // Debug: log team sectors
+      console.log('[SECTOR DEBUG] Teams with sectors:');
       teams.forEach(team => {
-        if (team.sector) allSectors.add(team.sector);
+        if (team.sector) {
+          console.log(`  Team ${team.name}: sector="${team.sector}", sectorName="${team.sectorName}"`);
+          allSectors.add(team.sector);
+        }
       });
+      
+      // Debug: log catch sectors
+      console.log('[SECTOR DEBUG] Catches with sectors:');
+      const catchSectors = new Set<string>();
       catches.forEach(catch_ => {
-        if (catch_.sector) allSectors.add(catch_.sector);
+        if (catch_.sector) {
+          catchSectors.add(catch_.sector);
+          allSectors.add(catch_.sector);
+        }
       });
+      console.log(`  Unique catch sectors: ${Array.from(catchSectors).join(', ')}`);
+      
+      console.log(`[SECTOR DEBUG] Final allSectors: ${Array.from(allSectors).join(', ')}`);
+      console.log(`[SECTOR DEBUG] Total sectors found: ${allSectors.size}`);
 
       // Sector Performance (overall stats per sector)
       const sectorPerformance = Array.from(allSectors).map(sector => {
