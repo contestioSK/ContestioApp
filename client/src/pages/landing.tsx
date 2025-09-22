@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Fish, Users, Trophy, MapPin, PlusCircle, Menu, X, Info, DollarSign, HelpCircle, BarChart3, Target, Zap, BookOpen, Crown } from "lucide-react";
 import { ContestCategories } from "@/components/contest-categories";
+import LiveLeaderboard from "@/components/live-leaderboard";
 import { Link, useLocation } from "wouter";
 import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -23,61 +24,22 @@ interface Competition {
 export default function Landing() {
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const leftSectionRef = useRef<HTMLDivElement>(null);
-  const rightSectionRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLElement>(null);
-  const animationFrameRef = useRef<number>();
-  const [hoveredSection, setHoveredSection] = useState<'left' | 'right' | null>(null);
   
   // Fetch real competitions from API
   const { data: competitions = [], isLoading } = useQuery<Competition[]>({
     queryKey: ["/api/competitions"]
   });
+  
+  // Get first live competition for leaderboard
+  const liveCompetition = competitions.find(comp => comp.status === 'live');
+  
+  // Fetch teams for live leaderboard
+  const { data: teams = [], isLoading: teamsLoading } = useQuery({
+    queryKey: ["/api/competitions", liveCompetition?.id, "teams"],
+    enabled: !!liveCompetition?.id,
+  });
 
-  // RequestAnimationFrame-based parallax effect
-  useEffect(() => {
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    
-    if (prefersReducedMotion) return;
-
-    const handleScroll = () => {
-      if (!leftSectionRef.current || !rightSectionRef.current || !heroRef.current) return;
-      
-      const heroRect = heroRef.current.getBoundingClientRect();
-      const isHeroVisible = heroRect.bottom >= 0 && heroRect.top <= window.innerHeight;
-      
-      if (!isHeroVisible) return;
-      
-      const scrollProgress = Math.max(0, Math.min(1, (window.innerHeight - heroRect.top) / (window.innerHeight + heroRect.height)));
-      const leftOffset = Math.max(-80, Math.min(80, scrollProgress * window.scrollY * -0.25));
-      const rightOffset = Math.max(-80, Math.min(80, scrollProgress * window.scrollY * 0.18));
-      
-      leftSectionRef.current.style.transform = `translate3d(0, ${leftOffset}px, 0)`;
-      rightSectionRef.current.style.transform = `translate3d(0, ${rightOffset}px, 0)`;
-    };
-
-    const onScroll = () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-      animationFrameRef.current = requestAnimationFrame(handleScroll);
-    };
-
-    window.addEventListener('scroll', onScroll, { passive: true });
-    
-    // Set will-change property
-    if (leftSectionRef.current) leftSectionRef.current.style.willChange = 'transform';
-    if (rightSectionRef.current) rightSectionRef.current.style.willChange = 'transform';
-    
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-      if (leftSectionRef.current) leftSectionRef.current.style.willChange = 'auto';
-      if (rightSectionRef.current) rightSectionRef.current.style.willChange = 'auto';
-    };
-  }, []);
 
   // Navigation items
   const navItems = [
@@ -145,158 +107,6 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Navigation Header */}
-      <header className="bg-white border-b border-border shadow-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <Link href="/">
-                <div className="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition-opacity">
-                  <Fish className="text-primary text-2xl" />
-                  <h1 className="text-xl font-bold text-primary">Contestio</h1>
-                </div>
-              </Link>
-              <div className="hidden md:flex items-center space-x-8">
-                <Link href="/about-us">
-                  <span 
-                    className="text-sm font-medium text-foreground hover:text-primary transition-colors duration-200 relative after:content-[''] after:absolute after:w-0 after:h-0.5 after:bg-primary after:left-0 after:bottom-[-4px] after:transition-all after:duration-200 hover:after:w-full cursor-pointer"
-                    data-testid="button-about-us"
-                  >
-                    O nás
-                  </span>
-                </Link>
-                <Link href="/pricing">
-                  <span 
-                    className="text-sm font-medium text-foreground hover:text-primary transition-colors duration-200 relative after:content-[''] after:absolute after:w-0 after:h-0.5 after:bg-primary after:left-0 after:bottom-[-4px] after:transition-all after:duration-200 hover:after:w-full cursor-pointer"
-                    data-testid="button-pricing"
-                  >
-                    Cenník
-                  </span>
-                </Link>
-                <Link href="/faq">
-                  <span 
-                    className="text-sm font-medium text-foreground hover:text-primary transition-colors duration-200 relative after:content-[''] after:absolute after:w-0 after:h-0.5 after:bg-primary after:left-0 after:bottom-[-4px] after:transition-all after:duration-200 hover:after:w-full cursor-pointer"
-                    data-testid="button-faq"
-                  >
-                    FAQ
-                  </span>
-                </Link>
-                <Link href="/contact">
-                  <span 
-                    className="text-sm font-medium text-foreground hover:text-primary transition-colors duration-200 relative after:content-[''] after:absolute after:w-0 after:h-0.5 after:bg-primary after:left-0 after:bottom-[-4px] after:transition-all after:duration-200 hover:after:w-full cursor-pointer"
-                    data-testid="button-contact"
-                  >
-                    Kontakt
-                  </span>
-                </Link>
-              </div>
-            </div>
-            
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-1">
-              {navItems.map((item) => {
-                const isActive = location === item.href;
-                const IconComponent = item.icon;
-                
-                return (
-                  <Link key={item.href} href={item.href}>
-                    <div className={`
-                      flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer
-                      ${isActive 
-                        ? 'bg-primary text-primary-foreground shadow-sm' 
-                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                      }
-                    `} data-testid={`nav-${item.href.slice(1)}`}>
-                      <IconComponent className="w-4 h-4" />
-                      <span>{item.label}</span>
-                    </div>
-                  </Link>
-                );
-              })}
-              
-              <div className="w-px h-6 bg-border mx-2"></div>
-              
-              <Button 
-                onClick={() => window.location.href = '/api/login'}
-                className="bg-accent text-accent-foreground hover:bg-accent/90 transition-colors"
-                data-testid="button-login"
-              >
-                Prihlásiť sa
-              </Button>
-            </div>
-
-            {/* Mobile Menu Button */}
-            <div className="md:hidden">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                data-testid="button-mobile-menu"
-              >
-                {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              </Button>
-            </div>
-          </div>
-
-          {/* Mobile Navigation Menu */}
-          {isMobileMenuOpen && (
-            <div className="md:hidden border-t border-border bg-white">
-              <div className="px-4 py-3 space-y-2">
-                {navItems.map((item) => {
-                  const isActive = location === item.href;
-                  const IconComponent = item.icon;
-                  
-                  return (
-                    <Link key={item.href} href={item.href}>
-                      <div 
-                        className={`
-                          flex items-center space-x-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer
-                          ${isActive 
-                            ? 'bg-primary text-primary-foreground shadow-sm' 
-                            : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                          }
-                        `}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        data-testid={`mobile-nav-${item.href.slice(1)}`}
-                      >
-                        <IconComponent className="w-5 h-5" />
-                        <span>{item.label}</span>
-                      </div>
-                    </Link>
-                  );
-                })}
-                
-                <Link href="/about-us">
-                  <div 
-                    className="flex items-center space-x-3 px-3 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 cursor-pointer transition-all duration-200"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    data-testid="mobile-nav-about-us"
-                  >
-                    <Info className="w-5 h-5" />
-                    <span>O nás</span>
-                  </div>
-                </Link>
-                
-                <div className="border-t border-border my-2"></div>
-                
-                <Button 
-                  onClick={() => {
-                    window.location.href = '/api/login';
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="w-full bg-accent text-accent-foreground hover:bg-accent/90 transition-colors"
-                  data-testid="mobile-button-login"
-                >
-                  Prihlásiť sa
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
-      </header>
-      
-      {/* Ensure header doesn't overlap hero */}
-      <div className="h-0"></div>
 
       {/* Full-Screen Hero Section */}
       <section 
@@ -330,7 +140,7 @@ export default function Landing() {
                   const IconComponent = item.icon;
                   return (
                     <Link key={item.href} href={item.href}>
-                      <div className="flex items-center space-x-2 text-white/90 hover:text-white transition-colors cursor-pointer">
+                      <div className="flex items-center space-x-2 text-white/90 hover:text-white transition-colors cursor-pointer" data-testid={`nav-${item.href.slice(1)}`}>
                         <IconComponent className="w-4 h-4" />
                         <span className="text-sm font-medium">{item.label}</span>
                       </div>
@@ -339,7 +149,7 @@ export default function Landing() {
                 })}
                 
                 <Link href="/about-us">
-                  <div className="flex items-center space-x-2 text-white/90 hover:text-white transition-colors cursor-pointer">
+                  <div className="flex items-center space-x-2 text-white/90 hover:text-white transition-colors cursor-pointer" data-testid="nav-about-us">
                     <Info className="w-4 h-4" />
                     <span className="text-sm font-medium">O nás</span>
                   </div>
@@ -349,6 +159,7 @@ export default function Landing() {
                   onClick={() => window.location.href = '/api/login'}
                   className="bg-white text-blue-900 hover:bg-white/90 font-medium"
                   size="sm"
+                  data-testid="button-login"
                 >
                   Prihlásiť sa
                 </Button>
@@ -361,6 +172,7 @@ export default function Landing() {
                   size="sm" 
                   onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                   className="text-white hover:bg-white/10"
+                  data-testid="button-mobile-menu"
                 >
                   {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
                 </Button>
@@ -378,6 +190,7 @@ export default function Landing() {
                         <div 
                           className="flex items-center space-x-3 px-3 py-3 rounded-lg text-white/90 hover:text-white hover:bg-white/10 cursor-pointer transition-all duration-200"
                           onClick={() => setIsMobileMenuOpen(false)}
+                          data-testid={`mobile-nav-${item.href.slice(1)}`}
                         >
                           <IconComponent className="w-5 h-5" />
                           <span className="text-sm font-medium">{item.label}</span>
@@ -390,6 +203,7 @@ export default function Landing() {
                     <div 
                       className="flex items-center space-x-3 px-3 py-3 rounded-lg text-white/90 hover:text-white hover:bg-white/10 cursor-pointer transition-all duration-200"
                       onClick={() => setIsMobileMenuOpen(false)}
+                      data-testid="mobile-nav-about-us"
                     >
                       <Info className="w-5 h-5" />
                       <span className="text-sm font-medium">O nás</span>
@@ -404,6 +218,7 @@ export default function Landing() {
                       setIsMobileMenuOpen(false);
                     }}
                     className="w-full bg-white text-blue-900 hover:bg-white/90 font-medium"
+                    data-testid="mobile-button-login"
                   >
                     Prihlásiť sa
                   </Button>
@@ -414,103 +229,109 @@ export default function Landing() {
         </div>
         
         {/* Hero Content */}
-        <div className="relative z-10 flex-1 flex items-center min-h-[calc(100vh-4rem)] pt-8 pb-16">
+        <div className="relative z-10 flex-1 flex items-center min-h-screen pt-8 pb-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
               {/* Left Content */}
               <div className="text-white">
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight" data-testid="hero-title">
                   Súťaže na Slovensku
                 </h1>
-                <p className="text-lg md:text-xl text-white/90 mb-4 leading-relaxed">
+                <p className="text-lg md:text-xl text-white/90 mb-4 leading-relaxed" data-testid="hero-subtitle">
                   Vytvor si svoj osobný rybársky denník
                 </p>
-                <p className="text-lg md:text-xl text-white/90 mb-8 leading-relaxed">
+                <p className="text-lg md:text-xl text-white/90 mb-8 leading-relaxed" data-testid="hero-subtitle-2">
                   - všetko na jednom mieste
                 </p>
                 
-                <p className="text-base md:text-lg text-white/80 mb-6">
+                <p className="text-base md:text-lg text-white/80 mb-6" data-testid="hero-description">
                   Sleduj live úlovky a rebríčky tímov, alebo
                 </p>
-                <p className="text-base md:text-lg text-white/80 mb-8">
+                <p className="text-base md:text-lg text-white/80 mb-8" data-testid="hero-description-2">
                   si zapisuj svoje úlovky a súťaž s kamarátmi.
                 </p>
                 
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Button 
-                    className="bg-white text-blue-900 hover:bg-white/90 font-semibold px-6 py-3"
-                    size="lg"
-                  >
-                    Pozrieť prebiehajúce súťaže
-                  </Button>
-                  <Button 
-                    variant="outline"
-                    className="border-2 border-blue-600 text-blue-600 bg-blue-600 hover:bg-blue-700 font-semibold px-6 py-3"
-                    size="lg"
-                  >
-                    Začať zapisovať úlovky
-                  </Button>
+                  <Link href="/live">
+                    <Button 
+                      className="bg-white text-blue-900 hover:bg-white/90 font-semibold px-6 py-3 w-full sm:w-auto"
+                      size="lg"
+                      data-testid="button-view-live-competitions"
+                    >
+                      Pozrieť prebiehajúce súťaže
+                    </Button>
+                  </Link>
+                  <Link href="/diary">
+                    <Button 
+                      variant="outline"
+                      className="border-2 border-white text-white hover:bg-white hover:text-blue-900 font-semibold px-6 py-3 w-full sm:w-auto"
+                      size="lg"
+                      data-testid="button-start-diary-hero"
+                    >
+                      Začať zapisovať úlovky
+                    </Button>
+                  </Link>
                 </div>
               </div>
               
               {/* Right Content - Live Leaderboard */}
               <div className="relative">
-                <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-xl">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-bold text-gray-900">Live Rebríček</h3>
-                      <Badge variant="destructive" className="bg-red-600 text-white">
-                        LIVE
-                      </Badge>
+                <div className="bg-white/95 backdrop-blur-sm border-0 shadow-xl rounded-lg overflow-hidden">
+                  <div className="p-4 border-b bg-white/50">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-bold text-gray-900" data-testid="live-leaderboard-title">Live Rebríček</h3>
+                      {liveCompetition && (
+                        <Badge variant="destructive" className="bg-red-600 text-white" data-testid="live-badge">
+                          LIVE
+                        </Badge>
+                      )}
                     </div>
-                    
-                    <div className="space-y-3">
-                      {/* Simulated live data */}
-                      <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                        <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                          <span className="text-white text-sm font-bold">TA</span>
-                        </div>
-                        <div className="flex-1">
-                          <div className="font-semibold text-gray-900">Tyes´A</div>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-bold text-gray-900">12,2 kg</div>
-                        </div>
+                    {liveCompetition && (
+                      <p className="text-sm text-gray-600 mt-1" data-testid="live-competition-name">
+                        {liveCompetition.name}
+                      </p>
+                    )}
+                  </div>
+                  
+                  <div className="max-h-80 overflow-hidden">
+                    {liveCompetition ? (
+                      <LiveLeaderboard 
+                        teams={teams} 
+                        isLoading={teamsLoading} 
+                        competitionId={liveCompetition.id}
+                        compact={true}
+                        showTop={3}
+                      />
+                    ) : (
+                      <div className="p-6">
+                        {isLoading ? (
+                          <div className="space-y-3">
+                            {[1,2,3].map(i => (
+                              <div key={i} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg animate-pulse">
+                                <div className="w-8 h-8 bg-gray-300 rounded-full"></div>
+                                <div className="flex-1">
+                                  <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+                                </div>
+                                <div className="w-16 h-4 bg-gray-300 rounded"></div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center py-4 text-gray-500">
+                            <Trophy className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                            <p className="text-sm" data-testid="no-live-competitions-message">Momentálne neprebieha žiadna súťaž</p>
+                            <p className="text-xs mt-1" data-testid="upcoming-competitions-hint">Pozrite si nadchádzajúce súťaže</p>
+                            <Link href="/" className="mt-3 inline-block">
+                              <Button variant="outline" size="sm" data-testid="button-view-upcoming">
+                                Pozrieť súťaže
+                              </Button>
+                            </Link>
+                          </div>
+                        )}
                       </div>
-                      
-                      <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                        <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
-                          <span className="text-white text-sm font-bold">TB</span>
-                        </div>
-                        <div className="flex-1">
-                          <div className="font-semibold text-gray-900">Team B</div>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-bold text-gray-900">65,1 kg</div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                        <div className="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center">
-                          <span className="text-white text-sm font-bold">TC</span>
-                        </div>
-                        <div className="flex-1">
-                          <div className="font-semibold text-gray-900">Team C</div>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-bold text-gray-900">57,8 kg</div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Chart placeholder */}
-                    <div className="mt-6 h-20 bg-gradient-to-r from-blue-100 to-green-100 rounded-lg flex items-center justify-center">
-                      <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center">
-                        <div className="w-10 h-10 bg-green-500 rounded-full"></div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
