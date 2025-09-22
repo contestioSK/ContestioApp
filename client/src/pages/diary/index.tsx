@@ -10,7 +10,7 @@ export default function DiaryIndex() {
   const [, setLocation] = useLocation();
 
   // TODO: Replace with actual API call to check premium status
-  const isPremium = false; // This will be connected to actual premium check
+  const isPremium = true; // Temporarily set to true for development - will be connected to actual premium check
 
   const diaryFeatures = [
     {
@@ -52,7 +52,12 @@ export default function DiaryIndex() {
         setLocation("/pricing");
       }
     } else {
-      setLocation(feature.href);
+      // For premium users or free features
+      if (feature.href === "/diary/battle") {
+        setLocation("/diary/battle/create");
+      } else {
+        setLocation(feature.href);
+      }
     }
   };
 
