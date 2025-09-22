@@ -301,8 +301,8 @@ export default function Landing() {
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-4 bg-gradient-to-r from-blue-100 via-white to-green-100 bg-clip-text text-transparent">
               Zažite rybolov naplno
             </h1>
-            <p className="text-lg md:text-xl lg:text-2xl text-white/90 max-w-3xl mx-auto font-medium">
-              Každý úlovok má svoj príbeh
+            <p className="text-lg md:text-xl lg:text-2xl text-white/90 max-w-4xl mx-auto font-medium leading-relaxed">
+              Live výsledky, rybársky denník a priateľské súboje na jednom mieste.
             </p>
           </div>
         </div>
@@ -377,11 +377,11 @@ export default function Landing() {
               </div>
               
               <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 md:mb-4">
-                Súťaže
+                🏆 SÚŤAŽTE S NAJLEPŠÍMI
               </h2>
               <p className="text-blue-100 text-base md:text-lg mb-6 md:mb-8 leading-relaxed">
-                Chceš organizovať alebo sledovať profesionálne rybárske súťaže na Slovensku? 
-                Sleduj live výsledky, rebríčky a úlovky tímov v reálnom čase.
+                Vstúpte do sveta profesionálnych rybárskych súťaží. Sledujte live výsledky, 
+                porovnávajte techniky majstrov a zažite adrenalín skutočnej súťaže.
               </p>
               
               <div className="flex flex-col gap-3 md:gap-4">
@@ -394,7 +394,7 @@ export default function Landing() {
                     {/* Shine effect */}
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out"></div>
                     <Zap className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform duration-300" />
-                    Prehľad súťaží
+                    Pozrieť live výsledky
                   </Button>
                 </Link>
                 <Link href="/register-competition">
@@ -407,7 +407,7 @@ export default function Landing() {
                     {/* Shine effect */}
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out"></div>
                     <PlusCircle className="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform duration-300" />
-                    Zaregistruj súťaž
+                    Organizovať súťaž
                   </Button>
                 </Link>
               </div>
@@ -445,11 +445,11 @@ export default function Landing() {
               </div>
               
               <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 md:mb-4">
-                Rybársky denník
+                📖 VÁŠ RYBÁRSKY ODKAZ
               </h2>
               <p className="text-green-100 text-base md:text-lg mb-6 md:mb-8 leading-relaxed">
-                Zaznamenávaj svoje úlovky, porovnávaj ich s kamarátmi a súťažte medzi sebou 
-                o najlepšie výsledky v Fishing Battle.
+                Zachytávajte momenty, ktoré sa nedajú opakovať. Vytvorte si digitálny 
+                denník úlovkov a súťažte s priateľmi o tie najlepšie príbehy.
               </p>
               
               <div className="flex flex-col gap-3 md:gap-4">
@@ -462,7 +462,7 @@ export default function Landing() {
                     {/* Shine effect */}
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out"></div>
                     <BookOpen className="w-5 h-5 mr-2 group-hover:-rotate-12 transition-transform duration-300" />
-                    Začať zapisovať
+                    Začať denník
                   </Button>
                 </Link>
                 <a href="/api/login">
@@ -475,9 +475,34 @@ export default function Landing() {
                     {/* Shine effect */}
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out"></div>
                     <Trophy className="w-5 h-5 mr-2 group-hover:rotate-12 group-hover:scale-110 transition-transform duration-300" />
-                    Vyskúšať Battle
+                    Vyzvať kamarátov
                   </Button>
                 </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Social Proof Band */}
+        <div className="absolute bottom-0 left-0 right-0 bg-black/20 backdrop-blur-sm border-t border-white/10 py-4 px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="flex flex-col md:flex-row items-center justify-center md:justify-between gap-4 text-center md:text-left">
+              <div className="flex flex-col sm:flex-row items-center gap-6 text-white/80 text-sm">
+                <div className="flex items-center gap-2">
+                  <Trophy className="w-4 h-4 text-yellow-400" />
+                  <span className="font-semibold">120+ tímov</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-blue-400" />
+                  <span className="font-semibold">30+ súťaží naživo</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Fish className="w-4 h-4 text-green-400" />
+                  <span className="font-semibold">50k+ zaznamenaných úlovkov</span>
+                </div>
+              </div>
+              <div className="text-white/90 text-sm italic">
+                "Najlepšia platforma pre rybárske súťaže" - Slovak Fishing Federation
               </div>
             </div>
           </div>
