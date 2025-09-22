@@ -163,14 +163,20 @@ export default function StatsDashboard({ competitionId }: StatsDashboardProps) {
                       <span className="font-medium text-sm">Najefektívnejší tím</span>
                     </div>
                     <p className="text-lg font-bold">
-                      {stats.teamEfficiency.reduce((max, team) => 
-                        team.efficiency > max.efficiency ? team : max
-                      ).teamName}
+                      {stats.teamEfficiency.length > 0 
+                        ? stats.teamEfficiency.reduce((max, team) => 
+                            team.efficiency > max.efficiency ? team : max
+                          ).teamName
+                        : 'N/A'
+                      }
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {stats.teamEfficiency.reduce((max, team) => 
-                        team.efficiency > max.efficiency ? team : max
-                      ).efficiency.toFixed(1)} kg/h
+                      {stats.teamEfficiency.length > 0 
+                        ? `${stats.teamEfficiency.reduce((max, team) => 
+                            team.efficiency > max.efficiency ? team : max
+                          ).efficiency.toFixed(1)} kg/h`
+                        : 'Žiadne dáta'
+                      }
                     </p>
                   </div>
 
@@ -180,8 +186,11 @@ export default function StatsDashboard({ competitionId }: StatsDashboardProps) {
                       <span className="font-medium text-sm">Priemerná váha</span>
                     </div>
                     <p className="text-lg font-bold">
-                      {(stats.timeline[stats.timeline.length - 1]?.totalWeight / 
-                        stats.timeline[stats.timeline.length - 1]?.totalCount || 0).toFixed(1)} kg
+                      {stats.timeline.length > 0 
+                        ? (stats.timeline[stats.timeline.length - 1]?.totalWeight / 
+                           stats.timeline[stats.timeline.length - 1]?.totalCount || 0).toFixed(1)
+                        : '0.0'
+                      } kg
                     </p>
                     <p className="text-xs text-muted-foreground">
                       Na úlovok
