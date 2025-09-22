@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Fish, Users, Trophy, MapPin, PlusCircle, Menu, X, Info, DollarSign, HelpCircle, BarChart3, Target, Zap, BookOpen, Crown } from "lucide-react";
+import { Fish, Users, Trophy, MapPin, PlusCircle, Menu, X, Info, DollarSign, HelpCircle, BarChart3, Target, Zap, BookOpen, Crown, Phone } from "lucide-react";
 import { ContestCategories } from "@/components/contest-categories";
 import { Link, useLocation } from "wouter";
 import { useState, useEffect, useRef } from "react";
@@ -31,8 +31,17 @@ export default function Landing() {
   });
 
 
-  // Navigation items
+  // Main navigation items
   const navItems = [
+    { href: "/", label: "Súťaže", icon: Trophy },
+    { href: "/pricing", label: "Cenník", icon: DollarSign },
+    { href: "/faq", label: "FAQ", icon: HelpCircle },
+    { href: "/about-us", label: "O nás", icon: Info },
+    { href: "/contact", label: "Kontakt", icon: Phone },
+  ];
+  
+  // Action items
+  const actionItems = [
     { href: "/register-competition", label: "Zaregistrovať súťaž", icon: Trophy },
     { href: "/register-team", label: "Zaregistrovať tím", icon: Users },
   ];
@@ -125,12 +134,13 @@ export default function Landing() {
               </Link>
 
               {/* Desktop Navigation */}
-              <div className="hidden md:flex items-center space-x-8">
+              <div className="hidden md:flex items-center space-x-6">
+                {/* Main Navigation */}
                 {navItems.map((item) => {
                   const IconComponent = item.icon;
                   return (
                     <Link key={item.href} href={item.href}>
-                      <div className="flex items-center space-x-2 text-white/90 hover:text-white transition-colors cursor-pointer" data-testid={`nav-${item.href.slice(1)}`}>
+                      <div className="flex items-center space-x-1 text-white/90 hover:text-white transition-colors cursor-pointer" data-testid={`nav-${item.href.slice(1) || 'home'}`}>
                         <IconComponent className="w-4 h-4" />
                         <span className="text-sm font-medium">{item.label}</span>
                       </div>
@@ -138,12 +148,21 @@ export default function Landing() {
                   );
                 })}
                 
-                <Link href="/about-us">
-                  <div className="flex items-center space-x-2 text-white/90 hover:text-white transition-colors cursor-pointer" data-testid="nav-about-us">
-                    <Info className="w-4 h-4" />
-                    <span className="text-sm font-medium">O nás</span>
-                  </div>
-                </Link>
+                {/* Separator */}
+                <div className="w-px h-4 bg-white/30"></div>
+                
+                {/* Action Items */}
+                {actionItems.map((item) => {
+                  const IconComponent = item.icon;
+                  return (
+                    <Link key={item.href} href={item.href}>
+                      <div className="flex items-center space-x-1 text-white/90 hover:text-white transition-colors cursor-pointer" data-testid={`nav-${item.href.slice(1)}`}>
+                        <IconComponent className="w-4 h-4" />
+                        <span className="text-sm font-medium">{item.label}</span>
+                      </div>
+                    </Link>
+                  );
+                })}
                 
                 <Button 
                   onClick={() => window.location.href = '/api/login'}
@@ -173,7 +192,27 @@ export default function Landing() {
             {isMobileMenuOpen && (
               <div className="md:hidden border-t border-white/20 mt-2 pt-4 pb-6">
                 <div className="space-y-2">
+                  {/* Main Navigation */}
                   {navItems.map((item) => {
+                    const IconComponent = item.icon;
+                    return (
+                      <Link key={item.href} href={item.href}>
+                        <div 
+                          className="flex items-center space-x-3 px-3 py-3 rounded-lg text-white/90 hover:text-white hover:bg-white/10 cursor-pointer transition-all duration-200"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          data-testid={`mobile-nav-${item.href.slice(1) || 'home'}`}
+                        >
+                          <IconComponent className="w-5 h-5" />
+                          <span className="text-sm font-medium">{item.label}</span>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                  
+                  <div className="border-t border-white/20 my-3"></div>
+                  
+                  {/* Action Items */}
+                  {actionItems.map((item) => {
                     const IconComponent = item.icon;
                     return (
                       <Link key={item.href} href={item.href}>
@@ -188,17 +227,6 @@ export default function Landing() {
                       </Link>
                     );
                   })}
-                  
-                  <Link href="/about-us">
-                    <div 
-                      className="flex items-center space-x-3 px-3 py-3 rounded-lg text-white/90 hover:text-white hover:bg-white/10 cursor-pointer transition-all duration-200"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      data-testid="mobile-nav-about-us"
-                    >
-                      <Info className="w-5 h-5" />
-                      <span className="text-sm font-medium">O nás</span>
-                    </div>
-                  </Link>
                   
                   <div className="border-t border-white/20 my-4"></div>
                   
