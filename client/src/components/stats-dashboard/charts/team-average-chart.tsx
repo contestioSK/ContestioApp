@@ -47,7 +47,7 @@ export function TeamAverageChart({ data, title, description }: TeamAverageChartP
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
-          <ResponsiveContainer width="100%" height={450}>
+          <ResponsiveContainer width="100%" height={675}>
             <BarChart 
               data={formattedData} 
               margin={{ left: 20, right: 20, top: 20, bottom: 60 }}
