@@ -482,10 +482,9 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(teams)
       .leftJoin(teamMembers, eq(teams.id, teamMembers.teamId))
-      .where(eq(teams.competitionId, competitionId))
-      .orderBy(desc(teams.totalWeight));
+      .where(eq(teams.competitionId, competitionId));
 
-    // Group members by team
+    // Group members by team first
     const teamMap = new Map<string, Team & { members: TeamMember[] }>();
     
     for (const row of teamsWithMembers) {
@@ -501,7 +500,35 @@ export class DatabaseStorage implements IStorage {
       }
     }
     
-    return Array.from(teamMap.values());
+    const allTeams = Array.from(teamMap.values());
+
+    // Calculate real-time total weights for each team from catches table
+    const teamsWithRealWeights = await Promise.all(
+      allTeams.map(async (team) => {
+        const stats = await db
+          .select({
+            totalWeight: sql<number>`COALESCE(SUM(CAST(${catches.weight} AS DECIMAL)), 0)`,
+            fishCount: sql<number>`COALESCE(COUNT(*), 0)`,
+          })
+          .from(catches)
+          .where(and(eq(catches.teamId, team.id), eq(catches.isVerified, true)));
+
+        const { totalWeight, fishCount } = stats[0];
+        
+        return {
+          ...team,
+          totalWeight: totalWeight.toString(),
+          fishCount
+        };
+      })
+    );
+
+    // Sort teams by totalWeight descending (real-time calculated weights)
+    return teamsWithRealWeights.sort((a, b) => {
+      const weightA = parseFloat(a.totalWeight || '0');
+      const weightB = parseFloat(b.totalWeight || '0');
+      return weightB - weightA; // Descending order
+    });
   }
 
   async getTeam(id: string): Promise<(Team & { members: TeamMember[], catches: Catch[] }) | undefined> {
