@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Fish, Users, Trophy, MapPin, PlusCircle, Menu, X, Info, DollarSign, HelpCircle, BarChart3, Target, Zap, BookOpen, Crown } from "lucide-react";
 import { ContestCategories } from "@/components/contest-categories";
 import { Link, useLocation } from "wouter";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import heroImage from "@assets/Carp_Fishing_1600x500_crop_center_6bc11ee9-9096-425e-8946-560290a33987_2016x630_1758061236097.webp";
 interface Competition {
@@ -20,11 +20,22 @@ interface Competition {
 export default function Landing() {
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [scrollY, setScrollY] = useState(0);
   
   // Fetch real competitions from API
   const { data: competitions = [], isLoading } = useQuery<Competition[]>({
     queryKey: ["/api/competitions"]
   });
+
+  // Parallax scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Navigation items
   const navItems = [
@@ -262,6 +273,9 @@ export default function Landing() {
           {/* Competition Section */}
           <div 
             className="flex-1 flex items-center justify-center md:justify-start text-white px-4 sm:px-6 md:px-8 py-8"
+            style={{
+              transform: `translateY(${scrollY * -0.3}px)`,
+            }}
             data-testid="hero-competitions-section"
           >
             <div className="max-w-sm text-center md:text-left">
@@ -315,6 +329,9 @@ export default function Landing() {
           {/* Fishing Diary Section */}
           <div 
             className="flex-1 flex items-center justify-center md:justify-end text-white px-4 sm:px-6 md:px-8 py-8"
+            style={{
+              transform: `translateY(${scrollY * 0.2}px)`,
+            }}
             data-testid="hero-diary-section"
           >
             <div className="max-w-sm text-center md:text-left">
