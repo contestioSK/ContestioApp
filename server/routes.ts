@@ -3356,6 +3356,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       const newTrip = await storage.createDiaryTrip(tripData, userId);
+      
+      // Update seasonal goals progress after trip creation
+      await storage.updateAllUserGoalsProgress(userId);
+      
       res.status(201).json(newTrip);
     } catch (error) {
       console.error("Error creating diary trip:", error);
@@ -3381,6 +3385,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const updatedTrip = await storage.updateDiaryTrip(tripId, req.body, userId);
+      
+      // Update seasonal goals progress after trip update
+      await storage.updateAllUserGoalsProgress(userId);
+      
       res.json(updatedTrip);
     } catch (error) {
       console.error("Error updating diary trip:", error);
@@ -3400,6 +3408,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       await storage.deleteDiaryTrip(tripId, userId);
+      
+      // Update seasonal goals progress after trip deletion
+      await storage.updateAllUserGoalsProgress(userId);
+      
       res.json({ message: "Trip deleted successfully" });
     } catch (error) {
       console.error("Error deleting diary trip:", error);
@@ -3466,6 +3478,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       const newCatch = await storage.createDiaryCatch(catchData, userId);
+      
+      // Update seasonal goals progress after catch creation
+      await storage.updateAllUserGoalsProgress(userId);
+      
       res.status(201).json(newCatch);
     } catch (error) {
       console.error("Error creating diary catch:", error);
@@ -3491,6 +3507,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const updatedCatch = await storage.updateDiaryCatch(catchId, req.body, userId);
+      
+      // Update seasonal goals progress after catch update
+      await storage.updateAllUserGoalsProgress(userId);
+      
       res.json(updatedCatch);
     } catch (error) {
       console.error("Error updating diary catch:", error);
@@ -3510,6 +3530,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       await storage.deleteDiaryCatch(catchId, userId);
+      
+      // Update seasonal goals progress after catch deletion
+      await storage.updateAllUserGoalsProgress(userId);
+      
       res.json({ message: "Catch deleted successfully" });
     } catch (error) {
       console.error("Error deleting diary catch:", error);
