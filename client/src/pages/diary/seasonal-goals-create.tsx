@@ -252,16 +252,27 @@ export default function DiarySeasonalGoalsCreate() {
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
-        <div className="flex items-center gap-2 mb-6">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => setLocation('/diary/seasonal-goals')}
-            data-testid="button-back"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Späť na ciele
-          </Button>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setLocation('/diary')}
+              data-testid="button-back-to-diary"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Späť do denníka
+            </Button>
+            <span className="text-muted-foreground">|</span>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setLocation('/diary/seasonal-goals')}
+              data-testid="button-back-to-goals"
+            >
+              Späť na ciele
+            </Button>
+          </div>
         </div>
 
         <div className="mb-8">
