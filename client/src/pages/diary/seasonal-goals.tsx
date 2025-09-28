@@ -20,7 +20,8 @@ import {
   Crown,
   CheckCircle2,
   Clock,
-  Zap
+  Zap,
+  ArrowLeft
 } from "lucide-react";
 import { useLocation } from "wouter";
 
@@ -283,24 +284,39 @@ export default function DiarySeasonalGoals() {
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground flex items-center gap-2" data-testid="page-title">
-              <Target className="h-8 w-8 text-primary" />
-              Sezónne ciele
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              Sledujte svoj pokrok a dosahujte nové míľniky
-            </p>
+        <div className="space-y-4">
+          {/* Back to Diary Navigation */}
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setLocation('/diary')}
+              data-testid="button-back-to-diary"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Späť do denníka
+            </Button>
           </div>
-          <Button 
-            onClick={() => setLocation('/diary/seasonal-goals/create')}
-            className="flex items-center gap-2"
-            data-testid="button-create-goal"
-          >
-            <Plus className="h-4 w-4" />
-            Nový cieľ
-          </Button>
+          
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground flex items-center gap-2" data-testid="page-title">
+                <Target className="h-8 w-8 text-primary" />
+                Sezónne ciele
+              </h1>
+              <p className="text-muted-foreground mt-2">
+                Sledujte svoj pokrok a dosahujte nové míľniky
+              </p>
+            </div>
+            <Button 
+              onClick={() => setLocation('/diary/seasonal-goals/create')}
+              className="flex items-center gap-2"
+              data-testid="button-create-goal"
+            >
+              <Plus className="h-4 w-4" />
+              Nový cieľ
+            </Button>
+          </div>
         </div>
 
         {/* Season Overview */}
