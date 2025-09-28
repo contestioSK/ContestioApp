@@ -3460,10 +3460,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Verify trip belongs to user
-      const trip = await storage.getDiaryTrip(req.body.tripId, userId);
-      if (!trip) {
-        return res.status(403).json({ message: "Invalid trip" });
+      // Verify trip belongs to user (only if tripId is provided)
+      let trip = null;
+      if (req.body.tripId) {
+        trip = await storage.getDiaryTrip(req.body.tripId, userId);
+        if (!trip) {
+          return res.status(403).json({ message: "Invalid trip" });
+        }
       }
       
       // Server controls angler.userId and verified status
