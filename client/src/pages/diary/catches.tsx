@@ -52,7 +52,7 @@ import { getFishTypeLabel } from "@/utils/fishTypeMapping";
 
 // Catch form validation schema
 const catchFormSchema = z.object({
-  tripId: z.string().min(1, "Výprava je povinná"),
+  tripId: z.string().optional(),
   angler: z.object({
     name: z.string().min(1, "Meno rybára je povinné")
   }),
@@ -221,7 +221,7 @@ export default function DiaryCatches() {
   const form = useForm<CatchFormData>({
     resolver: zodResolver(catchFormSchema),
     defaultValues: {
-      tripId: selectedTrip || "",
+      tripId: selectedTrip || undefined,
       angler: { name: user?.firstName + " " + user?.lastName || "" },
       capturedAt: new Date(),
       weight: "",
