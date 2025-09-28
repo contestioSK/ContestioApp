@@ -24,6 +24,10 @@ import {
   insertAnnouncementSchema,
   updateAnnouncementSchema,
   insertDiaryBattleSchema,
+  insertSeasonSchema,
+  insertSeasonGoalSchema,
+  updateSeasonGoalSchema,
+  insertSeasonGoalProgressSchema,
 } from "@shared/schema";
 import { z } from "zod";
 import { canUseFeature } from "@shared/plan-capabilities";
@@ -3561,6 +3565,169 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
     next();
   }, express.static(path.join(process.cwd(), 'attached_assets')));
+
+  // Seasonal Goals API endpoints
+  // Get current season
+  app.get('/api/seasons/current', async (req, res) => {
+    try {
+      const currentSeason = await storage.getCurrentSeason();
+      res.json(currentSeason);
+    } catch (error) {
+      console.error("[SEASONS] Error fetching current season:", error);
+      res.status(500).json({ message: "Failed to fetch current season" });
+    }
+  });
+
+  // Get user seasonal goals for current season
+  app.get('/api/seasonal-goals', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const goals = await storage.getUserSeasonGoals(userId);
+      res.json(goals);
+    } catch (error) {
+      console.error("[SEASONAL_GOALS] Error fetching user goals:", error);
+      res.status(500).json({ message: "Failed to fetch seasonal goals" });
+    }
+  });
+
+  // Create new seasonal goal
+  app.post('/api/seasonal-goals', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Check if user can create goal (freemium limits)
+      const currentSeason = await storage.getCurrentSeason();
+      if (!currentSeason) {
+        return res.status(400).json({ message: "No active season found" });
+      }
+      
+      const limitCheck = await storage.checkSeasonGoalLimit(userId, currentSeason.id);
+      if (!limitCheck.canCreate) {
+        return res.status(403).json({ 
+          message: "You have reached the goal limit for your plan. Upgrade to Premium for unlimited goals." 
+        });
+      }
+
+      const validatedData = insertSeasonGoalSchema.parse({ 
+        ...req.body, 
+        userId 
+      });
+      
+      const goal = await storage.createSeasonGoal(validatedData, userId);
+      
+      // Initialize progress tracking
+      await storage.updateGoalProgress(goal.id, 'initialization', 0);
+      
+      res.status(201).json(goal);
+    } catch (error) {
+      console.error("[SEASONAL_GOALS] Error creating goal:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create seasonal goal" });
+    }
+  });
+
+  // Update seasonal goal
+  app.put('/api/seasonal-goals/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+      
+      // Verify ownership
+      const existingGoal = await storage.getSeasonGoal(id, userId);
+      if (!existingGoal || existingGoal.userId !== userId) {
+        return res.status(404).json({ message: "Goal not found" });
+      }
+
+      const validatedData = updateSeasonGoalSchema.parse(req.body);
+      const updatedGoal = await storage.updateSeasonGoal(id, validatedData, userId);
+      
+      // Recalculate progress if target changed
+      if (validatedData.targetValue !== undefined) {
+        await storage.updateGoalProgress(id, 'recalculation', 0);
+      }
+      
+      res.json(updatedGoal);
+    } catch (error) {
+      console.error("[SEASONAL_GOALS] Error updating goal:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update seasonal goal" });
+    }
+  });
+
+  // Delete seasonal goal
+  app.delete('/api/seasonal-goals/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+      
+      // Verify ownership
+      const existingGoal = await storage.getSeasonGoal(id, userId);
+      if (!existingGoal || existingGoal.userId !== userId) {
+        return res.status(404).json({ message: "Goal not found" });
+      }
+
+      await storage.deleteSeasonGoal(id, userId);
+      res.status(204).send();
+    } catch (error) {
+      console.error("[SEASONAL_GOALS] Error deleting goal:", error);
+      res.status(500).json({ message: "Failed to delete seasonal goal" });
+    }
+  });
+
+  // Set goal as main goal
+  app.post('/api/seasonal-goals/:id/main', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+      
+      // Verify ownership
+      const existingGoal = await storage.getSeasonGoal(id, userId);
+      if (!existingGoal || existingGoal.userId !== userId) {
+        return res.status(404).json({ message: "Goal not found" });
+      }
+
+      await storage.setMainGoal(userId, id);
+      res.json({ message: "Main goal updated successfully" });
+    } catch (error) {
+      console.error("[SEASONAL_GOALS] Error setting main goal:", error);
+      res.status(500).json({ message: "Failed to set main goal" });
+    }
+  });
+
+  // Get seasonal goals progress for user
+  app.get('/api/seasonal-goals/progress', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      // Get user goals and their progress
+      const goals = await storage.getUserSeasonGoals(userId);
+      const progress = await Promise.all(
+        goals.map(async (goal) => {
+          const goalProgress = await storage.getGoalProgress(goal.id, userId);
+          return { goal, progress: goalProgress };
+        })
+      );
+      res.json(progress);
+    } catch (error) {
+      console.error("[SEASONAL_GOALS] Error fetching progress:", error);
+      res.status(500).json({ message: "Failed to fetch seasonal goals progress" });
+    }
+  });
+
+  // Update all user goals progress (called after diary changes)
+  app.post('/api/seasonal-goals/update-progress', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      await storage.updateAllUserGoalsProgress(userId);
+      res.json({ message: "Progress updated successfully" });
+    } catch (error) {
+      console.error("[SEASONAL_GOALS] Error updating progress:", error);
+      res.status(500).json({ message: "Failed to update progress" });
+    }
+  });
 
   return httpServer;
 }
