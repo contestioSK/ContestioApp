@@ -191,8 +191,10 @@ export default function DiarySeasonalGoals() {
 
   // Celebrate completed goals on load
   useEffect(() => {
+    console.log("🎉 Checking for completed goals:", completedGoals.length, completedGoals);
     if (completedGoals.length > 0) {
       const newlyCompletedGoals = completedGoals.filter(goal => !celebratedGoals.has(goal.id));
+      console.log("🎊 Newly completed goals:", newlyCompletedGoals.length, newlyCompletedGoals);
       
       if (newlyCompletedGoals.length > 0) {
         // Hoist timeouts array to effect scope for proper cleanup
@@ -203,6 +205,7 @@ export default function DiarySeasonalGoals() {
           newlyCompletedGoals.forEach((goal, index) => {
             // Stagger celebrations to avoid overlapping animations
             const timeout = setTimeout(() => {
+              console.log("🎆 Celebrating goal:", goal.title, goal.goalType, goal.isMainGoal);
               if (goal.isMainGoal) {
                 celebrateMainGoal();
               } else {
