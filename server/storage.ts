@@ -2085,8 +2085,8 @@ export class DatabaseStorage implements IStorage {
       return undefined;
     }
     
-    // Verify trip ownership via catch's tripId (mandatory)
-    if (!(await this.checkTripOwnership(catch_.tripId, userId))) {
+    // Verify trip ownership via catch's tripId (if tripId exists)
+    if (catch_.tripId && !(await this.checkTripOwnership(catch_.tripId, userId))) {
       throw new Error("Nemáte oprávnenie na zobrazenie tohto úlovku");
     }
     
@@ -2094,8 +2094,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createDiaryCatch(catch_: InsertDiaryCatch, userId: string): Promise<DiaryCatch> {
-    // Verify trip ownership (mandatory)
-    if (!(await this.checkTripOwnership(catch_.tripId, userId))) {
+    // Verify trip ownership (if tripId exists)
+    if (catch_.tripId && !(await this.checkTripOwnership(catch_.tripId, userId))) {
       throw new Error("Nemáte oprávnenie na pridanie úlovku do tejto výpravy");
     }
     

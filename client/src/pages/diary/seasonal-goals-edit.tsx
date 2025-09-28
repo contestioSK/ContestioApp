@@ -47,11 +47,11 @@ const goalTypeConfig = {
   },
   trips_count: {
     icon: MapPin,
-    label: "Počet výprav",
+    label: "Počet dní strávených pri vode",
     color: "text-purple-500",
-    unit: "výprav",
-    description: "Počet rybárskych výprav v sezóne",
-    placeholder: "napr. 20"
+    unit: "dní",
+    description: "Počet dní strávených rybárčením v sezóne",
+    placeholder: "napr. 50"
   },
   biggest_fish: {
     icon: Ruler,

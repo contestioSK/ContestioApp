@@ -283,7 +283,7 @@ export const diaryTrips = pgTable("diary_trips", {
 // Diary catches table (separate from competition catches)
 export const diaryCatches = pgTable("diary_catches", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  tripId: uuid("trip_id").notNull().references(() => diaryTrips.id),
+  tripId: uuid("trip_id").references(() => diaryTrips.id),
   angler: jsonb("angler").$type<{ userId?: string; name: string }>().notNull(), // Who caught the fish
   capturedAt: timestamp("captured_at").notNull(),
   weight: decimal("weight", { precision: 10, scale: 3 }).notNull(), // in kg
