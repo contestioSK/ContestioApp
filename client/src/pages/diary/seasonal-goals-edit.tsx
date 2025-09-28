@@ -161,7 +161,7 @@ export default function DiarySeasonalGoalsEdit() {
     mutationFn: async (data: EditGoalFormData) => {
       if (!goalId) throw new Error("Goal ID not found");
       
-      return await apiRequest(`/api/seasonal-goals/${goalId}`, 'PUT', data);
+      return await apiRequest('PUT', `/api/seasonal-goals/${goalId}`, data);
     },
     onSuccess: () => {
       toast({
