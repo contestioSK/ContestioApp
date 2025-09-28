@@ -127,9 +127,9 @@ const goalTypeConfig = {
   },
   trips_count: {
     icon: MapPin,
-    label: "Počet výprav",
+    label: "Počet dní strávených pri vode",
     color: "text-purple-500",
-    unit: "výprav"
+    unit: "dní"
   },
   biggest_fish: {
     icon: Ruler,
