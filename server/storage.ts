@@ -54,9 +54,18 @@ import {
   type InsertDiaryCatch,
   type DiaryBattle,
   type InsertDiaryBattle,
+  seasons,
+  seasonGoals,
+  seasonGoalProgress,
+  type Season,
+  type InsertSeason,
+  type SeasonGoal,
+  type InsertSeasonGoal,
+  type SeasonGoalProgress,
+  type InsertSeasonGoalProgress,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, sql, ne, count, gt, gte, inArray } from "drizzle-orm";
+import { eq, desc, and, sql, ne, count, gt, gte, lte, inArray } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (required for Replit Auth)
@@ -272,6 +281,33 @@ export interface IStorage {
   // Premium feature checks
   canAccessAdvancedStats(userId: string): Promise<boolean>;
   canAccessBattleFeatures(userId: string): Promise<boolean>;
+  
+  // Seasonal Goals operations
+  getCurrentSeason(): Promise<Season | undefined>;
+  getActiveSeason(): Promise<Season | undefined>;
+  getSeasons(): Promise<Season[]>;
+  createSeason(season: InsertSeason): Promise<Season>;
+  updateSeason(id: string, season: Partial<InsertSeason>): Promise<Season>;
+  
+  // Season goals operations
+  getUserSeasonGoals(userId: string, seasonId?: string): Promise<SeasonGoal[]>;
+  getSeasonGoal(id: string, userId: string): Promise<SeasonGoal | undefined>;
+  createSeasonGoal(goal: InsertSeasonGoal, userId: string): Promise<SeasonGoal>;
+  updateSeasonGoal(id: string, goal: Partial<InsertSeasonGoal>, userId: string): Promise<SeasonGoal>;
+  deleteSeasonGoal(id: string, userId: string): Promise<void>;
+  getMainSeasonGoal(userId: string, seasonId: string): Promise<SeasonGoal | undefined>;
+  setMainGoal(goalId: string, userId: string): Promise<SeasonGoal>;
+  
+  // Season goal progress operations
+  getGoalProgress(goalId: string, userId: string): Promise<SeasonGoalProgress[]>;
+  updateGoalProgress(goalId: string, contributionType: string, value: number, details?: any): Promise<void>;
+  
+  // Seasonal goals freemium limits
+  checkSeasonGoalLimit(userId: string, seasonId: string): Promise<{ canCreate: boolean; currentCount: number; limit: number }>;
+  
+  // Season goal auto-update from diary data
+  recalculateGoalProgress(goalId: string): Promise<void>;
+  updateAllUserGoalsProgress(userId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2360,6 +2396,345 @@ export class DatabaseStorage implements IStorage {
     // }
     // 
     // return false;
+  }
+
+  // ================================
+  // SEASONAL GOALS IMPLEMENTATIONS
+  // ================================
+
+  // Season management
+  async getCurrentSeason(): Promise<Season | undefined> {
+    const now = new Date();
+    const [currentSeason] = await db
+      .select()
+      .from(seasons)
+      .where(and(
+        lte(seasons.startDate, now),
+        gte(seasons.endDate, now)
+      ))
+      .limit(1);
+    return currentSeason;
+  }
+
+  async getActiveSeason(): Promise<Season | undefined> {
+    const [activeSeason] = await db
+      .select()
+      .from(seasons)
+      .where(eq(seasons.isActive, true))
+      .limit(1);
+    return activeSeason;
+  }
+
+  async getSeasons(): Promise<Season[]> {
+    return await db
+      .select()
+      .from(seasons)
+      .orderBy(desc(seasons.startDate));
+  }
+
+  async createSeason(seasonData: InsertSeason): Promise<Season> {
+    const [newSeason] = await db
+      .insert(seasons)
+      .values(seasonData)
+      .returning();
+    return newSeason;
+  }
+
+  async updateSeason(id: string, seasonData: Partial<InsertSeason>): Promise<Season> {
+    const [updatedSeason] = await db
+      .update(seasons)
+      .set({ ...seasonData, updatedAt: new Date() })
+      .where(eq(seasons.id, id))
+      .returning();
+    return updatedSeason;
+  }
+
+  // Season goals management
+  async getUserSeasonGoals(userId: string, seasonId?: string): Promise<SeasonGoal[]> {
+    const whereConditions = [eq(seasonGoals.userId, userId)];
+    
+    if (seasonId) {
+      whereConditions.push(eq(seasonGoals.seasonId, seasonId));
+    }
+
+    return await db
+      .select()
+      .from(seasonGoals)
+      .where(and(...whereConditions))
+      .orderBy(desc(seasonGoals.isMainGoal), desc(seasonGoals.createdAt));
+  }
+
+  async getSeasonGoal(id: string, userId: string): Promise<SeasonGoal | undefined> {
+    const [goal] = await db
+      .select()
+      .from(seasonGoals)
+      .where(and(
+        eq(seasonGoals.id, id),
+        eq(seasonGoals.userId, userId)
+      ))
+      .limit(1);
+    return goal;
+  }
+
+  async createSeasonGoal(goalData: InsertSeasonGoal, userId: string): Promise<SeasonGoal> {
+    // Check freemium limits
+    const limitCheck = await this.checkSeasonGoalLimit(userId, goalData.seasonId);
+    if (!limitCheck.canCreate) {
+      throw new Error(`Goal limit reached. FREE users can create ${limitCheck.limit} goal per season.`);
+    }
+
+    const [newGoal] = await db
+      .insert(seasonGoals)
+      .values({ ...goalData, userId })
+      .returning();
+    return newGoal;
+  }
+
+  async updateSeasonGoal(id: string, goalData: Partial<InsertSeasonGoal>, userId: string): Promise<SeasonGoal> {
+    const [updatedGoal] = await db
+      .update(seasonGoals)
+      .set({ ...goalData, updatedAt: new Date() })
+      .where(and(
+        eq(seasonGoals.id, id),
+        eq(seasonGoals.userId, userId)
+      ))
+      .returning();
+    return updatedGoal;
+  }
+
+  async deleteSeasonGoal(id: string, userId: string): Promise<void> {
+    // Delete associated progress first
+    await db
+      .delete(seasonGoalProgress)
+      .where(eq(seasonGoalProgress.goalId, id));
+
+    // Delete the goal
+    await db
+      .delete(seasonGoals)
+      .where(and(
+        eq(seasonGoals.id, id),
+        eq(seasonGoals.userId, userId)
+      ));
+  }
+
+  async getMainSeasonGoal(userId: string, seasonId: string): Promise<SeasonGoal | undefined> {
+    const [mainGoal] = await db
+      .select()
+      .from(seasonGoals)
+      .where(and(
+        eq(seasonGoals.userId, userId),
+        eq(seasonGoals.seasonId, seasonId),
+        eq(seasonGoals.isMainGoal, true)
+      ))
+      .limit(1);
+    return mainGoal;
+  }
+
+  async setMainGoal(goalId: string, userId: string): Promise<SeasonGoal> {
+    // First get the goal to find the season
+    const goal = await this.getSeasonGoal(goalId, userId);
+    if (!goal) {
+      throw new Error("Goal not found");
+    }
+
+    // Unset all other main goals for this user in this season
+    await db
+      .update(seasonGoals)
+      .set({ isMainGoal: false, updatedAt: new Date() })
+      .where(and(
+        eq(seasonGoals.userId, userId),
+        eq(seasonGoals.seasonId, goal.seasonId),
+        eq(seasonGoals.isMainGoal, true)
+      ));
+
+    // Set this goal as main
+    const [updatedGoal] = await db
+      .update(seasonGoals)
+      .set({ isMainGoal: true, updatedAt: new Date() })
+      .where(eq(seasonGoals.id, goalId))
+      .returning();
+
+    return updatedGoal;
+  }
+
+  // Season goal progress operations
+  async getGoalProgress(goalId: string, userId: string): Promise<SeasonGoalProgress[]> {
+    // Verify goal ownership
+    const goal = await this.getSeasonGoal(goalId, userId);
+    if (!goal) {
+      throw new Error("Goal not found or access denied");
+    }
+
+    return await db
+      .select()
+      .from(seasonGoalProgress)
+      .where(eq(seasonGoalProgress.goalId, goalId))
+      .orderBy(desc(seasonGoalProgress.contributedAt));
+  }
+
+  async updateGoalProgress(goalId: string, contributionType: string, value: number, details?: any): Promise<void> {
+    // Add progress entry
+    await db
+      .insert(seasonGoalProgress)
+      .values({
+        goalId,
+        contributionType,
+        value: value.toString(),
+        contributedAt: new Date(),
+        details: details || {}
+      });
+
+    // Recalculate goal progress
+    await this.recalculateGoalProgress(goalId);
+  }
+
+  // Freemium limits
+  async checkSeasonGoalLimit(userId: string, seasonId: string): Promise<{ canCreate: boolean; currentCount: number; limit: number }> {
+    const isPremium = await this.isUserPremium(userId);
+    const limit = isPremium ? Infinity : 1; // FREE: 1 goal per season, PREMIUM: unlimited
+
+    const currentCount = await db
+      .select({ count: count() })
+      .from(seasonGoals)
+      .where(and(
+        eq(seasonGoals.userId, userId),
+        eq(seasonGoals.seasonId, seasonId)
+      ))
+      .then(result => result[0]?.count || 0);
+
+    return {
+      canCreate: isPremium || currentCount < limit,
+      currentCount,
+      limit: isPremium ? -1 : limit, // -1 indicates unlimited
+    };
+  }
+
+  // Auto-progress calculation
+  async recalculateGoalProgress(goalId: string): Promise<void> {
+    // Get the goal details
+    const [goal] = await db
+      .select()
+      .from(seasonGoals)
+      .where(eq(seasonGoals.id, goalId))
+      .limit(1);
+
+    if (!goal) return;
+
+    // Get season dates for filtering
+    const [season] = await db
+      .select()
+      .from(seasons)
+      .where(eq(seasons.id, goal.seasonId))
+      .limit(1);
+
+    if (!season) return;
+
+    let newValue = 0;
+
+    // Calculate progress based on goal type
+    switch (goal.goalType) {
+      case 'total_weight':
+        // Sum all catch weights in season
+        const weightResult = await db
+          .select({
+            total: sql<number>`COALESCE(SUM(CAST(${diaryCatches.weight} AS DECIMAL)), 0)`
+          })
+          .from(diaryCatches)
+          .innerJoin(diaryTrips, eq(diaryCatches.tripId, diaryTrips.id))
+          .where(and(
+            eq(diaryTrips.ownerUserId, goal.userId),
+            gte(diaryCatches.capturedAt, season.startDate),
+            lte(diaryCatches.capturedAt, season.endDate)
+          ));
+        newValue = weightResult[0]?.total || 0;
+        break;
+
+      case 'fish_count':
+        // Count all catches in season
+        const countResult = await db
+          .select({ count: count() })
+          .from(diaryCatches)
+          .innerJoin(diaryTrips, eq(diaryCatches.tripId, diaryTrips.id))
+          .where(and(
+            eq(diaryTrips.ownerUserId, goal.userId),
+            gte(diaryCatches.capturedAt, season.startDate),
+            lte(diaryCatches.capturedAt, season.endDate)
+          ));
+        newValue = countResult[0]?.count || 0;
+        break;
+
+      case 'trips_count':
+        // Count all trips in season
+        const tripsResult = await db
+          .select({ count: count() })
+          .from(diaryTrips)
+          .where(and(
+            eq(diaryTrips.ownerUserId, goal.userId),
+            gte(diaryTrips.startDate, season.startDate),
+            lte(diaryTrips.endDate, season.endDate)
+          ));
+        newValue = tripsResult[0]?.count || 0;
+        break;
+
+      case 'biggest_fish':
+        // Find biggest catch weight in season
+        const biggestResult = await db
+          .select({
+            maxWeight: sql<number>`COALESCE(MAX(CAST(${diaryCatches.weight} AS DECIMAL)), 0)`
+          })
+          .from(diaryCatches)
+          .innerJoin(diaryTrips, eq(diaryCatches.tripId, diaryTrips.id))
+          .where(and(
+            eq(diaryTrips.ownerUserId, goal.userId),
+            gte(diaryCatches.capturedAt, season.startDate),
+            lte(diaryCatches.capturedAt, season.endDate)
+          ));
+        newValue = biggestResult[0]?.maxWeight || 0;
+        break;
+
+      case 'species_variety':
+        // Count distinct carp types in season
+        const speciesResult = await db
+          .select({
+            distinctSpecies: sql<number>`COUNT(DISTINCT ${diaryCatches.carpType})`
+          })
+          .from(diaryCatches)
+          .innerJoin(diaryTrips, eq(diaryCatches.tripId, diaryTrips.id))
+          .where(and(
+            eq(diaryTrips.ownerUserId, goal.userId),
+            gte(diaryCatches.capturedAt, season.startDate),
+            lte(diaryCatches.capturedAt, season.endDate)
+          ));
+        newValue = speciesResult[0]?.distinctSpecies || 0;
+        break;
+    }
+
+    // Update goal progress and completion status
+    const targetValue = parseFloat(goal.targetValue);
+    const isCompleted = newValue >= targetValue;
+
+    await db
+      .update(seasonGoals)
+      .set({
+        currentValue: newValue.toString(),
+        isCompleted,
+        completedAt: isCompleted && !goal.isCompleted ? new Date() : goal.completedAt,
+        updatedAt: new Date()
+      })
+      .where(eq(seasonGoals.id, goalId));
+  }
+
+  async updateAllUserGoalsProgress(userId: string): Promise<void> {
+    // Get all active goals for user
+    const userGoals = await db
+      .select()
+      .from(seasonGoals)
+      .where(eq(seasonGoals.userId, userId));
+
+    // Recalculate progress for each goal
+    for (const goal of userGoals) {
+      await this.recalculateGoalProgress(goal.id);
+    }
   }
 }
 
