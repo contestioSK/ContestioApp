@@ -2,7 +2,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Trophy, Plus, Calendar, Fish, BarChart3, Crown, Archive, Eye, Clock, Medal, Users } from "lucide-react";
+import { BookOpen, Trophy, Plus, Calendar, Fish, BarChart3, Crown, Archive, Eye, Clock, Medal, Users, Target } from "lucide-react";
 import { useLocation } from "wouter";
 
 // Mock battle data for integration
@@ -58,6 +58,13 @@ export default function DiaryIndex() {
       title: "Úlovky",
       description: "Sledujte svoje úlovky s fotkami a poznámkami",
       href: "/diary/catches", 
+      isPremium: false
+    },
+    {
+      icon: Target,
+      title: "Sezónne ciele",
+      description: "Sledujte pokrok a dosahujte nové míľniky",
+      href: "/diary/seasonal-goals",
       isPremium: false
     },
     {

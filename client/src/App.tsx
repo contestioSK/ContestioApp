@@ -28,6 +28,7 @@ import DiaryIndex from "@/pages/diary/index";
 import DiaryTrips from "@/pages/diary/trips";
 import DiaryCatches from "@/pages/diary/catches";
 import DiaryStats from "@/pages/diary/stats";
+import DiarySeasonalGoals from "@/pages/diary/seasonal-goals";
 import BattlePaywall from "@/pages/diary/battle-paywall";
 import BattleCreate from "@/pages/diary/battle-create";
 import BattleDetail from "@/pages/diary/battle-detail";
@@ -99,6 +100,11 @@ function Router() {
       <Route path="/diary/stats">
         <ProtectedRoute>
           <DiaryStats />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/diary/seasonal-goals">
+        <ProtectedRoute>
+          <DiarySeasonalGoals />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/battle/paywall" component={BattlePaywall} />
