@@ -369,6 +369,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   announcements: many(announcements),
   diaryTrips: many(diaryTrips),
   subscriptions: many(userSubscriptions),
+  seasonGoals: many(seasonGoals), // Add seasonal goals relation
 }));
 
 export const competitionsRelations = relations(competitions, ({ one, many }) => ({
@@ -858,6 +859,126 @@ export function createTeamStatusValidationSchema(competition: Competition) {
   });
 }
 
+// Seasonal Goals tables
+
+// Seasons table - defines fishing seasons (January 15 - January 14)
+export const seasons = pgTable("seasons", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name", { length: 255 }).notNull(), // "2024/2025", "2025/2026"
+  startDate: timestamp("start_date").notNull(), // January 15, 2024
+  endDate: timestamp("end_date").notNull(), // January 14, 2025
+  isActive: boolean("is_active").notNull().default(false), // Only one season can be active
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  // Ensure only one active season at a time
+  uniqueIndex("unique_active_season").on(table.isActive).where(sql`${table.isActive} = true`),
+]);
+
+// Season goals table - user goals for specific seasons
+export const seasonGoals = pgTable("season_goals", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  seasonId: varchar("season_id").notNull().references(() => seasons.id),
+  goalType: varchar("goal_type").notNull(), // "total_weight", "fish_count", "trips_count", "biggest_fish", "species_variety"
+  targetValue: decimal("target_value", { precision: 10, scale: 3 }).notNull(), // Target value (weight in kg, count as number)
+  currentValue: decimal("current_value", { precision: 10, scale: 3 }).notNull().default("0"), // Current progress
+  title: varchar("title", { length: 255 }).notNull(), // Custom goal title
+  description: text("description"), // Optional description
+  isCompleted: boolean("is_completed").notNull().default(false), // Whether goal is completed
+  completedAt: timestamp("completed_at"), // When goal was completed
+  isMainGoal: boolean("is_main_goal").notNull().default(false), // Main goal shown prominently
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  // Ensure only one main goal per user per season (partial unique index)
+  uniqueIndex("unique_user_season_main_goal").on(table.userId, table.seasonId).where(sql`${table.isMainGoal} = true`),
+]);
+
+// Season goal progress table - tracking detailed progress 
+export const seasonGoalProgress = pgTable("season_goal_progress", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  goalId: varchar("goal_id").notNull().references(() => seasonGoals.id),
+  contributionType: varchar("contribution_type").notNull(), // "catch", "trip", "species"
+  contributionId: varchar("contribution_id"), // ID of diary_catch or diary_trip that contributed
+  value: decimal("value", { precision: 10, scale: 3 }).notNull(), // Contribution value
+  contributedAt: timestamp("contributed_at").notNull(), // When contribution was made
+  details: jsonb("details").$type<{
+    catchWeight?: number;
+    fishSpecies?: string;
+    tripLocation?: string;
+    notes?: string;
+  }>(), // Additional details about the contribution
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  // Index for efficient progress queries
+  index("season_goal_progress_goal_idx").on(table.goalId),
+  index("season_goal_progress_date_idx").on(table.contributedAt),
+]);
+
+// Seasonal Goals Relations
+export const seasonsRelations = relations(seasons, ({ many }) => ({
+  goals: many(seasonGoals),
+}));
+
+export const seasonGoalsRelations = relations(seasonGoals, ({ one, many }) => ({
+  user: one(users, {
+    fields: [seasonGoals.userId],
+    references: [users.id],
+  }),
+  season: one(seasons, {
+    fields: [seasonGoals.seasonId],
+    references: [seasons.id],
+  }),
+  progress: many(seasonGoalProgress),
+}));
+
+export const seasonGoalProgressRelations = relations(seasonGoalProgress, ({ one }) => ({
+  goal: one(seasonGoals, {
+    fields: [seasonGoalProgress.goalId],
+    references: [seasonGoals.id],
+  }),
+}));
+
+
+// Season Goals Insert Schemas
+export const insertSeasonSchema = createInsertSchema(seasons).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  startDate: z.string().or(z.date()).transform((val) => new Date(val)),
+  endDate: z.string().or(z.date()).transform((val) => new Date(val)),
+});
+
+export const insertSeasonGoalSchema = createInsertSchema(seasonGoals).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  currentValue: true,
+  isCompleted: true,
+  completedAt: true,
+}).extend({
+  goalType: z.enum(["total_weight", "fish_count", "trips_count", "biggest_fish", "species_variety"]),
+  targetValue: z.union([z.string(), z.number()]).transform(val => String(val)),
+  title: z.string().min(1, "Názov cieľa je povinný").max(255, "Názov môže mať maximálne 255 znakov"),
+  description: z.string().max(500, "Popis môže mať maximálne 500 znakov").optional(),
+}).refine((data) => {
+  const targetValue = parseFloat(data.targetValue);
+  return targetValue > 0;
+}, {
+  message: "Cieľová hodnota musí byť väčšia ako 0",
+  path: ["targetValue"]
+});
+
+export const insertSeasonGoalProgressSchema = createInsertSchema(seasonGoalProgress).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  contributedAt: z.string().or(z.date()).transform((val) => new Date(val)),
+  value: z.string().or(z.number()).transform(val => typeof val === 'string' ? val : val.toString()),
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -905,3 +1026,11 @@ export type DiaryCatch = typeof diaryCatches.$inferSelect;
 export type InsertDiaryCatch = z.infer<typeof insertDiaryCatchSchema>;
 export type DiaryBattle = typeof diaryBattles.$inferSelect;
 export type InsertDiaryBattle = z.infer<typeof insertDiaryBattleSchema>;
+
+// Seasonal Goals types
+export type Season = typeof seasons.$inferSelect;
+export type InsertSeason = z.infer<typeof insertSeasonSchema>;
+export type SeasonGoal = typeof seasonGoals.$inferSelect;
+export type InsertSeasonGoal = z.infer<typeof insertSeasonGoalSchema>;
+export type SeasonGoalProgress = typeof seasonGoalProgress.$inferSelect;
+export type InsertSeasonGoalProgress = z.infer<typeof insertSeasonGoalProgressSchema>;
