@@ -971,6 +971,33 @@ export const insertSeasonGoalSchema = createInsertSchema(seasonGoals).omit({
   path: ["targetValue"]
 });
 
+// Safe update schema for seasonal goals - omits protected fields like userId, seasonId
+export const updateSeasonGoalSchema = createInsertSchema(seasonGoals).omit({
+  id: true,
+  userId: true, // SECURITY: Prevent changing goal ownership
+  seasonId: true, // SECURITY: Prevent moving goals between seasons
+  createdAt: true,
+  updatedAt: true,
+  currentValue: true, // Computed field, not user-editable
+  isCompleted: true, // Computed field, not user-editable
+  completedAt: true, // Computed field, not user-editable
+}).extend({
+  goalType: z.enum(["total_weight", "fish_count", "trips_count", "biggest_fish", "species_variety"]).optional(),
+  targetValue: z.union([z.string(), z.number()]).transform(val => String(val)).optional(),
+  title: z.string().min(1, "Názov cieľa je povinný").max(255, "Názov môže mať maximálne 255 znakov").optional(),
+  description: z.string().max(500, "Popis môže mať maximálne 500 znakov").optional(),
+  isMainGoal: z.boolean().optional(),
+}).refine((data) => {
+  if (data.targetValue !== undefined) {
+    const targetValue = parseFloat(data.targetValue);
+    return targetValue > 0;
+  }
+  return true;
+}, {
+  message: "Cieľová hodnota musí byť väčšia ako 0",
+  path: ["targetValue"]
+});
+
 export const insertSeasonGoalProgressSchema = createInsertSchema(seasonGoalProgress).omit({
   id: true,
   createdAt: true,
