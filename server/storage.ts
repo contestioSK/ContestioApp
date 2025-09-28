@@ -2404,6 +2404,7 @@ export class DatabaseStorage implements IStorage {
 
   // Season management
   async getCurrentSeason(): Promise<Season | undefined> {
+    // First try to find existing current season
     const now = new Date();
     const [currentSeason] = await db
       .select()
@@ -2413,7 +2414,147 @@ export class DatabaseStorage implements IStorage {
         gte(seasons.endDate, now)
       ))
       .limit(1);
+    
+    // If no current season exists, create one automatically
+    if (!currentSeason) {
+      console.log('[SEASONS] No current season found, creating new season automatically');
+      return await this.ensureCurrentSeasonExists();
+    }
+    
     return currentSeason;
+  }
+
+  // Automatic season creation logic with January 15th reset (race condition safe)
+  async ensureCurrentSeasonExists(): Promise<Season> {
+    const now = new Date();
+    const currentSeasonDates = this.calculateCurrentSeasonDates(now);
+    
+    // Use transaction to prevent race conditions in concurrent season creation
+    return await db.transaction(async (tx) => {
+      // Check if season already exists for these dates within transaction
+      const [existingSeason] = await tx
+        .select()
+        .from(seasons)
+        .where(and(
+          eq(seasons.startDate, currentSeasonDates.startDate),
+          eq(seasons.endDate, currentSeasonDates.endDate)
+        ))
+        .limit(1);
+      
+      if (existingSeason) {
+        // Ensure existing season is active (re-activate if needed)
+        if (!existingSeason.isActive) {
+          console.log(`[SEASONS] Re-activating existing season: ${existingSeason.name}`);
+          // Deactivate other seasons first
+          await tx
+            .update(seasons)
+            .set({ isActive: false, updatedAt: new Date() })
+            .where(eq(seasons.isActive, true));
+          
+          // Activate this season
+          const [reactivatedSeason] = await tx
+            .update(seasons)
+            .set({ isActive: true, updatedAt: new Date() })
+            .where(eq(seasons.id, existingSeason.id))
+            .returning();
+          
+          return reactivatedSeason;
+        }
+        
+        return existingSeason;
+      }
+      
+      // Create new season using INSERT ON CONFLICT for race condition protection
+      const seasonName = this.generateSeasonName(currentSeasonDates.startDate);
+      console.log(`[SEASONS] Creating new season: ${seasonName} (${currentSeasonDates.startDate.toISOString()} - ${currentSeasonDates.endDate.toISOString()})`);
+      
+      // First, deactivate any previously active seasons
+      await tx
+        .update(seasons)
+        .set({ isActive: false, updatedAt: new Date() })
+        .where(eq(seasons.isActive, true));
+      
+      // Use INSERT ON CONFLICT to atomically handle race conditions
+      const insertResult = await tx
+        .insert(seasons)
+        .values({
+          name: seasonName,
+          startDate: currentSeasonDates.startDate,
+          endDate: currentSeasonDates.endDate,
+          isActive: true,
+        })
+        .onConflictDoNothing({
+          target: [seasons.startDate, seasons.endDate],
+        })
+        .returning();
+      
+      if (insertResult.length > 0) {
+        // We won the race - season was created successfully
+        const newSeason = insertResult[0];
+        console.log(`[SEASONS] New season created successfully: ${newSeason.name} (ID: ${newSeason.id})`);
+        return newSeason;
+      } else {
+        // Another process won the race - retrieve the existing season
+        console.log(`[SEASONS] Race condition detected, retrieving existing season for ${seasonName}`);
+        
+        const [existingSeason] = await tx
+          .select()
+          .from(seasons)
+          .where(and(
+            eq(seasons.startDate, currentSeasonDates.startDate),
+            eq(seasons.endDate, currentSeasonDates.endDate)
+          ))
+          .limit(1);
+        
+        if (existingSeason) {
+          // Ensure the existing season is active
+          if (!existingSeason.isActive) {
+            console.log(`[SEASONS] Activating existing season: ${existingSeason.name}`);
+            const [activatedSeason] = await tx
+              .update(seasons)
+              .set({ isActive: true, updatedAt: new Date() })
+              .where(eq(seasons.id, existingSeason.id))
+              .returning();
+            
+            return activatedSeason;
+          }
+          
+          return existingSeason;
+        } else {
+          throw new Error(`Season creation failed and no existing season found for dates ${currentSeasonDates.startDate.toISOString()} - ${currentSeasonDates.endDate.toISOString()}`);
+        }
+      }
+    });
+  }
+
+  // Calculate season dates based on January 15th reset rule
+  private calculateCurrentSeasonDates(referenceDate: Date): { startDate: Date; endDate: Date } {
+    const year = referenceDate.getFullYear();
+    const month = referenceDate.getMonth(); // 0-based (0 = January)
+    const day = referenceDate.getDate();
+    
+    let seasonStartYear: number;
+    
+    // If we're before January 15th, we're still in the previous season
+    if (month === 0 && day < 15) { // January 1-14
+      seasonStartYear = year - 1;
+    } else {
+      // If we're January 15th or later, we're in the current season
+      seasonStartYear = year;
+    }
+    
+    // Season runs from January 15th to January 14th next year
+    const startDate = new Date(seasonStartYear, 0, 15, 0, 0, 0, 0); // January 15th, 00:00:00
+    const endDate = new Date(seasonStartYear + 1, 0, 14, 23, 59, 59, 999); // January 14th next year, 23:59:59
+    
+    return { startDate, endDate };
+  }
+
+  // Generate season name in format "2024/2025"
+  private generateSeasonName(startDate: Date): string {
+    const startYear = startDate.getFullYear();
+    const endYear = startYear + 1;
+    return `${startYear}/${endYear}`;
   }
 
   async getActiveSeason(): Promise<Season | undefined> {

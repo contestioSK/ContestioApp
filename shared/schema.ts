@@ -873,6 +873,8 @@ export const seasons = pgTable("seasons", {
 }, (table) => [
   // Ensure only one active season at a time
   uniqueIndex("unique_active_season").on(table.isActive).where(sql`${table.isActive} = true`),
+  // Prevent duplicate seasons for the same date range (race condition protection)
+  uniqueIndex("unique_season_dates").on(table.startDate, table.endDate),
 ]);
 
 // Season goals table - user goals for specific seasons
