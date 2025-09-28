@@ -3477,7 +3477,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           userId: userId
         },
         verified: false, // Only server can set verified status
-        photos: req.body.photos || [] // Photos will be uploaded separately
+        photos: req.body.photos || [], // Photos will be uploaded separately
+        capturedAt: new Date(req.body.capturedAt) // Convert string date to Date object
       };
       
       const newCatch = await storage.createDiaryCatch(catchData, userId);
