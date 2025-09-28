@@ -158,7 +158,7 @@ export default function DiarySeasonalGoalsCreate() {
         unit: goalTypeConfig[data.goalType].unit
       };
       
-      return await apiRequest('/api/seasonal-goals', 'POST', goalData);
+      return await apiRequest('POST', '/api/seasonal-goals', goalData);
     },
     onSuccess: () => {
       toast({
