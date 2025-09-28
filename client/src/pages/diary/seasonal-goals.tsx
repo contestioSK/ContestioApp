@@ -21,7 +21,9 @@ import {
   CheckCircle2,
   Clock,
   Zap,
-  ArrowLeft
+  ArrowLeft,
+  Edit,
+  Settings
 } from "lucide-react";
 import { useLocation } from "wouter";
 
@@ -486,6 +488,20 @@ export default function DiarySeasonalGoals() {
                         <span>{new Date(goal.completedAt).toLocaleDateString('sk-SK')}</span>
                       </div>
                     )}
+                  </div>
+                  
+                  {/* Action buttons */}
+                  <div className="flex justify-end mt-4 pt-3 border-t">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setLocation(`/diary/seasonal-goals/${goal.id}/edit`)}
+                      className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+                      data-testid={`button-edit-goal-${goal.id}`}
+                    >
+                      <Edit className="h-4 w-4" />
+                      Upraviť
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
