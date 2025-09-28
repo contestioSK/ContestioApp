@@ -463,11 +463,11 @@ export default function DiaryCatches() {
                     name="tripId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Výprava</FormLabel>
+                        <FormLabel>Výprava (voliteľné)</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value} data-testid="select-trip">
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Vyberte výpravu" />
+                              <SelectValue placeholder="Vyberte výpravu (voliteľné)" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
