@@ -2372,12 +2372,11 @@ export class DatabaseStorage implements IStorage {
     const isPremium = await this.isUserPremium(userId);
     const limit = isPremium ? Infinity : 20; // FREE: 20 catches, PREMIUM: unlimited
     
-    // Count all catches across all user trips
+    // Count all catches for user (including those without tripId)
     const currentCount = await db
       .select({ count: count() })
       .from(diaryCatches)
-      .innerJoin(diaryTrips, eq(diaryCatches.tripId, diaryTrips.id))
-      .where(eq(diaryTrips.ownerUserId, userId))
+      .where(sql`${diaryCatches.angler}->>'userId' = ${userId}`)
       .then(result => result[0]?.count || 0);
 
     return {

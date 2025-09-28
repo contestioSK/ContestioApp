@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BookOpen, Trophy, Plus, Calendar, Fish, BarChart3, Crown, Archive, Eye, Clock, Medal, Users, Target } from "lucide-react";
 import { useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 
 // Mock battle data for integration
 const getMockBattleStats = () => ({
@@ -40,6 +41,25 @@ export default function DiaryIndex() {
 
   // TODO: Replace with actual API call to check premium status
   const isPremium = true; // Temporarily set to true for development - will be connected to actual premium check
+  
+  // Load all catches for statistics
+  const { data: allCatches = [] } = useQuery({
+    queryKey: ['/api/diary/catches/all'],
+    enabled: !!user?.id
+  });
+
+  // Load all trips for statistics
+  const { data: allTrips = [] } = useQuery({
+    queryKey: ['/api/diary/trips'],
+    enabled: !!user?.id
+  });
+
+  // Calculate statistics from catches
+  const diaryStats = {
+    totalTrips: (allTrips as any[]).length,
+    totalCatches: (allCatches as any[]).length,
+    totalWeight: (allCatches as any[]).reduce((sum: number, catch_: any) => sum + parseFloat(catch_.weight || '0'), 0)
+  };
   
   // Mock battle data
   const battleStats = getMockBattleStats();
@@ -139,13 +159,13 @@ export default function DiaryIndex() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <Card>
             <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-primary">0</div>
+              <div className="text-2xl font-bold text-primary">{diaryStats.totalTrips}</div>
               <div className="text-sm text-muted-foreground">Výpravy</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-primary">0</div>
+              <div className="text-2xl font-bold text-primary">{diaryStats.totalCatches}</div>
               <div className="text-sm text-muted-foreground">Úlovky</div>
             </CardContent>
           </Card>
@@ -157,7 +177,7 @@ export default function DiaryIndex() {
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-primary">0 kg</div>
+              <div className="text-2xl font-bold text-primary">{diaryStats.totalWeight.toFixed(1)} kg</div>
               <div className="text-sm text-muted-foreground">Celková váha</div>
             </CardContent>
           </Card>
