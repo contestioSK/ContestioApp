@@ -153,7 +153,14 @@ export default function DiarySeasonalGoals() {
   const { celebrateByGoalType, celebrateMainGoal, celebrateMilestone } = useConfetti();
   
   // Track celebrated goals and milestones to prevent repeated celebrations
-  const [celebratedGoals, setCelebratedGoals] = useState<Set<string>>(new Set());
+  const [celebratedGoals, setCelebratedGoals] = useState<Set<string>>(() => {
+    try {
+      const stored = localStorage.getItem('contestio-celebrated-goals');
+      return stored ? new Set(JSON.parse(stored)) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
   const [celebratedMilestones, setCelebratedMilestones] = useState<Set<string>>(new Set());
 
   // Fetch current season
@@ -191,10 +198,8 @@ export default function DiarySeasonalGoals() {
 
   // Celebrate completed goals on load
   useEffect(() => {
-    console.log("🎉 Checking for completed goals:", completedGoals.length, completedGoals);
     if (completedGoals.length > 0) {
       const newlyCompletedGoals = completedGoals.filter(goal => !celebratedGoals.has(goal.id));
-      console.log("🎊 Newly completed goals:", newlyCompletedGoals.length, newlyCompletedGoals);
       
       if (newlyCompletedGoals.length > 0) {
         // Hoist timeouts array to effect scope for proper cleanup
@@ -205,7 +210,6 @@ export default function DiarySeasonalGoals() {
           newlyCompletedGoals.forEach((goal, index) => {
             // Stagger celebrations to avoid overlapping animations
             const timeout = setTimeout(() => {
-              console.log("🎆 Celebrating goal:", goal.title, goal.goalType, goal.isMainGoal);
               if (goal.isMainGoal) {
                 celebrateMainGoal();
               } else {
@@ -216,10 +220,18 @@ export default function DiarySeasonalGoals() {
             timeouts.push(timeout);
           });
           
-          // Mark these goals as celebrated
+          // Mark these goals as celebrated and save to localStorage
           setCelebratedGoals(prev => {
             const updated = new Set(prev);
             newlyCompletedGoals.forEach(goal => updated.add(goal.id));
+            
+            // Save to localStorage
+            try {
+              localStorage.setItem('contestio-celebrated-goals', JSON.stringify(Array.from(updated)));
+            } catch (error) {
+              console.warn('Failed to save celebrated goals to localStorage:', error);
+            }
+            
             return updated;
           });
         }, 1000); // 1s initial delay
