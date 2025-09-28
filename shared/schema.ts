@@ -288,7 +288,7 @@ export const diaryCatches = pgTable("diary_catches", {
   capturedAt: timestamp("captured_at").notNull(),
   weight: decimal("weight", { precision: 10, scale: 3 }).notNull(), // in kg
   lengthCm: integer("length_cm"), // optional length in cm
-  carpType: varchar("carp_type").notNull(), // "common", "mirror", "grass", "other"
+  fishType: varchar("fish_type").notNull(), // Fish species
   bait: text("bait"), // what bait was used
   spot: text("spot"), // fishing spot description
   latitude: decimal("latitude", { precision: 10, scale: 8 }), // GPS coordinates
@@ -766,8 +766,20 @@ export const insertDiaryCatchSchema = createInsertSchema(diaryCatches).omit({
     return weight.toString();
   }),
   lengthCm: z.number().positive("Dĺžka musí byť kladné číslo").optional(),
-  carpType: z.enum(["common", "mirror", "grass", "other"], {
-    required_error: "Typ kapra je povinný"
+  fishType: z.enum([
+    "kapor_supinac", 
+    "kapor_lysec", 
+    "amur", 
+    "sumec", 
+    "zubac", 
+    "stuka", 
+    "pleskac", 
+    "podustva", 
+    "mrena", 
+    "pstruh", 
+    "jalec"
+  ], {
+    required_error: "Typ ryby je povinný"
   }),
   angler: z.object({
     userId: z.string().optional(),
