@@ -2378,24 +2378,59 @@ export class DatabaseStorage implements IStorage {
   }
 
   async isUserPremium(userId: string): Promise<boolean> {
-    // TODO: Temporarily return true for development since user_subscriptions table doesn't exist
-    // In production, this should check the actual subscription status
-    return true;
+    // Development mode overrides (only in non-production environments)
+    const isProduction = process.env.NODE_ENV === 'production';
     
-    // Original implementation (commented out for development):
-    // const subscription = await this.getUserSubscription(userId);
-    // if (!subscription || subscription.status !== "active") {
-    //   return false;
-    // }
-    // 
-    // // Check if subscription is still valid (not expired)
-    // if (subscription.currentPeriodEnd) {
-    //   const now = new Date();
-    //   const periodEnd = new Date(subscription.currentPeriodEnd);
-    //   return periodEnd > now;
-    // }
-    // 
-    // return false;
+    if (!isProduction) {
+      // Development mode: Force FREE user for testing limits
+      if (process.env.FORCE_FREE_USER === 'true') {
+        return false; // Force FREE user for testing
+      }
+      
+      // Development mode: Force specific user as PREMIUM for testing
+      if (process.env.PREMIUM_TEST_USER && process.env.PREMIUM_TEST_USER === userId) {
+        return true; // Force specific user as PREMIUM
+      }
+    }
+    
+    // Production implementation: Check subscription status
+    try {
+      // TODO: Replace with real subscription lookup when user_subscriptions table is ready
+      // For now, check if user has an active subscription
+      
+      // Stub implementation - in production, query actual subscription table:
+      // const [subscription] = await db
+      //   .select()
+      //   .from(userSubscriptions)
+      //   .where(and(
+      //     eq(userSubscriptions.userId, userId),
+      //     eq(userSubscriptions.status, 'active')
+      //   ))
+      //   .limit(1);
+      //
+      // if (!subscription) {
+      //   return false; // No active subscription = FREE user
+      // }
+      //
+      // // Check if subscription is still valid (not expired)
+      // if (subscription.currentPeriodEnd) {
+      //   const now = new Date();
+      //   const periodEnd = new Date(subscription.currentPeriodEnd);
+      //   return periodEnd > now;
+      // }
+      
+      // SECURITY: Default to FREE in production until subscription system is ready
+      if (isProduction) {
+        return false; // All users are FREE in production by default
+      }
+      
+      // Development: Default to PREMIUM for easier testing
+      return true;
+      
+    } catch (error) {
+      console.error('Error checking premium status:', error);
+      return false; // Always default to FREE on error (security first)
+    }
   }
 
   // ================================
