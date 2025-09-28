@@ -122,6 +122,19 @@ export default function DiaryIndex() {
           </p>
         </div>
 
+        {/* Quick Action Button */}
+        <div className="flex justify-center mb-8">
+          <Button 
+            size="lg" 
+            onClick={() => setLocation("/diary/catches")}
+            className="text-lg px-8 py-6 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg"
+            data-testid="button-add-catch"
+          >
+            <Fish className="w-5 h-5 mr-2" />
+            Zapísať nový úlovok
+          </Button>
+        </div>
+
         {/* Quick Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <Card>
