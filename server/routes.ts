@@ -3447,6 +3447,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get('/api/diary/catches/all', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const catches = await storage.getAllUserCatches(userId);
+      res.json(catches);
+    } catch (error) {
+      console.error("Error fetching all diary catches:", error);
+      res.status(500).json({ message: "Failed to fetch catches" });
+    }
+  });
+
   app.post('/api/diary/catches', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;

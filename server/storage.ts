@@ -260,6 +260,7 @@ export interface IStorage {
   
   // Diary catch operations
   getDiaryCatches(tripId: string, userId: string): Promise<DiaryCatch[]>;
+  getAllUserCatches(userId: string): Promise<DiaryCatch[]>;
   getDiaryCatch(id: string, userId: string): Promise<DiaryCatch | undefined>;
   createDiaryCatch(catch_: InsertDiaryCatch, userId: string): Promise<DiaryCatch>;
   updateDiaryCatch(id: string, catch_: Partial<InsertDiaryCatch>, userId: string): Promise<DiaryCatch>;
@@ -2075,6 +2076,15 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(diaryCatches.capturedAt));
   }
 
+  async getAllUserCatches(userId: string): Promise<DiaryCatch[]> {
+    // Get all catches for user (including those without tripId)
+    return await db
+      .select()
+      .from(diaryCatches)
+      .where(sql`${diaryCatches.angler}->>'userId' = ${userId}`)
+      .orderBy(desc(diaryCatches.capturedAt));
+  }
+
   async getDiaryCatch(id: string, userId: string): Promise<DiaryCatch | undefined> {
     const [catch_] = await db
       .select()
@@ -2816,9 +2826,8 @@ export class DatabaseStorage implements IStorage {
             total: sql<number>`COALESCE(SUM(CAST(${diaryCatches.weight} AS DECIMAL)), 0)`
           })
           .from(diaryCatches)
-          .innerJoin(diaryTrips, eq(diaryCatches.tripId, diaryTrips.id))
           .where(and(
-            eq(diaryTrips.ownerUserId, goal.userId),
+            sql`${diaryCatches.angler}->>'userId' = ${goal.userId}`,
             gte(diaryCatches.capturedAt, season.startDate),
             lte(diaryCatches.capturedAt, season.endDate)
           ));
@@ -2830,9 +2839,8 @@ export class DatabaseStorage implements IStorage {
         const countResult = await db
           .select({ count: count() })
           .from(diaryCatches)
-          .innerJoin(diaryTrips, eq(diaryCatches.tripId, diaryTrips.id))
           .where(and(
-            eq(diaryTrips.ownerUserId, goal.userId),
+            sql`${diaryCatches.angler}->>'userId' = ${goal.userId}`,
             gte(diaryCatches.capturedAt, season.startDate),
             lte(diaryCatches.capturedAt, season.endDate)
           ));
@@ -2859,9 +2867,8 @@ export class DatabaseStorage implements IStorage {
             maxWeight: sql<number>`COALESCE(MAX(CAST(${diaryCatches.weight} AS DECIMAL)), 0)`
           })
           .from(diaryCatches)
-          .innerJoin(diaryTrips, eq(diaryCatches.tripId, diaryTrips.id))
           .where(and(
-            eq(diaryTrips.ownerUserId, goal.userId),
+            sql`${diaryCatches.angler}->>'userId' = ${goal.userId}`,
             gte(diaryCatches.capturedAt, season.startDate),
             lte(diaryCatches.capturedAt, season.endDate)
           ));
@@ -2869,15 +2876,14 @@ export class DatabaseStorage implements IStorage {
         break;
 
       case 'species_variety':
-        // Count distinct carp types in season
+        // Count distinct fish types in season
         const speciesResult = await db
           .select({
-            distinctSpecies: sql<number>`COUNT(DISTINCT ${diaryCatches.carpType})`
+            distinctSpecies: sql<number>`COUNT(DISTINCT ${diaryCatches.fishType})`
           })
           .from(diaryCatches)
-          .innerJoin(diaryTrips, eq(diaryCatches.tripId, diaryTrips.id))
           .where(and(
-            eq(diaryTrips.ownerUserId, goal.userId),
+            sql`${diaryCatches.angler}->>'userId' = ${goal.userId}`,
             gte(diaryCatches.capturedAt, season.startDate),
             lte(diaryCatches.capturedAt, season.endDate)
           ));
