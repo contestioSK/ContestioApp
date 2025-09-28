@@ -1,0 +1,38 @@
+Veľmi sa ospravedlňujem za pretrvávajúce technické problémy. Zdá sa, že je chyba v zobrazovaní, ktorá vám bráni vidieť obsah, ktorý generujem.
+
+Skúsim to teda inak. Namiesto vloženia do špeciálneho bloku vám napíšem celý prompt ako obyčajný text priamo sem do chatu. Takto by ste ho mali určite vidieť.
+
+Prosím, skopírujte si nasledujúci text:
+
+Prompt pre Replit AI: Baliace Zoznamy
+Vytvor novú funkciu "Baliace Zoznamy" pre rybársku aplikáciu Contestio. Táto funkcia má slúžiť ako inteligentný checklist, ktorý pomôže rybárom, aby si na svoje výpravy nezabudli zbaliť dôležité vybavenie.
+
+Kľúčové Požiadavky:
+
+Vytváranie a Správa Zoznamov:
+
+Používateľ si musí vedieť vytvoriť vlastný baliaci zoznam a pridať do neho položky (napr. "Bivak", "Prúty", "Čelovka").
+
+Vytvor predpripravené šablóny pre bežné typy výprav: "Jednodňová rybačka", "Víkendová výprava", "Týždňová súťaž". Používateľ si môže šablónu použiť a ďalej upravovať.
+
+Každá položka v zozname musí fungovať ako interaktívny checklist. Po kliknutí na položku sa táto vizuálne odškrtne (napr. prečiarkne a zašedne), aby používateľ videl, čo už má zbalené.
+
+Rozdelenie na FREE a PREMIUM Verziu:
+
+FREE Verzia: Používateľ má prístup ku všetkým šablónam, ale môže si vytvoriť iba jeden vlastný zoznam.
+
+PREMIUM Verzia: Používateľ môže vytvárať neobmedzený počet vlastných zoznamov a odomknú sa mu nasledujúce inteligentné funkcie.
+
+Inteligentné PREMIUM Funkcie:
+
+Návrhy podľa Počasia: Aplikácia na základe predpovede počasia pre lokalitu a dátum výpravy automaticky navrhne pridať do zoznamu dôležité položky. (Napr. „Predpoveď hlási dážď, nezabudni na nepremokavé oblečenie a prístrešok.“).
+
+Zdieľané Tímové Zoznamy: Pri tímových výpravách (alebo Fishing Battle) môže kapitán vytvoriť spoločný zoznam a priradiť jednotlivé položky členom tímu. (Napr. „Peter balí gril, ja beriem nástrahy.“). Každý člen v tíme vidí, čo má na starosti.
+
+Technické a Dizajnové Požiadavky:
+
+UI Dizajn: Použi moderný a čistý dizajn s knižnicou TailwindCSS. Rozhranie musí byť intuitívne a prispôsobené pre mobilné zariadenia.
+
+Technológia: Vytvor to ako React komponent.
+
+Dáta: Použi ukážkové (mock) dáta. Zoznamy a ich položky ukladaj do stavu komponentu.
