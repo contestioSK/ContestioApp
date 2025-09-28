@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
+import { useConfetti } from "@/hooks/useConfetti";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -146,6 +147,11 @@ const goalTypeConfig = {
 export default function DiarySeasonalGoals() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
+  const { celebrateByGoalType, celebrateMainGoal, celebrateMilestone } = useConfetti();
+  
+  // Track celebrated goals and milestones to prevent repeated celebrations
+  const [celebratedGoals, setCelebratedGoals] = useState<Set<string>>(new Set());
+  const [celebratedMilestones, setCelebratedMilestones] = useState<Set<string>>(new Set());
 
   // Fetch current season
   const { data: currentSeason, isLoading: seasonLoading } = useQuery<Season>({
@@ -179,6 +185,82 @@ export default function DiarySeasonalGoals() {
   const seasonProgress = getSeasonProgress();
   const mainGoal = goals.find(goal => goal.isMainGoal);
   const completedGoals = goals.filter(goal => goal.isCompleted);
+
+  // Celebrate completed goals on load
+  useEffect(() => {
+    if (completedGoals.length > 0) {
+      const newlyCompletedGoals = completedGoals.filter(goal => !celebratedGoals.has(goal.id));
+      
+      if (newlyCompletedGoals.length > 0) {
+        // Hoist timeouts array to effect scope for proper cleanup
+        const timeouts: NodeJS.Timeout[] = [];
+        
+        // Add small delay to let the page render first
+        const celebrationTimer = setTimeout(() => {
+          newlyCompletedGoals.forEach((goal, index) => {
+            // Stagger celebrations to avoid overlapping animations
+            const timeout = setTimeout(() => {
+              if (goal.isMainGoal) {
+                celebrateMainGoal();
+              } else {
+                celebrateByGoalType(goal.goalType, false);
+              }
+            }, index * 800); // 800ms delay between each celebration
+            
+            timeouts.push(timeout);
+          });
+          
+          // Mark these goals as celebrated
+          setCelebratedGoals(prev => {
+            const updated = new Set(prev);
+            newlyCompletedGoals.forEach(goal => updated.add(goal.id));
+            return updated;
+          });
+        }, 1000); // 1s initial delay
+        
+        timeouts.push(celebrationTimer);
+
+        // Cleanup function clears ALL timers
+        return () => {
+          timeouts.forEach(timeout => clearTimeout(timeout));
+        };
+      }
+    }
+  }, [completedGoals, celebratedGoals, celebrateByGoalType, celebrateMainGoal]);
+
+  // Celebrate milestone progress
+  useEffect(() => {
+    if (mainGoal && !mainGoal.isCompleted) {
+      const progress = (parseFloat(mainGoal.currentValue) / parseFloat(mainGoal.targetValue)) * 100;
+      const milestoneKey = `${mainGoal.id}`;
+      
+      // Determine which milestone to celebrate
+      let milestoneTocelebrate: number | null = null;
+      if (progress >= 75 && progress < 100) {
+        milestoneTocelebrate = 75;
+      } else if (progress >= 50 && progress < 75) {
+        milestoneTocelebrate = 50;
+      } else if (progress >= 25 && progress < 50) {
+        milestoneTocelebrate = 25;
+      }
+      
+      // Only celebrate if milestone exists and hasn't been celebrated
+      if (milestoneTocelebrate && !celebratedMilestones.has(`${milestoneKey}-${milestoneTocelebrate}`)) {
+        const milestoneTimer = setTimeout(() => {
+          celebrateMilestone(milestoneTocelebrate!);
+          
+          // Mark this milestone as celebrated
+          setCelebratedMilestones(prev => {
+            const updated = new Set(prev);
+            updated.add(`${milestoneKey}-${milestoneTocelebrate}`);
+            return updated;
+          });
+        }, 1500);
+        
+        return () => clearTimeout(milestoneTimer);
+      }
+    }
+  }, [mainGoal?.id, mainGoal?.currentValue, mainGoal?.targetValue, mainGoal?.isCompleted, celebratedMilestones, celebrateMilestone]);
 
   if (isLoading) {
     return (
