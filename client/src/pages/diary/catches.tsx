@@ -48,6 +48,7 @@ import {
 
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { DiaryCatch, InsertDiaryCatch, DiaryTrip } from "@shared/schema";
+import { getFishTypeLabel } from "@/utils/fishTypeMapping";
 
 // Catch form validation schema
 const catchFormSchema = z.object({
@@ -64,8 +65,20 @@ const catchFormSchema = z.object({
     return weight.toString();
   }),
   lengthCm: z.coerce.number().positive("Dĺžka musí byť kladné číslo").optional(),
-  carpType: z.enum(["common", "mirror", "grass", "other"], {
-    required_error: "Typ kapra je povinný"
+  fishType: z.enum([
+    "kapor_supinac", 
+    "kapor_lysec", 
+    "amur", 
+    "sumec", 
+    "zubac", 
+    "stuka", 
+    "pleskac", 
+    "podustva", 
+    "mrena", 
+    "pstruh", 
+    "jalec"
+  ], {
+    required_error: "Typ ryby je povinný"
   }),
   bait: z.string().optional(),
   spot: z.string().optional(),
@@ -173,7 +186,7 @@ export default function DiaryCatches() {
   const [deletingCatch, setDeletingCatch] = useState<DiaryCatch | null>(null);
   const [selectedTrip, setSelectedTrip] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [carpTypeFilter, setCarpTypeFilter] = useState<string>("all");
+  const [fishTypeFilter, setFishTypeFilter] = useState<string>("all");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [lightboxPhoto, setLightboxPhoto] = useState<string | null>(null);
 
@@ -212,7 +225,7 @@ export default function DiaryCatches() {
       angler: { name: user?.firstName + " " + user?.lastName || "" },
       capturedAt: new Date(),
       weight: "",
-      carpType: "common" as const,
+      fishType: "kapor_supinac" as const,
       bait: "",
       spot: "",
       latitude: undefined,
@@ -322,12 +335,12 @@ export default function DiaryCatches() {
   const handleEdit = (catch_: DiaryCatch) => {
     setEditingCatch(catch_);
     form.reset({
-      tripId: catch_.tripId,
+      tripId: catch_.tripId || "",
       angler: { name: catch_.angler.name },
       capturedAt: new Date(catch_.capturedAt),
       weight: catch_.weight,
       lengthCm: catch_.lengthCm || undefined,
-      carpType: catch_.carpType as "common" | "mirror" | "grass" | "other",
+      fishType: catch_.fishType as any,
       bait: catch_.bait || "",
       spot: catch_.spot || "",
       latitude: catch_.latitude ? parseFloat(catch_.latitude.toString()) : undefined,
@@ -350,15 +363,6 @@ export default function DiaryCatches() {
     form.setValue('photos', newFiles);
   };
 
-  const getCarpTypeLabel = (type: string) => {
-    switch (type) {
-      case "common": return "Obyčajný";
-      case "mirror": return "Zrkadlový";
-      case "grass": return "Trávojedný";
-      case "other": return "Iný";
-      default: return type;
-    }
-  };
 
   // Filter catches based on search and filters
   const filteredCatches = catches.filter(catch_ => {
@@ -367,9 +371,9 @@ export default function DiaryCatches() {
       catch_.spot?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       catch_.bait?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesCarpType = carpTypeFilter === "all" || catch_.carpType === carpTypeFilter;
+    const matchesFishType = fishTypeFilter === "all" || catch_.fishType === fishTypeFilter;
     
-    return matchesSearch && matchesCarpType;
+    return matchesSearch && matchesFishType;
   });
 
   // Enforce strict freemium gating - don't allow bypass during loading
@@ -578,21 +582,28 @@ export default function DiaryCatches() {
 
                   <FormField
                     control={form.control}
-                    name="carpType"
+                    name="fishType"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Typ kapra</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value} data-testid="select-carp-type">
+                        <FormLabel>Typ ryby</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value} data-testid="select-fish-type">
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Vyberte typ kapra" />
+                              <SelectValue placeholder="Vyberte typ ryby" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="common">Obyčajný</SelectItem>
-                            <SelectItem value="mirror">Zrkadlový</SelectItem>
-                            <SelectItem value="grass">Trávojedný</SelectItem>
-                            <SelectItem value="other">Iný</SelectItem>
+                            <SelectItem value="kapor_supinac">Kapor - šupináč</SelectItem>
+                            <SelectItem value="kapor_lysec">Kapor - lysec</SelectItem>
+                            <SelectItem value="amur">Amur</SelectItem>
+                            <SelectItem value="sumec">Sumec</SelectItem>
+                            <SelectItem value="zubac">Zubáč</SelectItem>
+                            <SelectItem value="stuka">Šťuka</SelectItem>
+                            <SelectItem value="pleskac">Pleskáč</SelectItem>
+                            <SelectItem value="podustva">Podustva</SelectItem>
+                            <SelectItem value="mrena">Mrena</SelectItem>
+                            <SelectItem value="pstruh">Pstruh</SelectItem>
+                            <SelectItem value="jalec">Jalec</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -895,16 +906,23 @@ export default function DiaryCatches() {
                 />
               </div>
               <div>
-                <Select value={carpTypeFilter} onValueChange={setCarpTypeFilter} data-testid="select-carp-filter">
+                <Select value={fishTypeFilter} onValueChange={setFishTypeFilter} data-testid="select-fish-filter">
                   <SelectTrigger className="h-8">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Všetky typy</SelectItem>
-                    <SelectItem value="common">Obyčajný</SelectItem>
-                    <SelectItem value="mirror">Zrkadlový</SelectItem>
-                    <SelectItem value="grass">Trávojedný</SelectItem>
-                    <SelectItem value="other">Iný</SelectItem>
+                    <SelectItem value="kapor_supinac">Kapor - šupináč</SelectItem>
+                    <SelectItem value="kapor_lysec">Kapor - lysec</SelectItem>
+                    <SelectItem value="amur">Amur</SelectItem>
+                    <SelectItem value="sumec">Sumec</SelectItem>
+                    <SelectItem value="zubac">Zubáč</SelectItem>
+                    <SelectItem value="stuka">Šťuka</SelectItem>
+                    <SelectItem value="pleskac">Pleskáč</SelectItem>
+                    <SelectItem value="podustva">Podustva</SelectItem>
+                    <SelectItem value="mrena">Mrena</SelectItem>
+                    <SelectItem value="pstruh">Pstruh</SelectItem>
+                    <SelectItem value="jalec">Jalec</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -1108,7 +1126,7 @@ export default function DiaryCatches() {
                       </div>
                       <div className="flex gap-1">
                         <Badge variant="secondary" className="text-xs">
-                          {getCarpTypeLabel(catch_.carpType)}
+                          {getFishTypeLabel(catch_.fishType)}
                         </Badge>
                         {catch_.verified && (
                           <Badge variant="default" className="text-xs">
@@ -1179,12 +1197,12 @@ export default function DiaryCatches() {
                                   onClick={() => setLightboxPhoto(photoUrl)}
                                   data-testid={`thumbnail-photo-${catch_.id}-${index}`}
                                 />
-                                {index === 2 && catch_.photos.length > 3 && (
+                                {index === 2 && catch_.photos && catch_.photos.length > 3 && (
                                   <div 
                                     className="absolute inset-0 bg-black/50 rounded border flex items-center justify-center cursor-pointer hover:bg-black/60 transition-colors"
                                     onClick={() => setLightboxPhoto(photoUrl)}
                                   >
-                                    <span className="text-white text-sm font-medium">+{catch_.photos.length - 3}</span>
+                                    <span className="text-white text-sm font-medium">+{catch_.photos ? catch_.photos.length - 3 : 0}</span>
                                   </div>
                                 )}
                               </div>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
+import { getFishTypeLabel } from "@/utils/fishTypeMapping";
 import { useLocation } from "wouter";
 import { format, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { 
@@ -67,8 +68,8 @@ type MonthlyStats = {
   trips: number;
 };
 
-// Carp type stats
-type CarpTypeStats = {
+// Fish type stats
+type FishTypeStats = {
   type: string;
   count: number;
   totalWeight: number;
@@ -127,21 +128,32 @@ export default function DiaryStats() {
     };
   });
 
-  // Calculate carp type distribution
-  const carpTypeStats: CarpTypeStats[] = [
-    { type: "common", label: "Obyčajný", count: 0, totalWeight: 0 },
-    { type: "mirror", label: "Zrkadlový", count: 0, totalWeight: 0 },
-    { type: "grass", label: "Trávojedný", count: 0, totalWeight: 0 },
-    { type: "other", label: "Iný", count: 0, totalWeight: 0 }
-  ];
-
-  catches.forEach(catch_ => {
-    const stat = carpTypeStats.find(s => s.type === catch_.carpType);
-    if (stat) {
-      stat.count++;
-      stat.totalWeight += parseFloat(catch_.weight);
+  // Calculate fish type distribution
+  const fishTypeStats: FishTypeStats[] = [];
+  
+  // Group catches by fish type
+  const fishTypeCounts = catches.reduce((acc, catch_) => {
+    const fishType = catch_.fishType;
+    if (!acc[fishType]) {
+      acc[fishType] = { count: 0, totalWeight: 0 };
     }
+    acc[fishType].count++;
+    acc[fishType].totalWeight += parseFloat(catch_.weight);
+    return acc;
+  }, {} as Record<string, { count: number; totalWeight: number }>);
+  
+  // Convert to array format with labels
+  Object.entries(fishTypeCounts).forEach(([type, stats]) => {
+    fishTypeStats.push({
+      type,
+      label: getFishTypeLabel(type),
+      count: stats.count,
+      totalWeight: stats.totalWeight
+    });
   });
+  
+  // Sort by count descending
+  fishTypeStats.sort((a, b) => b.count - a.count);
 
   // Calculate success rate (catches per trip)
   const successRate = totalTrips > 0 ? (totalCatches / totalTrips).toFixed(1) : "0";
@@ -331,10 +343,11 @@ export default function DiaryStats() {
       // Length bonus if available
       const lengthBonus = catch_.lengthCm ? Math.min(20, catch_.lengthCm / 5) : 0;
       
-      // Type rarity bonus
-      const typeBonus = catch_.carpType === 'grass' ? 15 : 
-                       catch_.carpType === 'mirror' ? 10 : 
-                       catch_.carpType === 'common' ? 5 : 0;
+      // Type rarity bonus  
+      const typeBonus = catch_.fishType === 'sumec' ? 15 : 
+                       catch_.fishType === 'stuka' ? 12 : 
+                       catch_.fishType === 'amur' ? 10 : 
+                       catch_.fishType === 'kapor_lysec' ? 8 : 5;
       
       const totalScore = Math.min(100, weightScore + lengthBonus + typeBonus);
       
@@ -643,9 +656,9 @@ export default function DiaryStats() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {carpTypeStats.some(stat => stat.count > 0) ? (
+                  {fishTypeStats.some(stat => stat.count > 0) ? (
                     <div className="space-y-4">
-                      {carpTypeStats
+                      {fishTypeStats
                         .filter(stat => stat.count > 0)
                         .sort((a, b) => b.count - a.count)
                         .map(stat => (
@@ -815,7 +828,7 @@ export default function DiaryStats() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {carpTypeStats.map(stat => (
+                    {fishTypeStats.map(stat => (
                       <div key={stat.type} className="space-y-2">
                         <div className="flex items-center justify-between text-sm">
                           <span className="font-medium">{stat.label}</span>
@@ -1270,9 +1283,7 @@ export default function DiaryStats() {
                             {parseFloat(personalRecords.heaviestCatch.weight).toFixed(1)} kg
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            <div>{personalRecords.heaviestCatch.carpType === 'common' ? 'Obyčajný kaprík' :
-                                personalRecords.heaviestCatch.carpType === 'mirror' ? 'Zrkadlový kaprík' :
-                                personalRecords.heaviestCatch.carpType === 'grass' ? 'Trávojedný kaprík' : 'Iný kaprík'}</div>
+                            <div>{getFishTypeLabel(personalRecords.heaviestCatch.fishType)}</div>
                             <div>{format(new Date(personalRecords.heaviestCatch.capturedAt), "d. MMMM yyyy", { locale: sk })}</div>
                           </div>
                         </div>
