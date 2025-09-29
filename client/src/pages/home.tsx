@@ -125,8 +125,8 @@ export default function Home() {
         name: comp.name,
         description: comp.description || '',
         status: comp.status as 'registration' | 'live' | 'finished',
-        startDate: comp.startDate.toISOString(),
-        endDate: comp.endDate.toISOString(),
+        startDate: typeof comp.startDate === 'string' ? comp.startDate : comp.startDate.toISOString(),
+        endDate: typeof comp.endDate === 'string' ? comp.endDate : comp.endDate.toISOString(),
         location: comp.location
       }))} />
     </div>
