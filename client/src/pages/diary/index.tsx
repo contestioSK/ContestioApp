@@ -16,13 +16,43 @@ export default function DiaryIndex() {
     enabled: !!user?.id
   });
 
-  // Calculate statistics from catches
+  // Filter catches for 2025 season (January 15, 2025 onwards)
+  const season2025Catches = Array.isArray(allCatches) ? allCatches.filter((catch_: any) => {
+    if (!catch_.caughtAt) return false;
+    const catchDate = new Date(catch_.caughtAt);
+    const season2025Start = new Date('2025-01-15');
+    return catchDate >= season2025Start;
+  }) : [];
+
+  // Calculate statistics from 2025 season catches
   const diaryStats = {
-    totalCatches: Array.isArray(allCatches) ? allCatches.length : 0,
-    biggestFish: Array.isArray(allCatches) && allCatches.length > 0 
-      ? Math.max(...allCatches.map((c: any) => parseFloat(c.weight || '0')))
+    totalCatches: season2025Catches.length,
+    biggestFish: season2025Catches.length > 0 
+      ? Math.max(...season2025Catches.map((c: any) => {
+          const weight = parseFloat(c.weight || '0');
+          return isNaN(weight) ? 0 : weight;
+        }))
       : 0,
-    mostSuccessfulTechnique: "Položená"
+    mostSuccessfulTechnique: (() => {
+      if (season2025Catches.length === 0) return "Žiadna";
+      
+      // Count technique usage from 2025 season only
+      const techniqueCount = season2025Catches.reduce((acc: any, catch_: any) => {
+        const technique = catch_.technique || 'Neznáma';
+        acc[technique] = (acc[technique] || 0) + 1;
+        return acc;
+      }, {});
+      
+      // Find most used technique
+      const techniques = Object.entries(techniqueCount);
+      if (techniques.length === 0) return 'Neznáma';
+      
+      const mostUsed = techniques.reduce((a: any, b: any) => 
+        a[1] > b[1] ? a : b
+      );
+      
+      return mostUsed[0];
+    })()
   };
 
   return (
