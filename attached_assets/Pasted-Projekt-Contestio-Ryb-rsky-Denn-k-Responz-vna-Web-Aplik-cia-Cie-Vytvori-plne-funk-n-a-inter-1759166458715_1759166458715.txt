@@ -1,0 +1,48 @@
+Projekt: Contestio - Rybársky Denník (Responzívna Web Aplikácia) Cieľ: Vytvoriť plne funkčný a interaktívny prototyp modulu "Rybársky Denník", ktorý bude dokonale responzívny pre desktop, tablet a mobilné zariadenia. Technológie: React.js, TailwindCSS Dizajnový Jazyk: Moderný, tmavý (dark mode), prémiový a dátovo-orientovaný.
+1. Celková Architektúra a Rozloženie (Layout)
+Aplikácia bude mať dvojstĺpcové rozloženie pre desktopové zobrazenie.
+•	Ľavý Stĺpec: Bočný Panel (Sidebar)
+o	Šírka: Pevná, 280px.
+o	Pozadie: #012a36 (Hlboká Voda).
+o	Obsah: Logo, Profil Používateľa, Hlavná Navigácia, Odhlásenie.
+•	Pravý Stĺpec: Hlavný Obsah (Main Content)
+o	Šírka: Flexibilná, zaberá zvyšok obrazovky (1fr).
+o	Pozadie: #0c1f28.
+o	Obsah: Dynamicky sa mení podľa výberu v bočnom paneli.
+2. Obrazovka: "Môj Denník" (Hlavný Prehľad)
+Toto je hlavná obrazovka po prihlásení.
+•	Hlavička: Nadpis h1 "Môj Denník" a primárne tlačidlo "Pridať Úlovok".
+•	Súhrnné Karty: Tri prémiové karty zobrazujúce kľúčové metriky: "Úlovky", "Najväčšia Ryba" a "Dní Pri Vode".
+•	Panel s Filtrami: Interaktívny panel nad tabuľkou úlovkov s filtrami pre Techniku, Druh Ryby a Dátum.
+•	Tabuľka Úlovkov (Desktop): Prehľadná tabuľka so stĺpcami Druh Ryby, Váha / Dĺžka, Revír, Technika, Dátum. Celý riadok je interaktívny.
+3. Kľúčová Interaktivita: Detail Úlovku a Lightbox
+•	Vysúvací Panel (Desktop):
+o	Spúšťač: Kliknutie na riadok v tabuľke.
+o	Animácia: Panel sa elegantne vysunie z pravej strany, layout sa prispôsobí na 1fr 40%.
+o	Obsah: Kompletný, skrolovateľný detail úlovku.
+o	Zatvorenie: Kliknutím na 'X' sa panel zasunie.
+•	Prezeranie Fotiek (Lightbox):
+o	Spúšťač: Kliknutie na fotku úlovku v detaile.
+o	Funkcionalita: Zobrazí sa modálne okno s fotkou v maximálnej kvalite.
+4. Dáta a Stav Aplikácie
+•	Pre účely prototypu použi priložený statický catchData objekt v JavaScripte.
+•	Celý stav aplikácie musí byť spravovaný v rámci React stavu (useState, useContext).
+5. Responzivita (Mobil a Tablet)
+Toto je kľúčová požiadavka. Dizajn musí byť plne responzívny a prispôsobený pre menšie obrazovky.
+Tablet (šírka < 1024px):
+•	Bočný Panel: Zmení sa na užší variant, kde bude viditeľná len ikona a pri prejdení myšou (hover) sa dočasne rozšíri a zobrazí aj text.
+•	Hlavný Obsah: Rozloženie zostáva podobné, ale prvky (karty, filtre) sa môžu zalamovať do viacerých riadkov pre lepšiu prehľadnosť.
+•	Detail Úlovku: Vysúvací panel zaberie väčšiu šírku (napr. 50% obrazovky).
+Mobil (šírka < 768px):
+•	Celková Architektúra: Dvojstĺpcové rozloženie sa úplne zruší. Aplikácia bude fungovať ako jedna obrazovka (single-column).
+•	Bočný Panel sa mení na Spodnú Navigáciu (Bottom Tab Bar):
+o	Pevne umiestnená na spodnom okraji obrazovky.
+o	Obsahuje 4-5 najdôležitejších ikon (napr. Denník, Štatistiky, Pridať Úlovok, Ciele, Profil).
+o	Je to hlavný navigačný prvok aplikácie na mobile.
+•	Obrazovka "Môj Denník":
+o	Súhrnné Karty: Zobrazia sa vertikálne pod sebou.
+o	Panel s Filtrami: Skryje sa za jedno tlačidlo "Filtrovať", ktoré po kliknutí otvorí modálne okno s možnosťami filtrovania.
+o	Tabuľka sa mení na Zoznam Kariet: Namiesto tabuľky sa úlovky zobrazia ako zoznam prehľadných kariet. Každá karta reprezentuje jeden úlovok a zobrazuje jeho najdôležitejšie údaje (malá fotka, druh, váha/dĺžka, dátum).
+•	Detail Úlovku:
+o	Nová Obrazovka: Kliknutím na kartu úlovku sa používateľ presmeruje na novú, samostatnú obrazovku, ktorá zobrazí kompletný detail. Toto je štandardné a očakávané správanie na mobilných zariadeniach.
+o	Návrat: Na tejto obrazovke bude v ľavom hornom rohu jasne viditeľná šípka "Späť" pre návrat na zoznam úlovkov.
