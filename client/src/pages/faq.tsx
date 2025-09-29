@@ -1,6 +1,6 @@
 import NavigationHeader from "@/components/navigation-header";
 import { Card, CardContent } from "@/components/ui/card";
-import { ChevronDown, Users, Fish, Settings } from "lucide-react";
+import { ChevronDown, Users, Fish, Settings, BookOpen, UserCircle } from "lucide-react";
 import { useState } from "react";
 
 interface FAQItem {
@@ -78,13 +78,71 @@ export default function FAQ() {
       ]
     },
     {
+      title: "Rybársky denník",
+      icon: BookOpen,
+      color: "from-teal-500 to-teal-600",
+      items: [
+        {
+          question: "Čo je rybársky denník?",
+          answer: "Digitálny denník, kde si môžeš zapisovať úlovky, fotky, lokality, nástrahy a podmienky lovu. Všetko máš uložené na jednom mieste."
+        },
+        {
+          question: "Obsahuje denník aj predpoveď počasia?",
+          answer: "Áno. Pri zápise úlovku sa ti zobrazí predpoveď počasia pre danú lokalitu, vrátane tlaku a smeru vetra."
+        },
+        {
+          question: "Dá sa sledovať aj štatistika mojich úlovkov?",
+          answer: "Určite. Aplikácia ti ponúkne grafy a prehľady podľa použitých nástrah, lokalít či poveternostných podmienok."
+        },
+        {
+          question: "Môžem si nastaviť ciele na novú sezónu?",
+          answer: "Áno. Každý používateľ si po registrácii a následne každoročne od 15. januára môže nastaviť svoje ciele (napr. počet výprav, ulovených rýb alebo trofejných kusov). Splnenie cieľov sa zobrazuje v prehľadných grafoch a progress baroch."
+        },
+        {
+          question: "Funguje denník aj offline?",
+          answer: "Zápis úlovkov, fotiek a poznámok je možný aj bez internetu. Po opätovnom pripojení sa všetko automaticky synchronizuje."
+        }
+      ]
+    },
+    {
+      title: "Registrácia a účty",
+      icon: UserCircle,
+      color: "from-orange-500 to-orange-600",
+      items: [
+        {
+          question: "Musím mať účet, aby som používal Contestio?",
+          answer: "Áno. Registrácia je nutná pre vedenie rybárskeho denníka aj pre účasť v súťažiach."
+        },
+        {
+          question: "Ako sa môžem registrovať?",
+          answer: "Máš dve možnosti: rýchla registrácia cez Google účet alebo klasická registrácia cez e-mail a heslo."
+        },
+        {
+          question: "Je možné spravovať tím viacerými ľuďmi?",
+          answer: "Áno, tímový kapitán môže pridať členov a rozdeliť im prístup."
+        },
+        {
+          question: "Čo ak zabudnem heslo?",
+          answer: "Stačí kliknúť na 'Zabudnuté heslo' pri prihlasovaní a dostaneš inštrukcie na e-mail."
+        }
+      ]
+    },
+    {
       title: "Technické otázky",
       icon: Settings,
       color: "from-purple-500 to-purple-600",
       items: [
         {
-          question: "Na akých zariadeniach môžem aplikáciu používať?",
-          answer: "Contestio funguje na všetkých moderných zariadeniach - počítače, tablety a mobilné telefóny s internetovým pripojením. Rozhodcovia používajú mobilnú aplikáciu optimalizovanú pre terénne podmienky, organizátori a diváci majú prístup cez webový prehliadač."
+          question: "Na akých zariadeniach funguje Contestio?",
+          answer: "Contestio funguje na PC, tabletoch aj mobiloch. Aplikácia je responzívna, takže ju môžeš používať priamo v prehliadači alebo ako webovú appku."
+        },
+        {
+          question: "Bude dostupná aj mobilná aplikácia?",
+          answer: "Áno, v ďalšej fáze vývoja pripravujeme aj natívnu aplikáciu pre Android a iOS."
+        },
+        {
+          question: "Potrebujem internet, aby som používal Contestio?",
+          answer: "Na prístup k súťažiam a live výsledkom internet potrebuješ, ale zápis do rybárskeho denníka je možný aj offline (synchronizácia prebehne po pripojení)."
         },
         {
           question: "Môžem integrovať výsledky na vlastný web?",

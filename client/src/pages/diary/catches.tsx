@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useDiaryOffline } from "@/hooks/use-diary-offline";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -42,7 +43,10 @@ import {
   Filter,
   Search,
   Eye,
-  Download
+  Download,
+  WifiOff,
+  Loader2,
+  Upload
 } from "lucide-react";
 
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -135,6 +139,17 @@ export default function DiaryCatches() {
   const [activeTab, setActiveTab] = useState("recent");
   const [filterTrip, setFilterTrip] = useState<string>("all");
   const [filterFishType, setFilterFishType] = useState<string>("all");
+  const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
+  
+  // Offline functionality
+  const { 
+    isOffline, 
+    pendingCatches, 
+    saveCatchDraft, 
+    removeCatchDraft,
+    getPhoto
+  } = useDiaryOffline();
 
   // Fetch user's catches
   const { data: catches = [], isLoading } = useQuery<DiaryCatch[]>({
@@ -228,11 +243,43 @@ export default function DiaryCatches() {
     }
   });
 
-  const handleSubmit = (data: CatchFormData) => {
-    if (editingCatch) {
-      updateCatchMutation.mutate(data);
+  const handleSubmit = async (data: CatchFormData) => {
+    if (isOffline) {
+      // Save as draft when offline (with photo if available)
+      try {
+        const type = editingCatch ? 'update' : deletingCatch ? 'delete' : 'create';
+        const originalId = editingCatch?.id || deletingCatch?.id;
+        const catchDataWithPhoto = selectedPhoto ? { ...data, photo: selectedPhoto } : data;
+        
+        await saveCatchDraft(catchDataWithPhoto, type, originalId);
+        
+        setIsCreateDialogOpen(false);
+        setEditingCatch(null);
+        setSelectedPhoto(null);
+        form.reset();
+        
+        toast({
+          title: "Uložené offline",
+          description: selectedPhoto 
+            ? "Úlovok s fotkou sa odošle automaticky po obnovení pripojenia"
+            : "Úlovok sa odošle automaticky po obnovení pripojenia",
+          variant: "default",
+        });
+      } catch (error) {
+        console.error('Failed to save catch draft:', error);
+        toast({
+          title: "Chyba",
+          description: "Nepodarilo sa uložiť úlovok offline",
+          variant: "destructive",
+        });
+      }
     } else {
-      createCatchMutation.mutate(data);
+      // Online - use normal mutations
+      if (editingCatch) {
+        updateCatchMutation.mutate(data);
+      } else {
+        createCatchMutation.mutate(data);
+      }
     }
   };
 
@@ -255,14 +302,112 @@ export default function DiaryCatches() {
   const closeDialog = () => {
     setIsCreateDialogOpen(false);
     setEditingCatch(null);
+    setSelectedPhoto(null);
     form.reset();
   };
 
-  const handleDeleteCatch = () => {
-    if (deletingCatch) {
+  const handleDeleteCatch = async () => {
+    if (!deletingCatch) return;
+    
+    if (isOffline) {
+      // Save delete as draft when offline
+      try {
+        await saveCatchDraft({ id: deletingCatch.id }, 'delete', deletingCatch.id);
+        setDeletingCatch(null);
+        
+        toast({
+          title: "Uložené offline",
+          description: "Úlovok sa zmaže automaticky po obnovení pripojenia",
+          variant: "default",
+        });
+      } catch (error) {
+        console.error('Failed to save delete draft:', error);
+        toast({
+          title: "Chyba",
+          description: "Nepodarilo sa uložiť operáciu offline",
+          variant: "destructive",
+        });
+      }
+    } else {
       deleteCatchMutation.mutate(deletingCatch.id);
     }
   };
+
+  // Sync pending catches when back online
+  const syncPendingCatches = useCallback(async () => {
+    if (isOffline || pendingCatches.length === 0 || isSyncing) return;
+    
+    setIsSyncing(true);
+    
+    for (const catchDraft of pendingCatches) {
+      try {
+        if (catchDraft.type === 'create') {
+          // Get photo from IndexedDB if it has one
+          let photo = null;
+          if (catchDraft.hasPhoto) {
+            photo = await getPhoto(catchDraft.id);
+            if (!photo) {
+              toast({
+                title: "Chyba synchronizácie",
+                description: `Fotka pre úlovok z ${new Date(catchDraft.timestamp).toLocaleTimeString()} chýba`,
+                variant: "destructive",
+              });
+              continue; // Skip this draft until photo is resolved
+            }
+          }
+          
+          const response = await apiRequest("POST", "/api/diary/catches", { ...catchDraft.data, photo });
+          await response.json();
+          await removeCatchDraft(catchDraft.id);
+          
+          toast({
+            title: "Synchronizované",
+            description: `Úlovok ${catchDraft.data.angler?.name || ''} - ${catchDraft.data.weight}kg bol úspešne pridaný`,
+          });
+        } else if (catchDraft.type === 'update' && catchDraft.originalId) {
+          const response = await apiRequest("PUT", `/api/diary/catches/${catchDraft.originalId}`, catchDraft.data);
+          await response.json();
+          await removeCatchDraft(catchDraft.id);
+          
+          toast({
+            title: "Synchronizované",
+            description: "Úlovok bol úspešne aktualizovaný",
+          });
+        } else if (catchDraft.type === 'delete' && catchDraft.originalId) {
+          await apiRequest("DELETE", `/api/diary/catches/${catchDraft.originalId}`);
+          await removeCatchDraft(catchDraft.id);
+          
+          toast({
+            title: "Synchronizované",
+            description: "Úlovok bol úspešne zmazaný",
+          });
+        }
+        
+        // Invalidate queries after successful sync
+        queryClient.invalidateQueries({ queryKey: ["/api/diary/catches"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/diary/catch-limits"] });
+      } catch (error) {
+        console.error('Failed to sync catch:', error);
+        toast({
+          title: "Chyba synchronizácie",
+          description: `Nepodarilo sa synchronizovať úlovok z ${new Date(catchDraft.timestamp).toLocaleTimeString()}`,
+          variant: "destructive",
+        });
+      }
+    }
+    
+    setIsSyncing(false);
+  }, [isOffline, pendingCatches, isSyncing, removeCatchDraft, getPhoto, toast]);
+
+  // Auto-sync when connection is restored
+  useEffect(() => {
+    if (!isOffline && pendingCatches.length > 0) {
+      const timeout = setTimeout(() => {
+        syncPendingCatches();
+      }, 1000); // Wait 1s after reconnection
+      return () => clearTimeout(timeout);
+    }
+  }, [isOffline, pendingCatches.length, syncPendingCatches]);
 
   // Filter catches based on active filters
   const filteredCatches = catches.filter(catch_ => {
@@ -301,7 +446,45 @@ export default function DiaryCatches() {
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-foreground mb-2">Úlovky</h1>
+              <div className="flex items-center gap-3 mb-2">
+                <h1 className="text-3xl font-bold text-foreground">Úlovky</h1>
+                {isOffline && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Badge variant="destructive" className="flex items-center gap-1" data-testid="badge-offline">
+                          <WifiOff className="w-3 h-3" />
+                          Offline
+                        </Badge>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Bez pripojenia - úlovky sa uložia lokálne s fotkami</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+                {isSyncing && (
+                  <Badge variant="secondary" className="flex items-center gap-1" data-testid="badge-syncing">
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    Synchronizujem...
+                  </Badge>
+                )}
+                {!isOffline && pendingCatches.length > 0 && !isSyncing && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Badge variant="outline" className="flex items-center gap-1" data-testid="badge-pending">
+                          <Upload className="w-3 h-3" />
+                          {pendingCatches.length} čakajúcich
+                        </Badge>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{pendingCatches.filter(c => c.hasPhoto).length} s fotkami</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+              </div>
               <p className="text-muted-foreground">
                 Spravujte svoje úlovky a sledujte svoje rybárske úspechy
               </p>
@@ -373,6 +556,35 @@ export default function DiaryCatches() {
                           </FormItem>
                         )}
                       />
+
+                      {/* Photo Upload */}
+                      <div className="space-y-2">
+                        <FormLabel>Fotka úlovku (voliteľné)</FormLabel>
+                        <div className="flex items-center gap-4">
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                setSelectedPhoto(file);
+                              }
+                            }}
+                            data-testid="input-photo"
+                          />
+                          {selectedPhoto && (
+                            <Badge variant="secondary" className="flex items-center gap-1">
+                              <Camera className="w-3 h-3" />
+                              {selectedPhoto.name}
+                            </Badge>
+                          )}
+                        </div>
+                        {isOffline && (
+                          <p className="text-xs text-muted-foreground">
+                            Fotka sa uloží lokálne a odošle po obnovení pripojenia
+                          </p>
+                        )}
+                      </div>
 
                       <FormField
                         control={form.control}
