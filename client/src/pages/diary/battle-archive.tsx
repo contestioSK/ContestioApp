@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { Trophy, Users, Calendar, Clock, Fish, Weight, Crown, Archive, Search, Filter, Eye, RotateCcw, Medal, BarChart3, Star } from "lucide-react";
+import { Trophy, Users, Calendar, Clock, Fish, Weight, Crown, Archive, Search, Filter, Eye, RotateCcw, Medal, BarChart3, Star, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
 import { useLocation } from "wouter";
@@ -158,14 +158,25 @@ export default function BattleArchive() {
         <div className="max-w-6xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <div className="flex items-center gap-3 mb-4">
-              <Archive className="w-8 h-8 text-primary" />
-              <h1 className="text-3xl font-bold text-foreground">
-                Battle Archív
-              </h1>
-              <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-                PREMIUM
-              </Badge>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <Archive className="w-8 h-8 text-primary" />
+                <h1 className="text-3xl font-bold text-foreground">
+                  Battle Archív
+                </h1>
+                <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                  PREMIUM
+                </Badge>
+              </div>
+              <Button
+                size="lg"
+                onClick={() => setLocation("/diary/battle/create")}
+                className="bg-green-600 hover:bg-green-700 text-white"
+                data-testid="button-create-battle"
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                Vytvoriť nový Battle
+              </Button>
             </div>
             
             <p className="text-muted-foreground text-lg">

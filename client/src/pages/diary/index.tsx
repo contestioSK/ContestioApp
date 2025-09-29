@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Fish, Plus, X, Calendar, MapPin, Target, Ruler, Weight } from "lucide-react";
+import { Fish, Plus, X, Calendar, MapPin, Target, Ruler, Weight, Swords, Trophy, Crown } from "lucide-react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import DiaryLayout from "@/components/DiaryLayout";
@@ -41,6 +41,14 @@ export default function DiaryIndex() {
     queryKey: ['/api/diary/catches/all'],
     enabled: !!user?.id
   });
+
+  // Check premium status
+  const { data: premiumStatus, isLoading: premiumLoading } = useQuery<{ isPremium: boolean }>({
+    queryKey: ["/api/auth/premium-status"],
+    enabled: !!user?.id
+  });
+
+  const isPremium = premiumStatus?.isPremium || false;
 
   // Filter catches for 2025 season (January 15, 2025 onwards)
   const season2025Catches = Array.isArray(allCatches) ? allCatches.filter((catch_: any) => {
@@ -125,6 +133,62 @@ export default function DiaryIndex() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Fishing Battle CTA */}
+        <Card className="bg-gradient-to-r from-yellow-600/20 to-orange-600/20 border-yellow-600/30 mb-8" data-testid="card-battle-cta">
+          <CardContent className="p-6">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-yellow-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Swords className="w-6 h-6 text-yellow-400" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="text-lg font-bold text-white">Fishing Battle</h3>
+                    {!isPremium && (
+                      <Crown className="w-4 h-4 text-yellow-400" />
+                    )}
+                  </div>
+                  <p className="text-slate-300 text-sm">
+                    Súťažte s karamátmi v priatelských rybárskych dueloch!
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                {isPremium ? (
+                  <>
+                    <Button
+                      variant="outline"
+                      onClick={() => setLocation("/diary/battle/archive")}
+                      className="border-yellow-600/50 bg-yellow-600/10 hover:bg-yellow-600/20 text-yellow-100"
+                      data-testid="button-battle-archive"
+                    >
+                      <Trophy className="w-4 h-4 mr-2" />
+                      Archív
+                    </Button>
+                    <Button
+                      onClick={() => setLocation("/diary/battle/create")}
+                      className="bg-yellow-600 hover:bg-yellow-700 text-white"
+                      data-testid="button-create-battle-cta"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Vytvoriť Battle
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    onClick={() => setLocation("/diary/battle/paywall")}
+                    className="bg-yellow-600 hover:bg-yellow-700 text-white"
+                    data-testid="button-unlock-battle"
+                  >
+                    <Crown className="w-4 h-4 mr-2" />
+                    Odomknúť PREMIUM
+                  </Button>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Catches Table */}
         <Card className="bg-slate-800/50 border-slate-600 overflow-hidden">
