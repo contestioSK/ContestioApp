@@ -168,3 +168,19 @@
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom);
 }
+
+/* Fix for sticky navigation header overlap */
+.page-content-with-nav {
+  margin-top: 6rem !important; /* 96px - much larger to clear header completely */
+  padding-top: 1rem !important; /* Additional spacing */
+  min-height: calc(100vh - 7rem);
+}
+
+/* Alternative fix for body offset */
+body.has-sticky-nav {
+  padding-top: 4rem; /* 64px to match header height */
+}
+
+body.has-sticky-nav main {
+  padding-top: 1rem; /* Additional buffer */
+}
