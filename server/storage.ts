@@ -99,6 +99,12 @@ export interface IStorage {
   verifyUserEmail(token: string): Promise<User | null>;
   updateUserPassword(userId: string, hashedPassword: string): Promise<User>;
   updateUserEmailVerification(userId: string, emailVerified: boolean): Promise<User>;
+  updateUserProfile(userId: string, profileData: {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    profileImageUrl?: string;
+  }): Promise<User>;
   
   // Competition operations
   getCompetitions(): Promise<Competition[]>;
@@ -583,6 +589,42 @@ export class DatabaseStorage implements IStorage {
         emailVerified,
         updatedAt: new Date(),
       })
+      .where(eq(users.id, userId))
+      .returning();
+
+    if (!updatedUser) {
+      throw new Error('User not found');
+    }
+    return updatedUser;
+  }
+
+  async updateUserProfile(userId: string, profileData: {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    profileImageUrl?: string;
+  }): Promise<User> {
+    const updateData: any = {
+      updatedAt: new Date(),
+    };
+
+    // Only update fields that are provided
+    if (profileData.firstName !== undefined) {
+      updateData.firstName = profileData.firstName;
+    }
+    if (profileData.lastName !== undefined) {
+      updateData.lastName = profileData.lastName;
+    }
+    if (profileData.email !== undefined) {
+      updateData.email = profileData.email;
+    }
+    if (profileData.profileImageUrl !== undefined) {
+      updateData.profileImageUrl = profileData.profileImageUrl;
+    }
+
+    const [updatedUser] = await db
+      .update(users)
+      .set(updateData)
       .where(eq(users.id, userId))
       .returning();
 
