@@ -26,7 +26,6 @@ import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 import { 
-  ArrowLeft,
   Fish, 
   Calendar,
   Weight,
@@ -46,6 +45,8 @@ import {
   Star,
   Zap
 } from "lucide-react";
+
+import DiaryLayout from "@/components/DiaryLayout";
 
 import type { DiaryTrip, DiaryCatch } from "@shared/schema";
 
@@ -481,33 +482,21 @@ export default function DiaryStats() {
   };
 
   return (
-    <div className="min-h-screen bg-background" data-testid="page-diary-stats">
-      <div className="max-w-6xl mx-auto px-4 py-8">
+    <DiaryLayout>
+      <div className="p-6" data-testid="page-diary-stats">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setLocation("/diary")}
-              className="gap-2"
-              data-testid="button-back-to-diary"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Späť do denníka
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-                Štatistiky
-                {!isPremium && (
-                  <Badge variant="secondary" className="bg-secondary text-secondary-foreground">
-                    <Crown className="w-4 h-4 mr-1" />
-                    PREMIUM
-                  </Badge>
-                )}
-              </h1>
-              <p className="text-muted-foreground">Analýzy a štatistiky vašich rybárskych úspechov</p>
-            </div>
+          <div>
+            <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
+              Štatistiky
+              {!isPremium && (
+                <Badge variant="secondary" className="bg-secondary text-secondary-foreground">
+                  <Crown className="w-4 h-4 mr-1" />
+                  PREMIUM
+                </Badge>
+              )}
+            </h1>
+            <p className="text-muted-foreground">Analýzy a štatistiky vašich rybárskych úspechov</p>
           </div>
 
           {!isPremium && (
@@ -1499,6 +1488,6 @@ export default function DiaryStats() {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
+    </DiaryLayout>
   );
 }
