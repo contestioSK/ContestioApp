@@ -29,8 +29,8 @@ import DiaryLayout from "@/components/DiaryLayout";
 const profileSchema = z.object({
   firstName: z.string().min(1, "Meno je povinné").max(50, "Meno môže mať maximálne 50 znakov"),
   lastName: z.string().min(1, "Priezvisko je povinné").max(50, "Priezvisko môže mať maximálne 50 znakov"),
+  nickname: z.string().max(30, "Prezývka môže mať maximálne 30 znakov").optional().or(z.literal("")),
   email: z.string().email("Neplatný email"),
-  profileImageUrl: z.string().url().optional().or(z.literal("")),
 });
 
 type ProfileForm = z.infer<typeof profileSchema>;
@@ -39,14 +39,15 @@ export default function Profile() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
+  const [profileImage, setProfileImage] = useState<File | null>(null);
 
   const form = useForm<ProfileForm>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
       firstName: user?.firstName || "",
       lastName: user?.lastName || "",
+      nickname: user?.nickname || "",
       email: user?.email || "",
-      profileImageUrl: user?.profileImageUrl || "",
     }
   });
 
@@ -74,6 +75,42 @@ export default function Profile() {
     }
   });
 
+  // Profile image upload mutation
+  const uploadImageMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('avatar', file);
+      
+      const response = await fetch('/api/auth/profile/avatar', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      toast({
+        title: "Profilová fotografia nahraná!",
+        description: "Vaša profilová fotografia bola úspešne zmenená.",
+      });
+      setProfileImage(null);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Chyba",
+        description: "Nepodarilo sa nahrať profilovú fotografiu. Skúste to znovu.",
+        variant: "destructive"
+      });
+      console.error("Upload image error:", error);
+    }
+  });
+
   const onSubmit = (data: ProfileForm) => {
     updateProfileMutation.mutate(data);
   };
@@ -82,8 +119,8 @@ export default function Profile() {
     form.reset({
       firstName: user?.firstName || "",
       lastName: user?.lastName || "",
+      nickname: user?.nickname || "",
       email: user?.email || "",
-      profileImageUrl: user?.profileImageUrl || "",
     });
     setIsEditing(false);
   };
@@ -202,35 +239,68 @@ export default function Profile() {
               <CardContent>
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    {/* Profile Image */}
-                    <FormField
-                      control={form.control}
-                      name="profileImageUrl"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Profilový obrázok (URL)</FormLabel>
-                          <FormControl>
-                            <div className="flex gap-2">
-                              <Input 
-                                placeholder="https://example.com/avatar.jpg"
-                                data-testid="input-profile-image"
-                                disabled={!isEditing}
-                                {...field} 
-                              />
-                              {isEditing && (
-                                <Button type="button" variant="outline" size="icon">
-                                  <Camera className="w-4 h-4" />
-                                </Button>
-                              )}
+                    {/* Profile Image Upload */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-20 h-20 rounded-full bg-muted overflow-hidden">
+                          {user.profileImageUrl ? (
+                            <img
+                              src={user.profileImageUrl}
+                              alt="Profilový obrázok"
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <UserCircle className="w-12 h-12 text-muted-foreground" />
                             </div>
-                          </FormControl>
-                          <FormDescription>
-                            URL adresa vášho profilového obrázka
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="text-sm font-medium text-foreground">Profilový obrázok</h4>
+                          <p className="text-sm text-muted-foreground">Nahrajte svoj profilový obrázok</p>
+                        </div>
+                        {isEditing && (
+                          <div className="flex gap-2">
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => setProfileImage(e.target.files?.[0] || null)}
+                              className="hidden"
+                              id="profile-image-input"
+                              data-testid="input-profile-image"
+                            />
+                            <Button 
+                              type="button" 
+                              variant="outline" 
+                              onClick={() => document.getElementById('profile-image-input')?.click()}
+                            >
+                              <Camera className="w-4 h-4 mr-2" />
+                              Zmeniť
+                            </Button>
+                            {profileImage && (
+                              <Button
+                                type="button"
+                                onClick={() => uploadImageMutation.mutate(profileImage)}
+                                disabled={uploadImageMutation.isPending}
+                                data-testid="button-upload-image"
+                              >
+                                {uploadImageMutation.isPending ? (
+                                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                ) : (
+                                  <Save className="w-4 h-4 mr-2" />
+                                )}
+                                Nahrať
+                              </Button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      {profileImage && (
+                        <p className="text-sm text-muted-foreground">
+                          Vybratý súbor: {profileImage.name}
+                        </p>
                       )}
-                    />
+                    </div>
 
                     <Separator />
 
@@ -269,6 +339,29 @@ export default function Profile() {
                               {...field} 
                             />
                           </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Nickname */}
+                    <FormField
+                      control={form.control}
+                      name="nickname"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Prezývka</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="Vaša prezývka"
+                              data-testid="input-nickname"
+                              disabled={!isEditing}
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Nepovinná prezývka, ktorú budú vidieť ostatní rybári
+                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
