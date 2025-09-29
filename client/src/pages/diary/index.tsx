@@ -102,26 +102,26 @@ export default function DiaryIndex() {
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8">
-          <Card className="bg-slate-700/50 border-slate-600">
+          <Card className="bg-slate-700/50 border-slate-600" data-testid="card-season-catches">
             <CardContent className="p-6">
               <div className="text-sm text-slate-400 mb-1">Sezóna 2025</div>
-              <div className="text-3xl font-bold text-white">{diaryStats.totalCatches} úlovkov</div>
+              <div className="text-3xl font-bold text-white" data-testid="text-total-catches">{diaryStats.totalCatches} úlovkov</div>
             </CardContent>
           </Card>
           
-          <Card className="bg-slate-700/50 border-slate-600">
+          <Card className="bg-slate-700/50 border-slate-600" data-testid="card-biggest-fish">
             <CardContent className="p-6">
               <div className="text-sm text-slate-400 mb-1">Najväčšia Ryba</div>
-              <div className="text-3xl font-bold text-white">
+              <div className="text-3xl font-bold text-white" data-testid="text-biggest-fish">
                 {diaryStats.biggestFish > 0 ? `${diaryStats.biggestFish.toFixed(1)} kg` : '0 kg'}
               </div>
             </CardContent>
           </Card>
           
-          <Card className="bg-slate-700/50 border-slate-600">
+          <Card className="bg-slate-700/50 border-slate-600" data-testid="card-best-technique">
             <CardContent className="p-6">
               <div className="text-sm text-slate-400 mb-1">Najúspešnejšia Technika</div>
-              <div className="text-3xl font-bold text-white">{diaryStats.mostSuccessfulTechnique}</div>
+              <div className="text-3xl font-bold text-white" data-testid="text-best-technique">{diaryStats.mostSuccessfulTechnique}</div>
             </CardContent>
           </Card>
         </div>
@@ -145,6 +145,7 @@ export default function DiaryIndex() {
                   key={catch_.id || index} 
                   className="border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors cursor-pointer"
                   onClick={() => setSelectedCatch(catch_)}
+                  data-testid={`catch-row-${catch_.id || index}`}
                 >
                   {/* Desktop Row */}
                   <div className="hidden md:grid grid-cols-5 gap-4 p-4">
@@ -228,7 +229,7 @@ export default function DiaryIndex() {
 
         {/* Detail Panel */}
         <Sheet open={!!selectedCatch} onOpenChange={() => setSelectedCatch(null)}>
-          <SheetContent className="w-full sm:max-w-md bg-slate-800 border-slate-600 text-white overflow-y-auto">
+          <SheetContent className="w-full sm:max-w-md bg-slate-800 border-slate-600 text-white overflow-y-auto" data-testid="catch-detail-panel">
             <SheetHeader className="pb-6">
               <SheetTitle className="text-white flex items-center gap-3">
                 <div className="w-10 h-10 bg-slate-600/50 rounded-lg flex items-center justify-center">
@@ -246,7 +247,7 @@ export default function DiaryIndex() {
                     <Weight className="w-5 h-5 text-slate-400" />
                     <div>
                       <div className="text-sm text-slate-400">Váha</div>
-                      <div className="font-semibold">{selectedCatch.weight ? `${selectedCatch.weight} kg` : 'Neuvedené'}</div>
+                      <div className="font-semibold" data-testid="detail-weight">{selectedCatch.weight ? `${selectedCatch.weight} kg` : 'Neuvedené'}</div>
                     </div>
                   </div>
 
@@ -299,6 +300,7 @@ export default function DiaryIndex() {
                       alt="Fotografia úlovku"
                       className="w-full h-48 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
                       onClick={() => setLightboxImage(selectedCatch.photo)}
+                      data-testid="catch-photo"
                     />
                   </div>
                 )}
@@ -321,6 +323,7 @@ export default function DiaryIndex() {
                       setSelectedCatch(null);
                       setLocation('/diary/catches');
                     }}
+                    data-testid="button-edit-catch"
                   >
                     Upraviť úlovok
                   </Button>
@@ -332,7 +335,7 @@ export default function DiaryIndex() {
 
         {/* Photo Lightbox */}
         <Dialog open={!!lightboxImage} onOpenChange={() => setLightboxImage(null)}>
-          <DialogContent className="max-w-4xl max-h-[90vh] p-0 bg-black/90 border-0">
+          <DialogContent className="max-w-4xl max-h-[90vh] p-0 bg-black/90 border-0" data-testid="photo-lightbox">
             <div className="relative flex items-center justify-center h-full">
               <Button
                 variant="ghost"
