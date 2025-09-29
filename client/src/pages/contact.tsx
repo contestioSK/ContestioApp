@@ -52,7 +52,7 @@ export default function Contact() {
     <div className="min-h-screen bg-background">
       <NavigationHeader />
       
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-20">
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6" data-testid="text-contact-title">
