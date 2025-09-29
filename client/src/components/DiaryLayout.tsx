@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation, Link } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -14,8 +15,14 @@ import {
   Calendar,
   Plus,
   Menu,
-  X
+  X,
+  Swords
 } from "lucide-react";
+
+// Type for premium check
+type PremiumStatus = {
+  isPremium: boolean;
+};
 
 interface DiaryLayoutProps {
   children: React.ReactNode;
@@ -41,6 +48,13 @@ const navigationItems = [
     description: "Sezónne ciele"
   },
   {
+    icon: Swords,
+    label: "Fishing Battle",
+    href: "/diary/battle/archive",
+    description: "Súťažné súboje",
+    premium: true
+  },
+  {
     icon: Trophy,
     label: "Arzenál",
     href: "/diary/arsenal",
@@ -52,6 +66,14 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
   const { user } = useAuth();
   const [location, setLocation] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Check premium status
+  const { data: premiumStatus } = useQuery<PremiumStatus>({
+    queryKey: ["/api/auth/premium-status"],
+    enabled: !!user
+  });
+
+  const isPremium = premiumStatus?.isPremium || false;
 
   const handleLogout = () => {
     // TODO: Implement logout functionality
@@ -127,7 +149,13 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                 <button
                   key={item.href}
                   onClick={() => {
-                    setLocation(item.href);
+                    // Handle premium routing for Fishing Battle
+                    if (item.premium && item.label === "Fishing Battle") {
+                      const targetHref = isPremium ? "/diary/battle/archive" : "/diary/battle/paywall";
+                      setLocation(targetHref);
+                    } else {
+                      setLocation(item.href);
+                    }
                     setSidebarOpen(false);
                   }}
                   className={`
@@ -137,11 +165,18 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                       : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent'
                     }
                   `}
-                  data-testid={`nav-${item.label.toLowerCase()}`}
+                  data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
                 >
                   <Icon className="mr-2 md:mr-3 h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
-                  <div className="text-left">
-                    <div className="font-medium text-xs md:text-sm">{item.label}</div>
+                  <div className="text-left flex-1">
+                    <div className="font-medium text-xs md:text-sm flex items-center gap-2">
+                      {item.label}
+                      {item.premium && (
+                        <Badge variant="secondary" className="bg-sidebar-primary/20 text-sidebar-primary border-sidebar-primary/30 text-xs px-1 py-0">
+                          PREMIUM
+                        </Badge>
+                      )}
+                    </div>
                     <div className="text-xs text-sidebar-foreground/50 hidden md:block">{item.description}</div>
                   </div>
                 </button>
@@ -205,7 +240,15 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
               return (
                 <button
                   key={item.href}
-                  onClick={() => setLocation(item.href)}
+                  onClick={() => {
+                    // Handle premium routing for Fishing Battle
+                    if (item.premium && item.label === "Fishing Battle") {
+                      const targetHref = isPremium ? "/diary/battle/archive" : "/diary/battle/paywall";
+                      setLocation(targetHref);
+                    } else {
+                      setLocation(item.href);
+                    }
+                  }}
                   className={`
                     flex flex-col items-center justify-center space-y-1 transition-colors
                     ${isActive 
@@ -213,7 +256,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                       : 'text-white/70 hover:text-white'
                     }
                   `}
-                  data-testid={`mobile-nav-${item.label.toLowerCase()}`}
+                  data-testid={`mobile-nav-${item.label.toLowerCase().replace(' ', '-')}`}
                 >
                   <Icon className="h-5 w-5 flex-shrink-0" />
                   <span className="text-xs font-medium">{item.label}</span>
