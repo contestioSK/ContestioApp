@@ -174,7 +174,7 @@ html {
   scroll-padding-top: var(--header-height, 4rem); /* For anchor links */
 }
 
-/* Push content below sticky header - apply to first child after NavigationHeader */
-.main-content-wrapper:first-of-type {
-  margin-top: 65px;
+/* Push content below sticky header */
+.main-content-wrapper {
+  margin-top: 65px !important;
 }
