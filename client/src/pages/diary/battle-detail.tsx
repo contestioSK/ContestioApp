@@ -110,12 +110,10 @@ export default function BattleDetail() {
   const [progress, setProgress] = useState<number>(0);
 
   // WebSocket connection for live updates
-  const { isConnected, sendMessage } = useWebSocket({
-    onMessage: (message: WebSocketMessage) => {
-      if (message.type === "battle_update" && message.battleId === id) {
-        // Update battle data based on WebSocket message
-        setBattle(current => current ? { ...current, ...message.data } : null);
-      }
+  const { isConnected, sendMessage } = useWebSocket((message: WebSocketMessage) => {
+    if (message.type === "battle_update" && message.battleId === id) {
+      // Update battle data based on WebSocket message
+      setBattle(current => current ? { ...current, ...message.data } : null);
     }
   });
 

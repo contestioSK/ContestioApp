@@ -7,10 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { Trophy, Users, Calendar, Clock, Fish, Weight, Crown, Archive, Search, Filter, ArrowLeft, Eye, RotateCcw, Medal, BarChart3, Star } from "lucide-react";
+import { Trophy, Users, Calendar, Clock, Fish, Weight, Crown, Archive, Search, Filter, Eye, RotateCcw, Medal, BarChart3, Star } from "lucide-react";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
 import { useLocation } from "wouter";
+import DiaryLayout from "@/components/DiaryLayout";
 
 // Mock battle data interface
 interface ArchivedBattle {
@@ -74,17 +75,17 @@ const getMockArchivedBattles = (): ArchivedBattle[] => [
   },
   {
     id: "battle-4",
-    name: "Turnaj najlepších rybárov",
-    mode: "best_5_fish",
+    name: "Turnaj majstrov",
+    mode: "best_3_fish",
     status: "finished",
     startAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
     endAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000 + 8 * 60 * 60 * 1000), // 8 hours duration
     participantCount: 6,
-    winner: "Vy",
-    userPosition: 1,
-    userScore: 18.7,
+    winner: "Ľuboš P.",
+    userPosition: 4,
+    userScore: 15.2,
     totalScore: 18.7,
-    participants: ["Vy", "Robert K.", "Pavel N.", "Michal T.", "David L.", "Igor M."]
+    participants: ["Ľuboš P.", "Erik N.", "Dominik H.", "Vy", "Michal T.", "Robert F."]
   }
 ];
 
@@ -99,19 +100,19 @@ const getModeLabel = (mode: string) => {
   }
 };
 
-const getModeIcon = (mode: string) => {
+const getScoreUnit = (mode: string) => {
   switch (mode) {
-    case "most_fish": return Fish;
-    case "total_weight": return Weight;
-    case "biggest_fish": return Trophy;
-    case "best_3_fish": return Crown;
-    case "best_5_fish": return Crown;
-    default: return Trophy;
+    case "most_fish": return "rýb";
+    case "total_weight": return "kg";
+    case "biggest_fish": return "kg";
+    case "best_3_fish": return "kg";
+    case "best_5_fish": return "kg";
+    default: return "";
   }
 };
 
 const getPositionBadge = (position: number) => {
-  if (position === 1) return { emoji: "🥇", color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" };
+  if (position === 1) return { emoji: "🏆", color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" };
   if (position === 2) return { emoji: "🥈", color: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200" };
   if (position === 3) return { emoji: "🥉", color: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200" };
   return { emoji: `${position}.`, color: "bg-muted text-muted-foreground" };
@@ -152,246 +153,244 @@ export default function BattleArchive() {
   }, [battles]);
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <Button 
-            variant="ghost" 
-            onClick={() => setLocation("/diary")}
-            className="mb-4 -ml-4"
-            data-testid="button-back-diary"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Späť na denník
-          </Button>
-          
-          <div className="flex items-center gap-3 mb-4">
-            <Archive className="w-8 h-8 text-primary" />
-            <h1 className="text-3xl font-bold text-foreground">
-              Battle Archív
-            </h1>
-            <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-              PREMIUM
-            </Badge>
-          </div>
-          
-          <p className="text-muted-foreground text-lg">
-            História všetkých vašich Fishing Battle súbojov a štatistiky
-          </p>
-        </div>
-
-        {/* User Statistics Overview */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="w-5 h-5" />
-              Vaše štatistiky
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-primary mb-1">{userStats.totalBattles}</div>
-                <div className="text-sm text-muted-foreground">Celkovo súbojov</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-yellow-600 mb-1">{userStats.wins}</div>
-                <div className="text-sm text-muted-foreground">Víťazstvá</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-orange-600 mb-1">{userStats.podiums}</div>
-                <div className="text-sm text-muted-foreground">Pódiové umiestnenia</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-green-600 mb-1">{userStats.winRate}%</div>
-                <div className="text-sm text-muted-foreground">Úspešnosť víťazstiev</div>
-              </div>
+    <DiaryLayout>
+      <div className="p-6">
+        <div className="max-w-6xl mx-auto">
+          {/* Header */}
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-4">
+              <Archive className="w-8 h-8 text-primary" />
+              <h1 className="text-3xl font-bold text-foreground">
+                Battle Archív
+              </h1>
+              <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                PREMIUM
+              </Badge>
             </div>
-          </CardContent>
-        </Card>
+            
+            <p className="text-muted-foreground text-lg">
+              História všetkých vašich Fishing Battle súbojov a štatistiky
+            </p>
+          </div>
 
-        {/* Search and Filters */}
-        <Card className="mb-8">
-          <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row gap-4">
-              {/* Search */}
-              <div className="flex-1">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+          {/* User Statistics Overview */}
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="w-5 h-5" />
+                Vaše štatistiky
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-primary mb-1">{userStats.totalBattles}</div>
+                  <div className="text-sm text-muted-foreground">Celkovo súbojov</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-yellow-600 mb-1">{userStats.wins}</div>
+                  <div className="text-sm text-muted-foreground">Víťazstvá</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-orange-600 mb-1">{userStats.podiums}</div>
+                  <div className="text-sm text-muted-foreground">Pódiové umiestnenia</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-green-600 mb-1">{userStats.winRate}%</div>
+                  <div className="text-sm text-muted-foreground">Úspešnosť víťazstiev</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Search and Filters */}
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Search className="w-5 h-5" />
+                Vyhľadávanie a filtre
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1">
                   <Input
                     placeholder="Hľadať podľa názvu súboja alebo víťaza..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
+                    className="w-full"
                     data-testid="input-search-battles"
                   />
                 </div>
+                <div className="flex gap-4">
+                  <Select value={filterMode} onValueChange={setFilterMode}>
+                    <SelectTrigger className="w-48" data-testid="select-filter-mode">
+                      <SelectValue placeholder="Herný režim" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Všetky režimy</SelectItem>
+                      <SelectItem value="most_fish">Najviac rýb</SelectItem>
+                      <SelectItem value="total_weight">Celková váha</SelectItem>
+                      <SelectItem value="biggest_fish">Najväčšia ryba</SelectItem>
+                      <SelectItem value="best_3_fish">Top 3 ryby</SelectItem>
+                      <SelectItem value="best_5_fish">Top 5 rýb</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={filterResult} onValueChange={setFilterResult}>
+                    <SelectTrigger className="w-48" data-testid="select-filter-result">
+                      <SelectValue placeholder="Výsledok" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Všetky výsledky</SelectItem>
+                      <SelectItem value="win">Víťazstvá</SelectItem>
+                      <SelectItem value="podium">Pódiové umiestnenia</SelectItem>
+                      <SelectItem value="participated">Účasť</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              
-              {/* Mode Filter */}
-              <Select value={filterMode} onValueChange={setFilterMode}>
-                <SelectTrigger className="w-full md:w-48" data-testid="select-filter-mode">
-                  <Filter className="w-4 h-4 mr-2" />
-                  <SelectValue placeholder="Herný režim" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Všetky režimy</SelectItem>
-                  <SelectItem value="most_fish">Najviac rýb</SelectItem>
-                  <SelectItem value="total_weight">Celková váha</SelectItem>
-                  <SelectItem value="biggest_fish">Najväčšia ryba</SelectItem>
-                  <SelectItem value="best_3_fish">Top 3 ryby</SelectItem>
-                  <SelectItem value="best_5_fish">Top 5 rýb</SelectItem>
-                </SelectContent>
-              </Select>
-              
-              {/* Result Filter */}
-              <Select value={filterResult} onValueChange={setFilterResult}>
-                <SelectTrigger className="w-full md:w-48" data-testid="select-filter-result">
-                  <Medal className="w-4 h-4 mr-2" />
-                  <SelectValue placeholder="Výsledok" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Všetky výsledky</SelectItem>
-                  <SelectItem value="win">Víťazstvá</SelectItem>
-                  <SelectItem value="podium">Pódiové umiestnenia</SelectItem>
-                  <SelectItem value="participated">Ostatné účasti</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        {/* Battle List */}
-        <div className="space-y-6">
-          {filteredBattles.length === 0 ? (
-            <Card>
-              <CardContent className="p-12 text-center">
-                <Archive className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-muted-foreground mb-2">
-                  Žiadne súboje neboli nájdené
+          {/* Battles List */}
+          <div className="space-y-4">
+            {filteredBattles.length === 0 ? (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <Archive className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-foreground mb-2">
+                    {searchTerm || filterMode !== "all" || filterResult !== "all" 
+                      ? "Žiadne súboje nevyhovujú filtrom"
+                      : "Zatiaľ ste neabsolvovali žiadne súboje"
+                    }
+                  </h3>
+                  <p className="text-muted-foreground mb-4">
+                    {searchTerm || filterMode !== "all" || filterResult !== "all"
+                      ? "Skúste upraviť hľadacie kritériá alebo filtre."
+                      : "Vytvorte svoj prvý Fishing Battle a súťažte s kamarátmi!"
+                    }
+                  </p>
+                  {!(searchTerm || filterMode !== "all" || filterResult !== "all") && (
+                    <Button 
+                      onClick={() => setLocation("/diary/battle/create")}
+                      data-testid="button-create-first-battle"
+                    >
+                      <Trophy className="w-4 h-4 mr-2" />
+                      Vytvoriť prvý súboj
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            ) : (
+              filteredBattles.map((battle) => {
+                const positionBadge = getPositionBadge(battle.userPosition);
+                
+                return (
+                  <Card key={battle.id} className="hover:shadow-md transition-shadow">
+                    <CardContent className="p-6">
+                      <div className="flex flex-col md:flex-row md:items-center gap-4">
+                        {/* Battle Info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="text-lg font-semibold text-foreground truncate">
+                              {battle.name}
+                            </h3>
+                            <Badge 
+                              variant="secondary" 
+                              className={positionBadge.color}
+                            >
+                              {positionBadge.emoji} {battle.userPosition}. miesto
+                            </Badge>
+                          </div>
+                          
+                          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                              <Calendar className="w-4 h-4" />
+                              <span>{format(battle.startAt, "d. MMM yyyy", { locale: sk })}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Trophy className="w-4 h-4" />
+                              <span>{getModeLabel(battle.mode)}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Users className="w-4 h-4" />
+                              <span>{battle.participantCount} účastníkov</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Crown className="w-4 h-4" />
+                              <span>Víťaz: {battle.winner}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Battle Stats */}
+                        <div className="flex items-center gap-6">
+                          <div className="text-center">
+                            <div className="text-lg font-bold text-foreground">
+                              {battle.userScore} {getScoreUnit(battle.mode)}
+                            </div>
+                            <div className="text-xs text-muted-foreground">Váš výsledok</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-lg font-bold text-muted-foreground">
+                              {battle.totalScore} {getScoreUnit(battle.mode)}
+                            </div>
+                            <div className="text-xs text-muted-foreground">Víťazný výsledok</div>
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => setLocation(`/diary/battle/${battle.id}`)}
+                            data-testid={`button-view-battle-${battle.id}`}
+                          >
+                            <Eye className="w-4 h-4 mr-1" />
+                            Zobraziť
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => {/* TODO: Rematch functionality */}}
+                            data-testid={`button-rematch-battle-${battle.id}`}
+                          >
+                            <RotateCcw className="w-4 h-4 mr-1" />
+                            Revanš
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })
+            )}
+          </div>
+
+          {/* Create New Battle CTA */}
+          {filteredBattles.length > 0 && (
+            <Card className="mt-8">
+              <CardContent className="p-6 text-center">
+                <Trophy className="w-12 h-12 text-primary mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-foreground mb-2">
+                  Pripravený na ďalší súboj?
                 </h3>
                 <p className="text-muted-foreground mb-4">
-                  Skúste zmeniť filter alebo začať nový súboj.
+                  Vyzvite kamarátov na nový Fishing Battle a ukážte, kto je najlepší rybár!
                 </p>
-                <Button onClick={() => setLocation("/diary/battle/create")} data-testid="button-create-first-battle">
+                <Button 
+                  onClick={() => setLocation("/diary/battle/create")}
+                  data-testid="button-create-new-battle"
+                >
                   <Trophy className="w-4 h-4 mr-2" />
-                  Vytvoriť prvý súboj
+                  Vytvoriť nový súboj
                 </Button>
               </CardContent>
             </Card>
-          ) : (
-            filteredBattles.map((battle) => {
-              const ModeIcon = getModeIcon(battle.mode);
-              const positionBadge = getPositionBadge(battle.userPosition);
-              
-              return (
-                <Card key={battle.id} className="hover:shadow-md transition-shadow" data-testid={`battle-card-${battle.id}`}>
-                  <CardContent className="p-6">
-                    <div className="flex flex-col md:flex-row md:items-center gap-4">
-                      {/* Battle Info */}
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-xl font-semibold">{battle.name}</h3>
-                          <Badge className={positionBadge.color}>
-                            {positionBadge.emoji} {battle.userPosition}. miesto
-                          </Badge>
-                          {battle.userPosition === 1 && (
-                            <Badge variant="outline" className="border-yellow-500 text-yellow-700 dark:text-yellow-300">
-                              <Star className="w-3 h-3 mr-1" />
-                              Víťazstvo
-                            </Badge>
-                          )}
-                        </div>
-                        
-                        <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-3">
-                          <div className="flex items-center gap-1">
-                            <ModeIcon className="w-4 h-4" />
-                            <span>{getModeLabel(battle.mode)}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Users className="w-4 h-4" />
-                            <span>{battle.participantCount} účastníkov</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Calendar className="w-4 h-4" />
-                            <span>{format(battle.startAt, "d.M.yyyy", { locale: sk })}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Clock className="w-4 h-4" />
-                            <span>{Math.round((battle.endAt.getTime() - battle.startAt.getTime()) / (1000 * 60 * 60))}h</span>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center gap-4 text-sm">
-                          <div>
-                            <span className="text-muted-foreground">Víťaz: </span>
-                            <span className="font-medium">{battle.winner}</span>
-                          </div>
-                          <Separator orientation="vertical" className="h-4" />
-                          <div>
-                            <span className="text-muted-foreground">Vaše skóre: </span>
-                            <span className="font-medium">
-                              {battle.mode === "most_fish" ? `${battle.userScore} rýb` : `${battle.userScore}kg`}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Participants Preview */}
-                      <div className="flex items-center gap-3">
-                        <div className="flex -space-x-2">
-                          {battle.participants.slice(0, 4).map((participant, index) => (
-                            <Avatar key={participant} className="w-8 h-8 border-2 border-background">
-                              <AvatarFallback className="text-xs">
-                                {participant === "Vy" ? "Vy" : participant.split(' ').map(n => n[0]).join('').toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                          ))}
-                          {battle.participants.length > 4 && (
-                            <div className="w-8 h-8 rounded-full bg-muted border-2 border-background flex items-center justify-center text-xs font-medium">
-                              +{battle.participants.length - 4}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="flex gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => setLocation(`/diary/battle/${battle.id}`)}
-                          data-testid={`button-view-battle-${battle.id}`}
-                        >
-                          <Eye className="w-4 h-4 mr-2" />
-                          Zobraziť
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => setLocation(`/diary/battle/create?rematch=${battle.id}`)}
-                          data-testid={`button-rematch-${battle.id}`}
-                        >
-                          <RotateCcw className="w-4 h-4 mr-2" />
-                          Rematch
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })
           )}
         </div>
-
-        {/* Results Summary */}
-        {filteredBattles.length > 0 && (
-          <div className="mt-8 text-center text-sm text-muted-foreground">
-            Zobrazuje sa {filteredBattles.length} z {battles.length} súbojov
-          </div>
-        )}
       </div>
-    </div>
+    </DiaryLayout>
   );
 }
