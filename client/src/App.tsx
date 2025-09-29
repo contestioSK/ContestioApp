@@ -32,6 +32,7 @@ import DiaryStats from "@/pages/diary/stats";
 import DiarySeasonalGoals from "@/pages/diary/seasonal-goals";
 import DiarySeasonalGoalsCreate from "@/pages/diary/seasonal-goals-create.tsx";
 import DiarySeasonalGoalsEdit from "@/pages/diary/seasonal-goals-edit.tsx";
+import DiaryProfile from "@/pages/diary/profile";
 import BattlePaywall from "@/pages/diary/battle-paywall";
 import BattleCreate from "@/pages/diary/battle-create";
 import BattleDetail from "@/pages/diary/battle-detail";
@@ -98,6 +99,11 @@ function Router() {
       <Route path="/diary/catches">
         <ProtectedRoute>
           <DiaryCatches />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/diary/profile">
+        <ProtectedRoute>
+          <DiaryProfile />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/stats">
