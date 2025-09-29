@@ -175,5 +175,6 @@ html {
 }
 
 .main-content-wrapper {
-  padding-top: var(--header-height, 65px) !important;
+  padding-top: 200px !important;
+  background: red !important;
 }
