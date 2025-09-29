@@ -70,7 +70,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
   // Check premium status
   const { data: premiumStatus } = useQuery<PremiumStatus>({
     queryKey: ["/api/auth/premium-status"],
-    enabled: !!user
+    enabled: !!user?.id
   });
 
   const isPremium = premiumStatus?.isPremium || false;
