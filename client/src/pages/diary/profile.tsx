@@ -1,0 +1,372 @@
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useMutation } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import { queryClient, apiRequest } from "@/lib/queryClient";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { 
+  User, 
+  Mail, 
+  Camera,
+  Save,
+  Loader2,
+  UserCircle,
+  Shield,
+  Calendar
+} from "lucide-react";
+import DiaryLayout from "@/components/DiaryLayout";
+
+// Profile form schema
+const profileSchema = z.object({
+  firstName: z.string().min(1, "Meno je povinné").max(50, "Meno môže mať maximálne 50 znakov"),
+  lastName: z.string().min(1, "Priezvisko je povinné").max(50, "Priezvisko môže mať maximálne 50 znakov"),
+  email: z.string().email("Neplatný email"),
+  profileImageUrl: z.string().url().optional().or(z.literal("")),
+});
+
+type ProfileForm = z.infer<typeof profileSchema>;
+
+export default function Profile() {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [isEditing, setIsEditing] = useState(false);
+
+  const form = useForm<ProfileForm>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      firstName: user?.firstName || "",
+      lastName: user?.lastName || "",
+      email: user?.email || "",
+      profileImageUrl: user?.profileImageUrl || "",
+    }
+  });
+
+  // Update profile mutation
+  const updateProfileMutation = useMutation({
+    mutationFn: async (data: ProfileForm) => {
+      const response = await apiRequest("PATCH", "/api/auth/profile", data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      toast({
+        title: "Profil aktualizovaný!",
+        description: "Vaše údaje boli úspešne uložené.",
+      });
+      setIsEditing(false);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Chyba",
+        description: "Nepodarilo sa aktualizovať profil. Skúste to znovu.",
+        variant: "destructive"
+      });
+      console.error("Update profile error:", error);
+    }
+  });
+
+  const onSubmit = (data: ProfileForm) => {
+    updateProfileMutation.mutate(data);
+  };
+
+  const handleCancel = () => {
+    form.reset({
+      firstName: user?.firstName || "",
+      lastName: user?.lastName || "",
+      email: user?.email || "",
+      profileImageUrl: user?.profileImageUrl || "",
+    });
+    setIsEditing(false);
+  };
+
+  if (!user) {
+    return (
+      <DiaryLayout>
+        <div className="p-6">
+          <div className="max-w-2xl mx-auto">
+            <Card>
+              <CardContent className="p-8 text-center">
+                <UserCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-foreground mb-2">
+                  Načítavam profil...
+                </h3>
+                <p className="text-muted-foreground">
+                  Prosím počkajte, kým sa načíta váš profil.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </DiaryLayout>
+    );
+  }
+
+  return (
+    <DiaryLayout>
+      <div className="p-6">
+        <div className="max-w-4xl mx-auto space-y-8">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground mb-2">Môj profil</h1>
+              <p className="text-muted-foreground">
+                Spravujte svoje osobné údaje a nastavenia účtu
+              </p>
+            </div>
+            {!isEditing && (
+              <Button 
+                onClick={() => setIsEditing(true)}
+                className="gap-2"
+                data-testid="button-edit-profile"
+              >
+                <User className="w-4 h-4" />
+                Upraviť profil
+              </Button>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Profile Summary */}
+            <Card className="lg:col-span-1">
+              <CardHeader className="text-center">
+                <div className="mx-auto mb-4">
+                  {user.profileImageUrl ? (
+                    <img 
+                      src={user.profileImageUrl} 
+                      alt="Profilový obrázok"
+                      className="w-24 h-24 rounded-full object-cover border-4 border-primary/20"
+                    />
+                  ) : (
+                    <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center border-4 border-primary/20">
+                      <User className="w-12 h-12 text-primary" />
+                    </div>
+                  )}
+                </div>
+                <CardTitle className="text-xl">
+                  {user.firstName && user.lastName 
+                    ? `${user.firstName} ${user.lastName}`
+                    : user.email
+                  }
+                </CardTitle>
+                <CardDescription className="flex items-center justify-center gap-2">
+                  <Mail className="w-4 h-4" />
+                  {user.email}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Status</span>
+                  <Badge variant="secondary" className="bg-primary/20 text-primary border-primary/30">
+                    PREMIUM
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Rola</span>
+                  <div className="flex items-center gap-1">
+                    <Shield className="w-3 h-3 text-muted-foreground" />
+                    <span className="text-sm capitalize">{user.role}</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Člen od</span>
+                  <div className="flex items-center gap-1">
+                    <Calendar className="w-3 h-3 text-muted-foreground" />
+                    <span className="text-sm">
+                      {user.createdAt ? new Date(user.createdAt).toLocaleDateString('sk-SK') : 'Neznámy'}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Profile Form */}
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle>Osobné údaje</CardTitle>
+                <CardDescription>
+                  {isEditing 
+                    ? "Upravte svoje osobné informácie"
+                    : "Vaše základné informácie"
+                  }
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    {/* Profile Image */}
+                    <FormField
+                      control={form.control}
+                      name="profileImageUrl"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Profilový obrázok (URL)</FormLabel>
+                          <FormControl>
+                            <div className="flex gap-2">
+                              <Input 
+                                placeholder="https://example.com/avatar.jpg"
+                                data-testid="input-profile-image"
+                                disabled={!isEditing}
+                                {...field} 
+                              />
+                              {isEditing && (
+                                <Button type="button" variant="outline" size="icon">
+                                  <Camera className="w-4 h-4" />
+                                </Button>
+                              )}
+                            </div>
+                          </FormControl>
+                          <FormDescription>
+                            URL adresa vášho profilového obrázka
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <Separator />
+
+                    {/* First Name */}
+                    <FormField
+                      control={form.control}
+                      name="firstName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Meno</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="Vaše meno"
+                              data-testid="input-first-name"
+                              disabled={!isEditing}
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Last Name */}
+                    <FormField
+                      control={form.control}
+                      name="lastName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Priezvisko</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="Vaše priezvisko"
+                              data-testid="input-last-name"
+                              disabled={!isEditing}
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Email */}
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="email"
+                              placeholder="vas.email@example.com"
+                              data-testid="input-email"
+                              disabled={!isEditing}
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Emailová adresa pre prihlásenie a komunikáciu
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Action Buttons */}
+                    {isEditing && (
+                      <div className="flex justify-end gap-4 pt-6">
+                        <Button 
+                          type="button" 
+                          variant="outline"
+                          onClick={handleCancel}
+                          data-testid="button-cancel"
+                        >
+                          Zrušiť
+                        </Button>
+                        <Button 
+                          type="submit"
+                          disabled={updateProfileMutation.isPending}
+                          data-testid="button-save-profile"
+                        >
+                          {updateProfileMutation.isPending && (
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          )}
+                          <Save className="w-4 h-4 mr-2" />
+                          Uložiť zmeny
+                        </Button>
+                      </div>
+                    )}
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Account Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Informácie o účte</CardTitle>
+              <CardDescription>
+                Technické detaily vášho účtu
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="font-medium text-foreground mb-2">ID používateľa</h4>
+                  <p className="text-sm text-muted-foreground font-mono bg-muted p-2 rounded">
+                    {user.id}
+                  </p>
+                </div>
+                <div>
+                  <h4 className="font-medium text-foreground mb-2">Email overený</h4>
+                  <Badge variant={user.emailVerified ? "default" : "secondary"}>
+                    {user.emailVerified ? "Overený" : "Neoverený"}
+                  </Badge>
+                </div>
+                <div>
+                  <h4 className="font-medium text-foreground mb-2">Posledná aktualizácia</h4>
+                  <p className="text-sm text-muted-foreground">
+                    {user.updatedAt ? new Date(user.updatedAt).toLocaleString('sk-SK') : 'Neznámy'}
+                  </p>
+                </div>
+                <div>
+                  <h4 className="font-medium text-foreground mb-2">Stav účtu</h4>
+                  <Badge variant={user.active ? "default" : "destructive"}>
+                    {user.active ? "Aktívny" : "Neaktívny"}
+                  </Badge>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </DiaryLayout>
+  );
+}
