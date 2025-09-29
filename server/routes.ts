@@ -474,6 +474,93 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Profile image upload endpoint
+  app.post('/api/auth/profile/avatar', isAuthenticated, upload.single('avatar'), async (req: any, res) => {
+    try {
+      // Get user ID from session
+      let userId: string | undefined;
+      
+      // New auth system
+      if (req.user?.id) {
+        userId = req.user.id;
+      }
+      // Fallback to old auth system
+      else if (req.user?.claims?.sub) {
+        userId = req.user.claims.sub;
+      }
+
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ message: "Nebola nahraná žiadna fotografia" });
+      }
+
+      let imageUrl = "";
+      let imageMetadata: ProcessedImageResult | null = null;
+
+      try {
+        // Create user directory if it doesn't exist
+        const userDir = path.join("uploads", "users", userId);
+        if (!fs.existsSync(userDir)) {
+          fs.mkdirSync(userDir, { recursive: true });
+        }
+
+        const outputBasePath = path.join(userDir, `profile-${Date.now()}`);
+        
+        // Process image with ImageService for optimization
+        imageMetadata = await ImageService.processImage(
+          req.file.path,
+          outputBasePath,
+          `profile-${Date.now()}`
+        );
+        
+        // Use the best WebP variant for profile images, fall back to JPEG
+        const bestVariant = ImageService.getBestVariantForWidth(imageMetadata.variants, 320, 'webp') ||
+                            ImageService.getBestVariantForWidth(imageMetadata.variants, 320, 'jpeg') ||
+                            imageMetadata.variants[0];
+        
+        imageUrl = bestVariant?.url || `/uploads/${req.file.filename}`;
+        
+        // Update user profile with new image URL
+        const updatedUser = await storage.updateUserProfile(userId, {
+          profileImageUrl: imageUrl
+        });
+        
+        // Clean up the original uploaded file
+        await ImageService.cleanupTempFile(req.file.path);
+        
+        // Remove sensitive data
+        const { password: _, verificationToken: __, verificationTokenExpires: ___, ...safeUser } = updatedUser;
+        res.json(safeUser);
+      } catch (error) {
+        console.error("Error processing profile image:", error);
+        // Clean up temp file on error
+        if (req.file?.path) {
+          await ImageService.cleanupTempFile(req.file.path);
+        }
+        // Fall back to original file if processing fails
+        imageUrl = `/uploads/${req.file.filename}`;
+        
+        // Still try to update the user profile
+        const updatedUser = await storage.updateUserProfile(userId, {
+          profileImageUrl: imageUrl
+        });
+        
+        const { password: _, verificationToken: __, verificationTokenExpires: ___, ...safeUser } = updatedUser;
+        res.json(safeUser);
+      }
+    } catch (error) {
+      console.error("[AUTH] Error uploading profile image:", error);
+      // Clean up temp file on any error
+      if (req.file?.path) {
+        await ImageService.cleanupTempFile(req.file.path);
+      }
+      res.status(500).json({ message: "Chyba pri nahrávaní profilovej fotografie" });
+    }
+  });
+
   // User favorites endpoints
   app.get('/api/users/favorites/competitions', isAuthenticated, async (req: any, res) => {
     try {
