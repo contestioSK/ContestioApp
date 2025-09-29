@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -78,12 +78,16 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex items-center justify-between p-4 md:p-6 border-b border-white/10">
-            <div className="flex items-center space-x-2 md:space-x-3">
+            <Link 
+              href="/" 
+              className="flex items-center space-x-2 md:space-x-3 hover:opacity-80 transition-opacity cursor-pointer"
+              data-testid="link-home-logo"
+            >
               <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
                 <Fish className="h-5 w-5 text-white" />
               </div>
               <h1 className="text-lg md:text-xl font-bold text-white">Contestio</h1>
-            </div>
+            </Link>
             <Button
               variant="ghost"
               size="sm"
