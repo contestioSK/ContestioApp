@@ -453,6 +453,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const profileUpdateSchema = z.object({
         firstName: z.string().min(1, "Meno je povinné").max(50, "Meno môže mať maximálne 50 znakov").optional(),
         lastName: z.string().min(1, "Priezvisko je povinné").max(50, "Priezvisko môže mať maximálne 50 znakov").optional(),
+        nickname: z.string().max(30, "Prezývka môže mať maximálne 30 znakov").optional().or(z.literal("")),
         email: z.string().email("Neplatný email").optional(),
         profileImageUrl: z.string().url("Neplatná URL").optional().or(z.literal("")),
       });
