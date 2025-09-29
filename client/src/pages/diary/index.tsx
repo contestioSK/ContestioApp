@@ -96,7 +96,7 @@ export default function DiaryIndex() {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8">
           <Card className="bg-slate-700/50 border-slate-600">
             <CardContent className="p-6">
               <div className="text-sm text-slate-400 mb-1">Sezóna 2025</div>
@@ -124,8 +124,8 @@ export default function DiaryIndex() {
         {/* Catches Table */}
         <Card className="bg-slate-800/50 border-slate-600 overflow-hidden">
           <CardContent className="p-0">
-            {/* Table Header */}
-            <div className="grid grid-cols-5 gap-4 p-4 border-b border-slate-600 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-700/30">
+            {/* Desktop Table Header */}
+            <div className="hidden md:grid grid-cols-5 gap-4 p-4 border-b border-slate-600 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-700/30">
               <div>DRUH RYBY</div>
               <div>VÁHA / DĹŽKA</div>
               <div>REVÍR</div>
@@ -138,36 +138,71 @@ export default function DiaryIndex() {
               season2025Catches.slice(0, 6).map((catch_: any, index: number) => (
                 <div 
                   key={catch_.id || index} 
-                  className="grid grid-cols-5 gap-4 p-4 border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors cursor-pointer"
+                  className="border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors cursor-pointer"
                   onClick={() => setLocation(`/diary/catches`)}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-slate-600/50 rounded-lg flex items-center justify-center">
-                      {getFishIcon(catch_.fishType)}
+                  {/* Desktop Row */}
+                  <div className="hidden md:grid grid-cols-5 gap-4 p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-slate-600/50 rounded-lg flex items-center justify-center">
+                        {getFishIcon(catch_.fishType)}
+                      </div>
+                      <div className="text-white font-medium">
+                        {catch_.fishType ? getFishTypeLabel(catch_.fishType) : 'Neznámy druh'}
+                      </div>
                     </div>
-                    <div className="text-white font-medium">
-                      {catch_.fishType ? getFishTypeLabel(catch_.fishType) : 'Neznámy druh'}
+                    
+                    <div className="text-white font-semibold">
+                      {catch_.weight ? `${catch_.weight} kg` : catch_.length ? `${catch_.length} cm` : 'N/A'}
+                    </div>
+                    
+                    <div className="text-slate-300">
+                      {catch_.location || 'Neznáme miesto'}
+                    </div>
+                    
+                    <div className="text-slate-300">
+                      {catch_.technique || 'Neznáma'}
+                    </div>
+                    
+                    <div className="text-slate-300">
+                      {catch_.caughtAt ? new Date(catch_.caughtAt).toLocaleDateString('sk-SK', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric'
+                      }) : 'N/A'}
                     </div>
                   </div>
-                  
-                  <div className="text-white font-semibold">
-                    {catch_.weight ? `${catch_.weight} kg` : catch_.length ? `${catch_.length} cm` : 'N/A'}
-                  </div>
-                  
-                  <div className="text-slate-300">
-                    {catch_.location || 'Neznáme miesto'}
-                  </div>
-                  
-                  <div className="text-slate-300">
-                    {catch_.technique || 'Neznáma'}
-                  </div>
-                  
-                  <div className="text-slate-300">
-                    {catch_.caughtAt ? new Date(catch_.caughtAt).toLocaleDateString('sk-SK', {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric'
-                    }) : 'N/A'}
+
+                  {/* Mobile Card */}
+                  <div className="md:hidden p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-12 h-12 bg-slate-600/50 rounded-lg flex items-center justify-center flex-shrink-0">
+                        {getFishIcon(catch_.fishType)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-white font-medium mb-1">
+                          {catch_.fishType ? getFishTypeLabel(catch_.fishType) : 'Neznámy druh'}
+                        </div>
+                        <div className="text-white/80 text-sm mb-2">
+                          {catch_.weight ? `${catch_.weight} kg` : catch_.length ? `${catch_.length} cm` : 'N/A'}
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-xs text-slate-400">
+                          <div>
+                            <span className="text-slate-500">Miesto:</span> {catch_.location || 'N/A'}
+                          </div>
+                          <div>
+                            <span className="text-slate-500">Technika:</span> {catch_.technique || 'N/A'}
+                          </div>
+                          <div className="col-span-2">
+                            <span className="text-slate-500">Dátum:</span> {catch_.caughtAt ? new Date(catch_.caughtAt).toLocaleDateString('sk-SK', {
+                              day: 'numeric',
+                              month: 'short',
+                              year: 'numeric'
+                            }) : 'N/A'}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))
