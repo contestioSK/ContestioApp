@@ -330,10 +330,10 @@ export default function DiaryStats() {
       });
       
       return [
-        { quality: 'Slabé', label: 'Slabé (< 40%)', count: distribution.poor, color: '#ef4444' },
-        { quality: 'Priemerné', label: 'Priemerné (40-60%)', count: distribution.average, color: '#f59e0b' },
-        { quality: 'Dobré', label: 'Dobré (60-80%)', count: distribution.good, color: '#10b981' },
-        { quality: 'Výborné', label: 'Výborné (80%+)', count: distribution.excellent, color: '#3b82f6' }
+        { quality: 'Slabé', label: 'Slabé (< 40%)', count: distribution.poor, color: 'hsl(var(--destructive))' },
+        { quality: 'Priemerné', label: 'Priemerné (40-60%)', count: distribution.average, color: 'hsl(var(--accent))' },
+        { quality: 'Dobré', label: 'Dobré (60-80%)', count: distribution.good, color: 'hsl(var(--chart-2))' },
+        { quality: 'Výborné', label: 'Výborné (80%+)', count: distribution.excellent, color: 'hsl(var(--primary))' }
       ];
     })(),
     
@@ -500,7 +500,7 @@ export default function DiaryStats() {
               <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
                 Štatistiky
                 {!isPremium && (
-                  <Badge variant="secondary" className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
+                  <Badge variant="secondary" className="bg-secondary text-secondary-foreground">
                     <Crown className="w-4 h-4 mr-1" />
                     PREMIUM
                   </Badge>
@@ -511,7 +511,7 @@ export default function DiaryStats() {
           </div>
 
           {!isPremium && (
-            <Button className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700" data-testid="button-upgrade-premium">
+            <Button className="gap-2 bg-primary hover:bg-primary/90" data-testid="button-upgrade-premium">
               <Crown className="w-4 h-4" />
               Prejsť na PREMIUM
             </Button>
@@ -520,11 +520,11 @@ export default function DiaryStats() {
 
         {/* Premium Gate for Advanced Stats */}
         {!isPremium && (
-          <Alert className="mb-6 border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/20">
-            <Crown className="h-4 w-4 text-orange-600" />
-            <AlertDescription className="text-orange-800 dark:text-orange-200">
+          <Alert className="mb-6 border-border bg-muted/50">
+            <Crown className="h-4 w-4 text-primary" />
+            <AlertDescription className="text-foreground">
               Pokročilé štatistiky a analýzy sú dostupné len v PREMIUM verzii. 
-              <Button variant="link" className="p-0 h-auto font-medium text-orange-600 ml-1" data-testid="link-premium-upgrade">
+              <Button variant="link" className="p-0 h-auto font-medium text-primary ml-1" data-testid="link-premium-upgrade">
                 Zistite viac o PREMIUM
               </Button>
             </AlertDescription>
@@ -716,7 +716,7 @@ export default function DiaryStats() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       {/* Catches */}
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-blue-600">{comparison.current.catches}</div>
+                        <div className="text-2xl font-bold text-primary">{comparison.current.catches}</div>
                         <div className="text-xs text-muted-foreground">Úlovky za obdobie</div>
                         <div className="text-xs font-medium flex items-center justify-center gap-1">
                           <span className={catchesTrend.colorClass}>
@@ -730,7 +730,7 @@ export default function DiaryStats() {
                       
                       {/* Trips */}
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-green-600">{comparison.current.trips}</div>
+                        <div className="text-2xl font-bold text-primary">{comparison.current.trips}</div>
                         <div className="text-xs text-muted-foreground">Výpravy za obdobie</div>
                         <div className="text-xs font-medium flex items-center justify-center gap-1">
                           <span className={tripsTrend.colorClass}>
@@ -744,7 +744,7 @@ export default function DiaryStats() {
                       
                       {/* Weight */}
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-purple-600">{comparison.current.weight.toFixed(1)} kg</div>
+                        <div className="text-2xl font-bold text-primary">{comparison.current.weight.toFixed(1)} kg</div>
                         <div className="text-xs text-muted-foreground">Váha za obdobie</div>
                         <div className="text-xs font-medium flex items-center justify-center gap-1">
                           <span className={weightTrend.colorClass}>
@@ -758,7 +758,7 @@ export default function DiaryStats() {
                       
                       {/* Success Rate */}
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-orange-600">{comparison.current.successRate.toFixed(1)}</div>
+                        <div className="text-2xl font-bold text-primary">{comparison.current.successRate.toFixed(1)}</div>
                         <div className="text-xs text-muted-foreground">Úspešnosť za obdobie</div>
                         <div className="text-xs font-medium flex items-center justify-center gap-1">
                           <span className={successRateTrend.colorClass}>
@@ -795,9 +795,9 @@ export default function DiaryStats() {
                         <div key={location.location} className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                              index === 0 ? 'bg-yellow-100 text-yellow-800' : 
-                              index === 1 ? 'bg-gray-100 text-gray-800' : 
-                              index === 2 ? 'bg-orange-100 text-orange-800' : 
+                              index === 0 ? 'bg-primary/10 text-primary' : 
+                              index === 1 ? 'bg-muted text-muted-foreground' : 
+                              index === 2 ? 'bg-secondary text-secondary-foreground' : 
                               'bg-muted text-muted-foreground'
                             }`}>
                               {index + 1}
@@ -946,7 +946,7 @@ export default function DiaryStats() {
                   <Card>
                     <CardHeader>
                       <CardTitle className="text-lg flex items-center gap-2">
-                        <TrendingUp className="w-5 h-5 text-green-600" />
+                        <TrendingUp className="w-5 h-5 text-primary" />
                         Najlepší mesiac
                       </CardTitle>
                     </CardHeader>
@@ -974,7 +974,7 @@ export default function DiaryStats() {
                   <Card>
                     <CardHeader>
                       <CardTitle className="text-lg flex items-center gap-2">
-                        <Target className="w-5 h-5 text-blue-600" />
+                        <Target className="w-5 h-5 text-primary" />
                         Najefektívnejšie obdobie
                       </CardTitle>
                     </CardHeader>
@@ -1002,7 +1002,7 @@ export default function DiaryStats() {
                   <Card>
                     <CardHeader>
                       <CardTitle className="text-lg flex items-center gap-2">
-                        <Crown className="w-5 h-5 text-yellow-600" />
+                        <Crown className="w-5 h-5 text-primary" />
                         Trend váhy
                       </CardTitle>
                     </CardHeader>
@@ -1179,7 +1179,7 @@ export default function DiaryStats() {
                         </div>
                         <div className="flex justify-between text-sm">
                           <span>95. percentil:</span>
-                          <span className="font-medium text-blue-600">{catchQualityScores.weightPercentiles.p95.toFixed(1)} kg</span>
+                          <span className="font-medium text-primary">{catchQualityScores.weightPercentiles.p95.toFixed(1)} kg</span>
                         </div>
                       </div>
                     </CardContent>
@@ -1205,9 +1205,9 @@ export default function DiaryStats() {
                             <div className="flex items-center justify-between mb-2">
                               <div className="flex items-center gap-3">
                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                                  index === 0 ? 'bg-yellow-100 text-yellow-800' : 
-                                  index === 1 ? 'bg-gray-100 text-gray-800' : 
-                                  index === 2 ? 'bg-orange-100 text-orange-800' : 
+                                  index === 0 ? 'bg-primary/10 text-primary' : 
+                                  index === 1 ? 'bg-muted text-muted-foreground' : 
+                                  index === 2 ? 'bg-secondary text-secondary-foreground' : 
                                   'bg-muted text-muted-foreground'
                                 }`}>
                                   {index + 1}
@@ -1272,7 +1272,7 @@ export default function DiaryStats() {
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
-                        <Trophy className="w-5 h-5 text-yellow-600" />
+                        <Trophy className="w-5 h-5 text-primary" />
                         Najväčší úlovok
                       </CardTitle>
                       <CardDescription>
@@ -1282,7 +1282,7 @@ export default function DiaryStats() {
                     <CardContent>
                       {personalRecords.heaviestCatch ? (
                         <div className="space-y-2">
-                          <div className="text-2xl font-bold text-yellow-600">
+                          <div className="text-2xl font-bold text-primary">
                             {parseFloat(personalRecords.heaviestCatch.weight).toFixed(1)} kg
                           </div>
                           <div className="text-sm text-muted-foreground">
@@ -1299,7 +1299,7 @@ export default function DiaryStats() {
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
-                        <Target className="w-5 h-5 text-blue-600" />
+                        <Target className="w-5 h-5 text-primary" />
                         Najdlhší úlovok
                       </CardTitle>
                       <CardDescription>
@@ -1309,7 +1309,7 @@ export default function DiaryStats() {
                     <CardContent>
                       {personalRecords.longestCatch ? (
                         <div className="space-y-2">
-                          <div className="text-2xl font-bold text-blue-600">
+                          <div className="text-2xl font-bold text-primary">
                             {personalRecords.longestCatch.lengthCm} cm
                           </div>
                           <div className="text-sm text-muted-foreground">
@@ -1326,7 +1326,7 @@ export default function DiaryStats() {
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
-                        <Star className="w-5 h-5 text-green-600" />
+                        <Star className="w-5 h-5 text-primary" />
                         Najlepšia výprava
                       </CardTitle>
                       <CardDescription>
@@ -1336,7 +1336,7 @@ export default function DiaryStats() {
                     <CardContent>
                       {personalRecords.bestTrip ? (
                         <div className="space-y-2">
-                          <div className="text-2xl font-bold text-green-600">
+                          <div className="text-2xl font-bold text-primary">
                             {personalRecords.bestTrip.catchCount} úlovkov
                           </div>
                           <div className="text-sm text-muted-foreground">
@@ -1357,7 +1357,7 @@ export default function DiaryStats() {
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
-                        <Zap className="w-5 h-5 text-orange-600" />
+                        <Zap className="w-5 h-5 text-primary" />
                         Séria úspechov
                       </CardTitle>
                       <CardDescription>
@@ -1368,7 +1368,7 @@ export default function DiaryStats() {
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <div className="text-sm text-muted-foreground">Aktuálna séria</div>
-                          <div className="text-2xl font-bold text-orange-600">
+                          <div className="text-2xl font-bold text-primary">
                             {personalRecords.streaks.current}
                           </div>
                         </div>
@@ -1434,7 +1434,7 @@ export default function DiaryStats() {
                             <div className="flex items-center justify-between mb-2">
                               <div className="flex items-center gap-3">
                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                                  index === 0 ? 'bg-yellow-100 text-yellow-800' : 
+                                  index === 0 ? 'bg-primary/10 text-primary' : 
                                   'bg-muted text-muted-foreground'
                                 }`}>
                                   {index + 1}

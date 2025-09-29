@@ -128,7 +128,7 @@ export function formatTrendIndicator(change: { absolute: number; percentage: num
   text: string;
 } {
   const arrow = change.isPositive ? "↗" : "↘";
-  const colorClass = change.isPositive ? "text-green-600" : "text-red-600";
+  const colorClass = change.isPositive ? "text-primary" : "text-destructive";
   const sign = change.isPositive ? "+" : "";
   
   return {
