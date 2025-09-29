@@ -175,5 +175,5 @@ html {
 }
 
 .main-content-wrapper {
-  padding-top: var(--header-height, 4rem);
+  margin-top: 64px !important;
 }

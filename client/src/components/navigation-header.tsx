@@ -19,10 +19,13 @@ export default function NavigationHeader() {
       if (headerRef.current) {
         const height = headerRef.current.getBoundingClientRect().height;
         document.documentElement.style.setProperty('--header-height', `${height}px`);
+        console.log('[DEBUG] Header height set to:', height, 'px');
+        console.log('[DEBUG] CSS variable value:', getComputedStyle(document.documentElement).getPropertyValue('--header-height'));
       }
     };
 
-    updateHeaderHeight();
+    // Delay to ensure DOM is fully rendered
+    setTimeout(updateHeaderHeight, 100);
     window.addEventListener('resize', updateHeaderHeight);
     
     return () => window.removeEventListener('resize', updateHeaderHeight);
