@@ -5,6 +5,27 @@ import { Fish, Plus } from "lucide-react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import DiaryLayout from "@/components/DiaryLayout";
+import { getFishTypeLabel } from "@/utils/fishTypeMapping";
+
+// Function to get fish icon based on fish type
+const getFishIcon = (fishType?: string) => {
+  const iconColor = getFishIconColor(fishType);
+  return <Fish className={`w-5 h-5 ${iconColor}`} />;
+};
+
+// Function to get fish icon color based on fish type
+const getFishIconColor = (fishType?: string) => {
+  if (!fishType) return "text-blue-400";
+  
+  if (fishType.includes("kapor")) return "text-yellow-400";
+  if (fishType.includes("stuka")) return "text-green-400";
+  if (fishType.includes("sumec")) return "text-purple-400";
+  if (fishType.includes("amur")) return "text-emerald-400";
+  if (fishType.includes("pstruh")) return "text-pink-400";
+  if (fishType.includes("zubac")) return "text-orange-400";
+  
+  return "text-blue-400"; // default
+};
 
 export default function DiaryIndex() {
   const { user } = useAuth();
@@ -101,10 +122,10 @@ export default function DiaryIndex() {
         </div>
 
         {/* Catches Table */}
-        <Card className="bg-slate-800/50 border-slate-600">
+        <Card className="bg-slate-800/50 border-slate-600 overflow-hidden">
           <CardContent className="p-0">
             {/* Table Header */}
-            <div className="grid grid-cols-5 gap-4 p-4 border-b border-slate-600 text-sm font-medium text-slate-400 uppercase tracking-wide">
+            <div className="grid grid-cols-5 gap-4 p-4 border-b border-slate-600 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-700/30">
               <div>DRUH RYBY</div>
               <div>VÁHA / DĹŽKA</div>
               <div>REVÍR</div>
@@ -113,19 +134,19 @@ export default function DiaryIndex() {
             </div>
             
             {/* Table Rows */}
-            {Array.isArray(allCatches) && allCatches.length > 0 ? (
-              allCatches.slice(0, 6).map((catch_: any, index: number) => (
+            {season2025Catches.length > 0 ? (
+              season2025Catches.slice(0, 6).map((catch_: any, index: number) => (
                 <div 
                   key={catch_.id || index} 
                   className="grid grid-cols-5 gap-4 p-4 border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors cursor-pointer"
                   onClick={() => setLocation(`/diary/catches`)}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-slate-600 rounded-lg flex items-center justify-center">
-                      <Fish className="w-5 h-5 text-blue-400" />
+                    <div className="w-10 h-10 bg-slate-600/50 rounded-lg flex items-center justify-center">
+                      {getFishIcon(catch_.fishType)}
                     </div>
                     <div className="text-white font-medium">
-                      {catch_.fishType || 'Neznámy druh'}
+                      {catch_.fishType ? getFishTypeLabel(catch_.fishType) : 'Neznámy druh'}
                     </div>
                   </div>
                   
