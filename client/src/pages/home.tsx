@@ -55,7 +55,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       <NavigationHeader />
-      <div className="h-20 bg-green-500" />
+      <div className="h-16" />
 
       {/* Hero Section */}
       <section className="relative py-12 lg:py-20">
