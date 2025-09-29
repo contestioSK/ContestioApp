@@ -227,7 +227,7 @@ export default function NavigationHeader() {
               </div>
             )}
             
-            <Button variant="ghost" className="md:hidden text-slate-300 hover:bg-slate-700 hover:text-white" data-testid="button-menu">
+            <Button variant="ghost" className="md:hidden text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground" data-testid="button-menu">
               <Menu className="h-5 w-5" />
             </Button>
           </div>
