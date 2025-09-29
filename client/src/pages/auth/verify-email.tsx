@@ -79,10 +79,10 @@ export default function VerifyEmailPage() {
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <XCircle className="w-8 h-8 text-red-600" />
+            <div className="w-16 h-16 bg-destructive/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <XCircle className="w-8 h-8 text-destructive" />
             </div>
-            <CardTitle className="text-2xl font-bold text-red-600">
+            <CardTitle className="text-2xl font-bold text-destructive">
               Chýbajúci overovací kód
             </CardTitle>
           </CardHeader>
@@ -141,10 +141,10 @@ export default function VerifyEmailPage() {
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="w-8 h-8 text-green-600" />
+            <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="w-8 h-8 text-primary" />
             </div>
-            <CardTitle className="text-2xl font-bold text-green-600" data-testid="text-success-title">
+            <CardTitle className="text-2xl font-bold text-primary" data-testid="text-success-title">
               Email overený!
             </CardTitle>
           </CardHeader>
@@ -170,10 +170,10 @@ export default function VerifyEmailPage() {
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <XCircle className="w-8 h-8 text-red-600" />
+            <div className="w-16 h-16 bg-destructive/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <XCircle className="w-8 h-8 text-destructive" />
             </div>
-            <CardTitle className="text-2xl font-bold text-red-600" data-testid="text-error-title">
+            <CardTitle className="text-2xl font-bold text-destructive" data-testid="text-error-title">
               Chyba overenia
             </CardTitle>
           </CardHeader>
