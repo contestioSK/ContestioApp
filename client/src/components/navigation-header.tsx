@@ -1,13 +1,15 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
+import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Fish, Menu, DollarSign, Bell } from "lucide-react";
+import { Fish, Menu, DollarSign, Bell, Sun, Moon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export default function NavigationHeader() {
   const { user, isAuthenticated } = useAuth();
   const [location, setLocation] = useLocation();
+  const { theme, toggleTheme } = useTheme();
 
   const getRoleDisplayName = (role: string) => {
     switch (role) {
@@ -40,18 +42,18 @@ export default function NavigationHeader() {
   };
 
   return (
-    <header className="bg-[#012a36] border-b border-slate-600 shadow-sm sticky top-0 z-50">
+    <header className="bg-sidebar border-b border-sidebar-border shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo and Brand */}
           <div className="flex items-center space-x-4">
             <Link href="/" className="flex items-center space-x-2" data-testid="link-home">
-              <Fish className="text-blue-400 text-2xl" />
-              <h1 className="text-xl font-bold text-white">Contestio</h1>
+              <Fish className="text-sidebar-primary text-2xl" />
+              <h1 className="text-xl font-bold text-sidebar-foreground">Contestio</h1>
             </Link>
-            <div className="hidden md:flex items-center space-x-1 bg-slate-700/50 rounded-full px-3 py-1">
-              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-              <span className="text-sm font-medium text-green-400">Živé súťaže</span>
+            <div className="hidden md:flex items-center space-x-1 bg-sidebar-accent rounded-full px-3 py-1">
+              <span className="w-2 h-2 bg-sidebar-primary rounded-full animate-pulse"></span>
+              <span className="text-sm font-medium text-sidebar-primary">Živé súťaže</span>
             </div>
           </div>
           
@@ -60,7 +62,7 @@ export default function NavigationHeader() {
             <Link 
               href="/" 
               className={`font-medium transition-colors ${
-                location === '/' ? 'text-blue-400' : 'text-slate-300 hover:text-white'
+                location === '/' ? 'text-sidebar-primary' : 'text-sidebar-foreground/70 hover:text-sidebar-foreground'
               }`}
               data-testid="nav-competitions"
             >
@@ -69,7 +71,7 @@ export default function NavigationHeader() {
             <Link 
               href="/pricing" 
               className={`font-medium transition-colors ${
-                location === '/pricing' ? 'text-blue-400' : 'text-slate-300 hover:text-white'
+                location === '/pricing' ? 'text-sidebar-primary' : 'text-sidebar-foreground/70 hover:text-sidebar-foreground'
               }`}
               data-testid="nav-pricing"
             >
@@ -78,7 +80,7 @@ export default function NavigationHeader() {
             <Link 
               href="/faq" 
               className={`font-medium transition-colors ${
-                location === '/faq' ? 'text-blue-400' : 'text-slate-300 hover:text-white'
+                location === '/faq' ? 'text-sidebar-primary' : 'text-sidebar-foreground/70 hover:text-sidebar-foreground'
               }`}
               data-testid="nav-faq"
             >
@@ -87,7 +89,7 @@ export default function NavigationHeader() {
             <Link 
               href="/about-us" 
               className={`font-medium transition-colors ${
-                location === '/about-us' ? 'text-blue-400' : 'text-slate-300 hover:text-white'
+                location === '/about-us' ? 'text-sidebar-primary' : 'text-sidebar-foreground/70 hover:text-sidebar-foreground'
               }`}
               data-testid="nav-about-us"
             >
@@ -96,7 +98,7 @@ export default function NavigationHeader() {
             <Link 
               href="/contact" 
               className={`font-medium transition-colors ${
-                location === '/contact' ? 'text-blue-400' : 'text-slate-300 hover:text-white'
+                location === '/contact' ? 'text-sidebar-primary' : 'text-sidebar-foreground/70 hover:text-sidebar-foreground'
               }`}
               data-testid="nav-contact"
             >
@@ -106,7 +108,7 @@ export default function NavigationHeader() {
               <Link 
                 href="/diary" 
                 className={`font-medium transition-colors ${
-                  location.startsWith('/diary') ? 'text-blue-400' : 'text-slate-300 hover:text-white'
+                  location.startsWith('/diary') ? 'text-sidebar-primary' : 'text-sidebar-foreground/70 hover:text-sidebar-foreground'
                 }`}
                 data-testid="nav-diary"
               >
@@ -117,6 +119,20 @@ export default function NavigationHeader() {
           
           {/* User Actions */}
           <div className="flex items-center space-x-3">
+            {/* Theme Toggle */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleTheme}
+              className="text-sidebar-foreground hover:text-sidebar-primary hover:bg-sidebar-accent"
+              data-testid="button-theme-toggle"
+            >
+              {theme === 'light' ? (
+                <Moon className="h-4 w-4" />
+              ) : (
+                <Sun className="h-4 w-4" />
+              )}
+            </Button>
             {isAuthenticated && user && (
               <div className="hidden sm:flex items-center space-x-2">
                 <Select 
@@ -124,19 +140,19 @@ export default function NavigationHeader() {
                   onValueChange={handleRoleChange}
                   data-testid="select-role"
                 >
-                  <SelectTrigger className="w-40 bg-slate-700 border-slate-600 text-white">
+                  <SelectTrigger className="w-40 bg-sidebar-accent border-sidebar-border text-sidebar-foreground">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-700 border-slate-600 text-white">
-                    <SelectItem value="public" className="text-white focus:bg-slate-600 focus:text-white">Verejné zobrazenie</SelectItem>
+                  <SelectContent className="bg-sidebar-accent border-sidebar-border text-sidebar-foreground">
+                    <SelectItem value="public" className="text-sidebar-foreground focus:bg-sidebar-primary focus:text-sidebar-primary-foreground">Verejné zobrazenie</SelectItem>
                     {user.role === 'organizer' && (
-                      <SelectItem value="organizer" className="text-white focus:bg-slate-600 focus:text-white">Panel organizátora</SelectItem>
+                      <SelectItem value="organizer" className="text-sidebar-foreground focus:bg-sidebar-primary focus:text-sidebar-primary-foreground">Panel organizátora</SelectItem>
                     )}
                     {user.role === 'admin' && (
-                      <SelectItem value="admin" className="text-white focus:bg-slate-600 focus:text-white">Admin panel</SelectItem>
+                      <SelectItem value="admin" className="text-sidebar-foreground focus:bg-sidebar-primary focus:text-sidebar-primary-foreground">Admin panel</SelectItem>
                     )}
                     {user.role === 'referee' && (
-                      <SelectItem value="referee" className="text-white focus:bg-slate-600 focus:text-white">Rozhranie rozhodcu</SelectItem>
+                      <SelectItem value="referee" className="text-sidebar-foreground focus:bg-sidebar-primary focus:text-sidebar-primary-foreground">Rozhranie rozhodcu</SelectItem>
                     )}
                   </SelectContent>
                 </Select>
@@ -145,7 +161,7 @@ export default function NavigationHeader() {
             
             {(user?.role === 'organizer' || user?.role === 'admin') && (
               <Button 
-                className="bg-blue-600 text-white hover:bg-blue-700"
+                className="bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90"
                 onClick={() => setLocation('/admin-panel')}
                 data-testid="button-admin-panel"
               >
@@ -169,7 +185,7 @@ export default function NavigationHeader() {
                   onClick={() => setLocation('/notification-preferences')}
                   data-testid="button-notification-preferences"
                   title="Nastavenia notifikácií"
-                  className="bg-transparent border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white focus:bg-slate-700 focus:text-white"
+                  className="bg-transparent border-sidebar-border text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground focus:bg-sidebar-accent focus:text-sidebar-foreground"
                 >
                   <Bell className="h-4 w-4" />
                 </Button>
@@ -185,7 +201,7 @@ export default function NavigationHeader() {
                     }
                   }}
                   data-testid="button-logout"
-                  className="bg-transparent border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white focus:bg-slate-700 focus:text-white"
+                  className="bg-transparent border-sidebar-border text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground focus:bg-sidebar-accent focus:text-sidebar-foreground"
                 >
                   Odhlásiť sa
                 </Button>
@@ -196,13 +212,13 @@ export default function NavigationHeader() {
                   variant="outline"
                   onClick={() => window.location.href = '/auth/login'}
                   data-testid="button-login"
-                  className="bg-transparent border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white focus:bg-slate-700 focus:text-white"
+                  className="bg-transparent border-sidebar-border text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground focus:bg-sidebar-accent focus:text-sidebar-foreground"
                 >
                   Prihlásiť sa
                 </Button>
                 <Link href="/register">
                   <Button 
-                    className="bg-blue-600 text-white hover:bg-blue-700"
+                    className="bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90"
                     data-testid="button-register"
                   >
                     Zaregistrovať sa
