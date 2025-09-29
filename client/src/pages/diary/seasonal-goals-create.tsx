@@ -15,7 +15,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { 
-  ArrowLeft, 
   Target, 
   Weight, 
   Fish, 
@@ -27,6 +26,7 @@ import {
   Loader2
 } from "lucide-react";
 import { useLocation } from "wouter";
+import DiaryLayout from "@/components/DiaryLayout";
 
 // Goal Types Configuration
 const goalTypeConfig = {
@@ -74,26 +74,22 @@ const goalTypeConfig = {
 
 // Form Schema
 const createGoalSchema = z.object({
+  seasonId: z.string().min(1, "Musíte vybrať sezónu"),
   goalType: z.enum(['total_weight', 'fish_count', 'trips_count', 'biggest_fish', 'species_variety'], {
-    required_error: "Vyberte typ cieľa"
+    required_error: "Musíte vybrať typ cieľa"
   }),
-  targetValue: z.string()
-    .min(1, "Zadajte cieľovú hodnotu")
-    .refine((val) => {
-      const num = parseFloat(val);
-      return !isNaN(num) && num > 0;
-    }, "Cieľová hodnota musí byť pozitívne číslo"),
-  title: z.string()
-    .min(3, "Názov musí mať aspoň 3 znaky")
-    .max(100, "Názov môže mať maximálne 100 znakov"),
-  description: z.string()
-    .max(500, "Popis môže mať maximálne 500 znakov")
-    .optional(),
+  targetValue: z.string().min(1, "Cieľová hodnota je povinná").refine((val) => {
+    const num = parseFloat(val);
+    return !isNaN(num) && num > 0;
+  }, "Musí byť kladné číslo"),
+  title: z.string().min(1, "Názov je povinný").max(100, "Názov môže mať maximálne 100 znakov"),
+  description: z.string().optional(),
   isMainGoal: z.boolean().default(false)
 });
 
-type CreateGoalFormData = z.infer<typeof createGoalSchema>;
+type CreateGoalForm = z.infer<typeof createGoalSchema>;
 
+// Types
 interface Season {
   id: string;
   name: string;
@@ -102,31 +98,36 @@ interface Season {
   isActive: boolean;
 }
 
-export default function DiarySeasonalGoalsCreate() {
+export default function SeasonalGoalsCreate() {
   const { user } = useAuth();
-  const { toast } = useToast();
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const [selectedGoalType, setSelectedGoalType] = useState<string>("");
 
-  // Fetch current season
-  const { data: currentSeason, isLoading: seasonLoading } = useQuery<Season>({
-    queryKey: ['/api/seasons/current'],
-    enabled: !!user
-  });
-
-  // Check freemium limits
-  const { data: limitData, isLoading: limitLoading } = useQuery({
-    queryKey: ['/api/seasonal-goals', 'limits', currentSeason?.id],
-    queryFn: async () => {
-      if (!currentSeason) return null;
-      const response = await fetch(`/api/seasonal-goals/limits?seasonId=${currentSeason.id}`);
-      return response.json();
+  // Mock seasons data - in real app this would come from API
+  const mockSeasons: Season[] = [
+    {
+      id: "winter-2024",
+      name: "Zima 2024",
+      startDate: "2024-12-01",
+      endDate: "2025-02-28",
+      isActive: true
     },
-    enabled: !!user && !!currentSeason
-  });
+    {
+      id: "spring-2025",
+      name: "Jar 2025",
+      startDate: "2025-03-01",
+      endDate: "2025-05-31",
+      isActive: false
+    }
+  ];
 
-  const form = useForm<CreateGoalFormData>({
+  const seasons = mockSeasons;
+
+  const form = useForm<CreateGoalForm>({
     resolver: zodResolver(createGoalSchema),
     defaultValues: {
+      seasonId: "",
       goalType: undefined,
       targetValue: "",
       title: "",
@@ -135,347 +136,307 @@ export default function DiarySeasonalGoalsCreate() {
     }
   });
 
-  const selectedGoalType = form.watch("goalType");
+  // Watch goal type to update title automatically
+  const watchedGoalType = form.watch("goalType");
+  const watchedTargetValue = form.watch("targetValue");
 
-  // Auto-generate title based on goal type and target value
-  const handleGoalTypeChange = (goalType: string) => {
-    form.setValue("goalType", goalType as any);
-    
-    const config = goalTypeConfig[goalType as keyof typeof goalTypeConfig];
-    if (config) {
-      form.setValue("title", `${config.label} - sezóna`);
-    }
-  };
-
-  // Create goal mutation
-  const createGoalMutation = useMutation({
-    mutationFn: async (data: CreateGoalFormData) => {
-      if (!currentSeason) throw new Error("No active season found");
-      
-      const goalData = {
-        ...data,
-        seasonId: currentSeason.id,
-        unit: goalTypeConfig[data.goalType].unit
-      };
-      
-      return await apiRequest('POST', '/api/seasonal-goals', goalData);
-    },
-    onSuccess: () => {
-      toast({
-        title: "Cieľ vytvorený",
-        description: "Váš sezónny cieľ bol úspešne vytvorený."
-      });
-      
-      // Invalidate seasonal goals query
-      queryClient.invalidateQueries({ queryKey: ['/api/seasonal-goals'] });
-      
-      // Redirect back to dashboard
-      setLocation('/diary/seasonal-goals');
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Chyba",
-        description: error.message || "Nepodarilo sa vytvoriť cieľ. Skúste to znovu.",
-        variant: "destructive"
-      });
+  // Auto-generate title when goal type or target value changes
+  useState(() => {
+    if (watchedGoalType && watchedTargetValue) {
+      const config = goalTypeConfig[watchedGoalType];
+      const newTitle = `${config.label} - ${watchedTargetValue} ${config.unit}`;
+      form.setValue("title", newTitle);
     }
   });
 
-  const onSubmit = (data: CreateGoalFormData) => {
+  // Create goal mutation
+  const createGoalMutation = useMutation({
+    mutationFn: async (data: CreateGoalForm) => {
+      const goalConfig = goalTypeConfig[data.goalType];
+      const goalData = {
+        ...data,
+        unit: goalConfig.unit,
+        currentValue: "0" // Initialize with 0
+      };
+      const response = await apiRequest("POST", "/api/diary/seasonal-goals", goalData);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/diary/seasonal-goals"] });
+      toast({
+        title: "Cieľ vytvorený!",
+        description: "Váš sezónny cieľ bol úspešne vytvorený.",
+      });
+      setLocation("/diary/seasonal-goals");
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Chyba",
+        description: "Nepodarilo sa vytvoriť cieľ. Skúste to znovu.",
+        variant: "destructive"
+      });
+      console.error("Create goal error:", error);
+    }
+  });
+
+  const onSubmit = (data: CreateGoalForm) => {
     createGoalMutation.mutate(data);
   };
 
-  const isLoading = seasonLoading || limitLoading;
-  const canCreateGoal = limitData?.canCreate !== false;
+  const selectedConfig = selectedGoalType ? goalTypeConfig[selectedGoalType as keyof typeof goalTypeConfig] : null;
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="max-w-2xl mx-auto">
-          <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-muted rounded w-1/2"></div>
-            <div className="h-96 bg-muted rounded-lg"></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Freemium limit reached
-  if (!canCreateGoal) {
-    return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="max-w-2xl mx-auto">
-          <div className="flex items-center gap-2 mb-6">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => setLocation('/diary/seasonal-goals')}
-              data-testid="button-back"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Späť na ciele
-            </Button>
+  return (
+    <DiaryLayout>
+      <div className="p-6">
+        <div className="max-w-2xl mx-auto space-y-8">
+          {/* Header */}
+          <div className="text-center space-y-2">
+            <Target className="w-12 h-12 text-primary mx-auto" />
+            <h1 className="text-3xl font-bold text-foreground">Vytvoriť nový cieľ</h1>
+            <p className="text-muted-foreground">
+              Nastavte si nový sezónny cieľ a sledujte svoj pokrok
+            </p>
           </div>
 
-          <Card className="border-orange-200 bg-orange-50 dark:bg-orange-950/20" data-testid="card-limit-reached">
+          {/* Form */}
+          <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-orange-700 dark:text-orange-300">
-                <AlertCircle className="h-5 w-5" />
-                Limit dosiahnutý
-              </CardTitle>
+              <CardTitle>Detaily cieľa</CardTitle>
+              <CardDescription>
+                Vyplňte informácie o vašom novom sezónnom cieli
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-orange-600 dark:text-orange-400 mb-4">
-                Dosiahli ste limit cieľov pre FREE verziu. Môžete mať maximálne {limitData?.limit} cieľ na sezónu.
-              </p>
-              <div className="flex gap-3">
-                <Button onClick={() => setLocation('/pricing')} data-testid="button-upgrade">
-                  Prejsť na PREMIUM
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setLocation('/diary/seasonal-goals')}
-                  data-testid="button-back-to-goals"
-                >
-                  Späť na ciele
-                </Button>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  {/* Season Selection */}
+                  <FormField
+                    control={form.control}
+                    name="seasonId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Sezóna</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger data-testid="select-season">
+                              <SelectValue placeholder="Vyberte sezónu" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {seasons.map((season) => (
+                              <SelectItem key={season.id} value={season.id}>
+                                <div className="flex items-center gap-2">
+                                  <span>{season.name}</span>
+                                  {season.isActive && (
+                                    <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 text-xs">
+                                      Aktívna
+                                    </Badge>
+                                  )}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Goal Type Selection */}
+                  <FormField
+                    control={form.control}
+                    name="goalType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Typ cieľa</FormLabel>
+                        <FormDescription>
+                          Vyberte typ cieľa, ktorý chcete sledovať
+                        </FormDescription>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                          {Object.entries(goalTypeConfig).map(([key, config]) => {
+                            const IconComponent = config.icon;
+                            const isSelected = field.value === key;
+                            
+                            return (
+                              <Card 
+                                key={key}
+                                className={`cursor-pointer transition-all hover:shadow-md ${
+                                  isSelected ? 'ring-2 ring-primary border-primary' : ''
+                                }`}
+                                onClick={() => {
+                                  field.onChange(key);
+                                  setSelectedGoalType(key);
+                                }}
+                                data-testid={`goal-type-${key}`}
+                              >
+                                <CardContent className="p-4">
+                                  <div className="flex items-start gap-3">
+                                    <IconComponent className={`w-6 h-6 ${config.color} flex-shrink-0 mt-0.5`} />
+                                    <div className="min-w-0 flex-1">
+                                      <h3 className="font-medium text-foreground">{config.label}</h3>
+                                      <p className="text-sm text-muted-foreground mt-1">
+                                        {config.description}
+                                      </p>
+                                      <Badge variant="secondary" className="mt-2 text-xs">
+                                        Jednotka: {config.unit}
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            );
+                          })}
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Target Value */}
+                  <FormField
+                    control={form.control}
+                    name="targetValue"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Cieľová hodnota</FormLabel>
+                        <div className="flex gap-2">
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              step="0.1"
+                              placeholder={selectedConfig?.placeholder || "Zadajte hodnotu"}
+                              data-testid="input-target-value"
+                              {...field} 
+                            />
+                          </FormControl>
+                          {selectedConfig && (
+                            <div className="flex items-center px-3 py-2 bg-muted rounded-md text-sm text-muted-foreground">
+                              {selectedConfig.unit}
+                            </div>
+                          )}
+                        </div>
+                        <FormDescription>
+                          {selectedConfig ? `Cieľová hodnota pre ${selectedConfig.label.toLowerCase()}` : "Vyberte typ cieľa"}
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Title */}
+                  <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Názov cieľa</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="napr. Celková hmotnosť - 50 kg"
+                            data-testid="input-title"
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Názov sa automaticky vygeneruje alebo si ho môžete upraviť
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Description */}
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Popis (voliteľné)</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Dodatočné informácie o cieli..."
+                            data-testid="textarea-description"
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Main Goal Checkbox */}
+                  <FormField
+                    control={form.control}
+                    name="isMainGoal"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            data-testid="checkbox-main-goal"
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel className="flex items-center gap-2">
+                            <Crown className="w-4 h-4 text-yellow-500" />
+                            Hlavný cieľ sezóny
+                          </FormLabel>
+                          <FormDescription>
+                            Označte tento cieľ ako váš hlavný cieľ pre sezónu. Bude zvýraznený a sledovaný s vyššou prioritou.
+                          </FormDescription>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Actions */}
+                  <div className="flex justify-end gap-4 pt-6">
+                    <Button 
+                      type="button" 
+                      variant="outline"
+                      onClick={() => setLocation("/diary/seasonal-goals")}
+                      data-testid="button-cancel"
+                    >
+                      Zrušiť
+                    </Button>
+                    <Button 
+                      type="submit"
+                      disabled={createGoalMutation.isPending}
+                      data-testid="button-create-goal"
+                    >
+                      {createGoalMutation.isPending && (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      )}
+                      Vytvoriť cieľ
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
+
+          {/* Tips */}
+          <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/20">
+            <CardContent className="p-6">
+              <div className="flex gap-4">
+                <AlertCircle className="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="font-medium text-blue-900 dark:text-blue-100 mb-2">
+                    Tipy pre nastavenie cieľov
+                  </h3>
+                  <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+                    <li>• Nastavte si realistické ale výzývné ciele</li>
+                    <li>• Hlavný cieľ sezóny by mal byť váš najdôležitejší a najambicióznejší cieľ</li>
+                    <li>• Môžete mať viacero cieľov rôznych typov pre jednu sezónu</li>
+                    <li>• Pokrok sa automaticky aktualizuje na základe vašich úlovkov a výprav</li>
+                  </ul>
+                </div>
               </div>
             </CardContent>
           </Card>
         </div>
       </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => setLocation('/diary')}
-              data-testid="button-back-to-diary"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Späť do denníka
-            </Button>
-            <span className="text-muted-foreground">|</span>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => setLocation('/diary/seasonal-goals')}
-              data-testid="button-back-to-goals"
-            >
-              Späť na ciele
-            </Button>
-          </div>
-        </div>
-
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground flex items-center gap-2" data-testid="page-title">
-            <Target className="h-8 w-8 text-primary" />
-            Nový sezónny cieľ
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Vytvorte si nový cieľ pre aktuálnu sezónu a sledujte svoj pokrok
-          </p>
-        </div>
-
-        {/* Current Season Info */}
-        {currentSeason && (
-          <Card className="mb-6" data-testid="card-season-info">
-            <CardHeader>
-              <CardTitle className="text-lg">Aktuálna sezóna</CardTitle>
-              <CardDescription>
-                {currentSeason.name} • {new Date(currentSeason.startDate).toLocaleDateString('sk-SK')} - {new Date(currentSeason.endDate).toLocaleDateString('sk-SK')}
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        )}
-
-        {/* Goal Creation Form */}
-        <Card data-testid="card-create-form">
-          <CardHeader>
-            <CardTitle>Detaily cieľa</CardTitle>
-            <CardDescription>
-              Vyberte typ cieľa a zadajte cieľovú hodnotu
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                {/* Goal Type Selection */}
-                <FormField
-                  control={form.control}
-                  name="goalType"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Typ cieľa</FormLabel>
-                      <Select 
-                        onValueChange={handleGoalTypeChange} 
-                        value={field.value}
-                        data-testid="select-goal-type"
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Vyberte typ cieľa" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {Object.entries(goalTypeConfig).map(([key, config]) => {
-                            const IconComponent = config.icon;
-                            return (
-                              <SelectItem key={key} value={key} data-testid={`option-goal-type-${key}`}>
-                                <div className="flex items-center gap-2">
-                                  <IconComponent className={`h-4 w-4 ${config.color}`} />
-                                  {config.label}
-                                </div>
-                              </SelectItem>
-                            );
-                          })}
-                        </SelectContent>
-                      </Select>
-                      {selectedGoalType && (
-                        <FormDescription>
-                          {goalTypeConfig[selectedGoalType].description}
-                        </FormDescription>
-                      )}
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Target Value */}
-                <FormField
-                  control={form.control}
-                  name="targetValue"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Cieľová hodnota</FormLabel>
-                      <div className="flex items-center gap-2">
-                        <FormControl>
-                          <Input 
-                            {...field} 
-                            type="number" 
-                            step="0.1" 
-                            min="0.1"
-                            placeholder={selectedGoalType ? goalTypeConfig[selectedGoalType].placeholder : "Zadajte hodnotu"}
-                            data-testid="input-target-value"
-                          />
-                        </FormControl>
-                        {selectedGoalType && (
-                          <Badge variant="secondary">
-                            {goalTypeConfig[selectedGoalType].unit}
-                          </Badge>
-                        )}
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Goal Title */}
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Názov cieľa</FormLabel>
-                      <FormControl>
-                        <Input 
-                          {...field} 
-                          placeholder="Zadajte názov cieľa"
-                          data-testid="input-title"
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Krátky a výstižný názov vašeho cieľa
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Goal Description */}
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Popis (voliteľný)</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          {...field} 
-                          placeholder="Pridajte popis alebo poznámky k vášmu cieľu"
-                          rows={3}
-                          data-testid="textarea-description"
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Detailnejší popis vašeho cieľa alebo motivácie
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Main Goal Checkbox */}
-                <FormField
-                  control={form.control}
-                  name="isMainGoal"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                          data-testid="checkbox-main-goal"
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel className="flex items-center gap-2">
-                          <Crown className="h-4 w-4 text-primary" />
-                          Nastaviť ako hlavný cieľ sezóny
-                        </FormLabel>
-                        <FormDescription>
-                          Hlavný cieľ bude zvýraznený na dashboard a môžete mať len jeden na sezónu
-                        </FormDescription>
-                      </div>
-                    </FormItem>
-                  )}
-                />
-
-                {/* Submit Buttons */}
-                <div className="flex gap-3 pt-4">
-                  <Button 
-                    type="submit" 
-                    disabled={createGoalMutation.isPending}
-                    data-testid="button-create"
-                  >
-                    {createGoalMutation.isPending && (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    )}
-                    Vytvoriť cieľ
-                  </Button>
-                  <Button 
-                    type="button" 
-                    variant="outline"
-                    onClick={() => setLocation('/diary/seasonal-goals')}
-                    disabled={createGoalMutation.isPending}
-                    data-testid="button-cancel"
-                  >
-                    Zrušiť
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+    </DiaryLayout>
   );
 }

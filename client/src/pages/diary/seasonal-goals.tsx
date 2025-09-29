@@ -172,7 +172,7 @@ function getGoalTypeLabel(goalType: string) {
 export default function SeasonalGoals() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
-  const { triggerConfetti } = useConfetti();
+  const { celebrateGoalCompletion } = useConfetti();
   const [selectedSeason, setSelectedSeason] = useState<string>("");
 
   // Fetch seasons - in real app this would come from API
@@ -276,9 +276,9 @@ export default function SeasonalGoals() {
     );
     
     if (newlyCompletedGoals.length > 0) {
-      triggerConfetti();
+      celebrateGoalCompletion();
     }
-  }, [seasonGoals, triggerConfetti]);
+  }, [seasonGoals, celebrateGoalCompletion]);
 
   const currentSeason = seasons.find(s => s.id === selectedSeason);
 
