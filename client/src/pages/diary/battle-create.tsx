@@ -20,6 +20,7 @@ import { useLocation } from "wouter";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import DiaryLayout from "@/components/DiaryLayout";
 
 // Form validation schema
 const createBattleSchema = z.object({
@@ -74,24 +75,29 @@ export default function BattleCreate() {
       // Generate a UUID-like string for the stub to pass validation
       const tripId = crypto.randomUUID();
       
-      const battleData = {
-        tripId,
+      const requestData = {
         name: data.name,
-        rules: {
-          mode: data.mode,
+        mode: data.mode,
+        startAt: data.startAt.toISOString(),
+        endAt: data.endAt.toISOString(),
+        participants: data.participants,
+        tripId: tripId, // This is a stub - should be selected by user in production
+        settings: {
           minWeightKg: data.minWeightKg,
           includeOnlyVerified: data.includeOnlyVerified
-        },
-        participants: data.participants,
-        startAt: data.startAt.toISOString(),
-        endAt: data.endAt.toISOString()
+        }
       };
+
+      const response = await apiRequest<any>("/api/diary/battles", {
+        method: "POST",
+        body: JSON.stringify(requestData),
+      });
       
-      return apiRequest('POST', "/api/diary/battles", battleData);
+      return response;
     },
-    onSuccess: (data: any) => {
+    onSuccess: (data) => {
       toast({
-        title: "Battle vytvorený!",
+        title: "Úspech",
         description: "Váš fishing battle bol úspešne vytvorený."
       });
       queryClient.invalidateQueries({ queryKey: ["/api/diary/battles"] });
@@ -130,100 +136,245 @@ export default function BattleCreate() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <Trophy className="w-8 h-8 text-primary" />
-            <h1 className="text-3xl font-bold text-foreground">
-              Vytvoriť Fishing Battle
-            </h1>
-            <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-              PREMIUM
-            </Badge>
+    <DiaryLayout>
+      <div className="p-6">
+        <div className="max-w-4xl mx-auto">
+          {/* Header */}
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-4">
+              <Trophy className="w-8 h-8 text-primary" />
+              <h1 className="text-3xl font-bold text-foreground">
+                Vytvoriť Fishing Battle
+              </h1>
+              <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                PREMIUM
+              </Badge>
+            </div>
+            <p className="text-muted-foreground text-lg">
+              Vytvorte súťaž medzi kamarátmi a zmerajte si sily na vode
+            </p>
           </div>
-          <p className="text-muted-foreground text-lg">
-            Vytvorte súťaž medzi kamarátmi a zmerajte si sily na vode
-          </p>
-        </div>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            {/* Basic Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Trophy className="w-5 h-5" />
-                  Základné informácie
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Názov battle</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="napr. Letná súťaž na Dunaji"
-                          data-testid="input-battle-name"
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="mode"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Herný režim</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              {/* Basic Information */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Trophy className="w-5 h-5" />
+                    Základné informácie
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Názov battle</FormLabel>
                         <FormControl>
-                          <SelectTrigger data-testid="select-game-mode">
-                            <SelectValue placeholder="Vyberte herný režim" />
-                          </SelectTrigger>
+                          <Input 
+                            placeholder="napr. Letná súťaž na Dunaji"
+                            data-testid="input-battle-name"
+                            {...field} 
+                          />
                         </FormControl>
-                        <SelectContent>
-                          {gameModes.map((mode) => (
-                            <SelectItem key={mode.value} value={mode.value}>
-                              <div className="flex flex-col">
-                                <span className="font-medium">{mode.label}</span>
-                                <span className="text-sm text-muted-foreground">{mode.description}</span>
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="mode"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Herný režim</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger data-testid="select-game-mode">
+                              <SelectValue placeholder="Vyberte herný režim" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {gameModes.map((mode) => (
+                              <SelectItem key={mode.value} value={mode.value}>
+                                <div>
+                                  <div className="font-medium">{mode.label}</div>
+                                  <div className="text-sm text-muted-foreground">{mode.description}</div>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="startAt"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormLabel>Začiatok battle</FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant="outline"
+                                  className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
+                                  data-testid="button-start-date"
+                                >
+                                  {field.value ? (
+                                    format(field.value, "PPP", { locale: sk })
+                                  ) : (
+                                    <span>Vyberte dátum</span>
+                                  )}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                disabled={(date) => date < new Date()}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="endAt"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormLabel>Koniec battle</FormLabel>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant="outline"
+                                  className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
+                                  data-testid="button-end-date"
+                                >
+                                  {field.value ? (
+                                    format(field.value, "PPP", { locale: sk })
+                                  ) : (
+                                    <span>Vyberte dátum</span>
+                                  )}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                disabled={(date) => date < new Date()}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Participants */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="w-5 h-5" />
+                    Účastníci
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {form.watch("participants").map((_, index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <FormField
+                          control={form.control}
+                          name={`participants.${index}.name`}
+                          render={({ field }) => (
+                            <FormItem className="flex-1">
+                              <FormControl>
+                                <Input 
+                                  placeholder="Meno účastníka"
+                                  data-testid={`input-participant-${index}`}
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        {form.watch("participants").length > 1 && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => removeParticipant(index)}
+                            data-testid={`button-remove-participant-${index}`}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={addParticipant}
+                      className="w-full"
+                      data-testid="button-add-participant"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Pridať účastníka
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Settings */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Clock className="w-5 h-5" />
+                    Nastavenia
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
                   <FormField
                     control={form.control}
                     name="minWeightKg"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Minimálna váha (kg)</FormLabel>
+                        <FormLabel>Minimálna hmotnosť (kg)</FormLabel>
                         <FormControl>
                           <Input 
-                            type="number"
+                            type="number" 
+                            min="0" 
                             step="0.1"
                             placeholder="napr. 0.5"
                             data-testid="input-min-weight"
-                            {...field}
+                            value={field.value || ""} 
                             onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
                           />
                         </FormControl>
                         <FormDescription>
-                          Ryby pod touto váhou sa nebudú počítať
+                          Úlovky pod túto hmotnosť nebudú započítané
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -240,7 +391,7 @@ export default function BattleCreate() {
                             Len overené úlovky
                           </FormLabel>
                           <FormDescription>
-                            Počítajú sa len úlovky s fotografiou
+                            Počítať len úlovky s fotografiou ako dôkaz
                           </FormDescription>
                         </div>
                         <FormControl>
@@ -253,174 +404,31 @@ export default function BattleCreate() {
                       </FormItem>
                     )}
                   />
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            {/* Time Settings */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="w-5 h-5" />
-                  Časové nastavenia
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="startAt"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-col">
-                        <FormLabel>Začiatok battle</FormLabel>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <FormControl>
-                              <Button
-                                variant={"outline"}
-                                className="w-full pl-3 text-left font-normal"
-                                data-testid="button-start-date"
-                              >
-                                {field.value ? (
-                                  format(field.value, "PPP", { locale: sk })
-                                ) : (
-                                  <span>Vyberte dátum</span>
-                                )}
-                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                              </Button>
-                            </FormControl>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={field.value}
-                              onSelect={field.onChange}
-                              disabled={(date) => date < new Date()}
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="endAt"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-col">
-                        <FormLabel>Koniec battle</FormLabel>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <FormControl>
-                              <Button
-                                variant={"outline"}
-                                className="w-full pl-3 text-left font-normal"
-                                data-testid="button-end-date"
-                              >
-                                {field.value ? (
-                                  format(field.value, "PPP", { locale: sk })
-                                ) : (
-                                  <span>Vyberte dátum</span>
-                                )}
-                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                              </Button>
-                            </FormControl>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={field.value}
-                              onSelect={field.onChange}
-                              disabled={(date) => date < form.getValues("startAt")}
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Participants */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="w-5 h-5" />
-                  Účastníci
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {form.watch("participants").map((participant, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <FormField
-                      control={form.control}
-                      name={`participants.${index}.name`}
-                      render={({ field }) => (
-                        <FormItem className="flex-1">
-                          <FormControl>
-                            <Input 
-                              placeholder={`Meno účastníka ${index + 1}`}
-                              data-testid={`input-participant-${index}`}
-                              {...field} 
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    {form.watch("participants").length > 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => removeParticipant(index)}
-                        data-testid={`button-remove-participant-${index}`}
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </div>
-                ))}
-
-                <Button
-                  type="button"
+              {/* Actions */}
+              <div className="flex justify-end gap-4">
+                <Button 
+                  type="button" 
                   variant="outline"
-                  onClick={addParticipant}
-                  className="w-full"
-                  data-testid="button-add-participant"
+                  onClick={() => setLocation("/diary")}
+                  data-testid="button-cancel"
                 >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Pridať účastníka
+                  Zrušiť
                 </Button>
-              </CardContent>
-            </Card>
-
-            {/* Submit */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-end">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setLocation("/diary")}
-                data-testid="button-cancel"
-              >
-                Zrušiť
-              </Button>
-              <Button 
-                type="submit" 
-                disabled={createBattleMutation.isPending}
-                data-testid="button-create-battle"
-              >
-                {createBattleMutation.isPending ? "Vytvára sa..." : "Vytvoriť Battle"}
-              </Button>
-            </div>
-          </form>
-        </Form>
+                <Button 
+                  type="submit"
+                  disabled={createBattleMutation.isPending}
+                  data-testid="button-create-battle"
+                >
+                  {createBattleMutation.isPending ? "Vytvára sa..." : "Vytvoriť Battle"}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </div>
       </div>
-    </div>
+    </DiaryLayout>
   );
 }
