@@ -37,14 +37,14 @@ export default function LiveLeaderboard({ teams, isLoading, competitionId }: Liv
 
   const getScoringTypeBadge = (scoringType: string | undefined) => {
     const variants = {
-      "avg3": "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-      "avg5": "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-      "total": "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
+      "avg3": "bg-primary/10 text-primary border-primary/20",
+      "avg5": "bg-secondary/10 text-secondary-foreground border-secondary/20",
+      "total": "bg-accent/10 text-accent-foreground border-accent/20"
     };
     const variant = variants[scoringType as keyof typeof variants] || variants.total;
     
     return (
-      <Badge className={`${variant} text-xs font-medium`} data-testid="badge-scoring-type">
+      <Badge className={`${variant} text-xs font-medium border`} data-testid="badge-scoring-type">
         <Trophy className="w-3 h-3 mr-1" />
         {getScoringTypeLabel(scoringType)}
       </Badge>
@@ -87,21 +87,21 @@ export default function LiveLeaderboard({ teams, isLoading, competitionId }: Liv
   const getRankBadge = (rank: number) => {
     if (rank === 1) {
       return (
-        <div className="w-7 h-7 bg-gradient-to-br from-amber-400 to-amber-600 text-amber-950 rounded-full flex items-center justify-center text-sm font-bold shadow-lg ring-2 ring-amber-300">
+        <div className="w-7 h-7 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold shadow-lg ring-2 ring-primary/30">
           🥇
         </div>
       );
     }
     if (rank === 2) {
       return (
-        <div className="w-7 h-7 bg-gradient-to-br from-slate-300 to-slate-500 text-slate-900 rounded-full flex items-center justify-center text-sm font-bold shadow-lg ring-2 ring-slate-200">
+        <div className="w-7 h-7 bg-secondary text-secondary-foreground rounded-full flex items-center justify-center text-sm font-bold shadow-lg ring-2 ring-secondary/30">
           🥈
         </div>
       );
     }
     if (rank === 3) {
       return (
-        <div className="w-7 h-7 bg-gradient-to-br from-orange-400 to-orange-600 text-orange-950 rounded-full flex items-center justify-center text-sm font-bold shadow-lg ring-2 ring-orange-300">
+        <div className="w-7 h-7 bg-accent text-accent-foreground rounded-full flex items-center justify-center text-sm font-bold shadow-lg ring-2 ring-accent/30">
           🥉
         </div>
       );
@@ -127,14 +127,14 @@ export default function LiveLeaderboard({ teams, isLoading, competitionId }: Liv
     }
     
     const colors = {
-      'A': 'bg-primary/10 text-primary',
-      'B': 'bg-secondary/10 text-secondary',
-      'C': 'bg-accent/10 text-accent',
+      'A': 'bg-primary/10 text-primary border-primary/20',
+      'B': 'bg-secondary/10 text-secondary-foreground border-secondary/20',
+      'C': 'bg-accent/10 text-accent-foreground border-accent/20',
     };
     
     return (
       <Link href={`/competition/${competitionId}/sector/${sectorLetter}`} data-testid={`link-leaderboard-sector-${team.id}`}>
-        <Badge className={`text-sm font-medium cursor-pointer hover:bg-primary/20 transition-colors ${colors[sectorLetter as keyof typeof colors] || 'bg-muted/50'}`}>
+        <Badge className={`text-sm font-medium cursor-pointer hover:bg-primary/20 transition-colors border ${colors[sectorLetter as keyof typeof colors] || 'bg-muted/50'}`}>
           {sectorPlace}
         </Badge>
       </Link>
@@ -185,9 +185,9 @@ export default function LiveLeaderboard({ teams, isLoading, competitionId }: Liv
                 <tbody>
                   {sortedTeams.slice(0, 10).map((team, index) => {
                     const getRankRowStyle = (rank: number) => {
-                      if (rank === 1) return "border-b border-border hover:bg-amber-50 dark:hover:bg-amber-900/20 bg-gradient-to-r from-amber-50/30 to-amber-100/30 dark:from-amber-900/10 dark:to-amber-800/10 transition-colors cursor-pointer group";
-                      if (rank === 2) return "border-b border-border hover:bg-slate-50 dark:hover:bg-slate-900/20 bg-gradient-to-r from-slate-50/30 to-slate-100/30 dark:from-slate-900/10 dark:to-slate-800/10 transition-colors cursor-pointer group";
-                      if (rank === 3) return "border-b border-border hover:bg-orange-50 dark:hover:bg-orange-900/20 bg-gradient-to-r from-orange-50/30 to-orange-100/30 dark:from-orange-900/10 dark:to-orange-800/10 transition-colors cursor-pointer group";
+                      if (rank === 1) return "border-b border-border hover:bg-primary/10 bg-gradient-to-r from-primary/5 to-primary/10 transition-colors cursor-pointer group";
+                      if (rank === 2) return "border-b border-border hover:bg-secondary/10 bg-gradient-to-r from-secondary/5 to-secondary/10 transition-colors cursor-pointer group";
+                      if (rank === 3) return "border-b border-border hover:bg-accent/10 bg-gradient-to-r from-accent/5 to-accent/10 transition-colors cursor-pointer group";
                       return "border-b border-border hover:bg-muted/20 transition-colors cursor-pointer group";
                     };
                     
@@ -206,7 +206,7 @@ export default function LiveLeaderboard({ teams, isLoading, competitionId }: Liv
                           <img 
                             src={getCountryFlag(team.country || 'SK')} 
                             alt={`Vlajka ${team.country || 'SK'}`}
-                            className="w-5 h-4 object-cover rounded-sm border border-gray-200"
+                            className="w-5 h-4 object-cover rounded-sm border border-border"
                             title={`Krajina: ${team.country || 'SK'}`}
                             onError={(e) => {
                               // Fallback to emoji if image fails to load
