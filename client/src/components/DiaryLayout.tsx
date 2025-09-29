@@ -220,7 +220,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
             >
               <Menu className="h-5 w-5" />
             </Button>
-            <h1 className="text-lg font-semibold text-sidebar-foreground">Môj Denník</h1>
+            <h1 className="text-lg font-semibold text-sidebar-foreground">Môj rybársky denník</h1>
             <div className="w-8" /> {/* Spacer */}
           </div>
         </div>
