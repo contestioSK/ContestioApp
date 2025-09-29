@@ -102,6 +102,7 @@ export interface IStorage {
   updateUserProfile(userId: string, profileData: {
     firstName?: string;
     lastName?: string;
+    nickname?: string;
     email?: string;
     profileImageUrl?: string;
   }): Promise<User>;
@@ -601,6 +602,7 @@ export class DatabaseStorage implements IStorage {
   async updateUserProfile(userId: string, profileData: {
     firstName?: string;
     lastName?: string;
+    nickname?: string;
     email?: string;
     profileImageUrl?: string;
   }): Promise<User> {
@@ -614,6 +616,9 @@ export class DatabaseStorage implements IStorage {
     }
     if (profileData.lastName !== undefined) {
       updateData.lastName = profileData.lastName;
+    }
+    if (profileData.nickname !== undefined) {
+      updateData.nickname = profileData.nickname;
     }
     if (profileData.email !== undefined) {
       updateData.email = profileData.email;
