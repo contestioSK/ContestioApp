@@ -430,6 +430,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Profile update endpoint
+  app.patch('/api/auth/profile', isAuthenticated, async (req: any, res) => {
+    try {
+      // Get user ID from session
+      let userId: string | undefined;
+      
+      // New auth system
+      if (req.user?.id) {
+        userId = req.user.id;
+      }
+      // Fallback to old auth system
+      else if (req.user?.claims?.sub) {
+        userId = req.user.claims.sub;
+      }
+
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      // Validate request body
+      const profileUpdateSchema = z.object({
+        firstName: z.string().min(1, "Meno je povinné").max(50, "Meno môže mať maximálne 50 znakov").optional(),
+        lastName: z.string().min(1, "Priezvisko je povinné").max(50, "Priezvisko môže mať maximálne 50 znakov").optional(),
+        email: z.string().email("Neplatný email").optional(),
+        profileImageUrl: z.string().url("Neplatná URL").optional().or(z.literal("")),
+      });
+
+      const validatedData = profileUpdateSchema.parse(req.body);
+
+      // Update user profile
+      const updatedUser = await storage.updateUserProfile(userId, validatedData);
+      
+      // Remove sensitive data
+      const { password: _, verificationToken: __, verificationTokenExpires: ___, ...safeUser } = updatedUser;
+      res.json(safeUser);
+    } catch (error) {
+      console.error("[AUTH] Error updating profile:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Neplatné dáta", errors: error.errors });
+      }
+      res.status(500).json({ message: "Chyba pri aktualizácii profilu" });
+    }
+  });
+
   // User favorites endpoints
   app.get('/api/users/favorites/competitions', isAuthenticated, async (req: any, res) => {
     try {
