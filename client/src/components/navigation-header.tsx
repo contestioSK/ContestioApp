@@ -51,23 +51,10 @@ export default function NavigationHeader() {
               <Fish className="text-sidebar-primary text-2xl" />
               <h1 className="text-xl font-bold text-sidebar-foreground">Contestio</h1>
             </Link>
-            <div className="hidden md:flex items-center space-x-1 bg-sidebar-accent rounded-full px-3 py-1">
-              <span className="w-2 h-2 bg-sidebar-primary rounded-full animate-pulse"></span>
-              <span className="text-sm font-medium text-sidebar-primary">Živé súťaže</span>
-            </div>
           </div>
           
           {/* Navigation Links */}
           <nav className="hidden md:flex items-center space-x-6">
-            <Link 
-              href="/" 
-              className={`font-medium transition-colors ${
-                location === '/' ? 'text-sidebar-primary' : 'text-sidebar-foreground/70 hover:text-sidebar-foreground'
-              }`}
-              data-testid="nav-competitions"
-            >
-              Súťaže
-            </Link>
             <Link 
               href="/pricing" 
               className={`font-medium transition-colors ${
