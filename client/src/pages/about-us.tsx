@@ -7,7 +7,7 @@ export default function AboutUs() {
     <div className="min-h-screen bg-background">
       <NavigationHeader />
       
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 page-content-with-nav">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-foreground mb-4" data-testid="text-about-title">
