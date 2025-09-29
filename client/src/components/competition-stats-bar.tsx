@@ -32,32 +32,32 @@ export default function CompetitionStatsBar({ catches, isLoading }: CompetitionS
         <CardContent className="p-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center" data-testid="stat-total-weight">
-              <div className="w-8 h-8 bg-gradient-to-br from-accent/20 to-accent/10 rounded-lg flex items-center justify-center mx-auto mb-2">
-                <Scale className="w-4 h-4 text-accent" />
+              <div className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center mx-auto mb-2">
+                <Scale className="w-4 h-4 text-primary" />
               </div>
               <p className="text-xs text-muted-foreground mb-1">Celková váha</p>
               <p className="text-lg font-bold text-foreground">0 kg</p>
             </div>
             
             <div className="text-center" data-testid="stat-fish-count">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500/20 to-blue-500/10 rounded-lg flex items-center justify-center mx-auto mb-2">
-                <Fish className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <div className="w-8 h-8 bg-accent/20 rounded-lg flex items-center justify-center mx-auto mb-2">
+                <Fish className="w-4 h-4 text-accent-foreground" />
               </div>
               <p className="text-xs text-muted-foreground mb-1">Počet rýb</p>
               <p className="text-lg font-bold text-foreground">0</p>
             </div>
             
             <div className="text-center" data-testid="stat-heaviest-fish">
-              <div className="w-8 h-8 bg-gradient-to-br from-yellow-500/20 to-yellow-500/10 rounded-lg flex items-center justify-center mx-auto mb-2">
-                <Trophy className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
+              <div className="w-8 h-8 bg-secondary/20 rounded-lg flex items-center justify-center mx-auto mb-2">
+                <Trophy className="w-4 h-4 text-secondary-foreground" />
               </div>
               <p className="text-xs text-muted-foreground mb-1">Najťažšia ryba</p>
               <p className="text-lg font-bold text-foreground">0 kg</p>
             </div>
             
             <div className="text-center" data-testid="stat-average-weight">
-              <div className="w-8 h-8 bg-gradient-to-br from-green-500/20 to-green-500/10 rounded-lg flex items-center justify-center mx-auto mb-2">
-                <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />
+              <div className="w-8 h-8 bg-muted/50 rounded-lg flex items-center justify-center mx-auto mb-2">
+                <TrendingUp className="w-4 h-4 text-muted-foreground" />
               </div>
               <p className="text-xs text-muted-foreground mb-1">Váhový priemer</p>
               <p className="text-lg font-bold text-foreground">0 kg</p>
@@ -87,8 +87,8 @@ export default function CompetitionStatsBar({ catches, isLoading }: CompetitionS
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {/* Total Weight */}
           <div className="text-center" data-testid="stat-total-weight">
-            <div className="w-8 h-8 bg-gradient-to-br from-accent/20 to-accent/10 rounded-lg flex items-center justify-center mx-auto mb-2">
-              <Scale className="w-4 h-4 text-accent" />
+            <div className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center mx-auto mb-2">
+              <Scale className="w-4 h-4 text-primary" />
             </div>
             <p className="text-xs text-muted-foreground mb-1">Celková váha</p>
             <p className="text-lg font-bold text-foreground" data-testid="value-total-weight">
@@ -98,8 +98,8 @@ export default function CompetitionStatsBar({ catches, isLoading }: CompetitionS
           
           {/* Fish Count */}
           <div className="text-center" data-testid="stat-fish-count">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500/20 to-blue-500/10 rounded-lg flex items-center justify-center mx-auto mb-2">
-              <Fish className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            <div className="w-8 h-8 bg-accent/20 rounded-lg flex items-center justify-center mx-auto mb-2">
+              <Fish className="w-4 h-4 text-accent-foreground" />
             </div>
             <p className="text-xs text-muted-foreground mb-1">Počet rýb</p>
             <p className="text-lg font-bold text-foreground" data-testid="value-fish-count">
@@ -109,8 +109,8 @@ export default function CompetitionStatsBar({ catches, isLoading }: CompetitionS
           
           {/* Heaviest Fish */}
           <div className="text-center" data-testid="stat-heaviest-fish">
-            <div className="w-8 h-8 bg-gradient-to-br from-yellow-500/20 to-yellow-500/10 rounded-lg flex items-center justify-center mx-auto mb-2">
-              <Trophy className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
+            <div className="w-8 h-8 bg-secondary/20 rounded-lg flex items-center justify-center mx-auto mb-2">
+              <Trophy className="w-4 h-4 text-secondary-foreground" />
             </div>
             <p className="text-xs text-muted-foreground mb-1">Najťažšia ryba</p>
             <p className="text-lg font-bold text-foreground" data-testid="value-heaviest-fish">
@@ -125,8 +125,8 @@ export default function CompetitionStatsBar({ catches, isLoading }: CompetitionS
           
           {/* Average Weight */}
           <div className="text-center" data-testid="stat-average-weight">
-            <div className="w-8 h-8 bg-gradient-to-br from-green-500/20 to-green-500/10 rounded-lg flex items-center justify-center mx-auto mb-2">
-              <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />
+            <div className="w-8 h-8 bg-muted/50 rounded-lg flex items-center justify-center mx-auto mb-2">
+              <TrendingUp className="w-4 h-4 text-muted-foreground" />
             </div>
             <p className="text-xs text-muted-foreground mb-1">Váhový priemer</p>
             <p className="text-lg font-bold text-foreground" data-testid="value-average-weight">

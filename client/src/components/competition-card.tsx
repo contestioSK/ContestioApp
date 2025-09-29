@@ -146,7 +146,7 @@ export default function CompetitionCard({ competition }: CompetitionCardProps) {
         </div>
         {competition.status === 'registration' && (
           <div className="absolute top-3 right-3">
-            <span className="bg-black/50 text-white px-2 py-1 rounded text-sm">
+            <span className="bg-background/80 text-foreground px-2 py-1 rounded text-sm border border-border">
               Začína {formatDate(competition.startDate)}
             </span>
           </div>
@@ -265,7 +265,7 @@ export default function CompetitionCard({ competition }: CompetitionCardProps) {
               size="icon"
               onClick={handleFavoriteToggle}
               disabled={isLoading}
-              className={isFavorite ? "text-red-500 hover:text-red-600" : ""}
+              className={isFavorite ? "text-destructive hover:text-destructive/80" : ""}
               data-testid={`button-favorite-${competition.id}`}
             >
               <Heart className={`h-4 w-4 ${isFavorite ? 'fill-current' : ''}`} />
