@@ -42,7 +42,7 @@ export default function NavigationHeader() {
   };
 
   return (
-    <header className="bg-sidebar border-b border-sidebar-border shadow-sm sticky top-0 z-50">
+    <header className="bg-sidebar border-b border-sidebar-border shadow-sm sticky top-0 z-[999]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo and Brand */}
