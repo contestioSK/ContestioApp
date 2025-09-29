@@ -41,7 +41,10 @@ import {
   Users,
   Clock,
   AlertCircle,
-  Lock
+  Lock,
+  Trophy,
+  Star,
+  Zap
 } from "lucide-react";
 
 import type { DiaryTrip, DiaryCatch } from "@shared/schema";
@@ -1439,22 +1442,23 @@ export default function DiaryStats() {
                                 <h4 className="font-medium">{record.month}</h4>
                               </div>
                               <Badge variant="secondary">
-                                {parseFloat(record.bestCatch.weight).toFixed(1)} kg
+                                {record.bestCatch ? parseFloat(record.bestCatch.weight).toFixed(1) : '0'} kg
                               </Badge>
                             </div>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                               <div>
                                 <span className="text-muted-foreground">Typ:</span>
                                 <p className="font-medium">
-                                  {record.bestCatch.carpType === 'common' ? 'Obyčajný' :
-                                   record.bestCatch.carpType === 'mirror' ? 'Zrkadlový' :
-                                   record.bestCatch.carpType === 'grass' ? 'Trávojedný' : 'Iný'}
+                                  {record.bestCatch ? 
+                                    (record.bestCatch.fishType === 'kapor_lysec' ? 'Kapor lysec' :
+                                     record.bestCatch.fishType === 'kapor_zrkadlovy' ? 'Kapor zrkadlový' :
+                                     record.bestCatch.fishType === 'amur' ? 'Amur' : 'Iný') : 'N/A'}
                                 </p>
                               </div>
                               <div>
                                 <span className="text-muted-foreground">Dátum:</span>
                                 <p className="font-medium">
-                                  {format(new Date(record.bestCatch.capturedAt), "d.M.", { locale: sk })}
+                                  {record.bestCatch ? format(new Date(record.bestCatch.capturedAt), "d.M.", { locale: sk }) : 'N/A'}
                                 </p>
                               </div>
                               <div>
