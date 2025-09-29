@@ -9,6 +9,14 @@ Expanding platform with comprehensive diary functionality featuring FREE/PREMIUM
 - **Phase 3 PLANNED**: Stripe integration for premium subscriptions
 - **Phase 4 PLANNED**: Advanced statistics, charts, and hero section redesign
 
+## ✅ COMPLETED: Dark Theme Rollout (December 2024)
+Complete systematic dark theme implementation across entire application:
+- **Design System**: Established CSS variable-based theming using #012a36 (sidebar/header) and #0c1f28 (main content) color palette
+- **Component Coverage**: All components converted from hard-coded Tailwind colors to theme tokens (NavigationHeader, Sidebar, Competition cards, Auth pages, Landing/Home pages)
+- **Accessibility**: WCAG AA compliance maintained with contrast ratios ≥5.0:1 throughout dark theme
+- **Architecture**: Zero dark: overrides remaining, full reliance on bg-background, text-foreground, text-primary, etc. design tokens
+- **User Experience**: Seamless light/dark mode switching with consistent visual hierarchy and branding
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
