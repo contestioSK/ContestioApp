@@ -40,18 +40,18 @@ export default function NavigationHeader() {
   };
 
   return (
-    <header className="bg-white border-b border-border shadow-sm sticky top-0 z-50">
+    <header className="bg-[#012a36] border-b border-slate-600 shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo and Brand */}
           <div className="flex items-center space-x-4">
             <Link href="/" className="flex items-center space-x-2" data-testid="link-home">
-              <Fish className="text-primary text-2xl" />
-              <h1 className="text-xl font-bold text-primary">Contestio</h1>
+              <Fish className="text-blue-400 text-2xl" />
+              <h1 className="text-xl font-bold text-white">Contestio</h1>
             </Link>
-            <div className="hidden md:flex items-center space-x-1 bg-muted/20 rounded-full px-3 py-1">
-              <span className="w-2 h-2 bg-secondary rounded-full animate-pulse"></span>
-              <span className="text-sm font-medium text-secondary">Živé súťaže</span>
+            <div className="hidden md:flex items-center space-x-1 bg-slate-700/50 rounded-full px-3 py-1">
+              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+              <span className="text-sm font-medium text-green-400">Živé súťaže</span>
             </div>
           </div>
           
@@ -60,7 +60,7 @@ export default function NavigationHeader() {
             <Link 
               href="/" 
               className={`font-medium transition-colors ${
-                location === '/' ? 'text-primary' : 'text-muted-foreground hover:text-primary'
+                location === '/' ? 'text-blue-400' : 'text-slate-300 hover:text-white'
               }`}
               data-testid="nav-competitions"
             >
@@ -69,7 +69,7 @@ export default function NavigationHeader() {
             <Link 
               href="/pricing" 
               className={`font-medium transition-colors ${
-                location === '/pricing' ? 'text-primary' : 'text-muted-foreground hover:text-primary'
+                location === '/pricing' ? 'text-blue-400' : 'text-slate-300 hover:text-white'
               }`}
               data-testid="nav-pricing"
             >
@@ -78,7 +78,7 @@ export default function NavigationHeader() {
             <Link 
               href="/faq" 
               className={`font-medium transition-colors ${
-                location === '/faq' ? 'text-primary' : 'text-muted-foreground hover:text-primary'
+                location === '/faq' ? 'text-blue-400' : 'text-slate-300 hover:text-white'
               }`}
               data-testid="nav-faq"
             >
@@ -87,7 +87,7 @@ export default function NavigationHeader() {
             <Link 
               href="/about-us" 
               className={`font-medium transition-colors ${
-                location === '/about-us' ? 'text-primary' : 'text-muted-foreground hover:text-primary'
+                location === '/about-us' ? 'text-blue-400' : 'text-slate-300 hover:text-white'
               }`}
               data-testid="nav-about-us"
             >
@@ -96,7 +96,7 @@ export default function NavigationHeader() {
             <Link 
               href="/contact" 
               className={`font-medium transition-colors ${
-                location === '/contact' ? 'text-primary' : 'text-muted-foreground hover:text-primary'
+                location === '/contact' ? 'text-blue-400' : 'text-slate-300 hover:text-white'
               }`}
               data-testid="nav-contact"
             >
@@ -106,7 +106,7 @@ export default function NavigationHeader() {
               <Link 
                 href="/diary" 
                 className={`font-medium transition-colors ${
-                  location.startsWith('/diary') ? 'text-primary' : 'text-muted-foreground hover:text-primary'
+                  location.startsWith('/diary') ? 'text-blue-400' : 'text-slate-300 hover:text-white'
                 }`}
                 data-testid="nav-diary"
               >
@@ -124,19 +124,19 @@ export default function NavigationHeader() {
                   onValueChange={handleRoleChange}
                   data-testid="select-role"
                 >
-                  <SelectTrigger className="w-40">
+                  <SelectTrigger className="w-40 bg-slate-700 border-slate-600 text-white">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="public">Verejné zobrazenie</SelectItem>
+                  <SelectContent className="bg-slate-700 border-slate-600 text-white">
+                    <SelectItem value="public" className="text-white focus:bg-slate-600 focus:text-white">Verejné zobrazenie</SelectItem>
                     {user.role === 'organizer' && (
-                      <SelectItem value="organizer">Panel organizátora</SelectItem>
+                      <SelectItem value="organizer" className="text-white focus:bg-slate-600 focus:text-white">Panel organizátora</SelectItem>
                     )}
                     {user.role === 'admin' && (
-                      <SelectItem value="admin">Admin panel</SelectItem>
+                      <SelectItem value="admin" className="text-white focus:bg-slate-600 focus:text-white">Admin panel</SelectItem>
                     )}
                     {user.role === 'referee' && (
-                      <SelectItem value="referee">Rozhranie rozhodcu</SelectItem>
+                      <SelectItem value="referee" className="text-white focus:bg-slate-600 focus:text-white">Rozhranie rozhodcu</SelectItem>
                     )}
                   </SelectContent>
                 </Select>
@@ -145,7 +145,7 @@ export default function NavigationHeader() {
             
             {(user?.role === 'organizer' || user?.role === 'admin') && (
               <Button 
-                className="bg-accent text-accent-foreground hover:bg-accent/90"
+                className="bg-blue-600 text-white hover:bg-blue-700"
                 onClick={() => setLocation('/admin-panel')}
                 data-testid="button-admin-panel"
               >
@@ -169,6 +169,7 @@ export default function NavigationHeader() {
                   onClick={() => setLocation('/notification-preferences')}
                   data-testid="button-notification-preferences"
                   title="Nastavenia notifikácií"
+                  className="bg-transparent border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white focus:bg-slate-700 focus:text-white"
                 >
                   <Bell className="h-4 w-4" />
                 </Button>
@@ -184,6 +185,7 @@ export default function NavigationHeader() {
                     }
                   }}
                   data-testid="button-logout"
+                  className="bg-transparent border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white focus:bg-slate-700 focus:text-white"
                 >
                   Odhlásiť sa
                 </Button>
@@ -194,12 +196,13 @@ export default function NavigationHeader() {
                   variant="outline"
                   onClick={() => window.location.href = '/auth/login'}
                   data-testid="button-login"
+                  className="bg-transparent border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white focus:bg-slate-700 focus:text-white"
                 >
                   Prihlásiť sa
                 </Button>
                 <Link href="/register">
                   <Button 
-                    className="bg-primary text-primary-foreground hover:bg-primary/90"
+                    className="bg-blue-600 text-white hover:bg-blue-700"
                     data-testid="button-register"
                   >
                     Zaregistrovať sa
@@ -208,7 +211,7 @@ export default function NavigationHeader() {
               </div>
             )}
             
-            <Button variant="ghost" className="md:hidden" data-testid="button-menu">
+            <Button variant="ghost" className="md:hidden text-slate-300 hover:bg-slate-700 hover:text-white" data-testid="button-menu">
               <Menu className="h-5 w-5" />
             </Button>
           </div>
