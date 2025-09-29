@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useDiaryOffline } from "@/hooks/use-diary-offline";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -37,7 +38,10 @@ import {
   FileText,
   Globe,
   Lock,
-  AlertCircle
+  AlertCircle,
+  WifiOff,
+  Loader2,
+  Upload
 } from "lucide-react";
 
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -77,6 +81,15 @@ export default function DiaryTrips() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingTrip, setEditingTrip] = useState<DiaryTrip | null>(null);
   const [deletingTrip, setDeletingTrip] = useState<DiaryTrip | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
+  
+  // Offline functionality
+  const { 
+    isOffline, 
+    pendingTrips, 
+    saveTripDraft, 
+    removeTripDraft 
+  } = useDiaryOffline();
 
   // Fetch user's trips
   const { data: trips = [], isLoading } = useQuery<DiaryTrip[]>({
@@ -168,11 +181,38 @@ export default function DiaryTrips() {
     }
   });
 
-  const handleSubmit = (data: TripFormData) => {
-    if (editingTrip) {
-      updateTripMutation.mutate(data);
+  const handleSubmit = async (data: TripFormData) => {
+    if (isOffline) {
+      // Save as draft when offline
+      try {
+        const type = editingTrip ? 'update' : deletingTrip ? 'delete' : 'create';
+        const originalId = editingTrip?.id || deletingTrip?.id;
+        await saveTripDraft(data, type, originalId);
+        
+        setIsCreateDialogOpen(false);
+        setEditingTrip(null);
+        form.reset();
+        
+        toast({
+          title: "Uložené offline",
+          description: "Výprava sa odošle automaticky po obnovení pripojenia",
+          variant: "default",
+        });
+      } catch (error) {
+        console.error('Failed to save trip draft:', error);
+        toast({
+          title: "Chyba",
+          description: "Nepodarilo sa uložiť výpravu offline",
+          variant: "destructive",
+        });
+      }
     } else {
-      createTripMutation.mutate(data);
+      // Online - use normal mutations
+      if (editingTrip) {
+        updateTripMutation.mutate(data);
+      } else {
+        createTripMutation.mutate(data);
+      }
     }
   };
 
@@ -205,11 +245,94 @@ export default function DiaryTrips() {
     form.reset();
   };
 
-  const handleDeleteTrip = () => {
-    if (deletingTrip) {
+  const handleDeleteTrip = async () => {
+    if (!deletingTrip) return;
+    
+    if (isOffline) {
+      // Save delete as draft when offline
+      try {
+        await saveTripDraft({ id: deletingTrip.id }, 'delete', deletingTrip.id);
+        setDeletingTrip(null);
+        
+        toast({
+          title: "Uložené offline",
+          description: "Výprava sa zmaže automaticky po obnovení pripojenia",
+          variant: "default",
+        });
+      } catch (error) {
+        console.error('Failed to save delete draft:', error);
+        toast({
+          title: "Chyba",
+          description: "Nepodarilo sa uložiť operáciu offline",
+          variant: "destructive",
+        });
+      }
+    } else {
       deleteTripMutation.mutate(deletingTrip.id);
     }
   };
+
+  // Sync pending trips when back online
+  const syncPendingTrips = useCallback(async () => {
+    if (isOffline || pendingTrips.length === 0 || isSyncing) return;
+    
+    setIsSyncing(true);
+    
+    for (const tripDraft of pendingTrips) {
+      try {
+        if (tripDraft.type === 'create') {
+          const response = await apiRequest("POST", "/api/diary/trips", tripDraft.data);
+          await response.json();
+          await removeTripDraft(tripDraft.id);
+          
+          toast({
+            title: "Synchronizované",
+            description: `Výprava "${tripDraft.data.name}" bola úspešne vytvorená`,
+          });
+        } else if (tripDraft.type === 'update' && tripDraft.originalId) {
+          const response = await apiRequest("PUT", `/api/diary/trips/${tripDraft.originalId}`, tripDraft.data);
+          await response.json();
+          await removeTripDraft(tripDraft.id);
+          
+          toast({
+            title: "Synchronizované",
+            description: `Výprava "${tripDraft.data.name}" bola úspešne aktualizovaná`,
+          });
+        } else if (tripDraft.type === 'delete' && tripDraft.originalId) {
+          await apiRequest("DELETE", `/api/diary/trips/${tripDraft.originalId}`);
+          await removeTripDraft(tripDraft.id);
+          
+          toast({
+            title: "Synchronizované",
+            description: "Výprava bola úspešne zmazaná",
+          });
+        }
+        
+        // Invalidate queries after successful sync
+        queryClient.invalidateQueries({ queryKey: ["/api/diary/trips"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/diary/trip-limits"] });
+      } catch (error) {
+        console.error('Failed to sync trip:', error);
+        toast({
+          title: "Chyba synchronizácie",
+          description: `Nepodarilo sa synchronizovať výpravu z ${new Date(tripDraft.timestamp).toLocaleTimeString()}`,
+          variant: "destructive",
+        });
+      }
+    }
+    
+    setIsSyncing(false);
+  }, [isOffline, pendingTrips, isSyncing, removeTripDraft, toast]);
+
+  // Auto-sync when connection is restored
+  useEffect(() => {
+    if (!isOffline && pendingTrips.length > 0) {
+      const timeout = setTimeout(() => {
+        syncPendingTrips();
+      }, 1000); // Wait 1s after reconnection
+      return () => clearTimeout(timeout);
+    }
+  }, [isOffline, pendingTrips.length, syncPendingTrips]);
 
   return (
     <DiaryLayout>
@@ -218,7 +341,45 @@ export default function DiaryTrips() {
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-foreground mb-2">Rybárske výpravy</h1>
+              <div className="flex items-center gap-3 mb-2">
+                <h1 className="text-3xl font-bold text-foreground">Rybárske výpravy</h1>
+                {isOffline && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Badge variant="destructive" className="flex items-center gap-1" data-testid="badge-offline">
+                          <WifiOff className="w-3 h-3" />
+                          Offline
+                        </Badge>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Bez pripojenia - zmeny sa uložia lokálne</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+                {isSyncing && (
+                  <Badge variant="secondary" className="flex items-center gap-1" data-testid="badge-syncing">
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    Synchronizujem...
+                  </Badge>
+                )}
+                {!isOffline && pendingTrips.length > 0 && !isSyncing && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Badge variant="outline" className="flex items-center gap-1" data-testid="badge-pending">
+                          <Upload className="w-3 h-3" />
+                          {pendingTrips.length} čakajúcich
+                        </Badge>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Kliknite pre synchronizáciu pending výprav</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+              </div>
               <p className="text-muted-foreground">
                 Spravujte svoje rybárske výpravy a zdieľajte ich s ostatnými
               </p>

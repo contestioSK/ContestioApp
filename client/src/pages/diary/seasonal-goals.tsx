@@ -173,96 +173,21 @@ export default function SeasonalGoals() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const { celebrateGoalCompletion } = useConfetti();
-  const [selectedSeason, setSelectedSeason] = useState<string>("");
 
-  // Fetch seasons - in real app this would come from API
-  const mockSeasons: Season[] = [
-    {
-      id: "winter-2024",
-      name: "Zima 2024",
-      startDate: "2024-12-01",
-      endDate: "2025-02-28",
-      isActive: true
-    },
-    {
-      id: "autumn-2024",
-      name: "Jeseň 2024",
-      startDate: "2024-09-01",
-      endDate: "2024-11-30",
-      isActive: false
-    },
-    {
-      id: "summer-2024",
-      name: "Leto 2024",
-      startDate: "2024-06-01",
-      endDate: "2024-08-31",
-      isActive: false
-    }
-  ];
+  // Fetch current season from API
+  const { data: currentSeason, isLoading: seasonLoading } = useQuery<Season>({
+    queryKey: ["/api/seasons/current"],
+    enabled: !!user
+  });
 
-  // Mock goals data - in real app this would come from API
-  const mockGoals: SeasonGoal[] = [
-    {
-      id: "goal-1",
-      userId: user?.id || "",
-      seasonId: "winter-2024",
-      goalType: "total_weight",
-      targetValue: "50",
-      currentValue: "32.5",
-      unit: "kg",
-      title: "Celková váha úlovkov",
-      description: "Chytiť ryby s celkovou váhou 50 kg počas zimnej sezóny",
-      isMainGoal: true,
-      isCompleted: false,
-      createdAt: "2024-12-01",
-      updatedAt: "2024-12-15"
-    },
-    {
-      id: "goal-2",
-      userId: user?.id || "",
-      seasonId: "winter-2024",
-      goalType: "fish_count",
-      targetValue: "25",
-      currentValue: "18",
-      unit: "rýb",
-      title: "Počet ulovených rýb",
-      description: "Uloviť 25 rýb počas zimnej sezóny",
-      isMainGoal: false,
-      isCompleted: false,
-      createdAt: "2024-12-01",
-      updatedAt: "2024-12-15"
-    },
-    {
-      id: "goal-3",
-      userId: user?.id || "",
-      seasonId: "autumn-2024", 
-      goalType: "biggest_fish",
-      targetValue: "5",
-      currentValue: "6.2",
-      unit: "kg",
-      title: "Najväčšia ryba",
-      description: "Uloviť rybu vážiacu aspoň 5 kg",
-      isMainGoal: false,
-      isCompleted: true,
-      completedAt: "2024-10-15",
-      createdAt: "2024-09-01",
-      updatedAt: "2024-10-15"
-    }
-  ];
+  // Fetch user's seasonal goals
+  const { data: allGoals = [], isLoading: goalsLoading } = useQuery<SeasonGoal[]>({
+    queryKey: ["/api/seasonal-goals"],
+    enabled: !!user
+  });
 
-  const seasons = mockSeasons;
-  const allGoals = mockGoals;
-
-  // Set default season to active season
-  useEffect(() => {
-    const activeSeason = seasons.find(s => s.isActive);
-    if (activeSeason && !selectedSeason) {
-      setSelectedSeason(activeSeason.id);
-    }
-  }, [seasons, selectedSeason]);
-
-  // Filter goals by selected season
-  const seasonGoals = allGoals.filter(goal => goal.seasonId === selectedSeason);
+  // Filter goals by current season
+  const seasonGoals = currentSeason ? allGoals.filter(goal => goal.seasonId === currentSeason.id) : [];
   const completedGoals = seasonGoals.filter(goal => goal.isCompleted);
   const activeGoals = seasonGoals.filter(goal => !goal.isCompleted);
   const mainGoal = seasonGoals.find(goal => goal.isMainGoal);
@@ -280,8 +205,6 @@ export default function SeasonalGoals() {
     }
   }, [seasonGoals, celebrateGoalCompletion]);
 
-  const currentSeason = seasons.find(s => s.id === selectedSeason);
-
   return (
     <DiaryLayout>
       <div className="p-6">
@@ -291,7 +214,7 @@ export default function SeasonalGoals() {
             <div>
               <h1 className="text-3xl font-bold text-foreground mb-2">Sezónne ciele</h1>
               <p className="text-muted-foreground">
-                Nastavte si ciele a sledujte svoj pokrok počas rybárskej sezóny
+                Nastavte si ciele a sledujte svoj pokrok počas ročnej sezóny (15. január - 14. január)
               </p>
             </div>
             <Button 
@@ -303,35 +226,27 @@ export default function SeasonalGoals() {
             </Button>
           </div>
 
-          {/* Season Selector */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="w-5 h-5" />
-                Sezóna
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {seasons.map((season) => (
-                  <Button
-                    key={season.id}
-                    variant={selectedSeason === season.id ? "default" : "outline"}
-                    onClick={() => setSelectedSeason(season.id)}
-                    className="relative"
-                    data-testid={`button-season-${season.id}`}
-                  >
-                    {season.name}
-                    {season.isActive && (
-                      <Badge className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-1">
-                        Aktívna
-                      </Badge>
-                    )}
-                  </Button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          {/* Current Season Display */}
+          {currentSeason && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5" />
+                  Aktuálna sezóna
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-3">
+                  <Badge className="bg-primary text-primary-foreground text-lg px-4 py-2">
+                    {currentSeason.name}
+                  </Badge>
+                  <span className="text-muted-foreground">
+                    {new Date(currentSeason.startDate).toLocaleDateString('sk-SK')} - {new Date(currentSeason.endDate).toLocaleDateString('sk-SK')}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Season Overview */}
           {currentSeason && (
