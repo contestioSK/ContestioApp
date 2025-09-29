@@ -57,7 +57,7 @@ export default function Home() {
       <NavigationHeader />
 
       {/* Hero Section */}
-      <section className="relative py-12 lg:py-20">
+      <section className="relative py-12 lg:py-20 main-content-wrapper">
         <div className="absolute inset-0 z-0">
           <img 
             src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80" 
