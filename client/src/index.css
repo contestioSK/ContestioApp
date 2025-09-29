@@ -174,8 +174,6 @@ html {
   scroll-padding-top: var(--header-height, 4rem); /* For anchor links */
 }
 
-/* Single content wrapper approach - apply to content after header */
 .main-content-wrapper {
   padding-top: var(--header-height, 4rem);
-  min-height: calc(100vh - var(--header-height, 4rem));
 }
