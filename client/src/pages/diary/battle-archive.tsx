@@ -158,7 +158,7 @@ export default function BattleArchive() {
         <div className="max-w-6xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
               <div className="flex items-center gap-3">
                 <Archive className="w-8 h-8 text-primary" />
                 <h1 className="text-3xl font-bold text-foreground">
@@ -171,7 +171,7 @@ export default function BattleArchive() {
               <Button
                 size="lg"
                 onClick={() => setLocation("/diary/battle/create")}
-                className="bg-green-600 hover:bg-green-700 text-white"
+                className="bg-green-600 hover:bg-green-700 text-white w-full md:w-auto"
                 data-testid="button-create-battle"
               >
                 <Plus className="w-5 h-5 mr-2" />
