@@ -1424,7 +1424,7 @@ export default function AdminPanel() {
   return (
     <div className="min-h-screen bg-background">
       <NavigationHeader />
-      <div className="container mx-auto py-8 px-4 main-content-wrapper">
+      <div className="container mx-auto py-8 px-4">
         <Card className="w-full">
           {/* Header */}
           <div className="p-6 border-b border-border">
