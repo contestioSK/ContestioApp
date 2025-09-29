@@ -161,7 +161,7 @@ export default function CompetitionDetail() {
     return (
       <div className="min-h-screen bg-background">
         <NavigationHeader />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 main-content-wrapper">
           <Skeleton className="h-8 w-1/3 mb-4" />
           <Skeleton className="h-64 w-full mb-8" />
           <div className="grid lg:grid-cols-3 gap-8">
@@ -180,7 +180,7 @@ export default function CompetitionDetail() {
     return (
       <div className="min-h-screen bg-background">
         <NavigationHeader />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 main-content-wrapper">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-foreground mb-4">Súťaž nebola nájdená</h1>
             <p className="text-muted-foreground">Súťaž, ktorú hľadáte, neexistuje.</p>
@@ -196,7 +196,7 @@ export default function CompetitionDetail() {
       <NavigationHeader />
 
       {/* Competition Header */}
-      <section className="py-16 bg-muted/10">
+      <section className="py-16 bg-muted/10 main-content-wrapper">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             

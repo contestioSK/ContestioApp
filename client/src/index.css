@@ -170,12 +170,12 @@
 }
 
 /* Global fix for sticky navigation header overlap */
-body {
-  padding-top: var(--header-height, 4rem); /* Fallback to 64px if JS fails */
+html {
   scroll-padding-top: var(--header-height, 4rem); /* For anchor links */
 }
 
-/* Ensure minimum body height accounts for header */
-.min-h-screen {
+/* Single content wrapper approach - apply to content after header */
+.main-content-wrapper {
+  padding-top: var(--header-height, 4rem);
   min-height: calc(100vh - var(--header-height, 4rem));
 }
