@@ -157,7 +157,7 @@ export default function DiaryCatches() {
   const form = useForm<CatchFormData>({
     resolver: zodResolver(catchFormSchema),
     defaultValues: {
-      angler: { name: user?.name || "" },
+      angler: { name: user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : "" },
       capturedAt: new Date(),
       weight: "",
       fishType: "kapor_supinac",
@@ -245,9 +245,9 @@ export default function DiaryCatches() {
       weight: catch_.weight,
       lengthCm: catch_.lengthCm || undefined,
       fishType: catch_.fishType as any,
-      method: catch_.method || "",
+      method: "",
       notes: catch_.notes || "",
-      location: catch_.location || "",
+      location: "",
       verified: catch_.verified
     });
   };
@@ -732,19 +732,8 @@ export default function DiaryCatches() {
                                   <Clock className="w-4 h-4 text-muted-foreground" />
                                   <span>{format(new Date(catch_.capturedAt), "HH:mm")}</span>
                                 </div>
-                                {catch_.location && (
-                                  <div className="flex items-center gap-2">
-                                    <MapPin className="w-4 h-4 text-muted-foreground" />
-                                    <span className="truncate">{catch_.location}</span>
-                                  </div>
-                                )}
                               </div>
 
-                              {catch_.method && (
-                                <div className="text-sm text-muted-foreground">
-                                  <strong>Metóda:</strong> {catch_.method}
-                                </div>
-                              )}
 
                               {catch_.notes && (
                                 <div className="text-sm text-muted-foreground">
