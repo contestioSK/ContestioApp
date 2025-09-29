@@ -1,6 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Fish, Menu, DollarSign, Bell, Sun, Moon } from "lucide-react";
@@ -10,6 +11,22 @@ export default function NavigationHeader() {
   const { user, isAuthenticated } = useAuth();
   const [location, setLocation] = useLocation();
   const { theme, toggleTheme } = useTheme();
+  const headerRef = useRef<HTMLElement>(null);
+
+  // Dynamically measure header height and set CSS custom property
+  useEffect(() => {
+    const updateHeaderHeight = () => {
+      if (headerRef.current) {
+        const height = headerRef.current.getBoundingClientRect().height;
+        document.documentElement.style.setProperty('--header-height', `${height}px`);
+      }
+    };
+
+    updateHeaderHeight();
+    window.addEventListener('resize', updateHeaderHeight);
+    
+    return () => window.removeEventListener('resize', updateHeaderHeight);
+  }, []);
 
   const getRoleDisplayName = (role: string) => {
     switch (role) {
@@ -42,7 +59,7 @@ export default function NavigationHeader() {
   };
 
   return (
-    <header className="bg-sidebar border-b border-sidebar-border shadow-sm sticky top-0 z-[999]">
+    <header ref={headerRef} className="bg-sidebar border-b border-sidebar-border shadow-sm sticky top-0 z-[999]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo and Brand */}
