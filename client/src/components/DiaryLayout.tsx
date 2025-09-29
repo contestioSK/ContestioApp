@@ -50,7 +50,7 @@ const navigationItems = [
   {
     icon: Swords,
     label: "Fishing Battle",
-    href: "/diary/battle/archive",
+    href: "/diary/battle",
     description: "Súťažné súboje",
     premium: true
   },
@@ -158,7 +158,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                   onClick={() => {
                     // Handle premium routing for Fishing Battle
                     if (item.premium && item.label === "Fishing Battle") {
-                      const targetHref = isPremium ? "/diary/battle/archive" : "/diary/battle/paywall";
+                      const targetHref = isPremium ? "/diary/battle" : "/diary/battle/paywall";
                       setLocation(targetHref);
                     } else {
                       setLocation(item.href);
@@ -250,7 +250,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                   onClick={() => {
                     // Handle premium routing for Fishing Battle
                     if (item.premium && item.label === "Fishing Battle") {
-                      const targetHref = isPremium ? "/diary/battle/archive" : "/diary/battle/paywall";
+                      const targetHref = isPremium ? "/diary/battle" : "/diary/battle/paywall";
                       setLocation(targetHref);
                     } else {
                       setLocation(item.href);
