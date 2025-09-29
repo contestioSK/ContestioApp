@@ -21,11 +21,11 @@ import {
   CheckCircle2,
   Clock,
   Zap,
-  ArrowLeft,
   Edit,
   Settings
 } from "lucide-react";
 import { useLocation } from "wouter";
+import DiaryLayout from "@/components/DiaryLayout";
 
 // Types from backend
 interface Season {
@@ -74,36 +74,36 @@ function CircularProgress({
   const percentage = Math.min((value / max) * 100, 100);
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
-  const strokeDasharray = circumference;
+  const strokeDasharray = `${circumference} ${circumference}`;
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
   return (
-    <div className={`relative inline-flex items-center justify-center ${className}`}>
-      <svg width={size} height={size} className="transform -rotate-90">
-        {/* Background circle */}
+    <div className={`relative ${className}`} style={{ width: size, height: size }}>
+      <svg 
+        className="transform -rotate-90" 
+        width={size} 
+        height={size}
+      >
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
           stroke="currentColor"
           strokeWidth={strokeWidth}
-          fill="none"
-          className="text-muted-foreground/20"
+          fill="transparent"
+          className="text-muted"
         />
-        {/* Progress circle */}
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
           stroke="currentColor"
           strokeWidth={strokeWidth}
-          fill="none"
+          fill="transparent"
           strokeDasharray={strokeDasharray}
           strokeDashoffset={strokeDashoffset}
-          className={`transition-all duration-300 ease-in-out ${
-            percentage === 100 ? 'text-green-500' : 'text-primary'
-          }`}
           strokeLinecap="round"
+          className="text-primary transition-all duration-500 ease-in-out"
         />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
@@ -113,438 +113,421 @@ function CircularProgress({
   );
 }
 
-// Goal Type Configuration
-const goalTypeConfig = {
-  total_weight: {
-    icon: Weight,
-    label: "Celková hmotnosť",
-    color: "text-blue-500",
-    unit: "kg"
-  },
-  fish_count: {
-    icon: Fish,
-    label: "Počet rýb",
-    color: "text-green-500", 
-    unit: "ks"
-  },
-  trips_count: {
-    icon: MapPin,
-    label: "Počet dní strávených pri vode",
-    color: "text-purple-500",
-    unit: "dní"
-  },
-  biggest_fish: {
-    icon: Ruler,
-    label: "Najväčšia ryba",
-    color: "text-orange-500",
-    unit: "kg"
-  },
-  species_variety: {
-    icon: Star,
-    label: "Rôzne druhy",
-    color: "text-pink-500",
-    unit: "druhov"
-  }
-};
-
-export default function DiarySeasonalGoals() {
-  const { user } = useAuth();
-  const [, setLocation] = useLocation();
-  const { celebrateByGoalType, celebrateMainGoal, celebrateMilestone } = useConfetti();
+// Goal Achievement Badge Component
+function AchievementBadge({ goal }: { goal: SeasonGoal }) {
+  const IconComponent = getGoalIcon(goal.goalType);
   
-  // Track celebrated goals and milestones to prevent repeated celebrations
-  const [celebratedGoals, setCelebratedGoals] = useState<Set<string>>(() => {
-    try {
-      const stored = localStorage.getItem('contestio-celebrated-goals');
-      return stored ? new Set(JSON.parse(stored)) : new Set();
-    } catch {
-      return new Set();
-    }
-  });
-  const [celebratedMilestones, setCelebratedMilestones] = useState<Set<string>>(new Set());
-
-  // Fetch current season
-  const { data: currentSeason, isLoading: seasonLoading } = useQuery<Season>({
-    queryKey: ['/api/seasons/current'],
-    enabled: !!user
-  });
-
-  // Fetch user's seasonal goals
-  const { data: goals = [], isLoading: goalsLoading } = useQuery<SeasonGoal[]>({
-    queryKey: ['/api/seasonal-goals'],
-    enabled: !!user
-  });
-
-  const isLoading = seasonLoading || goalsLoading;
-
-  // Calculate season progress
-  const getSeasonProgress = () => {
-    if (!currentSeason) return { daysElapsed: 0, totalDays: 0, percentage: 0 };
-    
-    const now = new Date();
-    const start = new Date(currentSeason.startDate);
-    const end = new Date(currentSeason.endDate);
-    
-    const totalDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-    const daysElapsed = Math.ceil((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-    const percentage = Math.min((daysElapsed / totalDays) * 100, 100);
-    
-    return { daysElapsed: Math.max(0, daysElapsed), totalDays, percentage };
-  };
-
-  const seasonProgress = getSeasonProgress();
-  const mainGoal = goals.find(goal => goal.isMainGoal);
-  const completedGoals = goals.filter(goal => goal.isCompleted);
-
-  // Celebrate completed goals on load
-  useEffect(() => {
-    if (completedGoals.length > 0) {
-      const newlyCompletedGoals = completedGoals.filter(goal => !celebratedGoals.has(goal.id));
-      
-      if (newlyCompletedGoals.length > 0) {
-        // Hoist timeouts array to effect scope for proper cleanup
-        const timeouts: NodeJS.Timeout[] = [];
-        
-        // Add small delay to let the page render first
-        const celebrationTimer = setTimeout(() => {
-          newlyCompletedGoals.forEach((goal, index) => {
-            // Stagger celebrations to avoid overlapping animations
-            const timeout = setTimeout(() => {
-              if (goal.isMainGoal) {
-                celebrateMainGoal();
-              } else {
-                celebrateByGoalType(goal.goalType, false);
-              }
-            }, index * 800); // 800ms delay between each celebration
-            
-            timeouts.push(timeout);
-          });
-          
-          // Mark these goals as celebrated and save to localStorage
-          setCelebratedGoals(prev => {
-            const updated = new Set(prev);
-            newlyCompletedGoals.forEach(goal => updated.add(goal.id));
-            
-            // Save to localStorage
-            try {
-              localStorage.setItem('contestio-celebrated-goals', JSON.stringify(Array.from(updated)));
-            } catch (error) {
-              console.warn('Failed to save celebrated goals to localStorage:', error);
-            }
-            
-            return updated;
-          });
-        }, 1000); // 1s initial delay
-        
-        timeouts.push(celebrationTimer);
-
-        // Cleanup function clears ALL timers
-        return () => {
-          timeouts.forEach(timeout => clearTimeout(timeout));
-        };
-      }
-    }
-  }, [completedGoals, celebratedGoals, celebrateByGoalType, celebrateMainGoal]);
-
-  // Celebrate milestone progress
-  useEffect(() => {
-    if (mainGoal && !mainGoal.isCompleted) {
-      const progress = (parseFloat(mainGoal.currentValue) / parseFloat(mainGoal.targetValue)) * 100;
-      const milestoneKey = `${mainGoal.id}`;
-      
-      // Determine which milestone to celebrate
-      let milestoneTocelebrate: number | null = null;
-      if (progress >= 75 && progress < 100) {
-        milestoneTocelebrate = 75;
-      } else if (progress >= 50 && progress < 75) {
-        milestoneTocelebrate = 50;
-      } else if (progress >= 25 && progress < 50) {
-        milestoneTocelebrate = 25;
-      }
-      
-      // Only celebrate if milestone exists and hasn't been celebrated
-      if (milestoneTocelebrate && !celebratedMilestones.has(`${milestoneKey}-${milestoneTocelebrate}`)) {
-        const milestoneTimer = setTimeout(() => {
-          celebrateMilestone(milestoneTocelebrate!);
-          
-          // Mark this milestone as celebrated
-          setCelebratedMilestones(prev => {
-            const updated = new Set(prev);
-            updated.add(`${milestoneKey}-${milestoneTocelebrate}`);
-            return updated;
-          });
-        }, 1500);
-        
-        return () => clearTimeout(milestoneTimer);
-      }
-    }
-  }, [mainGoal?.id, mainGoal?.currentValue, mainGoal?.targetValue, mainGoal?.isCompleted, celebratedMilestones, celebrateMilestone]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-muted rounded w-1/3"></div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-48 bg-muted rounded-lg"></div>
-              ))}
-            </div>
-          </div>
+  return (
+    <div className="flex items-center gap-2 p-3 bg-primary/10 rounded-lg border-primary/20 border">
+      <div className="p-2 bg-primary rounded-full">
+        <IconComponent className="w-4 h-4 text-primary-foreground" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="font-medium text-foreground truncate">{goal.title}</div>
+        <div className="text-sm text-muted-foreground">
+          Splnený {goal.completedAt ? new Date(goal.completedAt).toLocaleDateString() : ''}
         </div>
       </div>
-    );
+      <Trophy className="w-5 h-5 text-yellow-500" />
+    </div>
+  );
+}
+
+// Get icon for goal type
+function getGoalIcon(goalType: string) {
+  switch (goalType) {
+    case 'total_weight': return Weight;
+    case 'fish_count': return Fish;
+    case 'trips_count': return MapPin;
+    case 'biggest_fish': return Ruler;
+    case 'species_variety': return Star;
+    default: return Target;
   }
+}
+
+// Get color for goal type
+function getGoalColor(goalType: string) {
+  switch (goalType) {
+    case 'total_weight': return 'text-blue-600 dark:text-blue-400';
+    case 'fish_count': return 'text-green-600 dark:text-green-400';
+    case 'trips_count': return 'text-purple-600 dark:text-purple-400';
+    case 'biggest_fish': return 'text-orange-600 dark:text-orange-400';
+    case 'species_variety': return 'text-pink-600 dark:text-pink-400';
+    default: return 'text-gray-600 dark:text-gray-400';
+  }
+}
+
+// Goal type labels
+function getGoalTypeLabel(goalType: string) {
+  switch (goalType) {
+    case 'total_weight': return 'Celková váha';
+    case 'fish_count': return 'Počet rýb';
+    case 'trips_count': return 'Počet výprav';
+    case 'biggest_fish': return 'Najväčšia ryba';
+    case 'species_variety': return 'Druhy rýb';
+    default: return goalType;
+  }
+}
+
+export default function SeasonalGoals() {
+  const { user } = useAuth();
+  const [, setLocation] = useLocation();
+  const { triggerConfetti } = useConfetti();
+  const [selectedSeason, setSelectedSeason] = useState<string>("");
+
+  // Fetch seasons - in real app this would come from API
+  const mockSeasons: Season[] = [
+    {
+      id: "winter-2024",
+      name: "Zima 2024",
+      startDate: "2024-12-01",
+      endDate: "2025-02-28",
+      isActive: true
+    },
+    {
+      id: "autumn-2024",
+      name: "Jeseň 2024",
+      startDate: "2024-09-01",
+      endDate: "2024-11-30",
+      isActive: false
+    },
+    {
+      id: "summer-2024",
+      name: "Leto 2024",
+      startDate: "2024-06-01",
+      endDate: "2024-08-31",
+      isActive: false
+    }
+  ];
+
+  // Mock goals data - in real app this would come from API
+  const mockGoals: SeasonGoal[] = [
+    {
+      id: "goal-1",
+      userId: user?.id || "",
+      seasonId: "winter-2024",
+      goalType: "total_weight",
+      targetValue: "50",
+      currentValue: "32.5",
+      unit: "kg",
+      title: "Celková váha úlovkov",
+      description: "Chytiť ryby s celkovou váhou 50 kg počas zimnej sezóny",
+      isMainGoal: true,
+      isCompleted: false,
+      createdAt: "2024-12-01",
+      updatedAt: "2024-12-15"
+    },
+    {
+      id: "goal-2",
+      userId: user?.id || "",
+      seasonId: "winter-2024",
+      goalType: "fish_count",
+      targetValue: "25",
+      currentValue: "18",
+      unit: "rýb",
+      title: "Počet ulovených rýb",
+      description: "Uloviť 25 rýb počas zimnej sezóny",
+      isMainGoal: false,
+      isCompleted: false,
+      createdAt: "2024-12-01",
+      updatedAt: "2024-12-15"
+    },
+    {
+      id: "goal-3",
+      userId: user?.id || "",
+      seasonId: "autumn-2024", 
+      goalType: "biggest_fish",
+      targetValue: "5",
+      currentValue: "6.2",
+      unit: "kg",
+      title: "Najväčšia ryba",
+      description: "Uloviť rybu vážiacu aspoň 5 kg",
+      isMainGoal: false,
+      isCompleted: true,
+      completedAt: "2024-10-15",
+      createdAt: "2024-09-01",
+      updatedAt: "2024-10-15"
+    }
+  ];
+
+  const seasons = mockSeasons;
+  const allGoals = mockGoals;
+
+  // Set default season to active season
+  useEffect(() => {
+    const activeSeason = seasons.find(s => s.isActive);
+    if (activeSeason && !selectedSeason) {
+      setSelectedSeason(activeSeason.id);
+    }
+  }, [seasons, selectedSeason]);
+
+  // Filter goals by selected season
+  const seasonGoals = allGoals.filter(goal => goal.seasonId === selectedSeason);
+  const completedGoals = seasonGoals.filter(goal => goal.isCompleted);
+  const activeGoals = seasonGoals.filter(goal => !goal.isCompleted);
+  const mainGoal = seasonGoals.find(goal => goal.isMainGoal);
+
+  // Trigger confetti for completed goals
+  useEffect(() => {
+    const newlyCompletedGoals = seasonGoals.filter(goal => 
+      goal.isCompleted && 
+      goal.completedAt &&
+      new Date(goal.completedAt).getTime() > Date.now() - 5000 // Completed in last 5 seconds
+    );
+    
+    if (newlyCompletedGoals.length > 0) {
+      triggerConfetti();
+    }
+  }, [seasonGoals, triggerConfetti]);
+
+  const currentSeason = seasons.find(s => s.id === selectedSeason);
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto space-y-8">
-        {/* Header */}
-        <div className="space-y-4">
-          {/* Back to Diary Navigation */}
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => setLocation('/diary')}
-              data-testid="button-back-to-diary"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Späť do denníka
-            </Button>
-          </div>
-          
+    <DiaryLayout>
+      <div className="p-6">
+        <div className="max-w-4xl mx-auto space-y-8">
+          {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-foreground flex items-center gap-2" data-testid="page-title">
-                <Target className="h-8 w-8 text-primary" />
-                Sezónne ciele
-              </h1>
-              <p className="text-muted-foreground mt-2">
-                Sledujte svoj pokrok a dosahujte nové míľniky
+              <h1 className="text-3xl font-bold text-foreground mb-2">Sezónne ciele</h1>
+              <p className="text-muted-foreground">
+                Nastavte si ciele a sledujte svoj pokrok počas rybárskej sezóny
               </p>
             </div>
             <Button 
-              onClick={() => setLocation('/diary/seasonal-goals/create')}
-              className="flex items-center gap-2"
+              onClick={() => setLocation("/diary/seasonal-goals/create")}
               data-testid="button-create-goal"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="w-4 h-4 mr-2" />
               Nový cieľ
             </Button>
           </div>
-        </div>
 
-        {/* Season Overview */}
-        {currentSeason && (
-          <Card data-testid="card-season-overview">
+          {/* Season Selector */}
+          <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                {currentSeason.name}
+                <Calendar className="w-5 h-5" />
+                Sezóna
               </CardTitle>
-              <CardDescription>
-                {new Date(currentSeason.startDate).toLocaleDateString('sk-SK')} - {new Date(currentSeason.endDate).toLocaleDateString('sk-SK')}
-              </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="text-center">
-                  <CircularProgress 
-                    value={seasonProgress.daysElapsed} 
-                    max={seasonProgress.totalDays}
-                    size={100}
+              <div className="flex flex-wrap gap-2">
+                {seasons.map((season) => (
+                  <Button
+                    key={season.id}
+                    variant={selectedSeason === season.id ? "default" : "outline"}
+                    onClick={() => setSelectedSeason(season.id)}
+                    className="relative"
+                    data-testid={`button-season-${season.id}`}
                   >
-                    <div className="text-center">
-                      <div className="text-lg font-bold" data-testid="text-season-progress">
-                        {Math.round(seasonProgress.percentage)}%
-                      </div>
-                      <div className="text-xs text-muted-foreground">sezóny</div>
-                    </div>
-                  </CircularProgress>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    {seasonProgress.daysElapsed} z {seasonProgress.totalDays} dní
-                  </p>
-                </div>
-                
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-foreground" data-testid="text-total-goals">
-                    {goals.length}
-                  </div>
-                  <p className="text-sm text-muted-foreground">celkovo cieľov</p>
-                </div>
-                
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-green-500" data-testid="text-completed-goals">
-                    {completedGoals.length}
-                  </div>
-                  <p className="text-sm text-muted-foreground">dokončených</p>
-                </div>
+                    {season.name}
+                    {season.isActive && (
+                      <Badge className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-1">
+                        Aktívna
+                      </Badge>
+                    )}
+                  </Button>
+                ))}
               </div>
             </CardContent>
           </Card>
-        )}
 
-        {/* Main Goal Highlight */}
-        {mainGoal && (
-          <Card className="border-primary/50 bg-primary/5" data-testid="card-main-goal">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Crown className="h-5 w-5 text-primary" />
-                Hlavný cieľ sezóny
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col md:flex-row items-center gap-6">
-                <CircularProgress 
-                  value={parseFloat(mainGoal.currentValue)} 
-                  max={parseFloat(mainGoal.targetValue)}
-                  size={140}
-                  strokeWidth={10}
-                >
-                  <div className="text-center">
-                    <div className="text-xl font-bold" data-testid={`text-main-goal-progress`}>
-                      {Math.round((parseFloat(mainGoal.currentValue) / parseFloat(mainGoal.targetValue)) * 100)}%
-                    </div>
-                    {mainGoal.isCompleted && (
-                      <CheckCircle2 className="h-6 w-6 text-green-500 mx-auto mt-1" />
-                    )}
-                  </div>
-                </CircularProgress>
-                
-                <div className="flex-1">
-                  <h3 className="text-xl font-semibold mb-2" data-testid="text-main-goal-title">
-                    {mainGoal.title}
-                  </h3>
-                  {mainGoal.description && (
-                    <p className="text-muted-foreground mb-3">{mainGoal.description}</p>
+          {/* Season Overview */}
+          {currentSeason && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <Target className="w-8 h-8 text-primary mx-auto mb-2" />
+                  <div className="text-2xl font-bold text-foreground">{seasonGoals.length}</div>
+                  <div className="text-sm text-muted-foreground">Celkom cieľov</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <CheckCircle2 className="w-8 h-8 text-green-600 mx-auto mb-2" />
+                  <div className="text-2xl font-bold text-foreground">{completedGoals.length}</div>
+                  <div className="text-sm text-muted-foreground">Splnených</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <Clock className="w-8 h-8 text-orange-600 mx-auto mb-2" />
+                  <div className="text-2xl font-bold text-foreground">{activeGoals.length}</div>
+                  <div className="text-sm text-muted-foreground">Aktívnych</div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Main Goal Progress */}
+          {mainGoal && (
+            <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Crown className="w-6 h-6 text-primary" />
+                  Hlavný cieľ sezóny
+                  {mainGoal.isCompleted && (
+                    <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                      Splnený!
+                    </Badge>
                   )}
-                  <div className="flex items-center gap-4 text-sm">
-                    <span>
-                      <strong>{mainGoal.currentValue}</strong> / {mainGoal.targetValue} {goalTypeConfig[mainGoal.goalType].unit}
-                    </span>
-                    {mainGoal.isCompleted ? (
-                      <Badge variant="default" className="bg-green-500">
-                        <CheckCircle2 className="h-3 w-3 mr-1" />
-                        Dokončené
-                      </Badge>
-                    ) : (
-                      <Badge variant="secondary">
-                        <Clock className="h-3 w-3 mr-1" />
-                        Prebieha
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Goals Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {goals.map((goal) => {
-            const config = goalTypeConfig[goal.goalType];
-            const IconComponent = config.icon;
-            const progress = (parseFloat(goal.currentValue) / parseFloat(goal.targetValue)) * 100;
-            
-            return (
-              <Card 
-                key={goal.id} 
-                className={`transition-all duration-200 hover:shadow-lg ${
-                  goal.isCompleted ? 'border-green-500/50 bg-green-50/50 dark:bg-green-950/20' : ''
-                }`}
-                data-testid={`card-goal-${goal.id}`}
-              >
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <IconComponent className={`h-5 w-5 ${config.color}`} />
-                    <div className="flex items-center gap-2">
-                      {goal.isMainGoal && (
-                        <Crown className="h-4 w-4 text-primary" />
-                      )}
-                      {goal.isCompleted && (
-                        <CheckCircle2 className="h-4 w-4 text-green-500" />
-                      )}
-                    </div>
-                  </div>
-                  <CardTitle className="text-lg" data-testid={`text-goal-title-${goal.id}`}>
-                    {goal.title}
-                  </CardTitle>
-                  <CardDescription>{config.label}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-center mb-4">
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col md:flex-row items-center gap-8">
+                  <div className="flex-shrink-0">
                     <CircularProgress 
-                      value={parseFloat(goal.currentValue)} 
-                      max={parseFloat(goal.targetValue)}
-                      size={80}
+                      value={parseFloat(mainGoal.currentValue)} 
+                      max={parseFloat(mainGoal.targetValue)}
+                      size={140}
+                      strokeWidth={12}
                     >
                       <div className="text-center">
-                        <div className="text-sm font-bold" data-testid={`text-goal-progress-${goal.id}`}>
-                          {Math.round(progress)}%
+                        <div className="text-2xl font-bold text-foreground">
+                          {Math.round((parseFloat(mainGoal.currentValue) / parseFloat(mainGoal.targetValue)) * 100)}%
                         </div>
+                        <div className="text-sm text-muted-foreground">splnené</div>
                       </div>
                     </CircularProgress>
                   </div>
                   
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span>Pokrok:</span>
-                      <span className="font-medium" data-testid={`text-goal-values-${goal.id}`}>
-                        {goal.currentValue} / {goal.targetValue} {config.unit}
+                  <div className="flex-1 text-center md:text-left">
+                    <h3 className="text-2xl font-bold text-foreground mb-2">{mainGoal.title}</h3>
+                    {mainGoal.description && (
+                      <p className="text-muted-foreground mb-4">{mainGoal.description}</p>
+                    )}
+                    <div className="flex items-center justify-center md:justify-start gap-4 text-lg">
+                      <span className="font-semibold text-primary">
+                        {mainGoal.currentValue} {mainGoal.unit}
+                      </span>
+                      <span className="text-muted-foreground">z</span>
+                      <span className="font-semibold text-foreground">
+                        {mainGoal.targetValue} {mainGoal.unit}
                       </span>
                     </div>
-                    
-                    {goal.isCompleted && goal.completedAt && (
-                      <div className="flex justify-between text-green-600 dark:text-green-400">
-                        <span>Dokončené:</span>
-                        <span>{new Date(goal.completedAt).toLocaleDateString('sk-SK')}</span>
-                      </div>
-                    )}
+                    <div className="mt-4">
+                      <Progress 
+                        value={(parseFloat(mainGoal.currentValue) / parseFloat(mainGoal.targetValue)) * 100} 
+                        className="h-3"
+                      />
+                    </div>
                   </div>
-                  
-                  {/* Action buttons */}
-                  <div className="flex justify-end mt-4 pt-3 border-t">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setLocation(`/diary/seasonal-goals/${goal.id}/edit`)}
-                      className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
-                      data-testid={`button-edit-goal-${goal.id}`}
-                    >
-                      <Edit className="h-4 w-4" />
-                      Upraviť
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-        {/* Empty State */}
-        {goals.length === 0 && (
-          <Card className="text-center py-12" data-testid="card-empty-state">
-            <CardContent>
-              <Target className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Žiadne sezónne ciele</h3>
-              <p className="text-muted-foreground mb-6">
-                Vytvorte si svoj prvý cieľ a začnite sledovať pokrok
-              </p>
-              <Button 
-                onClick={() => setLocation('/diary/seasonal-goals/create')}
-                className="flex items-center gap-2"
-                data-testid="button-create-first-goal"
-              >
-                <Plus className="h-4 w-4" />
-                Vytvoriť cieľ
-              </Button>
-            </CardContent>
-          </Card>
-        )}
+          {/* Goals Tabs */}
+          <Tabs defaultValue="active" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="active" data-testid="tab-active-goals">
+                Aktívne ciele ({activeGoals.length})
+              </TabsTrigger>
+              <TabsTrigger value="completed" data-testid="tab-completed-goals">
+                Splnené ciele ({completedGoals.length})
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="active" className="space-y-4">
+              {activeGoals.length === 0 ? (
+                <Card>
+                  <CardContent className="p-8 text-center">
+                    <Target className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-foreground mb-2">
+                      Žiadne aktívne ciele
+                    </h3>
+                    <p className="text-muted-foreground mb-4">
+                      Vytvorte si nové ciele pre túto sezónu a začnite sledovať svoj pokrok.
+                    </p>
+                    <Button 
+                      onClick={() => setLocation("/diary/seasonal-goals/create")}
+                      data-testid="button-create-first-goal"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Vytvoriť prvý cieľ
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {activeGoals.map((goal) => {
+                    const IconComponent = getGoalIcon(goal.goalType);
+                    const progress = (parseFloat(goal.currentValue) / parseFloat(goal.targetValue)) * 100;
+                    
+                    return (
+                      <Card key={goal.id} className="hover:shadow-md transition-shadow">
+                        <CardHeader className="pb-4">
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-center gap-2">
+                              <IconComponent className={`w-5 h-5 ${getGoalColor(goal.goalType)}`} />
+                              <CardTitle className="text-lg">{goal.title}</CardTitle>
+                            </div>
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => setLocation(`/diary/seasonal-goals/${goal.id}/edit`)}
+                              data-testid={`button-edit-goal-${goal.id}`}
+                            >
+                              <Edit className="w-3 h-3" />
+                            </Button>
+                          </div>
+                          <CardDescription className="text-sm">
+                            {getGoalTypeLabel(goal.goalType)}
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="font-medium text-foreground">
+                                {goal.currentValue} {goal.unit}
+                              </span>
+                              <span className="text-muted-foreground">
+                                z {goal.targetValue} {goal.unit}
+                              </span>
+                            </div>
+                            <Progress value={progress} className="h-2" />
+                            <div className="text-right text-sm font-medium text-primary">
+                              {Math.round(progress)}% splnené
+                            </div>
+                            {goal.description && (
+                              <p className="text-sm text-muted-foreground mt-2">
+                                {goal.description}
+                              </p>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="completed" className="space-y-4">
+              {completedGoals.length === 0 ? (
+                <Card>
+                  <CardContent className="p-8 text-center">
+                    <Trophy className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-foreground mb-2">
+                      Žiadne splnené ciele
+                    </h3>
+                    <p className="text-muted-foreground">
+                      Keď splníte nejaké ciele, zobrazíme ich tu s vašimi úspechmi.
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-4">
+                  {completedGoals.map((goal) => (
+                    <AchievementBadge key={goal.id} goal={goal} />
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
-    </div>
+    </DiaryLayout>
   );
 }
