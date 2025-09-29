@@ -1,6 +1,7 @@
 import NavigationHeader from "@/components/navigation-header";
 import { Card, CardContent } from "@/components/ui/card";
-import { ChevronDown, Users, Fish, Settings, BookOpen, UserCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ChevronDown, Users, Fish, Settings, BookOpen, UserCircle, ArrowLeft } from "lucide-react";
 import { useState } from "react";
 
 interface FAQItem {
@@ -12,11 +13,13 @@ interface FAQSection {
   title: string;
   icon: any;
   color: string;
+  description: string;
   items: FAQItem[];
 }
 
 export default function FAQ() {
   const [openItems, setOpenItems] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
 
   const toggleItem = (itemId: string) => {
     setOpenItems(prev => 
@@ -31,6 +34,7 @@ export default function FAQ() {
       title: "Organizátori",
       icon: Users,
       color: "from-blue-500 to-blue-600",
+      description: "Ako registrovať a spravovať súťaže, tímy a rozhodcov",
       items: [
         {
           question: "Ako zaregistrujem súťaž?",
@@ -58,6 +62,7 @@ export default function FAQ() {
       title: "Súťažiaci",
       icon: Fish,
       color: "from-green-500 to-green-600",
+      description: "Prihlásenie do súťaží, záznam úlovkov a sledovanie výsledkov",
       items: [
         {
           question: "Ako sa prihlásim do súťaže?",
@@ -81,6 +86,7 @@ export default function FAQ() {
       title: "Rybársky denník",
       icon: BookOpen,
       color: "from-teal-500 to-teal-600",
+      description: "Zápis úlovkov, štatistiky, sezónne ciele a offline režim",
       items: [
         {
           question: "Čo je rybársky denník?",
@@ -108,6 +114,7 @@ export default function FAQ() {
       title: "Registrácia a účty",
       icon: UserCircle,
       color: "from-orange-500 to-orange-600",
+      description: "Vytvorenie účtu, prihlásenie a správa tímu",
       items: [
         {
           question: "Musím mať účet, aby som používal Contestio?",
@@ -131,6 +138,7 @@ export default function FAQ() {
       title: "Technické otázky",
       icon: Settings,
       color: "from-purple-500 to-purple-600",
+      description: "Kompatibilita zariadení, offline režim a integrácie",
       items: [
         {
           question: "Na akých zariadeniach funguje Contestio?",
@@ -157,113 +165,172 @@ export default function FAQ() {
       <NavigationHeader />
       <div className="h-16" />
       
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6" data-testid="text-faq-title">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl lg:text-4xl font-bold text-foreground mb-3" data-testid="text-faq-title">
             Často kladené otázky
           </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+          <p className="text-base md:text-lg text-muted-foreground max-w-3xl mx-auto">
             Nájdite odpovede na najčastejšie otázky o platforme Contestio
           </p>
-          <div className="w-24 h-1 bg-gradient-to-r from-primary to-primary/60 mx-auto mt-6 rounded-full"></div>
+          <div className="w-20 h-1 bg-primary mx-auto mt-4 rounded-full"></div>
         </div>
 
-        {/* FAQ Sections */}
-        <div className="space-y-12">
-          {faqSections.map((section, sectionIndex) => {
-            const IconComponent = section.icon;
-            
-            return (
-              <div key={sectionIndex} className="space-y-6">
-                {/* Section Header */}
-                <div className="flex items-center gap-4 mb-8">
-                  <div className={`w-12 h-12 bg-gradient-to-br ${section.color} rounded-full flex items-center justify-center shadow-lg`}>
-                    <IconComponent className="w-6 h-6 text-white" />
-                  </div>
-                  <h2 className="text-2xl font-bold text-foreground">
-                    {section.title}
-                  </h2>
-                </div>
+        {selectedCategory === null ? (
+          // Category Selector
+          <div>
+            <p className="text-center text-muted-foreground mb-6">
+              Vyberte si oblasť, ktorá vás zaujíma
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {faqSections.map((section, index) => {
+                const IconComponent = section.icon;
+                
+                return (
+                  <Card 
+                    key={index}
+                    className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105"
+                    onClick={() => setSelectedCategory(index)}
+                    data-testid={`category-card-${index}`}
+                  >
+                    <CardContent className="p-6 text-center">
+                      <div className={`w-14 h-14 bg-gradient-to-br ${section.color} rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg`}>
+                        <IconComponent className="w-7 h-7 text-white" />
+                      </div>
+                      <h3 className="text-lg font-bold text-foreground mb-2">
+                        {section.title}
+                      </h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        {section.description}
+                      </p>
+                      <div className="mt-4 text-xs text-primary font-semibold">
+                        {section.items.length} {section.items.length === 1 ? 'otázka' : section.items.length < 5 ? 'otázky' : 'otázok'}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+          // Selected Category Questions
+          <div>
+            {/* Back Button */}
+            <div className="mb-6">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSelectedCategory(null);
+                  setOpenItems([]);
+                }}
+                className="flex items-center gap-2"
+                data-testid="button-back-to-categories"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Späť na kategórie
+              </Button>
+            </div>
 
-                {/* FAQ Items */}
-                <div className="space-y-4">
-                  {section.items.map((item, itemIndex) => {
-                    const itemId = `${sectionIndex}-${itemIndex}`;
-                    const isOpen = openItems.includes(itemId);
-                    
-                    return (
-                      <Card 
-                        key={itemIndex} 
-                        className="transition-all duration-200 hover:shadow-md border-l-4 border-l-transparent hover:border-l-primary"
+            {/* Category Header */}
+            <div className="flex items-center gap-4 mb-6">
+              {(() => {
+                const section = faqSections[selectedCategory];
+                const IconComponent = section.icon;
+                return (
+                  <>
+                    <div className={`w-12 h-12 bg-gradient-to-br ${section.color} rounded-full flex items-center justify-center shadow-lg flex-shrink-0`}>
+                      <IconComponent className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl md:text-3xl font-bold text-foreground">
+                        {section.title}
+                      </h2>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {section.description}
+                      </p>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+
+            {/* FAQ Items */}
+            <div className="space-y-3">
+              {faqSections[selectedCategory].items.map((item, itemIndex) => {
+                const itemId = `${selectedCategory}-${itemIndex}`;
+                const isOpen = openItems.includes(itemId);
+                
+                return (
+                  <Card 
+                    key={itemIndex} 
+                    className="transition-all duration-200 hover:shadow-md"
+                  >
+                    <CardContent className="p-0">
+                      {/* Question */}
+                      <button
+                        onClick={() => toggleItem(itemId)}
+                        className="w-full p-5 text-left flex items-center justify-between hover:bg-muted/30 transition-colors rounded-lg"
+                        data-testid={`faq-question-${itemId}`}
                       >
-                        <CardContent className="p-0">
-                          {/* Question */}
-                          <button
-                            onClick={() => toggleItem(itemId)}
-                            className="w-full p-6 text-left flex items-center justify-between hover:bg-muted/30 transition-colors rounded-lg"
-                            data-testid={`faq-question-${itemId}`}
-                          >
-                            <h3 className="font-semibold text-foreground text-lg pr-4">
-                              {item.question}
-                            </h3>
-                            <ChevronDown 
-                              className={`w-5 h-5 text-muted-foreground transition-transform duration-200 flex-shrink-0 ${
-                                isOpen ? 'rotate-180' : ''
-                              }`}
-                            />
-                          </button>
-                          
-                          {/* Answer */}
-                          <div 
-                            className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                              isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-                            }`}
-                          >
-                            <div 
-                              className="px-6 pb-6 pt-2 text-muted-foreground leading-relaxed border-t border-border/50"
-                              data-testid={`faq-answer-${itemId}`}
-                            >
-                              {item.answer}
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+                        <h3 className="font-semibold text-foreground pr-4">
+                          {item.question}
+                        </h3>
+                        <ChevronDown 
+                          className={`w-5 h-5 text-muted-foreground transition-transform duration-200 flex-shrink-0 ${
+                            isOpen ? 'rotate-180' : ''
+                          }`}
+                        />
+                      </button>
+                      
+                      {/* Answer */}
+                      <div 
+                        className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                          isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                        }`}
+                      >
+                        <div 
+                          className="px-5 pb-5 pt-2 text-sm text-muted-foreground leading-relaxed border-t border-border/50"
+                          data-testid={`faq-answer-${itemId}`}
+                        >
+                          {item.answer}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Contact Section */}
-        <div className="mt-20 text-center">
-          <div className="bg-muted/30 rounded-2xl p-8 md:p-12">
-            <h3 className="text-2xl font-bold text-foreground mb-4">
+        <Card className="mt-12 bg-muted/40">
+          <CardContent className="p-6 md:p-8 text-center">
+            <h3 className="text-xl font-bold text-foreground mb-3">
               Nenašli ste odpoveď na svoju otázku?
             </h3>
-            <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
+            <p className="text-sm text-muted-foreground mb-5 max-w-2xl mx-auto">
               Naš tím je tu pre vás! Kontaktujte nás a radi vám pomôžeme s čímkoľvek potrebujete.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <a
                 href="mailto:info@contestio.sk"
-                className="inline-flex items-center justify-center px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 transition-colors"
+                className="inline-flex items-center justify-center px-5 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded-lg hover:bg-primary/90 transition-colors"
                 data-testid="button-email-contact"
               >
                 Napísať email
               </a>
               <a
                 href="tel:+421000000000"
-                className="inline-flex items-center justify-center px-6 py-3 border border-primary text-primary font-semibold rounded-lg hover:bg-primary/5 transition-colors"
+                className="inline-flex items-center justify-center px-5 py-2.5 border border-primary text-primary text-sm font-semibold rounded-lg hover:bg-primary/5 transition-colors"
                 data-testid="button-phone-contact"
               >
                 Zavolať
               </a>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
