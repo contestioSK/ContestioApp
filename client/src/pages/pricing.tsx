@@ -2,10 +2,14 @@ import NavigationHeader from "@/components/navigation-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Star, Crown, Zap, Building } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Check, Star, Crown, Zap, Building, BookOpen, Sparkles } from "lucide-react";
 import { Link } from "wouter";
+import { useState } from "react";
 
 export default function Pricing() {
+  const [activeTab, setActiveTab] = useState("competitions");
+
   // Helper function to render text with bold formatting
   const renderFeatureText = (text: string) => {
     if (!text.includes('**')) {
@@ -110,12 +114,89 @@ export default function Pricing() {
     }
   ];
 
+  const diaryPlans = [
+    {
+      id: "free",
+      name: "FREE",
+      price: "0",
+      currency: "€",
+      period: "",
+      description: "Vyskúšajte základné funkcie zadarmo",
+      icon: BookOpen,
+      color: "from-gray-500 to-gray-600",
+      popular: false,
+      cta: "Používať zadarmo",
+      features: [
+        "📝 **1 rybárska výprava**",
+        "🐟 **20 úlovkov**",
+        "Zápis úlovkov s fotkami",
+        "Ukladanie lokalít (GPS)",
+        "Nástrahy a poznámky",
+        "Základné štatistiky"
+      ]
+    },
+    {
+      id: "premium-monthly",
+      name: "PREMIUM",
+      price: "4,90",
+      currency: "€",
+      period: "/ mesiac",
+      description: "Všetky funkcie bez obmedzení",
+      icon: Sparkles,
+      color: "from-teal-500 to-teal-600",
+      popular: true,
+      cta: "Upgradovať na Premium",
+      features: [
+        "✅ **Neobmedzené výpravy**",
+        "✅ **Neobmedzené úlovky**",
+        "📊 Pokročilé štatistiky a grafy",
+        "🎯 Sezónne ciele s progress tracking",
+        "⚔️ Fishing Battle (súťaž s priateľmi)",
+        "📴 Offline režim so synchronizáciou",
+        "🌤️ Predpoveď počasia a tlak",
+        "🗺️ Interaktívne mapy lokalít"
+      ]
+    },
+    {
+      id: "premium-yearly",
+      name: "PREMIUM",
+      price: "49",
+      currency: "€",
+      period: "/ rok",
+      description: "Ušetrite ~11€ pri ročnom predplatnom",
+      icon: Crown,
+      color: "from-amber-500 to-amber-600",
+      popular: false,
+      cta: "Upgradovať na Premium",
+      features: [
+        "✅ **Neobmedzené výpravy**",
+        "✅ **Neobmedzené úlovky**",
+        "📊 Pokročilé štatistiky a grafy",
+        "🎯 Sezónne ciele s progress tracking",
+        "⚔️ Fishing Battle (súťaž s priateľmi)",
+        "📴 Offline režim so synchronizáciou",
+        "🌤️ Predpoveď počasia a tlak",
+        "🗺️ Interaktívne mapy lokalít",
+        "💰 **Úspora ~11€ ročne**"
+      ]
+    }
+  ];
+
   const handlePlanSelect = (planId: string) => {
     if (planId === 'enterprise') {
       window.location.href = 'mailto:info@contestio.sk?subject=Záujem o Enterprise balík&body=Dobrý deň,%0A%0AMám záujem o Enterprise balík pre našu organizáciu.%0A%0AĎakujem';
     } else {
       // Redirect to competition registration with plan parameter
       window.location.href = `/register-competition?plan=${planId}`;
+    }
+  };
+
+  const handleDiaryPlanSelect = (planId: string) => {
+    if (planId === 'free') {
+      window.location.href = '/diary';
+    } else {
+      // TODO: Redirect to premium subscription page when implemented
+      window.location.href = '/diary';
     }
   };
 
@@ -126,61 +207,164 @@ export default function Pricing() {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6" data-testid="text-pricing-title">
-            Cenník pre organizátorov
+            Cenník
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Vyberte si balík, ktorý najlepšie vyhovuje vašej súťaži. Od jednoduchých pretkov 
-            až po komplexné podujatia s vlastným brandingom.
+            Vyberte si riešenie, ktoré najlepšie vyhovuje vašim potrebám
           </p>
           <div className="w-24 h-1 bg-gradient-to-r from-primary to-primary/60 mx-auto mt-6 rounded-full"></div>
         </div>
 
-        {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 lg:gap-8">
-          {pricingPlans.map((plan) => {
-            const IconComponent = plan.icon;
-            const isEnterprise = plan.id === 'enterprise';
-            
-            return (
-              <div key={plan.id} className="relative">
-                {/* Popular Badge */}
-                {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-                    <Badge className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-4 py-1 text-sm font-medium shadow-lg">
-                      Najobľúbenejší
-                    </Badge>
-                  </div>
-                )}
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
+            <TabsTrigger value="competitions" data-testid="tab-competitions">
+              Rybárske súťaže
+            </TabsTrigger>
+            <TabsTrigger value="diary" data-testid="tab-diary">
+              Rybársky denník
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Competitions Tab */}
+          <TabsContent value="competitions">
+            {/* Pricing Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 lg:gap-8">
+              {pricingPlans.map((plan) => {
+                const IconComponent = plan.icon;
+                const isEnterprise = plan.id === 'enterprise';
                 
-                <Card 
-                  className={`relative h-full transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 border-2 ${
-                    plan.popular 
-                      ? 'border-purple-200 shadow-xl ring-2 ring-purple-100' 
-                      : 'border-border hover:border-primary/20'
-                  }`}
-                  data-testid={`card-plan-${plan.id}`}
-                >
-                  <CardHeader className="text-center pb-8 pt-8">
-                    {/* Icon with gradient background */}
-                    <div className={`w-16 h-16 bg-gradient-to-br ${plan.color} rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg`}>
-                      <IconComponent className="w-8 h-8 text-white" />
-                    </div>
+                return (
+                  <div key={plan.id} className="relative">
+                    {/* Popular Badge */}
+                    {plan.popular && (
+                      <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
+                        <Badge className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-4 py-1 text-sm font-medium shadow-lg">
+                          Najobľúbenejší
+                        </Badge>
+                      </div>
+                    )}
                     
-                    {/* Plan Name */}
-                    <h3 className="text-2xl font-bold text-foreground mb-2">
-                      {plan.name}
-                    </h3>
-                    
-                    {/* Price */}
-                    <div className="mb-4">
-                      {isEnterprise ? (
-                        <div className="text-2xl font-bold text-foreground">
-                          {plan.price}
+                    <Card 
+                      className={`relative h-full transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 border-2 ${
+                        plan.popular 
+                          ? 'border-purple-200 shadow-xl ring-2 ring-purple-100' 
+                          : 'border-border hover:border-primary/20'
+                      }`}
+                      data-testid={`card-plan-${plan.id}`}
+                    >
+                      <CardHeader className="text-center pb-8 pt-8">
+                        {/* Icon with gradient background */}
+                        <div className={`w-16 h-16 bg-gradient-to-br ${plan.color} rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg`}>
+                          <IconComponent className="w-8 h-8 text-white" />
                         </div>
-                      ) : (
-                        <div>
+                        
+                        {/* Plan Name */}
+                        <h3 className="text-2xl font-bold text-foreground mb-2">
+                          {plan.name}
+                        </h3>
+                        
+                        {/* Price */}
+                        <div className="mb-4">
+                          {isEnterprise ? (
+                            <div className="text-2xl font-bold text-foreground">
+                              {plan.price}
+                            </div>
+                          ) : (
+                            <div>
+                              <span className="text-4xl font-bold text-foreground">
+                                {plan.price}
+                              </span>
+                              <span className="text-lg text-muted-foreground ml-1">
+                                {plan.currency}{plan.period}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Description */}
+                        <p className="text-sm text-muted-foreground">
+                          {plan.description}
+                        </p>
+                      </CardHeader>
+
+                      <CardContent className="flex flex-col flex-grow">
+                        {/* Features List */}
+                        <ul className="space-y-3 mb-8 flex-grow">
+                          {plan.features.map((feature, index) => (
+                            <li key={index} className="flex items-start">
+                              <Check className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                              <span className="text-sm text-foreground leading-relaxed">
+                                {renderFeatureText(feature)}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+
+                        {/* CTA Button */}
+                        <Button
+                          onClick={() => handlePlanSelect(plan.id)}
+                          className={`w-full py-6 text-lg font-semibold transition-all duration-200 ${
+                            plan.popular
+                              ? 'bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl'
+                              : isEnterprise
+                              ? 'bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-800 hover:to-gray-900 text-white'
+                              : 'bg-primary hover:bg-primary/90 text-primary-foreground'
+                          } ${plan.popular ? 'ring-2 ring-purple-200' : ''}`}
+                          data-testid={`button-select-${plan.id}`}
+                        >
+                          {plan.cta}
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </div>
+                );
+              })}
+            </div>
+          </TabsContent>
+
+          {/* Diary Tab */}
+          <TabsContent value="diary">
+            {/* Diary Pricing Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-5xl mx-auto">
+              {diaryPlans.map((plan) => {
+                const IconComponent = plan.icon;
+                const isFree = plan.id === 'free';
+                
+                return (
+                  <div key={plan.id} className="relative">
+                    {/* Popular Badge */}
+                    {plan.popular && (
+                      <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
+                        <Badge className="bg-gradient-to-r from-teal-500 to-teal-600 text-white px-4 py-1 text-sm font-medium shadow-lg">
+                          Najobľúbenejší
+                        </Badge>
+                      </div>
+                    )}
+                    
+                    <Card 
+                      className={`relative h-full transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 border-2 ${
+                        plan.popular 
+                          ? 'border-teal-200 shadow-xl ring-2 ring-teal-100' 
+                          : 'border-border hover:border-primary/20'
+                      }`}
+                      data-testid={`card-diary-plan-${plan.id}`}
+                    >
+                      <CardHeader className="text-center pb-8 pt-8">
+                        {/* Icon with gradient background */}
+                        <div className={`w-16 h-16 bg-gradient-to-br ${plan.color} rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg`}>
+                          <IconComponent className="w-8 h-8 text-white" />
+                        </div>
+                        
+                        {/* Plan Name */}
+                        <h3 className="text-2xl font-bold text-foreground mb-2">
+                          {plan.name}
+                        </h3>
+                        
+                        {/* Price */}
+                        <div className="mb-4">
                           <span className="text-4xl font-bold text-foreground">
                             {plan.price}
                           </span>
@@ -188,48 +372,48 @@ export default function Pricing() {
                             {plan.currency}{plan.period}
                           </span>
                         </div>
-                      )}
-                    </div>
-                    
-                    {/* Description */}
-                    <p className="text-sm text-muted-foreground">
-                      {plan.description}
-                    </p>
-                  </CardHeader>
+                        
+                        {/* Description */}
+                        <p className="text-sm text-muted-foreground">
+                          {plan.description}
+                        </p>
+                      </CardHeader>
 
-                  <CardContent className="flex flex-col flex-grow">
-                    {/* Features List */}
-                    <ul className="space-y-3 mb-8 flex-grow">
-                      {plan.features.map((feature, index) => (
-                        <li key={index} className="flex items-start">
-                          <Check className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                          <span className="text-sm text-foreground leading-relaxed">
-                            {renderFeatureText(feature)}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
+                      <CardContent className="flex flex-col flex-grow">
+                        {/* Features List */}
+                        <ul className="space-y-3 mb-8 flex-grow">
+                          {plan.features.map((feature, index) => (
+                            <li key={index} className="flex items-start">
+                              <Check className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                              <span className="text-sm text-foreground leading-relaxed">
+                                {renderFeatureText(feature)}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
 
-                    {/* CTA Button */}
-                    <Button
-                      onClick={() => handlePlanSelect(plan.id)}
-                      className={`w-full py-6 text-lg font-semibold transition-all duration-200 ${
-                        plan.popular
-                          ? 'bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl'
-                          : isEnterprise
-                          ? 'bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-800 hover:to-gray-900 text-white'
-                          : 'bg-primary hover:bg-primary/90 text-primary-foreground'
-                      } ${plan.popular ? 'ring-2 ring-purple-200' : ''}`}
-                      data-testid={`button-select-${plan.id}`}
-                    >
-                      {plan.cta}
-                    </Button>
-                  </CardContent>
-                </Card>
-              </div>
-            );
-          })}
-        </div>
+                        {/* CTA Button */}
+                        <Button
+                          onClick={() => handleDiaryPlanSelect(plan.id)}
+                          className={`w-full py-6 text-lg font-semibold transition-all duration-200 ${
+                            plan.popular
+                              ? 'bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white shadow-lg hover:shadow-xl'
+                              : isFree
+                              ? 'bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white'
+                              : 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white'
+                          } ${plan.popular ? 'ring-2 ring-teal-200' : ''}`}
+                          data-testid={`button-select-diary-${plan.id}`}
+                        >
+                          {plan.cta}
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </div>
+                );
+              })}
+            </div>
+          </TabsContent>
+        </Tabs>
 
         {/* Additional Info Section */}
         <div className="mt-20 text-center">
@@ -238,8 +422,8 @@ export default function Pricing() {
               Máte otázky o cenníkoch?
             </h3>
             <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-              Naš tím vám rád pomôže vybrať správny balík pre vašu súťaž. 
-              Kontaktujte nás a prediskutujeme vaše potreby.
+              Naš tím vám rád pomôže vybrať správne riešenie pre vaše potreby. 
+              Kontaktujte nás a prediskutujeme možnosti.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
@@ -275,9 +459,9 @@ export default function Pricing() {
             <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Star className="w-6 h-6 text-green-600" />
             </div>
-            <h4 className="font-semibold text-foreground mb-2">Podpora počas súťaže</h4>
+            <h4 className="font-semibold text-foreground mb-2">Podpora počas celého obdobia</h4>
             <p className="text-sm text-muted-foreground">
-              Náš tím je k dispozícii počas celej súťaže pre technickú podporu.
+              Náš tím je k dispozícii pre technickú podporu kedykoľvek to budete potrebovať.
             </p>
           </div>
           
