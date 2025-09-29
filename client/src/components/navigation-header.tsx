@@ -19,6 +19,7 @@ export default function NavigationHeader() {
       if (headerRef.current) {
         const height = headerRef.current.getBoundingClientRect().height;
         document.documentElement.style.setProperty('--header-height', `${height}px`);
+        console.log('[NavigationHeader] Setting header height:', height, 'px');
       }
     };
 
