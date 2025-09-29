@@ -171,7 +171,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                   <div className="text-left flex-1">
                     <div className="font-medium text-xs md:text-sm flex items-center gap-2">
                       {item.label}
-                      {item.premium && (
+                      {item.premium && !isPremium && (
                         <Badge variant="secondary" className="bg-sidebar-primary/20 text-sidebar-primary border-sidebar-primary/30 text-xs px-1 py-0">
                           PREMIUM
                         </Badge>
