@@ -194,7 +194,7 @@ export default function DiaryTrips() {
       endDate: new Date(trip.endDate),
       location: trip.location,
       notes: trip.notes || "",
-      visibility: trip.visibility,
+      visibility: trip.visibility as "private" | "shared",
       participants: trip.participants || []
     });
   };
