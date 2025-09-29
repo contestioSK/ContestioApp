@@ -1,11 +1,14 @@
 import { useAuth } from "@/hooks/useAuth";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Fish, Plus } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Fish, Plus, X, Calendar, MapPin, Target, Ruler, Weight } from "lucide-react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import DiaryLayout from "@/components/DiaryLayout";
 import { getFishTypeLabel } from "@/utils/fishTypeMapping";
+import { useState } from "react";
 
 // Function to get fish icon based on fish type
 const getFishIcon = (fishType?: string) => {
@@ -30,6 +33,8 @@ const getFishIconColor = (fishType?: string) => {
 export default function DiaryIndex() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
+  const [selectedCatch, setSelectedCatch] = useState<any>(null);
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
 
   // Load all catches for statistics
   const { data: allCatches = [] } = useQuery({
@@ -139,7 +144,7 @@ export default function DiaryIndex() {
                 <div 
                   key={catch_.id || index} 
                   className="border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors cursor-pointer"
-                  onClick={() => setLocation(`/diary/catches`)}
+                  onClick={() => setSelectedCatch(catch_)}
                 >
                   {/* Desktop Row */}
                   <div className="hidden md:grid grid-cols-5 gap-4 p-4">
@@ -220,6 +225,133 @@ export default function DiaryIndex() {
             )}
           </CardContent>
         </Card>
+
+        {/* Detail Panel */}
+        <Sheet open={!!selectedCatch} onOpenChange={() => setSelectedCatch(null)}>
+          <SheetContent className="w-full sm:max-w-md bg-slate-800 border-slate-600 text-white overflow-y-auto">
+            <SheetHeader className="pb-6">
+              <SheetTitle className="text-white flex items-center gap-3">
+                <div className="w-10 h-10 bg-slate-600/50 rounded-lg flex items-center justify-center">
+                  {getFishIcon(selectedCatch?.fishType)}
+                </div>
+                {selectedCatch?.fishType ? getFishTypeLabel(selectedCatch.fishType) : 'Detail úlovku'}
+              </SheetTitle>
+            </SheetHeader>
+
+            {selectedCatch && (
+              <div className="space-y-6">
+                {/* Basic Info */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <Weight className="w-5 h-5 text-slate-400" />
+                    <div>
+                      <div className="text-sm text-slate-400">Váha</div>
+                      <div className="font-semibold">{selectedCatch.weight ? `${selectedCatch.weight} kg` : 'Neuvedené'}</div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <Ruler className="w-5 h-5 text-slate-400" />
+                    <div>
+                      <div className="text-sm text-slate-400">Dĺžka</div>
+                      <div className="font-semibold">{selectedCatch.length ? `${selectedCatch.length} cm` : 'Neuvedené'}</div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <MapPin className="w-5 h-5 text-slate-400" />
+                    <div>
+                      <div className="text-sm text-slate-400">Miesto</div>
+                      <div className="font-semibold">{selectedCatch.location || 'Neuvedené'}</div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <Target className="w-5 h-5 text-slate-400" />
+                    <div>
+                      <div className="text-sm text-slate-400">Technika</div>
+                      <div className="font-semibold">{selectedCatch.technique || 'Neuvedené'}</div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <Calendar className="w-5 h-5 text-slate-400" />
+                    <div>
+                      <div className="text-sm text-slate-400">Dátum úlovku</div>
+                      <div className="font-semibold">
+                        {selectedCatch.caughtAt ? new Date(selectedCatch.caughtAt).toLocaleDateString('sk-SK', {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        }) : 'Neuvedené'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Photo */}
+                {selectedCatch.photo && (
+                  <div>
+                    <div className="text-sm text-slate-400 mb-2">Fotografia</div>
+                    <img 
+                      src={selectedCatch.photo} 
+                      alt="Fotografia úlovku"
+                      className="w-full h-48 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                      onClick={() => setLightboxImage(selectedCatch.photo)}
+                    />
+                  </div>
+                )}
+
+                {/* Notes */}
+                {selectedCatch.notes && (
+                  <div>
+                    <div className="text-sm text-slate-400 mb-2">Poznámky</div>
+                    <div className="bg-slate-700/50 rounded-lg p-3 text-sm">
+                      {selectedCatch.notes}
+                    </div>
+                  </div>
+                )}
+
+                {/* Action Button */}
+                <div className="pt-4">
+                  <Button 
+                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    onClick={() => {
+                      setSelectedCatch(null);
+                      setLocation('/diary/catches');
+                    }}
+                  >
+                    Upraviť úlovok
+                  </Button>
+                </div>
+              </div>
+            )}
+          </SheetContent>
+        </Sheet>
+
+        {/* Photo Lightbox */}
+        <Dialog open={!!lightboxImage} onOpenChange={() => setLightboxImage(null)}>
+          <DialogContent className="max-w-4xl max-h-[90vh] p-0 bg-black/90 border-0">
+            <div className="relative flex items-center justify-center h-full">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setLightboxImage(null)}
+                className="absolute top-4 right-4 z-10 text-white hover:bg-white/10"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+              {lightboxImage && (
+                <img 
+                  src={lightboxImage} 
+                  alt="Fotografia úlovku"
+                  className="max-w-full max-h-full object-contain"
+                />
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </DiaryLayout>
   );
