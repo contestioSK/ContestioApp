@@ -77,7 +77,7 @@ export default function Home() {
             </p>
             
             {/* Live Stats Banner */}
-            <div className="inline-flex items-center space-x-8 bg-white/90 backdrop-blur-sm rounded-2xl px-8 py-4 shadow-lg mb-8">
+            <div className="inline-flex items-center space-x-8 bg-card/90 backdrop-blur-sm rounded-2xl px-8 py-4 shadow-lg mb-8">
               <div className="text-center">
                 <div className="text-2xl font-bold text-primary" data-testid="text-live-competitions">
                   {(competitions?.filter((c: Competition) => c.status === 'live')?.length ?? 0)}
@@ -120,7 +120,15 @@ export default function Home() {
       </section>
 
       {/* Contest Categories */}
-      <ContestCategories contests={competitions || []} />
+      <ContestCategories contests={(competitions || []).map(comp => ({
+        id: comp.id,
+        name: comp.name,
+        description: comp.description || '',
+        status: comp.status as 'registration' | 'live' | 'finished',
+        startDate: comp.startDate.toISOString(),
+        endDate: comp.endDate.toISOString(),
+        location: comp.location
+      }))} />
     </div>
   );
 }

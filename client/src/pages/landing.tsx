@@ -113,7 +113,7 @@ export default function Landing() {
         }}
       >
         {/* Background Overlay */}
-        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="absolute inset-0 bg-background/20"></div>
         
         {/* Integrated Navigation */}
         <div className="relative z-20 w-full">
@@ -121,7 +121,7 @@ export default function Landing() {
             <div className="flex items-center justify-between h-16">
               {/* Logo */}
               <Link href="/">
-                <div className="flex items-center space-x-2 text-white">
+                <div className="flex items-center space-x-2 text-primary-foreground">
                   <Fish className="text-2xl" />
                   <span className="text-xl font-bold">Contestio</span>
                 </div>
@@ -134,7 +134,7 @@ export default function Landing() {
                   const IconComponent = item.icon;
                   return (
                     <Link key={item.href} href={item.href}>
-                      <div className="flex items-center space-x-1 text-white/90 hover:text-white transition-colors cursor-pointer" data-testid={`nav-${item.href.slice(1) || 'home'}`}>
+                      <div className="flex items-center space-x-1 text-primary-foreground/90 hover:text-primary-foreground transition-colors cursor-pointer" data-testid={`nav-${item.href.slice(1) || 'home'}`}>
                         <IconComponent className="w-4 h-4" />
                         <span className="text-sm font-medium">{item.label}</span>
                       </div>
@@ -145,7 +145,7 @@ export default function Landing() {
                 {/* CTA Buttons */}
                 <div className="flex items-center space-x-3">
                   <Button asChild
-                    className="bg-blue-600 text-white hover:bg-blue-700 font-medium"
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 font-medium"
                     size="sm"
                     data-testid="button-register"
                   >
@@ -154,7 +154,7 @@ export default function Landing() {
                     </Link>
                   </Button>
                   <Button asChild
-                    className="bg-white text-blue-900 hover:bg-white/90 font-medium"
+                    className="bg-secondary text-secondary-foreground hover:bg-secondary/90 font-medium"
                     size="sm"
                     data-testid="button-login"
                   >
@@ -171,7 +171,7 @@ export default function Landing() {
                   variant="ghost" 
                   size="sm" 
                   onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                  className="text-white hover:bg-white/10"
+                  className="text-primary-foreground hover:bg-primary-foreground/10"
                   data-testid="button-mobile-menu"
                 >
                   {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -181,7 +181,7 @@ export default function Landing() {
 
             {/* Mobile Navigation Menu */}
             {isMobileMenuOpen && (
-              <div className="md:hidden border-t border-white/20 mt-2 pt-4 pb-6">
+              <div className="md:hidden border-t border-primary-foreground/20 mt-2 pt-4 pb-6">
                 <div className="space-y-2">
                   {/* Main Navigation */}
                   {navItems.map((item) => {
@@ -189,7 +189,7 @@ export default function Landing() {
                     return (
                       <Link key={item.href} href={item.href}>
                         <div 
-                          className="flex items-center space-x-3 px-3 py-3 rounded-lg text-white/90 hover:text-white hover:bg-white/10 cursor-pointer transition-all duration-200"
+                          className="flex items-center space-x-3 px-3 py-3 rounded-lg text-primary-foreground/90 hover:text-primary-foreground hover:bg-primary-foreground/10 cursor-pointer transition-all duration-200"
                           onClick={() => setIsMobileMenuOpen(false)}
                           data-testid={`mobile-nav-${item.href.slice(1) || 'home'}`}
                         >
@@ -200,12 +200,12 @@ export default function Landing() {
                     );
                   })}
                   
-                  <div className="border-t border-white/20 my-4"></div>
+                  <div className="border-t border-primary-foreground/20 my-4"></div>
                   
                   {/* CTA Buttons */}
                   <div className="space-y-2">
                     <Button asChild
-                      className="w-full bg-blue-600 text-white hover:bg-blue-700 font-medium"
+                      className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-medium"
                       data-testid="mobile-button-register"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
@@ -214,7 +214,7 @@ export default function Landing() {
                       </Link>
                     </Button>
                     <Button asChild
-                      className="w-full bg-white text-blue-900 hover:bg-white/90 font-medium"
+                      className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/90 font-medium"
                       data-testid="mobile-button-login"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
@@ -232,27 +232,27 @@ export default function Landing() {
         {/* Hero Content */}
         <div className="relative z-10 flex items-center h-full">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight text-white" data-testid="hero-title">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight text-primary-foreground" data-testid="hero-title">
               Súťaže na Slovensku
             </h1>
-            <p className="text-lg md:text-xl text-white/90 mb-4 leading-relaxed" data-testid="hero-subtitle">
+            <p className="text-lg md:text-xl text-primary-foreground/90 mb-4 leading-relaxed" data-testid="hero-subtitle">
               Vytvor si svoj osobný rybársky denník
             </p>
-            <p className="text-lg md:text-xl text-white/90 mb-8 leading-relaxed" data-testid="hero-subtitle-2">
+            <p className="text-lg md:text-xl text-primary-foreground/90 mb-8 leading-relaxed" data-testid="hero-subtitle-2">
               - všetko na jednom mieste
             </p>
             
-            <p className="text-base md:text-lg text-white/80 mb-6" data-testid="hero-description">
+            <p className="text-base md:text-lg text-primary-foreground/80 mb-6" data-testid="hero-description">
               Sleduj live úlovky a rebríčky tímov, alebo
             </p>
-            <p className="text-base md:text-lg text-white/80 mb-8" data-testid="hero-description-2">
+            <p className="text-base md:text-lg text-primary-foreground/80 mb-8" data-testid="hero-description-2">
               si zapisuj svoje úlovky a súťaž s kamarátmi.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/live">
                 <Button 
-                  className="bg-white text-blue-900 hover:bg-white/90 font-semibold px-6 py-3 w-full sm:w-auto"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-6 py-3 w-full sm:w-auto"
                   size="lg"
                   data-testid="button-view-live-competitions"
                 >
@@ -262,7 +262,7 @@ export default function Landing() {
               <Link href="/diary">
                 <Button 
                   variant="outline"
-                  className="border-2 border-white bg-white text-blue-900 hover:bg-white/90 hover:text-blue-900 font-semibold px-6 py-3 w-full sm:w-auto"
+                  className="border-2 border-secondary bg-secondary text-secondary-foreground hover:bg-secondary/90 font-semibold px-6 py-3 w-full sm:w-auto"
                   size="lg"
                   data-testid="button-start-diary-hero"
                 >
