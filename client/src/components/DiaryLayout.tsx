@@ -104,7 +104,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
     <div className="min-h-screen bg-background flex">
       {/* Sidebar */}
       <div className={`
-        fixed inset-y-0 left-0 z-50 bg-sidebar transform transition-transform duration-300 ease-in-out
+        fixed inset-y-0 left-0 z-50 bg-sidebar border-r border-sidebar-border transform transition-transform duration-300 ease-in-out
         w-[280px] md:w-[240px] lg:w-[280px]
         lg:translate-x-0 lg:static lg:inset-0
         md:translate-x-0 md:static md:inset-0
