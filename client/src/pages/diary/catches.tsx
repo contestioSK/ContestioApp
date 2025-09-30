@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useWebSocket } from "@/hooks/useWebSocket";
 import { useDiaryOffline } from "@/hooks/use-diary-offline";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -145,8 +146,18 @@ const getFishIconColor = (fishType?: string) => {
   return "text-blue-400"; // default
 };
 
+type PhotoObject = {
+  id: string;
+  url: string;
+  status: 'processing' | 'ready' | 'failed';
+  originalUrl?: string;
+  variants?: Array<{width: number; format: string; url: string;}>;
+  placeholder?: string;
+  error?: string;
+};
+
 // Photo Carousel Component
-function PhotoCarousel({ photos, onPhotoClick }: { photos: string[], onPhotoClick: (photo: string) => void }) {
+function PhotoCarousel({ photos, onPhotoClick }: { photos: (string | PhotoObject)[], onPhotoClick: (photo: string) => void }) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false });
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -184,23 +195,60 @@ function PhotoCarousel({ photos, onPhotoClick }: { photos: string[], onPhotoClic
     if (emblaApi) emblaApi.scrollTo(index);
   }, [emblaApi]);
 
+  // Helper to get best photo URL
+  const getPhotoUrl = (photo: string | PhotoObject): string => {
+    if (typeof photo === 'string') return photo;
+    
+    // Prefer WebP 800w variant if available
+    const webp800 = photo.variants?.find(v => v.width === 800 && v.format === 'webp');
+    if (webp800) return webp800.url;
+    
+    // Fallback to any 800w variant
+    const any800 = photo.variants?.find(v => v.width === 800);
+    if (any800) return any800.url;
+    
+    // Use main URL
+    return photo.url;
+  };
+
+  // Helper to get photo status
+  const getPhotoStatus = (photo: string | PhotoObject): 'processing' | 'ready' | 'failed' | null => {
+    if (typeof photo === 'string') return null;
+    return photo.status;
+  };
+
   if (photos.length === 0) return null;
 
   return (
     <div className="relative">
       <div className="overflow-hidden rounded-lg" ref={emblaRef}>
         <div className="flex">
-          {photos.map((photo, index) => (
-            <div key={index} className="flex-[0_0_100%] min-w-0">
-              <img 
-                src={photo} 
-                alt={`Fotografia úlovku ${index + 1}`}
-                className="w-full h-64 object-cover cursor-pointer hover:opacity-80 transition-opacity"
-                onClick={() => onPhotoClick(photo)}
-                data-testid={`catch-photo-${index}`}
-              />
-            </div>
-          ))}
+          {photos.map((photo, index) => {
+            const photoUrl = getPhotoUrl(photo);
+            const status = getPhotoStatus(photo);
+            
+            return (
+              <div key={typeof photo === 'string' ? index : photo.id} className="flex-[0_0_100%] min-w-0 relative">
+                <img 
+                  src={photoUrl} 
+                  alt={`Fotografia úlovku ${index + 1}`}
+                  className="w-full h-64 object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => status !== 'processing' && onPhotoClick(photoUrl)}
+                  data-testid={`catch-photo-${index}`}
+                />
+                {status === 'processing' && (
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                    <Loader2 className="w-8 h-8 text-white animate-spin" />
+                  </div>
+                )}
+                {status === 'failed' && (
+                  <div className="absolute inset-0 bg-red-500/50 flex items-center justify-center">
+                    <X className="w-8 h-8 text-white" />
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
       
@@ -260,6 +308,53 @@ export default function DiaryCatches() {
   const { user } = useAuth();
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
+  
+  // WebSocket connection for real-time photo processing updates
+  useWebSocket((message) => {
+    if (message.type === 'diary_photo_processed') {
+      console.log('[Catches] Photo processed:', message);
+      
+      // Update the photo in selectedCatch if it contains this photo
+      if (selectedCatch && message.photoId) {
+        const photoIndex = selectedCatch.photos?.findIndex(p => p.id === message.photoId);
+        if (photoIndex !== undefined && photoIndex >= 0) {
+          setSelectedCatch(prev => {
+            if (!prev || !prev.photos) return prev;
+            const updatedPhotos = [...prev.photos];
+            updatedPhotos[photoIndex] = {
+              ...updatedPhotos[photoIndex],
+              status: message.status,
+              url: message.url || updatedPhotos[photoIndex].url,
+              variants: message.variants || updatedPhotos[photoIndex].variants,
+              placeholder: message.placeholder || updatedPhotos[photoIndex].placeholder,
+              error: message.error
+            };
+            return { ...prev, photos: updatedPhotos };
+          });
+        }
+      }
+
+      // Update the photo in existingPhotos if it's in the current editing catch
+      if (editingCatch && message.photoId) {
+        setExistingPhotos(prev => prev.map(photo => {
+          if (photo.id === message.photoId) {
+            return {
+              ...photo,
+              status: message.status,
+              url: message.url || photo.url,
+              variants: message.variants || photo.variants,
+              placeholder: message.placeholder || photo.placeholder,
+              error: message.error
+            };
+          }
+          return photo;
+        }));
+      }
+
+      // Invalidate catches query to refresh the list
+      queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
+    }
+  });
   
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingCatch, setEditingCatch] = useState<DiaryCatch | null>(null);
@@ -902,10 +997,10 @@ export default function DiaryCatches() {
                           <div className="mb-3">
                             <p className="text-xs text-muted-foreground mb-2">Existujúce fotky:</p>
                             <div className="flex flex-wrap gap-2">
-                              {existingPhotos.map((photoUrl, index) => (
-                                <div key={index} className="relative group">
+                              {existingPhotos.map((photo, index) => (
+                                <div key={photo.id} className="relative group">
                                   <img
-                                    src={photoUrl}
+                                    src={photo.url || photo.originalUrl}
                                     alt={`Existujúca fotka ${index + 1}`}
                                     className="w-20 h-20 object-cover rounded-lg border"
                                   />
