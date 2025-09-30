@@ -2,7 +2,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Plus, Archive, Swords, Users, Clock, Crown, Eye } from "lucide-react";
+import { Trophy, Plus, Archive, Swords, Users, Clock, Crown, Eye, Edit } from "lucide-react";
 import { useLocation } from "wouter";
 import DiaryLayout from "@/components/DiaryLayout";
 import { useQuery } from "@tanstack/react-query";
@@ -100,13 +100,23 @@ export default function BattleIndex() {
                               {new Date(battle.startAt).toLocaleDateString('sk-SK')} - {new Date(battle.endAt).toLocaleDateString('sk-SK')}
                             </span>
                           </div>
-                          <Button
-                            onClick={() => setLocation(`/diary/battle/${battle.id}`)}
-                            data-testid={`button-view-battle-${battle.id}`}
-                          >
-                            <Eye className="w-4 h-4 mr-2" />
-                            Zobraziť detail
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button
+                              onClick={() => setLocation(`/diary/battle/${battle.id}`)}
+                              data-testid={`button-view-battle-${battle.id}`}
+                            >
+                              <Eye className="w-4 h-4 mr-2" />
+                              Zobraziť detail
+                            </Button>
+                            <Button
+                              variant="outline"
+                              onClick={() => setLocation(`/diary/battle/${battle.id}/edit`)}
+                              data-testid={`button-edit-battle-${battle.id}`}
+                            >
+                              <Edit className="w-4 h-4 mr-2" />
+                              Upraviť
+                            </Button>
+                          </div>
                         </div>
                         <Badge className="bg-green-500 text-white">
                           {battle.rules.mode === 'most_fish' && 'Najviac rýb'}

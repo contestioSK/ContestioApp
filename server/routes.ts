@@ -3335,6 +3335,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch battle" });
     }
   });
+
+  // Update battle
+  app.put('/api/diary/battles/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+      
+      // Check if user has access to battle features (PREMIUM gating)
+      const canAccessBattles = await storage.canAccessBattleFeatures(userId);
+      if (!canAccessBattles) {
+        return res.status(403).json({ 
+          message: "Battle functionality is only available for Premium users",
+          code: "PREMIUM_REQUIRED"
+        });
+      }
+
+      // Validate request data
+      const updateSchema = z.object({
+        name: z.string().min(1).max(255).optional(),
+        rules: z.object({
+          mode: z.enum(["most_fish", "total_weight", "biggest_fish", "best_3_fish", "best_5_fish"]),
+          minWeightKg: z.number().optional(),
+          includeOnlyVerified: z.boolean().optional()
+        }).optional(),
+        participants: z.array(z.object({
+          userId: z.string().optional(),
+          name: z.string().min(1)
+        })).optional(),
+        startAt: z.string().or(z.date()).transform((val) => val instanceof Date ? val : new Date(val)).optional(),
+        endAt: z.string().or(z.date()).transform((val) => val instanceof Date ? val : new Date(val)).optional(),
+        status: z.enum(["active", "finished", "canceled"]).optional()
+      });
+
+      const updateData = updateSchema.parse(req.body);
+      
+      const updatedBattle = await storage.updateDiaryBattle(id, updateData, userId);
+      
+      // Broadcast update to all participants
+      broadcastToUsers([userId], {
+        type: 'diary_battle_updated',
+        battleId: id,
+        payload: updatedBattle
+      });
+      
+      res.json(updatedBattle);
+    } catch (error) {
+      console.error("Error updating battle:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid update data", 
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ message: "Failed to update battle" });
+    }
+  });
   
   // Create battle with auto-created trip (recommended flow)
   app.post('/api/diary/battles-with-trip', isAuthenticated, async (req: any, res) => {

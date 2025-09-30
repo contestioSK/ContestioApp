@@ -36,6 +36,7 @@ import DiaryProfile from "@/pages/diary/profile";
 import BattlePaywall from "@/pages/diary/battle-paywall";
 import BattleIndex from "@/pages/diary/battle-index";
 import BattleCreate from "@/pages/diary/battle-create";
+import BattleEdit from "@/pages/diary/battle-edit";
 import BattleDetail from "@/pages/diary/battle-detail";
 import BattleArchive from "@/pages/diary/battle-archive";
 import Register from "@/pages/register";
@@ -131,6 +132,11 @@ function Router() {
       <Route path="/diary/battle/create">
         <ProtectedRoute>
           <BattleCreate />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/diary/battle/:id/edit">
+        <ProtectedRoute>
+          <BattleEdit />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/battle/:id">
