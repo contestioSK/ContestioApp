@@ -166,21 +166,20 @@ export default function DiaryIndex() {
           </h1>
           <div className="flex gap-3">
             <Button 
-              size="lg" 
+              variant="outline"
               onClick={() => setIsStartFishingOpen(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 text-lg font-medium"
+              className="border-cyan-500/50 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-100 hover:text-white transition-all"
               data-testid="button-start-fishing"
             >
-              <Play className="w-5 h-5 mr-2" />
+              <Play className="w-4 h-4 mr-2" />
               Začať rybačku
             </Button>
             <Button 
-              size="lg" 
               onClick={() => setLocation("/diary/catches")}
-              className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 text-lg font-medium"
+              className="bg-emerald-600/90 hover:bg-emerald-600 text-white border border-emerald-500/50 transition-all"
               data-testid="button-add-catch"
             >
-              <Plus className="w-5 h-5 mr-2" />
+              <Plus className="w-4 h-4 mr-2" />
               Pridať Úlovok
             </Button>
           </div>
