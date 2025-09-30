@@ -1,0 +1,21 @@
+Teraz si nasaďme kritické okuliare a pozrime sa na detaily, ktoré by mohli používateľský zážitok posunúť z "dobrého" na "vynikajúci a návykový".
+
+Zameriam sa na 3 kľúčové oblasti:
+
+1. Vizuálna Hierarchia a Skenovateľnosť
+Čo vidím: Úlovky z jedného dňa sú zobrazené vedľa seba v mriežke. Toto narúša prirodzený vertikálny tok a sťažuje rýchle skenovanie úlovkov v chronologickom poradí. Váš zrak musí skákať zľava doprava a potom dole.
+
+Môj návrh: Zmeňme zobrazenie úlovkov na jednoduchý zoznam pod sebou (single-column list). Každý úlovok bude jeden riadok alebo jedna karta. Je to oveľa prirodzenejšie pre skenovanie a zodpovedá to tomu, ako sme zvyknutí čítať obsah na webe (ako Facebook feed).
+
+2. Interaktivita a Priorita Akcií
+Čo vidím: Každá karta úlovku má dve hlavné tlačidlá: "Upraviť" a "Zmazať". Čo je však najčastejšia akcia, ktorú bude používateľ chcieť urobiť? Prezrieť si detail úlovku. Momentálne mu na to neponúkame priamu cestu.
+
+Môj návrh: Spravme celú kartu úlovku klikateľnú. Po kliknutí sa elegantne vysunie bočný panel s detailom, presne ako v našom finálnom prototype. Akcie "Upraviť" a "Zmazať" presunieme priamo do tohto detailu, kde sú kontextovo správne, alebo ich ponecháme na karte ako menej výrazné ikony.
+
+3. Emócia a Dátový Kontext
+Čo vidím: Rybársky denník je predovšetkým o emóciách a spomienkach. V súčasnom zobrazení úplne chýba vizuálny prvok – fotografia úlovku. Zoznam je tak len suchým výpisom dát. Súhrnné karty na vrchu sú síce fajn, ale sú statické.
+
+Môj návrh: Pridajme na každú kartu (alebo riadok) v zozname malý náhľad fotografie úlovku. Okamžite to oživí celú obrazovku a dodá jej emóciu. Zároveň by som jednu zo štyroch súhrnných kariet nahradil za dynamický prvok, napríklad malý graf zobrazujúci počet úlovkov za posledných 30 dní.
+
+Zhrnutie:
+Máte skvelú kostru. Ak do nej teraz vdýchneme život pomocou lepšej hierarchie, intuitívnejšej interaktivity a pridania vizuálnych prvkov, vytvoríme produkt, ktorý budú rybári nielen používať, ale aj milovať.
