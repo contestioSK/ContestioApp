@@ -70,8 +70,8 @@ export default function DiaryIndex() {
 
   // Filter catches for 2025 season (January 15, 2025 onwards)
   const season2025Catches = Array.isArray(allCatches) ? allCatches.filter((catch_: any) => {
-    if (!catch_.caughtAt) return false;
-    const catchDate = new Date(catch_.caughtAt);
+    if (!catch_.capturedAt) return false;
+    const catchDate = new Date(catch_.capturedAt);
     const season2025Start = new Date('2025-01-15');
     return catchDate >= season2025Start;
   }) : [];
@@ -313,7 +313,7 @@ export default function DiaryIndex() {
                     </div>
                     
                     <div className="text-slate-300">
-                      {catch_.caughtAt ? new Date(catch_.caughtAt).toLocaleDateString('sk-SK', {
+                      {catch_.capturedAt ? new Date(catch_.capturedAt).toLocaleDateString('sk-SK', {
                         day: 'numeric',
                         month: 'short',
                         year: 'numeric'
@@ -342,7 +342,7 @@ export default function DiaryIndex() {
                             <span className="text-slate-500">Technika:</span> {catch_.technique || 'N/A'}
                           </div>
                           <div className="col-span-2">
-                            <span className="text-slate-500">Dátum:</span> {catch_.caughtAt ? new Date(catch_.caughtAt).toLocaleDateString('sk-SK', {
+                            <span className="text-slate-500">Dátum:</span> {catch_.capturedAt ? new Date(catch_.capturedAt).toLocaleDateString('sk-SK', {
                               day: 'numeric',
                               month: 'short',
                               year: 'numeric'
@@ -422,7 +422,7 @@ export default function DiaryIndex() {
                     <div>
                       <div className="text-sm text-slate-400">Dátum úlovku</div>
                       <div className="font-semibold">
-                        {selectedCatch.caughtAt ? new Date(selectedCatch.caughtAt).toLocaleDateString('sk-SK', {
+                        {selectedCatch.capturedAt ? new Date(selectedCatch.capturedAt).toLocaleDateString('sk-SK', {
                           weekday: 'long',
                           year: 'numeric',
                           month: 'long',
