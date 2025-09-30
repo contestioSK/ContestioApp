@@ -212,6 +212,7 @@ export default function DiaryCatches() {
       queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
       queryClient.invalidateQueries({ queryKey: ["/api/diary/catch-limits"] });
       setIsCreateDialogOpen(false);
+      setSelectedPhoto(null);
       form.reset();
       toast({
         title: "Úlovok pridaný!",
@@ -232,6 +233,7 @@ export default function DiaryCatches() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
       setEditingCatch(null);
+      setSelectedPhoto(null);
       form.reset();
       toast({
         title: "Úlovok aktualizovaný!",
@@ -305,11 +307,46 @@ export default function DiaryCatches() {
         });
       }
     } else {
-      // Online - use normal mutations
+      // Online - upload photo first if selected, then create/update catch
+      let photoUrls: string[] = [];
+      
+      if (selectedPhoto) {
+        try {
+          const formData = new FormData();
+          formData.append('photos', selectedPhoto);
+          
+          const uploadResponse = await fetch('/api/diary/photos/upload', {
+            method: 'POST',
+            body: formData,
+            credentials: 'include'
+          });
+          
+          if (!uploadResponse.ok) {
+            throw new Error('Failed to upload photo');
+          }
+          
+          const uploadResult = await uploadResponse.json();
+          photoUrls = uploadResult.photos?.map((p: any) => p.url) || [];
+        } catch (error) {
+          console.error('Photo upload error:', error);
+          toast({
+            title: "Chyba pri nahrávaní fotky",
+            description: "Úlovok bude uložený bez fotky",
+            variant: "destructive",
+          });
+        }
+      }
+      
+      // Add photo URLs to processed data
+      const dataWithPhotos = {
+        ...processedData,
+        photos: photoUrls.length > 0 ? photoUrls : (editingCatch?.photos || [])
+      };
+      
       if (editingCatch) {
-        updateCatchMutation.mutate(processedData);
+        updateCatchMutation.mutate(dataWithPhotos);
       } else {
-        createCatchMutation.mutate(processedData);
+        createCatchMutation.mutate(dataWithPhotos);
       }
     }
   };
