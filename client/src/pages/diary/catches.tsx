@@ -244,12 +244,18 @@ export default function DiaryCatches() {
   });
 
   const handleSubmit = async (data: CatchFormData) => {
+    // Convert "none" tripId to undefined (no trip selected)
+    const processedData = {
+      ...data,
+      tripId: data.tripId === "none" ? undefined : data.tripId
+    };
+
     if (isOffline) {
       // Save as draft when offline (with photo if available)
       try {
         const type = editingCatch ? 'update' : deletingCatch ? 'delete' : 'create';
         const originalId = editingCatch?.id || deletingCatch?.id;
-        const catchDataWithPhoto = selectedPhoto ? { ...data, photo: selectedPhoto } : data;
+        const catchDataWithPhoto = selectedPhoto ? { ...processedData, photo: selectedPhoto } : processedData;
         
         await saveCatchDraft(catchDataWithPhoto, type, originalId);
         
@@ -276,9 +282,9 @@ export default function DiaryCatches() {
     } else {
       // Online - use normal mutations
       if (editingCatch) {
-        updateCatchMutation.mutate(data);
+        updateCatchMutation.mutate(processedData);
       } else {
-        createCatchMutation.mutate(data);
+        createCatchMutation.mutate(processedData);
       }
     }
   };
@@ -530,7 +536,7 @@ export default function DiaryCatches() {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="">Bez výpravy</SelectItem>
+                                <SelectItem value="none">Bez výpravy</SelectItem>
                                 {trips.map((trip) => (
                                   <SelectItem key={trip.id} value={trip.id}>
                                     {trip.name} - {format(new Date(trip.startDate), "d. MMM yyyy", { locale: sk })}
