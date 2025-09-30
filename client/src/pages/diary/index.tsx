@@ -237,6 +237,7 @@ export default function DiaryIndex() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [catchToDelete, setCatchToDelete] = useState<string | null>(null);
   const [selectedPhotos, setSelectedPhotos] = useState<File[]>([]);
+  const [existingPhotos, setExistingPhotos] = useState<string[]>([]);
   const { toast } = useToast();
 
   // Filters state
@@ -384,6 +385,7 @@ export default function DiaryIndex() {
       queryClient.invalidateQueries({ queryKey: ["/api/diary/catch-limits"] });
       setIsCreateCatchOpen(false);
       setSelectedPhotos([]);
+      setExistingPhotos([]);
       catchForm.reset();
       toast({
         title: "Úlovok pridaný!",
@@ -406,6 +408,7 @@ export default function DiaryIndex() {
       setIsCreateCatchOpen(false);
       setEditingCatch(null);
       setSelectedPhotos([]);
+      setExistingPhotos([]);
       catchForm.reset();
       toast({
         title: "Úlovok aktualizovaný!",
@@ -492,8 +495,8 @@ export default function DiaryIndex() {
       bait: data.bait === "none" ? undefined : data.bait
     };
 
-    // Upload photos first if selected, then create/update catch
-    let photoUrls: string[] = [];
+    // Upload new photos first if selected
+    let newPhotoUrls: string[] = [];
     
     if (selectedPhotos.length > 0) {
       try {
@@ -513,19 +516,22 @@ export default function DiaryIndex() {
         }
         
         const uploadResult = await uploadResponse.json();
-        photoUrls = uploadResult.photos?.map((p: any) => p.url) || [];
+        newPhotoUrls = uploadResult.photos?.map((p: any) => p.url) || [];
       } catch (error) {
         console.error('Photo upload error:', error);
         toast({
           title: "Chyba pri nahrávaní fotiek",
-          description: "Úlovok bude uložený bez fotiek",
+          description: "Úlovok bude uložený bez nových fotiek",
           variant: "destructive",
         });
       }
     }
 
-    const finalData = photoUrls.length > 0 
-      ? { ...processedData, photos: photoUrls }
+    // Merge existing photos and new photos
+    const allPhotos = [...existingPhotos, ...newPhotoUrls];
+
+    const finalData = allPhotos.length > 0 
+      ? { ...processedData, photos: allPhotos }
       : processedData;
 
     if (editingCatch) {
@@ -550,6 +556,7 @@ export default function DiaryIndex() {
     setIsCreateCatchOpen(false);
     setEditingCatch(null);
     setSelectedPhotos([]);
+    setExistingPhotos([]);
     catchForm.reset();
   };
 
@@ -557,6 +564,7 @@ export default function DiaryIndex() {
     setEditingCatch(catch_);
     setSelectedCatch(null); // Close detail sheet
     setIsCreateCatchOpen(true); // Open dialog
+    setExistingPhotos(catch_.photos || []); // Load existing photos
     
     // Pre-fill form with catch data
     catchForm.reset({
@@ -1138,32 +1146,72 @@ export default function DiaryIndex() {
                         </Badge>
                       )}
                     </div>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      onChange={(e) => {
-                        const files = Array.from(e.target.files || []);
-                        if (files.length > maxPhotos) {
-                          toast({
-                            title: "Príliš veľa fotiek",
-                            description: `Môžete nahrať maximálne ${maxPhotos} ${maxPhotos === 1 ? 'fotku' : 'fotiek'}.`,
-                            variant: "destructive",
-                          });
-                          e.target.value = '';
-                          return;
-                        }
-                        setSelectedPhotos(files);
-                      }}
-                      data-testid="input-photos"
-                    />
-                    <p className="text-sm text-muted-foreground">
-                      {isPremium 
-                        ? "Vyberte až 5 fotiek naraz" 
-                        : "Vyberte 1 fotku"}
-                    </p>
+                    
+                    {/* Existing photos (when editing) */}
+                    {existingPhotos.length > 0 && (
+                      <div className="mb-3">
+                        <p className="text-xs text-muted-foreground mb-2">Existujúce fotky:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {existingPhotos.map((photoUrl, index) => (
+                            <div key={index} className="relative group">
+                              <img
+                                src={photoUrl}
+                                alt={`Existujúca fotka ${index + 1}`}
+                                className="w-20 h-20 object-cover rounded-lg border"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setExistingPhotos(prev => prev.filter((_, i) => i !== index));
+                                }}
+                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                data-testid={`button-remove-photo-${index}`}
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Upload new photos if under limit */}
+                    {(existingPhotos.length + selectedPhotos.length) < maxPhotos && (
+                      <>
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          multiple={isPremium}
+                          onChange={(e) => {
+                            const files = Array.from(e.target.files || []);
+                            const totalPhotos = existingPhotos.length + selectedPhotos.length + files.length;
+                            const remainingSlots = maxPhotos - existingPhotos.length - selectedPhotos.length;
+                            
+                            if (totalPhotos > maxPhotos) {
+                              toast({
+                                title: "Príliš veľa fotiek",
+                                description: `Môžete mať celkovo maximálne ${maxPhotos} ${maxPhotos === 1 ? 'fotku' : 'fotiek'}. Môžete pridať ešte ${remainingSlots}.`,
+                                variant: "destructive",
+                              });
+                              e.target.value = '';
+                              return;
+                            }
+                            setSelectedPhotos([...selectedPhotos, ...files]);
+                            e.target.value = ''; // Reset input to allow same file again
+                          }}
+                          data-testid="input-photos"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          {isPremium 
+                            ? `Môžete vybrať viacero fotiek naraz (Ctrl+klik alebo Cmd+klik)`
+                            : `FREE verzia: ${existingPhotos.length > 0 ? 'Limit fotiek dosiahnutý' : '1 fotka na úlovok'}`
+                          }
+                        </p>
+                      </>
+                    )}
+                    
                     {selectedPhotos.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-2 mt-2">
                         {selectedPhotos.map((photo, index) => (
                           <Badge key={index} variant="secondary" className="flex items-center gap-1">
                             <Camera className="w-3 h-3" />
