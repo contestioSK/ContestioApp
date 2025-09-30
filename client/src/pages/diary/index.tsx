@@ -2,10 +2,18 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Fish, Plus, X, Calendar, MapPin, Target, Ruler, Weight, Swords, Trophy, Crown } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Fish, Plus, X, Calendar, MapPin, Target, Ruler, Weight, Swords, Trophy, Crown, Play } from "lucide-react";
 import { useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import DiaryLayout from "@/components/DiaryLayout";
 import { getFishTypeLabel } from "@/utils/fishTypeMapping";
 import { useState } from "react";
@@ -30,11 +38,21 @@ const getFishIconColor = (fishType?: string) => {
   return "text-blue-400"; // default
 };
 
+// Quick start fishing form schema
+const quickStartSchema = z.object({
+  location: z.string().min(1, "Lokalita je povinná"),
+  notes: z.string().optional(),
+});
+
+type QuickStartFormData = z.infer<typeof quickStartSchema>;
+
 export default function DiaryIndex() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const [selectedCatch, setSelectedCatch] = useState<any>(null);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  const [isStartFishingOpen, setIsStartFishingOpen] = useState(false);
+  const { toast } = useToast();
 
   // Load all catches for statistics
   const { data: allCatches = [] } = useQuery({
@@ -89,6 +107,55 @@ export default function DiaryIndex() {
     })()
   };
 
+  // Quick start fishing form
+  const quickStartForm = useForm<QuickStartFormData>({
+    resolver: zodResolver(quickStartSchema),
+    defaultValues: {
+      location: "",
+      notes: "",
+    }
+  });
+
+  // Create quick trip mutation
+  const createQuickTripMutation = useMutation({
+    mutationFn: async (data: QuickStartFormData) => {
+      const today = new Date();
+      const tripData = {
+        name: `Rybačka ${today.toLocaleDateString('sk-SK')}`,
+        startDate: today,
+        endDate: today, // Single day trip
+        location: data.location,
+        notes: data.notes || "",
+        visibility: "private" as const,
+        participants: []
+      };
+      const response = await apiRequest("POST", "/api/diary/trips", tripData);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/diary/trips"] });
+      setIsStartFishingOpen(false);
+      quickStartForm.reset();
+      toast({
+        title: "Rybačka začatá!",
+        description: "Teraz môžete pridávať úlovky.",
+      });
+      // Redirect to catches page to add first catch
+      setLocation("/diary/catches");
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Chyba",
+        description: error.message || "Nepodarilo sa začať rybačku",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const handleQuickStart = (data: QuickStartFormData) => {
+    createQuickTripMutation.mutate(data);
+  };
+
   return (
     <DiaryLayout>
       <div className="p-6">
@@ -97,15 +164,26 @@ export default function DiaryIndex() {
           <h1 className="text-3xl font-bold text-white">
             Môj rybársky denník
           </h1>
-          <Button 
-            size="lg" 
-            onClick={() => setLocation("/diary/catches")}
-            className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 text-lg font-medium"
-            data-testid="button-add-catch"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            Pridať Úlovok
-          </Button>
+          <div className="flex gap-3">
+            <Button 
+              size="lg" 
+              onClick={() => setIsStartFishingOpen(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 text-lg font-medium"
+              data-testid="button-start-fishing"
+            >
+              <Play className="w-5 h-5 mr-2" />
+              Začať rybačku
+            </Button>
+            <Button 
+              size="lg" 
+              onClick={() => setLocation("/diary/catches")}
+              className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 text-lg font-medium"
+              data-testid="button-add-catch"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Pridať Úlovok
+            </Button>
+          </div>
         </div>
 
         {/* Summary Cards */}
@@ -417,6 +495,96 @@ export default function DiaryIndex() {
                 />
               )}
             </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Quick Start Fishing Dialog */}
+        <Dialog open={isStartFishingOpen} onOpenChange={setIsStartFishingOpen}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Play className="w-5 h-5 text-blue-500" />
+                Začať rybačku
+              </DialogTitle>
+              <DialogDescription>
+                Rýchlo spustite jednodňovú rybačku. Stačí zadať lokalitu a môžete pridávať úlovky.
+              </DialogDescription>
+            </DialogHeader>
+            <Form {...quickStartForm}>
+              <form onSubmit={quickStartForm.handleSubmit(handleQuickStart)} className="space-y-4">
+                <FormField
+                  control={quickStartForm.control}
+                  name="location"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Lokalita *</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                          <Input 
+                            placeholder="napr. Dunaj - Bratislava" 
+                            className="pl-10"
+                            data-testid="input-quick-location"
+                            {...field} 
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={quickStartForm.control}
+                  name="notes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Poznámka (voliteľné)</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Rýchle poznámky o dnešnej rybačke..."
+                          className="resize-none"
+                          rows={3}
+                          data-testid="textarea-quick-notes"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="flex gap-3 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsStartFishingOpen(false)}
+                    className="flex-1"
+                    data-testid="button-cancel-quick-start"
+                  >
+                    Zrušiť
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={createQuickTripMutation.isPending}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700"
+                    data-testid="button-submit-quick-start"
+                  >
+                    {createQuickTripMutation.isPending ? (
+                      <>
+                        <Calendar className="w-4 h-4 mr-2 animate-spin" />
+                        Vytváram...
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-4 h-4 mr-2" />
+                        Začať rybačku
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </Form>
           </DialogContent>
         </Dialog>
       </div>
