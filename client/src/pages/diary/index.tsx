@@ -1,6 +1,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -424,7 +425,8 @@ export default function DiaryIndex() {
               Začať rybačku
             </Button>
             <Button 
-              onClick={() => setLocation("/diary/catches")}
+              onClick={() => setIsCreateCatchOpen(true)}
+              disabled={limits && !limits.canCreate}
               className="bg-emerald-600/90 hover:bg-emerald-600 text-white border border-emerald-500/50 transition-all"
               data-testid="button-add-catch"
             >
@@ -893,6 +895,316 @@ export default function DiaryIndex() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* Create Catch Dialog */}
+        <Dialog open={isCreateCatchOpen} onOpenChange={closeCreateCatchDialog}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Nový úlovok</DialogTitle>
+              <DialogDescription>
+                Pridajte nový úlovok do vášho rybárskeho denníka.
+              </DialogDescription>
+            </DialogHeader>
+
+            <Form {...catchForm}>
+              <form onSubmit={catchForm.handleSubmit(handleCatchSubmit)} className="space-y-6">
+                {/* Basic Information */}
+                <div className="space-y-4">
+                  <FormField
+                    control={catchForm.control}
+                    name="tripId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Výprava (voliteľné)</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger data-testid="select-trip">
+                              <SelectValue placeholder="Vyberte výpravu" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="none">Bez výpravy</SelectItem>
+                            {trips.map((trip) => (
+                              <SelectItem key={trip.id} value={trip.id}>
+                                {trip.name} - {format(new Date(trip.startDate), "d. MMM yyyy", { locale: sk })}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={catchForm.control}
+                    name="angler.name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Rybár</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Meno rybára" data-testid="input-angler-name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Photo Upload */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <FormLabel>Fotky úlovku (voliteľné)</FormLabel>
+                      {!isPremium && (
+                        <Badge variant="outline" className="text-xs">
+                          FREE: max 1 fotka
+                        </Badge>
+                      )}
+                      {isPremium && (
+                        <Badge variant="secondary" className="text-xs">
+                          PREMIUM: až {maxPhotos} fotiek
+                        </Badge>
+                      )}
+                    </div>
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      multiple={isPremium}
+                      onChange={(e) => {
+                        const files = Array.from(e.target.files || []);
+                        if (files.length > maxPhotos) {
+                          toast({
+                            title: "Príliš veľa fotiek",
+                            description: `Môžete nahrať maximálne ${maxPhotos} ${maxPhotos === 1 ? 'fotku' : 'fotiek'}.`,
+                            variant: "destructive",
+                          });
+                          e.target.value = '';
+                          return;
+                        }
+                        setSelectedPhotos(files);
+                      }}
+                      data-testid="input-photos"
+                    />
+                    {selectedPhotos.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {selectedPhotos.map((photo, index) => (
+                          <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                            <Camera className="w-3 h-3" />
+                            {photo.name}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedPhotos(prev => prev.filter((_, i) => i !== index));
+                              }}
+                              className="ml-1 hover:text-red-500"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <FormField
+                    control={catchForm.control}
+                    name="capturedAt"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel>Čas chytenia</FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                className={cn(
+                                  "w-full pl-3 text-left font-normal",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                                data-testid="button-capture-date"
+                              >
+                                {field.value ? (
+                                  format(field.value, "PPP", { locale: sk })
+                                ) : (
+                                  <span>Vyberte dátum</span>
+                                )}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              disabled={(date) =>
+                                date > new Date() || date < new Date("1900-01-01")
+                              }
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* Fish Details */}
+                <div className="space-y-4">
+                  <FormField
+                    control={catchForm.control}
+                    name="fishType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Druh ryby</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger data-testid="select-fish-type">
+                              <SelectValue placeholder="Vyberte druh ryby" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {getFishTypeOptions().map((option) => (
+                              <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={catchForm.control}
+                      name="weight"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Váha (kg)</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="text" 
+                              placeholder="napr. 5.2" 
+                              data-testid="input-weight"
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={catchForm.control}
+                      name="lengthCm"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Dĺžka (cm)</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              placeholder="napr. 65" 
+                              data-testid="input-length"
+                              {...field}
+                              value={field.value ?? ''}
+                              onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={catchForm.control}
+                    name="bait"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nástraha</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger data-testid="select-bait">
+                              <SelectValue placeholder="Vyberte nástrahu" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="none">Neuvedené</SelectItem>
+                            {fishingMethods.map((method) => (
+                              <SelectItem key={method} value={method}>
+                                {method}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={catchForm.control}
+                    name="spot"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Revír / Miesto</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="napr. Dunaj pri Bratislave" 
+                            data-testid="input-spot"
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={catchForm.control}
+                    name="notes"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Poznámky</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Dodatočné poznámky k úlovku..."
+                            className="resize-none"
+                            rows={3}
+                            data-testid="textarea-notes"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={closeCreateCatchDialog}
+                    className="flex-1"
+                  >
+                    Zrušiť
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    className="flex-1"
+                    disabled={createCatchMutation.isPending}
+                    data-testid="button-submit-catch"
+                  >
+                    Pridať úlovok
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
 
         {/* Quick Start Fishing Dialog */}
         <Dialog open={isStartFishingOpen} onOpenChange={setIsStartFishingOpen}>
