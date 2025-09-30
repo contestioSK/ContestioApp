@@ -3855,7 +3855,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Catch not found" });
       }
       
-      const updatedCatch = await storage.updateDiaryCatch(catchId, req.body, userId);
+      // Convert capturedAt string to Date object if present
+      const updateData = { ...req.body };
+      if (updateData.capturedAt) {
+        updateData.capturedAt = new Date(updateData.capturedAt);
+      }
+      
+      const updatedCatch = await storage.updateDiaryCatch(catchId, updateData, userId);
       
       // Update seasonal goals progress after catch update
       await storage.updateAllUserGoalsProgress(userId);
