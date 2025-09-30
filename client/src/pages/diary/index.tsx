@@ -261,26 +261,47 @@ export default function DiaryIndex() {
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8">
-          <Card className="bg-slate-700/50 border-slate-600" data-testid="card-season-catches">
+          <Card className="bg-gradient-to-br from-blue-600/20 to-cyan-600/20 border-blue-500/30" data-testid="card-season-catches">
             <CardContent className="p-6">
-              <div className="text-sm text-slate-400 mb-1">Úlovky (Sezóna 2025)</div>
-              <div className="text-3xl font-bold text-white" data-testid="text-total-catches">{diaryStats.totalCatches}</div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-slate-700/50 border-slate-600" data-testid="card-biggest-fish">
-            <CardContent className="p-6">
-              <div className="text-sm text-slate-400 mb-1">Najväčšia Ryba</div>
-              <div className="text-3xl font-bold text-white" data-testid="text-biggest-fish">
-                {diaryStats.biggestFish > 0 ? `${diaryStats.biggestFish.toFixed(1)} kg` : '0 kg'}
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-blue-600/30 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Fish className="w-6 h-6 text-blue-300" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm text-slate-300 mb-1">Úlovky (Sezóna 2025)</div>
+                  <div className="text-3xl font-bold text-white" data-testid="text-total-catches">{diaryStats.totalCatches}</div>
+                </div>
               </div>
             </CardContent>
           </Card>
           
-          <Card className="bg-slate-700/50 border-slate-600" data-testid="card-days-at-water">
+          <Card className="bg-gradient-to-br from-emerald-600/20 to-green-600/20 border-emerald-500/30" data-testid="card-biggest-fish">
             <CardContent className="p-6">
-              <div className="text-sm text-slate-400 mb-1">Dni Pri Vode (Sezóna 2025)</div>
-              <div className="text-3xl font-bold text-white" data-testid="text-days-at-water">{diaryStats.daysAtWater}</div>
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-emerald-600/30 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Weight className="w-6 h-6 text-emerald-300" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm text-slate-300 mb-1">Najväčšia Ryba</div>
+                  <div className="text-3xl font-bold text-white" data-testid="text-biggest-fish">
+                    {diaryStats.biggestFish > 0 ? `${diaryStats.biggestFish.toFixed(1)} kg` : '0 kg'}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 border-purple-500/30" data-testid="card-days-at-water">
+            <CardContent className="p-6">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-purple-600/30 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Calendar className="w-6 h-6 text-purple-300" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm text-slate-300 mb-1">Dni Pri Vode (Sezóna 2025)</div>
+                  <div className="text-3xl font-bold text-white" data-testid="text-days-at-water">{diaryStats.daysAtWater}</div>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
