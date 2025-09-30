@@ -21,7 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import DiaryLayout from "@/components/DiaryLayout";
 import { getFishTypeLabel, getFishTypeOptions } from "@/utils/fishTypeMapping";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -242,7 +242,7 @@ export default function DiaryIndex() {
   const catchForm = useForm<CatchFormData>({
     resolver: zodResolver(catchFormSchema),
     defaultValues: {
-      angler: { name: user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : "" },
+      angler: { name: "" },
       capturedAt: new Date(),
       weight: "",
       fishType: "kapor_supinac",
@@ -252,6 +252,13 @@ export default function DiaryIndex() {
       verified: false
     }
   });
+
+  // Update form when user loads
+  useEffect(() => {
+    if (user && user.firstName) {
+      catchForm.setValue('angler.name', `${user.firstName} ${user.lastName || ''}`.trim());
+    }
+  }, [user, catchForm]);
 
   // Create catch mutation
   const createCatchMutation = useMutation({
@@ -907,7 +914,14 @@ export default function DiaryIndex() {
             </DialogHeader>
 
             <Form {...catchForm}>
-              <form onSubmit={catchForm.handleSubmit(handleCatchSubmit)} className="space-y-6">
+              <form onSubmit={catchForm.handleSubmit(handleCatchSubmit, (errors) => {
+                console.error('Form validation errors:', errors);
+                toast({
+                  title: "Chyba vo formulári",
+                  description: "Prosím skontrolujte všetky povinné polia",
+                  variant: "destructive"
+                });
+              })} className="space-y-6">
                 {/* Basic Information */}
                 <div className="space-y-4">
                   <FormField
