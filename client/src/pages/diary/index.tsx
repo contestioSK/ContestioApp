@@ -122,8 +122,8 @@ export default function DiaryIndex() {
       const today = new Date();
       const tripData = {
         name: `Rybačka ${today.toLocaleDateString('sk-SK')}`,
-        startDate: today,
-        endDate: today, // Single day trip
+        startDate: today.toISOString(),
+        endDate: today.toISOString(), // Single day trip
         location: data.location,
         notes: data.notes || "",
         visibility: "private" as const,
