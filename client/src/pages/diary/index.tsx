@@ -1,12 +1,16 @@
 import { useAuth } from "@/hooks/useAuth";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Fish, Plus, X, Calendar, MapPin, Target, Ruler, Weight, Swords, Trophy, Crown, Play } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Fish, Plus, X, MapPin, Target, Ruler, Weight, Swords, Trophy, Crown, Play, Edit2, Trash2, CalendarIcon } from "lucide-react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -15,8 +19,11 @@ import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import DiaryLayout from "@/components/DiaryLayout";
-import { getFishTypeLabel } from "@/utils/fishTypeMapping";
+import { getFishTypeLabel, getFishTypeOptions } from "@/utils/fishTypeMapping";
 import { useState } from "react";
+import { format } from "date-fns";
+import { sk } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 // Function to get fish icon based on fish type
 const getFishIcon = (fishType?: string) => {
@@ -52,7 +59,14 @@ export default function DiaryIndex() {
   const [selectedCatch, setSelectedCatch] = useState<any>(null);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [isStartFishingOpen, setIsStartFishingOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [catchToDelete, setCatchToDelete] = useState<string | null>(null);
   const { toast } = useToast();
+
+  // Filters state
+  const [selectedTechnique, setSelectedTechnique] = useState<string>("all");
+  const [selectedFishType, setSelectedFishType] = useState<string>("all");
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
 
   // Load all catches for statistics
   const { data: allCatches = [] } = useQuery({
@@ -76,6 +90,32 @@ export default function DiaryIndex() {
     return catchDate >= season2025Start;
   }) : [];
 
+  // Apply filters to catches
+  const filteredCatches = season2025Catches.filter((catch_: any) => {
+    // Filter by technique
+    if (selectedTechnique !== "all" && catch_.bait !== selectedTechnique) {
+      return false;
+    }
+    
+    // Filter by fish type
+    if (selectedFishType !== "all" && catch_.fishType !== selectedFishType) {
+      return false;
+    }
+    
+    // Filter by date
+    if (selectedDate) {
+      const catchDate = new Date(catch_.capturedAt);
+      if (catchDate.toDateString() !== selectedDate.toDateString()) {
+        return false;
+      }
+    }
+    
+    return true;
+  });
+
+  // Get unique techniques for filter dropdown
+  const uniqueTechniques = Array.from(new Set(season2025Catches.map((c: any) => c.bait).filter(Boolean)));
+
   // Calculate statistics from 2025 season catches
   const diaryStats = {
     totalCatches: season2025Catches.length,
@@ -85,25 +125,18 @@ export default function DiaryIndex() {
           return isNaN(weight) ? 0 : weight;
         }))
       : 0,
-    mostSuccessfulTechnique: (() => {
-      if (season2025Catches.length === 0) return "Žiadna";
+    daysAtWater: (() => {
+      if (season2025Catches.length === 0) return 0;
       
-      // Count technique usage from 2025 season only
-      const techniqueCount = season2025Catches.reduce((acc: any, catch_: any) => {
-        const technique = catch_.technique || 'Neznáma';
-        acc[technique] = (acc[technique] || 0) + 1;
-        return acc;
-      }, {});
-      
-      // Find most used technique
-      const techniques = Object.entries(techniqueCount);
-      if (techniques.length === 0) return 'Neznáma';
-      
-      const mostUsed = techniques.reduce((a: any, b: any) => 
-        a[1] > b[1] ? a : b
+      // Get unique dates (days) with catches
+      const uniqueDates = new Set(
+        season2025Catches.map((catch_: any) => {
+          const date = new Date(catch_.capturedAt);
+          return date.toDateString();
+        })
       );
       
-      return mostUsed[0];
+      return uniqueDates.size;
     })()
   };
 
@@ -123,7 +156,7 @@ export default function DiaryIndex() {
       const tripData = {
         name: `Rybačka ${today.toLocaleDateString('sk-SK')}`,
         startDate: today.toISOString(),
-        endDate: today.toISOString(), // Single day trip
+        endDate: today.toISOString(),
         location: data.location,
         notes: data.notes || "",
         visibility: "private" as const,
@@ -140,7 +173,6 @@ export default function DiaryIndex() {
         title: "Rybačka začatá!",
         description: "Teraz môžete pridávať úlovky.",
       });
-      // Redirect to catches page to add first catch
       setLocation("/diary/catches");
     },
     onError: (error: Error) => {
@@ -152,8 +184,43 @@ export default function DiaryIndex() {
     }
   });
 
+  // Delete catch mutation
+  const deleteCatchMutation = useMutation({
+    mutationFn: async (catchId: string) => {
+      await apiRequest("DELETE", `/api/diary/catches/${catchId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
+      setSelectedCatch(null);
+      setCatchToDelete(null);
+      setDeleteDialogOpen(false);
+      toast({
+        title: "Úlovok zmazaný",
+        description: "Úlovok bol úspešne odstránený z denníka.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Chyba",
+        description: error.message || "Nepodarilo sa zmazať úlovok",
+        variant: "destructive",
+      });
+    }
+  });
+
   const handleQuickStart = (data: QuickStartFormData) => {
     createQuickTripMutation.mutate(data);
+  };
+
+  const handleDeleteCatch = () => {
+    if (catchToDelete) {
+      deleteCatchMutation.mutate(catchToDelete);
+    }
+  };
+
+  const openDeleteDialog = (catchId: string) => {
+    setCatchToDelete(catchId);
+    setDeleteDialogOpen(true);
   };
 
   return (
@@ -189,8 +256,8 @@ export default function DiaryIndex() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8">
           <Card className="bg-slate-700/50 border-slate-600" data-testid="card-season-catches">
             <CardContent className="p-6">
-              <div className="text-sm text-slate-400 mb-1">Sezóna 2025</div>
-              <div className="text-3xl font-bold text-white" data-testid="text-total-catches">{diaryStats.totalCatches} úlovkov</div>
+              <div className="text-sm text-slate-400 mb-1">Úlovky (Sezóna 2025)</div>
+              <div className="text-3xl font-bold text-white" data-testid="text-total-catches">{diaryStats.totalCatches}</div>
             </CardContent>
           </Card>
           
@@ -203,10 +270,10 @@ export default function DiaryIndex() {
             </CardContent>
           </Card>
           
-          <Card className="bg-slate-700/50 border-slate-600" data-testid="card-best-technique">
+          <Card className="bg-slate-700/50 border-slate-600" data-testid="card-days-at-water">
             <CardContent className="p-6">
-              <div className="text-sm text-slate-400 mb-1">Najúspešnejšia Technika</div>
-              <div className="text-3xl font-bold text-white" data-testid="text-best-technique">{diaryStats.mostSuccessfulTechnique}</div>
+              <div className="text-sm text-slate-400 mb-1">Dni Pri Vode (Sezóna 2025)</div>
+              <div className="text-3xl font-bold text-white" data-testid="text-days-at-water">{diaryStats.daysAtWater}</div>
             </CardContent>
           </Card>
         </div>
@@ -267,6 +334,77 @@ export default function DiaryIndex() {
           </CardContent>
         </Card>
 
+        {/* Filters */}
+        <div className="flex flex-wrap gap-3 mb-6">
+          <Select value={selectedTechnique} onValueChange={setSelectedTechnique}>
+            <SelectTrigger className="w-[200px] bg-slate-700/50 border-slate-600 text-white" data-testid="filter-technique">
+              <SelectValue placeholder="Všetky Techniky" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Všetky Techniky</SelectItem>
+              {uniqueTechniques.map((technique: string) => (
+                <SelectItem key={technique} value={technique}>
+                  {technique}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={selectedFishType} onValueChange={setSelectedFishType}>
+            <SelectTrigger className="w-[200px] bg-slate-700/50 border-slate-600 text-white" data-testid="filter-fish-type">
+              <SelectValue placeholder="Všetky Druhy" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Všetky Druhy</SelectItem>
+              {getFishTypeOptions().map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-[200px] justify-start text-left font-normal bg-slate-700/50 border-slate-600 text-white hover:bg-slate-700/70",
+                  !selectedDate && "text-slate-400"
+                )}
+                data-testid="filter-date"
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {selectedDate ? format(selectedDate, "dd. MMM yyyy", { locale: sk }) : "Vybrať dátum"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={setSelectedDate}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+
+          {(selectedTechnique !== "all" || selectedFishType !== "all" || selectedDate) && (
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setSelectedTechnique("all");
+                setSelectedFishType("all");
+                setSelectedDate(undefined);
+              }}
+              className="text-slate-400 hover:text-white"
+              data-testid="button-clear-filters"
+            >
+              <X className="w-4 h-4 mr-2" />
+              Zrušiť filtre
+            </Button>
+          )}
+        </div>
+
         {/* Catches Table */}
         <Card className="bg-slate-800/50 border-slate-600 overflow-hidden">
           <CardContent className="p-0">
@@ -280,8 +418,8 @@ export default function DiaryIndex() {
             </div>
             
             {/* Table Rows */}
-            {season2025Catches.length > 0 ? (
-              season2025Catches.slice(0, 6).map((catch_: any, index: number) => (
+            {filteredCatches.length > 0 ? (
+              filteredCatches.map((catch_: any, index: number) => (
                 <div 
                   key={catch_.id || index} 
                   className="border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors cursor-pointer"
@@ -300,23 +438,19 @@ export default function DiaryIndex() {
                     </div>
                     
                     <div className="text-white font-semibold">
-                      {catch_.weight ? `${catch_.weight} kg` : catch_.length ? `${catch_.length} cm` : 'N/A'}
+                      {catch_.weight ? `${catch_.weight} kg` : catch_.lengthCm ? `${catch_.lengthCm} cm` : 'N/A'}
                     </div>
                     
                     <div className="text-slate-300">
-                      {catch_.location || 'Neznáme miesto'}
+                      {catch_.spot || 'Neznáme miesto'}
                     </div>
                     
                     <div className="text-slate-300">
-                      {catch_.technique || 'Neznáma'}
+                      {catch_.bait || 'Neznáma'}
                     </div>
                     
                     <div className="text-slate-300">
-                      {catch_.capturedAt ? new Date(catch_.capturedAt).toLocaleDateString('sk-SK', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric'
-                      }) : 'N/A'}
+                      {catch_.capturedAt ? format(new Date(catch_.capturedAt), "dd. MMM yyyy", { locale: sk }) : 'N/A'}
                     </div>
                   </div>
 
@@ -331,21 +465,17 @@ export default function DiaryIndex() {
                           {catch_.fishType ? getFishTypeLabel(catch_.fishType) : 'Neznámy druh'}
                         </div>
                         <div className="text-white/80 text-sm mb-2">
-                          {catch_.weight ? `${catch_.weight} kg` : catch_.length ? `${catch_.length} cm` : 'N/A'}
+                          {catch_.weight ? `${catch_.weight} kg` : catch_.lengthCm ? `${catch_.lengthCm} cm` : 'N/A'}
                         </div>
                         <div className="grid grid-cols-2 gap-2 text-xs text-slate-400">
                           <div>
-                            <span className="text-slate-500">Miesto:</span> {catch_.location || 'N/A'}
+                            <span className="text-slate-500">Miesto:</span> {catch_.spot || 'N/A'}
                           </div>
                           <div>
-                            <span className="text-slate-500">Technika:</span> {catch_.technique || 'N/A'}
+                            <span className="text-slate-500">Technika:</span> {catch_.bait || 'N/A'}
                           </div>
                           <div className="col-span-2">
-                            <span className="text-slate-500">Dátum:</span> {catch_.capturedAt ? new Date(catch_.capturedAt).toLocaleDateString('sk-SK', {
-                              day: 'numeric',
-                              month: 'short',
-                              year: 'numeric'
-                            }) : 'N/A'}
+                            <span className="text-slate-500">Dátum:</span> {catch_.capturedAt ? format(new Date(catch_.capturedAt), "dd. MMM yyyy", { locale: sk }) : 'N/A'}
                           </div>
                         </div>
                       </div>
@@ -356,13 +486,19 @@ export default function DiaryIndex() {
             ) : (
               <div className="p-8 text-center">
                 <Fish className="w-12 h-12 text-slate-500 mx-auto mb-4" />
-                <p className="text-slate-400 mb-4">Zatiaľ nemáte žiadne úlovky</p>
-                <Button 
-                  onClick={() => setLocation("/diary/catches")}
-                  className="bg-green-600 hover:bg-green-700"
-                >
-                  Pridať prvý úlovok
-                </Button>
+                <p className="text-slate-400 mb-4">
+                  {season2025Catches.length === 0 
+                    ? "Zatiaľ nemáte žiadne úlovky" 
+                    : "Žiadne úlovky nevyhovujú zvoleným filtrom"}
+                </p>
+                {season2025Catches.length === 0 && (
+                  <Button 
+                    onClick={() => setLocation("/diary/catches")}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    Pridať prvý úlovok
+                  </Button>
+                )}
               </div>
             )}
           </CardContent>
@@ -382,6 +518,19 @@ export default function DiaryIndex() {
 
             {selectedCatch && (
               <div className="space-y-6">
+                {/* Photo */}
+                {selectedCatch.photos && selectedCatch.photos.length > 0 && (
+                  <div>
+                    <img 
+                      src={selectedCatch.photos[0]} 
+                      alt="Fotografia úlovku"
+                      className="w-full h-64 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                      onClick={() => setLightboxImage(selectedCatch.photos[0])}
+                      data-testid="catch-photo"
+                    />
+                  </div>
+                )}
+
                 {/* Basic Info */}
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
@@ -396,55 +545,36 @@ export default function DiaryIndex() {
                     <Ruler className="w-5 h-5 text-slate-400" />
                     <div>
                       <div className="text-sm text-slate-400">Dĺžka</div>
-                      <div className="font-semibold">{selectedCatch.length ? `${selectedCatch.length} cm` : 'Neuvedené'}</div>
+                      <div className="font-semibold">{selectedCatch.lengthCm ? `${selectedCatch.lengthCm} cm` : 'Neuvedené'}</div>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-3">
                     <MapPin className="w-5 h-5 text-slate-400" />
                     <div>
-                      <div className="text-sm text-slate-400">Miesto</div>
-                      <div className="font-semibold">{selectedCatch.location || 'Neuvedené'}</div>
+                      <div className="text-sm text-slate-400">Revír</div>
+                      <div className="font-semibold">{selectedCatch.spot || 'Neuvedené'}</div>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-3">
                     <Target className="w-5 h-5 text-slate-400" />
                     <div>
-                      <div className="text-sm text-slate-400">Technika</div>
-                      <div className="font-semibold">{selectedCatch.technique || 'Neuvedené'}</div>
+                      <div className="text-sm text-slate-400">Nástraha</div>
+                      <div className="font-semibold">{selectedCatch.bait || 'Neuvedené'}</div>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <Calendar className="w-5 h-5 text-slate-400" />
+                    <CalendarIcon className="w-5 h-5 text-slate-400" />
                     <div>
                       <div className="text-sm text-slate-400">Dátum úlovku</div>
                       <div className="font-semibold">
-                        {selectedCatch.capturedAt ? new Date(selectedCatch.capturedAt).toLocaleDateString('sk-SK', {
-                          weekday: 'long',
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        }) : 'Neuvedené'}
+                        {selectedCatch.capturedAt ? format(new Date(selectedCatch.capturedAt), "EEEE, d. MMMM yyyy", { locale: sk }) : 'Neuvedené'}
                       </div>
                     </div>
                   </div>
                 </div>
-
-                {/* Photo */}
-                {selectedCatch.photo && (
-                  <div>
-                    <div className="text-sm text-slate-400 mb-2">Fotografia</div>
-                    <img 
-                      src={selectedCatch.photo} 
-                      alt="Fotografia úlovku"
-                      className="w-full h-48 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
-                      onClick={() => setLightboxImage(selectedCatch.photo)}
-                      data-testid="catch-photo"
-                    />
-                  </div>
-                )}
 
                 {/* Notes */}
                 {selectedCatch.notes && (
@@ -456,8 +586,8 @@ export default function DiaryIndex() {
                   </div>
                 )}
 
-                {/* Action Button */}
-                <div className="pt-4">
+                {/* Action Buttons */}
+                <div className="pt-4 space-y-3">
                   <Button 
                     className="w-full bg-blue-600 hover:bg-blue-700"
                     onClick={() => {
@@ -466,7 +596,19 @@ export default function DiaryIndex() {
                     }}
                     data-testid="button-edit-catch"
                   >
-                    Upraviť úlovok
+                    <Edit2 className="w-4 h-4 mr-2" />
+                    Upraviť
+                  </Button>
+                  <Button 
+                    variant="destructive"
+                    className="w-full"
+                    onClick={() => {
+                      openDeleteDialog(selectedCatch.id);
+                    }}
+                    data-testid="button-delete-catch"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Zmazať
                   </Button>
                 </div>
               </div>
@@ -496,6 +638,28 @@ export default function DiaryIndex() {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Naozaj chcete zmazať tento úlovok?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Táto akcia je nenávratná. Úlovok bude trvalo odstránený z vášho denníka.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel data-testid="button-cancel-delete">Zrušiť</AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={handleDeleteCatch}
+                className="bg-red-600 hover:bg-red-700"
+                data-testid="button-confirm-delete"
+              >
+                Zmazať
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         {/* Quick Start Fishing Dialog */}
         <Dialog open={isStartFishingOpen} onOpenChange={setIsStartFishingOpen}>
@@ -541,10 +705,9 @@ export default function DiaryIndex() {
                       <FormLabel>Poznámka (voliteľné)</FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="Rýchle poznámky o dnešnej rybačke..."
-                          className="resize-none"
+                          placeholder="Napr. Prvý deň sezóny, krásne počasie..."
                           rows={3}
-                          data-testid="textarea-quick-notes"
+                          data-testid="input-quick-notes"
                           {...field}
                         />
                       </FormControl>
@@ -554,32 +717,21 @@ export default function DiaryIndex() {
                 />
 
                 <div className="flex gap-3 pt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
+                  <Button 
+                    type="button" 
+                    variant="outline" 
                     onClick={() => setIsStartFishingOpen(false)}
                     className="flex-1"
-                    data-testid="button-cancel-quick-start"
                   >
                     Zrušiť
                   </Button>
-                  <Button
-                    type="submit"
-                    disabled={createQuickTripMutation.isPending}
+                  <Button 
+                    type="submit" 
                     className="flex-1 bg-blue-600 hover:bg-blue-700"
+                    disabled={createQuickTripMutation.isPending}
                     data-testid="button-submit-quick-start"
                   >
-                    {createQuickTripMutation.isPending ? (
-                      <>
-                        <Calendar className="w-4 h-4 mr-2 animate-spin" />
-                        Vytváram...
-                      </>
-                    ) : (
-                      <>
-                        <Play className="w-4 h-4 mr-2" />
-                        Začať rybačku
-                      </>
-                    )}
+                    {createQuickTripMutation.isPending ? "Vytváram..." : "Začať"}
                   </Button>
                 </div>
               </form>
