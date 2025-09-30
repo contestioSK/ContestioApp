@@ -25,7 +25,6 @@ import type { DiaryTrip } from "@shared/schema";
 
 // Form validation schema
 const createBattleSchema = z.object({
-  tripId: z.string().min(1, "Výber výpravy je povinný"),
   name: z.string().min(1, "Názov je povinný").max(255, "Názov je príliš dlhý"),
   mode: z.enum(["most_fish", "total_weight", "biggest_fish", "best_3_fish", "best_5_fish"]),
   minWeightKg: z.number().optional(),
@@ -34,10 +33,20 @@ const createBattleSchema = z.object({
   endAt: z.date(),
   participants: z.array(z.object({
     name: z.string().min(1, "Meno je povinné")
-  })).min(1, "Aspoň jeden účastník je povinný")
+  })).min(1, "Aspoň jeden účastník je povinný"),
+  useExistingTrip: z.boolean().default(false),
+  tripId: z.string().optional()
 }).refine((data) => data.endAt > data.startAt, {
   message: "Koniec musí byť po začiatku",
   path: ["endAt"]
+}).refine((data) => {
+  if (data.useExistingTrip && !data.tripId) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Výber výpravy je povinný",
+  path: ["tripId"]
 });
 
 type CreateBattleForm = z.infer<typeof createBattleSchema>;
@@ -68,34 +77,54 @@ export default function BattleCreate() {
   const form = useForm<CreateBattleForm>({
     resolver: zodResolver(createBattleSchema),
     defaultValues: {
-      tripId: "",
       name: "",
       mode: "most_fish",
       includeOnlyVerified: false,
       participants: [{ name: "" }],
       startAt: new Date(),
-      endAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // Default to 24 hours later
+      endAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // Default to 24 hours later
+      useExistingTrip: false,
+      tripId: ""
     }
   });
+  
+  const useExistingTrip = form.watch("useExistingTrip");
 
   const createBattleMutation = useMutation({
     mutationFn: async (data: CreateBattleForm) => {
-      const requestData = {
-        name: data.name,
-        mode: data.mode,
-        startAt: data.startAt.toISOString(),
-        endAt: data.endAt.toISOString(),
-        participants: data.participants,
-        tripId: data.tripId,
-        rules: {
+      if (data.useExistingTrip && data.tripId) {
+        // Use existing trip (advanced flow)
+        const requestData = {
+          name: data.name,
           mode: data.mode,
-          minWeightKg: data.minWeightKg,
-          includeOnlyVerified: data.includeOnlyVerified
-        }
-      };
-
-      const response = await apiRequest("POST", "/api/diary/battles", requestData);
-      return response.json();
+          startAt: data.startAt.toISOString(),
+          endAt: data.endAt.toISOString(),
+          participants: data.participants,
+          tripId: data.tripId,
+          rules: {
+            mode: data.mode,
+            minWeightKg: data.minWeightKg,
+            includeOnlyVerified: data.includeOnlyVerified
+          }
+        };
+        const response = await apiRequest("POST", "/api/diary/battles", requestData);
+        return response.json();
+      } else {
+        // Auto-create trip (default flow)
+        const requestData = {
+          name: data.name,
+          startAt: data.startAt.toISOString(),
+          endAt: data.endAt.toISOString(),
+          participants: data.participants,
+          rules: {
+            mode: data.mode,
+            minWeightKg: data.minWeightKg,
+            includeOnlyVerified: data.includeOnlyVerified
+          }
+        };
+        const response = await apiRequest("POST", "/api/diary/battles-with-trip", requestData);
+        return response.json();
+      }
     },
     onSuccess: (data) => {
       toast({
@@ -103,7 +132,11 @@ export default function BattleCreate() {
         description: "Váš fishing battle bol úspešne vytvorený."
       });
       queryClient.invalidateQueries({ queryKey: ["/api/diary/battles"] });
-      setLocation(`/diary/battle/${data.id}`);
+      queryClient.invalidateQueries({ queryKey: ["/api/diary/trips"] });
+      
+      // Handle response - can be either { battle, trip } or just battle
+      const battleId = data.battle?.id || data.id;
+      setLocation(`/diary/battle/${battleId}`);
     },
     onError: (error) => {
       toast({
@@ -170,48 +203,6 @@ export default function BattleCreate() {
                 <CardContent className="space-y-6">
                   <FormField
                     control={form.control}
-                    name="tripId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Výprava</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger data-testid="select-trip">
-                              <SelectValue placeholder="Vyberte výpravu pre battle" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {trips.length === 0 ? (
-                              <div className="p-2 text-sm text-muted-foreground">
-                                Najprv vytvorte výpravu v sekcii Výpravy
-                              </div>
-                            ) : (
-                              trips.map((trip) => (
-                                <SelectItem key={trip.id} value={trip.id}>
-                                  <div>
-                                    <div className="font-medium">{trip.name}</div>
-                                    <div className="text-sm text-muted-foreground">
-                                      {format(new Date(trip.startDate), "d.M.yyyy", { locale: sk })}
-                                      {trip.endDate && trip.endDate !== trip.startDate && 
-                                        ` - ${format(new Date(trip.endDate), "d.M.yyyy", { locale: sk })}`
-                                      }
-                                    </div>
-                                  </div>
-                                </SelectItem>
-                              ))
-                            )}
-                          </SelectContent>
-                        </Select>
-                        <FormDescription>
-                          Battle bude priradený k vybranej výprave
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
                     name="name"
                     render={({ field }) => (
                       <FormItem>
@@ -223,10 +214,85 @@ export default function BattleCreate() {
                             {...field} 
                           />
                         </FormControl>
+                        <FormDescription>
+                          Automaticky vytvoríme novú výpravu s týmto názvom
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+
+                  <FormField
+                    control={form.control}
+                    name="useExistingTrip"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-base">
+                            Použiť existujúcu výpravu
+                          </FormLabel>
+                          <FormDescription>
+                            Pre pokročilých: pripojiť battle k už naplánovanej výprave
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            data-testid="switch-use-existing-trip"
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  {useExistingTrip && (
+                    <FormField
+                      control={form.control}
+                      name="tripId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Výprava</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger data-testid="select-trip">
+                                <SelectValue placeholder="Vyberte výpravu pre battle" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {trips.length === 0 ? (
+                                <div className="p-2 text-sm text-muted-foreground">
+                                  Najprv vytvorte výpravu v sekcii Výpravy
+                                </div>
+                              ) : (
+                                trips.filter(trip => {
+                                  // Show only upcoming or ongoing trips
+                                  const endDate = new Date(trip.endDate || trip.startDate);
+                                  return endDate >= new Date();
+                                }).map((trip) => (
+                                  <SelectItem key={trip.id} value={trip.id}>
+                                    <div>
+                                      <div className="font-medium">{trip.name}</div>
+                                      <div className="text-sm text-muted-foreground">
+                                        {format(new Date(trip.startDate), "d.M.yyyy", { locale: sk })}
+                                        {trip.endDate && trip.endDate !== trip.startDate && 
+                                          ` - ${format(new Date(trip.endDate), "d.M.yyyy", { locale: sk })}`
+                                        }
+                                      </div>
+                                    </div>
+                                  </SelectItem>
+                                ))
+                              )}
+                            </SelectContent>
+                          </Select>
+                          <FormDescription>
+                            Battle bude priradený k vybranej výprave
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
 
                   <FormField
                     control={form.control}

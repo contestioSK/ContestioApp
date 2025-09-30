@@ -3304,6 +3304,92 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 
   // Diary Battle endpoints
+  
+  // Create battle with auto-created trip (recommended flow)
+  app.post('/api/diary/battles-with-trip', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Check if user has access to battle features (PREMIUM gating)
+      const canAccessBattles = await storage.canAccessBattleFeatures(userId);
+      if (!canAccessBattles) {
+        return res.status(403).json({ 
+          message: "Battle functionality is only available for Premium users",
+          code: "PREMIUM_REQUIRED"
+        });
+      }
+
+      // Validate battle data (without tripId)
+      const battleSchema = z.object({
+        name: z.string().min(1, "Názov battle je povinný").max(255),
+        rules: z.object({
+          mode: z.enum(["most_fish", "total_weight", "biggest_fish", "best_3_fish", "best_5_fish"]),
+          minWeightKg: z.number().optional(),
+          includeOnlyVerified: z.boolean().optional()
+        }),
+        participants: z.array(z.object({
+          name: z.string().min(1)
+        })),
+        startAt: z.string().or(z.date()).transform((val) => val instanceof Date ? val : new Date(val)),
+        endAt: z.string().or(z.date()).transform((val) => val instanceof Date ? val : new Date(val))
+      });
+
+      const battleData = battleSchema.parse(req.body);
+      
+      // Create trip automatically with same name and dates as battle
+      const tripData = {
+        name: battleData.name,
+        location: "", // Optional - could be added to battle form later
+        startDate: battleData.startAt,
+        endDate: battleData.endAt,
+        ownerUserId: userId,
+        visibility: "private" as const,
+        notes: `Automaticky vytvorené pre battle: ${battleData.name}`,
+        participants: battleData.participants.map(p => ({ name: p.name }))
+      };
+      
+      const trip = await storage.createDiaryTrip(tripData, userId);
+      
+      // Now create battle with reference to the new trip
+      const battleDataWithTrip = {
+        status: "active" as const,
+        name: battleData.name,
+        rules: battleData.rules,
+        participants: battleData.participants,
+        tripId: trip.id,
+        startAt: battleData.startAt,
+        endAt: battleData.endAt
+      };
+      
+      const battle = await storage.createDiaryBattle(battleDataWithTrip, userId);
+      
+      // Broadcast both trip and battle creation
+      broadcastToUsers([userId], {
+        type: 'diary_trip_created',
+        tripId: trip.id,
+        payload: trip
+      });
+      
+      broadcastToUsers([userId], {
+        type: 'diary_battle_created',
+        battleId: battle.id,
+        payload: battle
+      });
+      
+      res.status(201).json({ battle, trip });
+    } catch (error) {
+      console.error("Error creating battle with trip:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid battle data", 
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ message: "Failed to create battle" });
+    }
+  });
+
+  // Create battle with existing trip (advanced flow)
   app.post('/api/diary/battles', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
