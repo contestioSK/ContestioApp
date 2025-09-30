@@ -17,13 +17,15 @@ import { format } from "date-fns";
 import { sk } from "date-fns/locale";
 import { CalendarIcon, Trophy, Users, Clock, Plus, X } from "lucide-react";
 import { useLocation } from "wouter";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import DiaryLayout from "@/components/DiaryLayout";
+import type { DiaryTrip } from "@shared/schema";
 
 // Form validation schema
 const createBattleSchema = z.object({
+  tripId: z.string().min(1, "Výber výpravy je povinný"),
   name: z.string().min(1, "Názov je povinný").max(255, "Názov je príliš dlhý"),
   mode: z.enum(["most_fish", "total_weight", "biggest_fish", "best_3_fish", "best_5_fish"]),
   minWeightKg: z.number().optional(),
@@ -54,12 +56,19 @@ export default function BattleCreate() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
+  // Fetch user's trips for the trip selector
+  const { data: trips = [], isLoading: isLoadingTrips } = useQuery<DiaryTrip[]>({
+    queryKey: ["/api/diary/trips"],
+    enabled: !!user
+  });
+  
   // TODO: Replace with actual API call to check premium status
   const isPremium = true; // Temporarily set to true for development - will be connected to actual premium check
 
   const form = useForm<CreateBattleForm>({
     resolver: zodResolver(createBattleSchema),
     defaultValues: {
+      tripId: "",
       name: "",
       mode: "most_fish",
       includeOnlyVerified: false,
@@ -71,29 +80,22 @@ export default function BattleCreate() {
 
   const createBattleMutation = useMutation({
     mutationFn: async (data: CreateBattleForm) => {
-      // TODO: For now creating a stub tripId - in production this should be selected by user
-      // Generate a UUID-like string for the stub to pass validation
-      const tripId = crypto.randomUUID();
-      
       const requestData = {
         name: data.name,
         mode: data.mode,
         startAt: data.startAt.toISOString(),
         endAt: data.endAt.toISOString(),
         participants: data.participants,
-        tripId: tripId, // This is a stub - should be selected by user in production
-        settings: {
+        tripId: data.tripId,
+        rules: {
+          mode: data.mode,
           minWeightKg: data.minWeightKg,
           includeOnlyVerified: data.includeOnlyVerified
         }
       };
 
-      const response = await apiRequest<any>("/api/diary/battles", {
-        method: "POST",
-        body: JSON.stringify(requestData),
-      });
-      
-      return response;
+      const response = await apiRequest("POST", "/api/diary/battles", requestData);
+      return response.json();
     },
     onSuccess: (data) => {
       toast({
@@ -166,6 +168,48 @@ export default function BattleCreate() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="tripId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Výprava</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger data-testid="select-trip">
+                              <SelectValue placeholder="Vyberte výpravu pre battle" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {trips.length === 0 ? (
+                              <div className="p-2 text-sm text-muted-foreground">
+                                Najprv vytvorte výpravu v sekcii Výpravy
+                              </div>
+                            ) : (
+                              trips.map((trip) => (
+                                <SelectItem key={trip.id} value={trip.id}>
+                                  <div>
+                                    <div className="font-medium">{trip.name}</div>
+                                    <div className="text-sm text-muted-foreground">
+                                      {format(new Date(trip.startDate), "d.M.yyyy", { locale: sk })}
+                                      {trip.endDate && trip.endDate !== trip.startDate && 
+                                        ` - ${format(new Date(trip.endDate), "d.M.yyyy", { locale: sk })}`
+                                      }
+                                    </div>
+                                  </div>
+                                </SelectItem>
+                              ))
+                            )}
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>
+                          Battle bude priradený k vybranej výprave
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
                   <FormField
                     control={form.control}
                     name="name"
