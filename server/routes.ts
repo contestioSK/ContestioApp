@@ -3305,6 +3305,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Diary Battle endpoints
   
+  // Get all user battles
+  app.get('/api/diary/battles', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const battles = await storage.getAllUserBattles(userId);
+      res.json(battles);
+    } catch (error) {
+      console.error("Error fetching user battles:", error);
+      res.status(500).json({ message: "Failed to fetch battles" });
+    }
+  });
+  
   // Create battle with auto-created trip (recommended flow)
   app.post('/api/diary/battles-with-trip', isAuthenticated, async (req: any, res) => {
     try {
