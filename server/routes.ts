@@ -3317,26 +3317,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Validate request data
+      // Validate and parse request data (Zod automatically transforms dates)
       const battleData = insertDiaryBattleSchema.parse(req.body);
       
-      // TODO: For development, mock battle creation since diary tables don't exist
-      console.log('[DEV] Mock battle creation - diary tables not available');
-      
-      // Create mock battle response
-      const battle = {
-        id: randomUUID(),
-        tripId: battleData.tripId,
-        name: battleData.name,
-        rules: battleData.rules,
-        participants: battleData.participants,
-        startAt: battleData.startAt,
-        endAt: battleData.endAt,
-        status: "active",
-        results: null,
-        createdAt: new Date(),
-        updatedAt: new Date()
+      // Ensure dates are Date objects (double-check Zod transformation)
+      const processedBattleData = {
+        ...battleData,
+        startAt: battleData.startAt instanceof Date ? battleData.startAt : new Date(battleData.startAt),
+        endAt: battleData.endAt instanceof Date ? battleData.endAt : new Date(battleData.endAt),
       };
+      
+      // Create battle in database
+      const battle = await storage.createDiaryBattle(processedBattleData, userId);
       
       // Broadcast battle creation only to the owner for real-time updates
       // TODO: Later extend to include invited participants when that feature is added
