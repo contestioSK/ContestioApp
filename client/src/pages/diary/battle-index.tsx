@@ -5,10 +5,40 @@ import { Badge } from "@/components/ui/badge";
 import { Trophy, Plus, Archive, Swords, Users, Clock, Crown } from "lucide-react";
 import { useLocation } from "wouter";
 import DiaryLayout from "@/components/DiaryLayout";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 
 export default function BattleIndex() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
+
+  const { data: premiumStatus, isLoading: isPremiumLoading } = useQuery<{ isPremium: boolean }>({
+    queryKey: ['/api/auth/premium-status'],
+    enabled: !!user?.id,
+  });
+
+  const isPremium = premiumStatus?.isPremium;
+
+  // Redirect non-premium users to paywall
+  useEffect(() => {
+    if (user?.id && !isPremiumLoading && isPremium === false) {
+      setLocation('/diary/battle/paywall');
+    }
+  }, [user?.id, isPremium, isPremiumLoading, setLocation]);
+
+  // Show loading state while checking premium status or waiting for user
+  if (!user || isPremiumLoading || isPremium === undefined) {
+    return (
+      <DiaryLayout>
+        <div className="p-6 flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Načítavam...</p>
+          </div>
+        </div>
+      </DiaryLayout>
+    );
+  }
 
   // Mock active battles - will be replaced with real API
   const activeBattles: any[] = [

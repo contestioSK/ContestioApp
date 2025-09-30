@@ -128,11 +128,6 @@ function Router() {
         </ProtectedRoute>
       </Route>
       <Route path="/diary/battle/paywall" component={BattlePaywall} />
-      <Route path="/diary/battle">
-        <ProtectedRoute>
-          <BattleIndex />
-        </ProtectedRoute>
-      </Route>
       <Route path="/diary/battle/create">
         <ProtectedRoute>
           <BattleCreate />
@@ -146,6 +141,11 @@ function Router() {
       <Route path="/diary/battle/archive">
         <ProtectedRoute>
           <BattleArchive />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/diary/battle">
+        <ProtectedRoute>
+          <BattleIndex />
         </ProtectedRoute>
       </Route>
       {!isLoading && <Route component={NotFound} />}
