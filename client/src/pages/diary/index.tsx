@@ -121,6 +121,7 @@ export default function DiaryIndex() {
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [isStartFishingOpen, setIsStartFishingOpen] = useState(false);
   const [isCreateCatchOpen, setIsCreateCatchOpen] = useState(false);
+  const [editingCatch, setEditingCatch] = useState<DiaryCatch | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [catchToDelete, setCatchToDelete] = useState<string | null>(null);
   const [selectedPhotos, setSelectedPhotos] = useState<File[]>([]);
@@ -282,6 +283,28 @@ export default function DiaryIndex() {
     }
   });
 
+  // Update catch mutation
+  const updateCatchMutation = useMutation({
+    mutationFn: async ({ catchId, data }: { catchId: string, data: CatchFormData }) => {
+      const response = await apiRequest("PUT", `/api/diary/catches/${catchId}`, data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
+      setIsCreateCatchOpen(false);
+      setEditingCatch(null);
+      setSelectedPhotos([]);
+      catchForm.reset();
+      toast({
+        title: "Úlovok aktualizovaný!",
+        description: "Váš úlovok bol úspešne aktualizovaný.",
+      });
+    },
+    onError: (error: Error) => {
+      showErrorToast(toast, error, 'update');
+    }
+  });
+
   // Create quick trip mutation
   const createQuickTripMutation = useMutation({
     mutationFn: async (data: QuickStartFormData) => {
@@ -357,7 +380,7 @@ export default function DiaryIndex() {
       bait: data.bait === "none" ? undefined : data.bait
     };
 
-    // Upload photos first if selected, then create catch
+    // Upload photos first if selected, then create/update catch
     let photoUrls: string[] = [];
     
     if (selectedPhotos.length > 0) {
@@ -393,7 +416,11 @@ export default function DiaryIndex() {
       ? { ...processedData, photos: photoUrls }
       : processedData;
 
-    createCatchMutation.mutate(finalData);
+    if (editingCatch) {
+      updateCatchMutation.mutate({ catchId: editingCatch.id, data: finalData });
+    } else {
+      createCatchMutation.mutate(finalData);
+    }
   };
 
   const handleDeleteCatch = () => {
@@ -409,8 +436,35 @@ export default function DiaryIndex() {
 
   const closeCreateCatchDialog = () => {
     setIsCreateCatchOpen(false);
+    setEditingCatch(null);
     setSelectedPhotos([]);
     catchForm.reset();
+  };
+
+  const openEditDialog = (catch_: DiaryCatch) => {
+    setEditingCatch(catch_);
+    setSelectedCatch(null); // Close detail sheet
+    setIsCreateCatchOpen(true); // Open dialog
+    
+    // Pre-fill form with catch data
+    catchForm.reset({
+      tripId: catch_.tripId || "none",
+      angler: { name: catch_.angler?.name || "" },
+      capturedAt: catch_.capturedAt ? new Date(catch_.capturedAt) : new Date(),
+      weight: catch_.weight?.toString() || "",
+      lengthCm: catch_.lengthCm || undefined,
+      fishType: catch_.fishType as any,
+      bait: catch_.bait || "none",
+      notes: catch_.notes || "",
+      spot: catch_.spot || "",
+      verified: catch_.verified || false
+    });
+  };
+
+  const handleDialogOpenChange = (open: boolean) => {
+    if (!open) {
+      closeCreateCatchDialog();
+    }
   };
 
   return (
@@ -831,11 +885,7 @@ export default function DiaryIndex() {
                 <div className="pt-4 space-y-3">
                   <Button 
                     className="w-full bg-blue-600 hover:bg-blue-700"
-                    onClick={() => {
-                      const catchId = selectedCatch.id;
-                      setSelectedCatch(null);
-                      setLocation(`/diary/catches?edit=${catchId}`);
-                    }}
+                    onClick={() => openEditDialog(selectedCatch)}
                     data-testid="button-edit-catch"
                   >
                     <Edit2 className="w-4 h-4 mr-2" />
@@ -903,13 +953,15 @@ export default function DiaryIndex() {
           </AlertDialogContent>
         </AlertDialog>
 
-        {/* Create Catch Dialog */}
-        <Dialog open={isCreateCatchOpen} onOpenChange={closeCreateCatchDialog}>
+        {/* Create/Edit Catch Dialog */}
+        <Dialog open={isCreateCatchOpen || !!editingCatch} onOpenChange={handleDialogOpenChange}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Nový úlovok</DialogTitle>
+              <DialogTitle>{editingCatch ? "Upraviť úlovok" : "Nový úlovok"}</DialogTitle>
               <DialogDescription>
-                Pridajte nový úlovok do vášho rybárskeho denníka.
+                {editingCatch 
+                  ? "Aktualizujte detaily vášho úlovku."
+                  : "Pridajte nový úlovok do vášho rybárskeho denníka."}
               </DialogDescription>
             </DialogHeader>
 
@@ -1214,10 +1266,10 @@ export default function DiaryIndex() {
                   <Button 
                     type="submit" 
                     className="flex-1"
-                    disabled={createCatchMutation.isPending}
+                    disabled={createCatchMutation.isPending || updateCatchMutation.isPending}
                     data-testid="button-submit-catch"
                   >
-                    Pridať úlovok
+                    {editingCatch ? "Uložiť zmeny" : "Pridať úlovok"}
                   </Button>
                 </div>
               </form>
