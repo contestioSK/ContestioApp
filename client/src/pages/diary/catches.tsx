@@ -153,7 +153,7 @@ export default function DiaryCatches() {
 
   // Fetch user's catches
   const { data: catches = [], isLoading } = useQuery<DiaryCatch[]>({
-    queryKey: ["/api/diary/catches"],
+    queryKey: ["/api/diary/catches/all"],
     enabled: !!user
   });
 
@@ -190,7 +190,7 @@ export default function DiaryCatches() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/diary/catches"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
       queryClient.invalidateQueries({ queryKey: ["/api/diary/catch-limits"] });
       setIsCreateDialogOpen(false);
       form.reset();
@@ -211,7 +211,7 @@ export default function DiaryCatches() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/diary/catches"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
       setEditingCatch(null);
       form.reset();
       toast({
@@ -230,7 +230,7 @@ export default function DiaryCatches() {
       await apiRequest("DELETE", `/api/diary/catches/${catchId}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/diary/catches"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
       queryClient.invalidateQueries({ queryKey: ["/api/diary/catch-limits"] });
       setDeletingCatch(null);
       toast({
@@ -391,7 +391,7 @@ export default function DiaryCatches() {
         }
         
         // Invalidate queries after successful sync
-        queryClient.invalidateQueries({ queryKey: ["/api/diary/catches"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
         queryClient.invalidateQueries({ queryKey: ["/api/diary/catch-limits"] });
       } catch (error) {
         console.error('Failed to sync catch:', error);
