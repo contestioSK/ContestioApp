@@ -594,18 +594,18 @@ export default function DiaryCatches() {
                 Spravujte svoje úlovky a sledujte svoje rybárske úspechy
               </p>
             </div>
-            <Dialog open={isCreateDialogOpen || !!editingCatch} onOpenChange={closeDialog}>
-              <DialogTrigger asChild>
-                <Button 
-                  onClick={() => setIsCreateDialogOpen(true)}
-                  disabled={limits && !limits.canCreate}
-                  data-testid="button-add-catch"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Pridať úlovok
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <Button 
+              onClick={() => setIsCreateDialogOpen(true)}
+              disabled={limits && !limits.canCreate}
+              data-testid="button-add-catch"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Pridať úlovok
+            </Button>
+          </div>
+
+          <Dialog open={isCreateDialogOpen || !!editingCatch} onOpenChange={closeDialog}>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>
                     {editingCatch ? "Upraviť úlovok" : "Nový úlovok"}
@@ -1269,7 +1269,6 @@ export default function DiaryCatches() {
             </AlertDialogContent>
           </AlertDialog>
         </div>
-      </div>
-    </DiaryLayout>
-  );
-}
+      </DiaryLayout>
+    );
+  }
