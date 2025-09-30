@@ -6,60 +6,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { Trophy, Users, Calendar, Clock, Fish, Weight, Crown, Plus, AlertCircle, Download, Share2, Medal, Star, BarChart3 } from "lucide-react";
+import { Trophy, Users, Calendar, Clock, Fish, Weight, Plus, AlertCircle, Download, Share2, BarChart3 } from "lucide-react";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
 import { useQuery } from "@tanstack/react-query";
 import DiaryLayout from "@/components/DiaryLayout";
+import type { DiaryBattle } from "@shared/schema";
 
 // WebSocket message interface
 interface WebSocketMessage {
   type: string;
   [key: string]: any;
 }
-
-// Mock data interface for battle
-interface Battle {
-  id: string;
-  name: string;
-  mode: string;
-  status: "active" | "finished" | "upcoming";
-  startAt: Date;
-  endAt: Date;
-  participants: Array<{
-    name: string;
-    catches: number;
-    totalWeight: number;
-    biggestFish: number;
-    position: number;
-  }>;
-  currentUser: {
-    name: string;
-    catches: number;
-    totalWeight: number;
-    biggestFish: number;
-    position: number;
-  };
-}
-
-// Mock battle data - will be replaced with real API
-const getMockBattleData = (id: string): Battle => ({
-  id,
-  name: "Víkendový súboj kamarátov",
-  mode: "total_weight",
-  status: "finished",
-  startAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-  endAt: new Date(Date.now() + 4 * 60 * 60 * 1000), // 4 hours from now
-  participants: [
-    { name: "Tomáš K.", catches: 8, totalWeight: 12.5, biggestFish: 3.2, position: 1 },
-    { name: "Peter M.", catches: 6, totalWeight: 11.8, biggestFish: 4.1, position: 2 },
-    { name: "Vy", catches: 5, totalWeight: 9.3, biggestFish: 2.8, position: 3 },
-    { name: "Martin D.", catches: 3, totalWeight: 7.2, biggestFish: 2.5, position: 4 }
-  ],
-  currentUser: { name: "Vy", catches: 5, totalWeight: 9.3, biggestFish: 2.8, position: 3 }
-});
 
 const getModeLabel = (mode: string) => {
   switch (mode) {
@@ -83,47 +42,49 @@ const getModeIcon = (mode: string) => {
   }
 };
 
-const getPositionIcon = (position: number) => {
-  switch (position) {
-    case 1: return Medal;
-    case 2: return Medal;
-    case 3: return Medal;
-    default: return Star;
-  }
-};
-
-const getPositionColor = (position: number) => {
-  switch (position) {
-    case 1: return "text-yellow-500";
-    case 2: return "text-gray-400";
-    case 3: return "text-amber-600";
-    default: return "text-muted-foreground";
-  }
-};
-
 export default function BattleDetail() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const [, setLocation] = useLocation();
-  const [battle, setBattle] = useState<Battle | null>(null);
+  const [battle, setBattle] = useState<DiaryBattle | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<string>("");
   const [progress, setProgress] = useState<number>(0);
 
   // WebSocket connection for live updates
   const { isConnected, sendMessage } = useWebSocket((message: WebSocketMessage) => {
     if (message.type === "battle_update" && message.battleId === id) {
-      // Update battle data based on WebSocket message
-      setBattle(current => current ? { ...current, ...message.data } : null);
+      // Update battle data based on WebSocket message and deserialize dates
+      setBattle(current => {
+        if (!current) return null;
+        const updatedData = { ...current, ...message.data };
+        // Ensure dates are Date objects if they exist in the update
+        if (updatedData.startAt && !(updatedData.startAt instanceof Date)) {
+          updatedData.startAt = new Date(updatedData.startAt);
+        }
+        if (updatedData.endAt && !(updatedData.endAt instanceof Date)) {
+          updatedData.endAt = new Date(updatedData.endAt);
+        }
+        return updatedData;
+      });
     }
   });
 
-  // Load battle data
+  // Load battle data from API
+  const { data: battleData, isLoading } = useQuery<DiaryBattle>({
+    queryKey: ['/api/diary/battles', id],
+    enabled: !!id && !!user,
+  });
+
+  // Update local state when data is loaded and deserialize dates
   useEffect(() => {
-    if (id) {
-      // For now using mock data, replace with real API call
-      setBattle(getMockBattleData(id));
+    if (battleData) {
+      setBattle({
+        ...battleData,
+        startAt: new Date(battleData.startAt),
+        endAt: new Date(battleData.endAt),
+      });
     }
-  }, [id]);
+  }, [battleData]);
 
   // Update time remaining and progress
   useEffect(() => {
@@ -162,6 +123,19 @@ export default function BattleDetail() {
     return () => clearInterval(interval);
   }, [battle]);
 
+  if (isLoading) {
+    return (
+      <DiaryLayout>
+        <div className="p-6 flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Načítavam battle...</p>
+          </div>
+        </div>
+      </DiaryLayout>
+    );
+  }
+
   if (!battle) {
     return (
       <DiaryLayout>
@@ -172,8 +146,8 @@ export default function BattleDetail() {
             <p className="text-muted-foreground mb-6">
               Zadané battle neexistuje alebo k nemu nemáte prístup.
             </p>
-            <Button onClick={() => setLocation("/diary")} data-testid="button-back-to-diary">
-              Späť na denník
+            <Button onClick={() => setLocation("/diary/battle")} data-testid="button-back-to-battles">
+              Späť na battles
             </Button>
           </div>
         </div>
@@ -181,7 +155,7 @@ export default function BattleDetail() {
     );
   }
 
-  const ModeIcon = getModeIcon(battle.mode);
+  const ModeIcon = getModeIcon(battle.rules.mode);
 
   return (
     <DiaryLayout>
@@ -202,7 +176,7 @@ export default function BattleDetail() {
             <div className="flex flex-wrap items-center gap-4 text-muted-foreground">
               <div className="flex items-center gap-2">
                 <ModeIcon className="w-4 h-4" />
-                <span>{getModeLabel(battle.mode)}</span>
+                <span>{getModeLabel(battle.rules.mode)}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4" />
@@ -258,27 +232,21 @@ export default function BattleDetail() {
                   </div>
                 </div>
 
-                {/* Current User Stats */}
+                {/* Battle Mode Info */}
                 <Separator />
                 <div className="space-y-3">
                   <h4 className="font-medium flex items-center gap-2">
-                    <Fish className="w-4 h-4" />
-                    Vaše štatistiky
+                    <Trophy className="w-4 h-4" />
+                    Herný mód
                   </h4>
-                  <div className="grid grid-cols-3 gap-4 text-center">
-                    <div>
-                      <div className="text-2xl font-bold text-primary">{battle.currentUser.catches}</div>
-                      <div className="text-xs text-muted-foreground">úlovkov</div>
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold text-primary">{battle.currentUser.totalWeight}kg</div>
-                      <div className="text-xs text-muted-foreground">celkom</div>
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold text-primary">{battle.currentUser.biggestFish}kg</div>
-                      <div className="text-xs text-muted-foreground">najväčšia</div>
-                    </div>
-                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {getModeLabel(battle.rules.mode)}
+                  </p>
+                  {battle.rules.minWeightKg && (
+                    <p className="text-sm text-muted-foreground">
+                      Minimálna váha: {battle.rules.minWeightKg} kg
+                    </p>
+                  )}
                 </div>
 
                 {/* Add Catch Button */}
@@ -295,62 +263,52 @@ export default function BattleDetail() {
               </CardContent>
             </Card>
 
-            {/* Leaderboard */}
+            {/* Participants */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Trophy className="w-5 h-5" />
-                  Rebríček
+                  <Users className="w-5 h-5" />
+                  Účastníci
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {battle.participants.map((participant, index) => {
-                    const PositionIcon = getPositionIcon(participant.position);
-                    const positionColor = getPositionColor(participant.position);
-                    const isCurrentUser = participant.name === battle.currentUser.name;
+                    const isCurrentUser = participant.userId === user?.id;
                     
                     return (
                       <div 
                         key={index}
-                        className={`flex items-center gap-3 p-4 rounded-lg border-2 transition-colors ${
+                        className={`flex items-center gap-3 p-4 rounded-lg border transition-colors ${
                           isCurrentUser 
                             ? "border-primary bg-primary/5 dark:bg-primary/10" 
-                            : "border-transparent bg-muted/50"
+                            : "border-border bg-muted/30"
                         }`}
                       >
                         <div className="flex items-center gap-2 min-w-0 flex-1">
-                          <PositionIcon className={`w-5 h-5 ${positionColor}`} />
+                          <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                            <span className="text-primary font-semibold">
+                              {participant.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
                           <div className="min-w-0 flex-1">
                             <div className="font-medium text-foreground truncate">
                               {participant.name}
                               {isCurrentUser && (
-                                <span className="text-primary ml-2">(Vy)</span>
+                                <span className="text-primary ml-2 text-sm">(Vy)</span>
                               )}
                             </div>
-                            <div className="text-sm text-muted-foreground">
-                              {participant.position}. miesto
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="grid grid-cols-3 gap-3 text-center">
-                          <div>
-                            <div className="text-lg font-bold text-foreground">{participant.catches}</div>
-                            <div className="text-xs text-muted-foreground">úlovkov</div>
-                          </div>
-                          <div>
-                            <div className="text-lg font-bold text-foreground">{participant.totalWeight}kg</div>
-                            <div className="text-xs text-muted-foreground">celkom</div>
-                          </div>
-                          <div>
-                            <div className="text-lg font-bold text-foreground">{participant.biggestFish}kg</div>
-                            <div className="text-xs text-muted-foreground">najväčšia</div>
                           </div>
                         </div>
                       </div>
                     );
                   })}
+                </div>
+                <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+                  <p className="text-sm text-blue-700 dark:text-blue-300">
+                    <Trophy className="w-4 h-4 inline mr-1" />
+                    Štatistiky a rebríček budú dostupné po pridaní úlovkov
+                  </p>
                 </div>
               </CardContent>
             </Card>
