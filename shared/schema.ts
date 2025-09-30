@@ -294,7 +294,15 @@ export const diaryCatches = pgTable("diary_catches", {
   spot: text("spot"), // fishing spot description
   latitude: decimal("latitude", { precision: 10, scale: 8 }), // GPS coordinates
   longitude: decimal("longitude", { precision: 11, scale: 8 }), // GPS coordinates
-  photos: jsonb("photos").$type<string[]>().default([]), // Array of photo URLs
+  photos: jsonb("photos").$type<Array<{
+    id: string;
+    url: string;
+    status: 'processing' | 'ready' | 'failed';
+    originalUrl?: string;
+    variants?: Array<{width: number; format: string; url: string;}>;
+    placeholder?: string;
+    error?: string;
+  }>>().default([]), // Array of photo objects with processing status
   notes: text("notes"),
   verified: boolean("verified").default(false).notNull(), // For battle verification
   createdAt: timestamp("created_at").defaultNow(),
@@ -791,7 +799,19 @@ export const insertDiaryCatchSchema = createInsertSchema(diaryCatches).omit({
   latitude: z.number().min(-90).max(90).optional(), // GPS coordinate validation
   longitude: z.number().min(-180).max(180).optional(), // GPS coordinate validation
   notes: z.string().optional(),
-  photos: z.array(z.string().url("Neplatná URL fotky")).optional(),
+  photos: z.array(z.object({
+    id: z.string(),
+    url: z.string().url("Neplatná URL fotky"),
+    status: z.enum(['processing', 'ready', 'failed']),
+    originalUrl: z.string().url().optional(),
+    variants: z.array(z.object({
+      width: z.number(),
+      format: z.string(),
+      url: z.string().url()
+    })).optional(),
+    placeholder: z.string().optional(),
+    error: z.string().optional()
+  })).optional(),
   verified: z.boolean().default(false),
 });
 
