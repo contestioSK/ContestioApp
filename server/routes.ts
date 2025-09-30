@@ -206,6 +206,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     broadcastToAuthenticated
   });
 
+  // Initialize Photo Job Queue with WebSocket notifications
+  (async () => {
+    const { photoJobQueue } = await import('./photo-job-queue');
+    
+    // Listen for photo processing completion
+    photoJobQueue.on('photoProcessed', (result: any) => {
+      console.log(`[PhotoQueue] Photo processed, broadcasting update for photo ${result.photoId}`);
+      
+      // Broadcast photo processing result to the user
+      // Note: We need userId from the job context for this to work properly
+      // For now, we broadcast to all authenticated users (will be improved with per-user queuing)
+      broadcastToAuthenticated({
+        type: 'diary_photo_processed',
+        photoId: result.photoId,
+        catchId: result.catchId,
+        status: result.status,
+        url: result.url,
+        variants: result.variants,
+        placeholder: result.placeholder,
+        error: result.error
+      });
+    });
+    
+    console.log('[PhotoQueue] Background photo processing initialized');
+  })();
+
   // Get all connected user IDs
   function getConnectedUsers(): string[] {
     const userIds: string[] = [];
@@ -3524,7 +3550,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Diary Photo Upload endpoint
+  // Diary Photo Upload endpoint - FAST upload with background processing
   app.post('/api/diary/photos/upload', isAuthenticated, (req: any, res, next) => {
     // Handle multiple file upload (max 5 photos)
     upload.array('photos', 5)(req, res, (err: any) => {
@@ -3554,6 +3580,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
+      const catchId = req.body.catchId; // Optional: for queuing jobs with catch context
       
       if (!req.files || req.files.length === 0) {
         return res.status(400).json({ message: "Žiadne súbory neboli nahrané" });
@@ -3565,55 +3592,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await fsPromises.mkdir(diaryPhotosDir, { recursive: true });
       }
 
-      // Process all uploaded photos in parallel for better performance
-      const photoPromises = req.files.map(async (file: any) => {
-        try {
-          const fileExtension = path.extname(file.originalname).toLowerCase();
-          const baseFilename = `${randomUUID()}`;
-          const outputBasePath = path.join(diaryPhotosDir, baseFilename);
-          
-          // Process image with ImageService for optimization
-          const imageMetadata = await ImageService.processImage(
-            file.path,
-            outputBasePath,
-            baseFilename
-          );
-          
-          // Get best variant for display (prefer WebP 800w for diary preview)
-          const bestVariant = ImageService.getBestVariantForWidth(imageMetadata.variants, 800, 'webp') ||
-                              ImageService.getBestVariantForWidth(imageMetadata.variants, 800, 'jpeg') ||
-                              imageMetadata.variants[0];
-          
-          // Clean up the temporary uploaded file
-          await ImageService.cleanupTempFile(file.path);
-          
-          return {
-            id: randomUUID(),
-            originalName: file.originalname,
-            url: bestVariant?.url || `/uploads/${file.filename}`,
-            variants: imageMetadata.variants,
-            placeholder: imageMetadata.placeholder,
-            width: imageMetadata.originalWidth,
-            height: imageMetadata.originalHeight
-          };
-          
-        } catch (error) {
-          console.error(`Error processing photo ${file.originalname}:`, error);
-          // Clean up temp file on error
-          await ImageService.cleanupTempFile(file.path);
-          
-          // Return null for failed photos
-          return null;
-        }
-      });
+      // Quickly save photos and return immediately - processing happens in background
+      const photos = await Promise.all(req.files.map(async (file: any) => {
+        const photoId = randomUUID();
+        const baseFilename = `${photoId}`;
+        const originalFilename = `${baseFilename}-original${path.extname(file.originalname)}`;
+        const originalPath = path.join(diaryPhotosDir, originalFilename);
+        
+        // Move uploaded file to permanent location immediately
+        await fsPromises.rename(file.path, originalPath);
+        
+        const originalUrl = `/attached_assets/diary_photos/${userId}/${originalFilename}`;
+        
+        // Queue background processing job
+        const { photoJobQueue } = await import('./photo-job-queue');
+        photoJobQueue.addJob({
+          catchId: catchId || 'unknown',
+          photoId,
+          userId,
+          originalPath,
+          originalFilename: file.originalname,
+          outputBasePath: path.join(diaryPhotosDir, baseFilename),
+          priority: 5, // Normal priority
+          maxAttempts: 3
+        });
 
-      // Wait for all photos to be processed in parallel
-      const photoResults = await Promise.all(photoPromises);
-      const processedPhotos = photoResults.filter((photo): photo is NonNullable<typeof photo> => photo !== null);
-      
+        return {
+          id: photoId,
+          url: originalUrl, // Return original immediately
+          status: 'processing' as const,
+          originalUrl
+        };
+      }));
+
       res.json({ 
-        photos: processedPhotos,
-        message: `Úspešne nahrané ${processedPhotos.length} fotografií` 
+        photos,
+        message: `Nahraných ${photos.length} fotiek, optimalizácia prebieha na pozadí...` 
       });
       
     } catch (error) {
