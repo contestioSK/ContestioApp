@@ -3480,9 +3480,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      // Validate date fields
+      if (!req.body.startDate || !req.body.endDate) {
+        return res.status(400).json({ 
+          message: "Dátumy začiatku a konca sú povinné" 
+        });
+      }
+      
       // Server controls ownerUserId from session
+      // Convert date strings to Date objects for Drizzle
+      const startDate = new Date(req.body.startDate);
+      const endDate = new Date(req.body.endDate);
+      
+      // Validate dates are valid
+      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        return res.status(400).json({ 
+          message: "Neplatný formát dátumu" 
+        });
+      }
+      
       const tripData = {
         ...req.body,
+        startDate,
+        endDate,
         ownerUserId: userId,
         participants: req.body.participants || []
       };
@@ -3516,7 +3536,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Trip not found" });
       }
       
-      const updatedTrip = await storage.updateDiaryTrip(tripId, req.body, userId);
+      // Convert date strings to Date objects if present
+      const updateData = { ...req.body };
+      if (req.body.startDate) {
+        const startDate = new Date(req.body.startDate);
+        if (isNaN(startDate.getTime())) {
+          return res.status(400).json({ message: "Neplatný formát dátumu začiatku" });
+        }
+        updateData.startDate = startDate;
+      }
+      if (req.body.endDate) {
+        const endDate = new Date(req.body.endDate);
+        if (isNaN(endDate.getTime())) {
+          return res.status(400).json({ message: "Neplatný formát dátumu konca" });
+        }
+        updateData.endDate = endDate;
+      }
+      
+      const updatedTrip = await storage.updateDiaryTrip(tripId, updateData, userId);
       
       // Update seasonal goals progress after trip update
       await storage.updateAllUserGoalsProgress(userId);
