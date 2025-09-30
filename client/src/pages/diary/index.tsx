@@ -50,8 +50,19 @@ const getFishIconColor = (fishType?: string) => {
   return "text-blue-400"; // default
 };
 
+// Photo type for carousel
+type PhotoObject = {
+  id: string;
+  url: string;
+  status: 'processing' | 'ready' | 'failed';
+  originalUrl?: string;
+  variants?: Array<{width: number; format: string; url: string;}>;
+  placeholder?: string;
+  error?: string;
+};
+
 // Photo Carousel Component
-function PhotoCarousel({ photos, onPhotoClick }: { photos: string[], onPhotoClick: (photo: string) => void }) {
+function PhotoCarousel({ photos, onPhotoClick }: { photos: (string | PhotoObject)[], onPhotoClick: (photo: string) => void }) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false });
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -89,23 +100,60 @@ function PhotoCarousel({ photos, onPhotoClick }: { photos: string[], onPhotoClic
     if (emblaApi) emblaApi.scrollTo(index);
   }, [emblaApi]);
 
+  // Helper to get best photo URL
+  const getPhotoUrl = (photo: string | PhotoObject): string => {
+    if (typeof photo === 'string') return photo;
+    
+    // Prefer WebP 800w variant if available
+    const webp800 = photo.variants?.find(v => v.width === 800 && v.format === 'webp');
+    if (webp800) return webp800.url;
+    
+    // Fallback to any 800w variant
+    const any800 = photo.variants?.find(v => v.width === 800);
+    if (any800) return any800.url;
+    
+    // Use main URL
+    return photo.url;
+  };
+
+  // Helper to get photo status
+  const getPhotoStatus = (photo: string | PhotoObject): 'processing' | 'ready' | 'failed' | null => {
+    if (typeof photo === 'string') return null;
+    return photo.status;
+  };
+
   if (photos.length === 0) return null;
 
   return (
     <div className="relative">
       <div className="overflow-hidden rounded-lg" ref={emblaRef}>
         <div className="flex">
-          {photos.map((photo, index) => (
-            <div key={index} className="flex-[0_0_100%] min-w-0">
-              <img 
-                src={photo} 
-                alt={`Fotografia úlovku ${index + 1}`}
-                className="w-full h-64 object-cover cursor-pointer hover:opacity-80 transition-opacity"
-                onClick={() => onPhotoClick(photo)}
-                data-testid={`catch-photo-${index}`}
-              />
-            </div>
-          ))}
+          {photos.map((photo, index) => {
+            const photoUrl = getPhotoUrl(photo);
+            const status = getPhotoStatus(photo);
+            
+            return (
+              <div key={typeof photo === 'string' ? index : photo.id} className="flex-[0_0_100%] min-w-0 relative">
+                <img 
+                  src={photoUrl} 
+                  alt={`Fotografia úlovku ${index + 1}`}
+                  className="w-full h-64 object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => status !== 'processing' && onPhotoClick(photoUrl)}
+                  data-testid={`catch-photo-${index}`}
+                />
+                {status === 'processing' && (
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                    <Loader2 className="w-8 h-8 text-white animate-spin" />
+                  </div>
+                )}
+                {status === 'failed' && (
+                  <div className="absolute inset-0 bg-red-500/50 flex items-center justify-center">
+                    <AlertCircle className="w-8 h-8 text-white" />
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
       
