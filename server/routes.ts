@@ -3968,6 +3968,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Add photos to existing catch (background upload after instant save)
+  app.patch('/api/diary/catches/:id/photos', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const catchId = req.params.id;
+      
+      // Check if user owns this catch
+      const catch_ = await storage.getDiaryCatch(catchId, userId);
+      if (!catch_) {
+        return res.status(404).json({ message: "Catch not found" });
+      }
+      
+      // Get existing photos and new photos from request
+      const existingPhotos = catch_.photos || [];
+      const newPhotos = req.body.photos || [];
+      
+      // Merge photos
+      const allPhotos = [...existingPhotos, ...newPhotos];
+      
+      // Update catch with new photos
+      const updatedCatch = await storage.updateDiaryCatch(catchId, { photos: allPhotos }, userId);
+      
+      res.json(updatedCatch);
+    } catch (error) {
+      console.error("Error adding photos to catch:", error);
+      res.status(500).json({ message: "Failed to add photos" });
+    }
+  });
+
   // Diary Limits endpoints
   app.get('/api/diary/trip-limits', isAuthenticated, async (req: any, res) => {
     try {

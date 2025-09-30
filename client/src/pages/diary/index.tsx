@@ -593,60 +593,137 @@ export default function DiaryIndex() {
       bait: data.bait === "none" ? undefined : data.bait
     };
 
-    // Upload new photos first if selected (returns immediately with processing status)
-    let newPhotos: Array<{
-      id: string;
-      url: string;
-      status: 'processing' | 'ready' | 'failed';
-      originalUrl?: string;
-    }> = [];
-    
-    if (selectedPhotos.length > 0) {
-      try {
-        const formData = new FormData();
-        selectedPhotos.forEach(photo => {
-          formData.append('photos', photo);
-        });
-        
-        const uploadResponse = await fetch('/api/diary/photos/upload', {
-          method: 'POST',
-          body: formData,
-          credentials: 'include'
-        });
-        
-        if (!uploadResponse.ok) {
-          throw new Error('Failed to upload photos');
-        }
-        
-        const uploadResult = await uploadResponse.json();
-        newPhotos = uploadResult.photos || [];
-        
-        // Show success message with processing info
-        toast({
-          title: "Fotky nahrané!",
-          description: `${newPhotos.length} ${newPhotos.length === 1 ? 'fotka sa' : 'fotky sa'} optimalizujú na pozadí...`,
-        });
-      } catch (error) {
-        console.error('Photo upload error:', error);
-        toast({
-          title: "Chyba pri nahrávaní fotiek",
-          description: "Úlovok bude uložený bez nových fotiek",
-          variant: "destructive",
-        });
-      }
-    }
-
-    // Merge existing photos and new photos
-    const allPhotos = [...existingPhotos, ...newPhotos];
-
-    const finalData = allPhotos.length > 0 
-      ? { ...processedData, photos: allPhotos }
-      : processedData;
-
     if (editingCatch) {
+      // EDITING MODE: Use old flow with photo upload first
+      let newPhotos: Array<{
+        id: string;
+        url: string;
+        status: 'processing' | 'ready' | 'failed';
+        originalUrl?: string;
+      }> = [];
+      
+      if (selectedPhotos.length > 0) {
+        try {
+          const formData = new FormData();
+          selectedPhotos.forEach(photo => {
+            formData.append('photos', photo);
+          });
+          
+          const uploadResponse = await fetch('/api/diary/photos/upload', {
+            method: 'POST',
+            body: formData,
+            credentials: 'include'
+          });
+          
+          if (!uploadResponse.ok) {
+            throw new Error('Failed to upload photos');
+          }
+          
+          const uploadResult = await uploadResponse.json();
+          newPhotos = uploadResult.photos || [];
+        } catch (error) {
+          console.error('Photo upload error:', error);
+          toast({
+            title: "Chyba pri nahrávaní fotiek",
+            description: "Úlovok bude aktualizovaný bez nových fotiek",
+            variant: "destructive",
+          });
+        }
+      }
+
+      const allPhotos = [...existingPhotos, ...newPhotos];
+      const finalData = allPhotos.length > 0 
+        ? { ...processedData, photos: allPhotos }
+        : processedData;
+      
       updateCatchMutation.mutate({ catchId: editingCatch.id, data: finalData });
     } else {
-      createCatchMutation.mutate(finalData);
+      // NEW CATCH MODE: Instant save with background photo upload
+      
+      // 1. Save catch IMMEDIATELY without photos
+      const immediateData = existingPhotos.length > 0 
+        ? { ...processedData, photos: existingPhotos }
+        : processedData;
+      
+      // Store photos to upload for background processing
+      const photosToUpload = [...selectedPhotos];
+      
+      // 2. Create catch mutation with immediate success callback
+      createCatchMutation.mutate(immediateData, {
+        onSuccess: async (newCatch: any) => {
+          // 3. If there are photos, upload them in background
+          if (photosToUpload.length > 0) {
+            toast({
+              title: "Úlovok uložený!",
+              description: `${photosToUpload.length} ${photosToUpload.length === 1 ? 'fotka sa nahráva' : 'fotky sa nahrávajú'} na pozadí...`,
+            });
+            
+            // Background photo upload (async, non-blocking)
+            uploadPhotosInBackground(newCatch.id, photosToUpload);
+          }
+        }
+      });
+    }
+  };
+
+  // Background photo upload function (runs after catch is saved)
+  const uploadPhotosInBackground = async (catchId: string, photos: File[]) => {
+    try {
+      // Import resize utility
+      const { resizeImages } = await import('@/utils/imageResize');
+      
+      // Resize images to 2048px max (reduces upload time significantly)
+      const resizedPhotos = await resizeImages(photos, { 
+        maxWidth: 2048, 
+        maxHeight: 2048, 
+        quality: 0.85 
+      });
+      
+      // Upload resized photos in parallel
+      const formData = new FormData();
+      resizedPhotos.forEach(photo => {
+        formData.append('photos', photo);
+      });
+      
+      const uploadResponse = await fetch('/api/diary/photos/upload', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include'
+      });
+      
+      if (!uploadResponse.ok) {
+        throw new Error('Failed to upload photos');
+      }
+      
+      const uploadResult = await uploadResponse.json();
+      const uploadedPhotos = uploadResult.photos || [];
+      
+      // Add photos to catch via PATCH endpoint
+      const patchResponse = await fetch(`/api/diary/catches/${catchId}/photos`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ photos: uploadedPhotos }),
+        credentials: 'include'
+      });
+      
+      if (!patchResponse.ok) {
+        throw new Error('Failed to attach photos to catch');
+      }
+      
+      // Refresh catch list to show uploaded photos
+      queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
+      
+      toast({
+        title: "Fotky nahrané!",
+        description: "Fotky sa optimalizujú na pozadí a onedlho sa zobrazia.",
+      });
+    } catch (error) {
+      console.error('Background photo upload error:', error);
+      toast({
+        title: "Chyba pri nahrávaní fotiek",
+        description: "Úlovok je uložený, ale fotky sa nepodarilo nahrať",
+        variant: "destructive",
+      });
     }
   };
 
