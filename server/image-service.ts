@@ -17,9 +17,9 @@ export interface ProcessedImageResult {
   placeholder: string; // base64 tiny placeholder
 }
 
-const SIZES = [160, 320, 640, 1280, 1920]; // responsive sizes
-const FORMATS = ['avif', 'webp', 'jpeg'] as const;
-const QUALITY = { avif: 45, webp: 70, jpeg: 70 };
+const SIZES = [200, 800, 1920]; // optimized sizes: thumbnail, preview, fullscreen
+const FORMATS = ['webp', 'jpeg'] as const;
+const QUALITY = { webp: 70, jpeg: 70 };
 
 export class ImageService {
   static async processImage(
@@ -66,68 +66,73 @@ export class ImageService {
       .toBuffer();
     const placeholder = `data:image/jpeg;base64,${placeholderBuffer.toString('base64')}`;
 
-    // Generate variants for each size and format
+    // Generate variants for each size and format in parallel
+    const variantPromises: Promise<ImageVariant | null>[] = [];
+
     for (const targetWidth of SIZES) {
       // Don't upscale - skip sizes larger than original
       if (targetWidth > metadata.width) continue;
 
       for (const format of FORMATS) {
-        const filename = `${baseFilename}-${targetWidth}w.${format}`;
-        const outputPath = path.join(outputDir, filename);
-        const url = `/uploads/${path.relative('uploads', outputPath).replace(/\\/g, '/')}`;
+        variantPromises.push(
+          (async () => {
+            const filename = `${baseFilename}-${targetWidth}w.${format}`;
+            const outputPath = path.join(outputDir, filename);
+            const url = `/uploads/${path.relative('uploads', outputPath).replace(/\\/g, '/')}`;
 
-        try {
-          let processedVariant = processedImage
-            .clone()
-            .resize(targetWidth, null, { 
-              withoutEnlargement: true,
-              kernel: sharp.kernel.lanczos3 
-            });
+            try {
+              let processedVariant = processedImage
+                .clone()
+                .resize(targetWidth, null, { 
+                  withoutEnlargement: true,
+                  kernel: sharp.kernel.lanczos3 
+                });
 
-          switch (format) {
-            case 'avif':
-              processedVariant = processedVariant.avif({ 
-                quality: QUALITY.avif,
-                effort: 6 // Higher effort for better compression
-              });
-              break;
-            case 'webp':
-              processedVariant = processedVariant.webp({ 
-                quality: QUALITY.webp,
-                effort: 6
-              });
-              break;
-            case 'jpeg':
-              processedVariant = processedVariant.jpeg({ 
-                quality: QUALITY.jpeg,
-                progressive: true,
-                mozjpeg: true
-              });
-              break;
-          }
+              switch (format) {
+                case 'webp':
+                  processedVariant = processedVariant.webp({ 
+                    quality: QUALITY.webp,
+                    effort: 6
+                  });
+                  break;
+                case 'jpeg':
+                  processedVariant = processedVariant.jpeg({ 
+                    quality: QUALITY.jpeg,
+                    progressive: true,
+                    mozjpeg: true
+                  });
+                  break;
+              }
 
-          await processedVariant.toFile(outputPath);
+              await processedVariant.toFile(outputPath);
 
-          // Get file size for metadata
-          const stats = await fs.stat(outputPath);
-          
-          variants.push({
-            width: targetWidth,
-            format,
-            url,
-            size: stats.size
-          });
-        } catch (error) {
-          console.warn(`Failed to process ${format} variant at ${targetWidth}w:`, error);
-        }
+              // Get file size for metadata
+              const stats = await fs.stat(outputPath);
+              
+              return {
+                width: targetWidth,
+                format,
+                url,
+                size: stats.size
+              };
+            } catch (error) {
+              console.warn(`Failed to process ${format} variant at ${targetWidth}w:`, error);
+              return null;
+            }
+          })()
+        );
       }
     }
+
+    // Wait for all variants to be generated in parallel
+    const variantResults = await Promise.all(variantPromises);
+    variants.push(...variantResults.filter((v): v is ImageVariant => v !== null));
 
     // Sort variants by width then by format preference
     variants.sort((a, b) => {
       if (a.width !== b.width) return a.width - b.width;
       
-      const formatOrder = { avif: 0, webp: 1, jpeg: 2 };
+      const formatOrder = { webp: 0, jpeg: 1 };
       return formatOrder[a.format as keyof typeof formatOrder] - formatOrder[b.format as keyof typeof formatOrder];
     });
 
