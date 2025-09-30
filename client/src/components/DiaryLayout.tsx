@@ -16,7 +16,8 @@ import {
   Plus,
   Menu,
   X,
-  Swords
+  Swords,
+  MapPin
 } from "lucide-react";
 
 // Type for premium check
@@ -34,6 +35,12 @@ const navigationItems = [
     label: "Denník",
     href: "/diary",
     description: "Hlavný prehľad"
+  },
+  {
+    icon: MapPin,
+    label: "Moje rybárske výpravy",
+    href: "/diary/trips",
+    description: "Viacdenné výlety"
   },
   {
     icon: BarChart3,
