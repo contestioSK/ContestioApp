@@ -9,6 +9,7 @@ import { useLocation } from "wouter";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import useEmblaCarousel from "embla-carousel-react";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -40,7 +41,9 @@ import {
   WifiOff,
   Loader2,
   Upload,
-  X
+  X,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -141,6 +144,117 @@ const getFishIconColor = (fishType?: string) => {
   
   return "text-blue-400"; // default
 };
+
+// Photo Carousel Component
+function PhotoCarousel({ photos, onPhotoClick }: { photos: string[], onPhotoClick: (photo: string) => void }) {
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false });
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    setSelectedIndex(emblaApi.selectedScrollSnap());
+  }, [emblaApi]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    onSelect();
+    emblaApi.on('select', onSelect);
+    return () => {
+      emblaApi.off('select', onSelect);
+    };
+  }, [emblaApi, onSelect]);
+
+  // Reset to first photo when photos change
+  useEffect(() => {
+    if (!emblaApi) return;
+    emblaApi.reInit();
+    emblaApi.scrollTo(0);
+    setSelectedIndex(0);
+  }, [photos, emblaApi]);
+
+  const scrollPrev = useCallback(() => {
+    if (emblaApi) emblaApi.scrollPrev();
+  }, [emblaApi]);
+
+  const scrollNext = useCallback(() => {
+    if (emblaApi) emblaApi.scrollNext();
+  }, [emblaApi]);
+
+  const scrollTo = useCallback((index: number) => {
+    if (emblaApi) emblaApi.scrollTo(index);
+  }, [emblaApi]);
+
+  if (photos.length === 0) return null;
+
+  return (
+    <div className="relative">
+      <div className="overflow-hidden rounded-lg" ref={emblaRef}>
+        <div className="flex">
+          {photos.map((photo, index) => (
+            <div key={index} className="flex-[0_0_100%] min-w-0">
+              <img 
+                src={photo} 
+                alt={`Fotografia úlovku ${index + 1}`}
+                className="w-full h-64 object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => onPhotoClick(photo)}
+                data-testid={`catch-photo-${index}`}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      {/* Navigation Buttons (only show if more than 1 photo) */}
+      {photos.length > 1 && (
+        <>
+          <button
+            onClick={scrollPrev}
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-2 hover:bg-black/70 transition-colors"
+            aria-label="Predchádzajúca fotka"
+            data-testid="button-prev-photo"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <button
+            onClick={scrollNext}
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-2 hover:bg-black/70 transition-colors"
+            aria-label="Ďalšia fotka"
+            data-testid="button-next-photo"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        </>
+      )}
+      
+      {/* Dots Indicator (only show if more than 1 photo) */}
+      {photos.length > 1 && (
+        <div className="flex justify-center gap-2 mt-3">
+          {photos.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => scrollTo(index)}
+              className={cn(
+                "w-2 h-2 rounded-full transition-all",
+                index === selectedIndex 
+                  ? "bg-white w-6" 
+                  : "bg-white/50 hover:bg-white/70"
+              )}
+              aria-label={`Zobraziť fotku ${index + 1}`}
+              data-testid={`dot-${index}`}
+            />
+          ))}
+        </div>
+      )}
+      
+      {/* Photo counter */}
+      {photos.length > 1 && (
+        <div className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+          {selectedIndex + 1} / {photos.length}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function DiaryCatches() {
   const { user } = useAuth();
@@ -1179,17 +1293,12 @@ export default function DiaryCatches() {
 
               {selectedCatch && (
                 <div className="space-y-6">
-                  {/* Photo */}
+                  {/* Photo Carousel */}
                   {selectedCatch.photos && selectedCatch.photos.length > 0 && (
-                    <div>
-                      <img 
-                        src={selectedCatch.photos[0]} 
-                        alt="Fotografia úlovku"
-                        className="w-full h-64 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
-                        onClick={() => selectedCatch.photos && setLightboxImage(selectedCatch.photos[0])}
-                        data-testid="catch-photo"
-                      />
-                    </div>
+                    <PhotoCarousel 
+                      photos={selectedCatch.photos} 
+                      onPhotoClick={(photo) => setLightboxImage(photo)}
+                    />
                   )}
 
                   {/* Basic Info */}
