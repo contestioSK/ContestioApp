@@ -173,9 +173,9 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                     setSidebarOpen(false);
                   }}
                   className={`
-                    w-full flex items-center px-2 md:px-3 py-2 md:py-3 text-sm font-medium rounded-lg transition-colors
+                    w-full flex items-center px-2 md:px-3 py-2 md:py-3 text-sm font-medium rounded-lg transition-all
                     ${isActive 
-                      ? 'bg-sidebar-primary/20 text-sidebar-primary border border-sidebar-primary/30' 
+                      ? 'bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-white border border-blue-500/50 shadow-lg shadow-blue-500/20' 
                       : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent'
                     }
                   `}
