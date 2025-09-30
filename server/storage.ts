@@ -2157,11 +2157,8 @@ export class DatabaseStorage implements IStorage {
       throw new Error("Nemáte oprávnenie na pridanie úlovku do tejto výpravy");
     }
     
-    // Check freemium limits for the authenticated user
-    const catchLimit = await this.checkDiaryCatchLimit(userId);
-    if (!catchLimit.canCreate) {
-      throw new Error(`Dosiahli ste limit ${catchLimit.limit} úlovkov pre FREE verziu. Prejdite na PREMIUM pre neobmedzene úlovky.`);
-    }
+    // NOTE: Freemium limit check moved to route handler (routes.ts) to avoid duplicate queries
+    // This storage method now assumes the caller has already validated limits
     
     const [newCatch] = await db
       .insert(diaryCatches)
