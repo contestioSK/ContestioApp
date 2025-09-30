@@ -215,20 +215,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`[PhotoQueue] Photo processed, broadcasting update for photo ${result.photoId}`);
       
       try {
-        // Update the catch in the database with the new photo status
-        if (result.catchId && result.catchId !== 'unknown') {
-          const db = (await import('./db')).db;
-          const { diaryCatches } = await import('@shared/schema');
-          const { eq, sql } = await import('drizzle-orm');
+        // Find catch that contains this photo by photoId (not by catchId)
+        const db = (await import('./db')).db;
+        const { diaryCatches } = await import('@shared/schema');
+        const { sql } = await import('drizzle-orm');
+        
+        // Search for catch containing this photoId
+        const catches = await db
+          .select()
+          .from(diaryCatches)
+          .where(sql`photos::jsonb @> ${JSON.stringify([{id: result.photoId}])}::jsonb`)
+          .limit(1);
+        
+        if (catches.length > 0) {
+          const currentCatch = catches[0];
           
-          // Get current catch data
-          const [currentCatch] = await db
-            .select()
-            .from(diaryCatches)
-            .where(eq(diaryCatches.id, result.catchId))
-            .limit(1);
-          
-          if (currentCatch && currentCatch.photos) {
+          if (currentCatch.photos) {
             // Parse photos array
             const photos = Array.isArray(currentCatch.photos) 
               ? currentCatch.photos 
@@ -256,10 +258,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 photos: sql`${JSON.stringify(updatedPhotos)}::jsonb`,
                 updatedAt: new Date()
               })
-              .where(eq(diaryCatches.id, result.catchId));
+              .where(sql`id = ${currentCatch.id}`);
             
-            console.log(`[PhotoQueue] Updated photo ${result.photoId} in database with status ${result.status}`);
+            console.log(`[PhotoQueue] Updated photo ${result.photoId} in catch ${currentCatch.id} with status ${result.status}`);
+            
+            // Update broadcast with actual catchId
+            result.catchId = currentCatch.id;
           }
+        } else {
+          console.warn(`[PhotoQueue] No catch found containing photo ${result.photoId}`);
         }
       } catch (error) {
         console.error(`[PhotoQueue] Failed to update photo in database:`, error);
