@@ -2440,9 +2440,18 @@ export class DatabaseStorage implements IStorage {
 
   async checkDiaryCatchLimit(userId: string): Promise<{ canCreate: boolean; currentCount: number; limit: number }> {
     const isPremium = await this.isUserPremium(userId);
-    const limit = isPremium ? Infinity : 20; // FREE: 20 catches, PREMIUM: unlimited
     
-    // Count all catches for user (including those without tripId)
+    // OPTIMIZATION: Skip expensive count query for premium users
+    if (isPremium) {
+      return {
+        canCreate: true,
+        currentCount: -1, // -1 indicates not counted (unlimited)
+        limit: -1 // -1 indicates unlimited
+      };
+    }
+    
+    // FREE users: Check limit with count query
+    const limit = 20;
     const currentCount = await db
       .select({ count: count() })
       .from(diaryCatches)
@@ -2450,9 +2459,9 @@ export class DatabaseStorage implements IStorage {
       .then(result => result[0]?.count || 0);
 
     return {
-      canCreate: isPremium || currentCount < limit,
+      canCreate: currentCount < limit,
       currentCount,
-      limit: isPremium ? -1 : limit, // -1 indicates unlimited
+      limit
     };
   }
 
