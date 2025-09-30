@@ -152,7 +152,7 @@ export default function DiaryCatches() {
   const [deletingCatch, setDeletingCatch] = useState<DiaryCatch | null>(null);
   const [selectedCatch, setSelectedCatch] = useState<DiaryCatch | null>(null);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
-  const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
+  const [selectedPhotos, setSelectedPhotos] = useState<File[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
 
   // Filters state
@@ -188,6 +188,15 @@ export default function DiaryCatches() {
     enabled: !!user
   });
 
+  // Check premium status for photo limits
+  const { data: premiumStatus } = useQuery<{ isPremium: boolean }>({
+    queryKey: ["/api/auth/premium-status"],
+    enabled: !!user?.id
+  });
+
+  const isPremium = premiumStatus?.isPremium || false;
+  const maxPhotos = isPremium ? 5 : 1;
+
   const form = useForm<CatchFormData>({
     resolver: zodResolver(catchFormSchema),
     defaultValues: {
@@ -212,7 +221,7 @@ export default function DiaryCatches() {
       queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
       queryClient.invalidateQueries({ queryKey: ["/api/diary/catch-limits"] });
       setIsCreateDialogOpen(false);
-      setSelectedPhoto(null);
+      setSelectedPhotos([]);
       form.reset();
       toast({
         title: "Úlovok pridaný!",
@@ -233,7 +242,7 @@ export default function DiaryCatches() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
       setEditingCatch(null);
-      setSelectedPhoto(null);
+      setSelectedPhotos([]);
       form.reset();
       toast({
         title: "Úlovok aktualizovaný!",
@@ -278,22 +287,22 @@ export default function DiaryCatches() {
     };
 
     if (isOffline) {
-      // Save as draft when offline (with photo if available)
+      // Save as draft when offline (with photos if available)
       try {
         const type = editingCatch ? 'update' : deletingCatch ? 'delete' : 'create';
         const originalId = editingCatch?.id || deletingCatch?.id;
-        const catchDataWithPhoto = selectedPhoto ? { ...processedData, photo: selectedPhoto } : processedData;
+        const catchDataWithPhoto = selectedPhotos.length > 0 ? { ...processedData, photo: selectedPhotos[0] } : processedData;
         
         await saveCatchDraft(catchDataWithPhoto, type, originalId);
         
         setIsCreateDialogOpen(false);
         setEditingCatch(null);
-        setSelectedPhoto(null);
+        setSelectedPhotos([]);
         form.reset();
         
         toast({
           title: "Uložené offline",
-          description: selectedPhoto 
+          description: selectedPhotos.length > 0
             ? "Úlovok s fotkou sa odošle automaticky po obnovení pripojenia"
             : "Úlovok sa odošle automaticky po obnovení pripojenia",
           variant: "default",
@@ -307,13 +316,15 @@ export default function DiaryCatches() {
         });
       }
     } else {
-      // Online - upload photo first if selected, then create/update catch
+      // Online - upload photos first if selected, then create/update catch
       let photoUrls: string[] = [];
       
-      if (selectedPhoto) {
+      if (selectedPhotos.length > 0) {
         try {
           const formData = new FormData();
-          formData.append('photos', selectedPhoto);
+          selectedPhotos.forEach(photo => {
+            formData.append('photos', photo);
+          });
           
           const uploadResponse = await fetch('/api/diary/photos/upload', {
             method: 'POST',
@@ -322,7 +333,7 @@ export default function DiaryCatches() {
           });
           
           if (!uploadResponse.ok) {
-            throw new Error('Failed to upload photo');
+            throw new Error('Failed to upload photos');
           }
           
           const uploadResult = await uploadResponse.json();
@@ -330,8 +341,8 @@ export default function DiaryCatches() {
         } catch (error) {
           console.error('Photo upload error:', error);
           toast({
-            title: "Chyba pri nahrávaní fotky",
-            description: "Úlovok bude uložený bez fotky",
+            title: "Chyba pri nahrávaní fotiek",
+            description: "Úlovok bude uložený bez fotiek",
             variant: "destructive",
           });
         }
@@ -370,7 +381,7 @@ export default function DiaryCatches() {
   const closeDialog = () => {
     setIsCreateDialogOpen(false);
     setEditingCatch(null);
-    setSelectedPhoto(null);
+    setSelectedPhotos([]);
     form.reset();
   };
 
@@ -653,29 +664,62 @@ export default function DiaryCatches() {
 
                       {/* Photo Upload */}
                       <div className="space-y-2">
-                        <FormLabel>Fotka úlovku (voliteľné)</FormLabel>
-                        <div className="flex items-center gap-4">
-                          <Input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                setSelectedPhoto(file);
-                              }
-                            }}
-                            data-testid="input-photo"
-                          />
-                          {selectedPhoto && (
-                            <Badge variant="secondary" className="flex items-center gap-1">
-                              <Camera className="w-3 h-3" />
-                              {selectedPhoto.name}
+                        <div className="flex items-center justify-between">
+                          <FormLabel>Fotky úlovku (voliteľné)</FormLabel>
+                          {!isPremium && (
+                            <Badge variant="outline" className="text-xs">
+                              FREE: max 1 fotka
+                            </Badge>
+                          )}
+                          {isPremium && (
+                            <Badge variant="secondary" className="text-xs">
+                              PREMIUM: až {maxPhotos} fotiek
                             </Badge>
                           )}
                         </div>
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          multiple={isPremium}
+                          onChange={(e) => {
+                            const files = Array.from(e.target.files || []);
+                            if (files.length > maxPhotos) {
+                              toast({
+                                title: "Príliš veľa fotiek",
+                                description: `Môžete nahrať maximálne ${maxPhotos} ${maxPhotos === 1 ? 'fotku' : 'fotiek'}.`,
+                                variant: "destructive",
+                              });
+                              e.target.value = '';
+                              return;
+                            }
+                            setSelectedPhotos(files);
+                          }}
+                          data-testid="input-photos"
+                        />
+                        {selectedPhotos.length > 0 && (
+                          <div className="flex flex-wrap gap-2">
+                            {selectedPhotos.map((photo, index) => (
+                              <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                                <Camera className="w-3 h-3" />
+                                {photo.name}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedPhotos(prev => prev.filter((_, i) => i !== index));
+                                  }}
+                                  className="ml-1 hover:text-red-500"
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
                         {isOffline && (
                           <p className="text-xs text-muted-foreground">
-                            Fotka sa uloží lokálne a odošle po obnovení pripojenia
+                            {selectedPhotos.length > 0 
+                              ? `${selectedPhotos.length} ${selectedPhotos.length === 1 ? 'fotka' : 'fotky'} sa uložia lokálne a odošlú po obnovení pripojenia`
+                              : 'Fotky sa uložia lokálne a odošlú po obnovení pripojenia'}
                           </p>
                         )}
                       </div>
