@@ -264,8 +264,13 @@ export default function DiaryCatches() {
 
   const handleSubmit = async (data: CatchFormData) => {
     // Convert "none" values to undefined (no selection)
+    // CRITICAL: Always include userId in angler object for proper filtering
     const processedData = {
       ...data,
+      angler: {
+        ...data.angler,
+        userId: user?.id || ''
+      },
       tripId: data.tripId === "none" ? undefined : data.tripId,
       bait: data.bait === "none" ? undefined : data.bait
     };
@@ -1046,7 +1051,7 @@ export default function DiaryCatches() {
                         src={selectedCatch.photos[0]} 
                         alt="Fotografia úlovku"
                         className="w-full h-64 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
-                        onClick={() => setLightboxImage(selectedCatch.photos[0])}
+                        onClick={() => selectedCatch.photos && setLightboxImage(selectedCatch.photos[0])}
                         data-testid="catch-photo"
                       />
                     </div>
