@@ -66,6 +66,7 @@ export default function DiaryIndex() {
   // Filters state
   const [selectedTechnique, setSelectedTechnique] = useState<string>("all");
   const [selectedFishType, setSelectedFishType] = useState<string>("all");
+  const [selectedSpot, setSelectedSpot] = useState<string>("all");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
 
   // Load all catches for statistics
@@ -102,6 +103,11 @@ export default function DiaryIndex() {
       return false;
     }
     
+    // Filter by spot
+    if (selectedSpot !== "all" && catch_.spot !== selectedSpot) {
+      return false;
+    }
+    
     // Filter by date
     if (selectedDate) {
       const catchDate = new Date(catch_.capturedAt);
@@ -113,8 +119,9 @@ export default function DiaryIndex() {
     return true;
   });
 
-  // Get unique techniques for filter dropdown
+  // Get unique techniques and spots for filter dropdowns
   const uniqueTechniques = Array.from(new Set(season2025Catches.map((c: any) => c.bait).filter(Boolean)));
+  const uniqueSpots = Array.from(new Set(season2025Catches.map((c: any) => c.spot).filter(Boolean)));
 
   // Calculate statistics from 2025 season catches
   const diaryStats = {
@@ -364,6 +371,20 @@ export default function DiaryIndex() {
             </SelectContent>
           </Select>
 
+          <Select value={selectedSpot} onValueChange={setSelectedSpot}>
+            <SelectTrigger className="w-[200px] bg-slate-700/50 border-slate-600 text-white" data-testid="filter-spot">
+              <SelectValue placeholder="Všetky Revíry" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Všetky Revíry</SelectItem>
+              {uniqueSpots.map((spot: string) => (
+                <SelectItem key={spot} value={spot}>
+                  {spot}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -388,12 +409,13 @@ export default function DiaryIndex() {
             </PopoverContent>
           </Popover>
 
-          {(selectedTechnique !== "all" || selectedFishType !== "all" || selectedDate) && (
+          {(selectedTechnique !== "all" || selectedFishType !== "all" || selectedSpot !== "all" || selectedDate) && (
             <Button
               variant="ghost"
               onClick={() => {
                 setSelectedTechnique("all");
                 setSelectedFishType("all");
+                setSelectedSpot("all");
                 setSelectedDate(undefined);
               }}
               className="text-slate-400 hover:text-white"
