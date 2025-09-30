@@ -2,7 +2,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Plus, Archive, Swords, Users, Clock, Crown } from "lucide-react";
+import { Trophy, Plus, Archive, Swords, Users, Clock, Crown, Eye } from "lucide-react";
 import { useLocation } from "wouter";
 import DiaryLayout from "@/components/DiaryLayout";
 import { useQuery } from "@tanstack/react-query";
@@ -80,18 +80,17 @@ export default function BattleIndex() {
                 {battles.map((battle) => (
                   <Card 
                     key={battle.id} 
-                    className="hover:shadow-lg transition-shadow cursor-pointer"
-                    onClick={() => setLocation(`/diary/battle/${battle.id}`)}
+                    className="hover:shadow-lg transition-shadow"
                     data-testid={`card-battle-${battle.id}`}
                   >
                     <CardContent className="p-6">
-                      <div className="flex items-start justify-between">
+                      <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
                           <h3 className="text-xl font-bold text-foreground mb-2 flex items-center gap-2">
                             <Trophy className="w-5 h-5 text-yellow-600" />
                             {battle.name}
                           </h3>
-                          <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                          <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-4">
                             <span className="flex items-center gap-1">
                               <Users className="w-4 h-4" />
                               {battle.participants.length} účastníkov
@@ -101,6 +100,13 @@ export default function BattleIndex() {
                               {new Date(battle.startAt).toLocaleDateString('sk-SK')} - {new Date(battle.endAt).toLocaleDateString('sk-SK')}
                             </span>
                           </div>
+                          <Button
+                            onClick={() => setLocation(`/diary/battle/${battle.id}`)}
+                            data-testid={`button-view-battle-${battle.id}`}
+                          >
+                            <Eye className="w-4 h-4 mr-2" />
+                            Zobraziť detail
+                          </Button>
                         </div>
                         <Badge className="bg-green-500 text-white">
                           {battle.rules.mode === 'most_fish' && 'Najviac rýb'}
