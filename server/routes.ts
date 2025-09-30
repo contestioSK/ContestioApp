@@ -3316,6 +3316,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch battles" });
     }
   });
+
+  // Get single battle by ID
+  app.get('/api/diary/battles/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+      
+      const battle = await storage.getDiaryBattle(id, userId);
+      
+      if (!battle) {
+        return res.status(404).json({ message: "Battle sa nenašiel" });
+      }
+      
+      res.json(battle);
+    } catch (error) {
+      console.error("Error fetching battle:", error);
+      res.status(500).json({ message: "Failed to fetch battle" });
+    }
+  });
   
   // Create battle with auto-created trip (recommended flow)
   app.post('/api/diary/battles-with-trip', isAuthenticated, async (req: any, res) => {
