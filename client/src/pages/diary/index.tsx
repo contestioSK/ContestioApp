@@ -119,6 +119,12 @@ export default function DiaryIndex() {
     return true;
   });
 
+  // Check if any filters are active
+  const hasActiveFilters = selectedTechnique !== "all" || selectedFishType !== "all" || selectedSpot !== "all" || selectedDate !== undefined;
+
+  // Display catches: show top 5 when no filters are active, otherwise show all filtered results
+  const displayedCatches = hasActiveFilters ? filteredCatches : filteredCatches.slice(0, 5);
+
   // Get unique techniques and spots for filter dropdowns
   const uniqueTechniques = Array.from(new Set(season2025Catches.map((c: any) => c.bait).filter(Boolean)));
   const uniqueSpots = Array.from(new Set(season2025Catches.map((c: any) => c.spot).filter(Boolean)));
@@ -461,8 +467,8 @@ export default function DiaryIndex() {
             </div>
             
             {/* Table Rows */}
-            {filteredCatches.length > 0 ? (
-              filteredCatches.map((catch_: any, index: number) => (
+            {displayedCatches.length > 0 ? (
+              displayedCatches.map((catch_: any, index: number) => (
                 <div 
                   key={catch_.id || index} 
                   className="border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors cursor-pointer"
@@ -546,6 +552,20 @@ export default function DiaryIndex() {
             )}
           </CardContent>
         </Card>
+
+        {/* View All Button - show when there are more than 5 catches total, regardless of filters */}
+        {season2025Catches.length > 5 && (
+          <div className="flex justify-center mt-4">
+            <Button
+              onClick={() => setLocation("/diary/catches")}
+              variant="outline"
+              className="border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
+              data-testid="button-view-all-catches"
+            >
+              Zobraziť všetky úlovky ({season2025Catches.length})
+            </Button>
+          </div>
+        )}
 
         {/* Detail Panel */}
         <Sheet open={!!selectedCatch} onOpenChange={() => setSelectedCatch(null)}>
