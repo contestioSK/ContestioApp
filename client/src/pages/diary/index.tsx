@@ -371,7 +371,7 @@ export default function DiaryIndex() {
         {/* Filters */}
         <div className="flex flex-wrap gap-3 mb-6">
           <Select value={selectedTechnique} onValueChange={setSelectedTechnique}>
-            <SelectTrigger className="w-[200px] bg-slate-700/50 border-slate-600 text-white" data-testid="filter-technique">
+            <SelectTrigger className="w-[200px] bg-slate-700/50 border text-white" data-testid="filter-technique">
               <SelectValue placeholder="Všetky Techniky" />
             </SelectTrigger>
             <SelectContent>
@@ -385,7 +385,7 @@ export default function DiaryIndex() {
           </Select>
 
           <Select value={selectedFishType} onValueChange={setSelectedFishType}>
-            <SelectTrigger className="w-[200px] bg-slate-700/50 border-slate-600 text-white" data-testid="filter-fish-type">
+            <SelectTrigger className="w-[200px] bg-slate-700/50 border text-white" data-testid="filter-fish-type">
               <SelectValue placeholder="Všetky Druhy" />
             </SelectTrigger>
             <SelectContent>
@@ -399,7 +399,7 @@ export default function DiaryIndex() {
           </Select>
 
           <Select value={selectedSpot} onValueChange={setSelectedSpot}>
-            <SelectTrigger className="w-[200px] bg-slate-700/50 border-slate-600 text-white" data-testid="filter-spot">
+            <SelectTrigger className="w-[200px] bg-slate-700/50 border text-white" data-testid="filter-spot">
               <SelectValue placeholder="Všetky Revíry" />
             </SelectTrigger>
             <SelectContent>
@@ -417,7 +417,7 @@ export default function DiaryIndex() {
               <Button
                 variant="outline"
                 className={cn(
-                  "w-[200px] justify-start text-left font-normal bg-slate-700/50 border-slate-600 text-white hover:bg-slate-700/70",
+                  "w-[200px] justify-start text-left font-normal bg-slate-700/50 border text-white hover:bg-slate-700/70",
                   !selectedDate && "text-slate-400"
                 )}
                 data-testid="filter-date"
@@ -455,10 +455,10 @@ export default function DiaryIndex() {
         </div>
 
         {/* Catches Table */}
-        <Card className="bg-slate-800/50 border-slate-600 overflow-hidden">
+        <Card className="bg-slate-800/50 border overflow-hidden">
           <CardContent className="p-0">
             {/* Desktop Table Header */}
-            <div className="hidden md:grid grid-cols-5 gap-4 p-4 border-b border-slate-600 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-700/30">
+            <div className="hidden md:grid grid-cols-5 gap-4 p-4 border-b text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-700/30">
               <div>DRUH RYBY</div>
               <div>VÁHA / DĹŽKA</div>
               <div>REVÍR</div>
@@ -471,7 +471,7 @@ export default function DiaryIndex() {
               displayedCatches.map((catch_: any, index: number) => (
                 <div 
                   key={catch_.id || index} 
-                  className="border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors cursor-pointer"
+                  className="border-b hover:bg-slate-700/30 transition-colors cursor-pointer"
                   onClick={() => setSelectedCatch(catch_)}
                   data-testid={`catch-row-${catch_.id || index}`}
                 >
@@ -559,7 +559,7 @@ export default function DiaryIndex() {
             <Button
               onClick={() => setLocation("/diary/catches")}
               variant="outline"
-              className="border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
+              className="border text-slate-300 hover:bg-slate-700 hover:text-white"
               data-testid="button-view-all-catches"
             >
               Zobraziť všetky úlovky ({season2025Catches.length})
@@ -569,7 +569,7 @@ export default function DiaryIndex() {
 
         {/* Detail Panel */}
         <Sheet open={!!selectedCatch} onOpenChange={() => setSelectedCatch(null)}>
-          <SheetContent className="w-full sm:max-w-md bg-slate-800 border-slate-600 text-white overflow-y-auto" data-testid="catch-detail-panel">
+          <SheetContent className="w-full sm:max-w-md bg-slate-800 border text-white overflow-y-auto" data-testid="catch-detail-panel">
             <SheetHeader className="pb-6">
               <SheetTitle className="text-white flex items-center gap-3">
                 <div className="w-10 h-10 bg-slate-600/50 rounded-lg flex items-center justify-center">
