@@ -37,6 +37,12 @@ const navigationItems = [
     description: "Hlavný prehľad"
   },
   {
+    icon: Fish,
+    label: "Moje úlovky",
+    href: "/diary/catches",
+    description: "Správa úlovkov"
+  },
+  {
     icon: MapPin,
     label: "Moje rybárske výpravy",
     href: "/diary/trips",
