@@ -4,13 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Fish, Plus, X, MapPin, Target, Ruler, Weight, Swords, Trophy, Crown, Play, Edit2, Trash2, CalendarIcon, CalendarDays } from "lucide-react";
+import { Fish, Plus, X, MapPin, Target, Ruler, Weight, Swords, Trophy, Crown, Play, Edit2, Trash2, CalendarIcon, CalendarDays, Camera } from "lucide-react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -24,6 +24,8 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { showErrorToast } from "@/lib/errorUtils";
+import type { DiaryCatch, DiaryTrip } from "@shared/schema";
 
 // Function to get fish icon based on fish type
 const getFishIcon = (fishType?: string) => {
@@ -53,14 +55,74 @@ const quickStartSchema = z.object({
 
 type QuickStartFormData = z.infer<typeof quickStartSchema>;
 
+// Catch form validation schema
+const catchFormSchema = z.object({
+  tripId: z.string().optional(),
+  angler: z.object({
+    name: z.string().min(1, "Meno rybára je povinné")
+  }),
+  capturedAt: z.date({ required_error: "Čas chytenia je povinný" }),
+  weight: z.string().min(1, "Váha je povinná").transform((val) => {
+    const weight = parseFloat(val);
+    if (isNaN(weight) || weight < 0) {
+      throw new Error("Neplatná váha");
+    }
+    return weight.toString();
+  }),
+  lengthCm: z.coerce.number().positive("Dĺžka musí byť kladné číslo").optional(),
+  fishType: z.enum([
+    "kapor_supinac", 
+    "kapor_lysec", 
+    "amur", 
+    "sumec", 
+    "zubac", 
+    "stuka", 
+    "pleskac", 
+    "zubac_zubatovity",
+    "ostretus",
+    "tolstolobik",
+    "bream",
+    "other"
+  ]),
+  bait: z.string().optional(),
+  notes: z.string().optional(),
+  spot: z.string().optional(),
+  verified: z.boolean().default(false),
+});
+
+type CatchFormData = z.infer<typeof catchFormSchema>;
+
+// Fishing methods
+const fishingMethods = [
+  "Boilie",
+  "Kukurica",
+  "Pelety", 
+  "Dážďovka",
+  "Návnada",
+  "Spoon",
+  "Spinner",
+  "Wobler",
+  "Gumiak",
+  "Iné"
+];
+
+// Type for freemium limits response
+type FreemiumLimits = {
+  canCreate: boolean;
+  currentCount: number;
+  limit: number;
+};
+
 export default function DiaryIndex() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const [selectedCatch, setSelectedCatch] = useState<any>(null);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [isStartFishingOpen, setIsStartFishingOpen] = useState(false);
+  const [isCreateCatchOpen, setIsCreateCatchOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [catchToDelete, setCatchToDelete] = useState<string | null>(null);
+  const [selectedPhotos, setSelectedPhotos] = useState<File[]>([]);
   const { toast } = useToast();
 
   // Filters state
@@ -82,6 +144,19 @@ export default function DiaryIndex() {
   });
 
   const isPremium = premiumStatus?.isPremium || false;
+  const maxPhotos = isPremium ? 5 : 1;
+
+  // Fetch user's trips for the trip selector
+  const { data: trips = [] } = useQuery<DiaryTrip[]>({
+    queryKey: ["/api/diary/trips"],
+    enabled: !!user
+  });
+
+  // Check freemium limits
+  const { data: limits } = useQuery<FreemiumLimits>({
+    queryKey: ["/api/diary/catch-limits"],
+    enabled: !!user
+  });
 
   // Filter catches for 2025 season (January 15, 2025 onwards)
   const season2025Catches = Array.isArray(allCatches) ? allCatches.filter((catch_: any) => {
@@ -162,6 +237,43 @@ export default function DiaryIndex() {
     }
   });
 
+  // Catch form
+  const catchForm = useForm<CatchFormData>({
+    resolver: zodResolver(catchFormSchema),
+    defaultValues: {
+      angler: { name: user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : "" },
+      capturedAt: new Date(),
+      weight: "",
+      fishType: "kapor_supinac",
+      bait: "",
+      notes: "",
+      spot: "",
+      verified: false
+    }
+  });
+
+  // Create catch mutation
+  const createCatchMutation = useMutation({
+    mutationFn: async (data: CatchFormData) => {
+      const response = await apiRequest("POST", "/api/diary/catches", data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/diary/catch-limits"] });
+      setIsCreateCatchOpen(false);
+      setSelectedPhotos([]);
+      catchForm.reset();
+      toast({
+        title: "Úlovok pridaný!",
+        description: "Váš úlovok bol úspešne pridaný do denníka.",
+      });
+    },
+    onError: (error: Error) => {
+      showErrorToast(toast, error, 'catch');
+    }
+  });
+
   // Create quick trip mutation
   const createQuickTripMutation = useMutation({
     mutationFn: async (data: QuickStartFormData) => {
@@ -225,6 +337,57 @@ export default function DiaryIndex() {
     createQuickTripMutation.mutate(data);
   };
 
+  const handleCatchSubmit = async (data: CatchFormData) => {
+    // CRITICAL: Always include userId in angler object for proper filtering
+    const processedData = {
+      ...data,
+      angler: {
+        ...data.angler,
+        userId: user?.id || ''
+      },
+      tripId: data.tripId === "none" ? undefined : data.tripId,
+      bait: data.bait === "none" ? undefined : data.bait
+    };
+
+    // Upload photos first if selected, then create catch
+    let photoUrls: string[] = [];
+    
+    if (selectedPhotos.length > 0) {
+      try {
+        const formData = new FormData();
+        selectedPhotos.forEach(photo => {
+          formData.append('photos', photo);
+        });
+        
+        const uploadResponse = await fetch('/api/diary/photos/upload', {
+          method: 'POST',
+          body: formData,
+          credentials: 'include'
+        });
+        
+        if (!uploadResponse.ok) {
+          throw new Error('Failed to upload photos');
+        }
+        
+        const uploadResult = await uploadResponse.json();
+        photoUrls = uploadResult.photos?.map((p: any) => p.url) || [];
+      } catch (error) {
+        console.error('Photo upload error:', error);
+        toast({
+          title: "Chyba pri nahrávaní fotiek",
+          description: "Úlovok bude uložený bez fotiek",
+          variant: "destructive",
+        });
+      }
+    }
+
+    const finalData = photoUrls.length > 0 
+      ? { ...processedData, photos: photoUrls }
+      : processedData;
+
+    createCatchMutation.mutate(finalData);
+  };
+
   const handleDeleteCatch = () => {
     if (catchToDelete) {
       deleteCatchMutation.mutate(catchToDelete);
@@ -234,6 +397,12 @@ export default function DiaryIndex() {
   const openDeleteDialog = (catchId: string) => {
     setCatchToDelete(catchId);
     setDeleteDialogOpen(true);
+  };
+
+  const closeCreateCatchDialog = () => {
+    setIsCreateCatchOpen(false);
+    setSelectedPhotos([]);
+    catchForm.reset();
   };
 
   return (
