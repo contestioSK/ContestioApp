@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useDiaryOffline } from "@/hooks/use-diary-offline";
@@ -309,10 +309,23 @@ export default function DiaryCatches() {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
   
+  // ⏱️ Performance measurement ref
+  const perfStartRef = useRef<number | null>(null);
+  
   // WebSocket connection for real-time photo processing updates
   useWebSocket((message) => {
     if (message.type === 'diary_photo_processed') {
       console.log('[Catches] Photo processed:', message);
+      
+      // ⏱️ PERFORMANCE: Photos displayed (when status becomes 'ready')
+      if (message.status === 'ready' && perfStartRef.current !== null) {
+        const photoDisplayedTime = performance.now();
+        const totalTime = photoDisplayedTime - perfStartRef.current;
+        console.log(`[PERF] 🖼️ Photo displayed (ready) in ${totalTime.toFixed(0)}ms total time`);
+        console.log(`[PERF] 🎯 TOTAL TIME: ${(totalTime / 1000).toFixed(1)} seconds`);
+        // Reset perf measurement after first photo is ready
+        perfStartRef.current = null;
+      }
       
       // Update the photo in selectedCatch if it contains this photo
       if (selectedCatch && message.photoId) {
@@ -494,6 +507,11 @@ export default function DiaryCatches() {
   });
 
   const handleSubmit = async (data: CatchFormData) => {
+    // ⏱️ PERFORMANCE MEASUREMENT START
+    const perfStart = performance.now();
+    perfStartRef.current = perfStart;
+    console.log(`[PERF] 🎬 Form submit started at ${perfStart.toFixed(0)}ms`);
+    
     // Convert "none" values to undefined (no selection)
     // CRITICAL: Always include userId in angler object for proper filtering
     const processedData = {
@@ -597,6 +615,11 @@ export default function DiaryCatches() {
         // 2. Create catch with immediate success callback
         createCatchMutation.mutate(immediateData, {
           onSuccess: async (newCatch: any) => {
+            // ⏱️ PERFORMANCE: Catch saved
+            const catchSavedTime = performance.now();
+            const timeSinceSave = catchSavedTime - perfStart;
+            console.log(`[PERF] ✅ Catch saved in ${timeSinceSave.toFixed(0)}ms (ultra-fast!)`);
+            
             // 3. If there are photos, upload them in background
             if (photosToUpload.length > 0) {
               toast({
@@ -605,7 +628,7 @@ export default function DiaryCatches() {
               });
               
               // Background photo upload (async, non-blocking)
-              uploadPhotosInBackground(newCatch.id, photosToUpload);
+              uploadPhotosInBackground(newCatch.id, photosToUpload, perfStart);
             }
           }
         });
@@ -614,7 +637,7 @@ export default function DiaryCatches() {
   };
 
   // Background photo upload function (runs after catch is saved)
-  const uploadPhotosInBackground = async (catchId: string, photos: File[]) => {
+  const uploadPhotosInBackground = async (catchId: string, photos: File[], perfStart: number) => {
     try {
       // Import resize utility
       const { resizeImages } = await import('@/utils/imageResize');
@@ -644,6 +667,12 @@ export default function DiaryCatches() {
       
       const uploadResult = await uploadResponse.json();
       const uploadedPhotos = uploadResult.photos || [];
+      
+      // ⏱️ PERFORMANCE: Photos uploaded
+      const photosUploadedTime = performance.now();
+      const timeSinceStart = photosUploadedTime - perfStart;
+      const timeSinceSave = photosUploadedTime - (perfStart + (photosUploadedTime - perfStart));
+      console.log(`[PERF] 📤 Photos uploaded in ${timeSinceStart.toFixed(0)}ms (+${timeSinceStart.toFixed(0)}ms from start)`);
       
       // Add photos to catch via PATCH endpoint
       const patchResponse = await fetch(`/api/diary/catches/${catchId}/photos`, {
