@@ -3559,16 +3559,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Žiadne súbory neboli nahrané" });
       }
 
-      const processedPhotos = [];
-      
       // Create diary photos directory
       const diaryPhotosDir = path.join('attached_assets', 'diary_photos', userId);
       if (!existsSync(diaryPhotosDir)) {
         await fsPromises.mkdir(diaryPhotosDir, { recursive: true });
       }
 
-      // Process each uploaded photo
-      for (const file of req.files) {
+      // Process all uploaded photos in parallel for better performance
+      const photoPromises = req.files.map(async (file: any) => {
         try {
           const fileExtension = path.extname(file.originalname).toLowerCase();
           const baseFilename = `${randomUUID()}`;
@@ -3581,15 +3579,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
             baseFilename
           );
           
-          // Get best variant for display (prefer WebP 640w for diary)
-          const bestVariant = ImageService.getBestVariantForWidth(imageMetadata.variants, 640, 'webp') ||
-                              ImageService.getBestVariantForWidth(imageMetadata.variants, 640, 'jpeg') ||
+          // Get best variant for display (prefer WebP 800w for diary preview)
+          const bestVariant = ImageService.getBestVariantForWidth(imageMetadata.variants, 800, 'webp') ||
+                              ImageService.getBestVariantForWidth(imageMetadata.variants, 800, 'jpeg') ||
                               imageMetadata.variants[0];
           
           // Clean up the temporary uploaded file
           await ImageService.cleanupTempFile(file.path);
           
-          processedPhotos.push({
+          return {
             id: randomUUID(),
             originalName: file.originalname,
             url: bestVariant?.url || `/uploads/${file.filename}`,
@@ -3597,17 +3595,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
             placeholder: imageMetadata.placeholder,
             width: imageMetadata.originalWidth,
             height: imageMetadata.originalHeight
-          });
+          };
           
         } catch (error) {
           console.error(`Error processing photo ${file.originalname}:`, error);
           // Clean up temp file on error
           await ImageService.cleanupTempFile(file.path);
           
-          // Skip this file if processing failed
-          console.error(`Skipping file ${file.originalname} due to processing error`);
+          // Return null for failed photos
+          return null;
         }
-      }
+      });
+
+      // Wait for all photos to be processed in parallel
+      const photoResults = await Promise.all(photoPromises);
+      const processedPhotos = photoResults.filter((photo): photo is NonNullable<typeof photo> => photo !== null);
       
       res.json({ 
         photos: processedPhotos,

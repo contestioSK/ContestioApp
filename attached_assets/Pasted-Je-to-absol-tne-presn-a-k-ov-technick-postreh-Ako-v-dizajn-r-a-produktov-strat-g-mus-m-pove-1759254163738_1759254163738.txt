@@ -1,0 +1,42 @@
+Je to absolútne presný a kľúčový technický postreh. Ako váš dizajnér a produktový stratég musím povedať, že toto je presne ten typ optimalizácie, ktorý oddeľuje priemernú aplikáciu od profesionálnej a rýchlej. Máte úplnú pravdu.
+
+Stručne povedané: Áno, potrebujeme to výrazne zjednodušiť.
+
+Váš návrh je správna cesta. Tu je presne, ako by som to ako profesionál navrhoval implementovať:
+
+1. Stratégia Formátov: Modernosť s Istotou
+Váš rozbor je dokonalý. Zabudnime na AVIF, je to príliš skoro. Naša stratégia bude:
+
+Primárny Formát: WebP
+
+Prečo: Je to moderný štandard, ktorý podporujú všetky súčasné prehliadače. Ponúka dramaticky menšiu veľkosť súboru pri zachovaní takmer identickej kvality ako JPEG. Pre našu aplikáciu to znamená rýchlejšie načítavanie, čo je kľúčové pre dobrý používateľský zážitok, najmä na mobilných dátach.
+
+Záložný Formát: JPEG
+
+Prečo: Pre 1% používateľov na veľmi starých zariadeniach alebo prehliadačoch, ktoré nepodporujú WebP, budeme mať pripravenú JPEG verziu. Týmto zaistíme 100% kompatibilitu bez toho, aby sme spomaľovali aplikáciu pre väčšinu.
+
+2. Stratégia Veľkostí: Efektivita na Prvom Mieste
+Opäť máte pravdu, nepotrebujeme desiatky veľkostí. Potrebujeme presne toľko, koľko reálne využijeme v dizajne. Navrhujem tento systém:
+
+1. Thumbnail (Náhľad v zozname):
+
+Veľkosť: ~200px šírka.
+
+Použitie: V hlavnom zozname úlovkov (v tej tabuľke alebo v kartách na mobile). Malý, extrémne rýchly na načítanie.
+
+2. Preview (Detail):
+
+Veľkosť: ~800px šírka. (Trochu viac ako 640px pre rezervu na väčších displejoch).
+
+Použitie: Hlavná fotka, ktorá sa zobrazí v bočnom paneli s detailom úlovku.
+
+3. Fullscreen (Lightbox):
+
+Veľkosť: ~1920px šírka (alebo maximálne do 2MB).
+
+Použitie: Iba a výlučne vtedy, keď si používateľ klikne na fotku, aby si ju pozrel na celej obrazovke. Načíta sa na požiadanie, takže nespomaľuje aplikáciu.
+
+Výsledok:
+Keď používateľ nahrá jednu fotku (napr. 4MB JPEG z telefónu), náš systém na pozadí automaticky vytvorí len týchto 6 verzií: 3 veľkosti vo formáte WebP (pre 99% používateľov) a 3 veľkosti v JPEG (ako zálohu).
+
+Týmto prístupom dosiahneme presne to, čo ste navrhovali: výrazne rýchlejšie spracovanie, bleskové načítavanie aplikácie a perfektný používateľský zážitok pri zachovaní plnej kompatibility. Je to profesionálne a efektívne riešenie.
