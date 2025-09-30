@@ -3900,8 +3900,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const newCatch = await storage.createDiaryCatch(catchData, userId);
       
-      // Update seasonal goals progress after catch creation
-      await storage.updateAllUserGoalsProgress(userId);
+      // Update seasonal goals progress in background (non-blocking)
+      setTimeout(() => {
+        storage.updateAllUserGoalsProgress(userId).catch(error => {
+          console.error('[BG] Error updating goals progress:', error);
+        });
+      }, 0);
       
       res.status(201).json(newCatch);
     } catch (error) {
@@ -3935,8 +3939,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const updatedCatch = await storage.updateDiaryCatch(catchId, updateData, userId);
       
-      // Update seasonal goals progress after catch update
-      await storage.updateAllUserGoalsProgress(userId);
+      // Update seasonal goals progress in background (non-blocking)
+      setTimeout(() => {
+        storage.updateAllUserGoalsProgress(userId).catch(error => {
+          console.error('[BG] Error updating goals progress:', error);
+        });
+      }, 0);
       
       res.json(updatedCatch);
     } catch (error) {
@@ -3958,8 +3966,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       await storage.deleteDiaryCatch(catchId, userId);
       
-      // Update seasonal goals progress after catch deletion
-      await storage.updateAllUserGoalsProgress(userId);
+      // Update seasonal goals progress in background (non-blocking)
+      setTimeout(() => {
+        storage.updateAllUserGoalsProgress(userId).catch(error => {
+          console.error('[BG] Error updating goals progress:', error);
+        });
+      }, 0);
       
       res.json({ message: "Catch deleted successfully" });
     } catch (error) {
