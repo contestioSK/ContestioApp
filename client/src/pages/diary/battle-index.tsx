@@ -7,6 +7,7 @@ import { useLocation } from "wouter";
 import DiaryLayout from "@/components/DiaryLayout";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
+import type { DiaryBattle } from "@shared/schema";
 
 export default function BattleIndex() {
   const { user } = useAuth();
@@ -19,6 +20,12 @@ export default function BattleIndex() {
 
   const isPremium = premiumStatus?.isPremium;
 
+  // Fetch user's battles
+  const { data: battles = [], isLoading: isBattlesLoading } = useQuery<DiaryBattle[]>({
+    queryKey: ['/api/diary/battles'],
+    enabled: !!user && isPremium === true,
+  });
+
   // Redirect non-premium users to paywall
   useEffect(() => {
     if (user?.id && !isPremiumLoading && isPremium === false) {
@@ -27,7 +34,7 @@ export default function BattleIndex() {
   }, [user?.id, isPremium, isPremiumLoading, setLocation]);
 
   // Show loading state while checking premium status or waiting for user
-  if (!user || isPremiumLoading || isPremium === undefined) {
+  if (!user || isPremiumLoading || isPremium === undefined || isBattlesLoading) {
     return (
       <DiaryLayout>
         <div className="p-6 flex items-center justify-center min-h-[400px]">
@@ -39,11 +46,6 @@ export default function BattleIndex() {
       </DiaryLayout>
     );
   }
-
-  // Mock active battles - will be replaced with real API
-  const activeBattles: any[] = [
-    // Currently no active battles
-  ];
 
   return (
     <DiaryLayout>
@@ -67,18 +69,47 @@ export default function BattleIndex() {
             </p>
           </div>
 
-          {/* Active Battles Section */}
-          {activeBattles.length > 0 ? (
+          {/* Battles Section - Show ALL battles */}
+          {battles.length > 0 ? (
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-foreground mb-4 flex items-center gap-2">
                 <Clock className="w-6 h-6 text-orange-500" />
                 Aktívne súboje
               </h2>
               <div className="grid gap-4">
-                {activeBattles.map((battle: any) => (
-                  <Card key={battle.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+                {battles.map((battle) => (
+                  <Card 
+                    key={battle.id} 
+                    className="hover:shadow-lg transition-shadow cursor-pointer"
+                    onClick={() => setLocation(`/diary/battle/${battle.id}`)}
+                    data-testid={`card-battle-${battle.id}`}
+                  >
                     <CardContent className="p-6">
-                      {/* Battle card content will go here */}
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h3 className="text-xl font-bold text-foreground mb-2 flex items-center gap-2">
+                            <Trophy className="w-5 h-5 text-yellow-600" />
+                            {battle.name}
+                          </h3>
+                          <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <Users className="w-4 h-4" />
+                              {battle.participants.length} účastníkov
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-4 h-4" />
+                              {new Date(battle.startAt).toLocaleDateString('sk-SK')} - {new Date(battle.endAt).toLocaleDateString('sk-SK')}
+                            </span>
+                          </div>
+                        </div>
+                        <Badge className="bg-green-500 text-white">
+                          {battle.rules.mode === 'most_fish' && 'Najviac rýb'}
+                          {battle.rules.mode === 'total_weight' && 'Celková váha'}
+                          {battle.rules.mode === 'biggest_fish' && 'Najväčšia ryba'}
+                          {battle.rules.mode === 'best_3_fish' && 'Top 3 ryby'}
+                          {battle.rules.mode === 'best_5_fish' && 'Top 5 rýb'}
+                        </Badge>
+                      </div>
                     </CardContent>
                   </Card>
                 ))}

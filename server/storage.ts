@@ -275,6 +275,7 @@ export interface IStorage {
   
   // Diary battle operations
   getDiaryBattles(tripId: string, userId: string): Promise<DiaryBattle[]>;
+  getAllUserBattles(userId: string): Promise<DiaryBattle[]>;
   getDiaryBattle(id: string, userId: string): Promise<DiaryBattle | undefined>;
   createDiaryBattle(battle: InsertDiaryBattle, userId: string): Promise<DiaryBattle>;
   updateDiaryBattle(id: string, battle: Partial<InsertDiaryBattle>, userId: string): Promise<DiaryBattle>;
@@ -2214,6 +2215,28 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(diaryBattles)
       .where(eq(diaryBattles.tripId, tripId))
+      .orderBy(desc(diaryBattles.createdAt));
+  }
+
+  async getAllUserBattles(userId: string): Promise<DiaryBattle[]> {
+    // Check PREMIUM access (mandatory for battles)
+    if (!(await this.isUserPremium(userId))) {
+      throw new Error("Fishing Battle je dostupný iba v PREMIUM verzii. Prejdite na PREMIUM pre súboje medzi kamarátmi!");
+    }
+    
+    // Get all user's trips first
+    const userTrips = await this.getDiaryTrips(userId);
+    const tripIds = userTrips.map(trip => trip.id);
+    
+    if (tripIds.length === 0) {
+      return [];
+    }
+    
+    // Get all battles from user's trips
+    return await db
+      .select()
+      .from(diaryBattles)
+      .where(inArray(diaryBattles.tripId, tripIds))
       .orderBy(desc(diaryBattles.createdAt));
   }
 
