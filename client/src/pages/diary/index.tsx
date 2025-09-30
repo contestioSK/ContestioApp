@@ -998,6 +998,11 @@ export default function DiaryIndex() {
                       }}
                       data-testid="input-photos"
                     />
+                    <p className="text-sm text-muted-foreground">
+                      {isPremium 
+                        ? "Vyberte až 5 fotiek naraz" 
+                        : "Vyberte 1 fotku"}
+                    </p>
                     {selectedPhotos.length > 0 && (
                       <div className="flex flex-wrap gap-2">
                         {selectedPhotos.map((photo, index) => (
