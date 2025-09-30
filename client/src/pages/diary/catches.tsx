@@ -244,10 +244,11 @@ export default function DiaryCatches() {
   });
 
   const handleSubmit = async (data: CatchFormData) => {
-    // Convert "none" tripId to undefined (no trip selected)
+    // Convert "none" values to undefined (no selection)
     const processedData = {
       ...data,
-      tripId: data.tripId === "none" ? undefined : data.tripId
+      tripId: data.tripId === "none" ? undefined : data.tripId,
+      method: data.method === "none" ? undefined : data.method
     };
 
     if (isOffline) {
@@ -417,7 +418,9 @@ export default function DiaryCatches() {
 
   // Filter catches based on active filters
   const filteredCatches = catches.filter(catch_ => {
-    const tripMatch = filterTrip === "all" || catch_.tripId === filterTrip;
+    const tripMatch = filterTrip === "all" || 
+      (filterTrip === "none" && !catch_.tripId) || 
+      catch_.tripId === filterTrip;
     const fishTypeMatch = filterFishType === "all" || catch_.fishType === filterFishType;
     return tripMatch && fishTypeMatch;
   });
@@ -711,7 +714,7 @@ export default function DiaryCatches() {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="">Nevybrané</SelectItem>
+                                <SelectItem value="none">Nevybrané</SelectItem>
                                 {fishingMethods.map((method) => (
                                   <SelectItem key={method} value={method}>
                                     {method}
@@ -839,7 +842,7 @@ export default function DiaryCatches() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Všetky výpravy</SelectItem>
-                      <SelectItem value="">Bez výpravy</SelectItem>
+                      <SelectItem value="none">Bez výpravy</SelectItem>
                       {trips.map((trip) => (
                         <SelectItem key={trip.id} value={trip.id}>
                           {trip.name}
