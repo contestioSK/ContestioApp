@@ -131,7 +131,7 @@ const fishingMethods = [
 
 export default function DiaryCatches() {
   const { user } = useAuth();
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const { toast } = useToast();
   
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -417,6 +417,22 @@ export default function DiaryCatches() {
       return () => clearTimeout(timeout);
     }
   }, [isOffline, pendingCatches.length, syncPendingCatches]);
+
+  // Handle edit query parameter from URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const editId = params.get('edit');
+    
+    if (editId && catches.length > 0 && !editingCatch) {
+      const catchToEdit = catches.find(c => c.id === editId);
+      if (catchToEdit) {
+        openEditDialog(catchToEdit);
+        // Clear query parameter from URL using replaceState to avoid adding history entry
+        window.history.replaceState({}, '', '/diary/catches');
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location, catches, editingCatch]);
 
   // Filter catches based on active filters
   const filteredCatches = catches.filter(catch_ => {

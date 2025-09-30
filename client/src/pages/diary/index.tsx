@@ -634,8 +634,9 @@ export default function DiaryIndex() {
                   <Button 
                     className="w-full bg-blue-600 hover:bg-blue-700"
                     onClick={() => {
+                      const catchId = selectedCatch.id;
                       setSelectedCatch(null);
-                      setLocation('/diary/catches');
+                      setLocation(`/diary/catches?edit=${catchId}`);
                     }}
                     data-testid="button-edit-catch"
                   >
