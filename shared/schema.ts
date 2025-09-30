@@ -303,8 +303,8 @@ export const diaryCatches = pgTable("diary_catches", {
 
 // Diary battles table (fishing competitions between friends)
 export const diaryBattles = pgTable("diary_battles", {
-  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  tripId: uuid("trip_id").notNull().references(() => diaryTrips.id),
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tripId: varchar("trip_id").notNull().references(() => diaryTrips.id),
   name: varchar("name", { length: 255 }).notNull(),
   rules: jsonb("rules").$type<{
     mode: "most_fish" | "total_weight" | "biggest_fish" | "best_3_fish" | "best_5_fish";
