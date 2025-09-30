@@ -91,9 +91,9 @@ const catchFormSchema = z.object({
     "bream",
     "other"
   ]),
-  method: z.string().optional(),
+  bait: z.string().optional(),
   notes: z.string().optional(),
-  location: z.string().optional(),
+  spot: z.string().optional(),
   verified: z.boolean().default(false),
 });
 
@@ -178,9 +178,9 @@ export default function DiaryCatches() {
       capturedAt: new Date(),
       weight: "",
       fishType: "kapor_supinac",
-      method: "",
+      bait: "",
       notes: "",
-      location: "",
+      spot: "",
       verified: false
     }
   });
@@ -250,7 +250,7 @@ export default function DiaryCatches() {
     const processedData = {
       ...data,
       tripId: data.tripId === "none" ? undefined : data.tripId,
-      method: data.method === "none" ? undefined : data.method
+      bait: data.bait === "none" ? undefined : data.bait
     };
 
     if (isOffline) {
@@ -301,9 +301,9 @@ export default function DiaryCatches() {
       weight: catch_.weight,
       lengthCm: catch_.lengthCm || undefined,
       fishType: catch_.fishType as any,
-      method: "",
+      bait: catch_.bait || "",
       notes: catch_.notes || "",
-      location: "",
+      spot: catch_.spot || "",
       verified: catch_.verified
     });
   };
@@ -721,14 +721,14 @@ export default function DiaryCatches() {
 
                       <FormField
                         control={form.control}
-                        name="method"
+                        name="bait"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Metóda (voliteľné)</FormLabel>
+                            <FormLabel>Nástraha (voliteľné)</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl>
-                                <SelectTrigger data-testid="select-method">
-                                  <SelectValue placeholder="Vyberte metódu" />
+                                <SelectTrigger data-testid="select-bait">
+                                  <SelectValue placeholder="Vyberte nástrahu" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
@@ -747,12 +747,12 @@ export default function DiaryCatches() {
 
                       <FormField
                         control={form.control}
-                        name="location"
+                        name="spot"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Lokalita (voliteľné)</FormLabel>
+                            <FormLabel>Revír / Miesto (voliteľné)</FormLabel>
                             <FormControl>
-                              <Input placeholder="napr. Dunaj - Bratislava" data-testid="input-location" {...field} />
+                              <Input placeholder="napr. Dunaj - Bratislava" data-testid="input-spot" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>

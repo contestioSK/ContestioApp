@@ -3855,15 +3855,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Catch not found" });
       }
       
-      console.log('[DEBUG] Update request body:', JSON.stringify(req.body, null, 2));
-      
       // Convert capturedAt string to Date object if present
       const updateData = { ...req.body };
       if (updateData.capturedAt) {
         updateData.capturedAt = new Date(updateData.capturedAt);
       }
-      
-      console.log('[DEBUG] Update data after conversion:', JSON.stringify(updateData, null, 2));
       
       const updatedCatch = await storage.updateDiaryCatch(catchId, updateData, userId);
       
