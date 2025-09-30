@@ -3868,7 +3868,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       
-      // Check freemium limits
+      // Check freemium limits (optimized - skips count query for premium users)
       const catchLimit = await storage.checkDiaryCatchLimit(userId);
       if (!catchLimit.canCreate) {
         return res.status(403).json({ 
