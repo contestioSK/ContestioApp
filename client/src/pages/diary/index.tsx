@@ -1,4 +1,5 @@
 import { useAuth } from "@/hooks/useAuth";
+import { useWebSocket } from "@/hooks/useWebSocket";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Fish, Plus, X, MapPin, Target, Ruler, Weight, Swords, Trophy, Crown, Play, Edit2, Trash2, CalendarIcon, CalendarDays, Camera, ChevronLeft, ChevronRight } from "lucide-react";
+import { Fish, Plus, X, MapPin, Target, Ruler, Weight, Swords, Trophy, Crown, Play, Edit2, Trash2, CalendarIcon, CalendarDays, Camera, ChevronLeft, ChevronRight, Loader2, AlertCircle } from "lucide-react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -237,8 +238,57 @@ export default function DiaryIndex() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [catchToDelete, setCatchToDelete] = useState<string | null>(null);
   const [selectedPhotos, setSelectedPhotos] = useState<File[]>([]);
-  const [existingPhotos, setExistingPhotos] = useState<string[]>([]);
+  const [existingPhotos, setExistingPhotos] = useState<Array<{
+    id: string;
+    url: string;
+    status: 'processing' | 'ready' | 'failed';
+    originalUrl?: string;
+    variants?: Array<{width: number; format: string; url: string;}>;
+    placeholder?: string;
+    error?: string;
+  }>>([]);
   const { toast } = useToast();
+
+  // WebSocket connection for real-time photo processing updates
+  useWebSocket((message) => {
+    if (message.type === 'diary_photo_processed') {
+      console.log('[Diary] Photo processed:', message);
+      
+      // Update the photo in existingPhotos if it's in the current editing catch
+      if (editingCatch && message.photoId) {
+        setExistingPhotos(prev => prev.map(photo => {
+          if (photo.id === message.photoId) {
+            return {
+              ...photo,
+              status: message.status,
+              url: message.url || photo.url,
+              variants: message.variants || photo.variants,
+              placeholder: message.placeholder || photo.placeholder,
+              error: message.error
+            };
+          }
+          return photo;
+        }));
+      }
+      
+      // Invalidate catches query to refresh the list
+      queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
+      
+      // Show toast notification
+      if (message.status === 'ready') {
+        toast({
+          title: "Fotka optimalizovaná!",
+          description: "Fotka bola úspešne spracovaná a je pripravená na zobrazenie.",
+        });
+      } else if (message.status === 'failed') {
+        toast({
+          title: "Chyba pri spracovaní fotky",
+          description: message.error || "Fotku sa nepodarilo optimalizovať",
+          variant: "destructive",
+        });
+      }
+    }
+  });
 
   // Filters state
   const [selectedTechnique, setSelectedTechnique] = useState<string>("all");
@@ -495,8 +545,13 @@ export default function DiaryIndex() {
       bait: data.bait === "none" ? undefined : data.bait
     };
 
-    // Upload new photos first if selected
-    let newPhotoUrls: string[] = [];
+    // Upload new photos first if selected (returns immediately with processing status)
+    let newPhotos: Array<{
+      id: string;
+      url: string;
+      status: 'processing' | 'ready' | 'failed';
+      originalUrl?: string;
+    }> = [];
     
     if (selectedPhotos.length > 0) {
       try {
@@ -516,7 +571,13 @@ export default function DiaryIndex() {
         }
         
         const uploadResult = await uploadResponse.json();
-        newPhotoUrls = uploadResult.photos?.map((p: any) => p.url) || [];
+        newPhotos = uploadResult.photos || [];
+        
+        // Show success message with processing info
+        toast({
+          title: "Fotky nahrané!",
+          description: `${newPhotos.length} ${newPhotos.length === 1 ? 'fotka sa' : 'fotky sa'} optimalizujú na pozadí...`,
+        });
       } catch (error) {
         console.error('Photo upload error:', error);
         toast({
@@ -528,7 +589,7 @@ export default function DiaryIndex() {
     }
 
     // Merge existing photos and new photos
-    const allPhotos = [...existingPhotos, ...newPhotoUrls];
+    const allPhotos = [...existingPhotos, ...newPhotos];
 
     const finalData = allPhotos.length > 0 
       ? { ...processedData, photos: allPhotos }
@@ -1152,13 +1213,23 @@ export default function DiaryIndex() {
                       <div className="mb-3">
                         <p className="text-xs text-muted-foreground mb-2">Existujúce fotky:</p>
                         <div className="flex flex-wrap gap-2">
-                          {existingPhotos.map((photoUrl, index) => (
-                            <div key={index} className="relative group">
+                          {existingPhotos.map((photo, index) => (
+                            <div key={photo.id} className="relative group">
                               <img
-                                src={photoUrl}
+                                src={photo.url}
                                 alt={`Existujúca fotka ${index + 1}`}
                                 className="w-20 h-20 object-cover rounded-lg border"
                               />
+                              {photo.status === 'processing' && (
+                                <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-lg">
+                                  <Loader2 className="w-5 h-5 text-white animate-spin" />
+                                </div>
+                              )}
+                              {photo.status === 'failed' && (
+                                <div className="absolute inset-0 bg-red-500/50 flex items-center justify-center rounded-lg">
+                                  <AlertCircle className="w-5 h-5 text-white" />
+                                </div>
+                              )}
                               <button
                                 type="button"
                                 onClick={() => {
