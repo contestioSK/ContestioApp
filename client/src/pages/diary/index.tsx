@@ -982,7 +982,7 @@ export default function DiaryIndex() {
                     <Input
                       type="file"
                       accept="image/*"
-                      multiple={isPremium}
+                      multiple
                       onChange={(e) => {
                         const files = Array.from(e.target.files || []);
                         if (files.length > maxPhotos) {
