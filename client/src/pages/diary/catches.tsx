@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -136,6 +137,7 @@ export default function DiaryCatches() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingCatch, setEditingCatch] = useState<DiaryCatch | null>(null);
   const [deletingCatch, setDeletingCatch] = useState<DiaryCatch | null>(null);
+  const [selectedCatch, setSelectedCatch] = useState<DiaryCatch | null>(null);
   const [activeTab, setActiveTab] = useState("recent");
   const [filterTrip, setFilterTrip] = useState<string>("all");
   const [filterFishType, setFilterFishType] = useState<string>("all");
@@ -917,10 +919,15 @@ export default function DiaryCatches() {
                     <h3 className="text-lg font-semibold text-foreground mb-4">
                       {format(new Date(date), "EEEE, d. MMMM yyyy", { locale: sk })}
                     </h3>
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    <div className="space-y-3">
                       {dateCatches.map((catch_) => (
-                        <Card key={catch_.id} className="hover:shadow-md transition-shadow">
-                          <CardContent className="p-6">
+                        <Card 
+                          key={catch_.id} 
+                          className="hover:shadow-md transition-shadow cursor-pointer"
+                          onClick={() => setSelectedCatch(catch_)}
+                          data-testid={`catch-card-${catch_.id}`}
+                        >
+                          <CardContent className="p-4 flex items-center gap-4">
                             <div className="space-y-3">
                               <div className="flex items-start justify-between">
                                 <div className="flex-1">
