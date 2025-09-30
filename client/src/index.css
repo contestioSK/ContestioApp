@@ -68,7 +68,7 @@
   --accent-foreground: hsl(204, 88%, 53%);
   --destructive: hsl(0, 62%, 55%);
   --destructive-foreground: hsl(0, 0%, 100%);
-  --border: hsl(215, 14%, 34%);
+  --border: hsl(214, 52%, 25%);
   --input: hsl(210, 24%, 16%);
   --ring: hsl(201, 96%, 32%);
   --chart-1: hsl(201, 96%, 32%);
@@ -82,7 +82,7 @@
   --sidebar-primary-foreground: hsl(0, 0%, 100%);
   --sidebar-accent: hsl(210, 24%, 16%);
   --sidebar-accent-foreground: hsl(204, 88%, 53%);
-  --sidebar-border: hsl(215, 14%, 34%);
+  --sidebar-border: hsl(214, 52%, 25%);
   --sidebar-ring: hsl(204, 88%, 53%);
   --font-sans: Inter, system-ui, sans-serif;
   --font-serif: Georgia, serif;
