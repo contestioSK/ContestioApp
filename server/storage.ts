@@ -2185,6 +2185,15 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(diaryCatches.capturedAt));
   }
 
+  async getBattleCatches(battleId: string): Promise<DiaryCatch[]> {
+    // Get all catches for a specific battle using battleId column
+    return await db
+      .select()
+      .from(diaryCatches)
+      .where(eq(diaryCatches.battleId, battleId))
+      .orderBy(desc(diaryCatches.capturedAt));
+  }
+
   async getDiaryCatch(id: string, userId: string): Promise<DiaryCatch | undefined> {
     const [catch_] = await db
       .select()
