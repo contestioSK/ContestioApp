@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, ComposedChart } from 'recharts';
 
 interface ForecastDay {
   date: string;
@@ -384,6 +385,75 @@ export default function WeatherForecast() {
                       <p>Min: {Math.round(selectedDay.day.mintemp_c)}°C</p>
                     </div>
                   </div>
+                </div>
+
+                {/* Hourly Forecast Chart Widget */}
+                <div 
+                  className="p-6 rounded-lg border-2"
+                  style={{ 
+                    backgroundColor: '#012a36',
+                    borderColor: '#1e3a5f'
+                  }}
+                >
+                  <h3 className="text-lg font-semibold mb-4">Hodinová predpoveď</h3>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <ComposedChart 
+                      data={selectedDay.hour.map(h => ({
+                        time: format(new Date(h.time), 'HH:mm'),
+                        teplota: Math.round(h.temp_c),
+                        zrážky: h.precip_mm
+                      }))}
+                      margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="#1e3a5f" />
+                      <XAxis 
+                        dataKey="time" 
+                        stroke="#94a3b8"
+                        tick={{ fill: '#94a3b8', fontSize: 12 }}
+                        interval={2}
+                      />
+                      <YAxis 
+                        yAxisId="left"
+                        stroke="#94a3b8"
+                        tick={{ fill: '#94a3b8', fontSize: 12 }}
+                        label={{ value: 'Teplota (°C)', angle: -90, position: 'insideLeft', fill: '#94a3b8' }}
+                      />
+                      <YAxis 
+                        yAxisId="right"
+                        orientation="right"
+                        stroke="#94a3b8"
+                        tick={{ fill: '#94a3b8', fontSize: 12 }}
+                        label={{ value: 'Zrážky (mm)', angle: 90, position: 'insideRight', fill: '#94a3b8' }}
+                      />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: '#0c1f28', 
+                          border: '1px solid #1e3a5f',
+                          borderRadius: '6px',
+                          color: '#f1f5f9'
+                        }}
+                      />
+                      <Legend 
+                        wrapperStyle={{ color: '#94a3b8' }}
+                      />
+                      <Line 
+                        yAxisId="left"
+                        type="monotone" 
+                        dataKey="teplota" 
+                        stroke="#f59e0b" 
+                        strokeWidth={2}
+                        dot={{ fill: '#f59e0b', r: 3 }}
+                        name="Teplota (°C)"
+                      />
+                      <Bar 
+                        yAxisId="right"
+                        dataKey="zrážky" 
+                        fill="#3b82f6" 
+                        opacity={0.6}
+                        name="Zrážky (mm)"
+                      />
+                    </ComposedChart>
+                  </ResponsiveContainer>
                 </div>
 
                 {/* Detailed Conditions Widget */}
