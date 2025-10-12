@@ -703,11 +703,14 @@ export default function TripDetail() {
                       >
                         {/* Photo */}
                         {catch_.photos && catch_.photos.length > 0 ? (
-                          <img 
-                            src={typeof catch_.photos[0] === 'string' ? catch_.photos[0] : catch_.photos[0].url}
-                            alt={getFishTypeLabel(catch_.fishType)}
-                            className="w-full aspect-[4/3] object-contain bg-slate-700"
-                            crossOrigin="anonymous"
+                          <div 
+                            className="w-full relative pb-[75%] bg-slate-700"
+                            style={{
+                              backgroundImage: `url("${typeof catch_.photos[0] === 'string' ? catch_.photos[0] : catch_.photos[0].url}")`,
+                              backgroundSize: 'contain',
+                              backgroundPosition: 'center',
+                              backgroundRepeat: 'no-repeat'
+                            }}
                           />
                         ) : (
                           <div className="w-full aspect-[4/3] bg-slate-700 flex items-center justify-center">
