@@ -1,7 +1,7 @@
 // Fish type mapping for the fishing diary
 export const fishTypeMapping = {
-  kapor_supinac: "Kapor - šupináč",
-  kapor_lysec: "Kapor - lysec", 
+  kapor_supinac: "Kapor šupináč",
+  kapor_lysec: "Kapor lysec", 
   amur: "Amur",
   sumec: "Sumec",
   zubac: "Zubáč",
