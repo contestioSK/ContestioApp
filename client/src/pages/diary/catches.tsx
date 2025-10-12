@@ -819,6 +819,27 @@ export default function DiaryCatches() {
                     </div>
                   )}
 
+                  {/* GPS Coordinates */}
+                  {(selectedCatch.latitude || selectedCatch.longitude) && (
+                    <div className="bg-slate-700/30 rounded-lg p-4 space-y-2">
+                      <div className="text-sm font-semibold text-slate-300 mb-3">📍 GPS Súradnice</div>
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        {selectedCatch.latitude && (
+                          <div>
+                            <div className="text-slate-400">Zem. šírka</div>
+                            <div className="font-medium">{Number(selectedCatch.latitude).toFixed(6)}°</div>
+                          </div>
+                        )}
+                        {selectedCatch.longitude && (
+                          <div>
+                            <div className="text-slate-400">Zem. dĺžka</div>
+                            <div className="font-medium">{Number(selectedCatch.longitude).toFixed(6)}°</div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Weather Conditions */}
                   {(selectedCatch.waterTemp !== null && selectedCatch.waterTemp !== undefined) || 
                    (selectedCatch.airTemp !== null && selectedCatch.airTemp !== undefined) || 

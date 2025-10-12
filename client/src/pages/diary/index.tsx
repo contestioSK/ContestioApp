@@ -1036,6 +1036,63 @@ export default function DiaryIndex() {
                   </div>
                 </div>
 
+                {/* GPS Coordinates */}
+                {(selectedCatch.latitude || selectedCatch.longitude) && (
+                  <div className="bg-slate-700/30 rounded-lg p-4 space-y-2">
+                    <div className="text-sm font-semibold text-slate-300 mb-3">📍 GPS Súradnice</div>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      {selectedCatch.latitude && (
+                        <div>
+                          <div className="text-slate-400">Zem. šírka</div>
+                          <div className="font-medium">{Number(selectedCatch.latitude).toFixed(6)}°</div>
+                        </div>
+                      )}
+                      {selectedCatch.longitude && (
+                        <div>
+                          <div className="text-slate-400">Zem. dĺžka</div>
+                          <div className="font-medium">{Number(selectedCatch.longitude).toFixed(6)}°</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Weather Conditions */}
+                {(selectedCatch.waterTemp !== null && selectedCatch.waterTemp !== undefined) || 
+                 (selectedCatch.airTemp !== null && selectedCatch.airTemp !== undefined) || 
+                 (selectedCatch.windSpeed !== null && selectedCatch.windSpeed !== undefined) || 
+                 (selectedCatch.airPressure !== null && selectedCatch.airPressure !== undefined) ? (
+                  <div className="bg-slate-700/30 rounded-lg p-4 space-y-2">
+                    <div className="text-sm font-semibold text-slate-300 mb-3">🌤️ Podmienky počasia</div>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      {(selectedCatch.waterTemp !== null && selectedCatch.waterTemp !== undefined) && (
+                        <div>
+                          <div className="text-slate-400">Teplota vody</div>
+                          <div className="font-medium">{selectedCatch.waterTemp}°C</div>
+                        </div>
+                      )}
+                      {(selectedCatch.airTemp !== null && selectedCatch.airTemp !== undefined) && (
+                        <div>
+                          <div className="text-slate-400">Teplota vzduchu</div>
+                          <div className="font-medium">{selectedCatch.airTemp}°C</div>
+                        </div>
+                      )}
+                      {(selectedCatch.windSpeed !== null && selectedCatch.windSpeed !== undefined) && (
+                        <div>
+                          <div className="text-slate-400">Rýchlosť vetra</div>
+                          <div className="font-medium">{selectedCatch.windSpeed} km/h</div>
+                        </div>
+                      )}
+                      {(selectedCatch.airPressure !== null && selectedCatch.airPressure !== undefined) && (
+                        <div>
+                          <div className="text-slate-400">Tlak vzduchu</div>
+                          <div className="font-medium">{selectedCatch.airPressure} hPa</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : null}
+
                 {/* Notes */}
                 {selectedCatch.notes && (
                   <div>
