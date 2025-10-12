@@ -6,10 +6,6 @@ import { ContestCategories } from "@/components/contest-categories";
 import { Link, useLocation } from "wouter";
 import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
-import heroImage from "@assets/Carp_Fishing_1600x500_crop_center_6bc11ee9-9096-425e-8946-560290a33987_2016x630_1758061236097.webp";
-import fishingImage2 from "@assets/360_F_381579894_CiNFCkD3dVWVjOm5WzxGeYlD9B1Go1sr_1758061127573.jpg";
-import lakeImage from "@assets/zemplinska-sirava-6_1758098736505.avif";
-import heroBackgroundImage from "@assets/stock_images/fishing_lake_landsca_8a0b7214.jpg";
 interface Competition {
   id: string;
   name: string;
@@ -23,6 +19,7 @@ interface Competition {
 export default function Landing() {
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'competitions' | 'diary'>('competitions');
   const heroRef = useRef<HTMLElement>(null);
   
   // Fetch real competitions from API
@@ -104,16 +101,11 @@ export default function Landing() {
       {/* Hero Section */}
       <section 
         ref={heroRef} 
-        className="relative h-[600px] overflow-hidden"
+        className="relative min-h-[600px] md:h-[700px] overflow-hidden"
         style={{
-          backgroundImage: `url(${heroBackgroundImage})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
+          background: 'radial-gradient(ellipse at top, #1e3a5f 0%, #011a24 70%)'
         }}
       >
-        {/* Background Overlay */}
-        <div className="absolute inset-0 bg-background/20"></div>
         
         {/* Integrated Navigation */}
         <div className="relative z-20 w-full">
@@ -230,45 +222,167 @@ export default function Landing() {
         </div>
         
         {/* Hero Content */}
-        <div className="relative z-10 flex items-center h-full">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight text-primary-foreground" data-testid="hero-title">
-              Súťaže na Slovensku
-            </h1>
-            <p className="text-lg md:text-xl text-primary-foreground/90 mb-4 leading-relaxed" data-testid="hero-subtitle">
-              Vytvor si svoj osobný rybársky denník
-            </p>
-            <p className="text-lg md:text-xl text-primary-foreground/90 mb-8 leading-relaxed" data-testid="hero-subtitle-2">
-              - všetko na jednom mieste
-            </p>
-            
-            <p className="text-base md:text-lg text-primary-foreground/80 mb-6" data-testid="hero-description">
-              Sleduj live úlovky a rebríčky tímov, alebo
-            </p>
-            <p className="text-base md:text-lg text-primary-foreground/80 mb-8" data-testid="hero-description-2">
-              si zapisuj svoje úlovky a súťaž s kamarátmi.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/live">
-                <Button 
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-6 py-3 w-full sm:w-auto"
-                  size="lg"
-                  data-testid="button-view-live-competitions"
-                >
-                  Pozrieť prebiehajúce súťaže
-                </Button>
-              </Link>
-              <Link href="/diary">
-                <Button 
-                  variant="outline"
-                  className="border-2 border-secondary bg-secondary text-secondary-foreground hover:bg-secondary/90 font-semibold px-6 py-3 w-full sm:w-auto"
-                  size="lg"
-                  data-testid="button-start-diary-hero"
-                >
-                  Začať zapisovať úlovky
-                </Button>
-              </Link>
+        <div className="relative z-10 py-12 md:py-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+              
+              {/* Left Column - Text Content */}
+              <div className="text-center lg:text-left">
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight" data-testid="hero-title">
+                  Platforma pre <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">Moderného Rybára</span>.
+                </h1>
+                
+                <p className="text-lg md:text-xl text-white/80 mb-8 leading-relaxed" data-testid="hero-description">
+                  {activeTab === 'competitions' 
+                    ? 'Sleduj live úlovky a rebríčky tímov v prebiehajúcich súťažiach.' 
+                    : 'Vytvor si svoj osobný rybársky denník a súťaž s kamarátmi.'}
+                </p>
+                
+                {/* Interactive Tab Switcher */}
+                <div className="flex gap-4 mb-8 justify-center lg:justify-start">
+                  <button
+                    onClick={() => setActiveTab('competitions')}
+                    className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
+                      activeTab === 'competitions'
+                        ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/50'
+                        : 'bg-white/10 text-white/70 hover:bg-white/20'
+                    }`}
+                    data-testid="tab-competitions"
+                  >
+                    <Trophy className="w-5 h-5" />
+                    <span>Súťaže</span>
+                  </button>
+                  
+                  <button
+                    onClick={() => setActiveTab('diary')}
+                    className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
+                      activeTab === 'diary'
+                        ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/50'
+                        : 'bg-white/10 text-white/70 hover:bg-white/20'
+                    }`}
+                    data-testid="tab-diary"
+                  >
+                    <BookOpen className="w-5 h-5" />
+                    <span>Denník</span>
+                  </button>
+                </div>
+                
+                {/* Dynamic CTA Container */}
+                <div className="hero-cta-container">
+                  {activeTab === 'competitions' ? (
+                    <Link href="/live">
+                      <Button 
+                        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-6 text-lg transition-all duration-200 hover:scale-105"
+                        size="lg"
+                        data-testid="button-view-live-results"
+                      >
+                        Zobraziť Live Výsledky
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Link href="/diary">
+                      <Button 
+                        className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-8 py-6 text-lg transition-all duration-200 hover:scale-105"
+                        size="lg"
+                        data-testid="button-try-free"
+                      >
+                        Vyskúšať zdarma
+                      </Button>
+                    </Link>
+                  )}
+                </div>
+              </div>
+              
+              {/* Right Column - Phone Mockup */}
+              <div className="flex justify-center lg:justify-end">
+                <div className="phone-mockup relative w-[320px] h-[640px] bg-[#1a1a1a] rounded-[3rem] p-3 shadow-2xl border-8 border-[#2a2a2a]">
+                  {/* Phone Screen */}
+                  <div className="w-full h-full rounded-[2.5rem] overflow-hidden">
+                    {activeTab === 'competitions' ? (
+                      /* Competitions UI - Dark Mode */
+                      <div className="w-full h-full bg-[#0c1f28] flex flex-col">
+                        {/* Header */}
+                        <div className="bg-[#012a36] p-4 flex items-center justify-between">
+                          <h2 className="text-white font-bold text-lg">Live Výsledky</h2>
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                            <span className="text-red-500 text-sm font-semibold">LIVE</span>
+                          </div>
+                        </div>
+                        {/* Content */}
+                        <div className="flex-1 p-4 space-y-3">
+                          <div className="bg-[#1e3a5f] p-3 rounded-lg">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-white font-medium" data-testid="text-team-name-alfa">1. Tím Alfa</span>
+                              <span className="text-emerald-400 font-bold" data-testid="text-weight-alfa">245 kg</span>
+                            </div>
+                            <div className="text-gray-400 text-sm" data-testid="text-catches-alfa">12 úlovkov</div>
+                          </div>
+                          <div className="bg-[#1e3a5f] p-3 rounded-lg">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-white font-medium" data-testid="text-team-name-rybari">2. Rybári SK</span>
+                              <span className="text-emerald-400 font-bold" data-testid="text-weight-rybari">198 kg</span>
+                            </div>
+                            <div className="text-gray-400 text-sm" data-testid="text-catches-rybari">9 úlovkov</div>
+                          </div>
+                          <div className="bg-[#1e3a5f] p-3 rounded-lg">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-white font-medium" data-testid="text-team-name-kaprari">3. Kapráři CZ</span>
+                              <span className="text-emerald-400 font-bold" data-testid="text-weight-kaprari">176 kg</span>
+                            </div>
+                            <div className="text-gray-400 text-sm" data-testid="text-catches-kaprari">8 úlovkov</div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      /* Diary UI - Light Mode */
+                      <div className="w-full h-full bg-white flex flex-col">
+                        {/* Header */}
+                        <div className="bg-emerald-500 p-4">
+                          <h2 className="text-white font-bold text-lg">Môj Denník</h2>
+                        </div>
+                        {/* Content */}
+                        <div className="flex-1 p-4 space-y-3 bg-gray-50">
+                          <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-200">
+                            <div className="flex items-center gap-3 mb-2">
+                              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <Fish className="w-6 h-6 text-blue-600" />
+                              </div>
+                              <div className="flex-1">
+                                <div className="font-medium text-gray-900" data-testid="text-catch-kapor">Kapor 8.5 kg</div>
+                                <div className="text-sm text-gray-500" data-testid="text-time-kapor">Dnes, 14:30</div>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-200">
+                            <div className="flex items-center gap-3 mb-2">
+                              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                <Fish className="w-6 h-6 text-green-600" />
+                              </div>
+                              <div className="flex-1">
+                                <div className="font-medium text-gray-900" data-testid="text-catch-stuka">Šťuka 4.2 kg</div>
+                                <div className="text-sm text-gray-500" data-testid="text-time-stuka">Včera, 09:15</div>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-200">
+                            <div className="flex items-center gap-3 mb-2">
+                              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <Fish className="w-6 h-6 text-purple-600" />
+                              </div>
+                              <div className="flex-1">
+                                <div className="font-medium text-gray-900" data-testid="text-catch-zubac">Zubáč 3.8 kg</div>
+                                <div className="text-sm text-gray-500" data-testid="text-time-zubac">2 dni, 16:45</div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
             </div>
           </div>
         </div>
