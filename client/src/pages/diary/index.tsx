@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Fish, Plus, X, MapPin, Target, Ruler, Weight, Swords, Trophy, Crown, Play, Edit2, Trash2, CalendarIcon, CalendarDays, Camera, ChevronLeft, ChevronRight, Loader2, AlertCircle } from "lucide-react";
+import { Fish, Plus, X, MapPin, Target, Ruler, Weight, Swords, Trophy, Crown, Play, Edit2, Trash2, CalendarIcon, CalendarDays, Camera, ChevronLeft, ChevronRight, Loader2, AlertCircle, Check, UserPlus } from "lucide-react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -369,6 +369,76 @@ export default function DiaryIndex() {
   const { data: limits } = useQuery<FreemiumLimits>({
     queryKey: ["/api/diary/catch-limits"],
     enabled: !!user
+  });
+
+  // Fetch pending battle invitations
+  interface BattleInvitation {
+    id: string;
+    battleId: string;
+    invitedUserId: string;
+    invitedByUserId: string;
+    status: 'pending' | 'accepted' | 'rejected';
+    createdAt: string;
+    battle?: {
+      name: string;
+      type: 'tournament' | 'location' | 'trip';
+      tripDate?: string;
+    };
+    invitedBy?: {
+      firstName: string | null;
+      lastName: string | null;
+      email: string;
+    };
+  }
+
+  const { data: invitations = [] } = useQuery<BattleInvitation[]>({
+    queryKey: ['/api/diary/battles/invitations'],
+    enabled: !!user
+  });
+
+  const pendingInvitations = invitations.filter(inv => inv.status === 'pending');
+
+  // Accept invitation mutation
+  const acceptInvitationMutation = useMutation({
+    mutationFn: async (invitationId: string) => {
+      return await apiRequest('POST', `/api/diary/battles/invitations/${invitationId}/accept`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/diary/battles/invitations'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/diary/battles'] });
+      toast({
+        title: "Pozvánka prijatá",
+        description: "Úspešne ste sa pridali do battle",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Chyba",
+        description: "Nepodarilo sa prijať pozvánku",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Reject invitation mutation
+  const rejectInvitationMutation = useMutation({
+    mutationFn: async (invitationId: string) => {
+      return await apiRequest('POST', `/api/diary/battles/invitations/${invitationId}/reject`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/diary/battles/invitations'] });
+      toast({
+        title: "Pozvánka odmietnutá",
+        description: "Pozvánka bola odmietnutá",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Chyba",
+        description: "Nepodarilo sa odmietnuť pozvánku",
+        variant: "destructive",
+      });
+    },
   });
 
   // Filter catches for 2025 season (January 15, 2025 onwards)
@@ -905,6 +975,96 @@ export default function DiaryIndex() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Pending Battle Invitations */}
+        {pendingInvitations.length > 0 && (
+          <Card className="bg-[hsl(192,40%,14%)] border-[hsl(186,100%,45%)]/30 mb-8" data-testid="card-pending-invitations">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <UserPlus className="w-5 h-5 text-[hsl(186,100%,45%)]" />
+                <h3 className="text-lg font-bold text-foreground">
+                  Čakajúce Battle pozvánky ({pendingInvitations.length})
+                </h3>
+              </div>
+              
+              <div className="space-y-3">
+                {pendingInvitations.map((invitation) => {
+                  const getBattleTypeLabel = (type: string) => {
+                    switch (type) {
+                      case 'tournament':
+                        return 'Turnaj';
+                      case 'location':
+                        return 'Lokalita';
+                      case 'trip':
+                        return 'Výlet';
+                      default:
+                        return type;
+                    }
+                  };
+
+                  const getInviterName = (invitedBy?: { firstName: string | null; lastName: string | null; email: string }) => {
+                    if (!invitedBy) return 'Používateľ';
+                    if (invitedBy.firstName || invitedBy.lastName) {
+                      return `${invitedBy.firstName || ''} ${invitedBy.lastName || ''}`.trim();
+                    }
+                    return invitedBy.email;
+                  };
+
+                  return (
+                    <div
+                      key={invitation.id}
+                      className="p-4 rounded-lg bg-[hsl(192,52%,11%)] border border-[hsl(192,30%,20%)] hover:border-[hsl(186,100%,45%)]/50 transition-colors"
+                      data-testid={`invitation-card-${invitation.id}`}
+                    >
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-sm font-medium text-foreground" data-testid={`invitation-sender-${invitation.id}`}>
+                              {getInviterName(invitation.invitedBy)}
+                            </span>
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-[hsl(186,100%,45%)]/20 text-[hsl(186,100%,45%)]" data-testid={`invitation-type-${invitation.id}`}>
+                              {invitation.battle ? getBattleTypeLabel(invitation.battle.type) : 'Battle'}
+                            </span>
+                          </div>
+                          <p className="text-foreground font-medium mb-1" data-testid={`invitation-name-${invitation.id}`}>
+                            {invitation.battle?.name || 'Názov battle'}
+                          </p>
+                          <p className="text-xs text-muted-foreground" data-testid={`invitation-time-${invitation.id}`}>
+                            {format(new Date(invitation.createdAt), "dd. MMM yyyy 'o' HH:mm", { locale: sk })}
+                          </p>
+                        </div>
+
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            className="bg-[hsl(142,76%,36%)] hover:bg-[hsl(142,76%,30%)] text-white"
+                            onClick={() => acceptInvitationMutation.mutate(invitation.id)}
+                            disabled={acceptInvitationMutation.isPending}
+                            data-testid={`button-accept-invitation-${invitation.id}`}
+                          >
+                            <Check className="w-4 h-4 mr-1" />
+                            Prijať
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="border-[hsl(192,30%,20%)] hover:bg-[hsl(192,40%,14%)]"
+                            onClick={() => rejectInvitationMutation.mutate(invitation.id)}
+                            disabled={rejectInvitationMutation.isPending}
+                            data-testid={`button-reject-invitation-${invitation.id}`}
+                          >
+                            <X className="w-4 h-4 mr-1" />
+                            Odmietnuť
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Filters */}
         <div className="flex flex-wrap gap-3 mb-6">
