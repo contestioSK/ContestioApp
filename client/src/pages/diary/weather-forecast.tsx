@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
+import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
 import { 
   Cloud, 
   MapPin, 
@@ -19,7 +21,9 @@ import {
   CloudDrizzle,
   Search,
   Sunrise,
-  Sunset
+  Sunset,
+  Fish,
+  Crown
 } from "lucide-react";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
@@ -85,6 +89,7 @@ interface LocationResult {
 }
 
 export default function WeatherForecast() {
+  const { user } = useAuth();
   const [forecast, setForecast] = useState<WeatherForecast | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -94,6 +99,14 @@ export default function WeatherForecast() {
   const [showResults, setShowResults] = useState(false);
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
   const searchRef = useRef<HTMLDivElement>(null);
+
+  // Check premium status
+  const { data: premiumStatus } = useQuery<{ isPremium: boolean }>({
+    queryKey: ["/api/auth/premium-status"],
+    enabled: !!user?.id
+  });
+
+  const isPremium = premiumStatus?.isPremium || false;
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -233,6 +246,57 @@ export default function WeatherForecast() {
   const getAvgPressure = (hours: ForecastDay['hour']) => {
     const pressures = hours.map(h => h.pressure_mb);
     return Math.round(pressures.reduce((a, b) => a + b, 0) / pressures.length);
+  };
+
+  // Calculate fish activity index (0-100) based on weather conditions
+  const calculateFishActivity = (day: ForecastDay): number => {
+    let score = 50; // Start at middle
+
+    // Pressure: optimal around 1010-1020 mb
+    const avgPressure = getAvgPressure(day.hour);
+    if (avgPressure >= 1010 && avgPressure <= 1020) {
+      score += 20;
+    } else if (avgPressure >= 1005 && avgPressure <= 1025) {
+      score += 10;
+    } else {
+      score -= 10;
+    }
+
+    // Temperature: optimal 15-20°C
+    const temp = day.day.avgtemp_c;
+    if (temp >= 15 && temp <= 20) {
+      score += 20;
+    } else if (temp >= 10 && temp <= 25) {
+      score += 10;
+    } else if (temp < 5 || temp > 30) {
+      score -= 15;
+    }
+
+    // Precipitation: less is better
+    if (day.day.totalprecip_mm === 0) {
+      score += 15;
+    } else if (day.day.totalprecip_mm < 2) {
+      score += 5;
+    } else if (day.day.totalprecip_mm > 10) {
+      score -= 15;
+    }
+
+    // Wind: moderate is good, calm or very strong is bad
+    const wind = day.day.maxwind_kph;
+    if (wind >= 5 && wind <= 15) {
+      score += 10;
+    } else if (wind < 3 || wind > 25) {
+      score -= 10;
+    }
+
+    // Clamp to 0-100 range
+    return Math.max(0, Math.min(100, score));
+  };
+
+  const getActivityLevel = (score: number): { label: string; color: string } => {
+    if (score >= 70) return { label: 'Vysoká', color: '#22c55e' };
+    if (score >= 40) return { label: 'Stredná', color: '#eab308' };
+    return { label: 'Nízka', color: '#ef4444' };
   };
 
   const selectedDay = forecast?.forecast.forecastday[selectedDayIndex];
@@ -386,6 +450,86 @@ export default function WeatherForecast() {
                     </div>
                   </div>
                 </div>
+
+                {/* PREMIUM: Fish Activity Index Widget */}
+                {isPremium ? (
+                  <div 
+                    className="p-6 rounded-lg border-2"
+                    style={{ 
+                      backgroundColor: '#012a36',
+                      borderColor: '#1e3a5f'
+                    }}
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-semibold flex items-center gap-2">
+                        <Fish className="w-5 h-5" />
+                        Index aktivity rýb
+                      </h3>
+                      <span className="text-xs px-2 py-1 rounded bg-amber-500/20 text-amber-500 font-semibold flex items-center gap-1">
+                        <Crown className="w-3 h-3" />
+                        PREMIUM
+                      </span>
+                    </div>
+                    
+                    {(() => {
+                      const activityScore = calculateFishActivity(selectedDay);
+                      const activityInfo = getActivityLevel(activityScore);
+                      const position = `${activityScore}%`;
+                      
+                      return (
+                        <div className="space-y-4">
+                          <div className="relative h-12 rounded-full overflow-hidden bg-gradient-to-r from-red-500 via-yellow-500 to-green-500">
+                            {/* Activity Indicator */}
+                            <div 
+                              className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 transition-all duration-500"
+                              style={{ left: position }}
+                            >
+                              <div className="relative">
+                                <div className="w-6 h-6 rounded-full bg-white border-2 border-slate-900 shadow-lg" />
+                                <div className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap text-sm font-semibold">
+                                  {activityScore}%
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground">Aktivita:</span>
+                            <span className="font-semibold" style={{ color: activityInfo.color }}>
+                              {activityInfo.label}
+                            </span>
+                          </div>
+                          
+                          <p className="text-xs text-muted-foreground">
+                            Index je vypočítaný na základe tlaku vzduchu, teploty, zrážok a vetra. 
+                            Vyššia hodnota znamená lepšie podmienky pre rybolov.
+                          </p>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                ) : (
+                  <div 
+                    className="p-6 rounded-lg border-2 text-center"
+                    style={{ 
+                      backgroundColor: '#012a36',
+                      borderColor: '#1e3a5f'
+                    }}
+                  >
+                    <Fish className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                    <h3 className="text-lg font-semibold mb-2">Index aktivity rýb</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Zisti optimálny čas na rybolov na základe počasia
+                    </p>
+                    <div className="flex items-center justify-center gap-2 text-amber-500 font-semibold mb-3">
+                      <Crown className="w-4 h-4" />
+                      <span>Dostupné len v PREMIUM</span>
+                    </div>
+                    <Button variant="default" size="sm" className="bg-amber-500 hover:bg-amber-600 text-white">
+                      Prejsť na Premium
+                    </Button>
+                  </div>
+                )}
 
                 {/* Hourly Forecast Chart Widget */}
                 <div 
