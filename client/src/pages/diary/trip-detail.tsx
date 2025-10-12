@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { format, isPast, isToday } from "date-fns";
 import { sk } from "date-fns/locale";
-import { ArrowLeft, MapPin, Calendar as CalendarIcon, Fish, Weight, Trophy, FileText, Medal, Ruler, Target, Cloud, Thermometer, Wind, Gauge, XCircle } from "lucide-react";
+import { ArrowLeft, MapPin, Calendar as CalendarIcon, Fish, Weight, Trophy, FileText, Medal, Ruler, Target, Cloud, Thermometer, Wind, Gauge, XCircle, Download } from "lucide-react";
+import html2canvas from "html2canvas";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -48,6 +49,8 @@ export default function TripDetail() {
   const [selectedCatch, setSelectedCatch] = useState<DiaryCatch | null>(null);
   const [showAllCatches, setShowAllCatches] = useState(false);
   const [showEndTripDialog, setShowEndTripDialog] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const exportCardRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   // Fetch trip detail
@@ -84,6 +87,40 @@ export default function TripDetail() {
       });
     }
   });
+
+  // Export trip as image
+  const handleExportTrip = async () => {
+    if (!exportCardRef.current || !trip) return;
+    
+    setIsExporting(true);
+    try {
+      const canvas = await html2canvas(exportCardRef.current, {
+        backgroundColor: '#0c1f28',
+        scale: 2,
+        logging: false,
+        useCORS: true,
+      });
+      
+      const link = document.createElement('a');
+      link.download = `${trip.name.replace(/\s+/g, '_')}_${format(new Date(), 'dd-MM-yyyy')}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      
+      toast({
+        title: "Export úspešný!",
+        description: "Výprava bola exportovaná ako obrázok.",
+      });
+    } catch (error) {
+      console.error('Export error:', error);
+      toast({
+        title: "Chyba",
+        description: "Nepodarilo sa exportovať výpravu",
+        variant: "destructive",
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   // Filter catches for this trip
   const tripCatches = allCatches.filter(c => c.tripId === id);
@@ -155,19 +192,33 @@ export default function TripDetail() {
               Späť na výpravy
             </Button>
 
-            {/* End Trip Button - only show if trip is not ended yet */}
-            {trip && !isPast(new Date(trip.endDate)) && !isToday(new Date(trip.endDate)) && (
+            <div className="flex gap-2">
+              {/* Export Trip Button */}
               <Button
                 variant="outline"
-                onClick={() => setShowEndTripDialog(true)}
-                disabled={endTripMutation.isPending}
-                className="gap-2 text-orange-600 hover:text-orange-700 border-orange-600 hover:border-orange-700"
-                data-testid="button-end-trip"
+                onClick={handleExportTrip}
+                disabled={isExporting}
+                className="gap-2"
+                data-testid="button-export-trip"
               >
-                <XCircle className="w-4 h-4" />
-                {endTripMutation.isPending ? "Ukončujem..." : "Ukončiť výpravu"}
+                <Download className="w-4 h-4" />
+                {isExporting ? "Exportujem..." : "Exportovať ako obrázok"}
               </Button>
-            )}
+
+              {/* End Trip Button - only show if trip is not ended yet */}
+              {trip && !isPast(new Date(trip.endDate)) && !isToday(new Date(trip.endDate)) && (
+                <Button
+                  variant="outline"
+                  onClick={() => setShowEndTripDialog(true)}
+                  disabled={endTripMutation.isPending}
+                  className="gap-2 text-orange-600 hover:text-orange-700 border-orange-600 hover:border-orange-700"
+                  data-testid="button-end-trip"
+                >
+                  <XCircle className="w-4 h-4" />
+                  {endTripMutation.isPending ? "Ukončujem..." : "Ukončiť výpravu"}
+                </Button>
+              )}
+            </div>
           </div>
 
           <div>
@@ -591,6 +642,121 @@ export default function TripDetail() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* Hidden Export Card */}
+        <div 
+          ref={exportCardRef}
+          className="absolute left-[-9999px] w-[1200px] bg-[#0c1f28] p-12"
+          data-testid="export-card"
+        >
+          {trip && (
+            <div className="space-y-8">
+              {/* Header */}
+              <div className="text-center space-y-4 border-b border-slate-700 pb-8">
+                <h1 className="text-5xl font-bold text-white">
+                  {trip.name}
+                </h1>
+                <div className="flex items-center justify-center gap-6 text-slate-300 text-xl">
+                  <div className="flex items-center gap-2">
+                    <CalendarIcon className="w-6 h-6" />
+                    <span>
+                      {format(new Date(trip.startDate), "d. MMM", { locale: sk })} - {format(new Date(trip.endDate), "d. MMM yyyy", { locale: sk })}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-6 h-6" />
+                    <span>{trip.location}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Statistics */}
+              <div className="grid grid-cols-3 gap-6">
+                <div className="bg-slate-800/50 rounded-2xl p-6 text-center">
+                  <div className="text-4xl font-bold text-white mb-2">{totalCatches}</div>
+                  <div className="text-slate-400 text-lg">
+                    {totalCatches === 0 ? "Úlovkov" : totalCatches === 1 ? "Úlovok" : "Úlovkov"}
+                  </div>
+                </div>
+                <div className="bg-slate-800/50 rounded-2xl p-6 text-center">
+                  <div className="text-4xl font-bold text-white mb-2">{totalWeight.toFixed(1)} kg</div>
+                  <div className="text-slate-400 text-lg">Celková váha</div>
+                </div>
+                <div className="bg-slate-800/50 rounded-2xl p-6 text-center">
+                  <div className="text-4xl font-bold text-white mb-2">
+                    {biggestCatch ? parseFloat(biggestCatch.weight).toFixed(1) : "0"} kg
+                  </div>
+                  <div className="text-slate-400 text-lg">Najväčší úlovok</div>
+                </div>
+              </div>
+
+              {/* TOP 3 Catches */}
+              {top3Catches.length > 0 && (
+                <div className="space-y-6">
+                  <h2 className="text-3xl font-bold text-white text-center">TOP 3 Úlovky</h2>
+                  <div className="grid grid-cols-3 gap-6">
+                    {top3Catches.map((catch_, index) => (
+                      <div 
+                        key={catch_.id}
+                        className="bg-slate-800/50 rounded-2xl overflow-hidden"
+                      >
+                        {/* Medal Badge */}
+                        <div className="relative">
+                          <div className="absolute top-4 left-4 z-10">
+                            <div className={`
+                              w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold
+                              ${index === 0 ? 'bg-yellow-500 text-yellow-900' : 
+                                index === 1 ? 'bg-slate-300 text-slate-700' : 
+                                'bg-orange-600 text-orange-100'}
+                            `}>
+                              {index + 1}
+                            </div>
+                          </div>
+                          
+                          {/* Photo */}
+                          {catch_.photos && catch_.photos.length > 0 ? (
+                            <img 
+                              src={typeof catch_.photos[0] === 'string' ? catch_.photos[0] : catch_.photos[0].url}
+                              alt={getFishTypeLabel(catch_.fishType)}
+                              className="w-full h-64 object-cover"
+                              crossOrigin="anonymous"
+                            />
+                          ) : (
+                            <div className="w-full h-64 bg-slate-700 flex items-center justify-center">
+                              <Fish className={`w-16 h-16 ${getFishIconColor(catch_.fishType)}`} />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Info */}
+                        <div className="p-6 space-y-3">
+                          <div className="text-center">
+                            <div className="text-sm text-slate-400 mb-1">
+                              {getFishTypeLabel(catch_.fishType)}
+                            </div>
+                            <div className="text-3xl font-bold text-white">
+                              {parseFloat(catch_.weight).toFixed(1)} kg
+                            </div>
+                            {catch_.lengthCm && (
+                              <div className="text-slate-400 mt-1">
+                                {catch_.lengthCm} cm
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Footer */}
+              <div className="text-center text-slate-500 text-lg pt-8 border-t border-slate-700">
+                Contestio - Denník rybára
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </DiaryLayout>
   );
