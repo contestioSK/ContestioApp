@@ -37,6 +37,7 @@ export const users = pgTable("users", {
   profileImageUrl: varchar("profile_image_url"),
   role: varchar("role").notNull().default("public"), // "public", "organizer", "referee", "admin"
   active: boolean("active").default(true).notNull(),
+  isPremium: boolean("isPremium").default(false).notNull(),
   // Classic authentication fields
   password: varchar("password"), // hashed password (null for OAuth users)
   emailVerified: boolean("email_verified").default(false).notNull(),
