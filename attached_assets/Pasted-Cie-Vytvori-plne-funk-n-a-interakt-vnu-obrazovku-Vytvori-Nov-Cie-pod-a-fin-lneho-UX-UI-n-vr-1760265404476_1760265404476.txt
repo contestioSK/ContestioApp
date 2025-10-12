@@ -1,0 +1,73 @@
+Cieľ: Vytvoriť plne funkčnú a interaktívnu obrazovku "Vytvoriť Nový Cieľ" podľa finálneho UX/UI návrhu.
+Technológie: React.js, TailwindCSS
+Dizajnový Jazyk: Moderný, prémiový, tmavý (dark mode).
+
+1. Celková Architektúra a Funkcionalita
+Vytvorte stránku, ktorá bude fungovať ako dvojkrokový sprievodca (wizard) na vytvorenie nového sezónneho cieľa. Používateľ si najprv vyberie typ cieľa a následne zadá jeho detaily.
+
+2. Komponenty a Požiadavky na Dizajn
+2.1. Krok 1: Výber Typu Cieľa
+Rozloženie: Vytvorte responzívnu mriežku (grid), ktorá bude obsahovať karty pre jednotlivé typy cieľov.
+
+Obsah Kariet: Každá karta (goal-card) musí byť klikateľná a musí obsahovať ikonu a názov cieľa.
+
+Typy Cieľov na Zobrazenie: Implementujte karty pre nasledujúcich 5 typov cieľov:
+
+Celková hmotnosť
+
+Počet rýb
+
+Počet dní pri vode
+
+Najväčšia ryba
+
+Prekonať PB (Osobný Rekord)
+
+Vynechané Ciele: Prosím, neimplementujte nasledujúce typy cieľov: "Rôzne druhy", "Cieľ pre druh", "Nové revíry".
+
+Interaktivita:
+
+Po kliknutí na kartu sa táto vizuálne zvýrazní ako aktívna (pridaním triedy active).
+
+Zároveň sa pod touto sekciou plynulo zobrazí sekcia "Krok 2: Nastavte Hodnotu".
+
+2.2. Krok 2: Nastavenie Hodnoty Cieľa
+Dynamické Zobrazenie: Táto sekcia sa zobrazí až po výbere typu cieľa v kroku 1. Jej obsah sa musí dynamicky prispôsobiť podľa zvoleného typu.
+
+Obsah Sekcie:
+
+Názov Cieľa: input pole, ktoré sa automaticky predvyplní na základe zvoleného typu (napr. "Najväčšia ryba - Sezóna 2025"), ale musí zostať pre používateľa editovateľné.
+
+Cieľová Hodnota:
+
+Pre väčšinu cieľov sa zobrazí jedno input pole pre číselnú hodnotu s príslušnou jednotkou (napr. ks, kg, dni).
+
+Špeciálna požiadavka pre "Najväčšia ryba": Pre tento typ cieľa sa musia zobraziť dve input polia vedľa seba – jedno pre hmotnosť (kg) a druhé pre dĺžku (cm). Používateľ môže vyplniť jedno, druhé, alebo oboje. Pridajte pod ne aj nápovedu: "Môžete zadať hmotnosť, dĺžku, alebo oboje."
+
+Popis (voliteľné): Viacriadkové textové pole (textarea) pre zadanie dodatočných informácií o cieli.
+
+Hlavný cieľ sezóny: checkbox s popisom: "Označte tento cieľ ako váš hlavný cieľ pre sezónu. Bude zvýraznený a sledovaný s vyššou prioritou."
+
+Tlačidlá: Na konci formulára umiestnite dve tlačidlá vedľa seba:
+
+"Zrušiť" (sekundárne, menej výrazné tlačidlo).
+
+"Vytvoriť cieľ" (primárne, výrazné modré tlačidlo).
+
+3. Informačný Panel s Tipmi
+Pod celým formulárom na vytvorenie cieľa zobrazte vizuálne odlíšený informačný box (modrý odtieň).
+
+Tento box bude obsahovať "Tipy pre nastavenie cieľov" vo forme odrážkového zoznamu:
+
+Nastavte si realistické ale výzvové ciele.
+
+Hlavný cieľ sezóny by mal byť váš najdôležitejší a najambicióznejší cieľ.
+
+Môžete mať viacero cieľov rôznych typov pre jednu sezónu.
+
+Pokrok sa automaticky aktualizuje na základe vašich úlovkov a výprav.
+
+4. Dáta a Stav Aplikácie
+Celý stav sprievodcu (ktorý typ cieľa je zvolený, hodnoty v inputoch) musí byť spravovaný v rámci React stavu (useState).
+
+Pri zmene výberu v kroku 1 sa musí obsah kroku 2 korektne a plynulo prekresliť.

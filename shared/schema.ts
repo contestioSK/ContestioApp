@@ -965,7 +965,7 @@ export const seasonGoals = pgTable("season_goals", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id),
   seasonId: varchar("season_id").notNull().references(() => seasons.id),
-  goalType: varchar("goal_type").notNull(), // "total_weight", "fish_count", "trips_count", "biggest_fish", "species_variety"
+  goalType: varchar("goal_type").notNull(), // "total_weight", "fish_count", "trips_count", "biggest_fish", "personal_best"
   targetValue: decimal("target_value", { precision: 10, scale: 3 }).notNull(), // Target value (weight in kg, count as number)
   currentValue: decimal("current_value", { precision: 10, scale: 3 }).notNull().default("0"), // Current progress
   title: varchar("title", { length: 255 }).notNull(), // Custom goal title
@@ -1044,7 +1044,7 @@ export const insertSeasonGoalSchema = createInsertSchema(seasonGoals).omit({
   isCompleted: true,
   completedAt: true,
 }).extend({
-  goalType: z.enum(["total_weight", "fish_count", "trips_count", "biggest_fish", "species_variety"]),
+  goalType: z.enum(["total_weight", "fish_count", "trips_count", "biggest_fish", "personal_best"]),
   targetValue: z.union([z.string(), z.number()]).transform(val => String(val)),
   title: z.string().min(1, "Názov cieľa je povinný").max(255, "Názov môže mať maximálne 255 znakov"),
   description: z.string().max(500, "Popis môže mať maximálne 500 znakov").optional(),
@@ -1067,7 +1067,7 @@ export const updateSeasonGoalSchema = createInsertSchema(seasonGoals).omit({
   isCompleted: true, // Computed field, not user-editable
   completedAt: true, // Computed field, not user-editable
 }).extend({
-  goalType: z.enum(["total_weight", "fish_count", "trips_count", "biggest_fish", "species_variety"]).optional(),
+  goalType: z.enum(["total_weight", "fish_count", "trips_count", "biggest_fish", "personal_best"]).optional(),
   targetValue: z.union([z.string(), z.number()]).transform(val => String(val)).optional(),
   title: z.string().min(1, "Názov cieľa je povinný").max(255, "Názov môže mať maximálne 255 znakov").optional(),
   description: z.string().max(500, "Popis môže mať maximálne 500 znakov").optional(),
