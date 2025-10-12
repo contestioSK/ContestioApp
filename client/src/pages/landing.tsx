@@ -5,6 +5,7 @@ import { ContestCategories } from "@/components/contest-categories";
 import { Link } from "wouter";
 import { useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
+import contestioLogo from "@assets/contestio logo_1760283270014.png";
 interface Competition {
   id: string;
   name: string;
@@ -110,10 +111,7 @@ export default function Landing() {
             <div className="flex items-center justify-between h-16">
               {/* Logo */}
               <Link href="/">
-                <div className="flex items-center space-x-2 text-white">
-                  <Fish className="text-2xl" />
-                  <span className="text-xl font-bold">Contestio</span>
-                </div>
+                <img src={contestioLogo} alt="Contestio" className="h-8" />
               </Link>
 
               {/* Desktop Navigation */}
@@ -475,9 +473,8 @@ export default function Landing() {
             
             {/* Logo and Slogan */}
             <div className="lg:col-span-2">
-              <div className="flex items-center space-x-2 mb-4">
-                <Fish className="text-emerald-400 text-2xl" />
-                <h3 className="text-xl font-bold text-white">Contestio</h3>
+              <div className="mb-4">
+                <img src={contestioLogo} alt="Contestio" className="h-10" />
               </div>
               <p className="text-gray-400 text-sm leading-relaxed max-w-md">
                 Moderná platforma spájajúca rybárske súťaže s inteligentným osobným denníkom. Tvoj partner pri vode.

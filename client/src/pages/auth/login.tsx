@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Loader2, Eye, EyeOff, FishIcon, Chrome, AlertCircle } from "lucide-react";
 import { Link } from "wouter";
+import contestioLogo from "@assets/contestio logo_1760283270014.png";
 
 // Login validation schema
 const loginSchema = z.object({
@@ -84,9 +85,8 @@ export default function LoginPage() {
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="flex items-center justify-center space-x-2 mb-4">
-            <FishIcon className="w-8 h-8 text-primary" />
-            <h1 className="text-2xl font-bold text-primary">Contestio</h1>
+          <div className="flex items-center justify-center mb-4">
+            <img src={contestioLogo} alt="Contestio" className="h-10" />
           </div>
           <CardTitle className="text-2xl font-bold" data-testid="text-login-title">
             Prihlásenie
