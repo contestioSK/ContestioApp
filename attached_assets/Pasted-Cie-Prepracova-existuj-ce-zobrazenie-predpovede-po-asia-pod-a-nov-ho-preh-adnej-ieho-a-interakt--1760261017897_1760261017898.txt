@@ -1,0 +1,49 @@
+Cieľ: Prepracovať existujúce zobrazenie predpovede počasia podľa nového, prehľadnejšieho a interaktívnejšieho dizajnu.
+Technológie: React.js, TailwindCSS
+
+1. Hlavný Cieľ Redizajnu
+Súčasné zobrazenie je funkčné, ale zobrazuje informácie o vetre na viacerých miestach a chýba mu lepšia vizuálna hierarchia. Cieľom je zjednotiť hodinové dáta do jedného inteligentného widgetu, sprehľadniť ostatné sekcie a nahradiť statické placeholdery za plne funkčné, interaktívne grafy.
+
+2. Požiadavky na Zmeny v Komponentoch
+2.1. Nový Komponent "Hodinová Predpoveď"
+Toto je najdôležitejšia zmena. Vytvorte nový, jednotný komponent, ktorý bude obsahovať:
+
+Interaktívny Graf:
+
+Namiesto statického obrázka implementujte reálny SVG graf.
+
+Graf musí zobrazovať vývoj teploty ako plynulú krivku a pravdepodobnosť zrážok ako stĺpcový graf v pozadí.
+
+Interaktivita (Hover): Pri prejdení myšou ponad graf sa musí zobraziť vertikálna čiara a "tooltip" (malé informačné okno), ktorý ukáže presnú teplotu a šancu na zrážky pre danú hodinu.
+
+Horizontálne Skrolovateľný Zoznam Hodín:
+
+Tento zoznam bude priamo pod grafom, v jednom spoločnom kontajneri.
+
+Každá položka v zozname musí obsahovať:
+
+Čas (napr. "14:00")
+
+Ikonu počasia
+
+Teplotu
+
+Rotujúcu šípku smeru vetra
+
+Silu vetra v km/h
+
+2.2. Úprava Komponentu "Detailné Podmienky Dňa"
+Zjednodušenie: Z tejto sekcie odstráňte duplicitné informácie o vetre.
+
+Vylepšenie UI: Každá položka (Tlak, Vlhkosť, Východ slnka atď.) musí mať teraz vlastnú, prehľadnú ikonu, ktorá vizuálne reprezentuje daný údaj.
+
+Obsah: Táto sekcia bude zobrazovať už len tie dáta, ktoré platia pre celý deň: Tlak, Vlhkosť, Šanca na dážď (súhrn), Východ slnka, Západ slnka a Fáza mesiaca.
+
+3. Implementačné Detaily
+Dáta: Pokračujte v používaní dát z WeatherAPI.com. Zabezpečte, aby sa z API načítavali všetky potrebné hodinové dáta (teplota, ikona, sila a smer vetra, zrážky).
+
+Štýl: Striktne dodržte tmavý dizajnový jazyk aplikácie. Nové komponenty musia vizuálne ladiť s existujúcim dizajnom.
+
+Interaktivita: Klikanie na jednotlivé dni v ľavom stĺpci musí aj naďalej správne prekresľovať celý obsah v pravom stĺpci s novými dátami pre vybraný deň.
+
+Tento redizajn premení sekciu predpovede počasia z informačnej stránky na pré
