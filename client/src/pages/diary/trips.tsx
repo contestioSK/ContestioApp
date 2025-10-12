@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useDiaryOffline } from "@/hooks/use-diary-offline";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -45,8 +45,9 @@ import {
 } from "lucide-react";
 
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import type { DiaryTrip, InsertDiaryTrip } from "@shared/schema";
+import type { DiaryTrip, InsertDiaryTrip, DiaryCatch } from "@shared/schema";
 import DiaryLayout from "@/components/DiaryLayout";
+import { TripCard } from "@/components/diary/TripCard";
 
 // Type for freemium limits response
 type FreemiumLimits = {
@@ -94,6 +95,12 @@ export default function DiaryTrips() {
   // Fetch user's trips
   const { data: trips = [], isLoading } = useQuery<DiaryTrip[]>({
     queryKey: ["/api/diary/trips"],
+    enabled: !!user
+  });
+
+  // Fetch all catches for statistics
+  const { data: allCatches = [] } = useQuery<DiaryCatch[]>({
+    queryKey: ["/api/diary/catches/all"],
     enabled: !!user
   });
 
@@ -333,6 +340,51 @@ export default function DiaryTrips() {
       return () => clearTimeout(timeout);
     }
   }, [isOffline, pendingTrips.length, syncPendingTrips]);
+
+  // Calculate trip statistics
+  const tripStats = useMemo(() => {
+    const stats: Record<string, { catchCount: number; biggestCatch: { weight: string; fishType: string } | null }> = {};
+    
+    allCatches.forEach((catch_) => {
+      if (!catch_.tripId) return;
+      
+      if (!stats[catch_.tripId]) {
+        stats[catch_.tripId] = { catchCount: 0, biggestCatch: null };
+      }
+      
+      stats[catch_.tripId].catchCount++;
+      
+      const weight = parseFloat(catch_.weight);
+      if (!stats[catch_.tripId].biggestCatch || weight > parseFloat(stats[catch_.tripId].biggestCatch!.weight)) {
+        stats[catch_.tripId].biggestCatch = {
+          weight: catch_.weight,
+          fishType: catch_.fishType
+        };
+      }
+    });
+    
+    return stats;
+  }, [allCatches]);
+
+  // Split trips into active/planned and finished
+  const { activeAndPlannedTrips, finishedTrips } = useMemo(() => {
+    const now = new Date();
+    const active: DiaryTrip[] = [];
+    const finished: DiaryTrip[] = [];
+    
+    trips.forEach((trip) => {
+      if (new Date(trip.endDate) >= now) {
+        active.push(trip);
+      } else {
+        finished.push(trip);
+      }
+    });
+    
+    return {
+      activeAndPlannedTrips: active,
+      finishedTrips: finished
+    };
+  }, [trips]);
 
   return (
     <DiaryLayout>
@@ -644,18 +696,7 @@ export default function DiaryTrips() {
           {isLoading ? (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {[...Array(6)].map((_, i) => (
-                <Card key={i}>
-                  <CardHeader className="animate-pulse">
-                    <div className="h-4 bg-muted rounded w-3/4"></div>
-                    <div className="h-3 bg-muted rounded w-1/2"></div>
-                  </CardHeader>
-                  <CardContent className="animate-pulse">
-                    <div className="space-y-2">
-                      <div className="h-3 bg-muted rounded"></div>
-                      <div className="h-3 bg-muted rounded w-3/4"></div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <div key={i} className="h-72 bg-muted rounded-xl animate-pulse"></div>
               ))}
             </div>
           ) : trips.length === 0 ? (
@@ -679,93 +720,46 @@ export default function DiaryTrips() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {trips.map((trip) => (
-                <Card key={trip.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="text-lg truncate">{trip.name}</CardTitle>
-                        <CardDescription className="flex items-center gap-1 mt-1">
-                          <MapPin className="w-3 h-3" />
-                          {trip.location}
-                        </CardDescription>
-                      </div>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger>
-                            {trip.visibility === "private" ? (
-                              <Lock className="w-4 h-4 text-muted-foreground" />
-                            ) : (
-                              <Globe className="w-4 h-4 text-muted-foreground" />
-                            )}
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            {trip.visibility === "private" ? "Súkromné" : "Zdieľané"}
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <CalendarIcon className="w-4 h-4" />
-                        <span>
-                          {format(new Date(trip.startDate), "d. MMM", { locale: sk })} - {format(new Date(trip.endDate), "d. MMM yyyy", { locale: sk })}
-                        </span>
-                      </div>
+            <div className="space-y-10">
+              {/* Active and Planned Trips */}
+              {activeAndPlannedTrips.length > 0 && (
+                <div>
+                  <h2 className="text-2xl font-bold text-foreground mb-6" data-testid="heading-active-planned">
+                    Aktívne a Plánované
+                  </h2>
+                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    {activeAndPlannedTrips.map((trip) => (
+                      <TripCard
+                        key={trip.id}
+                        trip={trip}
+                        catchCount={tripStats[trip.id]?.catchCount || 0}
+                        biggestCatch={tripStats[trip.id]?.biggestCatch || null}
+                        onClick={() => setLocation(`/diary/trips/${trip.id}`)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
 
-                      {trip.participants && trip.participants.length > 0 && (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Users className="w-4 h-4" />
-                          <span>{trip.participants.length + 1} účastníkov</span>
-                        </div>
-                      )}
-
-                      {trip.notes && (
-                        <div className="flex items-start gap-2 text-sm text-muted-foreground">
-                          <FileText className="w-4 h-4 mt-0.5" />
-                          <span className="line-clamp-2">{trip.notes}</span>
-                        </div>
-                      )}
-
-                      <Separator />
-
-                      <div className="flex items-center justify-between">
-                        <div className="flex gap-2">
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => setLocation(`/diary/trips/${trip.id}`)}
-                            data-testid={`button-view-trip-${trip.id}`}
-                          >
-                            <Eye className="w-3 h-3 mr-1" />
-                            Zobraziť
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => openEditDialog(trip)}
-                            data-testid={`button-edit-trip-${trip.id}`}
-                          >
-                            <Edit className="w-3 h-3 mr-1" />
-                            Upraviť
-                          </Button>
-                        </div>
-                        <Button 
-                          size="sm" 
-                          variant="destructive" 
-                          onClick={() => setDeletingTrip(trip)}
-                          data-testid={`button-delete-trip-${trip.id}`}
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+              {/* Finished Trips */}
+              {finishedTrips.length > 0 && (
+                <div>
+                  <h2 className="text-2xl font-bold text-foreground mb-6" data-testid="heading-finished">
+                    Ukončené Výpravy
+                  </h2>
+                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    {finishedTrips.map((trip) => (
+                      <TripCard
+                        key={trip.id}
+                        trip={trip}
+                        catchCount={tripStats[trip.id]?.catchCount || 0}
+                        biggestCatch={tripStats[trip.id]?.biggestCatch || null}
+                        onClick={() => setLocation(`/diary/trips/${trip.id}`)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
