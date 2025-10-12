@@ -2,17 +2,16 @@ import { useAuth } from "@/hooks/useAuth";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Fish, Plus, X, MapPin, Target, Ruler, Weight, Swords, Trophy, Crown, Play, Edit2, Trash2, CalendarIcon, CalendarDays, Camera, ChevronLeft, ChevronRight, Loader2, AlertCircle, Check, UserPlus } from "lucide-react";
+import { Fish, Plus, X, MapPin, Target, Ruler, Weight, Swords, Trophy, Crown, Play, Edit2, Trash2, CalendarIcon, CalendarDays, ChevronLeft, ChevronRight, Loader2, AlertCircle, Check, UserPlus } from "lucide-react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -23,12 +22,11 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import DiaryLayout from "@/components/DiaryLayout";
 import CatchFormDialog from "@/components/diary/CatchFormDialog";
 import { getFishTypeLabel, getFishTypeOptions } from "@/utils/fishTypeMapping";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { showErrorToast } from "@/lib/errorUtils";
 import type { DiaryCatch, DiaryTrip } from "@shared/schema";
 
 // Function to get fish icon based on fish type
@@ -247,57 +245,6 @@ const quickStartSchema = z.object({
 
 type QuickStartFormData = z.infer<typeof quickStartSchema>;
 
-// Catch form validation schema
-const catchFormSchema = z.object({
-  tripId: z.string().optional(),
-  angler: z.object({
-    name: z.string().min(1, "Meno rybára je povinné")
-  }),
-  capturedAt: z.date({ required_error: "Čas chytenia je povinný" }),
-  weight: z.string().min(1, "Váha je povinná").transform((val) => {
-    const weight = parseFloat(val);
-    if (isNaN(weight) || weight < 0) {
-      throw new Error("Neplatná váha");
-    }
-    return weight.toString();
-  }),
-  lengthCm: z.coerce.number().positive("Dĺžka musí byť kladné číslo").optional(),
-  fishType: z.enum([
-    "kapor_supinac", 
-    "kapor_lysec", 
-    "amur", 
-    "sumec", 
-    "zubac", 
-    "stuka", 
-    "pleskac", 
-    "zubac_zubatovity",
-    "ostretus",
-    "tolstolobik",
-    "bream",
-    "other"
-  ]),
-  bait: z.string().optional(),
-  notes: z.string().optional(),
-  spot: z.string().optional(),
-  verified: z.boolean().default(false),
-});
-
-type CatchFormData = z.infer<typeof catchFormSchema>;
-
-// Fishing methods
-const fishingMethods = [
-  "Boilie",
-  "Kukurica",
-  "Pelety", 
-  "Dážďovka",
-  "Návnada",
-  "Spoon",
-  "Spinner",
-  "Wobler",
-  "Gumiak",
-  "Iné"
-];
-
 // Type for freemium limits response
 type FreemiumLimits = {
   canCreate: boolean;
@@ -315,57 +262,11 @@ export default function DiaryIndex() {
   const [editingCatch, setEditingCatch] = useState<DiaryCatch | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [catchToDelete, setCatchToDelete] = useState<string | null>(null);
-  const [selectedPhotos, setSelectedPhotos] = useState<File[]>([]);
-  const [existingPhotos, setExistingPhotos] = useState<Array<{
-    id: string;
-    url: string;
-    status: 'processing' | 'ready' | 'failed';
-    originalUrl?: string;
-    variants?: Array<{width: number; format: string; url: string;}>;
-    placeholder?: string;
-    error?: string;
-  }>>([]);
   const { toast } = useToast();
 
-  // WebSocket connection for real-time photo processing updates and battle invitations
+  // WebSocket connection for battle invitations
   useWebSocket((message) => {
-    if (message.type === 'diary_photo_processed') {
-      console.log('[Diary] Photo processed:', message);
-      
-      // Update the photo in existingPhotos if it's in the current editing catch
-      if (editingCatch && message.photoId) {
-        setExistingPhotos(prev => prev.map(photo => {
-          if (photo.id === message.photoId) {
-            return {
-              ...photo,
-              status: message.status,
-              url: message.url || photo.url,
-              variants: message.variants || photo.variants,
-              placeholder: message.placeholder || photo.placeholder,
-              error: message.error
-            };
-          }
-          return photo;
-        }));
-      }
-      
-      // Invalidate catches query to refresh the list
-      queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
-      
-      // Show toast notification
-      if (message.status === 'ready') {
-        toast({
-          title: "Fotka optimalizovaná!",
-          description: "Fotka bola úspešne spracovaná a je pripravená na zobrazenie.",
-        });
-      } else if (message.status === 'failed') {
-        toast({
-          title: "Chyba pri spracovaní fotky",
-          description: message.error || "Fotku sa nepodarilo optimalizovať",
-          variant: "destructive",
-        });
-      }
-    } else if (message.type === 'battle_invitation') {
+    if (message.type === 'battle_invitation') {
       console.log('[Diary] Received battle invitation:', message);
       
       // Invalidate invitations query to refresh the list
@@ -561,74 +462,6 @@ export default function DiaryIndex() {
     }
   });
 
-  // Catch form
-  const catchForm = useForm<CatchFormData>({
-    resolver: zodResolver(catchFormSchema),
-    defaultValues: {
-      angler: { name: "" },
-      capturedAt: new Date(),
-      weight: "",
-      fishType: "kapor_supinac",
-      bait: "",
-      notes: "",
-      spot: "",
-      verified: false
-    }
-  });
-
-  // Update form when user loads
-  useEffect(() => {
-    if (user && user.firstName) {
-      catchForm.setValue('angler.name', `${user.firstName} ${user.lastName || ''}`.trim());
-    }
-  }, [user, catchForm]);
-
-  // Create catch mutation
-  const createCatchMutation = useMutation({
-    mutationFn: async (data: CatchFormData) => {
-      const response = await apiRequest("POST", "/api/diary/catches", data);
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/diary/catch-limits"] });
-      setIsCreateCatchOpen(false);
-      setSelectedPhotos([]);
-      setExistingPhotos([]);
-      catchForm.reset();
-      toast({
-        title: "Úlovok pridaný!",
-        description: "Váš úlovok bol úspešne pridaný do denníka.",
-      });
-    },
-    onError: (error: Error) => {
-      showErrorToast(toast, error, 'catch');
-    }
-  });
-
-  // Update catch mutation
-  const updateCatchMutation = useMutation({
-    mutationFn: async ({ catchId, data }: { catchId: string, data: CatchFormData }) => {
-      const response = await apiRequest("PUT", `/api/diary/catches/${catchId}`, data);
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
-      setIsCreateCatchOpen(false);
-      setEditingCatch(null);
-      setSelectedPhotos([]);
-      setExistingPhotos([]);
-      catchForm.reset();
-      toast({
-        title: "Úlovok aktualizovaný!",
-        description: "Váš úlovok bol úspešne aktualizovaný.",
-      });
-    },
-    onError: (error: Error) => {
-      showErrorToast(toast, error, 'update');
-    }
-  });
-
   // Create quick trip mutation
   const createQuickTripMutation = useMutation({
     mutationFn: async (data: QuickStartFormData) => {
@@ -692,152 +525,6 @@ export default function DiaryIndex() {
     createQuickTripMutation.mutate(data);
   };
 
-  const handleCatchSubmit = async (data: CatchFormData) => {
-    // CRITICAL: Always include userId in angler object for proper filtering
-    const processedData = {
-      ...data,
-      angler: {
-        ...data.angler,
-        userId: user?.id || ''
-      },
-      tripId: data.tripId === "none" ? undefined : data.tripId,
-      bait: data.bait === "none" ? undefined : data.bait
-    };
-
-    if (editingCatch) {
-      // EDITING MODE: Use old flow with photo upload first
-      let newPhotos: Array<{
-        id: string;
-        url: string;
-        status: 'processing' | 'ready' | 'failed';
-        originalUrl?: string;
-      }> = [];
-      
-      if (selectedPhotos.length > 0) {
-        try {
-          const formData = new FormData();
-          selectedPhotos.forEach(photo => {
-            formData.append('photos', photo);
-          });
-          
-          const uploadResponse = await fetch('/api/diary/photos/upload', {
-            method: 'POST',
-            body: formData,
-            credentials: 'include'
-          });
-          
-          if (!uploadResponse.ok) {
-            throw new Error('Failed to upload photos');
-          }
-          
-          const uploadResult = await uploadResponse.json();
-          newPhotos = uploadResult.photos || [];
-        } catch (error) {
-          console.error('Photo upload error:', error);
-          toast({
-            title: "Chyba pri nahrávaní fotiek",
-            description: "Úlovok bude aktualizovaný bez nových fotiek",
-            variant: "destructive",
-          });
-        }
-      }
-
-      const allPhotos = [...existingPhotos, ...newPhotos];
-      const finalData = allPhotos.length > 0 
-        ? { ...processedData, photos: allPhotos }
-        : processedData;
-      
-      updateCatchMutation.mutate({ catchId: editingCatch.id, data: finalData });
-    } else {
-      // NEW CATCH MODE: Instant save with background photo upload
-      
-      // 1. Save catch IMMEDIATELY without photos
-      const immediateData = existingPhotos.length > 0 
-        ? { ...processedData, photos: existingPhotos }
-        : processedData;
-      
-      // Store photos to upload for background processing
-      const photosToUpload = [...selectedPhotos];
-      
-      // 2. Create catch mutation with immediate success callback
-      createCatchMutation.mutate(immediateData, {
-        onSuccess: async (newCatch: any) => {
-          // 3. If there are photos, upload them in background
-          if (photosToUpload.length > 0) {
-            toast({
-              title: "Úlovok uložený!",
-              description: `${photosToUpload.length} ${photosToUpload.length === 1 ? 'fotka sa nahráva' : 'fotky sa nahrávajú'} na pozadí...`,
-            });
-            
-            // Background photo upload (async, non-blocking)
-            uploadPhotosInBackground(newCatch.id, photosToUpload);
-          }
-        }
-      });
-    }
-  };
-
-  // Background photo upload function (runs after catch is saved)
-  const uploadPhotosInBackground = async (catchId: string, photos: File[]) => {
-    try {
-      // Import resize utility
-      const { resizeImages } = await import('@/utils/imageResize');
-      
-      // Resize images to 2048px max (reduces upload time significantly)
-      const resizedPhotos = await resizeImages(photos, { 
-        maxWidth: 2048, 
-        maxHeight: 2048, 
-        quality: 0.85 
-      });
-      
-      // Upload resized photos in parallel
-      const formData = new FormData();
-      resizedPhotos.forEach(photo => {
-        formData.append('photos', photo);
-      });
-      
-      const uploadResponse = await fetch('/api/diary/photos/upload', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include'
-      });
-      
-      if (!uploadResponse.ok) {
-        throw new Error('Failed to upload photos');
-      }
-      
-      const uploadResult = await uploadResponse.json();
-      const uploadedPhotos = uploadResult.photos || [];
-      
-      // Add photos to catch via PATCH endpoint
-      const patchResponse = await fetch(`/api/diary/catches/${catchId}/photos`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ photos: uploadedPhotos }),
-        credentials: 'include'
-      });
-      
-      if (!patchResponse.ok) {
-        throw new Error('Failed to attach photos to catch');
-      }
-      
-      // Refresh catch list to show uploaded photos
-      queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
-      
-      toast({
-        title: "Fotky nahrané!",
-        description: "Fotky sa optimalizujú na pozadí a onedlho sa zobrazia.",
-      });
-    } catch (error) {
-      console.error('Background photo upload error:', error);
-      toast({
-        title: "Chyba pri nahrávaní fotiek",
-        description: "Úlovok je uložený, ale fotky sa nepodarilo nahrať",
-        variant: "destructive",
-      });
-    }
-  };
-
   const handleDeleteCatch = () => {
     if (catchToDelete) {
       deleteCatchMutation.mutate(catchToDelete);
@@ -852,36 +539,12 @@ export default function DiaryIndex() {
   const closeCreateCatchDialog = () => {
     setIsCreateCatchOpen(false);
     setEditingCatch(null);
-    setSelectedPhotos([]);
-    setExistingPhotos([]);
-    catchForm.reset();
   };
 
   const openEditDialog = (catch_: DiaryCatch) => {
     setEditingCatch(catch_);
-    setSelectedCatch(null); // Close detail sheet
-    setIsCreateCatchOpen(true); // Open dialog
-    setExistingPhotos(catch_.photos || []); // Load existing photos
-    
-    // Pre-fill form with catch data
-    catchForm.reset({
-      tripId: catch_.tripId || "none",
-      angler: { name: catch_.angler?.name || "" },
-      capturedAt: catch_.capturedAt ? new Date(catch_.capturedAt) : new Date(),
-      weight: catch_.weight?.toString() || "",
-      lengthCm: catch_.lengthCm || undefined,
-      fishType: catch_.fishType as any,
-      bait: catch_.bait || "none",
-      notes: catch_.notes || "",
-      spot: catch_.spot || "",
-      verified: catch_.verified || false
-    });
-  };
-
-  const handleDialogOpenChange = (open: boolean) => {
-    if (!open) {
-      closeCreateCatchDialog();
-    }
+    setSelectedCatch(null);
+    setIsCreateCatchOpen(true);
   };
 
   return (
