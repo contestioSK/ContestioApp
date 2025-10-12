@@ -120,28 +120,33 @@ export default function BattleDetail() {
       c.angler.userId === participant.userId || c.angler.name === participant.name
     );
 
+    // Filter catches by minimum weight if specified
+    const validCatches = battle.rules.minWeightKg 
+      ? participantCatches.filter(c => parseFloat(c.weight) >= battle.rules.minWeightKg!)
+      : participantCatches;
+
     let score = 0;
     switch (battle.rules.mode) {
       case "most_fish":
-        score = participantCatches.length;
+        score = validCatches.length;
         break;
       case "total_weight":
-        score = participantCatches.reduce((sum, c) => sum + parseFloat(c.weight), 0);
+        score = validCatches.reduce((sum, c) => sum + parseFloat(c.weight), 0);
         break;
       case "biggest_fish":
-        score = participantCatches.length > 0 
-          ? Math.max(...participantCatches.map(c => parseFloat(c.weight))) 
+        score = validCatches.length > 0 
+          ? Math.max(...validCatches.map(c => parseFloat(c.weight))) 
           : 0;
         break;
       case "best_3_fish":
-        const top3 = participantCatches
+        const top3 = validCatches
           .map(c => parseFloat(c.weight))
           .sort((a, b) => b - a)
           .slice(0, 3);
         score = top3.reduce((sum, w) => sum + w, 0);
         break;
       case "best_5_fish":
-        const top5 = participantCatches
+        const top5 = validCatches
           .map(c => parseFloat(c.weight))
           .sort((a, b) => b - a)
           .slice(0, 5);
@@ -152,7 +157,7 @@ export default function BattleDetail() {
     return {
       participant,
       score,
-      catchCount: participantCatches.length
+      catchCount: validCatches.length
     };
   }).sort((a, b) => b.score - a.score) : [];
 
@@ -297,50 +302,64 @@ export default function BattleDetail() {
                         Zatiaľ žiadne úlovky
                       </p>
                     ) : (
-                      catches.slice(0, 10).map((catch_) => (
-                        <div 
-                          key={catch_.id}
-                          className="flex gap-4 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors"
-                          data-testid={`catch-${catch_.id}`}
-                        >
-                          {/* Photo */}
-                          {catch_.photos && catch_.photos.length > 0 ? (
-                            <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
-                              <img 
-                                src={typeof catch_.photos[0] === 'string' ? catch_.photos[0] : catch_.photos[0].url}
-                                alt={getFishTypeLabel(catch_.fishType)}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          ) : (
-                            <div className="w-20 h-20 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-                              <Fish className="w-8 h-8 text-muted-foreground" />
-                            </div>
-                          )}
-                          
-                          {/* Info */}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-2">
-                              <div>
-                                <div className="font-medium text-sm">
-                                  {getFishTypeLabel(catch_.fishType)}
-                                </div>
-                                <div className="text-xs text-muted-foreground">
-                                  {catch_.angler.name}
-                                </div>
+                      catches.slice(0, 10).map((catch_) => {
+                        // Check if catch meets minimum weight requirement
+                        const meetsMinWeight = !battle.rules.minWeightKg || parseFloat(catch_.weight) >= battle.rules.minWeightKg;
+                        
+                        return (
+                          <div 
+                            key={catch_.id}
+                            className={`flex gap-4 p-3 rounded-lg border transition-colors ${
+                              meetsMinWeight 
+                                ? 'border-border hover:bg-muted/50' 
+                                : 'border-muted bg-muted/30 opacity-60'
+                            }`}
+                            data-testid={`catch-${catch_.id}`}
+                          >
+                            {/* Photo */}
+                            {catch_.photos && catch_.photos.length > 0 ? (
+                              <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+                                <img 
+                                  src={typeof catch_.photos[0] === 'string' ? catch_.photos[0] : catch_.photos[0].url}
+                                  alt={getFishTypeLabel(catch_.fishType)}
+                                  className="w-full h-full object-cover"
+                                />
                               </div>
-                              <div className="text-right">
-                                <div className="font-bold text-primary">
-                                  {parseFloat(catch_.weight).toFixed(1)} kg
+                            ) : (
+                              <div className="w-20 h-20 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                                <Fish className="w-8 h-8 text-muted-foreground" />
+                              </div>
+                            )}
+                            
+                            {/* Info */}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-2">
+                                <div>
+                                  <div className="font-medium text-sm">
+                                    {getFishTypeLabel(catch_.fishType)}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">
+                                    {catch_.angler.name}
+                                  </div>
+                                  {!meetsMinWeight && (
+                                    <Badge variant="outline" className="mt-1 text-xs bg-muted">
+                                      Nezapočítava sa
+                                    </Badge>
+                                  )}
                                 </div>
-                                <div className="text-xs text-muted-foreground">
-                                  {formatDistanceToNow(new Date(catch_.capturedAt), { addSuffix: true, locale: sk })}
+                                <div className="text-right">
+                                  <div className={`font-bold ${meetsMinWeight ? 'text-primary' : 'text-muted-foreground'}`}>
+                                    {parseFloat(catch_.weight).toFixed(1)} kg
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">
+                                    {formatDistanceToNow(new Date(catch_.capturedAt), { addSuffix: true, locale: sk })}
+                                  </div>
                                 </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      ))
+                        );
+                      })
                     )}
                   </div>
                 </CardContent>
