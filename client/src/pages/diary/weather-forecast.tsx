@@ -98,6 +98,8 @@ interface LocationResult {
   url: string;
 }
 
+const LAST_LOCATION_KEY = 'weather-last-location';
+
 export default function WeatherForecast() {
   const { user } = useAuth();
   const [forecast, setForecast] = useState<WeatherForecast | null>(null);
@@ -108,6 +110,7 @@ export default function WeatherForecast() {
   const [searchLoading, setSearchLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const searchRef = useRef<HTMLDivElement>(null);
 
   // Check premium status
@@ -117,6 +120,34 @@ export default function WeatherForecast() {
   });
 
   const isPremium = premiumStatus?.isPremium || false;
+
+  // Auto-load weather on first visit
+  useEffect(() => {
+    const loadInitialWeather = async () => {
+      // Check if we have a saved location
+      const savedLocation = localStorage.getItem(LAST_LOCATION_KEY);
+      
+      if (savedLocation) {
+        // Load weather for saved location
+        try {
+          const { query, name, region, country } = JSON.parse(savedLocation);
+          setSearchQuery(`${name}, ${region || country}`);
+          await fetchForecast(query);
+        } catch (err) {
+          console.error('Failed to load saved location:', err);
+          // If saved location fails, try GPS
+          getMyLocation(true);
+        }
+      } else {
+        // First visit - try to get GPS location silently
+        getMyLocation(true);
+      }
+      
+      setIsInitialLoad(false);
+    };
+
+    loadInitialWeather();
+  }, []); // Run only once on mount
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -185,6 +216,14 @@ export default function WeatherForecast() {
       const data = await response.json();
       setForecast(data);
       setSelectedDayIndex(0); // Reset to first day
+      
+      // Save location to localStorage
+      localStorage.setItem(LAST_LOCATION_KEY, JSON.stringify({
+        query,
+        name: data.location.name,
+        region: data.location.region,
+        country: data.location.country
+      }));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Chyba pri načítaní predpovede');
     } finally {
@@ -197,13 +236,17 @@ export default function WeatherForecast() {
     fetchForecast(`${location.lat},${location.lon}`);
   };
 
-  const getMyLocation = () => {
-    setLoading(true);
-    setError(null);
+  const getMyLocation = (silent = false) => {
+    if (!silent) {
+      setLoading(true);
+      setError(null);
+    }
 
     if (!navigator.geolocation) {
-      setError("Váš prehliadač nepodporuje geolokáciu");
-      setLoading(false);
+      if (!silent) {
+        setError("Váš prehliadač nepodporuje geolokáciu");
+        setLoading(false);
+      }
       return;
     }
 
@@ -224,15 +267,29 @@ export default function WeatherForecast() {
           setForecast(data);
           setSelectedDayIndex(0); // Reset to first day
           setSearchQuery(`${data.location.name}, ${data.location.region || data.location.country}`);
+          
+          // Save location to localStorage
+          localStorage.setItem(LAST_LOCATION_KEY, JSON.stringify({
+            query: `${latitude},${longitude}`,
+            name: data.location.name,
+            region: data.location.region,
+            country: data.location.country
+          }));
         } catch (err) {
-          setError(err instanceof Error ? err.message : 'Chyba pri načítaní predpovede');
+          if (!silent) {
+            setError(err instanceof Error ? err.message : 'Chyba pri načítaní predpovede');
+          }
         } finally {
-          setLoading(false);
+          if (!silent) {
+            setLoading(false);
+          }
         }
       },
       (error) => {
-        setError(`Nepodarilo sa získať polohu: ${error.message}`);
-        setLoading(false);
+        if (!silent) {
+          setError(`Nepodarilo sa získať polohu: ${error.message}`);
+          setLoading(false);
+        }
       }
     );
   };
@@ -425,7 +482,7 @@ export default function WeatherForecast() {
             </div>
 
             <Button 
-              onClick={getMyLocation} 
+              onClick={() => getMyLocation()} 
               disabled={loading}
               data-testid="button-get-location"
               variant="outline"
@@ -861,6 +918,21 @@ export default function WeatherForecast() {
               </div>
             )}
           </div>
+        )}
+
+        {/* Empty State - shown when no forecast and initial load is complete */}
+        {!loading && !forecast && !isInitialLoad && (
+          <Card className="border-dashed" data-testid="card-empty-state">
+            <CardHeader className="text-center pb-4">
+              <div className="mx-auto w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
+                <MapPin className="w-8 h-8 text-muted-foreground" />
+              </div>
+              <CardTitle className="text-xl">Začnite plánovať svoju rybačku</CardTitle>
+              <CardDescription className="text-base mt-2">
+                Zadajte lokalitu do vyhľadávacieho poľa vyššie alebo použijte tlačidlo "Moja poloha" pre automatickú detekciu a získajte presnú predpoveď počasia.
+              </CardDescription>
+            </CardHeader>
+          </Card>
         )}
       </div>
     </DiaryLayout>
