@@ -76,6 +76,7 @@ export interface IStorage {
   searchUsers(query: string, excludeUserId?: string): Promise<User[]>;
   updateUserRole(userId: string, newRole: string): Promise<User>;
   updateUserStatus(userId: string, active: boolean): Promise<User>;
+  updateUserPremiumStatus(userId: string, isPremium: boolean): Promise<User>;
   getUserFromSession(sessionId: string): Promise<User | null>;
   
   // New auth methods
@@ -427,6 +428,22 @@ export class DatabaseStorage implements IStorage {
       .update(users)
       .set({ 
         active,
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    
+    if (!updatedUser) {
+      throw new Error("Používateľ nenájdený");
+    }
+    return updatedUser;
+  }
+
+  async updateUserPremiumStatus(userId: string, isPremium: boolean): Promise<User> {
+    const [updatedUser] = await db
+      .update(users)
+      .set({ 
+        isPremium,
         updatedAt: new Date() 
       })
       .where(eq(users.id, userId))

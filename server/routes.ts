@@ -3062,6 +3062,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put('/api/admin/users/:userId/premium', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const user = await storage.getUser(userId);
+      
+      if (!isAdmin(user)) {
+        return res.status(403).json({ message: "Only admins can update premium status" });
+      }
+
+      // Zod validation for premium status
+      const premiumSchema = z.object({
+        isPremium: z.boolean()
+      });
+      
+      const validation = premiumSchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ message: "Invalid premium status. isPremium must be boolean" });
+      }
+
+      const { isPremium } = validation.data;
+      const targetUserId = req.params.userId;
+
+      const updatedUser = await storage.updateUserPremiumStatus(targetUserId, isPremium);
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("Error updating premium status:", error);
+      res.status(500).json({ message: "Failed to update premium status" });
+    }
+  });
+
   // Competition registration routes
   app.post('/api/competition-registrations', upload.single('competitionLogo'), async (req: any, res) => {
     try {
