@@ -51,8 +51,8 @@ export default function LoginPage() {
         description: "Vitajte späť v Contestio.",
       });
       
-      // Redirect to home page
-      setLocation("/");
+      // Redirect to diary page
+      setLocation("/diary");
     },
     onError: (error: Error) => {
       console.error("Login error:", error);
