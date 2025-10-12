@@ -3956,24 +3956,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         const originalUrl = `/attached_assets/diary_photos/${userId}/${originalFilename}`;
         
-        // Queue background processing job
-        const { photoJobQueue } = await import('./photo-job-queue');
-        photoJobQueue.addJob({
-          catchId: catchId || 'unknown',
-          photoId,
-          userId,
-          originalPath,
-          originalFilename: file.originalname,
-          outputBasePath: path.join(diaryPhotosDir, baseFilename),
-          priority: 5, // Normal priority
-          maxAttempts: 3
-        });
-
+        // Don't queue job yet - will be queued when photo is attached to catch
+        // This prevents race condition where PhotoQueue looks for catch before photo is attached
+        
         return {
           id: photoId,
           url: originalUrl, // Return original immediately
           status: 'processing' as const,
-          originalUrl
+          originalUrl,
+          // Store processing info for later queuing
+          _processingInfo: {
+            userId,
+            originalPath,
+            originalFilename: file.originalname,
+            outputBasePath: path.join(diaryPhotosDir, baseFilename)
+          }
         };
       }));
 
@@ -4333,11 +4330,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const existingPhotos = catch_.photos || [];
       const newPhotos = req.body.photos || [];
       
-      // Merge photos
-      const allPhotos = [...existingPhotos, ...newPhotos];
+      // Merge photos (remove _processingInfo from stored data)
+      const cleanPhotos = newPhotos.map((photo: any) => {
+        const { _processingInfo, ...cleanPhoto } = photo;
+        return cleanPhoto;
+      });
+      const allPhotos = [...existingPhotos, ...cleanPhotos];
       
       // Update catch with new photos
       const updatedCatch = await storage.updateDiaryCatch(catchId, { photos: allPhotos }, userId);
+      
+      // NOW queue background processing jobs for new photos
+      // This happens AFTER photos are attached to catch, preventing race condition
+      const { photoJobQueue } = await import('./photo-job-queue');
+      for (const photo of newPhotos) {
+        if (photo._processingInfo && photo.status === 'processing') {
+          photoJobQueue.addJob({
+            catchId,
+            photoId: photo.id,
+            userId: photo._processingInfo.userId,
+            originalPath: photo._processingInfo.originalPath,
+            originalFilename: photo._processingInfo.originalFilename,
+            outputBasePath: photo._processingInfo.outputBasePath,
+            priority: 5,
+            maxAttempts: 3
+          });
+          console.log(`[PhotoQueue] Queued processing for photo ${photo.id} in catch ${catchId}`);
+        }
+      }
       
       res.json(updatedCatch);
     } catch (error) {
