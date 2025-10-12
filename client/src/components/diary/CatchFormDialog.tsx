@@ -167,16 +167,26 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
   // Update form when editing catch changes
   useEffect(() => {
     if (editingCatch) {
+      console.log('[CatchFormDialog] Editing catch:', editingCatch);
       setExistingPhotos(editingCatch.photos || []);
+      
+      // Parse date safely
+      let capturedDate = new Date();
+      try {
+        capturedDate = new Date(editingCatch.capturedAt);
+      } catch (e) {
+        console.error('Error parsing capturedAt:', e);
+      }
+      
       form.reset({
-        capturedAt: new Date(editingCatch.capturedAt),
-        weight: editingCatch.weight,
+        capturedAt: capturedDate,
+        weight: editingCatch.weight || "",
         lengthCm: editingCatch.lengthCm || undefined,
         fishType: editingCatch.fishType as any,
         bait: editingCatch.bait || "",
         notes: editingCatch.notes || "",
         spot: editingCatch.spot || "",
-        verified: editingCatch.verified,
+        verified: editingCatch.verified || false,
         waterTemp: editingCatch.waterTemp ? Number(editingCatch.waterTemp) : undefined,
         airTemp: editingCatch.airTemp ? Number(editingCatch.airTemp) : undefined,
         windSpeed: editingCatch.windSpeed ? Number(editingCatch.windSpeed) : undefined,
@@ -196,7 +206,7 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
         verified: false
       });
     }
-  }, [editingCatch, form, user]);
+  }, [editingCatch, form]);
 
   // Create catch mutation
   const createCatchMutation = useMutation({
