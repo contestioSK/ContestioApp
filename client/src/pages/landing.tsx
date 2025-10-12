@@ -385,7 +385,13 @@ export default function Landing() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="bg-[#0c1f28] py-20 md:py-32">
+      <section 
+        id="features" 
+        className="py-20 md:py-32"
+        style={{
+          background: 'radial-gradient(ellipse at top, #011a24 0%, #0c1f28 50%)'
+        }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* Section Header */}
