@@ -1,0 +1,61 @@
+Technické Zadanie (Prompt) pre Vývoj Sekcie "Rybársky Poriadok"
+Projekt: Contestio - Modul Rybársky Poriadok
+Cieľ: Vytvoriť plne funkčnú a interaktívnu obrazovku "Rybársky Poriadok" podľa finálneho UX/UI návrhu.
+Technológie: React.js, TailwindCSS
+Dizajnový Jazyk: Moderný, prémiový, tmavý (dark mode) a zameraný na rýchly prístup k informáciám.
+
+1. Celková Architektúra a Rozloženie (Layout)
+Vytvorte hlavnú stránku pre sekciu "Rybársky Poriadok", ktorá bude slúžiť ako interaktívna databáza pravidiel.
+
+Hlavička: Musí obsahovať nadpis "Rybársky Poriadok" a popisný text.
+
+Hlavný Obsah: Bude rozdelený do troch hlavných častí:
+
+Vyhľadávacie pole.
+
+Karty pre rýchly prístup.
+
+Oblasť pre zobrazenie obsahu (tabuľky s pravidlami).
+
+2. Komponenty a Požiadavky na Dizajn
+2.1. Vyhľadávacie Pole
+Dizajn: Vytvorte veľké, dominantné vyhľadávacie pole s ikonou lupy vo vnútri.
+
+Funkcionalita: Pre tento prototyp bude slúžiť ako vizuálny prvok. V budúcnosti bude slúžiť na fulltextové vyhľadávanie v pravidlách.
+
+2.2. Karty pre Rýchly Prístup (QuickLinkCard)
+Rozloženie: Tri karty vedľa seba v responzívnej mriežke (md:grid-cols-3).
+
+Obsah: Každá karta musí byť klikateľná a musí obsahovať veľkú ikonu a názov:
+
+"Doby Hájenia"
+
+"Lovné Miery"
+
+"Denná Doba Lovu"
+
+Interaktivita:
+
+Kliknutie na kartu ju môže vizuálne zvýrazniť (napr. zmenou farby okraja).
+
+Kliknutie na kartu musí dynamicky zmeniť obsah zobrazený v sekcii "Oblasť pre zobrazenie obsahu". Predvolene bude aktívna a zobrazená tabuľka pre "Lovné Miery".
+
+2.3. Oblasť pre Zobrazenie Obsahu
+Logika: Tento komponent bude dynamicky zobrazovať rôzne tabuľky s dátami na základe toho, ktorá karta rýchleho prístupu je aktívna.
+
+Komponent Tabuľky: Vytvorte univerzálny komponent pre tabuľku, ktorý bude zobrazovať dáta. Tabuľka musí mať jasne odlíšenú hlavičku a riadky musia byť prehľadné.
+
+Obsah: Pripravte statické dáta pre tri rôzne tabuľky:
+
+Tabuľka "Lovné miery": So stĺpcami "Druh Ryby", "Najmenšia / Najväčšia Miera", "Poznámka".
+
+Tabuľka "Doby hájenia": So stĺpcami "Druh Ryby", "Od", "Do".
+
+Tabuľka "Denná doba lovu": So stĺpcami "Mesiac", "Kaprové Vody", "Pstruhové Vody".
+
+3. Dáta a Stav Aplikácie
+Vytvorte statické objekty s dátami pre všetky tri tabuľky.
+
+Celý stav interaktivity (ktorá karta a ktorá tabuľka je aktívne zobrazená) musí byť spravovaný v rámci React stavu (useState).
+
+Tento prompt definuje kompletný rozsah prác na vytvorenie kľúčovej informačnej sekcie,
