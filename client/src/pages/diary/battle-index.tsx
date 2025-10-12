@@ -252,7 +252,7 @@ export default function BattleIndex() {
             <div className="lg:col-span-2 space-y-6">
               
               {/* Section: Moje Aktuálne Súboje */}
-              <Card style={{ backgroundColor: '#012a36', borderColor: '#1e3a5f' }}>
+              <Card className="bg-card border-border">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-foreground">
                     <Clock className="w-5 h-5 text-orange-500" />
@@ -268,8 +268,7 @@ export default function BattleIndex() {
                       return (
                         <div
                           key={battle.id}
-                          className="p-4 rounded-lg border border-border/50 hover:border-primary/50 transition-colors"
-                          style={{ backgroundColor: '#0c1f28' }}
+                          className="p-4 rounded-lg border border-border/50 hover:border-primary/50 transition-colors bg-muted/30"
                           data-testid={`card-active-battle-${battle.id}`}
                         >
                           <div className="space-y-3">
@@ -329,7 +328,7 @@ export default function BattleIndex() {
               </Card>
 
               {/* Section: Výzvy pre Teba */}
-              <Card style={{ backgroundColor: '#012a36', borderColor: '#1e3a5f' }}>
+              <Card className="bg-card border-border">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-foreground">
                     <Users className="w-5 h-5 text-blue-500" />
@@ -341,8 +340,7 @@ export default function BattleIndex() {
                     localInvitations.map((invitation) => (
                       <div
                         key={invitation.id}
-                        className="p-4 rounded-lg border border-border/50"
-                        style={{ backgroundColor: '#0c1f28' }}
+                        className="p-4 rounded-lg border border-border/50 bg-muted/30"
                         data-testid={`card-invitation-${invitation.id}`}
                       >
                         <div className="flex items-start gap-4">
@@ -412,7 +410,7 @@ export default function BattleIndex() {
             <div className="space-y-6">
               
               {/* Section: Archív Súbojov */}
-              <Card style={{ backgroundColor: '#012a36', borderColor: '#1e3a5f' }}>
+              <Card className="bg-card border-border">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-foreground">
                     <Archive className="w-5 h-5 text-purple-500" />
@@ -424,8 +422,7 @@ export default function BattleIndex() {
                     {mockArchivedBattles.map((battle) => (
                       <div
                         key={battle.id}
-                        className="p-3 rounded-lg border border-border/50"
-                        style={{ backgroundColor: '#0c1f28' }}
+                        className="p-3 rounded-lg border border-border/50 bg-muted/30"
                         data-testid={`card-archived-battle-${battle.id}`}
                       >
                         <div className="flex items-center justify-between">
@@ -466,10 +463,7 @@ export default function BattleIndex() {
               </Card>
 
               {/* Section: Sieň Slávy */}
-              <Card 
-                className="bg-gradient-to-br from-yellow-500/10 to-amber-600/10 border-yellow-500/30"
-                style={{ borderColor: '#f59e0b' }}
-              >
+              <Card className="bg-gradient-to-br from-yellow-500/10 to-amber-600/10 border-yellow-500/30">
                 <CardContent className="p-6">
                   <div className="text-center">
                     <div className="w-16 h-16 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-4">

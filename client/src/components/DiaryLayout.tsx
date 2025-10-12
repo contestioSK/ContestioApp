@@ -262,7 +262,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
         </main>
         
         {/* Mobile Bottom Navigation */}
-        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-[#012a36] border-t border-white/10 z-50">
+        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50">
           <div className="grid grid-cols-4 h-16">
             {navigationItems.map((item) => {
               const Icon = item.icon;
@@ -283,8 +283,8 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                   className={`
                     flex flex-col items-center justify-center space-y-1 transition-colors
                     ${isActive 
-                      ? 'text-blue-400' 
-                      : 'text-white/70 hover:text-white'
+                      ? 'text-primary' 
+                      : 'text-muted-foreground hover:text-foreground'
                     }
                   `}
                   data-testid={`mobile-nav-${item.label.toLowerCase().replace(' ', '-')}`}

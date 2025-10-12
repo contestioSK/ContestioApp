@@ -597,13 +597,7 @@ export default function WeatherForecast() {
                 {/* Top Row: Basic Info + Fish Activity in 2 columns */}
                 <div className="grid lg:grid-cols-2 gap-6">
                   {/* Detail Header */}
-                  <div 
-                    className="p-6 rounded-lg border-2 space-y-4"
-                    style={{ 
-                      backgroundColor: '#012a36',
-                      borderColor: '#1e3a5f'
-                    }}
-                  >
+                  <div className="p-6 rounded-lg border-2 space-y-4 bg-card border-border">
                     <div className="flex items-start justify-between">
                       <div className="space-y-1">
                         <p className="text-sm text-muted-foreground capitalize">
@@ -634,25 +628,13 @@ export default function WeatherForecast() {
 
                   {/* PREMIUM: Fish Activity Index Widget */}
                   {isPremiumLoading ? (
-                    <div 
-                      className="p-6 rounded-lg border-2"
-                      style={{ 
-                        backgroundColor: '#012a36',
-                        borderColor: '#1e3a5f'
-                      }}
-                    >
+                    <div className="p-6 rounded-lg border-2 bg-card border-border">
                       <Skeleton className="h-6 w-48 mb-4" />
                       <Skeleton className="h-12 w-full rounded-full mb-4" />
                       <Skeleton className="h-4 w-32" />
                     </div>
                   ) : isPremium ? (
-                    <div 
-                      className="p-6 rounded-lg border-2"
-                      style={{ 
-                        backgroundColor: '#012a36',
-                        borderColor: '#1e3a5f'
-                      }}
-                    >
+                    <div className="p-6 rounded-lg border-2 bg-card border-border">
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-semibold flex items-center gap-2">
                           <Fish className="w-5 h-5" />
@@ -702,13 +684,7 @@ export default function WeatherForecast() {
                       })()}
                     </div>
                   ) : (
-                    <div 
-                      className="p-6 rounded-lg border-2 text-center"
-                      style={{ 
-                        backgroundColor: '#012a36',
-                        borderColor: '#1e3a5f'
-                      }}
-                    >
+                    <div className="p-6 rounded-lg border-2 text-center bg-card border-border">
                       <Fish className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                       <h3 className="text-lg font-semibold mb-2">Index aktivity rýb</h3>
                       <p className="text-sm text-muted-foreground mb-4">
@@ -726,13 +702,7 @@ export default function WeatherForecast() {
                 </div>
 
                 {/* Hourly Forecast Chart Widget */}
-                <div 
-                  className="p-6 rounded-lg border-2"
-                  style={{ 
-                    backgroundColor: '#012a36',
-                    borderColor: '#1e3a5f'
-                  }}
-                >
+                <div className="p-6 rounded-lg border-2 bg-card border-border">
                   <h3 className="text-lg font-semibold mb-4">Hodinová predpoveď</h3>
                   <ResponsiveContainer width="100%" height={300}>
                     <ComposedChart 
@@ -765,10 +735,10 @@ export default function WeatherForecast() {
                       />
                       <Tooltip 
                         contentStyle={{ 
-                          backgroundColor: '#0c1f28', 
-                          border: '1px solid #1e3a5f',
+                          backgroundColor: 'hsl(var(--muted))', 
+                          border: '1px solid hsl(var(--border))',
                           borderRadius: '6px',
-                          color: '#f1f5f9'
+                          color: 'hsl(var(--foreground))'
                         }}
                       />
                       <Legend 
@@ -799,11 +769,7 @@ export default function WeatherForecast() {
                       {selectedDay.hour.map((hour, index) => (
                         <div
                           key={index}
-                          className="flex-shrink-0 p-4 rounded-lg border-2 min-w-[120px] space-y-2 text-center"
-                          style={{
-                            backgroundColor: '#012a36',
-                            borderColor: '#1e3a5f'
-                          }}
+                          className="flex-shrink-0 p-4 rounded-lg border-2 min-w-[120px] space-y-2 text-center bg-card border-border"
                           data-testid={`hour-card-${index}`}
                         >
                           {/* Time */}
@@ -849,13 +815,7 @@ export default function WeatherForecast() {
                 </div>
 
                 {/* Detailed Conditions Widget */}
-                <div 
-                  className="p-6 rounded-lg border-2"
-                  style={{ 
-                    backgroundColor: '#012a36',
-                    borderColor: '#1e3a5f'
-                  }}
-                >
+                <div className="p-6 rounded-lg border-2 bg-card border-border">
                   <h3 className="text-lg font-semibold mb-4">Detailné podmienky</h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {/* Tlak */}

@@ -381,8 +381,8 @@ export default function SeasonalGoals() {
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex items-center gap-3 flex-1">
-                            <div className="p-3 rounded-lg" style={{ backgroundColor: '#012a36' }}>
-                              <IconComponent className="w-6 h-6 text-white" />
+                            <div className="p-3 rounded-lg bg-primary/10">
+                              <IconComponent className="w-6 h-6 text-primary" />
                             </div>
                             <div className="flex-1 min-w-0">
                               <h3 className="text-xl font-semibold text-foreground truncate" data-testid={`text-goal-title-${goal.id}`}>{goal.title}</h3>
