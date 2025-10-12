@@ -4,6 +4,7 @@ import { useLocation, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { NotificationCenter } from "@/components/diary/notification-center";
 import { 
   BookOpen, 
   BarChart3, 
@@ -135,28 +136,31 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
 
           {/* User Profile */}
           <div className="p-4 md:p-6 border-b border-sidebar-border">
-            <button
-              onClick={() => {
-                setLocation("/diary/profile");
-                setSidebarOpen(false);
-              }}
-              className="w-full flex items-center space-x-2 md:space-x-3 hover:bg-sidebar-accent rounded-lg p-2 transition-colors group"
-              data-testid="button-profile"
-            >
-              <div className="w-8 h-8 md:w-10 md:h-10 bg-sidebar-accent rounded-full flex items-center justify-center group-hover:bg-sidebar-primary/20">
-                <User className="h-4 w-4 md:h-6 md:w-6 text-sidebar-accent-foreground group-hover:text-sidebar-primary" />
-              </div>
-              <div className="flex-1 min-w-0 text-left">
-                <p className="text-xs md:text-sm font-medium text-sidebar-foreground truncate">
-                  {user?.email || "Používateľ"}
-                </p>
-                <div className="flex items-center gap-2 mt-1">
-                  <Badge variant="secondary" className="bg-sidebar-primary/20 text-sidebar-primary border-sidebar-primary/30 text-xs">
-                    PREMIUM
-                  </Badge>
+            <div className="flex items-center justify-between gap-2">
+              <button
+                onClick={() => {
+                  setLocation("/diary/profile");
+                  setSidebarOpen(false);
+                }}
+                className="flex-1 flex items-center space-x-2 md:space-x-3 hover:bg-sidebar-accent rounded-lg p-2 transition-colors group"
+                data-testid="button-profile"
+              >
+                <div className="w-8 h-8 md:w-10 md:h-10 bg-sidebar-accent rounded-full flex items-center justify-center group-hover:bg-sidebar-primary/20">
+                  <User className="h-4 w-4 md:h-6 md:w-6 text-sidebar-accent-foreground group-hover:text-sidebar-primary" />
                 </div>
-              </div>
-            </button>
+                <div className="flex-1 min-w-0 text-left">
+                  <p className="text-xs md:text-sm font-medium text-sidebar-foreground truncate">
+                    {user?.email || "Používateľ"}
+                  </p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Badge variant="secondary" className="bg-sidebar-primary/20 text-sidebar-primary border-sidebar-primary/30 text-xs">
+                      PREMIUM
+                    </Badge>
+                  </div>
+                </div>
+              </button>
+              <NotificationCenter />
+            </div>
           </div>
 
           {/* Navigation */}

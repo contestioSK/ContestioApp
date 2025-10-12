@@ -454,11 +454,18 @@ export class DatabaseStorage implements IStorage {
       const sessData = sessionData.sess as any;
       
       // Extract user ID from passport session data
-      // Handle both new format (string id) and old format (OIDC claims)
+      // Handle multiple formats:
+      // 1. New format: user is a complete user object with .id
+      // 2. Old format: user is just a string ID
+      // 3. OIDC format: user is object with claims.sub
       let userId = sessData?.passport?.user;
       
+      // If user is a complete object with id property (new format)
+      if (typeof userId === 'object' && userId?.id) {
+        userId = userId.id;
+      }
       // If it's the old Replit/OIDC format, extract from claims
-      if (typeof userId === 'object' && userId?.claims?.sub) {
+      else if (typeof userId === 'object' && userId?.claims?.sub) {
         userId = userId.claims.sub;
       }
       
