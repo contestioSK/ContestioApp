@@ -542,16 +542,6 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
     onClose();
   };
 
-  // Debug: Log when dialog opens
-  if (isOpen && editingCatch) {
-    console.log('[DEBUG] Opening edit dialog with catch:', {
-      id: editingCatch.id,
-      capturedAt: editingCatch.capturedAt,
-      weight: editingCatch.weight,
-      fishType: editingCatch.fishType
-    });
-  }
-
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
