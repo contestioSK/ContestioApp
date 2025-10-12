@@ -3570,24 +3570,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Battle sa nenašiel" });
       }
       
-      // Get all catches for the trip associated with this battle
-      const catches = await storage.getDiaryCatches(battle.tripId, userId);
-      
-      // Filter catches by battle time range and participants
-      const battleCatches = catches.filter((catch_: any) => {
-        const catchTime = new Date(catch_.capturedAt);
-        const isInTimeRange = catchTime >= new Date(battle.startAt) && catchTime <= new Date(battle.endAt);
-        
-        // Check if catch is from a battle participant
-        const isParticipant = battle.participants.some(p => 
-          p.userId === catch_.angler.userId || p.name === catch_.angler.name
-        );
-        
-        return isInTimeRange && isParticipant;
-      });
-      
-      // Sort by captured time descending (newest first)
-      battleCatches.sort((a: any, b: any) => new Date(b.capturedAt).getTime() - new Date(a.capturedAt).getTime());
+      // Get all catches for this battle using battleId column
+      const battleCatches = await storage.getBattleCatches(id);
       
       res.json(battleCatches);
     } catch (error) {
