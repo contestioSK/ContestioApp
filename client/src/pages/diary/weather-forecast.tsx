@@ -347,6 +347,29 @@ export default function WeatherForecast() {
     return phases[phase] || phase;
   };
 
+  // Translate wind direction from English to Slovak
+  const getWindDirectionSlovak = (direction: string): string => {
+    const directions: Record<string, string> = {
+      'N': 'S',
+      'NNE': 'SSV',
+      'NE': 'SV',
+      'ENE': 'VSV',
+      'E': 'V',
+      'ESE': 'VJV',
+      'SE': 'JV',
+      'SSE': 'JJV',
+      'S': 'J',
+      'SSW': 'JJZ',
+      'SW': 'JZ',
+      'WSW': 'ZJZ',
+      'W': 'Z',
+      'WNW': 'ZSZ',
+      'NW': 'SZ',
+      'NNW': 'SSZ'
+    };
+    return directions[direction.toUpperCase()] || direction;
+  };
+
   const selectedDay = forecast?.forecast.forecastday[selectedDayIndex];
 
   return (
@@ -759,7 +782,7 @@ export default function WeatherForecast() {
                               data-testid={`wind-arrow-${index}`}
                             />
                             <p className="text-xs font-medium text-blue-400">
-                              {hour.wind_dir}
+                              {getWindDirectionSlovak(hour.wind_dir)}
                             </p>
                           </div>
                         </div>
