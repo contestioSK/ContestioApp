@@ -270,7 +270,7 @@ export default function Landing() {
                 {/* Dynamic CTA Container */}
                 <div className="hero-cta-container">
                   {activeTab === 'competitions' ? (
-                    <Link href="/live">
+                    <Link href="/categories/live">
                       <Button 
                         className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-6 text-lg transition-all duration-200 hover:scale-105"
                         size="lg"
