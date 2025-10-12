@@ -297,7 +297,7 @@ export default function DiaryIndex() {
   }>>([]);
   const { toast } = useToast();
 
-  // WebSocket connection for real-time photo processing updates
+  // WebSocket connection for real-time photo processing updates and battle invitations
   useWebSocket((message) => {
     if (message.type === 'diary_photo_processed') {
       console.log('[Diary] Photo processed:', message);
@@ -335,6 +335,17 @@ export default function DiaryIndex() {
           variant: "destructive",
         });
       }
+    } else if (message.type === 'battle_invitation') {
+      console.log('[Diary] Received battle invitation:', message);
+      
+      // Invalidate invitations query to refresh the list
+      queryClient.invalidateQueries({ queryKey: ['/api/diary/battles/invitations'] });
+      
+      // Show toast notification
+      toast({
+        title: "🎣 Nová výzva!",
+        description: `${message.inviterName} vás pozval do battle: ${message.battleName}`,
+      });
     }
   });
 
