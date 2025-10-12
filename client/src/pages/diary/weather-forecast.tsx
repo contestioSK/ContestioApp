@@ -55,6 +55,12 @@ interface ForecastDay {
     pressure_mb: number;
     precip_mm: number;
     humidity: number;
+    condition: {
+      text: string;
+      icon: string;
+    };
+    wind_kph: number;
+    wind_dir: string;
   }>;
 }
 
