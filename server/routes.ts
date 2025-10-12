@@ -4226,6 +4226,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Trip Cover Image Upload endpoint
+  app.post('/api/diary/trips/upload-cover', isAuthenticated, upload.single('coverImage'), async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No image file uploaded" });
+      }
+
+      const coverImageUrl = `/uploads/${req.file.filename}`;
+      res.json({ coverImageUrl });
+    } catch (error) {
+      console.error("Error uploading trip cover image:", error);
+      res.status(500).json({ message: "Failed to upload cover image" });
+    }
+  });
+
   // Diary Catches endpoints  
   app.get('/api/diary/catches', isAuthenticated, async (req: any, res) => {
     try {
