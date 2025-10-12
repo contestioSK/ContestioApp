@@ -165,8 +165,24 @@ function getGoalTypeLabel(goalType: string) {
     case 'trips_count': return 'Počet výprav';
     case 'biggest_fish': return 'Najväčšia ryba';
     case 'species_variety': return 'Druhy rýb';
+    case 'personal_best': return 'Osobný rekord';
     default: return goalType;
   }
+}
+
+// Format number with spaces for thousands and comma for decimals
+function formatNumber(value: number | string): string {
+  const num = typeof value === 'string' ? parseFloat(value) : value;
+  if (isNaN(num)) return '0';
+  
+  // Round to 1 decimal place
+  const rounded = Math.round(num * 10) / 10;
+  
+  // Format with Slovak locale (uses comma for decimals and nbsp for thousands)
+  const formatted = rounded.toLocaleString('sk-SK', { minimumFractionDigits: 0, maximumFractionDigits: 1 });
+  
+  // Replace non-breaking spaces with regular spaces for thousands separator
+  return formatted.replace(/\u00A0/g, ' ');
 }
 
 export default function SeasonalGoals() {
@@ -192,6 +208,15 @@ export default function SeasonalGoals() {
   const activeGoals = seasonGoals.filter(goal => !goal.isCompleted);
   const mainGoal = seasonGoals.find(goal => goal.isMainGoal);
 
+  // Find goal closest to completion (highest percentage) - "Ďalší na Rade"
+  const nextGoal = activeGoals
+    .filter(goal => !goal.isMainGoal) // Exclude main goal
+    .map(goal => ({
+      ...goal,
+      percentage: (parseFloat(goal.currentValue) / parseFloat(goal.targetValue)) * 100
+    }))
+    .sort((a, b) => b.percentage - a.percentage)[0]; // Highest percentage first
+
   // Trigger confetti for completed goals
   useEffect(() => {
     const newlyCompletedGoals = seasonGoals.filter(goal => 
@@ -208,98 +233,87 @@ export default function SeasonalGoals() {
   return (
     <DiaryLayout>
       <div className="p-6">
-        <div className="max-w-4xl mx-auto space-y-8">
+        <div className="max-w-6xl mx-auto space-y-8">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-foreground mb-2">Sezónne ciele</h1>
+              <h1 className="text-3xl font-bold text-foreground mb-2">Sezónne Ciele</h1>
               <p className="text-muted-foreground">
-                Nastavte si ciele a sledujte svoj pokrok počas ročnej sezóny (15. január - 14. január)
+                Nastavte si ciele a sledujte svoj pokrok počas sezóny {currentSeason?.name}
               </p>
             </div>
             <Button 
               onClick={() => setLocation("/diary/seasonal-goals/create")}
               data-testid="button-create-goal"
+              className="bg-primary hover:bg-primary/90"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Nový cieľ
+              Vytvoriť Nový Cieľ
             </Button>
           </div>
 
-          {/* Current Season Display */}
-          {currentSeason && (
+          {/* Súhrnné Widgety */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Widget 1: Celkom Cieľov */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5" />
-                  Aktuálna sezóna
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-3">
-                  <Badge className="bg-primary text-primary-foreground text-lg px-4 py-2">
-                    {currentSeason.name}
-                  </Badge>
-                  <span className="text-muted-foreground">
-                    {new Date(currentSeason.startDate).toLocaleDateString('sk-SK')} - {new Date(currentSeason.endDate).toLocaleDateString('sk-SK')}
-                  </span>
-                </div>
+              <CardContent className="p-6 text-center">
+                <Target className="w-10 h-10 text-primary mx-auto mb-3" />
+                <div className="text-3xl font-bold text-foreground" data-testid="text-total-goals-count">{seasonGoals.length}</div>
+                <div className="text-sm text-muted-foreground mt-1">Celkom Cieľov</div>
               </CardContent>
             </Card>
-          )}
 
-          {/* Season Overview */}
-          {currentSeason && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <Target className="w-8 h-8 text-primary mx-auto mb-2" />
-                  <div className="text-2xl font-bold text-foreground">{seasonGoals.length}</div>
-                  <div className="text-sm text-muted-foreground">Celkom cieľov</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <CheckCircle2 className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                  <div className="text-2xl font-bold text-foreground">{completedGoals.length}</div>
-                  <div className="text-sm text-muted-foreground">Splnených</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <Clock className="w-8 h-8 text-orange-600 mx-auto mb-2" />
-                  <div className="text-2xl font-bold text-foreground">{activeGoals.length}</div>
-                  <div className="text-sm text-muted-foreground">Aktívnych</div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
+            {/* Widget 2: Ďalší na Rade - Motivačný s gradientom */}
+            <Card className="bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10 border-primary/30">
+              <CardContent className="p-6">
+                {nextGoal ? (
+                  <div className="text-center">
+                    <Zap className="w-10 h-10 text-primary mx-auto mb-3" />
+                    <div className="text-lg font-semibold text-foreground mb-2" data-testid="text-next-goal-label">Ďalší na Rade</div>
+                    <div className="text-sm font-medium text-foreground truncate" data-testid="text-next-goal-title">{nextGoal.title}</div>
+                    <div className="text-xs text-muted-foreground mt-2" data-testid="text-next-goal-remaining">
+                      Chýba ti už len {formatNumber(parseFloat(nextGoal.targetValue) - parseFloat(nextGoal.currentValue))} {nextGoal.unit}!
+                    </div>
+                    <div className="mt-3">
+                      <div className="text-2xl font-bold text-primary" data-testid="text-next-goal-percentage">
+                        {Math.round(nextGoal.percentage)}%
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center">
+                    <Zap className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+                    <div className="text-sm text-muted-foreground" data-testid="text-no-next-goal">Pridaj si prvý cieľ!</div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
-          {/* Main Goal Progress */}
+            {/* Widget 3: Splnených Cieľov */}
+            <Card>
+              <CardContent className="p-6 text-center">
+                <Trophy className="w-10 h-10 text-yellow-500 mx-auto mb-3" />
+                <div className="text-3xl font-bold text-foreground" data-testid="text-completed-goals-count">{completedGoals.length}</div>
+                <div className="text-sm text-muted-foreground mt-1">Splnených Cieľov</div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Hlavný Cieľ Sezóny */}
           {mainGoal && (
-            <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Crown className="w-6 h-6 text-primary" />
-                  Hlavný cieľ sezóny
-                  {mainGoal.isCompleted && (
-                    <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                      Splnený!
-                    </Badge>
-                  )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+            <Card className="border-primary/30 bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5" data-testid="card-main-goal">
+              <CardContent className="p-8">
                 <div className="flex flex-col md:flex-row items-center gap-8">
+                  {/* Kruhový Progress Bar */}
                   <div className="flex-shrink-0">
                     <CircularProgress 
                       value={parseFloat(mainGoal.currentValue)} 
                       max={parseFloat(mainGoal.targetValue)}
-                      size={140}
-                      strokeWidth={12}
+                      size={180}
+                      strokeWidth={14}
                     >
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-foreground">
+                        <div className="text-3xl font-bold text-primary" data-testid="text-main-goal-percentage">
                           {Math.round((parseFloat(mainGoal.currentValue) / parseFloat(mainGoal.targetValue)) * 100)}%
                         </div>
                         <div className="text-sm text-muted-foreground">splnené</div>
@@ -307,25 +321,26 @@ export default function SeasonalGoals() {
                     </CircularProgress>
                   </div>
                   
+                  {/* Textový Obsah */}
                   <div className="flex-1 text-center md:text-left">
-                    <h3 className="text-2xl font-bold text-foreground mb-2">{mainGoal.title}</h3>
+                    <Badge className="bg-primary text-primary-foreground mb-3 inline-flex items-center gap-1">
+                      <Crown className="w-4 h-4" />
+                      HLAVNÝ CIEĽ
+                    </Badge>
+                    <h2 className="text-3xl font-bold text-foreground mb-3" data-testid="text-main-goal-title">{mainGoal.title}</h2>
                     {mainGoal.description && (
-                      <p className="text-muted-foreground mb-4">{mainGoal.description}</p>
+                      <p className="text-muted-foreground mb-4" data-testid="text-main-goal-description">{mainGoal.description}</p>
                     )}
-                    <div className="flex items-center justify-center md:justify-start gap-4 text-lg">
-                      <span className="font-semibold text-primary">
-                        {mainGoal.currentValue} {mainGoal.unit}
+                    <div className="flex items-center justify-center md:justify-start gap-3 text-xl">
+                      <span className="font-medium text-muted-foreground">Aktuálne:</span>
+                      <span className="font-bold text-primary" data-testid="text-main-goal-current">
+                        {formatNumber(mainGoal.currentValue)} {mainGoal.unit}
                       </span>
-                      <span className="text-muted-foreground">z</span>
-                      <span className="font-semibold text-foreground">
-                        {mainGoal.targetValue} {mainGoal.unit}
+                      <span className="text-muted-foreground">/</span>
+                      <span className="font-medium text-muted-foreground">Cieľ:</span>
+                      <span className="font-bold text-foreground" data-testid="text-main-goal-target">
+                        {formatNumber(mainGoal.targetValue)} {mainGoal.unit}
                       </span>
-                    </div>
-                    <div className="mt-4">
-                      <Progress 
-                        value={(parseFloat(mainGoal.currentValue) / parseFloat(mainGoal.targetValue)) * 100} 
-                        className="h-3"
-                      />
                     </div>
                   </div>
                 </div>
@@ -333,114 +348,104 @@ export default function SeasonalGoals() {
             </Card>
           )}
 
-          {/* Goals Tabs */}
-          <Tabs defaultValue="active" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="active" data-testid="tab-active-goals">
-                Aktívne ciele ({activeGoals.length})
-              </TabsTrigger>
-              <TabsTrigger value="completed" data-testid="tab-completed-goals">
-                Splnené ciele ({completedGoals.length})
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="active" className="space-y-4">
-              {activeGoals.length === 0 ? (
-                <Card>
-                  <CardContent className="p-8 text-center">
-                    <Target className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-foreground mb-2">
-                      Žiadne aktívne ciele
-                    </h3>
-                    <p className="text-muted-foreground mb-4">
-                      Vytvorte si nové ciele pre túto sezónu a začnite sledovať svoj pokrok.
-                    </p>
-                    <Button 
-                      onClick={() => setLocation("/diary/seasonal-goals/create")}
-                      data-testid="button-create-first-goal"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Vytvoriť prvý cieľ
-                    </Button>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {activeGoals.map((goal) => {
-                    const IconComponent = getGoalIcon(goal.goalType);
-                    const progress = (parseFloat(goal.currentValue) / parseFloat(goal.targetValue)) * 100;
-                    
-                    return (
-                      <Card key={goal.id} className="hover:shadow-md transition-shadow">
-                        <CardHeader className="pb-4">
-                          <div className="flex items-start justify-between">
-                            <div className="flex items-center gap-2">
-                              <IconComponent className={`w-5 h-5 ${getGoalColor(goal.goalType)}`} />
-                              <CardTitle className="text-lg">{goal.title}</CardTitle>
+          {/* Aktívne Ciele */}
+          <div>
+            <h2 className="text-2xl font-bold text-foreground mb-6">Aktívne Ciele</h2>
+            {activeGoals.length === 0 ? (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <Target className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-foreground mb-2">
+                    Žiadne aktívne ciele
+                  </h3>
+                  <p className="text-muted-foreground mb-4">
+                    Vytvorte si nové ciele pre túto sezónu a začnite sledovať svoj pokrok.
+                  </p>
+                  <Button 
+                    onClick={() => setLocation("/diary/seasonal-goals/create")}
+                    data-testid="button-create-first-goal"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Vytvoriť prvý cieľ
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                {activeGoals.map((goal) => {
+                  const IconComponent = getGoalIcon(goal.goalType);
+                  const progress = Math.min((parseFloat(goal.currentValue) / parseFloat(goal.targetValue)) * 100, 100);
+                  
+                  return (
+                    <Card key={goal.id} className="hover:shadow-lg transition-all" data-testid={`card-goal-${goal.id}`}>
+                      <CardContent className="p-6">
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-center gap-3 flex-1">
+                            <div className="p-3 rounded-lg" style={{ backgroundColor: '#012a36' }}>
+                              <IconComponent className="w-6 h-6 text-white" />
                             </div>
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-xl font-semibold text-foreground truncate" data-testid={`text-goal-title-${goal.id}`}>{goal.title}</h3>
+                              <p className="text-sm text-muted-foreground" data-testid={`text-goal-type-${goal.id}`}>{getGoalTypeLabel(goal.goalType)}</p>
+                            </div>
+                          </div>
+                          <div className="flex gap-2 ml-4">
                             <Button 
-                              size="sm" 
-                              variant="outline"
+                              size="icon" 
+                              variant="ghost"
                               onClick={() => setLocation(`/diary/seasonal-goals/${goal.id}/edit`)}
                               data-testid={`button-edit-goal-${goal.id}`}
+                              className="hover:bg-primary/10"
                             >
-                              <Edit className="w-3 h-3" />
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button 
+                              size="icon" 
+                              variant="ghost"
+                              onClick={() => {
+                                // TODO: Add delete functionality
+                              }}
+                              data-testid={`button-delete-goal-${goal.id}`}
+                              className="hover:bg-destructive/10 hover:text-destructive"
+                            >
+                              <Settings className="w-4 h-4" />
                             </Button>
                           </div>
-                          <CardDescription className="text-sm">
-                            {getGoalTypeLabel(goal.goalType)}
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-4">
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="font-medium text-foreground">
-                                {goal.currentValue} {goal.unit}
-                              </span>
-                              <span className="text-muted-foreground">
-                                z {goal.targetValue} {goal.unit}
-                              </span>
-                            </div>
-                            <Progress value={progress} className="h-2" />
-                            <div className="text-right text-sm font-medium text-primary">
-                              {Math.round(progress)}% splnené
-                            </div>
-                            {goal.description && (
-                              <p className="text-sm text-muted-foreground mt-2">
-                                {goal.description}
-                              </p>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-              )}
-            </TabsContent>
+                        </div>
 
-            <TabsContent value="completed" className="space-y-4">
-              {completedGoals.length === 0 ? (
-                <Card>
-                  <CardContent className="p-8 text-center">
-                    <Trophy className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-foreground mb-2">
-                      Žiadne splnené ciele
-                    </h3>
-                    <p className="text-muted-foreground">
-                      Keď splníte nejaké ciele, zobrazíme ich tu s vašimi úspechmi.
-                    </p>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="space-y-4">
-                  {completedGoals.map((goal) => (
-                    <AchievementBadge key={goal.id} goal={goal} />
-                  ))}
-                </div>
-              )}
-            </TabsContent>
-          </Tabs>
+                        {goal.description && (
+                          <p className="text-sm text-muted-foreground mb-4" data-testid={`text-goal-description-${goal.id}`}>{goal.description}</p>
+                        )}
+
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between text-lg">
+                            <span className="font-bold text-primary" data-testid={`text-goal-current-${goal.id}`}>
+                              {formatNumber(goal.currentValue)} {goal.unit}
+                            </span>
+                            <span className="text-muted-foreground">/</span>
+                            <span className="font-medium text-foreground" data-testid={`text-goal-target-${goal.id}`}>
+                              {formatNumber(goal.targetValue)} {goal.unit}
+                            </span>
+                          </div>
+                          
+                          <Progress value={progress} className="h-3" data-testid={`progress-goal-${goal.id}`} />
+                          
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-muted-foreground" data-testid={`text-goal-remaining-${goal.id}`}>
+                              Chýba ešte {formatNumber(parseFloat(goal.targetValue) - parseFloat(goal.currentValue))} {goal.unit}
+                            </span>
+                            <span className="text-sm font-semibold text-primary" data-testid={`text-goal-percentage-${goal.id}`}>
+                              {Math.round(progress)}%
+                            </span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </DiaryLayout>
