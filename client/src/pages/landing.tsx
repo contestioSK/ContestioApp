@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Fish, Trophy, BookOpen, Menu, X, Info, DollarSign, HelpCircle, Phone } from "lucide-react";
+import { SiFacebook, SiInstagram, SiYoutube } from "react-icons/si";
 import { ContestCategories } from "@/components/contest-categories";
 import { Link } from "wouter";
 import { useState, useRef } from "react";
@@ -466,20 +467,136 @@ export default function Landing() {
       <ContestCategories contests={competitions} />
 
       {/* Footer */}
-      <footer className="bg-primary text-primary-foreground py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <div className="flex items-center justify-center space-x-2 mb-4">
-              <Fish className="text-2xl" />
-              <h3 className="text-xl font-bold">Contestio</h3>
+      <footer className="bg-[#011a24] border-t border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+          
+          {/* Main Footer Content */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12 mb-12">
+            
+            {/* Logo and Slogan */}
+            <div className="lg:col-span-2">
+              <div className="flex items-center space-x-2 mb-4">
+                <Fish className="text-emerald-400 text-2xl" />
+                <h3 className="text-xl font-bold text-white">Contestio</h3>
+              </div>
+              <p className="text-gray-400 text-sm leading-relaxed max-w-md">
+                Moderná platforma spájajúca rybárske súťaže s inteligentným osobným denníkom. Tvoj partner pri vode.
+              </p>
             </div>
-            <p className="text-primary-foreground/80 mb-4">
-              Najlepšia platforma pre rybárske súťaže naživo.
-            </p>
-            <div className="text-primary-foreground/80 text-sm">
-              © 2024 Contestio. Všetky práva vyhradené.
+
+            {/* Product Links */}
+            <div>
+              <h4 className="text-white font-semibold mb-4">Produkt</h4>
+              <ul className="space-y-3">
+                <li>
+                  <Link href="/pricing">
+                    <span className="text-gray-400 hover:text-emerald-400 transition-colors cursor-pointer text-sm">
+                      Cenník
+                    </span>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/#features">
+                    <span className="text-gray-400 hover:text-emerald-400 transition-colors cursor-pointer text-sm">
+                      Funkcie
+                    </span>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/categories/live">
+                    <span className="text-gray-400 hover:text-emerald-400 transition-colors cursor-pointer text-sm">
+                      Živé súťaže
+                    </span>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/diary">
+                    <span className="text-gray-400 hover:text-emerald-400 transition-colors cursor-pointer text-sm">
+                      Rybársky denník
+                    </span>
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Company Links */}
+            <div>
+              <h4 className="text-white font-semibold mb-4">Firma</h4>
+              <ul className="space-y-3">
+                <li>
+                  <Link href="/about-us">
+                    <span className="text-gray-400 hover:text-emerald-400 transition-colors cursor-pointer text-sm">
+                      O nás
+                    </span>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/contact">
+                    <span className="text-gray-400 hover:text-emerald-400 transition-colors cursor-pointer text-sm">
+                      Kontakt
+                    </span>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/faq">
+                    <span className="text-gray-400 hover:text-emerald-400 transition-colors cursor-pointer text-sm">
+                      FAQ
+                    </span>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/register-competition">
+                    <span className="text-gray-400 hover:text-emerald-400 transition-colors cursor-pointer text-sm">
+                      Zaregistrovať súťaž
+                    </span>
+                  </Link>
+                </li>
+              </ul>
             </div>
           </div>
+
+          {/* Bottom Section: Social Media and Copyright */}
+          <div className="pt-8 border-t border-gray-800">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+              
+              {/* Copyright */}
+              <div className="text-gray-400 text-sm order-2 md:order-1">
+                © 2025 Contestio. Všetky práva vyhradené.
+              </div>
+
+              {/* Social Media Icons */}
+              <div className="flex items-center space-x-6 order-1 md:order-2">
+                <a 
+                  href="https://facebook.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-blue-500 transition-colors"
+                  aria-label="Facebook"
+                >
+                  <SiFacebook className="w-5 h-5" />
+                </a>
+                <a 
+                  href="https://instagram.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-pink-500 transition-colors"
+                  aria-label="Instagram"
+                >
+                  <SiInstagram className="w-5 h-5" />
+                </a>
+                <a 
+                  href="https://youtube.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-red-500 transition-colors"
+                  aria-label="YouTube"
+                >
+                  <SiYoutube className="w-5 h-5" />
+                </a>
+              </div>
+            </div>
+          </div>
+
         </div>
       </footer>
     </div>
