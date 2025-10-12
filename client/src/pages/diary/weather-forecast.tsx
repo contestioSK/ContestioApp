@@ -497,133 +497,136 @@ export default function WeatherForecast() {
             {/* Right Column - Day Detail */}
             {selectedDay && (
               <div className="lg:col-span-3 space-y-6">
-                {/* Detail Header */}
-                <div 
-                  className="p-6 rounded-lg border-2 space-y-4"
-                  style={{ 
-                    backgroundColor: '#012a36',
-                    borderColor: '#1e3a5f'
-                  }}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1">
-                      <p className="text-sm text-muted-foreground capitalize">
-                        {getFullDate(selectedDay.date)}
-                      </p>
-                      <h3 className="text-2xl font-bold flex items-center gap-2">
-                        <MapPin className="w-5 h-5" />
-                        {forecast.location.name}
-                        {forecast.location.region && `, ${forecast.location.region}`}
-                      </h3>
-                    </div>
-                    <div className="text-right">
-                      {getWeatherIcon(selectedDay.day.condition.code, "w-16 h-16")}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-6">
-                    <div>
-                      <p className="text-5xl font-bold">{Math.round(selectedDay.day.avgtemp_c)}°C</p>
-                      <p className="text-muted-foreground mt-1">{selectedDay.day.condition.text}</p>
-                    </div>
-                    <div className="flex-1 text-sm space-y-1">
-                      <p>Max: {Math.round(selectedDay.day.maxtemp_c)}°C</p>
-                      <p>Min: {Math.round(selectedDay.day.mintemp_c)}°C</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* PREMIUM: Fish Activity Index Widget */}
-                {isPremiumLoading ? (
+                {/* Top Row: Basic Info + Fish Activity in 2 columns */}
+                <div className="grid lg:grid-cols-2 gap-6">
+                  {/* Detail Header */}
                   <div 
-                    className="p-6 rounded-lg border-2"
+                    className="p-6 rounded-lg border-2 space-y-4"
                     style={{ 
                       backgroundColor: '#012a36',
                       borderColor: '#1e3a5f'
                     }}
                   >
-                    <Skeleton className="h-6 w-48 mb-4" />
-                    <Skeleton className="h-12 w-full rounded-full mb-4" />
-                    <Skeleton className="h-4 w-32" />
-                  </div>
-                ) : isPremium ? (
-                  <div 
-                    className="p-6 rounded-lg border-2"
-                    style={{ 
-                      backgroundColor: '#012a36',
-                      borderColor: '#1e3a5f'
-                    }}
-                  >
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-semibold flex items-center gap-2">
-                        <Fish className="w-5 h-5" />
-                        Index aktivity rýb
-                      </h3>
-                      <span className="text-xs px-2 py-1 rounded bg-amber-500/20 text-amber-500 font-semibold flex items-center gap-1">
-                        <Crown className="w-3 h-3" />
-                        PREMIUM
-                      </span>
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1">
+                        <p className="text-sm text-muted-foreground capitalize">
+                          {getFullDate(selectedDay.date)}
+                        </p>
+                        <h3 className="text-2xl font-bold flex items-center gap-2">
+                          <MapPin className="w-5 h-5" />
+                          {forecast.location.name}
+                          {forecast.location.region && `, ${forecast.location.region}`}
+                        </h3>
+                      </div>
+                      <div className="text-right">
+                        {getWeatherIcon(selectedDay.day.condition.code, "w-16 h-16")}
+                      </div>
                     </div>
-                    
-                    {(() => {
-                      const activityScore = calculateFishActivity(selectedDay);
-                      const activityInfo = getActivityLevel(activityScore);
-                      const position = `${activityScore}%`;
+
+                    <div className="flex items-center gap-6">
+                      <div>
+                        <p className="text-5xl font-bold">{Math.round(selectedDay.day.avgtemp_c)}°C</p>
+                        <p className="text-muted-foreground mt-1">{selectedDay.day.condition.text}</p>
+                      </div>
+                      <div className="flex-1 text-sm space-y-1">
+                        <p>Max: {Math.round(selectedDay.day.maxtemp_c)}°C</p>
+                        <p>Min: {Math.round(selectedDay.day.mintemp_c)}°C</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* PREMIUM: Fish Activity Index Widget */}
+                  {isPremiumLoading ? (
+                    <div 
+                      className="p-6 rounded-lg border-2"
+                      style={{ 
+                        backgroundColor: '#012a36',
+                        borderColor: '#1e3a5f'
+                      }}
+                    >
+                      <Skeleton className="h-6 w-48 mb-4" />
+                      <Skeleton className="h-12 w-full rounded-full mb-4" />
+                      <Skeleton className="h-4 w-32" />
+                    </div>
+                  ) : isPremium ? (
+                    <div 
+                      className="p-6 rounded-lg border-2"
+                      style={{ 
+                        backgroundColor: '#012a36',
+                        borderColor: '#1e3a5f'
+                      }}
+                    >
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-semibold flex items-center gap-2">
+                          <Fish className="w-5 h-5" />
+                          Index aktivity rýb
+                        </h3>
+                        <span className="text-xs px-2 py-1 rounded bg-amber-500/20 text-amber-500 font-semibold flex items-center gap-1">
+                          <Crown className="w-3 h-3" />
+                          PREMIUM
+                        </span>
+                      </div>
                       
-                      return (
-                        <div className="space-y-4">
-                          <div className="relative h-12 rounded-full overflow-hidden bg-gradient-to-r from-red-500 via-yellow-500 to-green-500">
-                            {/* Activity Indicator */}
-                            <div 
-                              className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 transition-all duration-500"
-                              style={{ left: position }}
-                            >
-                              <div className="relative">
-                                <div className="w-6 h-6 rounded-full bg-white border-2 border-slate-900 shadow-lg" />
-                                <div className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap text-sm font-semibold">
-                                  {activityScore}%
+                      {(() => {
+                        const activityScore = calculateFishActivity(selectedDay);
+                        const activityInfo = getActivityLevel(activityScore);
+                        const position = `${activityScore}%`;
+                        
+                        return (
+                          <div className="space-y-4">
+                            <div className="relative h-12 rounded-full overflow-hidden bg-gradient-to-r from-red-500 via-yellow-500 to-green-500">
+                              {/* Activity Indicator */}
+                              <div 
+                                className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 transition-all duration-500"
+                                style={{ left: position }}
+                              >
+                                <div className="relative">
+                                  <div className="w-6 h-6 rounded-full bg-white border-2 border-slate-900 shadow-lg" />
+                                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap text-sm font-semibold">
+                                    {activityScore}%
+                                  </div>
                                 </div>
                               </div>
                             </div>
+                            
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-muted-foreground">Aktivita:</span>
+                              <span className="font-semibold" style={{ color: activityInfo.color }}>
+                                {activityInfo.label}
+                              </span>
+                            </div>
+                            
+                            <p className="text-xs text-muted-foreground">
+                              Index je vypočítaný na základe tlaku vzduchu, teploty, zrážok a vetra. 
+                              Vyššia hodnota znamená lepšie podmienky pre rybolov.
+                            </p>
                           </div>
-                          
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-muted-foreground">Aktivita:</span>
-                            <span className="font-semibold" style={{ color: activityInfo.color }}>
-                              {activityInfo.label}
-                            </span>
-                          </div>
-                          
-                          <p className="text-xs text-muted-foreground">
-                            Index je vypočítaný na základe tlaku vzduchu, teploty, zrážok a vetra. 
-                            Vyššia hodnota znamená lepšie podmienky pre rybolov.
-                          </p>
-                        </div>
-                      );
-                    })()}
-                  </div>
-                ) : (
-                  <div 
-                    className="p-6 rounded-lg border-2 text-center"
-                    style={{ 
-                      backgroundColor: '#012a36',
-                      borderColor: '#1e3a5f'
-                    }}
-                  >
-                    <Fish className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                    <h3 className="text-lg font-semibold mb-2">Index aktivity rýb</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Zisti optimálny čas na rybolov na základe počasia
-                    </p>
-                    <div className="flex items-center justify-center gap-2 text-amber-500 font-semibold mb-3">
-                      <Crown className="w-4 h-4" />
-                      <span>Dostupné len v PREMIUM</span>
+                        );
+                      })()}
                     </div>
-                    <Button variant="default" size="sm" className="bg-amber-500 hover:bg-amber-600 text-white">
-                      Prejsť na Premium
-                    </Button>
-                  </div>
-                )}
+                  ) : (
+                    <div 
+                      className="p-6 rounded-lg border-2 text-center"
+                      style={{ 
+                        backgroundColor: '#012a36',
+                        borderColor: '#1e3a5f'
+                      }}
+                    >
+                      <Fish className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                      <h3 className="text-lg font-semibold mb-2">Index aktivity rýb</h3>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Zisti optimálny čas na rybolov na základe počasia
+                      </p>
+                      <div className="flex items-center justify-center gap-2 text-amber-500 font-semibold mb-3">
+                        <Crown className="w-4 h-4" />
+                        <span>Dostupné len v PREMIUM</span>
+                      </div>
+                      <Button variant="default" size="sm" className="bg-amber-500 hover:bg-amber-600 text-white">
+                        Prejsť na Premium
+                      </Button>
+                    </div>
+                  )}
+                </div>
 
                 {/* Hourly Forecast Chart Widget */}
                 <div 
