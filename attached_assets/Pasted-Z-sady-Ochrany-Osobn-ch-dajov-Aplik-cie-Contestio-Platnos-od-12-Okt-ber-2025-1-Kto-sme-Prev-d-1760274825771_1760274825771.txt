@@ -1,0 +1,68 @@
+Zásady Ochrany Osobných Údajov Aplikácie Contestio
+Platnosť od: 12. Október 2025
+
+1. Kto sme?
+Prevádzkovateľom vašich osobných údajov je Ľubomír Šulek, IČO: 44648499, so sídlom Majakovského 13027/11, 08001 Prešov (ďalej len "Prevádzkovateľ" alebo "my"). V prípade otázok týkajúcich sa ochrany osobných údajov nás môžete kontaktovať na e-mailovej adrese: gdpr@contestio.sk.
+
+2. Aké údaje spracúvame a prečo?
+Spracúvame nasledujúce kategórie osobných údajov:
+
+Registračné údaje: E-mailová adresa, meno (alebo prezývka), heslo.
+
+Účel: Vytvorenie a správa vášho používateľského účtu.
+
+Právny základ: Plnenie zmluvy (čl. 6 ods. 1 písm. b) GDPR).
+
+Údaje z Rybárskeho Denníka: Fotografie, dátumy, váha a dĺžka úlovkov, poznámky, typy nástrah.
+
+Účel: Poskytovanie hlavnej funkcionality Rybárskeho denníka.
+
+Právny základ: Plnenie zmluvy.
+
+GPS lokalita: Presné geografické údaje o mieste úlovku.
+
+Účel: Poskytovanie prémiových funkcií v Rybárskom denníku, ako je mapa úlovkov a analýza úspešnosti lokalít. Tieto údaje sú predvolene súkromné, viditeľné iba pre vás a nie sú použité na žiadne iné účely.
+
+Právny základ: Súhlas (čl. 6 ods. 1 písm. a) GDPR), ktorý udeľujete povolením prístupu k polohe vo vašom zariadení.
+
+Platobné údaje: V prípade zakúpenia Premium verzie spracúva vaše platobné údaje náš partner (platobná brána). My k týmto údajom nemáme priamy prístup.
+
+Technické a Analytické údaje: IP adresa, typ zariadenia, prehliadača a informácie o používaní aplikácie (napr. kliknutia).
+
+Účel: Zabezpečenie funkčnosti, bezpečnosti Aplikácie a anonymná analýza používania za účelom zlepšovania našich služieb. Na tento účel môžeme využívať nástroje tretích strán, ako je Google Analytics.
+
+Právny základ: Oprávnený záujem (čl. 6 ods. 1 písm. f) GDPR).
+
+3. Ako dlho údaje uchovávame?
+Vaše osobné údaje uchovávame po dobu trvania vašej registrácie v Aplikácii. Po zrušení účtu budú vaše údaje anonymizované alebo vymazané v zákonnej lehote.
+
+4. Kto má k vašim údajom prístup?
+Vaše údaje sú u nás v bezpečí. Sprístupňujeme ich len overeným tretím stranám, ktoré nám pomáhajú prevádzkovať Aplikáciu, ako sú:
+
+Poskytovatelia cloudovej infraštruktúry.
+
+Poskytovatelia platobných brán.
+
+Poskytovatelia analytických nástrojov.
+
+5. Aké sú vaše práva?
+V súlade s GDPR máte právo na:
+
+Prístup k svojim údajom.
+
+Opravu nesprávnych údajov.
+
+Vymazanie údajov ("právo byť zabudnutý").
+
+Obmedzenie spracúvania.
+
+Prenosnosť údajov.
+
+Vzniesť námietku proti spracúvaniu.
+
+Tieto práva si môžete uplatniť kontaktovaním nás na e-mailovej adrese uvedenej v bode 1.
+
+6. Súbory Cookies
+Naša webová stránka používa súbory cookies na zabezpečenie jej funkčnosti a na analýzu návštevnosti. Používaním stránky súhlasíte s ich využívaním.
+
+Tieto Zásady môžeme z času na čas aktualizovať. O všetkých podstatných zmenách vás budeme informovať.
