@@ -1,0 +1,96 @@
+Technické Zadanie (Prompt) pre Vývoj Aplikácie Contestio – Modul Predpoveď Počasia
+Projekt: Contestio - Predpoveď Počasia (Desktop Web Aplikácia)
+Cieľ: Vytvoriť plne funkčnú a interaktívnu obrazovku "Predpoveď Počasia" podľa finálneho UX/UI návrhu, napojenú na reálne dáta.
+Technológie: React.js, TailwindCSS
+Dizajnový Jazyk: Moderný, prémiový, tmavý (dark mode) a dátovo-orientovaný.
+
+1. Celková Architektúra a Rozloženie (Layout)
+Aplikácia bude mať štandardné dvojstĺpcové rozloženie.
+
+Ľavý Stĺpec: Bočný Panel (Sidebar)
+
+Implementujte štandardný bočný panel aplikácie s navigačnými odkazmi. Pre tento účel stačí zástupný panel. Dôležité je, aby odkaz "Predpoveď počasia" bol vizuálne aktívny.
+
+Pravý Stĺpec: Hlavný Obsah (Main Content)
+
+Toto je hlavná pracovná plocha. Musí obsahovať hlavičku a dvojstĺpcové rozloženie pre samotnú predpoveď.
+
+Pozadie: #0c1f28.
+
+2. Komponenty a Ich Funkcionalita
+2.1. Hlavička Hlavného Obsahu a Interaktivita Lokality
+Nadpis h1: "Predpoveď Počasia".
+
+Popis p: "Plánuj svoje výpravy ako profesionál."
+
+Interaktívne Vyhľadávacie Pole: Kľúčový prvok pre výber lokality.
+
+Funkcionalita: Musí to byť input pole pre textové vyhľadávanie.
+
+Autocomplete: Počas písania musí aplikácia volať "Search/Autocomplete API" od WeatherAPI a ponúkať zoznam relevantných lokalít.
+
+Výber Lokality: Používateľ si môže vybrať lokalitu z ponúkaného zoznamu. Po výbere sa celá predpoveď počasia (zoznam dní aj detail dňa) musí dynamicky aktualizovať načítaním nových dát z API pre danú lokalitu.
+
+Tlačidlo "Moja poloha":
+
+Funkcionalita: Tlačidlo s ikonou polohy, ktoré po kliknutí načíta predpoveď pre aktuálnu GPS polohu používateľa (pomocou geolokačného API prehliadača).
+
+2.2. Hlavné Rozloženie Predpovede (Grid)
+Obsah pod hlavičkou bude rozdelený na dva stĺpce (lg:grid-cols-4).
+
+Ľavý Stĺpec (Zoznam Dní):
+
+Zaberá 1 zo 4 stĺpcov (lg:col-span-1).
+
+Musí obsahovať zoznam klikateľných kariet (day-card) pre jednotlivé dni predpovede načítané z API.
+
+Interaktivita: Kliknutie na kartu dňa ju označí ako aktívnu a dynamicky zobrazí jej detailné dáta v pravom stĺpci (bez nutnosti nového volania API).
+
+Štýl Karty: Každá karta zobrazuje názov dňa, dátum a maximálnu/minimálnu teplotu.
+
+Pravý Stĺpec (Detail Dňa):
+
+Zaberá 3 zo 4 stĺpcov (lg:col-span-3).
+
+Pozadie: #012a36 s okrajom #1e3a5f.
+
+Obsah je rozdelený do nasledujúcich widgetov:
+
+Hlavička Detailu: Zobrazuje celý dátum, názov lokality, aktuálnu teplotu a textový popis počasia z API.
+
+Widget "Index Aktivity Rýb":
+
+Označený ako PREMIUM funkcia.
+
+Obsahuje horizontálny gradientový pás (from-red-500 via-yellow-500 to-green-500).
+
+Na tomto páse musí byť malý biely kruh, ktorý indikuje aktuálnu úroveň aktivity.
+
+Widget "Hodinová Predpoveď":
+
+Zobrazí reálny graf, ktorý vizualizuje vývoj teploty a zrážok počas dňa na základe hodinových dát z API.
+
+Widget "Detailné Podmienky":
+
+Prehľadná mriežka (grid-cols-4), ktorá zobrazuje kľúčové rybárske dáta z API: Vietor, Tlak, Zrážky, Vlhkosť, Východ a Západ slnka.
+
+3. Dáta a Stav Aplikácie
+Zdroj Dát: Aplikácia musí načítať dáta o počasí priamo z WeatherAPI.com pomocou poskytnutého API kľúča. Prestaňte používať statické alebo mock dáta.
+
+Typy Požiadaviek (API Calls):
+
+Predpoveď: Pre zobrazenie predpovede na nasledujúce dni použite "Forecast API". Potrebujeme získať dáta minimálne na 3 dni dopredu.
+
+Vyhľadávanie/Autocomplete: Pre funkciu vyhľadávania lokalít použite "Search/Autocomplete API", ktoré poskytuje WeatherAPI.
+
+Spracovanie Dát: Z odpovede API je potrebné extrahovať a v UI zobraziť všetky relevantné dáta, ktoré sme definovali v dizajne:
+
+Pre každý deň: maximálna/minimálna teplota, textový popis, ikona.
+
+Pre detail dňa: aktuálna teplota, hodinová predpoveď, vietor, tlak, zrážky, vlhkosť, východ a západ slnka.
+
+Stav Aplikácie:
+
+Stav aplikácie (ktorá lokalita je vyhľadaná, ktorý deň je aktívne zobrazený) musí byť spravovaný v rámci React stavu (useState, useContext).
+
+Pri každej novej požiadavke na API (zmena lokality) musí byť zobrazený **načítavací indikátor (loading
