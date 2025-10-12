@@ -1,0 +1,60 @@
+Projekt: Contestio - Modul Fishing Battle
+Cieľ: upraviť plne funkčný a interaktívny dashboard "Fishing Battle" podľa finálneho UX/UI návrhu. Technológie: React.js, TailwindCSS
+Dizajnový Jazyk: Moderný, prémiový, tmavý (dark mode) a zameraný na sociálnu interakciu.
+
+1. Celková Architektúra a Rozloženie (Layout)
+Vytvorte hlavnú stránku pre sekciu "Fishing Battle", ktorá bude slúžiť ako dynamický a sociálny dashboard.
+
+Hlavička: Musí obsahovať nadpis "Fishing Battle", popis a výrazné tlačidlo "Vytvoriť Nový Súboj".
+
+Hlavný Obsah (Grid): Rozloženie bude trojstĺpcové (lg:grid-cols-3):
+
+Ľavý Blok (2 stĺpce): Bude obsahovať dve hlavné sekcie pod sebou: "Moje Aktuálne Súboje" a "Výzvy pre Teba".
+
+Pravý Blok (1 stĺpec): Bude obsahovať dve vedľajšie sekcie pod sebou: "Archív Súbojov" a "Sieň Slávy".
+
+2. Komponenty a Požiadavky na Dizajn
+2.1. Sekcia "Moje Aktuálne Súboje"
+Logika: Zobrazí zoznam všetkých súbojov, v ktorých je používateľ momentálne aktívny.
+
+Komponent Karty Súboja: Každý súboj bude reprezentovaný ako samostatná karta, ktorá musí obsahovať:
+
+Názov súboja (napr. "Víkend na Domaši").
+
+Zoznam oponentov.
+
+Zostávajúci čas do konca.
+
+Odkaz "Zobraziť detail →".
+
+Lineárny Progress Bar, ktorý vizualizuje progres používateľa v rámci súboja, vrátane textu (napr. "Tvoj Progres (2. miesto)").
+
+2.2. Sekcia "Výzvy pre Teba"
+Logika: Zobrazí zoznam všetkých otvorených výziev od iných používateľov.
+
+Komponent Karty Výzvy: Každá výzva musí obsahovať:
+
+Avatar a meno vyzývajúceho používateľa.
+
+Text výzvy (napr. "...ťa vyzval na 24h súboj").
+
+Dve jasne oddelené tlačidlá: "Prijať" (zelené) a "Odmietnuť" (sivé).
+
+2.3. Sekcia "Archív Súbojov"
+Logika: Zobrazí stručný prehľad posledných ukončených súbojov.
+
+Obsah: Zoznam položiek, kde každá obsahuje názov súboja, oponenta a výsledok.
+
+Vizuálne Odlíšenie: Výsledok musí byť farebne odlíšený: "Víťazstvo" (zelená farba) a "Prehra" (červená farba).
+
+Akcia: Tlačidlo "Zobraziť celý archív" na konci.
+
+2.4. Sekcia "Sieň Slávy"
+Logika: Zobrazí súhrnnú štatistiku úspechov používateľa.
+
+Obsah: Prémiová karta s ikonou trofeje, celkovým počtom vyhratých súbojov a popisným textom.
+
+3. Dáta a Stav Aplikácie
+Pre účely prototypu vytvorte statické objekty s dátami, ktoré budú reprezentovať aktívne súboje, výzvy a archív.
+
+Celý stav dashboardu, najmä interakcie v sekcii "Výzvy pre Teba" (prijatie/odmietnutie výzvy), musí byť spravovaný v rámci React stavu (useState). Po kliknutí na tlačidlo by mala daná výzva zo zoznamu zmiznúť.
