@@ -4485,5 +4485,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get weather data from WeatherAPI.com
+  app.get('/api/weather', isAuthenticated, async (req: any, res) => {
+    try {
+      const { lat, lon, datetime } = req.query;
+
+      if (!lat || !lon || !datetime) {
+        return res.status(400).json({ 
+          message: "Missing required parameters: lat, lon, datetime" 
+        });
+      }
+
+      // Parse and validate datetime
+      const date = new Date(datetime as string);
+      if (isNaN(date.getTime())) {
+        return res.status(400).json({ 
+          message: "Invalid datetime format" 
+        });
+      }
+
+      // Use Unix timestamp for timezone-independent date querying
+      const unixTimestamp = Math.floor(date.getTime() / 1000);
+
+      // Call WeatherAPI History API (HTTPS for security)
+      const apiKey = process.env.WEATHER_API_KEY;
+      if (!apiKey) {
+        console.error("[WEATHER] WEATHER_API_KEY not configured");
+        return res.status(500).json({ message: "Weather API not configured" });
+      }
+
+      const apiUrl = `https://api.weatherapi.com/v1/history.json?key=${apiKey}&q=${lat},${lon}&unixdt=${unixTimestamp}`;
+      
+      const response = await fetch(apiUrl);
+      
+      if (!response.ok) {
+        console.error(`[WEATHER] API error: ${response.status} ${response.statusText}`);
+        return res.status(response.status).json({ 
+          message: "Failed to fetch weather data" 
+        });
+      }
+
+      const data = await response.json();
+
+      // Find closest hourly data by comparing Unix timestamps
+      const requestedTimestamp = date.getTime() / 1000;
+      let closestHourData = null;
+      let minTimeDiff = Infinity;
+
+      for (const h of data.forecast?.forecastday?.[0]?.hour || []) {
+        const hourTimestamp = h.time_epoch;
+        const timeDiff = Math.abs(hourTimestamp - requestedTimestamp);
+        
+        if (timeDiff < minTimeDiff) {
+          minTimeDiff = timeDiff;
+          closestHourData = h;
+        }
+      }
+
+      const hourData = closestHourData;
+
+      if (!hourData) {
+        // Fallback to day average if hour not found
+        const dayData = data.forecast?.forecastday?.[0]?.day;
+        return res.json({
+          temperature: dayData?.avgtemp_c || null,
+          windSpeed: dayData?.maxwind_kph || null,
+          pressure: null, // Day data doesn't have pressure
+        });
+      }
+
+      // Return weather data
+      res.json({
+        temperature: hourData.temp_c,
+        windSpeed: hourData.wind_kph,
+        pressure: hourData.pressure_mb,
+      });
+
+    } catch (error) {
+      console.error("[WEATHER] Error fetching weather:", error);
+      res.status(500).json({ message: "Failed to fetch weather data" });
+    }
+  });
+
   return httpServer;
 }
