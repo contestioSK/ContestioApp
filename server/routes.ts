@@ -4325,10 +4325,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Server controls angler.userId, tripId (auto-assigned), and verified status
+      // Auto-assign active battle if battleId not provided
+      let battleId = req.body.battleId;
+      
+      if (!battleId) {
+        // Find active battles for this user
+        const acceptedInvitations = await storage.getUserBattleInvitations(userId, 'accepted');
+        const today = new Date();
+        
+        // Filter for active battles (based on battle dates)
+        const activeBattleInvitation = acceptedInvitations.find((inv: any) => {
+          if (!inv.battle) return false;
+          
+          const startDate = new Date(inv.battle.startDate);
+          const endDate = new Date(inv.battle.endDate);
+          startDate.setHours(0, 0, 0, 0);
+          endDate.setHours(23, 59, 59, 999);
+          
+          return startDate <= today && today <= endDate;
+        });
+        
+        if (activeBattleInvitation?.battle) {
+          battleId = activeBattleInvitation.battle.id;
+        }
+      }
+      
+      // Server controls angler.userId, tripId (auto-assigned), battleId (auto-assigned), and verified status
       const catchData = {
         ...req.body,
         tripId: tripId || undefined, // Use auto-assigned tripId or undefined if no active trip
+        battleId: battleId || undefined, // Use auto-assigned battleId or undefined if no active battle
         angler: {
           ...req.body.angler,
           userId: userId
