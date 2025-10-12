@@ -676,7 +676,6 @@ export default function DiaryIndex() {
                           });
                         }
                       }}
-                      disabled={!firstActiveBattle}
                       className={cn(
                         "border-yellow-600/50 hover:bg-yellow-600/20",
                         firstActiveBattle 
