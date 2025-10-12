@@ -58,6 +58,13 @@ Fixed critical battle functionality with automatic catch assignment and minimum 
   - All scoring modes (most_fish, total_weight, biggest_fish, best_3_fish, best_5_fish) use filtered validCatches
 - **Database Schema**: Added battleId column to diary_catches for direct battle-catch relationships
 - **Edge Case Handling**: Safe deduplication (handles missing userId/name), empty participants, malformed entries
+- **Active Battle CTA**: Quick-access button on diary homepage to jump to active battle (with toast notification if none active)
+
+## ✅ COMPLETED: Diary-First Login Experience (October 2025)
+Optimized user experience for diary-focused usage:
+- **Direct Redirect**: Users redirected to `/diary` immediately after successful login (changed from homepage `/`)
+- **Streamlined Flow**: Eliminates extra navigation step for primary use case (diary management)
+- **Implementation**: Modified `successReturnToOrRedirect` in `server/replitAuth.ts` authentication callback
 
 # User Preferences
 
