@@ -17,7 +17,9 @@ import {
   CloudSnow,
   Sun,
   CloudDrizzle,
-  Search
+  Search,
+  Sunrise,
+  Sunset
 } from "lucide-react";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
@@ -89,6 +91,7 @@ export default function WeatherForecast() {
   const [searchResults, setSearchResults] = useState<LocationResult[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [selectedDayIndex, setSelectedDayIndex] = useState(0);
   const searchRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
@@ -130,17 +133,17 @@ export default function WeatherForecast() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const getWeatherIcon = (code: number) => {
+  const getWeatherIcon = (code: number, className = "w-12 h-12") => {
     // WeatherAPI condition codes
-    if (code === 1000) return <Sun className="w-12 h-12 text-yellow-500" />;
-    if ([1003, 1006, 1009].includes(code)) return <Cloud className="w-12 h-12 text-gray-400" />;
+    if (code === 1000) return <Sun className={`${className} text-yellow-500`} />;
+    if ([1003, 1006, 1009].includes(code)) return <Cloud className={`${className} text-gray-400`} />;
     if ([1063, 1180, 1183, 1186, 1189, 1192, 1195, 1240, 1243, 1246].includes(code)) 
-      return <CloudRain className="w-12 h-12 text-blue-400" />;
+      return <CloudRain className={`${className} text-blue-400`} />;
     if ([1066, 1210, 1213, 1216, 1219, 1222, 1225, 1255, 1258].includes(code)) 
-      return <CloudSnow className="w-12 h-12 text-blue-200" />;
+      return <CloudSnow className={`${className} text-blue-200`} />;
     if ([1072, 1150, 1153, 1168, 1171].includes(code)) 
-      return <CloudDrizzle className="w-12 h-12 text-blue-300" />;
-    return <Cloud className="w-12 h-12 text-gray-400" />;
+      return <CloudDrizzle className={`${className} text-blue-300`} />;
+    return <Cloud className={`${className} text-gray-400`} />;
   };
 
   const fetchForecast = async (query: string) => {
@@ -157,6 +160,7 @@ export default function WeatherForecast() {
 
       const data = await response.json();
       setForecast(data);
+      setSelectedDayIndex(0); // Reset to first day
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Chyba pri načítaní predpovede');
     } finally {
@@ -194,6 +198,7 @@ export default function WeatherForecast() {
 
           const data = await response.json();
           setForecast(data);
+          setSelectedDayIndex(0); // Reset to first day
           setSearchQuery(`${data.location.name}, ${data.location.region || data.location.country}`);
         } catch (err) {
           setError(err instanceof Error ? err.message : 'Chyba pri načítaní predpovede');
@@ -218,11 +223,18 @@ export default function WeatherForecast() {
     return format(date, 'd. MMMM', { locale: sk });
   };
 
+  const getFullDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return format(date, 'EEEE, d. MMMM yyyy', { locale: sk });
+  };
+
   // Get average pressure for the day (from hourly data)
   const getAvgPressure = (hours: ForecastDay['hour']) => {
     const pressures = hours.map(h => h.pressure_mb);
     return Math.round(pressures.reduce((a, b) => a + b, 0) / pressures.length);
   };
+
+  const selectedDay = forecast?.forecast.forecastday[selectedDayIndex];
 
   return (
     <DiaryLayout>
@@ -306,106 +318,145 @@ export default function WeatherForecast() {
         </div>
 
         {forecast && (
-          <div className="space-y-6">
-            {/* Current Weather */}
-            <Card data-testid="card-current-weather">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MapPin className="w-5 h-5" />
-                  {forecast.location.name}, {forecast.location.region}
-                </CardTitle>
-                <CardDescription>Aktuálne počasie</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <img 
-                      src={`https:${forecast.current.condition.icon}`} 
-                      alt={forecast.current.condition.text}
-                      className="w-16 h-16"
-                    />
+          <div className="grid lg:grid-cols-4 gap-6">
+            {/* Left Column - Day List */}
+            <div className="lg:col-span-1 space-y-3">
+              <h2 className="text-xl font-bold">3-dňová predpoveď</h2>
+              {forecast.forecast.forecastday.map((day, index) => (
+                <button
+                  key={day.date}
+                  onClick={() => setSelectedDayIndex(index)}
+                  data-testid={`button-day-${index}`}
+                  className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
+                    selectedDayIndex === index
+                      ? 'border-primary bg-primary/10'
+                      : 'border-border hover:border-primary/50 bg-card'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-4xl font-bold">{Math.round(forecast.current.temp_c)}°C</p>
-                      <p className="text-muted-foreground">{forecast.current.condition.text}</p>
+                      <p className="font-semibold capitalize">{getDayName(day.date)}</p>
+                      <p className="text-sm text-muted-foreground">{getDate(day.date)}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold">{Math.round(day.day.maxtemp_c)}°</p>
+                      <p className="text-sm text-muted-foreground">{Math.round(day.day.mintemp_c)}°</p>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div className="flex items-center gap-2">
-                      <Wind className="w-4 h-4 text-muted-foreground" />
-                      <span>{Math.round(forecast.current.wind_kph)} km/h</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Right Column - Day Detail */}
+            {selectedDay && (
+              <div className="lg:col-span-3 space-y-6">
+                {/* Detail Header */}
+                <div 
+                  className="p-6 rounded-lg border-2 space-y-4"
+                  style={{ 
+                    backgroundColor: '#012a36',
+                    borderColor: '#1e3a5f'
+                  }}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground capitalize">
+                        {getFullDate(selectedDay.date)}
+                      </p>
+                      <h3 className="text-2xl font-bold flex items-center gap-2">
+                        <MapPin className="w-5 h-5" />
+                        {forecast.location.name}
+                        {forecast.location.region && `, ${forecast.location.region}`}
+                      </h3>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Gauge className="w-4 h-4 text-muted-foreground" />
-                      <span>{forecast.current.pressure_mb} mb</span>
+                    <div className="text-right">
+                      {getWeatherIcon(selectedDay.day.condition.code, "w-16 h-16")}
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Droplets className="w-4 h-4 text-muted-foreground" />
-                      <span>{forecast.current.humidity}%</span>
+                  </div>
+
+                  <div className="flex items-center gap-6">
+                    <div>
+                      <p className="text-5xl font-bold">{Math.round(selectedDay.day.avgtemp_c)}°C</p>
+                      <p className="text-muted-foreground mt-1">{selectedDay.day.condition.text}</p>
+                    </div>
+                    <div className="flex-1 text-sm space-y-1">
+                      <p>Max: {Math.round(selectedDay.day.maxtemp_c)}°C</p>
+                      <p>Min: {Math.round(selectedDay.day.mintemp_c)}°C</p>
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
 
-            {/* 3-Day Forecast */}
-            <div>
-              <h2 className="text-2xl font-bold mb-4">3-dňová predpoveď</h2>
-              <div className="grid gap-4 md:grid-cols-3">
-                {forecast.forecast.forecastday.map((day, index) => (
-                  <Card key={day.date} data-testid={`card-forecast-day-${index}`}>
-                    <CardHeader>
-                      <CardTitle className="text-lg capitalize">
-                        {getDayName(day.date)}
-                      </CardTitle>
-                      <CardDescription>{getDate(day.date)}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        {getWeatherIcon(day.day.condition.code)}
-                        <div className="text-right">
-                          <p className="text-3xl font-bold">
-                            {Math.round(day.day.maxtemp_c)}°
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {Math.round(day.day.mintemp_c)}°
-                          </p>
-                        </div>
+                {/* Detailed Conditions Widget */}
+                <div 
+                  className="p-6 rounded-lg border-2"
+                  style={{ 
+                    backgroundColor: '#012a36',
+                    borderColor: '#1e3a5f'
+                  }}
+                >
+                  <h3 className="text-lg font-semibold mb-4">Detailné podmienky</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Wind className="w-4 h-4" />
+                        <span className="text-sm">Vietor</span>
                       </div>
+                      <p className="text-2xl font-bold">{Math.round(selectedDay.day.maxwind_kph)} km/h</p>
+                    </div>
 
-                      <p className="text-sm text-muted-foreground text-center">
-                        {day.day.condition.text}
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Gauge className="w-4 h-4" />
+                        <span className="text-sm">Tlak</span>
+                      </div>
+                      <p className="text-2xl font-bold">{getAvgPressure(selectedDay.hour)} mb</p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Droplets className="w-4 h-4" />
+                        <span className="text-sm">Zrážky</span>
+                      </div>
+                      <p className="text-2xl font-bold">{selectedDay.day.totalprecip_mm} mm</p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Droplets className="w-4 h-4" />
+                        <span className="text-sm">Vlhkosť</span>
+                      </div>
+                      <p className="text-2xl font-bold">
+                        {Math.round(selectedDay.hour.reduce((acc, h) => acc + h.humidity, 0) / selectedDay.hour.length)}%
                       </p>
+                    </div>
 
-                      <div className="grid grid-cols-2 gap-3 pt-3 border-t text-sm">
-                        <div className="flex items-center gap-2" data-testid={`text-rain-${index}`}>
-                          <Droplets className="w-4 h-4 text-blue-500" />
-                          <span>{day.day.totalprecip_mm} mm</span>
-                        </div>
-                        <div className="flex items-center gap-2" data-testid={`text-wind-${index}`}>
-                          <Wind className="w-4 h-4 text-gray-500" />
-                          <span>{Math.round(day.day.maxwind_kph)} km/h</span>
-                        </div>
-                        <div className="flex items-center gap-2" data-testid={`text-pressure-${index}`}>
-                          <Gauge className="w-4 h-4 text-purple-500" />
-                          <span>{getAvgPressure(day.hour)} mb</span>
-                        </div>
-                        <div className="flex items-center gap-2" data-testid={`text-rain-chance-${index}`}>
-                          <Cloud className="w-4 h-4 text-gray-400" />
-                          <span>{day.day.daily_chance_of_rain}%</span>
-                        </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Sunrise className="w-4 h-4" />
+                        <span className="text-sm">Východ slnka</span>
                       </div>
+                      <p className="text-xl font-semibold">{selectedDay.astro.sunrise}</p>
+                    </div>
 
-                      <div className="text-xs text-muted-foreground pt-2 border-t">
-                        <div className="flex justify-between">
-                          <span>Východ: {day.astro.sunrise}</span>
-                          <span>Západ: {day.astro.sunset}</span>
-                        </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Sunset className="w-4 h-4" />
+                        <span className="text-sm">Západ slnka</span>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      <p className="text-xl font-semibold">{selectedDay.astro.sunset}</p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Cloud className="w-4 h-4" />
+                        <span className="text-sm">Šanca dažďa</span>
+                      </div>
+                      <p className="text-2xl font-bold">{selectedDay.day.daily_chance_of_rain}%</p>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
       </div>
