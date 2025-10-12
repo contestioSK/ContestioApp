@@ -263,7 +263,7 @@ export default function Landing() {
                     data-testid="tab-diary"
                   >
                     <BookOpen className="w-5 h-5" />
-                    <span>Denník</span>
+                    <span>Rybársky denník</span>
                   </button>
                 </div>
                 
