@@ -332,6 +332,21 @@ export default function WeatherForecast() {
     return directions[direction.toUpperCase()] || 0;
   };
 
+  // Translate moon phase from English to Slovak
+  const getMoonPhaseSlovak = (phase: string): string => {
+    const phases: Record<string, string> = {
+      'New Moon': 'Nov',
+      'Waxing Crescent': 'Dorастajúci polmesiac',
+      'First Quarter': 'Prvá štvrtina',
+      'Waxing Gibbous': 'Dorастajúci mesiac',
+      'Full Moon': 'Spln',
+      'Waning Gibbous': 'Ubúdajúci mesiac',
+      'Last Quarter': 'Posledná štvrtina',
+      'Waning Crescent': 'Ubúdajúci polmesiac'
+    };
+    return phases[phase] || phase;
+  };
+
   const selectedDay = forecast?.forecast.forecastday[selectedDayIndex];
 
   return (
@@ -816,7 +831,7 @@ export default function WeatherForecast() {
                         <Moon className="w-4 h-4" />
                         <span className="text-sm">Fáza mesiaca</span>
                       </div>
-                      <p className="text-lg font-semibold">{selectedDay.astro.moon_phase}</p>
+                      <p className="text-lg font-semibold">{getMoonPhaseSlovak(selectedDay.astro.moon_phase)}</p>
                     </div>
                   </div>
                 </div>
