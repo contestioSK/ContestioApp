@@ -132,9 +132,7 @@ export default function BattleIndex() {
   // Accept invitation mutation
   const acceptInvitationMutation = useMutation({
     mutationFn: async (invitationId: string) => {
-      return await apiRequest(`/api/diary/battles/invitations/${invitationId}/accept`, {
-        method: 'POST',
-      });
+      return await apiRequest('POST', `/api/diary/battles/invitations/${invitationId}/accept`);
     },
     onSuccess: (_, invitationId) => {
       // Remove invitation from local state
@@ -161,9 +159,7 @@ export default function BattleIndex() {
   // Reject invitation mutation
   const rejectInvitationMutation = useMutation({
     mutationFn: async (invitationId: string) => {
-      return await apiRequest(`/api/diary/battles/invitations/${invitationId}/reject`, {
-        method: 'POST',
-      });
+      return await apiRequest('POST', `/api/diary/battles/invitations/${invitationId}/reject`);
     },
     onSuccess: (_, invitationId) => {
       // Remove invitation from local state
@@ -189,7 +185,7 @@ export default function BattleIndex() {
   // Redirect non-premium users to paywall
   useEffect(() => {
     if (user?.id && !isPremiumLoading && isPremium === false) {
-      setLocation('/diary/battle/paywall');
+      setLocation('/diary/battles/paywall');
     }
   }, [user?.id, isPremium, isPremiumLoading, setLocation]);
 
@@ -235,7 +231,7 @@ export default function BattleIndex() {
               
               <Button
                 size="lg"
-                onClick={() => setLocation("/diary/battle/create")}
+                onClick={() => setLocation("/diary/battles/create")}
                 className="bg-green-600 hover:bg-green-700 text-white"
                 data-testid="button-create-new-battle"
               >
@@ -308,7 +304,7 @@ export default function BattleIndex() {
                               variant="ghost"
                               size="sm"
                               className="w-full justify-between text-primary hover:text-primary"
-                              onClick={() => setLocation(`/diary/battle/${battle.id}`)}
+                              onClick={() => setLocation(`/diary/battles/${battle.id}`)}
                               data-testid={`button-view-detail-${battle.id}`}
                             >
                               Zobraziť detail
@@ -453,7 +449,7 @@ export default function BattleIndex() {
                   <Button
                     variant="outline"
                     className="w-full mt-4"
-                    onClick={() => setLocation("/diary/battle/archive")}
+                    onClick={() => setLocation("/diary/battles/archive")}
                     data-testid="button-view-full-archive"
                   >
                     <Archive className="w-4 h-4 mr-2" />

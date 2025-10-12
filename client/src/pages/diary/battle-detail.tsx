@@ -183,7 +183,7 @@ export default function BattleDetail() {
           <div className="max-w-4xl mx-auto text-center">
             <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-foreground mb-2">Battle sa nenašiel</h2>
-            <Button onClick={() => setLocation("/diary/battle")} data-testid="button-back-to-battles">
+            <Button onClick={() => setLocation("/diary/battles")} data-testid="button-back-to-battles">
               Späť na battles
             </Button>
           </div>

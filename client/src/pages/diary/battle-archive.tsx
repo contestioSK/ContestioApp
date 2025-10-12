@@ -203,7 +203,7 @@ export default function BattleArchive() {
               </div>
               <Button
                 size="lg"
-                onClick={() => setLocation("/diary/battle/create")}
+                onClick={() => setLocation("/diary/battles/create")}
                 className="bg-green-600 hover:bg-green-700 text-white w-full md:w-auto"
                 data-testid="button-create-battle"
               >
@@ -316,7 +316,7 @@ export default function BattleArchive() {
                   </p>
                   {!(searchTerm || filterMode !== "all" || filterResult !== "all") && (
                     <Button 
-                      onClick={() => setLocation("/diary/battle/create")}
+                      onClick={() => setLocation("/diary/battles/create")}
                       data-testid="button-create-first-battle"
                     >
                       <Trophy className="w-4 h-4 mr-2" />
@@ -399,7 +399,7 @@ export default function BattleArchive() {
                           <Button 
                             variant="outline" 
                             size="sm"
-                            onClick={() => setLocation(`/diary/battle/${battle.id}`)}
+                            onClick={() => setLocation(`/diary/battles/${battle.id}`)}
                             data-testid={`button-view-battle-${battle.id}`}
                           >
                             <Eye className="w-4 h-4 mr-1" />
@@ -435,7 +435,7 @@ export default function BattleArchive() {
                   Vyzvite kamarátov na nový Fishing Battle a ukážte, kto je najlepší rybár!
                 </p>
                 <Button 
-                  onClick={() => setLocation("/diary/battle/create")}
+                  onClick={() => setLocation("/diary/battles/create")}
                   data-testid="button-create-new-battle"
                 >
                   <Trophy className="w-4 h-4 mr-2" />

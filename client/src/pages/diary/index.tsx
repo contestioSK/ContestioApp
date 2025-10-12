@@ -649,7 +649,7 @@ export default function DiaryIndex() {
                   <>
                     <Button
                       variant="outline"
-                      onClick={() => setLocation("/diary/battle/archive")}
+                      onClick={() => setLocation("/diary/battles/archive")}
                       className="border-yellow-600/50 bg-yellow-600/10 hover:bg-yellow-600/20 text-yellow-100"
                       data-testid="button-battle-archive"
                     >
@@ -657,7 +657,7 @@ export default function DiaryIndex() {
                       Archív
                     </Button>
                     <Button
-                      onClick={() => setLocation("/diary/battle/create")}
+                      onClick={() => setLocation("/diary/battles/create")}
                       className="bg-yellow-600 hover:bg-yellow-700 text-white"
                       data-testid="button-create-battle-cta"
                     >
@@ -667,7 +667,7 @@ export default function DiaryIndex() {
                   </>
                 ) : (
                   <Button
-                    onClick={() => setLocation("/diary/battle/paywall")}
+                    onClick={() => setLocation("/diary/battles/paywall")}
                     className="bg-yellow-600 hover:bg-yellow-700 text-white"
                     data-testid="button-unlock-battle"
                   >

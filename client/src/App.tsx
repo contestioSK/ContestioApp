@@ -150,28 +150,28 @@ function Router() {
           <DiarySeasonalGoalsEdit />
         </ProtectedRoute>
       </Route>
-      <Route path="/diary/battle/paywall" component={BattlePaywall} />
-      <Route path="/diary/battle/create">
+      <Route path="/diary/battles/paywall" component={BattlePaywall} />
+      <Route path="/diary/battles/create">
         <ProtectedRoute>
           <BattleCreate />
         </ProtectedRoute>
       </Route>
-      <Route path="/diary/battle/:id/edit">
+      <Route path="/diary/battles/:id/edit">
         <ProtectedRoute>
           <BattleEdit />
         </ProtectedRoute>
       </Route>
-      <Route path="/diary/battle/:id">
+      <Route path="/diary/battles/:id">
         <ProtectedRoute>
           <BattleDetail />
         </ProtectedRoute>
       </Route>
-      <Route path="/diary/battle/archive">
+      <Route path="/diary/battles/archive">
         <ProtectedRoute>
           <BattleArchive />
         </ProtectedRoute>
       </Route>
-      <Route path="/diary/battle">
+      <Route path="/diary/battles">
         <ProtectedRoute>
           <BattleIndex />
         </ProtectedRoute>
