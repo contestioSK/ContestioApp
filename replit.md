@@ -47,6 +47,18 @@ Comprehensive weather forecasting system for fishing trip planning with intellig
   - Error handling with user-friendly messages
 - **WeatherAPI Integration**: Backend proxy with location search and 7-day forecast endpoints
 
+## ✅ COMPLETED: Battle System Enhancements (October 2025)
+Fixed critical battle functionality with automatic catch assignment and minimum weight filtering:
+- **Automatic Battle Creator as Participant**: Creator automatically added to battle participants with deduplication logic (filters by userId or name)
+- **Automatic Catch Assignment**: New catches automatically assigned to active battles via battleId column (backward compatible - old catches without battleId won't appear in battles)
+- **Battle Live Feed**: Direct battleId-based lookup replaces complex participant/time filtering for reliable catch retrieval
+- **Minimum Weight Filtering**: 
+  - Leaderboard scoring respects battle.rules.minWeightKg - only valid catches count toward scores
+  - Live feed displays all catches but visually marks invalid ones (opacity, muted colors, "Nezapočítava sa" badge)
+  - All scoring modes (most_fish, total_weight, biggest_fish, best_3_fish, best_5_fish) use filtered validCatches
+- **Database Schema**: Added battleId column to diary_catches for direct battle-catch relationships
+- **Edge Case Handling**: Safe deduplication (handles missing userId/name), empty participants, malformed entries
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
