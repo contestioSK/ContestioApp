@@ -660,66 +660,64 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
               </div>
 
               {/* Date and Time - Split into two inputs */}
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="capturedAt"
-                  render={({ field }) => {
-                    const dateValue = field.value ? format(field.value, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd");
-                    const timeValue = field.value ? format(field.value, "HH:mm") : format(new Date(), "HH:mm");
-                    
-                    const handleDateChange = (newDate: string) => {
-                      const currentDate = field.value || new Date();
-                      const [year, month, day] = newDate.split('-').map(Number);
-                      const updatedDate = new Date(currentDate);
-                      updatedDate.setFullYear(year);
-                      updatedDate.setMonth(month - 1);
-                      updatedDate.setDate(day);
-                      field.onChange(updatedDate);
-                    };
-                    
-                    const handleTimeChange = (newTime: string) => {
-                      const currentDate = field.value || new Date();
-                      const [hours, minutes] = newTime.split(':').map(Number);
-                      const updatedDate = new Date(currentDate);
-                      updatedDate.setHours(hours);
-                      updatedDate.setMinutes(minutes);
-                      field.onChange(updatedDate);
-                    };
-                    
-                    return (
-                      <>
-                        <FormItem>
-                          <FormLabel>Dátum</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="date"
-                              value={dateValue}
-                              onChange={(e) => handleDateChange(e.target.value)}
-                              data-testid="input-capture-date"
-                              max={format(new Date(), "yyyy-MM-dd")}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                        
-                        <FormItem>
-                          <FormLabel>Čas</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="time"
-                              value={timeValue}
-                              onChange={(e) => handleTimeChange(e.target.value)}
-                              data-testid="input-capture-time"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      </>
-                    );
-                  }}
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="capturedAt"
+                render={({ field }) => {
+                  const dateValue = field.value ? format(field.value, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd");
+                  const timeValue = field.value ? format(field.value, "HH:mm") : format(new Date(), "HH:mm");
+                  
+                  const handleDateChange = (newDate: string) => {
+                    const currentDate = field.value || new Date();
+                    const [year, month, day] = newDate.split('-').map(Number);
+                    const updatedDate = new Date(currentDate);
+                    updatedDate.setFullYear(year);
+                    updatedDate.setMonth(month - 1);
+                    updatedDate.setDate(day);
+                    field.onChange(updatedDate);
+                  };
+                  
+                  const handleTimeChange = (newTime: string) => {
+                    const currentDate = field.value || new Date();
+                    const [hours, minutes] = newTime.split(':').map(Number);
+                    const updatedDate = new Date(currentDate);
+                    updatedDate.setHours(hours);
+                    updatedDate.setMinutes(minutes);
+                    field.onChange(updatedDate);
+                  };
+                  
+                  return (
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormItem>
+                        <FormLabel>Dátum</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="date"
+                            value={dateValue}
+                            onChange={(e) => handleDateChange(e.target.value)}
+                            data-testid="input-capture-date"
+                            max={format(new Date(), "yyyy-MM-dd")}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                      
+                      <FormItem>
+                        <FormLabel>Čas</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="time"
+                            value={timeValue}
+                            onChange={(e) => handleTimeChange(e.target.value)}
+                            data-testid="input-capture-time"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    </div>
+                  );
+                }}
+              />
             </div>
 
             {/* Fish Details */}
