@@ -335,7 +335,7 @@ export default function TripDetail() {
         </Card>
 
         {/* Detail Panel */}
-        <Sheet open={!!selectedCatch} onOpenChange={() => setSelectedCatch(null)}>
+        <Sheet open={!!selectedCatch} onOpenChange={(open) => !open && setSelectedCatch(null)}>
           <SheetContent className="w-full sm:max-w-md bg-slate-800 border text-white overflow-y-auto" data-testid="catch-detail-panel">
             <SheetHeader className="pb-6">
               <SheetTitle className="text-white flex items-center gap-3">
