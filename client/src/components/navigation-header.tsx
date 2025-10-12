@@ -4,7 +4,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Fish, Menu, DollarSign, Bell, Sun, Moon } from "lucide-react";
+import { Fish, Menu, DollarSign, Bell, Sun, Moon, Info, HelpCircle, Phone, Trophy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { NotificationCenter } from "@/components/diary/notification-center";
 
@@ -29,6 +29,15 @@ export default function NavigationHeader() {
     
     return () => window.removeEventListener('resize', updateHeaderHeight);
   }, []);
+
+  // Main navigation items matching landing page
+  const navItems = [
+    { href: "/about-us", label: "O nás", icon: Info },
+    { href: "/faq", label: "FAQ", icon: HelpCircle },
+    { href: "/pricing", label: "Cenník", icon: DollarSign },
+    { href: "/contact", label: "Kontakt", icon: Phone },
+    { href: "/register-competition", label: "Zaregistrovať súťaž", icon: Trophy },
+  ];
 
   const getRoleDisplayName = (role: string) => {
     switch (role) {
@@ -74,42 +83,22 @@ export default function NavigationHeader() {
           
           {/* Navigation Links */}
           <nav className="hidden md:flex items-center space-x-6">
-            <Link 
-              href="/pricing" 
-              className={`font-medium transition-colors ${
-                location === '/pricing' ? 'text-sidebar-primary' : 'text-sidebar-foreground/70 hover:text-sidebar-foreground'
-              }`}
-              data-testid="nav-pricing"
-            >
-              Cenník
-            </Link>
-            <Link 
-              href="/faq" 
-              className={`font-medium transition-colors ${
-                location === '/faq' ? 'text-sidebar-primary' : 'text-sidebar-foreground/70 hover:text-sidebar-foreground'
-              }`}
-              data-testid="nav-faq"
-            >
-              FAQ
-            </Link>
-            <Link 
-              href="/about-us" 
-              className={`font-medium transition-colors ${
-                location === '/about-us' ? 'text-sidebar-primary' : 'text-sidebar-foreground/70 hover:text-sidebar-foreground'
-              }`}
-              data-testid="nav-about-us"
-            >
-              O nás
-            </Link>
-            <Link 
-              href="/contact" 
-              className={`font-medium transition-colors ${
-                location === '/contact' ? 'text-sidebar-primary' : 'text-sidebar-foreground/70 hover:text-sidebar-foreground'
-              }`}
-              data-testid="nav-contact"
-            >
-              Kontakt
-            </Link>
+            {navItems.map((item) => {
+              const IconComponent = item.icon;
+              return (
+                <Link 
+                  key={item.href}
+                  href={item.href} 
+                  className={`flex items-center space-x-1 font-medium transition-colors ${
+                    location === item.href ? 'text-sidebar-primary' : 'text-sidebar-foreground/70 hover:text-sidebar-foreground'
+                  }`}
+                  data-testid={`nav-${item.href.slice(1) || 'home'}`}
+                >
+                  <IconComponent className="w-4 h-4" />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
             {isAuthenticated && (
               <Link 
                 href="/diary" 
