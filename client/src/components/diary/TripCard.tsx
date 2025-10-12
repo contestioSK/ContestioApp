@@ -74,7 +74,7 @@ export function TripCard({ trip, catchCount = 0, biggestCatch, onClick }: TripCa
         style={{ backgroundImage: `url(${coverImage})` }}
       />
       
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/70 to-transparent" />
       
       <div className="absolute top-4 left-4">
         <div
@@ -87,7 +87,7 @@ export function TripCard({ trip, catchCount = 0, biggestCatch, onClick }: TripCa
 
       <div className="absolute bottom-0 left-0 right-0 p-6">
         <h3
-          className="text-2xl font-bold text-white mb-2 line-clamp-1"
+          className="text-2xl font-bold text-white mb-2 line-clamp-2"
           data-testid={`trip-name-${trip.id}`}
         >
           {trip.name}
