@@ -692,6 +692,60 @@ export default function WeatherForecast() {
                       />
                     </ComposedChart>
                   </ResponsiveContainer>
+
+                  {/* Horizontal Hourly Scroll */}
+                  <div className="mt-6">
+                    <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent">
+                      {selectedDay.hour.map((hour, index) => (
+                        <div
+                          key={index}
+                          className="flex-shrink-0 p-4 rounded-lg border-2 min-w-[120px] space-y-2 text-center"
+                          style={{
+                            backgroundColor: '#012a36',
+                            borderColor: '#1e3a5f'
+                          }}
+                          data-testid={`hour-card-${index}`}
+                        >
+                          {/* Time */}
+                          <p className="text-sm font-semibold text-foreground">
+                            {format(new Date(hour.time), 'HH:mm')}
+                          </p>
+
+                          {/* Weather Icon */}
+                          <img
+                            src={`https:${hour.condition.icon}`}
+                            alt={hour.condition.text}
+                            className="w-12 h-12 mx-auto"
+                            data-testid={`weather-icon-${index}`}
+                          />
+
+                          {/* Temperature */}
+                          <p className="text-2xl font-bold text-foreground">
+                            {Math.round(hour.temp_c)}°
+                          </p>
+
+                          {/* Wind Speed */}
+                          <p className="text-xs text-muted-foreground">
+                            {Math.round(hour.wind_kph)} km/h
+                          </p>
+
+                          {/* Wind Direction - Arrow + Text */}
+                          <div className="flex flex-col items-center gap-1">
+                            <ArrowUp
+                              className="w-5 h-5 text-blue-400"
+                              style={{
+                                transform: `rotate(${getWindRotation(hour.wind_dir)}deg)`
+                              }}
+                              data-testid={`wind-arrow-${index}`}
+                            />
+                            <p className="text-xs font-medium text-blue-400">
+                              {hour.wind_dir}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
                 {/* Detailed Conditions Widget */}
