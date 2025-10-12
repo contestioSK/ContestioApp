@@ -683,6 +683,66 @@ export default function DiaryCatches() {
     }
   };
 
+  // Get user's current GPS location
+  const getMyLocation = () => {
+    if (!navigator.geolocation) {
+      toast({
+        title: "GPS nie je podporované",
+        description: "Váš prehliadač nepodporuje získavanie GPS polohy.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoadingWeather(true);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        
+        // Update form with GPS coordinates
+        form.setValue("latitude", lat);
+        form.setValue("longitude", lon);
+        
+        setIsLoadingWeather(false);
+        
+        toast({
+          title: "Poloha získaná!",
+          description: `GPS: ${lat.toFixed(6)}, ${lon.toFixed(6)}`,
+        });
+      },
+      (error) => {
+        setIsLoadingWeather(false);
+        
+        let errorMessage = "Nepodarilo sa získať GPS polohu.";
+        
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = "Povolenie na prístup k polohe bolo zamietnuté. Prosím povoľte prístup v nastaveniach prehliadača.";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = "Informácie o polohe nie sú dostupné.";
+            break;
+          case error.TIMEOUT:
+            errorMessage = "Požiadavka na získanie polohy vypršala.";
+            break;
+        }
+        
+        toast({
+          title: "Chyba GPS",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
+  };
+
   // Background photo upload function (runs after catch is saved)
   const uploadPhotosInBackground = async (catchId: string, photos: File[]) => {
     try {
@@ -1384,6 +1444,29 @@ export default function DiaryCatches() {
                           )}
                         />
                       </div>
+
+                      {/* Get My Location Button */}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={getMyLocation}
+                        disabled={isLoadingWeather}
+                        className="w-full"
+                        data-testid="button-get-location"
+                      >
+                        {isLoadingWeather ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Získavam polohu...
+                          </>
+                        ) : (
+                          <>
+                            <MapPin className="mr-2 h-4 w-4" />
+                            Získať moju polohu
+                          </>
+                        )}
+                      </Button>
 
                       {/* Load Weather Button */}
                       <Button
