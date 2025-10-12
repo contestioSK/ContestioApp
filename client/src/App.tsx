@@ -21,6 +21,7 @@ import Pricing from "@/pages/pricing";
 import FAQ from "@/pages/faq";
 import Contact from "@/pages/contact";
 import Terms from "@/pages/terms";
+import Privacy from "@/pages/privacy";
 import RegistrationOpenPage from "@/pages/registration-open";
 import UpcomingPage from "@/pages/upcoming";
 import LivePage from "@/pages/live";
@@ -67,6 +68,7 @@ function Router() {
       <Route path="/faq" component={FAQ} />
       <Route path="/contact" component={Contact} />
       <Route path="/terms" component={Terms} />
+      <Route path="/privacy" component={Privacy} />
       <Route path="/categories/registration-open" component={RegistrationOpenPage} />
       <Route path="/categories/upcoming" component={UpcomingPage} />
       <Route path="/categories/live" component={LivePage} />
