@@ -38,10 +38,6 @@ import type { DiaryCatch, DiaryTrip } from "@shared/schema";
 
 // Catch form validation schema
 const catchFormSchema = z.object({
-  tripId: z.string().optional(),
-  angler: z.object({
-    name: z.string().min(1, "Meno rybára je povinné")
-  }),
   capturedAt: z.date({ required_error: "Čas chytenia je povinný" }),
   weight: z.string().min(1, "Váha je povinná").transform((val) => {
     const weight = parseFloat(val);
@@ -158,7 +154,6 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
   const form = useForm<CatchFormData>({
     resolver: zodResolver(catchFormSchema),
     defaultValues: {
-      angler: { name: user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : "" },
       capturedAt: new Date(),
       weight: "",
       fishType: "kapor_supinac",
@@ -174,8 +169,6 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
     if (editingCatch) {
       setExistingPhotos(editingCatch.photos || []);
       form.reset({
-        tripId: editingCatch.tripId || undefined,
-        angler: { name: editingCatch.angler.name },
         capturedAt: new Date(editingCatch.capturedAt),
         weight: editingCatch.weight,
         lengthCm: editingCatch.lengthCm || undefined,
@@ -194,7 +187,6 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
     } else {
       setExistingPhotos([]);
       form.reset({
-        angler: { name: user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : "" },
         capturedAt: new Date(),
         weight: "",
         fishType: "kapor_supinac",
@@ -249,14 +241,13 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
 
   const handleSubmit = async (data: CatchFormData) => {
     // Convert "none" values to undefined (no selection)
-    // CRITICAL: Always include userId in angler object for proper filtering
+    // CRITICAL: Always include userId in angler object - server will auto-assign trip
     const processedData = {
       ...data,
       angler: {
-        ...data.angler,
+        name: user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : "",
         userId: user?.id || ''
       },
-      tripId: data.tripId === "none" ? undefined : data.tripId,
       bait: data.bait === "none" ? undefined : data.bait
     };
 
@@ -561,46 +552,6 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
             {/* Basic Information */}
             <div className="space-y-4">
-              <FormField
-                control={form.control}
-                name="tripId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Výprava (voliteľné)</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger data-testid="select-trip">
-                          <SelectValue placeholder="Vyberte výpravu" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="none">Bez výpravy</SelectItem>
-                        {trips.map((trip) => (
-                          <SelectItem key={trip.id} value={trip.id}>
-                            {trip.name} - {format(new Date(trip.startDate), "d. MMM yyyy", { locale: sk })}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="angler.name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Rybár</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Meno rybára" data-testid="input-angler-name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               {/* Photo Upload */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
