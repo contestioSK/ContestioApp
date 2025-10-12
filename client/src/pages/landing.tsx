@@ -1,10 +1,9 @@
 import { Button } from "@/components/ui/button";
-import { Fish, Trophy, BookOpen } from "lucide-react";
+import { Fish, Trophy, BookOpen, Menu, X, Info, DollarSign, HelpCircle, Phone } from "lucide-react";
 import { ContestCategories } from "@/components/contest-categories";
 import { Link } from "wouter";
 import { useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
-import NavigationHeader from "@/components/navigation-header";
 interface Competition {
   id: string;
   name: string;
@@ -17,12 +16,22 @@ interface Competition {
 
 export default function Landing() {
   const [activeTab, setActiveTab] = useState<'competitions' | 'diary'>('competitions');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const heroRef = useRef<HTMLElement>(null);
   
   // Fetch real competitions from API
   const { data: competitions = [], isLoading } = useQuery<Competition[]>({
     queryKey: ["/api/competitions"]
   });
+
+  // Main navigation items
+  const navItems = [
+    { href: "/about-us", label: "O nás", icon: Info },
+    { href: "/faq", label: "FAQ", icon: HelpCircle },
+    { href: "/pricing", label: "Cenník", icon: DollarSign },
+    { href: "/contact", label: "Kontakt", icon: Phone },
+    { href: "/register-competition", label: "Zaregistrovať súťaž", icon: Trophy },
+  ];
 
   // Sample contests data to showcase different categories
   const sampleContests = [
@@ -84,18 +93,129 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-background">
-      
-      {/* Navigation Header */}
-      <NavigationHeader />
 
       {/* Hero Section */}
       <section 
         ref={heroRef} 
-        className="relative min-h-[600px] md:h-[700px] overflow-hidden pt-16"
+        className="relative min-h-[600px] md:h-[700px] overflow-hidden"
         style={{
           background: 'radial-gradient(ellipse at top, #1e3a5f 0%, #011a24 70%)'
         }}
       >
+        
+        {/* Integrated Navigation */}
+        <div className="relative z-20 w-full">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              {/* Logo */}
+              <Link href="/">
+                <div className="flex items-center space-x-2 text-white">
+                  <Fish className="text-2xl" />
+                  <span className="text-xl font-bold">Contestio</span>
+                </div>
+              </Link>
+
+              {/* Desktop Navigation */}
+              <div className="hidden md:flex items-center space-x-6">
+                {/* Main Navigation */}
+                {navItems.map((item) => {
+                  const IconComponent = item.icon;
+                  return (
+                    <Link key={item.href} href={item.href}>
+                      <div className="flex items-center space-x-1 text-white/90 hover:text-white transition-colors cursor-pointer" data-testid={`nav-${item.href.slice(1) || 'home'}`}>
+                        <IconComponent className="w-4 h-4" />
+                        <span className="text-sm font-medium">{item.label}</span>
+                      </div>
+                    </Link>
+                  );
+                })}
+                
+                {/* CTA Buttons */}
+                <div className="flex items-center space-x-3">
+                  <Button asChild
+                    className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium"
+                    size="sm"
+                    data-testid="button-register"
+                  >
+                    <Link href="/auth/register">
+                      Zaregistrovať sa
+                    </Link>
+                  </Button>
+                  <Button asChild
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-medium"
+                    size="sm"
+                    data-testid="button-login"
+                  >
+                    <Link href="/auth/login">
+                      Prihlásiť sa
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+
+              {/* Mobile menu button */}
+              <div className="md:hidden">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                  className="text-white hover:bg-white/10"
+                  data-testid="button-mobile-menu"
+                >
+                  {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                </Button>
+              </div>
+            </div>
+
+            {/* Mobile Navigation Menu */}
+            {isMobileMenuOpen && (
+              <div className="md:hidden border-t border-white/20 mt-2 pt-4 pb-6">
+                <div className="space-y-2">
+                  {/* Main Navigation */}
+                  {navItems.map((item) => {
+                    const IconComponent = item.icon;
+                    return (
+                      <Link key={item.href} href={item.href}>
+                        <div 
+                          className="flex items-center space-x-3 px-3 py-3 rounded-lg text-white/90 hover:text-white hover:bg-white/10 cursor-pointer transition-all duration-200"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          data-testid={`mobile-nav-${item.href.slice(1) || 'home'}`}
+                        >
+                          <IconComponent className="w-5 h-5" />
+                          <span className="text-sm font-medium">{item.label}</span>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                  
+                  <div className="border-t border-white/20 my-4"></div>
+                  
+                  {/* CTA Buttons */}
+                  <div className="space-y-2">
+                    <Button asChild
+                      className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-medium"
+                      data-testid="mobile-button-register"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Link href="/auth/register">
+                        Zaregistrovať sa
+                      </Link>
+                    </Button>
+                    <Button asChild
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium"
+                      data-testid="mobile-button-login"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Link href="/auth/login">
+                        Prihlásiť sa
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
         
         {/* Hero Content */}
         <div className="relative z-10 py-12 md:py-20">
