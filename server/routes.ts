@@ -3532,6 +3532,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get catches for specific battle
+  app.get('/api/diary/battles/:id/catches', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id || req.user?.claims?.sub;
+      const { id } = req.params;
+      
+      // First verify user has access to this battle
+      const battle = await storage.getDiaryBattle(id, userId);
+      if (!battle) {
+        return res.status(404).json({ message: "Battle sa nenašiel" });
+      }
+      
+      // Get all catches for the trip associated with this battle
+      const catches = await storage.getDiaryCatches(battle.tripId, userId);
+      
+      // Filter catches by battle time range and participants
+      const battleCatches = catches.filter((catch_: any) => {
+        const catchTime = new Date(catch_.capturedAt);
+        const isInTimeRange = catchTime >= new Date(battle.startAt) && catchTime <= new Date(battle.endAt);
+        
+        // Check if catch is from a battle participant
+        const isParticipant = battle.participants.some(p => 
+          p.userId === catch_.angler.userId || p.name === catch_.angler.name
+        );
+        
+        return isInTimeRange && isParticipant;
+      });
+      
+      // Sort by captured time descending (newest first)
+      battleCatches.sort((a: any, b: any) => new Date(b.capturedAt).getTime() - new Date(a.capturedAt).getTime());
+      
+      res.json(battleCatches);
+    } catch (error) {
+      console.error("Error fetching battle catches:", error);
+      res.status(500).json({ message: "Failed to fetch battle catches" });
+    }
+  });
+
   // Get single battle by ID
   app.get('/api/diary/battles/:id', isAuthenticated, async (req: any, res) => {
     try {
