@@ -74,13 +74,13 @@ const navigationItems = [
     href: "/diary/battle",
     description: "Súťažné súboje",
     premium: true
-  },
-  {
-    icon: Trophy,
-    label: "Arzenál",
-    href: "/diary/arsenal",
-    description: "Vybavenie a návnady"
   }
+  // {
+  //   icon: Trophy,
+  //   label: "Arzenál",
+  //   href: "/diary/arsenal",
+  //   description: "Vybavenie a návnady"
+  // }
 ];
 
 export default function DiaryLayout({ children }: DiaryLayoutProps) {
