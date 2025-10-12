@@ -701,49 +701,19 @@ export default function TripDetail() {
                         key={catch_.id}
                         className="bg-slate-800/50 rounded-2xl overflow-hidden"
                       >
-                        {/* Medal Badge */}
-                        <div className="relative">
-                          <div className="absolute top-4 left-4 z-10">
-                            <div className={`
-                              relative w-16 h-20 flex items-center justify-center
-                              ${index === 0 ? 'text-yellow-400' : 
-                                index === 1 ? 'text-slate-300' : 
-                                'text-orange-500'}
-                            `}>
-                              {/* Shield background */}
-                              <svg viewBox="0 0 64 80" className="absolute inset-0 w-full h-full drop-shadow-lg">
-                                <path 
-                                  d="M32 0 L64 12 L64 40 Q64 64 32 80 Q0 64 0 40 L0 12 Z" 
-                                  fill="currentColor"
-                                  stroke="rgba(0,0,0,0.3)"
-                                  strokeWidth="2"
-                                />
-                              </svg>
-                              {/* Number */}
-                              <span className={`relative text-2xl font-bold z-10 ${
-                                index === 0 ? 'text-yellow-900' : 
-                                index === 1 ? 'text-slate-700' : 
-                                'text-orange-900'
-                              }`}>
-                                {index + 1}
-                              </span>
-                            </div>
+                        {/* Photo */}
+                        {catch_.photos && catch_.photos.length > 0 ? (
+                          <img 
+                            src={typeof catch_.photos[0] === 'string' ? catch_.photos[0] : catch_.photos[0].url}
+                            alt={getFishTypeLabel(catch_.fishType)}
+                            className="w-full aspect-[4/3] object-contain bg-slate-700"
+                            crossOrigin="anonymous"
+                          />
+                        ) : (
+                          <div className="w-full aspect-[4/3] bg-slate-700 flex items-center justify-center">
+                            <Fish className={`w-16 h-16 ${getFishIconColor(catch_.fishType)}`} />
                           </div>
-                          
-                          {/* Photo */}
-                          {catch_.photos && catch_.photos.length > 0 ? (
-                            <img 
-                              src={typeof catch_.photos[0] === 'string' ? catch_.photos[0] : catch_.photos[0].url}
-                              alt={getFishTypeLabel(catch_.fishType)}
-                              className="w-full h-64 object-contain bg-slate-700"
-                              crossOrigin="anonymous"
-                            />
-                          ) : (
-                            <div className="w-full h-64 bg-slate-700 flex items-center justify-center">
-                              <Fish className={`w-16 h-16 ${getFishIconColor(catch_.fishType)}`} />
-                            </div>
-                          )}
-                        </div>
+                        )}
 
                         {/* Info */}
                         <div className="p-6 space-y-3">
