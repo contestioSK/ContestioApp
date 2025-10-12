@@ -117,7 +117,7 @@ export default function BattleEdit() {
       });
       queryClient.invalidateQueries({ queryKey: ["/api/diary/battles"] });
       queryClient.invalidateQueries({ queryKey: ['/api/diary/battles', id] });
-      setLocation(`/diary/battle/${id}`);
+      setLocation(`/diary/battles/${id}`);
     },
     onError: () => {
       toast({
@@ -176,7 +176,7 @@ export default function BattleEdit() {
         <div className="p-6">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-2xl font-bold text-foreground mb-2">Battle sa nenašiel</h2>
-            <Button onClick={() => setLocation("/diary/battle")} className="mt-4">
+            <Button onClick={() => setLocation("/diary/battles")} className="mt-4">
               Späť na battles
             </Button>
           </div>

@@ -140,7 +140,7 @@ export default function BattleCreate() {
       
       // Handle response - can be either { battle, trip } or just battle
       const battleId = data.battle?.id || data.id;
-      setLocation(`/diary/battle/${battleId}`);
+      setLocation(`/diary/battles/${battleId}`);
     },
     onError: (error) => {
       toast({
@@ -154,7 +154,7 @@ export default function BattleCreate() {
   // Redirect to paywall if not premium (moved to useEffect to avoid render loop)
   useEffect(() => {
     if (!isPremium) {
-      setLocation("/diary/battle/paywall");
+      setLocation("/diary/battles/paywall");
     }
   }, [isPremium, setLocation]);
 
