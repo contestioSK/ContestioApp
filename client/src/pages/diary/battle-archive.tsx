@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,29 +8,34 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { Trophy, Users, Calendar, Clock, Fish, Weight, Crown, Archive, Search, Filter, Eye, RotateCcw, Medal, BarChart3, Star, Plus } from "lucide-react";
+import { Trophy, Users, Calendar, Clock, Fish, Weight, Crown, Archive, Search, Filter, Eye, RotateCcw, Medal, BarChart3, Star, Plus, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
 import { useLocation } from "wouter";
 import DiaryLayout from "@/components/DiaryLayout";
 
-// Mock battle data interface
+// Archived battle data interface
 interface ArchivedBattle {
   id: string;
   name: string;
   mode: string;
   status: "finished";
-  startAt: Date;
-  endAt: Date;
+  startAt: Date | string;
+  endAt: Date | string;
   participantCount: number;
   winner: string;
-  userPosition: number;
+  userPosition: number | null;
   userScore: number;
   totalScore: number;
   participants: string[];
+  results?: Array<{
+    participant: { userId?: string; name: string };
+    score: number;
+    position: number;
+  }>;
 }
 
-// Mock archived battles data
+// DEPRECATED: Mock archived battles data - replaced with API call
 const getMockArchivedBattles = (): ArchivedBattle[] => [
   {
     id: "battle-1", 
@@ -125,7 +131,20 @@ export default function BattleArchive() {
   const [filterMode, setFilterMode] = useState<string>("all");
   const [filterResult, setFilterResult] = useState<string>("all");
   
-  const battles = getMockArchivedBattles();
+  // Fetch archived battles from API
+  const { data: rawBattles = [], isLoading } = useQuery<ArchivedBattle[]>({
+    queryKey: ['/api/diary/battles/archive'],
+    enabled: !!user,
+  });
+
+  // Normalize date strings to Date objects
+  const battles = useMemo(() => {
+    return rawBattles.map(battle => ({
+      ...battle,
+      startAt: typeof battle.startAt === 'string' ? new Date(battle.startAt) : battle.startAt,
+      endAt: typeof battle.endAt === 'string' ? new Date(battle.endAt) : battle.endAt,
+    }));
+  }, [rawBattles]);
 
   // Filter battles based on search and filters
   const filteredBattles = useMemo(() => {
@@ -135,8 +154,8 @@ export default function BattleArchive() {
       const matchesMode = filterMode === "all" || battle.mode === filterMode;
       const matchesResult = filterResult === "all" || 
                           (filterResult === "win" && battle.userPosition === 1) ||
-                          (filterResult === "podium" && battle.userPosition <= 3) ||
-                          (filterResult === "participated" && battle.userPosition > 3);
+                          (filterResult === "podium" && battle.userPosition !== null && battle.userPosition <= 3) ||
+                          (filterResult === "participated" && battle.userPosition !== null && battle.userPosition > 3);
       
       return matchesSearch && matchesMode && matchesResult;
     });
@@ -146,11 +165,25 @@ export default function BattleArchive() {
   const userStats = useMemo(() => {
     const totalBattles = battles.length;
     const wins = battles.filter(b => b.userPosition === 1).length;
-    const podiums = battles.filter(b => b.userPosition <= 3).length;
+    const podiums = battles.filter(b => b.userPosition !== null && b.userPosition <= 3).length;
     const winRate = totalBattles > 0 ? (wins / totalBattles * 100).toFixed(1) : "0";
     
     return { totalBattles, wins, podiums, winRate };
   }, [battles]);
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <DiaryLayout>
+        <div className="p-6 flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <Loader2 className="animate-spin h-12 w-12 text-primary mx-auto mb-4" />
+            <p className="text-muted-foreground">Načítavam archív battles...</p>
+          </div>
+        </div>
+      </DiaryLayout>
+    );
+  }
 
   return (
     <DiaryLayout>
@@ -294,7 +327,9 @@ export default function BattleArchive() {
               </Card>
             ) : (
               filteredBattles.map((battle) => {
-                const positionBadge = getPositionBadge(battle.userPosition);
+                const positionBadge = battle.userPosition !== null 
+                  ? getPositionBadge(battle.userPosition)
+                  : { emoji: "—", color: "bg-muted text-muted-foreground" };
                 
                 return (
                   <Card key={battle.id} className="hover:shadow-md transition-shadow">
@@ -306,12 +341,21 @@ export default function BattleArchive() {
                             <h3 className="text-lg font-semibold text-foreground truncate">
                               {battle.name}
                             </h3>
-                            <Badge 
-                              variant="secondary" 
-                              className={positionBadge.color}
-                            >
-                              {positionBadge.emoji} {battle.userPosition}. miesto
-                            </Badge>
+                            {battle.userPosition !== null ? (
+                              <Badge 
+                                variant="secondary" 
+                                className={positionBadge.color}
+                              >
+                                {positionBadge.emoji} {battle.userPosition}. miesto
+                              </Badge>
+                            ) : (
+                              <Badge 
+                                variant="secondary" 
+                                className="bg-muted text-muted-foreground"
+                              >
+                                Bez umiestnenia
+                              </Badge>
+                            )}
                           </div>
                           
                           <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">

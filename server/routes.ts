@@ -3399,6 +3399,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get archived (finished) battles with calculated stats
+  app.get('/api/diary/battles/archive', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Get all user battles
+      const allBattles = await storage.getAllUserBattles(userId);
+      
+      // Filter for finished battles only
+      const finishedBattles = allBattles.filter(battle => battle.status === 'finished');
+      
+      // Transform to archive format with additional stats
+      const archivedBattles = finishedBattles.map(battle => {
+        const results = battle.results || [];
+        const winner = results.length > 0 ? results[0] : null;
+        const userResult = results.find(r => r.participant.userId === userId);
+        
+        return {
+          id: battle.id,
+          name: battle.name,
+          mode: battle.rules.mode,
+          status: battle.status,
+          startAt: battle.startAt,
+          endAt: battle.endAt,
+          participantCount: battle.participants.length,
+          winner: winner ? winner.participant.name : 'N/A',
+          userPosition: userResult ? userResult.position : null,
+          userScore: userResult ? userResult.score : 0,
+          totalScore: winner ? winner.score : 0,
+          participants: battle.participants.map(p => p.name),
+          results: battle.results
+        };
+      });
+      
+      // Sort by end date descending (most recent first)
+      archivedBattles.sort((a, b) => new Date(b.endAt).getTime() - new Date(a.endAt).getTime());
+      
+      res.json(archivedBattles);
+    } catch (error) {
+      console.error("Error fetching archived battles:", error);
+      res.status(500).json({ message: "Failed to fetch archived battles" });
+    }
+  });
+
   // Get single battle by ID
   app.get('/api/diary/battles/:id', isAuthenticated, async (req: any, res) => {
     try {
@@ -4035,9 +4079,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Premium status endpoint
   app.get('/api/auth/premium-status', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const subscription = await storage.getUserSubscription(userId, "diary_premium");
-      const isPremium = !!subscription && subscription.status === 'active';
+      // TEMPORARY: All authenticated users get premium access for testing
+      // TODO: Re-enable Stripe subscription check when payment gateway is ready
+      // const userId = req.user.claims.sub;
+      // const subscription = await storage.getUserSubscription(userId, "diary_premium");
+      // const isPremium = !!subscription && subscription.status === 'active';
+      const isPremium = true; // Temporary: everyone is premium
       res.json({ isPremium });
     } catch (error) {
       console.error("Error checking premium status:", error);
