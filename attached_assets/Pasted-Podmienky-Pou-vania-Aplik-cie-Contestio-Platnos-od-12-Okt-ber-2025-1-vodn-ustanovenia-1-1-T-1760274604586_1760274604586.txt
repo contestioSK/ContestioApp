@@ -1,0 +1,50 @@
+Podmienky Používania Aplikácie Contestio
+Platnosť od: 12. Október 2025
+
+1. Úvodné ustanovenia
+1.1. Tieto Podmienky používania (ďalej len "Podmienky") upravujú práva a povinnosti medzi prevádzkovateľom a používateľmi pri používaní aplikácie Contestio (ďalej len "Aplikácia").
+
+1.2. Prevádzkovateľom Aplikácie je Ľubomír Šulek, IČO: 44648499, so sídlom Majakovského 13027/11, 08001 Prešov (ďalej len "Prevádzkovateľ").
+
+1.3. Používateľom sa rozumie každá fyzická alebo právnická osoba, ktorá sa zaregistruje a používa Aplikáciu. Súhlasom s týmito Podmienkami pri registrácii sa Používateľ zaväzuje ich dodržiavať.
+
+2. Registrácia a Používateľský Účet
+2.1. Používanie Aplikácie je podmienené registráciou a vytvorením používateľského účtu. Používateľ je povinný uviesť pravdivé a aktuálne údaje.
+
+2.2. Používateľ je zodpovedný za ochranu svojich prihlasovacích údajov a za všetky aktivity vykonané prostredníctvom jeho účtu.
+
+3. Služby a Predplatné (Premium)
+3.1. Aplikácia je poskytovaná v dvoch verziách:
+* Free verzia: Bezplatná verzia s obmedzenými funkciami.
+* Premium verzia: Platená verzia s prístupom ku všetkým pokročilým funkciám, ako je definované v sekcii Cenník.
+
+3.2. Platby za Premium verziu sú spracovávané prostredníctvom platobnej brány tretej strany. Úhradou predplatného Používateľ súhlasí s platobnými podmienkami tejto tretej strany.
+
+3.3. Predplatné sa automaticky obnovuje, pokiaľ ho Používateľ nezruší pred koncom predplateného obdobia v nastaveniach svojho účtu.
+
+4. Obsah Používateľa
+4.1. Používateľ je plne zodpovedný za všetok obsah (fotografie, texty, dáta o úlovkoch), ktorý nahrá do Aplikácie.
+
+4.2. Používateľ vyhlasuje, že je oprávnený nakladať s obsahom, ktorý nahráva, a že tento obsah neporušuje práva tretích strán ani platné právne predpisy.
+
+4.3. Nahraním obsahu udeľuje Používateľ Prevádzkovateľovi nevýhradnú, bezodplatnú, celosvetovú licenciu na použitie tohto obsahu v anonymizovanej a agregovanej podobe na účely analýzy, marketingu a zlepšovania služieb Aplikácie.
+
+5. Pravidlá Správania
+5.1. Používateľ sa zaväzuje, že nebude Aplikáciu používať na šírenie nezákonného, urážlivého, nenávistného, obťažujúceho, hanlivého alebo inak nevhodného obsahu.
+
+5.2. Prevádzkovateľ si vyhradzuje právo, no nie povinnosť, monitorovať obsah a aktivity používateľov. V prípade porušenia týchto Podmienok si Prevádzkovateľ vyhradzuje právo podľa vlastného uváženia:
+* Odstrániť nevhodný obsah.
+* Udeliť Používateľovi varovanie.
+* Dočasne alebo trvalo zablokovať účet Používateľa bez nároku na vrátenie predplatného.
+
+6. Zodpovednosť a Obmedzenia
+6.1. Prevádzkovateľ poskytuje Aplikáciu "tak, ako je", bez záruky nepretržitej dostupnosti alebo bezchybnosti.
+
+6.2. Prevádzkovateľ nenesie zodpovednosť za škody spôsobené používaním Aplikácie, stratou dát alebo konaním iných Používateľov.
+
+7. Záverečné ustanovenia
+7.1. Tieto Podmienky sa riadia právnym poriadkom Slovenskej republiky.
+
+7.2. Prevádzkovateľ si vyhradzuje právo na zmenu týchto Podmienok. O podstatných zmenách bude Používateľa informovať vopred.
+
+7.3. V prípade otázok nás kontaktujte na e-mailovej adrese: gdpr@contestio.sk.
