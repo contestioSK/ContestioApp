@@ -18,7 +18,8 @@ import {
   Menu,
   X,
   Swords,
-  MapPin
+  MapPin,
+  Cloud
 } from "lucide-react";
 
 // Type for premium check
@@ -48,6 +49,12 @@ const navigationItems = [
     label: "Moje rybárske výpravy",
     href: "/diary/trips",
     description: "Viacdenné výlety"
+  },
+  {
+    icon: Cloud,
+    label: "Predpoveď počasia",
+    href: "/diary/weather-forecast",
+    description: "3-dňová predpoveď"
   },
   {
     icon: BarChart3,
