@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { 
@@ -101,7 +102,7 @@ export default function WeatherForecast() {
   const searchRef = useRef<HTMLDivElement>(null);
 
   // Check premium status
-  const { data: premiumStatus } = useQuery<{ isPremium: boolean }>({
+  const { data: premiumStatus, isLoading: isPremiumLoading } = useQuery<{ isPremium: boolean }>({
     queryKey: ["/api/auth/premium-status"],
     enabled: !!user?.id
   });
@@ -382,6 +383,57 @@ export default function WeatherForecast() {
           )}
         </div>
 
+        {loading && !forecast && (
+          <div className="grid lg:grid-cols-4 gap-6">
+            {/* Left Column - Day List Skeleton */}
+            <div className="lg:col-span-1 space-y-3">
+              <Skeleton className="h-7 w-40" />
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="p-4 rounded-lg border-2 border-border space-y-2">
+                  <Skeleton className="h-5 w-24" />
+                  <Skeleton className="h-4 w-32" />
+                  <div className="flex justify-between items-center pt-2">
+                    <Skeleton className="h-8 w-12" />
+                    <Skeleton className="h-8 w-12" />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Right Column - Day Detail Skeleton */}
+            <div className="lg:col-span-3 space-y-6">
+              <div className="p-6 rounded-lg border-2 border-border space-y-4">
+                <Skeleton className="h-6 w-64" />
+                <Skeleton className="h-10 w-48" />
+                <div className="flex gap-4">
+                  <Skeleton className="h-16 w-16 rounded-full" />
+                  <div className="space-y-2 flex-1">
+                    <Skeleton className="h-6 w-32" />
+                    <Skeleton className="h-4 w-24" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-6 rounded-lg border-2 border-border">
+                <Skeleton className="h-6 w-40 mb-4" />
+                <Skeleton className="h-[300px] w-full" />
+              </div>
+
+              <div className="p-6 rounded-lg border-2 border-border">
+                <Skeleton className="h-6 w-40 mb-4" />
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+                    <div key={i} className="space-y-2">
+                      <Skeleton className="h-4 w-20" />
+                      <Skeleton className="h-8 w-24" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {forecast && (
           <div className="grid lg:grid-cols-4 gap-6">
             {/* Left Column - Day List */}
@@ -452,7 +504,19 @@ export default function WeatherForecast() {
                 </div>
 
                 {/* PREMIUM: Fish Activity Index Widget */}
-                {isPremium ? (
+                {isPremiumLoading ? (
+                  <div 
+                    className="p-6 rounded-lg border-2"
+                    style={{ 
+                      backgroundColor: '#012a36',
+                      borderColor: '#1e3a5f'
+                    }}
+                  >
+                    <Skeleton className="h-6 w-48 mb-4" />
+                    <Skeleton className="h-12 w-full rounded-full mb-4" />
+                    <Skeleton className="h-4 w-32" />
+                  </div>
+                ) : isPremium ? (
                   <div 
                     className="p-6 rounded-lg border-2"
                     style={{ 
