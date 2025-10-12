@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Fish, Menu, DollarSign, Bell, Sun, Moon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { NotificationCenter } from "@/components/diary/notification-center";
 
 export default function NavigationHeader() {
   const { user, isAuthenticated } = useAuth();
@@ -184,16 +185,7 @@ export default function NavigationHeader() {
                     data-testid="img-profile"
                   />
                 )}
-                <Button 
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setLocation('/notification-preferences')}
-                  data-testid="button-notification-preferences"
-                  title="Nastavenia notifikácií"
-                  className="bg-transparent border-sidebar-border text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground focus:bg-sidebar-accent focus:text-sidebar-foreground"
-                >
-                  <Bell className="h-4 w-4" />
-                </Button>
+                <NotificationCenter />
                 <Button 
                   variant="outline"
                   onClick={async () => {
