@@ -669,43 +669,30 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
               </div>
 
               {/* Date and Time - Split into two inputs */}
-              <FormField
-                control={form.control}
-                name="capturedAt"
-                render={({ field }) => {
-                  // Ensure we have a valid date object
-                  const currentValue = field.value instanceof Date && !isNaN(field.value.getTime()) 
-                    ? field.value 
-                    : new Date();
-                  
-                  const dateValue = format(currentValue, "yyyy-MM-dd");
-                  const timeValue = format(currentValue, "HH:mm");
-                  
-                  const handleDateChange = (newDate: string) => {
-                    if (!newDate) return;
-                    const baseDate = field.value instanceof Date && !isNaN(field.value.getTime()) 
-                      ? new Date(field.value) 
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="capturedAt"
+                  render={({ field }) => {
+                    const currentValue = field.value instanceof Date && !isNaN(field.value.getTime()) 
+                      ? field.value 
                       : new Date();
-                    const [year, month, day] = newDate.split('-').map(Number);
-                    baseDate.setFullYear(year);
-                    baseDate.setMonth(month - 1);
-                    baseDate.setDate(day);
-                    field.onChange(baseDate);
-                  };
-                  
-                  const handleTimeChange = (newTime: string) => {
-                    if (!newTime) return;
-                    const baseDate = field.value instanceof Date && !isNaN(field.value.getTime()) 
-                      ? new Date(field.value) 
-                      : new Date();
-                    const [hours, minutes] = newTime.split(':').map(Number);
-                    baseDate.setHours(hours);
-                    baseDate.setMinutes(minutes);
-                    field.onChange(baseDate);
-                  };
-                  
-                  return (
-                    <div className="grid grid-cols-2 gap-4">
+                    
+                    const dateValue = format(currentValue, "yyyy-MM-dd");
+                    
+                    const handleDateChange = (newDate: string) => {
+                      if (!newDate) return;
+                      const baseDate = field.value instanceof Date && !isNaN(field.value.getTime()) 
+                        ? new Date(field.value) 
+                        : new Date();
+                      const [year, month, day] = newDate.split('-').map(Number);
+                      baseDate.setFullYear(year);
+                      baseDate.setMonth(month - 1);
+                      baseDate.setDate(day);
+                      field.onChange(baseDate);
+                    };
+                    
+                    return (
                       <FormItem>
                         <FormLabel>Dátum</FormLabel>
                         <FormControl>
@@ -719,7 +706,32 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
                         </FormControl>
                         <FormMessage />
                       </FormItem>
-                      
+                    );
+                  }}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="capturedAt"
+                  render={({ field }) => {
+                    const currentValue = field.value instanceof Date && !isNaN(field.value.getTime()) 
+                      ? field.value 
+                      : new Date();
+                    
+                    const timeValue = format(currentValue, "HH:mm");
+                    
+                    const handleTimeChange = (newTime: string) => {
+                      if (!newTime) return;
+                      const baseDate = field.value instanceof Date && !isNaN(field.value.getTime()) 
+                        ? new Date(field.value) 
+                        : new Date();
+                      const [hours, minutes] = newTime.split(':').map(Number);
+                      baseDate.setHours(hours);
+                      baseDate.setMinutes(minutes);
+                      field.onChange(baseDate);
+                    };
+                    
+                    return (
                       <FormItem>
                         <FormLabel>Čas</FormLabel>
                         <FormControl>
@@ -732,10 +744,10 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
                         </FormControl>
                         <FormMessage />
                       </FormItem>
-                    </div>
-                  );
-                }}
-              />
+                    );
+                  }}
+                />
+              </div>
             </div>
 
             {/* Fish Details */}
