@@ -55,6 +55,7 @@ import { WeightProgressionChart } from "@/components/diary-charts/weight-progres
 import { CatchFrequencyChart } from "@/components/diary-charts/catch-frequency-chart";
 import { SeasonalTrendsChart } from "@/components/diary-charts/seasonal-trends-chart";
 import { MonthComparisonChart } from "@/components/diary-charts/month-comparison-chart";
+import { HourlyDistributionChart } from "@/components/stats-dashboard/charts/hourly-distribution-chart";
 
 // Type for premium check
 type PremiumStatus = {
@@ -882,6 +883,9 @@ export default function DiaryStats() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Hourly Distribution Chart */}
+            <HourlyDistributionChart data={hourlyDistributionData} />
           </TabsContent>
 
           {/* Premium-only tabs */}
