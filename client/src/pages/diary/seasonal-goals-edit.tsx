@@ -121,43 +121,17 @@ export default function SeasonalGoalsEdit() {
   const { toast } = useToast();
   const [selectedGoalType, setSelectedGoalType] = useState<string>("");
 
-  // Mock seasons data - in real app this would come from API
-  const mockSeasons: Season[] = [
-    {
-      id: "winter-2024",
-      name: "Zima 2024",
-      startDate: "2024-12-01",
-      endDate: "2025-02-28",
-      isActive: true
-    },
-    {
-      id: "spring-2025",
-      name: "Jar 2025",
-      startDate: "2025-03-01",
-      endDate: "2025-05-31",
-      isActive: false
-    }
-  ];
+  // Fetch seasons from API
+  const { data: seasons = [], isLoading: seasonsLoading } = useQuery<Season[]>({
+    queryKey: ['/api/seasons'],
+  });
 
-  // Mock goal data - in real app this would come from API
-  const mockGoal: SeasonGoal = {
-    id: id || "",
-    userId: user?.id || "",
-    seasonId: "winter-2024",
-    goalType: "total_weight",
-    targetValue: "50",
-    currentValue: "32.5",
-    unit: "kg",
-    title: "Celková hmotnosť - 50 kg",
-    description: "Chytiť ryby s celkovou váhou 50 kg počas zimnej sezóny",
-    isMainGoal: true,
-    isCompleted: false,
-    createdAt: "2024-12-01",
-    updatedAt: "2024-12-15"
-  };
+  // Fetch all goals and find the one being edited
+  const { data: allGoals = [], isLoading: goalsLoading } = useQuery<SeasonGoal[]>({
+    queryKey: ['/api/seasonal-goals'],
+  });
 
-  const seasons = mockSeasons;
-  const goal = mockGoal;
+  const goal = allGoals.find(g => g.id === id);
 
   const form = useForm<EditGoalForm>({
     resolver: zodResolver(editGoalSchema),
@@ -208,12 +182,11 @@ export default function SeasonalGoalsEdit() {
         unit: goalConfig.unit,
         currentValue: goal?.currentValue || "0" // Keep current progress
       };
-      const response = await apiRequest("PATCH", `/api/diary/seasonal-goals/${id}`, goalData);
+      const response = await apiRequest("PUT", `/api/seasonal-goals/${id}`, goalData);
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/diary/seasonal-goals"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/diary/seasonal-goals", id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/seasonal-goals"] });
       toast({
         title: "Cieľ aktualizovaný!",
         description: "Váš sezónny cieľ bol úspešne aktualizovaný.",
@@ -236,6 +209,30 @@ export default function SeasonalGoalsEdit() {
 
   const selectedConfig = selectedGoalType ? goalTypeConfig[selectedGoalType as keyof typeof goalTypeConfig] : null;
 
+  // Show loading state while fetching
+  if (goalsLoading || seasonsLoading) {
+    return (
+      <DiaryLayout>
+        <div className="p-6">
+          <div className="max-w-2xl mx-auto">
+            <Card>
+              <CardContent className="p-8 text-center">
+                <Loader2 className="w-12 h-12 text-muted-foreground mx-auto mb-4 animate-spin" />
+                <h3 className="text-lg font-medium text-foreground mb-2">
+                  Načítavanie...
+                </h3>
+                <p className="text-muted-foreground">
+                  Načítavam detaily cieľa
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </DiaryLayout>
+    );
+  }
+
+  // Show error state if goal not found
   if (!goal) {
     return (
       <DiaryLayout>

@@ -104,25 +104,10 @@ export default function SeasonalGoalsCreate() {
   const { toast } = useToast();
   const [selectedGoalType, setSelectedGoalType] = useState<string>("");
 
-  // Mock seasons data - in real app this would come from API
-  const mockSeasons: Season[] = [
-    {
-      id: "winter-2024",
-      name: "Zima 2024",
-      startDate: "2024-12-01",
-      endDate: "2025-02-28",
-      isActive: true
-    },
-    {
-      id: "spring-2025",
-      name: "Jar 2025",
-      startDate: "2025-03-01",
-      endDate: "2025-05-31",
-      isActive: false
-    }
-  ];
-
-  const seasons = mockSeasons;
+  // Fetch seasons from API
+  const { data: seasons = [], isLoading: seasonsLoading } = useQuery<Season[]>({
+    queryKey: ['/api/seasons'],
+  });
 
   const form = useForm<CreateGoalForm>({
     resolver: zodResolver(createGoalSchema),
@@ -158,11 +143,11 @@ export default function SeasonalGoalsCreate() {
         unit: goalConfig.unit,
         currentValue: "0" // Initialize with 0
       };
-      const response = await apiRequest("POST", "/api/diary/seasonal-goals", goalData);
+      const response = await apiRequest("POST", "/api/seasonal-goals", goalData);
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/diary/seasonal-goals"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/seasonal-goals"] });
       toast({
         title: "Cieľ vytvorený!",
         description: "Váš sezónny cieľ bol úspešne vytvorený.",
@@ -216,10 +201,10 @@ export default function SeasonalGoalsCreate() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Sezóna</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} disabled={seasonsLoading}>
                           <FormControl>
                             <SelectTrigger data-testid="select-season">
-                              <SelectValue placeholder="Vyberte sezónu" />
+                              <SelectValue placeholder={seasonsLoading ? "Načítavajú sa sezóny..." : "Vyberte sezónu"} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
