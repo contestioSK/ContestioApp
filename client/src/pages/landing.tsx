@@ -559,9 +559,21 @@ export default function Landing() {
           <div className="pt-8 border-t border-gray-800">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               
-              {/* Copyright */}
-              <div className="text-gray-400 text-sm order-2 md:order-1">
-                © 2025 Contestio. Všetky práva vyhradené.
+              {/* Copyright and Legal Links */}
+              <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 text-gray-400 text-sm order-2 md:order-1">
+                <span>© 2025 Contestio. Všetky práva vyhradené.</span>
+                <div className="flex items-center gap-4">
+                  <Link href="/terms">
+                    <span className="hover:text-emerald-400 transition-colors cursor-pointer">
+                      Podmienky používania
+                    </span>
+                  </Link>
+                  <Link href="/privacy">
+                    <span className="hover:text-emerald-400 transition-colors cursor-pointer">
+                      Ochrana osobných údajov
+                    </span>
+                  </Link>
+                </div>
               </div>
 
               {/* Social Media Icons */}
