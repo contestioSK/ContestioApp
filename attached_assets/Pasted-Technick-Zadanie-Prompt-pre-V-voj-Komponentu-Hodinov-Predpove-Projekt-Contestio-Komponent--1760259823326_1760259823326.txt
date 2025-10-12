@@ -1,0 +1,73 @@
+Technické Zadanie (Prompt) pre Vývoj Komponentu "Hodinová Predpoveď"
+Projekt: Contestio - Komponent HourlyForecast
+Cieľ: Vytvoriť plne funkčný a vizuálne atraktívny React komponent, ktorý zobrazuje hodinovú predpoveď počasia vrátane teploty, zrážok a detailných informácií o vetre.
+Technológie: React.js, TailwindCSS
+Dizajnový Jazyk: Moderný, prémiový, tmavý (dark mode).
+
+1. Všeobecný Popis a Funkcionalita
+Vytvorte React komponent s názvom HourlyForecast, ktorý prijíma dáta o hodinovej predpovedi a zobrazuje ich v dvoch hlavných častiach:
+
+Grafický prehľad: Vizualizácia vývoja teploty a zrážok.
+
+Detailný hodinový zoznam: Horizontálne skrolovateľný zoznam, ktorý pre každú hodinu zobrazuje čas, ikonu počasia, teplotu, silu vetra a smer vetra.
+
+2. Vstupné Dáta (Props)
+Komponent bude prijímať pole objektov ako prop s názvom hourlyData. Každý objekt v poli reprezentuje jednu hodinu a má nasledujúcu štruktúru:
+
+{
+  time: '14:00',
+  temp_c: 14,
+  condition: {
+    text: 'Čiastočne oblačno',
+    icon: '//[cdn.weatherapi.com/weather/64x64/day/116.png](https://cdn.weatherapi.com/weather/64x64/day/116.png)'
+  },
+  chance_of_rain: 20, // in percent
+  wind_kph: 15,
+  wind_dir: 'SSV' // Smer vetra
+}
+
+3. Požiadavky na Dizajn a Komponenty
+3.1. Grafický Prehľad
+V hornej časti komponentu zobrazte placeholder pre graf, ktorý by vizualizoval vývoj teploty (napr. ako krivka) a pravdepodobnosť zrážok (napr. ako stĺpcový graf). Pre účely tohto komponentu stačí použiť zástupný obrázok.
+
+3.2. Detailný Hodinový Zoznam
+Pod grafom vytvorte horizontálne skrolovateľný zoznam (flex kontajner s overflow-x-auto).
+
+Každá položka v zozname reprezentuje jednu hodinu a musí byť vizuálne oddelená (napr. jemným okrajom).
+
+Štruktúra jednej hodinovej položky:
+
+Čas: Zobrazený na vrchu (napr. 14:00).
+
+Ikona Počasia: Zobrazená z condition.icon.
+
+Teplota: Zobrazená výrazným písmom (napr. 14°).
+
+Sila Vetra: Zobrazená pod teplotou (napr. 15 km/h).
+
+Smer Vetra:
+
+Vedľa sily vetra zobrazte ikonu šípky, ktorá bude dynamicky rotovať podľa hodnoty wind_dir (napr. pre 'SSV' bude šípka smerovať nadol a mierne doprava).
+
+Pod šípkou zobrazte textovú skratku smeru vetra (napr. SSV).
+
+4. Príklad Implementácie (Pseudokód)
+<div className="hourly-forecast-widget">
+  <div className="chart-placeholder">
+    {/* Placeholder pre graf teploty a zrážok */}
+  </div>
+  <div className="horizontal-scroll-container">
+    {hourlyData.map(hour => (
+      <div className="hour-item">
+        <p>{hour.time}</p>
+        <img src={hour.condition.icon} alt={hour.condition.text} />
+        <p>{hour.temp_c}°</p>
+        <p>{hour.wind_kph} km/h</p>
+        <div>
+          <ArrowIcon style={{ transform: `rotate(${calculateWindDirection(hour.wind_dir)}deg)` }} />
+          <p>{hour.wind_dir}</p>
+        </div>
+      </div>
+    ))}
+  </div>
+</div>
