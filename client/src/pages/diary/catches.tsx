@@ -3,9 +3,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useDiaryOffline } from "@/hooks/use-diary-offline";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { useLocation } from "wouter";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
@@ -15,12 +12,9 @@ import useEmblaCarousel from "embla-carousel-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -35,7 +29,6 @@ import {
   Fish, 
   Edit2, 
   Trash2, 
-  Camera,
   Weight,
   Ruler,
   Target,
@@ -52,7 +45,7 @@ import {
 } from "lucide-react";
 
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import type { DiaryCatch, InsertDiaryCatch, DiaryTrip } from "@shared/schema";
+import type { DiaryCatch, DiaryTrip } from "@shared/schema";
 import { getFishTypeLabel, getFishTypeOptions } from "@/utils/fishTypeMapping";
 import DiaryLayout from "@/components/DiaryLayout";
 import CatchFormDialog from "@/components/diary/CatchFormDialog";
@@ -63,80 +56,6 @@ type FreemiumLimits = {
   currentCount: number;
   limit: number;
 };
-
-// Catch form validation schema
-const catchFormSchema = z.object({
-  tripId: z.string().optional(),
-  angler: z.object({
-    name: z.string().min(1, "Meno rybára je povinné")
-  }),
-  capturedAt: z.date({ required_error: "Čas chytenia je povinný" }),
-  weight: z.string().min(1, "Váha je povinná").transform((val) => {
-    const weight = parseFloat(val);
-    if (isNaN(weight) || weight < 0) {
-      throw new Error("Neplatná váha");
-    }
-    return weight.toString();
-  }),
-  lengthCm: z.coerce.number().positive("Dĺžka musí byť kladné číslo").optional(),
-  fishType: z.enum([
-    "kapor_supinac", 
-    "kapor_lysec", 
-    "amur", 
-    "sumec", 
-    "zubac", 
-    "stuka", 
-    "pleskac", 
-    "zubac_zubatovity",
-    "ostretus",
-    "tolstolobik",
-    "bream",
-    "other"
-  ]),
-  bait: z.string().optional(),
-  notes: z.string().optional(),
-  spot: z.string().optional(),
-  verified: z.boolean().default(false),
-  // Weather data (optional)
-  waterTemp: z.coerce.number().min(-50).max(50).optional(),
-  airTemp: z.coerce.number().min(-50).max(50).optional(),
-  windSpeed: z.coerce.number().min(0).max(500).optional(),
-  airPressure: z.coerce.number().min(800).max(1200).optional(),
-  latitude: z.coerce.number().min(-90).max(90).optional(),
-  longitude: z.coerce.number().min(-180).max(180).optional(),
-});
-
-type CatchFormData = z.infer<typeof catchFormSchema>;
-
-// Fish type options
-const fishTypeOptions = [
-  { value: "kapor_supinac", label: "Kapor šupinkatý" },
-  { value: "kapor_lysec", label: "Kapor lysec" },
-  { value: "amur", label: "Amur" },
-  { value: "sumec", label: "Sumec" },
-  { value: "zubac", label: "Zubáč" },
-  { value: "stuka", label: "Šťuka" },
-  { value: "pleskac", label: "Pleskáč" },
-  { value: "zubac_zubatovity", label: "Zubáč zubatovitý" },
-  { value: "ostretus", label: "Ostretuš" },
-  { value: "tolstolobik", label: "Tolstolobik" },
-  { value: "bream", label: "Pleskáč obecný" },
-  { value: "other", label: "Iné" }
-];
-
-// Fishing methods
-const fishingMethods = [
-  "Boilie",
-  "Kukurica",
-  "Pelety", 
-  "Dážďovka",
-  "Návnada",
-  "Spoon",
-  "Spinner",
-  "Wobler",
-  "Gumiak",
-  "Iné"
-];
 
 // Function to get fish icon based on fish type
 const getFishIcon = (fishType?: string) => {
@@ -346,23 +265,6 @@ export default function DiaryCatches() {
         }
       }
 
-      // Update the photo in existingPhotos if it's in the current editing catch
-      if (editingCatch && message.photoId) {
-        setExistingPhotos(prev => prev.map(photo => {
-          if (photo.id === message.photoId) {
-            return {
-              ...photo,
-              status: message.status,
-              url: message.url || photo.url,
-              variants: message.variants || photo.variants,
-              placeholder: message.placeholder || photo.placeholder,
-              error: message.error
-            };
-          }
-          return photo;
-        }));
-      }
-
       // Invalidate catches query to refresh the list
       queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
     }
@@ -373,16 +275,6 @@ export default function DiaryCatches() {
   const [deletingCatch, setDeletingCatch] = useState<DiaryCatch | null>(null);
   const [selectedCatch, setSelectedCatch] = useState<DiaryCatch | null>(null);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
-  const [selectedPhotos, setSelectedPhotos] = useState<File[]>([]);
-  const [existingPhotos, setExistingPhotos] = useState<Array<{
-    id: string;
-    url: string;
-    status: 'processing' | 'ready' | 'failed';
-    originalUrl?: string;
-    variants?: Array<{width: number; format: string; url: string;}>;
-    placeholder?: string;
-    error?: string;
-  }>>([]);
   const [isSyncing, setIsSyncing] = useState(false);
 
   // Filters state
@@ -390,9 +282,6 @@ export default function DiaryCatches() {
   const [selectedFishType, setSelectedFishType] = useState<string>("all");
   const [selectedSpot, setSelectedSpot] = useState<string>("all");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-  
-  // Weather state
-  const [isLoadingWeather, setIsLoadingWeather] = useState(false);
   
   // Offline functionality
   const { 
@@ -409,84 +298,10 @@ export default function DiaryCatches() {
     enabled: !!user
   });
 
-  // Fetch user's trips for the trip selector
-  const { data: trips = [] } = useQuery<DiaryTrip[]>({
-    queryKey: ["/api/diary/trips"],
-    enabled: !!user
-  });
-
   // Check freemium limits
   const { data: limits } = useQuery<FreemiumLimits>({
     queryKey: ["/api/diary/catch-limits"],
     enabled: !!user
-  });
-
-  // Check premium status for photo limits
-  const { data: premiumStatus } = useQuery<{ isPremium: boolean }>({
-    queryKey: ["/api/auth/premium-status"],
-    enabled: !!user?.id
-  });
-
-  const isPremium = premiumStatus?.isPremium || false;
-  const maxPhotos = isPremium ? 5 : 1;
-
-  const form = useForm<CatchFormData>({
-    resolver: zodResolver(catchFormSchema),
-    defaultValues: {
-      angler: { name: user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : "" },
-      capturedAt: new Date(),
-      weight: "",
-      fishType: "kapor_supinac",
-      bait: "",
-      notes: "",
-      spot: "",
-      verified: false
-    }
-  });
-
-  // Create catch mutation
-  const createCatchMutation = useMutation({
-    mutationFn: async (data: CatchFormData) => {
-      const response = await apiRequest("POST", "/api/diary/catches", data);
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/diary/catch-limits"] });
-      setIsCreateDialogOpen(false);
-      setSelectedPhotos([]);
-      setExistingPhotos([]);
-      form.reset();
-      toast({
-        title: "Úlovok pridaný!",
-        description: "Váš úlovok bol úspešne pridaný do denníka.",
-      });
-    },
-    onError: (error: Error) => {
-      showErrorToast(toast, error, 'catch');
-    }
-  });
-
-  // Update catch mutation
-  const updateCatchMutation = useMutation({
-    mutationFn: async (data: CatchFormData) => {
-      const response = await apiRequest("PUT", `/api/diary/catches/${editingCatch!.id}`, data);
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
-      setEditingCatch(null);
-      setSelectedPhotos([]);
-      setExistingPhotos([]);
-      form.reset();
-      toast({
-        title: "Úlovok aktualizovaný!",
-        description: "Váš úlovok bol úspešne aktualizovaný.",
-      });
-    },
-    onError: (error: Error) => {
-      showErrorToast(toast, error, 'update');
-    }
   });
 
   // Delete catch mutation
@@ -508,326 +323,9 @@ export default function DiaryCatches() {
     }
   });
 
-  const handleSubmit = async (data: CatchFormData) => {
-    // Convert "none" values to undefined (no selection)
-    // CRITICAL: Always include userId in angler object for proper filtering
-    const processedData = {
-      ...data,
-      angler: {
-        ...data.angler,
-        userId: user?.id || ''
-      },
-      tripId: data.tripId === "none" ? undefined : data.tripId,
-      bait: data.bait === "none" ? undefined : data.bait
-    };
-
-    if (isOffline) {
-      // Save as draft when offline (with photos if available)
-      try {
-        const type = editingCatch ? 'update' : deletingCatch ? 'delete' : 'create';
-        const originalId = editingCatch?.id || deletingCatch?.id;
-        const catchDataWithPhoto = selectedPhotos.length > 0 ? { ...processedData, photo: selectedPhotos[0] } : processedData;
-        
-        await saveCatchDraft(catchDataWithPhoto, type, originalId);
-        
-        setIsCreateDialogOpen(false);
-        setEditingCatch(null);
-        setSelectedPhotos([]);
-        setExistingPhotos([]);
-        form.reset();
-        
-        toast({
-          title: "Uložené offline",
-          description: selectedPhotos.length > 0
-            ? "Úlovok s fotkou sa odošle automaticky po obnovení pripojenia"
-            : "Úlovok sa odošle automaticky po obnovení pripojenia",
-          variant: "default",
-        });
-      } catch (error) {
-        console.error('Failed to save catch draft:', error);
-        toast({
-          title: "Chyba",
-          description: "Nepodarilo sa uložiť úlovok offline",
-          variant: "destructive",
-        });
-      }
-    } else {
-      // Online mode - instant save with background photo upload
-      
-      if (editingCatch) {
-        // EDITING MODE: Use old flow with photo upload first
-        let newPhotos: Array<{
-          id: string;
-          url: string;
-          status: 'processing' | 'ready' | 'failed';
-          originalUrl?: string;
-        }> = [];
-        
-        if (selectedPhotos.length > 0) {
-          try {
-            const formData = new FormData();
-            selectedPhotos.forEach(photo => {
-              formData.append('photos', photo);
-            });
-            
-            const uploadResponse = await fetch('/api/diary/photos/upload', {
-              method: 'POST',
-              body: formData,
-              credentials: 'include'
-            });
-            
-            if (!uploadResponse.ok) {
-              throw new Error('Failed to upload photos');
-            }
-            
-            const uploadResult = await uploadResponse.json();
-            newPhotos = uploadResult.photos || [];
-          } catch (error) {
-            console.error('Photo upload error:', error);
-            toast({
-              title: "Chyba pri nahrávaní fotiek",
-              description: "Úlovok bude aktualizovaný bez nových fotiek",
-              variant: "destructive",
-            });
-          }
-        }
-
-        const allPhotos = [...existingPhotos, ...newPhotos];
-        const finalData = allPhotos.length > 0 
-          ? { ...processedData, photos: allPhotos }
-          : processedData;
-        
-        updateCatchMutation.mutate(finalData);
-      } else {
-        // NEW CATCH MODE: Instant save with background photo upload
-        
-        // 1. Save catch IMMEDIATELY without photos
-        const immediateData = existingPhotos.length > 0 
-          ? { ...processedData, photos: existingPhotos }
-          : processedData;
-        
-        // Store photos to upload for background processing
-        const photosToUpload = [...selectedPhotos];
-        
-        // 2. Create catch with immediate success callback
-        createCatchMutation.mutate(immediateData, {
-          onSuccess: async (newCatch: any) => {
-            // 3. If there are photos, upload them in background
-            if (photosToUpload.length > 0) {
-              toast({
-                title: "Úlovok uložený!",
-                description: `${photosToUpload.length} ${photosToUpload.length === 1 ? 'fotka sa nahráva' : 'fotky sa nahrávajú'} na pozadí...`,
-              });
-              
-              // Background photo upload (async, non-blocking)
-              uploadPhotosInBackground(newCatch.id, photosToUpload);
-            }
-          }
-        });
-      }
-    }
-  };
-
-  // Load weather data from API
-  const loadWeatherData = async () => {
-    const lat = form.getValues("latitude");
-    const lon = form.getValues("longitude");
-    const datetime = form.getValues("capturedAt");
-
-    if (!lat || !lon || !datetime) {
-      toast({
-        title: "Chýbajúce údaje",
-        description: "Prosím zadajte GPS súradnice (široká/dĺžka) a čas chytenia.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsLoadingWeather(true);
-    
-    try {
-      const response = await fetch(
-        `/api/weather?lat=${lat}&lon=${lon}&datetime=${datetime.toISOString()}`,
-        { credentials: 'include' }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch weather data');
-      }
-
-      const weatherData = await response.json();
-
-      // Update form with weather data
-      if (weatherData.temperature !== null && weatherData.temperature !== undefined) {
-        form.setValue("airTemp", weatherData.temperature);
-      }
-      if (weatherData.windSpeed !== null && weatherData.windSpeed !== undefined) {
-        form.setValue("windSpeed", weatherData.windSpeed);
-      }
-      if (weatherData.pressure !== null && weatherData.pressure !== undefined) {
-        form.setValue("airPressure", weatherData.pressure);
-      }
-
-      toast({
-        title: "Počasie načítané!",
-        description: `Teplota: ${weatherData.temperature}°C, Vietor: ${weatherData.windSpeed} km/h, Tlak: ${weatherData.pressure} mb`,
-      });
-    } catch (error) {
-      console.error('Weather fetch error:', error);
-      toast({
-        title: "Chyba pri načítaní počasia",
-        description: "Nepodarilo sa načítať údaje o počasí. Skúste to znova.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoadingWeather(false);
-    }
-  };
-
-  // Get user's current GPS location
-  const getMyLocation = () => {
-    if (!navigator.geolocation) {
-      toast({
-        title: "GPS nie je podporované",
-        description: "Váš prehliadač nepodporuje získavanie GPS polohy.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsLoadingWeather(true);
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const lat = position.coords.latitude;
-        const lon = position.coords.longitude;
-        
-        // Update form with GPS coordinates
-        form.setValue("latitude", lat);
-        form.setValue("longitude", lon);
-        
-        setIsLoadingWeather(false);
-        
-        toast({
-          title: "Poloha získaná!",
-          description: `GPS: ${lat.toFixed(6)}, ${lon.toFixed(6)}`,
-        });
-      },
-      (error) => {
-        setIsLoadingWeather(false);
-        
-        let errorMessage = "Nepodarilo sa získať GPS polohu.";
-        
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            errorMessage = "Povolenie na prístup k polohe bolo zamietnuté. Prosím povoľte prístup v nastaveniach prehliadača.";
-            break;
-          case error.POSITION_UNAVAILABLE:
-            errorMessage = "Informácie o polohe nie sú dostupné.";
-            break;
-          case error.TIMEOUT:
-            errorMessage = "Požiadavka na získanie polohy vypršala.";
-            break;
-        }
-        
-        toast({
-          title: "Chyba GPS",
-          description: errorMessage,
-          variant: "destructive",
-        });
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0
-      }
-    );
-  };
-
-  // Background photo upload function (runs after catch is saved)
-  const uploadPhotosInBackground = async (catchId: string, photos: File[]) => {
-    try {
-      // Import resize utility
-      const { resizeImages } = await import('@/utils/imageResize');
-      
-      // Resize images to 2048px max (reduces upload time significantly)
-      const resizedPhotos = await resizeImages(photos, { 
-        maxWidth: 2048, 
-        maxHeight: 2048, 
-        quality: 0.85 
-      });
-      
-      // Upload resized photos in parallel
-      const formData = new FormData();
-      resizedPhotos.forEach(photo => {
-        formData.append('photos', photo);
-      });
-      
-      const uploadResponse = await fetch('/api/diary/photos/upload', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include'
-      });
-      
-      if (!uploadResponse.ok) {
-        throw new Error('Failed to upload photos');
-      }
-      
-      const uploadResult = await uploadResponse.json();
-      const uploadedPhotos = uploadResult.photos || [];
-      
-      // Add photos to catch via PATCH endpoint
-      const patchResponse = await fetch(`/api/diary/catches/${catchId}/photos`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ photos: uploadedPhotos }),
-        credentials: 'include'
-      });
-      
-      if (!patchResponse.ok) {
-        throw new Error('Failed to attach photos to catch');
-      }
-      
-      // Refresh catch list to show uploaded photos
-      queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
-      
-      toast({
-        title: "Fotky nahrané!",
-        description: "Fotky sa optimalizujú na pozadí a onedlho sa zobrazia.",
-      });
-    } catch (error) {
-      console.error('Background photo upload error:', error);
-      toast({
-        title: "Chyba pri nahrávaní fotiek",
-        description: "Úlovok je uložený, ale fotky sa nepodarilo nahrať",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const openEditDialog = (catch_: DiaryCatch) => {
-    setEditingCatch(catch_);
-    setExistingPhotos(catch_.photos || []);
-    form.reset({
-      tripId: catch_.tripId || undefined,
-      angler: { name: catch_.angler.name },
-      capturedAt: new Date(catch_.capturedAt),
-      weight: catch_.weight,
-      lengthCm: catch_.lengthCm || undefined,
-      fishType: catch_.fishType as any,
-      bait: catch_.bait || "",
-      notes: catch_.notes || "",
-      spot: catch_.spot || "",
-      verified: catch_.verified
-    });
-  };
-
   const closeDialog = () => {
     setIsCreateDialogOpen(false);
     setEditingCatch(null);
-    setSelectedPhotos([]);
-    setExistingPhotos([]);
-    form.reset();
   };
 
   const handleDeleteCatch = async () => {
@@ -941,7 +439,7 @@ export default function DiaryCatches() {
     if (editId && catches.length > 0 && !editingCatch) {
       const catchToEdit = catches.find(c => c.id === editId);
       if (catchToEdit) {
-        openEditDialog(catchToEdit);
+        setEditingCatch(catchToEdit);
         // Clear query parameter from URL using replaceState to avoid adding history entry
         window.history.replaceState({}, '', '/diary/catches');
       }
@@ -1377,7 +875,7 @@ export default function DiaryCatches() {
                     <Button 
                       className="w-full bg-blue-600 hover:bg-blue-700"
                       onClick={() => {
-                        openEditDialog(selectedCatch);
+                        setEditingCatch(selectedCatch);
                         setSelectedCatch(null);
                       }}
                       data-testid="button-edit-catch"
