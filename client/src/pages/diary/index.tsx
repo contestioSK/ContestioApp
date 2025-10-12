@@ -340,6 +340,14 @@ export default function DiaryIndex() {
 
   const pendingInvitations = invitations.filter(inv => inv.status === 'pending');
 
+  // Fetch active battles
+  const { data: activeBattles = [] } = useQuery<any[]>({
+    queryKey: ['/api/diary/battles/active'],
+    enabled: !!user && isPremium
+  });
+
+  const firstActiveBattle = activeBattles[0];
+
   // Accept invitation mutation
   const acceptInvitationMutation = useMutation({
     mutationFn: async (invitationId: string) => {
@@ -655,6 +663,30 @@ export default function DiaryIndex() {
                     >
                       <Trophy className="w-4 h-4 mr-2" />
                       Archív
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        if (firstActiveBattle) {
+                          setLocation(`/diary/battles/${firstActiveBattle.id}`);
+                        } else {
+                          toast({
+                            title: "Žiadny aktívny battle",
+                            description: "Momentálne nemáte žiadny aktívny battle",
+                          });
+                        }
+                      }}
+                      disabled={!firstActiveBattle}
+                      className={cn(
+                        "border-yellow-600/50 hover:bg-yellow-600/20",
+                        firstActiveBattle 
+                          ? "bg-yellow-600/20 text-yellow-100" 
+                          : "bg-yellow-600/5 text-yellow-100/50"
+                      )}
+                      data-testid="button-active-battle"
+                    >
+                      <Play className="w-4 h-4 mr-2" />
+                      Aktívny Battle
                     </Button>
                     <Button
                       onClick={() => setLocation("/diary/battles/create")}
