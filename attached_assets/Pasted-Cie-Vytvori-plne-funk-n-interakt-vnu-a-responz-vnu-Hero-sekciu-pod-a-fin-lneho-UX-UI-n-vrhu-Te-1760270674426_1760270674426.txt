@@ -1,0 +1,78 @@
+Cieľ: Vytvoriť plne funkčnú, interaktívnu a responzívnu Hero sekciu podľa finálneho UX/UI návrhu.
+Technológie: React.js, TailwindCSS
+Dizajnový Jazyk: Moderný, prémiový, tmavý (dark mode) a prehľadný.
+
+1. Celková Architektúra a Rozloženie (Layout)
+Hero sekcia bude mať trojstĺpcové rozloženie na desktopových zariadeniach a bude plne responzívna.
+
+Celkové Pozadie: Jemný radiálny gradient (radial-gradient(ellipse at top, #1e3a5f 0%, #011a24 70%)).
+
+Štruktúra (Desktop):
+
+Ľavý Stĺpec: Mockup telefónu zobrazujúci Súťaže.
+
+Stredný Stĺpec: Hlavný textový obsah – nadpis, popis a interaktívny prepínač.
+
+Pravý Stĺpec: Mockup telefónu zobrazujúci Denník.
+
+Štruktúra (Mobil):
+
+Prvky sa zoradia vertikálne pod seba v poradí: Hlavný textový obsah, Mockup Súťaží, Mockup Denníka.
+
+2. Komponenty a Ich Funkcionalita
+2.1. Hlavný Textový Obsah (Stredný Stĺpec)
+Nadpis h1: "Platforma pre Moderného Rybára." s druhou časťou "Moderného Rybára." vo výraznej gradientovej farbe (gradient-text).
+
+Popis p: Krátky, výstižný text pod nadpisom.
+
+Interaktívny Prepínač (Tab Switcher):
+
+Musí obsahovať dve jasne oddelené, vizuálne príťažlivé tlačidlá: "Súťaže" a "Denník".
+
+Každé tlačidlo musí obsahovať ikonu a text (Súťaže: ikona trofeje, Denník: ikona knihy).
+
+Kliknutie na tlačidlo ho označí ako aktívne (zmení farbu pozadia na #10B981 a pridá tieň) a druhé tlačidlo sa stane neaktívnym.
+
+Dynamická Zmena Obsahu: Kliknutie na tlačidlo musí okamžite zmeniť obsah v elemente hero-text a v elemente hero-cta-container podľa aktívnej voľby.
+
+2.2. Mockupy Telefónov
+Vzhľad: Prémiový, tmavý rám (#1a1a1a), zaoblené rohy, jemný tieň a okraj.
+
+Obsah (Súťaže):
+
+Musí zobraziť tmavú verziu UI.
+
+V hlavičke nápis "Live Výsledky" a pulzujúci LIVE indikátor.
+
+V obsahu ukážka výsledkovej tabuľky.
+
+Obsah (Denník):
+
+Musí zobraziť svetlú verziu UI.
+
+V hlavičke nápis "Môj Denník".
+
+V obsahu ukážka kariet s poslednými úlovkami.
+
+Animácia/Pozícia: Na desktope musia byť mockupy jemne pootočené a vizuálne vrstvené, aby vytvárali dojem hĺbky.
+
+2.3. CTA Tlačidlá (Call to Action)
+Dynamické Zobrazenie: V elemente hero-cta-container sa bude zobrazovať tlačidlo podľa aktívnej voľby v prepínači.
+
+Pre Súťaže to bude modré (btn-secondary) tlačidlo s textom "Zobraziť Live Výsledky".
+
+Pre Denník to bude zelené (btn-primary) tlačidlo s textom "Vyskúšať zdarma".
+
+Hover Efekty: Tlačidlá musia mať plynulý hover efekt (zmena farby, jemné zväčšenie).
+
+3. Dáta a Stav Aplikácie
+Vytvor statické HTML/JSX pre obsah oboch obrazoviek v mockupoch.
+
+Celý stav interaktivity (ktorý tab je aktívny) musí byť spravovaný v rámci React stavu (useState).
+
+4. Responzivita
+Mobil (< 768px): Aplikujte vertikálne usporiadanie. Hlavný textový blok na vrchu, pod ním oba mockupy (môžu byť vedľa seba alebo pod sebou pre lepšiu prehľadnosť).
+
+Tablet (768px - 1024px): Zachovajte desktopové rozloženie, ale zmenšite medzery a veľkosť písma, aby sa všetko zmestilo.
+
+Tento prompt definuje kompletný rozsah prác na vytvorenie kľúčovej časti landing page s dôrazom na prémiový dizajn, jasnosť posolstva a plynulé interakcie na všetkých zariadeniach.
