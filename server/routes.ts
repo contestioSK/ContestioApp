@@ -4173,18 +4173,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Verify trip belongs to user (only if tripId is provided)
+      // Auto-assign active trip if tripId not provided
+      let tripId = req.body.tripId;
+      
+      if (!tripId) {
+        // Find active trip for this user
+        const userTrips = await storage.getDiaryTrips(userId);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Reset time to midnight for accurate date comparison
+        
+        const activeTrip = userTrips.find((trip: any) => {
+          const startDate = new Date(trip.startDate);
+          const endDate = new Date(trip.endDate);
+          startDate.setHours(0, 0, 0, 0);
+          endDate.setHours(23, 59, 59, 999);
+          
+          return startDate <= today && today <= endDate;
+        });
+        
+        if (activeTrip) {
+          tripId = activeTrip.id;
+        }
+      }
+      
+      // Verify trip belongs to user (only if tripId is set)
       let trip = null;
-      if (req.body.tripId) {
-        trip = await storage.getDiaryTrip(req.body.tripId, userId);
+      if (tripId) {
+        trip = await storage.getDiaryTrip(tripId, userId);
         if (!trip) {
           return res.status(403).json({ message: "Invalid trip" });
         }
       }
       
-      // Server controls angler.userId and verified status
+      // Server controls angler.userId, tripId (auto-assigned), and verified status
       const catchData = {
         ...req.body,
+        tripId: tripId || undefined, // Use auto-assigned tripId or undefined if no active trip
         angler: {
           ...req.body.angler,
           userId: userId
