@@ -171,7 +171,7 @@ export async function setupAuth(app: Express) {
     console.log(`[AUTH] Callback using strategy: ${strategyName}`);
     
     passport.authenticate(strategyName, {
-      successReturnToOrRedirect: "/",
+      successReturnToOrRedirect: "/diary",
       failureRedirect: "/api/login",
     })(req, res, next);
   });
