@@ -22,7 +22,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import DiaryLayout from "@/components/DiaryLayout";
 import CatchFormDialog from "@/components/diary/CatchFormDialog";
 import { getFishTypeLabel, getFishTypeOptions } from "@/utils/fishTypeMapping";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";

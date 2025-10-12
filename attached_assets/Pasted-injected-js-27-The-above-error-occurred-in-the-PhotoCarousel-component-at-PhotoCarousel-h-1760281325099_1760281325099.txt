@@ -1,0 +1,59 @@
+injected.js:27 The above error occurred in the <PhotoCarousel> component:
+
+    at PhotoCarousel (https://9d1b885d-638d-46de-a616-21347a2af8fd-00-umvbcgom3icv.picard.replit.dev/src/pages/diary/index.tsx:97:26)
+    at div
+    at div
+    at https://9d1b885d-638d-46de-a616-21347a2af8fd-00-umvbcgom3icv.picard.replit.…unner/workspace/node_modules/.vite/deps/chunk-AXMZZQ2X.js?v=818528f1:42:13
+    at https://9d1b885d-638d-46de-a616-21347a2af8fd-00-umvbcgom3icv.picard.replit.…runner/workspace/node_modules/.vite/deps/chunk-LLLTVKM7.js?v=818528f1:61:7
+    at https://9d1b885d-638d-46de-a616-21347a2af8fd-00-umvbcgom3icv.picard.replit.…unner/workspace/node_modules/.vite/deps/chunk-2K77HOHX.js?v=818528f1:79:13
+    at https://9d1b885d-638d-46de-a616-21347a2af8fd-00-umvbcgom3icv.picard.replit.…unner/workspace/node_modules/.vite/deps/chunk-2K77HOHX.js?v=818528f1:56:13
+    at https://9d1b885d-638d-46de-a616-21347a2af8fd-00-umvbcgom3icv.picard.replit.…unner/workspace/node_modules/.vite/deps/chunk-AXMZZQ2X.js?v=818528f1:42:13
+    at https://9d1b885d-638d-46de-a616-21347a2af8fd-00-umvbcgom3icv.picard.replit.…runner/workspace/node_modules/.vite/deps/chunk-HG7P5XMB.js?v=818528f1:29:5
+    at https://9d1b885d-638d-46de-a616-21347a2af8fd-00-umvbcgom3icv.picard.replit.…nner/workspace/node_modules/.vite/deps/chunk-7HTPDSET.js?v=818528f1:233:13
+    at https://9d1b885d-638d-46de-a616-21347a2af8fd-00-umvbcgom3icv.picard.replit.…nner/workspace/node_modules/.vite/deps/chunk-7HTPDSET.js?v=818528f1:156:58
+    at Presence (https://9d1b885d-638d-46de-a616-21347a2af8fd-00-umvbcgom3icv.picard.replit.…unner/workspace/node_modules/.vite/deps/chunk-LUE5KDWX.js?v=818528f1:24:11)
+    at https://9d1b885d-638d-46de-a616-21347a2af8fd-00-umvbcgom3icv.picard.replit.…nner/workspace/node_modules/.vite/deps/chunk-7HTPDSET.js?v=818528f1:147:64
+    at https://9d1b885d-638d-46de-a616-21347a2af8fd-00-umvbcgom3icv.picard.replit.…unner/workspace/node_modules/.vite/deps/chunk-2K77HOHX.js?v=818528f1:79:13
+    at https://9d1b885d-638d-46de-a616-21347a2af8fd-00-umvbcgom3icv.picard.replit.…unner/workspace/node_modules/.vite/deps/chunk-2K77HOHX.js?v=818528f1:56:13
+    at https://9d1b885d-638d-46de-a616-21347a2af8fd-00-umvbcgom3icv.picard.replit.…unner/workspace/node_modules/.vite/deps/chunk-AXMZZQ2X.js?v=818528f1:42:13
+    at https://9d1b885d-638d-46de-a616-21347a2af8fd-00-umvbcgom3icv.picard.replit.…nner/workspace/node_modules/.vite/deps/chunk-LLLTVKM7.js?v=818528f1:260:22
+    at Presence (https://9d1b885d-638d-46de-a616-21347a2af8fd-00-umvbcgom3icv.picard.replit.…unner/workspace/node_modules/.vite/deps/chunk-LUE5KDWX.js?v=818528f1:24:11)
+    at Provider (https://9d1b885d-638d-46de-a616-21347a2af8fd-00-umvbcgom3icv.picard.replit.…unner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=818528f1:38:15)
+    at DialogPortal (https://9d1b885d-638d-46de-a616-21347a2af8fd-00-umvbcgom3icv.picard.replit.…nner/workspace/node_modules/.vite/deps/chunk-7HTPDSET.js?v=818528f1:109:11)
+    at _c3 (https://9d1b885d-638d-46de-a616-21347a2af8fd-00-umvbcgom3icv.picard.replit.dev/src/components/ui/sheet.tsx:69:12)
+    at Provider (https://9d1b885d-638d-46de-a616-21347a2af8fd-00-umvbcgom3icv.picard.replit.…unner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=818528f1:38:15)
+    at Dialog (https://9d1b885d-638d-46de-a616-21347a2af8fd-00-umvbcgom3icv.picard.replit.…runner/workspace/node_modules/.vite/deps/chunk-7HTPDSET.js?v=818528f1:50:5)
+    at div
+    at main
+    at div
+    at div
+    at DiaryLayout (https://9d1b885d-638d-46de-a616-21347a2af8fd-00-umvbcgom3icv.picard.replit.dev/src/components/DiaryLayout.tsx:89:39)
+    at DiaryIndex (https://9d1b885d-638d-46de-a616-21347a2af8fd-00-umvbcgom3icv.picard.replit.dev/src/pages/diary/index.tsx:305:20)
+    at ProtectedRoute (https://9d1b885d-638d-46de-a616-21347a2af8fd-00-umvbcgom3icv.picard.replit.dev/src/components/ProtectedRoute.tsx:22:42)
+    at Route (https://9d1b885d-638d-46de-a616-21347a2af8fd-00-umvbcgom3icv.picard.replit.…/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=818528f1:323:16)
+    at Switch (https://9d1b885d-638d-46de-a616-21347a2af8fd-00-umvbcgom3icv.picard.replit.…/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=818528f1:379:17)
+    at Router (https://9d1b885d-638d-46de-a616-21347a2af8fd-00-umvbcgom3icv.picard.replit.dev/src/App.tsx?v=LZt2uRaSX2DPDmzCOauuC:69:31)
+    at Provider (https://9d1b885d-638d-46de-a616-21347a2af8fd-00-umvbcgom3icv.picard.replit.…unner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=818528f1:38:15)
+    at TooltipProvider (https://9d1b885d-638d-46de-a616-21347a2af8fd-00-umvbcgom3icv.picard.replit.…rkspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=818528f1:62:5)
+    at ThemeProvider (https://9d1b885d-638d-46de-a616-21347a2af8fd-00-umvbcgom3icv.picard.replit.dev/src/contexts/ThemeContext.tsx:20:33)
+    at QueryClientProvider (https://9d1b885d-638d-46de-a616-21347a2af8fd-00-umvbcgom3icv.picard.replit.…rkspace/node_modules/.vite/deps/@tanstack_react-query.js?v=818528f1:2805:3)
+    at App
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+chunk-RPCDYKBN.js?v=818528f1:9129 Uncaught ReferenceError: useEffect is not defined
+    at PhotoCarousel (index.tsx:102:3)
+injected.js:27 WebSocket error: 
+Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+injected.js:27 WebSocket disconnected: 1006 
+injected.js:27 WebSocket error: 
+Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+injected.js:27 WebSocket disconnected: 1006 
+2
+injected.js:27 WebSocket disconnected: 1000 Component unmounting
+2
+injected.js:27 Attempting to reconnect (1/5)...
+injected.js:27 WebSocket connected - server will authenticate automatically
+injected.js:27 [WS] Authentication successful
+injected.js:27 WebSocket connected - server will authenticate automatically
+injected.js:27 [WS] Authentication successful
