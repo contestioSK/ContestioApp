@@ -29,6 +29,7 @@ import FinishedPage from "@/pages/finished";
 import NotificationPreferences from "@/pages/notification-preferences";
 import DiaryIndex from "@/pages/diary/index";
 import DiaryTrips from "@/pages/diary/trips";
+import DiaryTripDetail from "@/pages/diary/trip-detail";
 import DiaryCatches from "@/pages/diary/catches";
 import DiaryStats from "@/pages/diary/stats";
 import DiarySeasonalGoals from "@/pages/diary/seasonal-goals";
@@ -97,6 +98,11 @@ function Router() {
       <Route path="/diary">
         <ProtectedRoute>
           <DiaryIndex />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/diary/trips/:id">
+        <ProtectedRoute>
+          <DiaryTripDetail />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/trips">
