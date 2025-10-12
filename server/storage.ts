@@ -17,6 +17,7 @@ import {
   diaryTrips,
   diaryCatches,
   diaryBattles,
+  battleInvitations,
   type User,
   type UpsertUser,
   type Competition,
@@ -72,6 +73,7 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   getAllUsers(): Promise<User[]>;
+  searchUsers(query: string, excludeUserId?: string): Promise<User[]>;
   updateUserRole(userId: string, newRole: string): Promise<User>;
   updateUserStatus(userId: string, active: boolean): Promise<User>;
   getUserFromSession(sessionId: string): Promise<User | null>;
@@ -282,6 +284,13 @@ export interface IStorage {
   deleteDiaryBattle(id: string, userId: string): Promise<void>;
   calculateBattleResults(battleId: string, userId: string): Promise<DiaryBattle>;
   
+  // Battle invitation operations
+  createBattleInvitation(battleId: string, invitedUserId: string, invitedByUserId: string): Promise<any>;
+  getBattleInvitation(id: string): Promise<any>;
+  getUserBattleInvitations(userId: string, status?: string): Promise<any[]>;
+  updateInvitationStatus(id: string, status: string): Promise<any>;
+  getInvitedUsersForBattle(battleId: string): Promise<string[]>;
+  
   // Freemium limit checks
   checkDiaryTripLimit(userId: string): Promise<{ canCreate: boolean; currentCount: number; limit: number }>;
   checkDiaryCatchLimit(userId: string): Promise<{ canCreate: boolean; currentCount: number; limit: number }>;
@@ -376,6 +385,25 @@ export class DatabaseStorage implements IStorage {
 
   async getAllUsers(): Promise<User[]> {
     return db.select().from(users).orderBy(desc(users.createdAt));
+  }
+
+  async searchUsers(query: string, excludeUserId?: string): Promise<User[]> {
+    const searchTerm = `%${query.toLowerCase()}%`;
+    const conditions = [
+      sql`LOWER(${users.email}) LIKE ${searchTerm} OR LOWER(${users.firstName}) LIKE ${searchTerm} OR LOWER(${users.lastName}) LIKE ${searchTerm}`,
+      eq(users.active, true)
+    ];
+    
+    if (excludeUserId) {
+      conditions.push(ne(users.id, excludeUserId));
+    }
+    
+    return db
+      .select()
+      .from(users)
+      .where(and(...conditions))
+      .orderBy(users.email)
+      .limit(10);
   }
 
   async updateUserRole(userId: string, newRole: string): Promise<User> {
@@ -2405,6 +2433,87 @@ export class DatabaseStorage implements IStorage {
       .returning();
 
     return updatedBattle;
+  }
+
+  // Battle invitation operations
+  async createBattleInvitation(battleId: string, invitedUserId: string, invitedByUserId: string) {
+    // Check if invitation already exists
+    const [existing] = await db
+      .select()
+      .from(battleInvitations)
+      .where(and(
+        eq(battleInvitations.battleId, battleId),
+        eq(battleInvitations.invitedUserId, invitedUserId)
+      ));
+    
+    if (existing) {
+      throw new Error("Používateľ už bol pozvaný do tohto battle");
+    }
+    
+    const [invitation] = await db
+      .insert(battleInvitations)
+      .values({
+        battleId,
+        invitedUserId,
+        invitedByUserId,
+        status: "pending"
+      })
+      .returning();
+    
+    return invitation;
+  }
+
+  async getBattleInvitation(id: string) {
+    const [invitation] = await db
+      .select()
+      .from(battleInvitations)
+      .where(eq(battleInvitations.id, id));
+    
+    return invitation;
+  }
+
+  async getUserBattleInvitations(userId: string, status?: string) {
+    const conditions = [eq(battleInvitations.invitedUserId, userId)];
+    
+    if (status) {
+      conditions.push(eq(battleInvitations.status, status));
+    }
+    
+    const invitations = await db
+      .select({
+        invitation: battleInvitations,
+        battle: diaryBattles,
+        invitedByUser: users,
+      })
+      .from(battleInvitations)
+      .leftJoin(diaryBattles, eq(battleInvitations.battleId, diaryBattles.id))
+      .leftJoin(users, eq(battleInvitations.invitedByUserId, users.id))
+      .where(and(...conditions))
+      .orderBy(desc(battleInvitations.createdAt));
+    
+    return invitations;
+  }
+
+  async updateInvitationStatus(id: string, status: string) {
+    const [updated] = await db
+      .update(battleInvitations)
+      .set({ 
+        status,
+        updatedAt: new Date()
+      })
+      .where(eq(battleInvitations.id, id))
+      .returning();
+    
+    return updated;
+  }
+
+  async getInvitedUsersForBattle(battleId: string): Promise<string[]> {
+    const invitations = await db
+      .select({ userId: battleInvitations.invitedUserId })
+      .from(battleInvitations)
+      .where(eq(battleInvitations.battleId, battleId));
+    
+    return invitations.map(inv => inv.userId);
   }
 
   // Check if user can access advanced statistics (PREMIUM feature)

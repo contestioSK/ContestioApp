@@ -644,6 +644,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User search endpoint (for battle invitations)
+  app.get('/api/users/search', isAuthenticated, async (req: any, res) => {
+    try {
+      // Support both auth systems
+      const userId = req.user?.id || req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const query = req.query.q as string;
+      const battleId = req.query.battleId as string;
+      
+      if (!query || query.trim().length < 2) {
+        return res.json([]);
+      }
+
+      let users = await storage.searchUsers(query.trim(), userId);
+      
+      // If battleId is provided, exclude already invited users
+      if (battleId) {
+        const invitedUserIds = await storage.getInvitedUsersForBattle(battleId);
+        users = users.filter(user => !invitedUserIds.includes(user.id));
+      }
+      
+      // Return only safe user data (exclude sensitive fields)
+      const safeUsers = users.map(user => ({
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        profileImageUrl: user.profileImageUrl,
+      }));
+      
+      res.json(safeUsers);
+    } catch (error) {
+      console.error("[USER_SEARCH] Error searching users:", error);
+      res.status(500).json({ message: "Chyba pri vyhľadávaní používateľov" });
+    }
+  });
+
   // User favorites endpoints
   app.get('/api/users/favorites/competitions', isAuthenticated, async (req: any, res) => {
     try {
