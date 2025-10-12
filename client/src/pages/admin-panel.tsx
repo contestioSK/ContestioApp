@@ -849,6 +849,28 @@ export default function AdminPanel() {
     },
   });
 
+  // User premium status update mutation
+  const updateUserPremiumMutation = useMutation({
+    mutationFn: async ({ userId, isPremium }: { userId: string; isPremium: boolean }) => {
+      const response = await apiRequest("PUT", `/api/admin/users/${userId}/premium`, { isPremium });
+      return response.json();
+    },
+    onSuccess: () => {
+      refetchUsers();
+      toast({
+        title: "Úspech",
+        description: "Premium status bol aktualizovaný",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Chyba",
+        description: "Nepodarilo sa aktualizovať premium status",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Competition creation mutation
   const createCompetitionMutation = useMutation({
     mutationFn: async (competitionData: any) => {
@@ -1933,6 +1955,9 @@ export default function AdminPanel() {
                                    user.role === 'organizer' ? 'Organizátor' :
                                    user.role === 'referee' ? 'Rozhodca' : 'Verejnosť'}
                                 </Badge>
+                                <Badge variant={user.isPremium ? 'default' : 'outline'} data-testid={`badge-premium-${user.id}`}>
+                                  {user.isPremium ? 'PREMIUM' : 'FREE'}
+                                </Badge>
                               </div>
 
                               {/* Status Toggle and Role Change Select */}
@@ -1947,6 +1972,19 @@ export default function AdminPanel() {
                                   />
                                   <span className="text-xs text-muted-foreground">
                                     {user.active ? 'Aktívny' : 'Neaktívny'}
+                                  </span>
+                                </div>
+
+                                {/* Premium Toggle Switch */}
+                                <div className="flex items-center space-x-2 min-w-[100px]">
+                                  <Switch 
+                                    checked={user.isPremium ?? false}
+                                    onCheckedChange={(isPremium) => updateUserPremiumMutation.mutate({ userId: user.id, isPremium })}
+                                    disabled={updateUserPremiumMutation.isPending}
+                                    data-testid={`switch-premium-${user.id}`}
+                                  />
+                                  <span className="text-xs text-muted-foreground">
+                                    {user.isPremium ? 'Premium' : 'Free'}
                                   </span>
                                 </div>
 
