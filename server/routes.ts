@@ -3486,7 +3486,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get single battle by ID
   app.get('/api/diary/battles/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user?.id || req.user?.claims?.sub;
       const { id } = req.params;
       
       const battle = await storage.getDiaryBattle(id, userId);
@@ -3505,7 +3505,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update battle
   app.put('/api/diary/battles/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user?.id || req.user?.claims?.sub;
       const { id } = req.params;
       
       // Check if user has access to battle features (PREMIUM gating)

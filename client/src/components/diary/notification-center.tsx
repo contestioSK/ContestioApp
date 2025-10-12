@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { formatDistanceToNow } from "date-fns";
+import { useWebSocket } from "@/hooks/useWebSocket";
 
 interface BattleInvitation {
   id: string;
@@ -36,6 +37,22 @@ export function NotificationCenter() {
   });
 
   const pendingInvitations = invitations.filter(inv => inv.status === 'pending');
+
+  // WebSocket listener for battle invitations
+  useWebSocket((message) => {
+    if (message.type === 'battle_invitation') {
+      console.log('[NotificationCenter] Received battle invitation:', message);
+      
+      // Invalidate invitations query to refresh the list
+      queryClient.invalidateQueries({ queryKey: ['/api/diary/battles/invitations'] });
+      
+      // Show toast notification
+      toast({
+        title: "🎣 Nová výzva!",
+        description: `${message.inviterName} vás pozval do battle: ${message.battleName}`,
+      });
+    }
+  });
 
   // Accept invitation mutation
   const acceptMutation = useMutation({

@@ -520,6 +520,21 @@ export class NotificationService {
         ? `${invitingUser.firstName || invitingUser.email} ${invitingUser.lastName || ''}`.trim()
         : 'Používateľ';
       
+      // Broadcast WebSocket event to invited user
+      if (this.broadcaster) {
+        this.broadcaster.broadcastToUsers([invitedUserId], {
+          type: 'battle_invitation',
+          battleId: data.battleId,
+          battleName: data.battleName,
+          invitedByUserId: data.invitedByUserId,
+          inviterName,
+          timestamp: new Date()
+        });
+        console.log(`[NotificationService] Sent WebSocket battle invitation to user ${invitedUserId}`);
+      } else {
+        console.log(`[NotificationService] Skipping WebSocket broadcast (no broadcaster available)`);
+      }
+      
       // Send push notification
       await this.sendPushNotifications([invitedUserId], {
         title: '🎣 Nová výzva!',
