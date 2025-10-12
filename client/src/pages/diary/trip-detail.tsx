@@ -34,6 +34,7 @@ export default function TripDetail() {
   const { id } = useParams();
   const [, setLocation] = useLocation();
   const [selectedCatch, setSelectedCatch] = useState<DiaryCatch | null>(null);
+  const [showAllCatches, setShowAllCatches] = useState(false);
 
   // Fetch trip detail
   const { data: trip, isLoading: tripLoading } = useQuery<DiaryTrip>({
@@ -61,6 +62,10 @@ export default function TripDetail() {
   const sortedCatches = [...tripCatches].sort((a, b) => parseFloat(b.weight) - parseFloat(a.weight));
   const top3Catches = sortedCatches.slice(0, 3);
   const remainingCatches = sortedCatches.slice(3);
+  
+  // Limit displayed catches to 10 when not expanded
+  const displayedCatches = showAllCatches ? remainingCatches : remainingCatches.slice(0, 10);
+  const hasMoreCatches = remainingCatches.length > 10;
 
   if (tripLoading) {
     return (
@@ -297,7 +302,7 @@ export default function TripDetail() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {remainingCatches.map((catch_, index) => (
+                          {displayedCatches.map((catch_, index) => (
                             <TableRow 
                               key={catch_.id}
                               className="cursor-pointer hover:bg-muted/50"
@@ -327,6 +332,19 @@ export default function TripDetail() {
                         </TableBody>
                       </Table>
                     </div>
+                    
+                    {/* Show All Button */}
+                    {hasMoreCatches && !showAllCatches && (
+                      <div className="mt-4 text-center">
+                        <Button
+                          variant="outline"
+                          onClick={() => setShowAllCatches(true)}
+                          data-testid="button-show-all-catches"
+                        >
+                          Zobraziť všetky úlovky ({remainingCatches.length})
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 )}
               </>
