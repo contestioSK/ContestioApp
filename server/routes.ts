@@ -3712,6 +3712,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const battleData = battleSchema.parse(req.body);
       
+      // Get creator info to add them as participant
+      const creator = await storage.getUser(userId);
+      if (!creator) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Get creator display name (firstName + lastName, or firstName, or email)
+      const creatorName = creator.firstName && creator.lastName 
+        ? `${creator.firstName} ${creator.lastName}`
+        : creator.firstName || creator.email || "Unknown";
+      
+      // Add creator to participants automatically
+      const allParticipants = [
+        { name: creatorName, userId: creator.id },
+        ...battleData.participants
+      ];
+      
       // Create trip automatically with same name and dates as battle
       const tripData = {
         name: battleData.name,
@@ -3721,17 +3738,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ownerUserId: userId,
         visibility: "private" as const,
         notes: `Automaticky vytvorené pre battle: ${battleData.name}`,
-        participants: battleData.participants.map(p => ({ name: p.name }))
+        participants: allParticipants.map(p => ({ name: p.name }))
       };
       
       const trip = await storage.createDiaryTrip(tripData, userId);
       
-      // Now create battle with reference to the new trip
+      // Now create battle with reference to the new trip (include creator in participants)
       const battleDataWithTrip = {
         status: "active" as const,
         name: battleData.name,
         rules: battleData.rules,
-        participants: battleData.participants,
+        participants: allParticipants,
         tripId: trip.id,
         startAt: battleData.startAt,
         endAt: battleData.endAt
@@ -3809,9 +3826,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const battleData = insertDiaryBattleSchema.parse(req.body);
       const invitedUserIds = req.body.invitedUserIds || [];
       
+      // Get creator info to add them as participant
+      const creator = await storage.getUser(userId);
+      if (!creator) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Get creator display name (firstName + lastName, or firstName, or email)
+      const creatorName = creator.firstName && creator.lastName 
+        ? `${creator.firstName} ${creator.lastName}`
+        : creator.firstName || creator.email || "Unknown";
+      
+      // Add creator to participants automatically
+      const allParticipants = [
+        { name: creatorName, userId: creator.id },
+        ...(battleData.participants || [])
+      ];
+      
       // Ensure dates are Date objects (double-check Zod transformation)
       const processedBattleData = {
         ...battleData,
+        participants: allParticipants,
         startAt: battleData.startAt instanceof Date ? battleData.startAt : new Date(battleData.startAt),
         endAt: battleData.endAt instanceof Date ? battleData.endAt : new Date(battleData.endAt),
       };
