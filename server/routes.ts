@@ -3483,6 +3483,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get user's battle invitations (must come before :id route)
+  app.get('/api/diary/battles/invitations', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id || req.user?.claims?.sub;
+      const status = req.query.status as string | undefined;
+      
+      const invitations = await storage.getUserBattleInvitations(userId, status);
+      res.json(invitations);
+    } catch (error) {
+      console.error("Error fetching battle invitations:", error);
+      res.status(500).json({ message: "Nepodarilo sa načítať pozvánky" });
+    }
+  });
+
   // Get single battle by ID
   app.get('/api/diary/battles/:id', isAuthenticated, async (req: any, res) => {
     try {
@@ -3850,20 +3864,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error rejecting battle invitation:", error);
       res.status(500).json({ message: "Nepodarilo sa odmietnuť pozvánku" });
-    }
-  });
-
-  // Get user's battle invitations
-  app.get('/api/diary/battles/invitations', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user?.id || req.user?.claims?.sub;
-      const status = req.query.status as string | undefined;
-      
-      const invitations = await storage.getUserBattleInvitations(userId, status);
-      res.json(invitations);
-    } catch (error) {
-      console.error("Error fetching battle invitations:", error);
-      res.status(500).json({ message: "Nepodarilo sa načítať pozvánky" });
     }
   });
 

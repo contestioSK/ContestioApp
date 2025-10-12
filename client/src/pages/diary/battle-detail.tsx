@@ -7,12 +7,26 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
-import { Trophy, Users, Calendar, Clock, Fish, Weight, Plus, AlertCircle, Download, Share2, BarChart3 } from "lucide-react";
+import { Trophy, Users, Calendar, Clock, Fish, Weight, Plus, AlertCircle, Download, Share2, BarChart3, UserCheck, UserPlus } from "lucide-react";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
 import { useQuery } from "@tanstack/react-query";
 import DiaryLayout from "@/components/DiaryLayout";
 import type { DiaryBattle } from "@shared/schema";
+
+interface BattleInvitation {
+  id: string;
+  battleId: string;
+  invitedUserId: string;
+  invitedByUserId: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  createdAt: string;
+  invitedUser?: {
+    firstName: string | null;
+    lastName: string | null;
+    email: string;
+  };
+}
 
 // WebSocket message interface
 interface WebSocketMessage {
@@ -74,6 +88,15 @@ export default function BattleDetail() {
     queryKey: ['/api/diary/battles', id],
     enabled: !!id && !!user,
   });
+
+  // Load battle invitations
+  const { data: allInvitations = [] } = useQuery<BattleInvitation[]>({
+    queryKey: ['/api/diary/battles/invitations'],
+    enabled: !!user,
+  });
+
+  // Filter invitations for this battle
+  const battleInvitations = allInvitations.filter(inv => inv.battleId === id);
 
   // Update local state when data is loaded and deserialize dates
   useEffect(() => {
@@ -273,6 +296,7 @@ export default function BattleDetail() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
+                  {/* Accepted Participants */}
                   {battle.participants.map((participant, index) => {
                     const isCurrentUser = participant.userId === user?.id;
                     
@@ -284,6 +308,7 @@ export default function BattleDetail() {
                             ? "border-primary bg-primary/5 dark:bg-primary/10" 
                             : "border-border bg-muted/30"
                         }`}
+                        data-testid={`participant-${participant.userId}`}
                       >
                         <div className="flex items-center gap-2 min-w-0 flex-1">
                           <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
@@ -292,11 +317,55 @@ export default function BattleDetail() {
                             </span>
                           </div>
                           <div className="min-w-0 flex-1">
-                            <div className="font-medium text-foreground truncate">
-                              {participant.name}
-                              {isCurrentUser && (
-                                <span className="text-primary ml-2 text-sm">(Vy)</span>
-                              )}
+                            <div className="flex items-center gap-2">
+                              <div className="font-medium text-foreground truncate">
+                                {participant.name}
+                                {isCurrentUser && (
+                                  <span className="text-primary ml-2 text-sm">(Vy)</span>
+                                )}
+                              </div>
+                              <Badge variant="outline" className="border-green-600/50 bg-green-600/10 text-green-600 dark:border-green-500/50 dark:bg-green-500/10 dark:text-green-400 flex items-center gap-1">
+                                <UserCheck className="w-3 h-3" />
+                                Prijatý
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  
+                  {/* Pending Invitations */}
+                  {battleInvitations.filter(inv => inv.status === 'pending').map((invitation) => {
+                    const getInvitedUserName = () => {
+                      if (!invitation.invitedUser) return 'Používateľ';
+                      if (invitation.invitedUser.firstName || invitation.invitedUser.lastName) {
+                        return `${invitation.invitedUser.firstName || ''} ${invitation.invitedUser.lastName || ''}`.trim();
+                      }
+                      return invitation.invitedUser.email;
+                    };
+                    
+                    return (
+                      <div 
+                        key={invitation.id}
+                        className="flex items-center gap-3 p-4 rounded-lg border border-orange-600/30 bg-orange-600/5 dark:border-orange-500/30 dark:bg-orange-500/5"
+                        data-testid={`pending-invitation-${invitation.id}`}
+                      >
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          <div className="w-10 h-10 rounded-full bg-orange-600/20 dark:bg-orange-500/20 flex items-center justify-center">
+                            <span className="text-orange-600 dark:text-orange-400 font-semibold">
+                              {getInvitedUserName().charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <div className="font-medium text-foreground truncate">
+                                {getInvitedUserName()}
+                              </div>
+                              <Badge variant="outline" className="border-orange-600/50 bg-orange-600/10 text-orange-600 dark:border-orange-500/50 dark:bg-orange-500/10 dark:text-orange-400 flex items-center gap-1">
+                                <UserPlus className="w-3 h-3" />
+                                Čaká na odpoveď
+                              </Badge>
                             </div>
                           </div>
                         </div>
