@@ -1794,6 +1794,57 @@ export default function DiaryCatches() {
                     </div>
                   )}
 
+                  {/* Weather Conditions */}
+                  {(selectedCatch.waterTemp !== null && selectedCatch.waterTemp !== undefined) || 
+                   (selectedCatch.airTemp !== null && selectedCatch.airTemp !== undefined) || 
+                   (selectedCatch.windSpeed !== null && selectedCatch.windSpeed !== undefined) || 
+                   (selectedCatch.airPressure !== null && selectedCatch.airPressure !== undefined) ? (
+                    <div className="border-t border-slate-700 pt-4">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Cloud className="w-5 h-5 text-slate-400" />
+                        <div className="text-sm text-slate-400">Podmienky počasia</div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        {(selectedCatch.waterTemp !== null && selectedCatch.waterTemp !== undefined) && (
+                          <div className="bg-slate-700/50 rounded-lg p-3">
+                            <div className="flex items-center gap-2 text-slate-400 mb-1">
+                              <Thermometer className="w-4 h-4" />
+                              <span className="text-xs">Teplota vody</span>
+                            </div>
+                            <div className="font-semibold" data-testid="detail-water-temp">{selectedCatch.waterTemp}°C</div>
+                          </div>
+                        )}
+                        {(selectedCatch.airTemp !== null && selectedCatch.airTemp !== undefined) && (
+                          <div className="bg-slate-700/50 rounded-lg p-3">
+                            <div className="flex items-center gap-2 text-slate-400 mb-1">
+                              <Thermometer className="w-4 h-4" />
+                              <span className="text-xs">Teplota vzduchu</span>
+                            </div>
+                            <div className="font-semibold" data-testid="detail-air-temp">{selectedCatch.airTemp}°C</div>
+                          </div>
+                        )}
+                        {(selectedCatch.windSpeed !== null && selectedCatch.windSpeed !== undefined) && (
+                          <div className="bg-slate-700/50 rounded-lg p-3">
+                            <div className="flex items-center gap-2 text-slate-400 mb-1">
+                              <Wind className="w-4 h-4" />
+                              <span className="text-xs">Vietor</span>
+                            </div>
+                            <div className="font-semibold" data-testid="detail-wind-speed">{selectedCatch.windSpeed} km/h</div>
+                          </div>
+                        )}
+                        {(selectedCatch.airPressure !== null && selectedCatch.airPressure !== undefined) && (
+                          <div className="bg-slate-700/50 rounded-lg p-3">
+                            <div className="flex items-center gap-2 text-slate-400 mb-1">
+                              <Gauge className="w-4 h-4" />
+                              <span className="text-xs">Tlak vzduchu</span>
+                            </div>
+                            <div className="font-semibold" data-testid="detail-air-pressure">{selectedCatch.airPressure} mb</div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : null}
+
                   {/* Action Buttons */}
                   <div className="pt-4 space-y-3">
                     <Button 
