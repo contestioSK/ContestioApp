@@ -1,0 +1,70 @@
+Technické Zadanie (Prompt) pre Vývoj Obrazovky "Sezónne Ciele"
+Projekt: Contestio - Modul Ciele
+Cieľ: Vytvoriť plne funkčný a interaktívny dashboard "Sezónne Ciele" podľa finálneho UX/UI návrhu.
+Technológie: React.js, TailwindCSS
+Dizajnový Jazyk: Moderný, prémiový, tmavý (dark mode) a dátovo-orientovaný.
+
+1. Celková Architektúra a Rozloženie (Layout)
+Vytvorte hlavnú stránku pre sekciu "Ciele", ktorá bude slúžiť ako dashboard pre prehľad sezónnych cieľov používateľa.
+
+Hlavička: Musí obsahovať nadpis "Sezónne Ciele", popis a výrazné tlačidlo "Vytvoriť Nový Cieľ".
+
+Hlavný Obsah: Bude rozdelený do troch hlavných sekcií:
+
+Súhrnné widgety (vrátane nového motivačného widgetu).
+
+Zvýraznený hlavný cieľ sezóny.
+
+Zoznam ostatných aktívnych cieľov.
+
+2. Komponenty a Požiadavky na Dizajn
+2.1. Súhrnné Widgety
+Rozloženie: Tri karty vedľa seba.
+
+Karta 1: "Celkom Cieľov": Jednoduchá karta zobrazujúca celkový počet aktívnych cieľov.
+
+Karta 2: "Ďalší na Rade" (Motivačný Widget):
+
+Logika: Tento widget musí dynamicky identifikovať a zobraziť ten cieľ, ktorý je percentuálne najbližšie k splneniu.
+
+Dizajn: Musí byť vizuálne odlíšený (napr. prémiovým gradientom), aby upútal pozornosť.
+
+Obsah: Zobrazí názov cieľa a text, ktorý motivuje k jeho dokončeniu (napr. "Chýba ti už len 31 kg do splnenia!").
+
+Karta 3: "Splnených Cieľov": Jednoduchá karta zobrazujúca počet cieľov, ktoré už boli splnené.
+
+2.2. Hlavný Cieľ Sezóny
+Logika: Zobrazí sa tu ten cieľ, ktorý má používateľ označený ako "hlavný".
+
+Dizajn: Musí to byť vizuálne dominantný prvok na stránke.
+
+Komponenty:
+
+Kruhový Progress Bar (Gauge): Zobrazuje percentuálne splnenie cieľa.
+
+Textový Obsah: Musí obsahovať odznak "HLAVNÝ CIEĽ", názov cieľa a prehľadné zobrazenie aktuálneho a cieľového stavu (napr. "Aktuálne: 19,0 kg / Cieľ: 23,0 kg").
+
+2.3. Zoznam Aktívnych Cieľov
+Logika: Zobrazí všetky ostatné aktívne ciele, ktoré nie sú označené ako hlavné.
+
+Dizajn: Každý cieľ bude zobrazený ako samostatná karta.
+
+Obsah Karty:
+
+Názov cieľa.
+
+Lineárny Progress Bar: Zobrazuje percentuálne splnenie.
+
+Textový Prehľad: Zobrazuje aktuálny a cieľový stav (napr. "1 000 / 25 000 ks") a percentuálnu hodnotu.
+
+Akčné Ikonky: Musí obsahovať ikony na úpravu a zmazanie cieľa.
+
+3. Formátovanie a Konzistencia Dát
+Jednotky: Všetky číselné hodnoty musia byť zobrazené s príslušnými jednotkami (kg, ks, dni).
+
+Formát Čísel: Pre lepšiu čitateľnosť používajte medzeru ako oddeľovač tisícov (napr. "25 000" namiesto "25000").
+
+4. Dáta a Stav Aplikácie
+Pre účely prototypu vytvorte statický objekt s dátami, ktorý bude obsahovať pole s viacerými cieľmi. Jeden z nich musí byť označený ako hlavný (isMain: true).
+
+Celý stav dashboardu musí byť spravovaný v rámci React stavu (useState, useContext). Log
