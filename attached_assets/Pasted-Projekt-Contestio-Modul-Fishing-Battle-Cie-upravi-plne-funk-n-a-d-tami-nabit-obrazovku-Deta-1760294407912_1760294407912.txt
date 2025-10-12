@@ -1,0 +1,62 @@
+Projekt: Contestio - Modul Fishing Battle
+Cieľ: upraviť plne funkčnú a dátami nabitú obrazovku "Detail Fishing Battle" podľa finálneho UX/UI návrhu. Technológie: React.js, TailwindCSS
+Dizajnový Jazyk: Moderný, prémiový, tmavý (dark mode), zameraný na live dáta a súťaživosť.
+
+1. Celková Architektúra a Rozloženie (Layout)
+Vytvorte hlavnú stránku pre detail prebiehajúceho súboja.
+
+Hlavička: Musí obsahovať názov súboja (napr. "Battle: Víkend na Domaši"), zostávajúci čas a tlačidlo "Pridať Úlovok".
+
+Hlavný Obsah (Grid): Rozloženie bude trojstĺpcové (lg:grid-cols-3):
+
+Ľavý Blok (2 stĺpce): Bude obsahovať hlavné "live" prvky súboja pod sebou: "Priebežné Poradie", "Vývoj Súboja" a "Live Feed Úlovkov".
+
+Pravý Blok (1 stĺpec): Bude slúžiť ako informačný panel so súhrnnými "highlightami" súboja.
+
+2. Komponenty a Požiadavky na Dizajn
+2.1. Sekcia "Priebežné Poradie"
+Dizajn: Vytvorte prémiový rebríček (leaderboard). Každý riadok musí obsahovať:
+
+Poradie (číslo).
+
+Avatar a meno súťažiaceho.
+
+Lineárny Progress Bar, ktorý vizuálne porovnáva váhu daného súťažiaceho s vedúcim pretekárom.
+
+Celkovú váhu úlovkov.
+
+Vizuálne Odlíšenie: Riadok aktuálne prihláseného používateľa a riadok lídra musia byť jemne vizuálne odlíšené.
+
+2.2. Sekcia "Vývoj Súboja" (Nový Graf)
+Logika: Tento komponent je kľúčový. Musí vizualizovať priebeh súboja v čase.
+
+Dizajn: Implementujte SVG line graf, ktorý bude zobrazovať vývoj celkovej váhy pre každého účastníka v čase. Každý účastník bude mať vlastnú farebnú krivku.
+
+Interaktivita: Pri prejdení myšou ponad graf sa musí zobraziť "tooltip" s presnými hodnotami pre daný časový bod.
+
+2.3. Sekcia "Live Feed Úlovkov"
+Logika: Zobrazí chronologický zoznam posledných pridaných úlovkov v rámci súboja.
+
+Komponent Karty Úlovku: Každý úlovok bude reprezentovaný ako karta, ktorá musí obsahovať:
+
+Fotku úlovku.
+
+Druh a váhu ryby.
+
+Meno rybára, ktorý ju chytil.
+
+Časový údaj (napr. "pred 15 minútami").
+
+2.4. Pravý Bočný Panel (Highlighty)
+Štruktúra: Tri samostatné karty pod sebou.
+
+Karta 1: "Zostáva do Konca": Výrazná karta zobrazujúca odpočet zostávajúceho času.
+
+Karta 2: "Highlight Súboja": Zobrazí fotku, váhu a lovca aktuálne najväčšej ryby v súboji.
+
+Karta 3: "Pravidlá Súboja": Prehľadný zoznam kľúčových pravidiel, podľa ktorých sa súťaží.
+
+3. Dáta a Stav Aplikácie
+Pre účely prototypu vytvorte statické objekty s dátami, ktoré budú reprezentovať účastníkov, ich úlovky v čase a pravidlá.
+
+Celá stránka musí byť navrhnutá tak, aby sa v budúcnosti dala jednoducho napojiť na live dáta (napr. cez WebSockets) a automaticky sa aktualizovala bez nutnosti
