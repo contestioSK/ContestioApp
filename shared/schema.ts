@@ -305,6 +305,11 @@ export const diaryCatches = pgTable("diary_catches", {
   }>>().default([]), // Array of photo objects with processing status
   notes: text("notes"),
   verified: boolean("verified").default(false).notNull(), // For battle verification
+  // Weather data (optional)
+  waterTemp: decimal("water_temp", { precision: 5, scale: 2 }), // Water temperature in °C
+  airTemp: decimal("air_temp", { precision: 5, scale: 2 }), // Air temperature in °C (from API)
+  windSpeed: decimal("wind_speed", { precision: 6, scale: 2 }), // Wind speed in km/h (from API)
+  airPressure: decimal("air_pressure", { precision: 7, scale: 2 }), // Air pressure in mb/hPa (from API)
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -845,6 +850,11 @@ export const insertDiaryCatchSchema = createInsertSchema(diaryCatches).omit({
     error: z.string().optional()
   })).optional(),
   verified: z.boolean().default(false),
+  // Weather data (optional)
+  waterTemp: z.number().min(-50).max(50).optional(), // Water temperature in °C (-50 to 50)
+  airTemp: z.number().min(-50).max(50).optional(), // Air temperature in °C (-50 to 50)
+  windSpeed: z.number().min(0).max(500).optional(), // Wind speed in km/h (0 to 500)
+  airPressure: z.number().min(800).max(1200).optional(), // Air pressure in mb/hPa (800 to 1200)
 });
 
 export const insertDiaryBattleSchema = createInsertSchema(diaryBattles).omit({
