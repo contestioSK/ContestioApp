@@ -59,12 +59,6 @@ const navigationItems = [
     description: "3-dňová predpoveď"
   },
   {
-    icon: Scale,
-    label: "Rybársky poriadok",
-    href: "/diary/fishing-rules",
-    description: "Pravidlá a predpisy"
-  },
-  {
     icon: BarChart3,
     label: "Štatistiky", 
     href: "/diary/stats",
@@ -82,6 +76,12 @@ const navigationItems = [
     href: "/diary/battle",
     description: "Súťažné súboje",
     premium: true
+  },
+  {
+    icon: Scale,
+    label: "Rybársky poriadok",
+    href: "/diary/fishing-rules",
+    description: "Pravidlá a predpisy"
   }
   // {
   //   icon: Trophy,
