@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,9 +14,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Trophy, Users, Plus, X, CalendarIcon, ArrowLeft, Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Trophy, Users, Plus, X, CalendarIcon, ArrowLeft, Loader2, User as UserIcon } from "lucide-react";
 import { useLocation, useParams } from "wouter";
 import DiaryLayout from "@/components/DiaryLayout";
+import { UserSearch } from "@/components/diary/user-search";
 import type { DiaryBattle } from "@shared/schema";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
@@ -56,6 +58,7 @@ export default function BattleEdit() {
   const { id } = useParams<{ id: string }>();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const [invitedUserIds, setInvitedUserIds] = useState<string[]>([]);
 
   // Fetch existing battle data
   const { data: battle, isLoading: isLoadingBattle } = useQuery<DiaryBattle>({
@@ -91,12 +94,13 @@ export default function BattleEdit() {
   }, [battle, form]);
 
   const updateBattleMutation = useMutation({
-    mutationFn: async (data: EditBattleForm) => {
+    mutationFn: async (data: EditBattleForm & { invitedUserIds?: string[] }) => {
       const requestData = {
         name: data.name,
         startAt: data.startAt.toISOString(),
         endAt: data.endAt.toISOString(),
         participants: data.participants,
+        invitedUserIds: data.invitedUserIds || [],
         rules: {
           mode: data.mode,
           minWeightKg: data.minWeightKg,
@@ -136,8 +140,21 @@ export default function BattleEdit() {
     }
   };
 
+  const handleSelectUser = (userId: string) => {
+    setInvitedUserIds(prev => [...prev, userId]);
+  };
+
+  const handleRemoveUser = (userId: string) => {
+    setInvitedUserIds(prev => prev.filter(id => id !== userId));
+  };
+
   const onSubmit = (data: EditBattleForm) => {
-    updateBattleMutation.mutate(data);
+    // Add invited user IDs to mutation data
+    const mutationData = {
+      ...data,
+      invitedUserIds
+    };
+    updateBattleMutation.mutate(mutationData as EditBattleForm);
   };
 
   if (isLoadingBattle) {
@@ -325,48 +342,91 @@ export default function BattleEdit() {
                     Účastníci
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  {form.watch("participants").map((_, index) => (
-                    <div key={index} className="flex gap-2">
-                      <FormField
-                        control={form.control}
-                        name={`participants.${index}.name`}
-                        render={({ field }) => (
-                          <FormItem className="flex-1">
-                            <FormControl>
-                              <Input 
-                                placeholder="Meno účastníka" 
-                                {...field} 
-                                data-testid={`input-participant-${index}`}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                <CardContent>
+                  <div className="space-y-6">
+                    {/* Invite registered users */}
+                    <div className="space-y-3">
+                      <FormLabel>Pozvať registrovaných používateľov</FormLabel>
+                      <UserSearch
+                        battleId={id}
+                        selectedUsers={invitedUserIds}
+                        onSelectUser={handleSelectUser}
+                        onRemoveUser={handleRemoveUser}
                       />
-                      {form.watch("participants").length > 1 && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          onClick={() => removeParticipant(index)}
-                          data-testid={`button-remove-participant-${index}`}
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
+                      {invitedUserIds.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {invitedUserIds.map((userId, index) => (
+                            <Badge 
+                              key={userId} 
+                              variant="secondary" 
+                              className="flex items-center gap-1"
+                              data-testid={`badge-invited-user-${index}`}
+                            >
+                              <UserIcon className="h-3 w-3" />
+                              Pozvaný používateľ
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveUser(userId)}
+                                className="ml-1 hover:bg-destructive/20 rounded-full p-0.5"
+                                data-testid={`button-remove-invited-${index}`}
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
                       )}
+                      <FormDescription>
+                        Vyhľadajte používateľov podľa mena alebo emailu a pošlite im pozvánku
+                      </FormDescription>
                     </div>
-                  ))}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={addParticipant}
-                    className="w-full"
-                    data-testid="button-add-participant"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Pridať účastníka
-                  </Button>
+
+                    {/* Manual participant names */}
+                    <div className="space-y-3">
+                      <FormLabel>Alebo zadajte mená účastníkov manuálne</FormLabel>
+                      {form.watch("participants").map((_, index) => (
+                        <div key={index} className="flex gap-2">
+                          <FormField
+                            control={form.control}
+                            name={`participants.${index}.name`}
+                            render={({ field }) => (
+                              <FormItem className="flex-1">
+                                <FormControl>
+                                  <Input 
+                                    placeholder="Meno účastníka" 
+                                    {...field} 
+                                    data-testid={`input-participant-${index}`}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          {form.watch("participants").length > 1 && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              onClick={() => removeParticipant(index)}
+                              data-testid={`button-remove-participant-${index}`}
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={addParticipant}
+                        className="w-full"
+                        data-testid="button-add-participant"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Pridať účastníka
+                      </Button>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
 
