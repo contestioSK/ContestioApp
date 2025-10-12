@@ -4332,7 +4332,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/auth/premium-status', isAuthenticated, async (req: any, res) => {
     try {
       const userId = getUserId(req);
-      const user = await storage.getUserById(userId);
+      const user = await storage.getUser(userId);
       const isPremium = user?.isPremium ?? false;
       res.json({ isPremium });
     } catch (error) {
