@@ -83,6 +83,8 @@ export default function DiaryTrips() {
   const [editingTrip, setEditingTrip] = useState<DiaryTrip | null>(null);
   const [deletingTrip, setDeletingTrip] = useState<DiaryTrip | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
+  const [coverImagePreview, setCoverImagePreview] = useState<string | null>(null);
   
   // Offline functionality
   const { 
@@ -125,7 +127,7 @@ export default function DiaryTrips() {
 
   // Create trip mutation
   const createTripMutation = useMutation({
-    mutationFn: async (data: TripFormData) => {
+    mutationFn: async (data: TripFormData & { coverImageUrl?: string }) => {
       // Server will set ownerUserId from auth session
       const tripData = {
         ...data,
@@ -139,6 +141,8 @@ export default function DiaryTrips() {
       queryClient.invalidateQueries({ queryKey: ["/api/diary/trip-limits"] });
       setIsCreateDialogOpen(false);
       form.reset();
+      setCoverImageFile(null);
+      setCoverImagePreview(null);
       toast({
         title: "Výprava vytvorená!",
         description: "Vaša rybárska výprava bola úspešne vytvorená.",
@@ -151,7 +155,7 @@ export default function DiaryTrips() {
 
   // Update trip mutation
   const updateTripMutation = useMutation({
-    mutationFn: async (data: TripFormData) => {
+    mutationFn: async (data: TripFormData & { coverImageUrl?: string }) => {
       const response = await apiRequest("PUT", `/api/diary/trips/${editingTrip!.id}`, data);
       return response.json();
     },
@@ -159,6 +163,8 @@ export default function DiaryTrips() {
       queryClient.invalidateQueries({ queryKey: ["/api/diary/trips"] });
       setEditingTrip(null);
       form.reset();
+      setCoverImageFile(null);
+      setCoverImagePreview(null);
       toast({
         title: "Výprava aktualizovaná!",
         description: "Vaša rybárska výprava bola úspešne aktualizovaná.",
@@ -188,6 +194,50 @@ export default function DiaryTrips() {
     }
   });
 
+  // Handle cover image selection
+  const handleCoverImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setCoverImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCoverImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Upload cover image and return URL
+  const uploadCoverImage = async (): Promise<string | null> => {
+    if (!coverImageFile) return null;
+    
+    const formData = new FormData();
+    formData.append('coverImage', coverImageFile);
+    
+    try {
+      const response = await fetch('/api/diary/trips/upload-cover', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to upload cover image');
+      }
+      
+      const { coverImageUrl } = await response.json();
+      return coverImageUrl;
+    } catch (error) {
+      console.error('Error uploading cover image:', error);
+      toast({
+        title: "Chyba uploadu",
+        description: "Nepodarilo sa nahrať titulnú fotografiu",
+        variant: "destructive"
+      });
+      return null;
+    }
+  };
+
   const handleSubmit = async (data: TripFormData) => {
     if (isOffline) {
       // Save as draft when offline
@@ -214,11 +264,24 @@ export default function DiaryTrips() {
         });
       }
     } else {
-      // Online - use normal mutations
+      // Online - upload cover image first if selected
+      let coverImageUrl: string | undefined = editingTrip?.coverImageUrl || undefined;
+      
+      if (coverImageFile) {
+        const uploadedUrl = await uploadCoverImage();
+        if (uploadedUrl === null && coverImageFile) {
+          // Upload failed, don't proceed
+          return;
+        }
+        coverImageUrl = uploadedUrl || undefined;
+      }
+      
+      // Use normal mutations
+      const tripData = { ...data, ...(coverImageUrl && { coverImageUrl }) };
       if (editingTrip) {
-        updateTripMutation.mutate(data);
+        updateTripMutation.mutate(tripData);
       } else {
-        createTripMutation.mutate(data);
+        createTripMutation.mutate(tripData);
       }
     }
   };
@@ -235,6 +298,8 @@ export default function DiaryTrips() {
 
   const openEditDialog = (trip: DiaryTrip) => {
     setEditingTrip(trip);
+    setCoverImageFile(null);
+    setCoverImagePreview(null);
     form.reset({
       name: trip.name,
       startDate: new Date(trip.startDate),
@@ -250,6 +315,8 @@ export default function DiaryTrips() {
     setIsCreateDialogOpen(false);
     setEditingTrip(null);
     form.reset();
+    setCoverImageFile(null);
+    setCoverImagePreview(null);
   };
 
   const handleDeleteTrip = async () => {
@@ -568,6 +635,29 @@ export default function DiaryTrips() {
                             </FormItem>
                           )}
                         />
+                      </div>
+
+                      {/* Cover Image Upload */}
+                      <div className="space-y-2">
+                        <FormLabel>Titulná fotografia (voliteľné)</FormLabel>
+                        <div className="flex flex-col gap-4">
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleCoverImageChange}
+                            data-testid="input-cover-image"
+                          />
+                          {(coverImagePreview || editingTrip?.coverImageUrl) && (
+                            <div className="relative w-full h-48 rounded-lg overflow-hidden border">
+                              <img
+                                src={coverImagePreview || editingTrip?.coverImageUrl || ''}
+                                alt="Náhľad titulnej fotografie"
+                                className="w-full h-full object-cover"
+                                data-testid="img-cover-preview"
+                              />
+                            </div>
+                          )}
+                        </div>
                       </div>
 
                       <FormField
