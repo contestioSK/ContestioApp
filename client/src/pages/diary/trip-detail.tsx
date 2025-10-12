@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useParams, useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { format, isPast, isToday } from "date-fns";
 import { sk } from "date-fns/locale";
-import { ArrowLeft, MapPin, Calendar as CalendarIcon, Fish, Weight, Trophy, FileText, Medal, Ruler, Target, Cloud, Thermometer, Wind, Gauge } from "lucide-react";
+import { ArrowLeft, MapPin, Calendar as CalendarIcon, Fish, Weight, Trophy, FileText, Medal, Ruler, Target, Cloud, Thermometer, Wind, Gauge, XCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +11,19 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import DiaryLayout from "@/components/DiaryLayout";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 import type { DiaryTrip, DiaryCatch } from "@shared/schema";
 import { getFishTypeLabel } from "@/utils/fishTypeMapping";
@@ -35,6 +47,8 @@ export default function TripDetail() {
   const [, setLocation] = useLocation();
   const [selectedCatch, setSelectedCatch] = useState<DiaryCatch | null>(null);
   const [showAllCatches, setShowAllCatches] = useState(false);
+  const [showEndTripDialog, setShowEndTripDialog] = useState(false);
+  const { toast } = useToast();
 
   // Fetch trip detail
   const { data: trip, isLoading: tripLoading } = useQuery<DiaryTrip>({
@@ -46,6 +60,29 @@ export default function TripDetail() {
   const { data: allCatches = [] } = useQuery<DiaryCatch[]>({
     queryKey: ["/api/diary/catches", "all"],
     enabled: !!id
+  });
+
+  // End trip mutation
+  const endTripMutation = useMutation({
+    mutationFn: async () => {
+      await apiRequest("PATCH", `/api/diary/trips/${id}/end`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/diary/trips", id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/diary/trips"] });
+      setShowEndTripDialog(false);
+      toast({
+        title: "Výprava ukončená",
+        description: "Výprava bola úspešne ukončená dnešným dátumom.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Chyba",
+        description: error.message || "Nepodarilo sa ukončiť výpravu",
+        variant: "destructive",
+      });
+    }
   });
 
   // Filter catches for this trip
@@ -107,20 +144,43 @@ export default function TripDetail() {
       <div className="max-w-6xl mx-auto p-4 md:p-6 space-y-6" data-testid="page-trip-detail">
         {/* Hero Section - Back button and Trip Info */}
         <div className="space-y-4">
-          <Button
-            variant="ghost"
-            onClick={() => setLocation("/diary/trips")}
-            className="gap-2"
-            data-testid="button-back"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Späť na výpravy
-          </Button>
+          <div className="flex items-center justify-between">
+            <Button
+              variant="ghost"
+              onClick={() => setLocation("/diary/trips")}
+              className="gap-2"
+              data-testid="button-back"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Späť na výpravy
+            </Button>
+
+            {/* End Trip Button - only show if trip is not ended yet */}
+            {trip && !isPast(new Date(trip.endDate)) && !isToday(new Date(trip.endDate)) && (
+              <Button
+                variant="outline"
+                onClick={() => setShowEndTripDialog(true)}
+                className="gap-2 text-orange-600 hover:text-orange-700 border-orange-600 hover:border-orange-700"
+                data-testid="button-end-trip"
+              >
+                <XCircle className="w-4 h-4" />
+                Ukončiť výpravu
+              </Button>
+            )}
+          </div>
 
           <div>
-            <h1 className="text-3xl font-bold text-foreground mb-2" data-testid="text-trip-name">
-              {trip.name}
-            </h1>
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-3xl font-bold text-foreground" data-testid="text-trip-name">
+                {trip.name}
+              </h1>
+              {/* Badge for ended trip */}
+              {isPast(new Date(trip.endDate)) && (
+                <Badge variant="secondary" className="text-xs">
+                  Ukončená
+                </Badge>
+              )}
+            </div>
             <div className="flex flex-wrap gap-4 text-muted-foreground">
               <div className="flex items-center gap-2">
                 <CalendarIcon className="w-4 h-4" />
@@ -507,6 +567,29 @@ export default function TripDetail() {
             )}
           </SheetContent>
         </Sheet>
+
+        {/* End Trip Confirmation Dialog */}
+        <AlertDialog open={showEndTripDialog} onOpenChange={setShowEndTripDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Ukončiť výpravu?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Táto akcia nastaví dátum ukončenia výpravy na dnešný deň. Výpravu bude možné neskôr upraviť, ak bude potrebné.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel data-testid="button-cancel-end-trip">Zrušiť</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => endTripMutation.mutate()}
+                disabled={endTripMutation.isPending}
+                className="bg-orange-600 hover:bg-orange-700"
+                data-testid="button-confirm-end-trip"
+              >
+                {endTripMutation.isPending ? "Ukončujem..." : "Ukončiť výpravu"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </DiaryLayout>
   );
