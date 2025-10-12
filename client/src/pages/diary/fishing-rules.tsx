@@ -115,9 +115,22 @@ export default function FishingRulesPage() {
   const [activeSection, setActiveSection] = useState<QuickLinkType>("sizes");
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Filter function for search
+  const filterData = <T extends Record<string, any>>(data: T[]): T[] => {
+    if (!searchQuery.trim()) return data;
+    
+    const query = searchQuery.toLowerCase();
+    return data.filter(row => 
+      Object.values(row).some(value => 
+        String(value).toLowerCase().includes(query)
+      )
+    );
+  };
+
   const renderTable = () => {
     switch (activeSection) {
-      case "sizes":
+      case "sizes": {
+        const filteredSizeLimits = filterData(sizeLimitsData);
         return (
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
@@ -135,7 +148,14 @@ export default function FishingRulesPage() {
                 </tr>
               </thead>
               <tbody>
-                {sizeLimitsData.map((row, index) => (
+                {filteredSizeLimits.length === 0 ? (
+                  <tr>
+                    <td colSpan={3} className="px-6 py-8 text-center text-muted-foreground">
+                      Nenašli sa žiadne výsledky
+                    </td>
+                  </tr>
+                ) : (
+                  filteredSizeLimits.map((row, index) => (
                   <tr 
                     key={index} 
                     className="border-b border-border hover:bg-sidebar-accent transition-colors"
@@ -151,13 +171,16 @@ export default function FishingRulesPage() {
                       {row.note}
                     </td>
                   </tr>
-                ))}
+                  ))
+                )}
               </tbody>
             </table>
           </div>
         );
+      }
 
-      case "closedSeasons":
+      case "closedSeasons": {
+        const filteredClosedSeasons = filterData(closedSeasonsData);
         return (
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
@@ -175,7 +198,14 @@ export default function FishingRulesPage() {
                 </tr>
               </thead>
               <tbody>
-                {closedSeasonsData.map((row, index) => (
+                {filteredClosedSeasons.length === 0 ? (
+                  <tr>
+                    <td colSpan={3} className="px-6 py-8 text-center text-muted-foreground">
+                      Nenašli sa žiadne výsledky
+                    </td>
+                  </tr>
+                ) : (
+                  filteredClosedSeasons.map((row, index) => (
                   <tr 
                     key={index} 
                     className="border-b border-border hover:bg-sidebar-accent transition-colors"
@@ -191,13 +221,16 @@ export default function FishingRulesPage() {
                       {row.to}
                     </td>
                   </tr>
-                ))}
+                  ))
+                )}
               </tbody>
             </table>
           </div>
         );
+      }
 
-      case "dailyHours":
+      case "dailyHours": {
+        const filteredDailyHours = filterData(dailyHoursData);
         return (
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
@@ -215,7 +248,14 @@ export default function FishingRulesPage() {
                 </tr>
               </thead>
               <tbody>
-                {dailyHoursData.map((row, index) => (
+                {filteredDailyHours.length === 0 ? (
+                  <tr>
+                    <td colSpan={3} className="px-6 py-8 text-center text-muted-foreground">
+                      Nenašli sa žiadne výsledky
+                    </td>
+                  </tr>
+                ) : (
+                  filteredDailyHours.map((row, index) => (
                   <tr 
                     key={index} 
                     className="border-b border-border hover:bg-sidebar-accent transition-colors"
@@ -231,11 +271,13 @@ export default function FishingRulesPage() {
                       {row.troutWaters}
                     </td>
                   </tr>
-                ))}
+                  ))
+                )}
               </tbody>
             </table>
           </div>
         );
+      }
 
       default:
         return null;
