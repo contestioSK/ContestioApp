@@ -384,6 +384,78 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Features Section */}
+      <section id="features" className="bg-[#0c1f28] py-20 md:py-32">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          {/* Section Header */}
+          <div className="text-center mb-16 md:mb-24">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight">
+              Viac Než Len Aplikácia. <br className="hidden md:block" />
+              Tvoj Partner Pri Vode.
+            </h2>
+            <p className="text-lg md:text-xl text-white/70 max-w-3xl mx-auto">
+              Spojili sme silu živých súťaží s inteligentným osobným denníkom. Všetko na jednom mieste.
+            </p>
+          </div>
+
+          {/* Feature Block 1: Centrum Súťaží */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center mb-24 md:mb-32">
+            {/* Text Content - Left on Desktop */}
+            <div className="text-left order-2 lg:order-1">
+              <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+                Centrum Súťaží
+              </h3>
+              <p className="text-base md:text-lg text-white/80 mb-6 leading-relaxed">
+                Sleduj live výsledky, registruj tímy a spravuj súťaže v reálnom čase. Organizátori majú plnú kontrolu nad registráciami, rozhodcami a živými rebríčkami. Diváci môžu sledovať napínavé momenty priamo na mobiloch.
+              </p>
+              <Link href="/categories/live">
+                <span className="text-blue-400 hover:text-blue-300 font-medium inline-flex items-center gap-2 cursor-pointer transition-colors">
+                  Zistiť viac o súťažiach →
+                </span>
+              </Link>
+            </div>
+
+            {/* Image - Right on Desktop, Top on Mobile */}
+            <div className="order-1 lg:order-2">
+              <img 
+                src="https://placehold.co/600x400/1e3a5f/white?text=Mockup+Sutazi" 
+                alt="Mockup súťaží" 
+                className="w-full h-auto rounded-2xl shadow-2xl"
+              />
+            </div>
+          </div>
+
+          {/* Feature Block 2: Inteligentný Denník */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            {/* Image - Left on Desktop, Top on Mobile */}
+            <div className="order-1 lg:order-1">
+              <img 
+                src="https://placehold.co/600x400/10b981/white?text=Mockup+Dennika" 
+                alt="Mockup denníka" 
+                className="w-full h-auto rounded-2xl shadow-2xl"
+              />
+            </div>
+
+            {/* Text Content - Right on Desktop */}
+            <div className="text-left order-2 lg:order-2">
+              <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-6 bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
+                Inteligentný Denník
+              </h3>
+              <p className="text-base md:text-lg text-white/80 mb-6 leading-relaxed">
+                Vytvor si osobný rybársky denník s GPS lokalitami, fotkami úlovkov a pokročilými štatistikami. Sleduj svoj progres, súťaž s priateľmi v Fishing Battle a využívaj predpoveď počasia pre maximálny úspech.
+              </p>
+              <Link href="/diary">
+                <span className="text-emerald-400 hover:text-emerald-300 font-medium inline-flex items-center gap-2 cursor-pointer transition-colors">
+                  Preskúmať denník →
+                </span>
+              </Link>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
       {/* Contest Categories */}
       <ContestCategories contests={competitions} />
 
