@@ -505,4 +505,38 @@ export class NotificationService {
       console.error('[NotificationService] Error sending official announcement:', error);
     }
   }
+
+  // Send battle invitation notification
+  async sendBattleInvitation(
+    invitedUserId: string,
+    data: { battleId: string; battleName: string; invitedByUserId: string }
+  ): Promise<void> {
+    try {
+      console.log(`[NotificationService] Sending battle invitation to user ${invitedUserId}`);
+      
+      // Get inviting user details
+      const invitingUser = await storage.getUser(data.invitedByUserId);
+      const inviterName = invitingUser 
+        ? `${invitingUser.firstName || invitingUser.email} ${invitingUser.lastName || ''}`.trim()
+        : 'Používateľ';
+      
+      // Send push notification
+      await this.sendPushNotifications([invitedUserId], {
+        title: '🎣 Nová výzva!',
+        body: `${inviterName} vás pozval do battle: ${data.battleName}`,
+        icon: '/favicon.ico',
+        tag: `battle-invitation-${data.battleId}`,
+        url: `/diary`,
+        data: {
+          type: 'battle_invitation',
+          battleId: data.battleId,
+          invitedByUserId: data.invitedByUserId
+        }
+      });
+      
+      console.log(`[NotificationService] Battle invitation sent to user ${invitedUserId}`);
+    } catch (error) {
+      console.error('[NotificationService] Error sending battle invitation:', error);
+    }
+  }
 }

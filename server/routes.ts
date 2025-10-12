@@ -3538,6 +3538,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const updatedBattle = await storage.updateDiaryBattle(id, updateData, userId);
       
+      // Handle new invitations
+      const invitedUserIds = req.body.invitedUserIds || [];
+      if (invitedUserIds.length > 0) {
+        for (const invitedUserId of invitedUserIds) {
+          try {
+            const invitation = await storage.createBattleInvitation(id, invitedUserId, userId);
+            
+            // Send push notification to invited user
+            await notificationService.sendBattleInvitation(invitedUserId, {
+              battleId: id,
+              battleName: updatedBattle.name,
+              invitedByUserId: userId
+            });
+            
+            // Broadcast invitation via WebSocket
+            broadcastToUsers([invitedUserId], {
+              type: 'battle_invitation',
+              invitationId: invitation.id,
+              payload: { ...invitation, battle: updatedBattle }
+            });
+          } catch (error) {
+            console.error(`Failed to invite user ${invitedUserId} to battle ${id}:`, error);
+          }
+        }
+      }
+      
       // Broadcast update to all participants
       broadcastToUsers([userId], {
         type: 'diary_battle_updated',
@@ -3616,6 +3642,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const battle = await storage.createDiaryBattle(battleDataWithTrip, userId);
       
+      // Create invitations for selected users
+      const invitedUserIds = req.body.invitedUserIds || [];
+      if (invitedUserIds.length > 0) {
+        for (const invitedUserId of invitedUserIds) {
+          try {
+            const invitation = await storage.createBattleInvitation(battle.id, invitedUserId, userId);
+            
+            // Send push notification to invited user
+            await notificationService.sendBattleInvitation(invitedUserId, {
+              battleId: battle.id,
+              battleName: battle.name,
+              invitedByUserId: userId
+            });
+            
+            // Broadcast invitation via WebSocket
+            broadcastToUsers([invitedUserId], {
+              type: 'battle_invitation',
+              invitationId: invitation.id,
+              payload: { ...invitation, battle }
+            });
+          } catch (error) {
+            console.error(`Failed to invite user ${invitedUserId} to battle ${battle.id}:`, error);
+          }
+        }
+      }
+      
       // Broadcast both trip and battle creation
       broadcastToUsers([userId], {
         type: 'diary_trip_created',
@@ -3658,6 +3710,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Validate and parse request data (Zod automatically transforms dates)
       const battleData = insertDiaryBattleSchema.parse(req.body);
+      const invitedUserIds = req.body.invitedUserIds || [];
       
       // Ensure dates are Date objects (double-check Zod transformation)
       const processedBattleData = {
@@ -3669,8 +3722,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create battle in database
       const battle = await storage.createDiaryBattle(processedBattleData, userId);
       
-      // Broadcast battle creation only to the owner for real-time updates
-      // TODO: Later extend to include invited participants when that feature is added
+      // Create invitations for selected users
+      if (invitedUserIds.length > 0) {
+        for (const invitedUserId of invitedUserIds) {
+          try {
+            const invitation = await storage.createBattleInvitation(battle.id, invitedUserId, userId);
+            
+            // Send push notification to invited user
+            await notificationService.sendBattleInvitation(invitedUserId, {
+              battleId: battle.id,
+              battleName: battle.name,
+              invitedByUserId: userId
+            });
+            
+            // Broadcast invitation via WebSocket
+            broadcastToUsers([invitedUserId], {
+              type: 'battle_invitation',
+              invitationId: invitation.id,
+              payload: { ...invitation, battle }
+            });
+          } catch (error) {
+            console.error(`Failed to invite user ${invitedUserId} to battle ${battle.id}:`, error);
+          }
+        }
+      }
+      
+      // Broadcast battle creation to owner for real-time updates
       broadcastToUsers([userId], {
         type: 'diary_battle_created',
         battleId: battle.id,
@@ -3687,6 +3764,106 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       res.status(500).json({ message: "Failed to create battle" });
+    }
+  });
+
+  // Accept battle invitation
+  app.post('/api/diary/battles/invitations/:id/accept', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id || req.user?.claims?.sub;
+      const { id: invitationId } = req.params;
+      
+      // Get the invitation
+      const invitation = await storage.getBattleInvitation(invitationId);
+      
+      if (!invitation) {
+        return res.status(404).json({ message: "Pozvánka nebola nájdená" });
+      }
+      
+      if (invitation.invitedUserId !== userId) {
+        return res.status(403).json({ message: "Nemáte oprávnenie prijať túto pozvánku" });
+      }
+      
+      if (invitation.status !== "pending") {
+        return res.status(400).json({ message: "Pozvánka už bola spracovaná" });
+      }
+      
+      // Update invitation status
+      const updatedInvitation = await storage.updateInvitationStatus(invitationId, "accepted");
+      
+      // Get the battle to notify the organizer
+      const battle = await storage.getDiaryBattle(invitation.battleId);
+      
+      // Broadcast to organizer that invitation was accepted
+      broadcastToUsers([invitation.invitedByUserId], {
+        type: 'battle_invitation_accepted',
+        invitationId,
+        payload: { ...updatedInvitation, battle }
+      });
+      
+      // Broadcast to invited user to update their UI
+      broadcastToUsers([userId], {
+        type: 'battle_invitation_updated',
+        invitationId,
+        payload: updatedInvitation
+      });
+      
+      res.json(updatedInvitation);
+    } catch (error) {
+      console.error("Error accepting battle invitation:", error);
+      res.status(500).json({ message: "Nepodarilo sa prijať pozvánku" });
+    }
+  });
+
+  // Reject battle invitation
+  app.post('/api/diary/battles/invitations/:id/reject', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id || req.user?.claims?.sub;
+      const { id: invitationId } = req.params;
+      
+      // Get the invitation
+      const invitation = await storage.getBattleInvitation(invitationId);
+      
+      if (!invitation) {
+        return res.status(404).json({ message: "Pozvánka nebola nájdená" });
+      }
+      
+      if (invitation.invitedUserId !== userId) {
+        return res.status(403).json({ message: "Nemáte oprávnenie odmietnuť túto pozvánku" });
+      }
+      
+      if (invitation.status !== "pending") {
+        return res.status(400).json({ message: "Pozvánka už bola spracovaná" });
+      }
+      
+      // Update invitation status
+      const updatedInvitation = await storage.updateInvitationStatus(invitationId, "rejected");
+      
+      // Broadcast to invited user to update their UI
+      broadcastToUsers([userId], {
+        type: 'battle_invitation_updated',
+        invitationId,
+        payload: updatedInvitation
+      });
+      
+      res.json(updatedInvitation);
+    } catch (error) {
+      console.error("Error rejecting battle invitation:", error);
+      res.status(500).json({ message: "Nepodarilo sa odmietnuť pozvánku" });
+    }
+  });
+
+  // Get user's battle invitations
+  app.get('/api/diary/battles/invitations', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id || req.user?.claims?.sub;
+      const status = req.query.status as string | undefined;
+      
+      const invitations = await storage.getUserBattleInvitations(userId, status);
+      res.json(invitations);
+    } catch (error) {
+      console.error("Error fetching battle invitations:", error);
+      res.status(500).json({ message: "Nepodarilo sa načítať pozvánky" });
     }
   });
 
