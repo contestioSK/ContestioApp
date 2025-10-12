@@ -5,6 +5,7 @@ import { format, isPast, isToday } from "date-fns";
 import { sk } from "date-fns/locale";
 import { ArrowLeft, MapPin, Calendar as CalendarIcon, Fish, Weight, Trophy, FileText, Medal, Ruler, Target, Cloud, Thermometer, Wind, Gauge, XCircle, Download } from "lucide-react";
 import html2canvas from "html2canvas";
+import contestioLogo from "@assets/contestio logo_1760283270014.png";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -704,12 +705,28 @@ export default function TripDetail() {
                         <div className="relative">
                           <div className="absolute top-4 left-4 z-10">
                             <div className={`
-                              w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold
-                              ${index === 0 ? 'bg-yellow-500 text-yellow-900' : 
-                                index === 1 ? 'bg-slate-300 text-slate-700' : 
-                                'bg-orange-600 text-orange-100'}
+                              relative w-16 h-20 flex items-center justify-center
+                              ${index === 0 ? 'text-yellow-400' : 
+                                index === 1 ? 'text-slate-300' : 
+                                'text-orange-500'}
                             `}>
-                              {index + 1}
+                              {/* Shield background */}
+                              <svg viewBox="0 0 64 80" className="absolute inset-0 w-full h-full drop-shadow-lg">
+                                <path 
+                                  d="M32 0 L64 12 L64 40 Q64 64 32 80 Q0 64 0 40 L0 12 Z" 
+                                  fill="currentColor"
+                                  stroke="rgba(0,0,0,0.3)"
+                                  strokeWidth="2"
+                                />
+                              </svg>
+                              {/* Number */}
+                              <span className={`relative text-2xl font-bold z-10 ${
+                                index === 0 ? 'text-yellow-900' : 
+                                index === 1 ? 'text-slate-700' : 
+                                'text-orange-900'
+                              }`}>
+                                {index + 1}
+                              </span>
                             </div>
                           </div>
                           
@@ -718,7 +735,7 @@ export default function TripDetail() {
                             <img 
                               src={typeof catch_.photos[0] === 'string' ? catch_.photos[0] : catch_.photos[0].url}
                               alt={getFishTypeLabel(catch_.fishType)}
-                              className="w-full h-64 object-cover"
+                              className="w-full h-64 object-contain bg-slate-700"
                               crossOrigin="anonymous"
                             />
                           ) : (
@@ -751,8 +768,13 @@ export default function TripDetail() {
               )}
 
               {/* Footer */}
-              <div className="text-center text-slate-500 text-lg pt-8 border-t border-slate-700">
-                Contestio - Denník rybára
+              <div className="flex justify-center pt-8 border-t border-slate-700">
+                <img 
+                  src={contestioLogo} 
+                  alt="Contestio" 
+                  className="h-12 object-contain"
+                  crossOrigin="anonymous"
+                />
               </div>
             </div>
           )}
