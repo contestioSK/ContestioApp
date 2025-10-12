@@ -1,14 +1,16 @@
+import { useState } from "react";
 import { useParams, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
-import { ArrowLeft, MapPin, Calendar as CalendarIcon, Fish, Weight, Trophy, FileText, Medal } from "lucide-react";
+import { ArrowLeft, MapPin, Calendar as CalendarIcon, Fish, Weight, Trophy, FileText, Medal, Ruler, Target, Cloud, Thermometer, Wind, Gauge } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import DiaryLayout from "@/components/DiaryLayout";
 
 import type { DiaryTrip, DiaryCatch } from "@shared/schema";
@@ -31,6 +33,7 @@ const getFishIconColor = (fishType?: string) => {
 export default function TripDetail() {
   const { id } = useParams();
   const [, setLocation] = useLocation();
+  const [selectedCatch, setSelectedCatch] = useState<DiaryCatch | null>(null);
 
   // Fetch trip detail
   const { data: trip, isLoading: tripLoading } = useQuery<DiaryTrip>({
@@ -219,7 +222,7 @@ export default function TripDetail() {
                         <Card 
                           key={catch_.id}
                           className="cursor-pointer hover:shadow-lg transition-shadow relative"
-                          onClick={() => setLocation(`/diary/catches/${catch_.id}`)}
+                          onClick={() => setSelectedCatch(catch_)}
                           data-testid={`card-top-catch-${catch_.id}`}
                         >
                           {/* Medal Badge */}
@@ -298,7 +301,7 @@ export default function TripDetail() {
                             <TableRow 
                               key={catch_.id}
                               className="cursor-pointer hover:bg-muted/50"
-                              onClick={() => setLocation(`/diary/catches/${catch_.id}`)}
+                              onClick={() => setSelectedCatch(catch_)}
                               data-testid={`row-catch-${catch_.id}`}
                             >
                               <TableCell className="font-medium text-muted-foreground">
@@ -330,6 +333,162 @@ export default function TripDetail() {
             )}
           </CardContent>
         </Card>
+
+        {/* Detail Panel */}
+        <Sheet open={!!selectedCatch} onOpenChange={() => setSelectedCatch(null)}>
+          <SheetContent className="w-full sm:max-w-md bg-slate-800 border text-white overflow-y-auto" data-testid="catch-detail-panel">
+            <SheetHeader className="pb-6">
+              <SheetTitle className="text-white flex items-center gap-3">
+                <div className="w-10 h-10 bg-slate-600/50 rounded-lg flex items-center justify-center">
+                  <Fish className={`w-5 h-5 ${getFishIconColor(selectedCatch?.fishType)}`} />
+                </div>
+                {selectedCatch?.fishType ? getFishTypeLabel(selectedCatch.fishType) : 'Detail úlovku'}
+              </SheetTitle>
+            </SheetHeader>
+
+            {selectedCatch && (
+              <div className="space-y-6">
+                {/* Photo Display */}
+                {selectedCatch.photos && selectedCatch.photos.length > 0 && (
+                  <div className="rounded-lg overflow-hidden bg-muted">
+                    <img 
+                      src={typeof selectedCatch.photos[0] === 'string' ? selectedCatch.photos[0] : selectedCatch.photos[0].url}
+                      alt={getFishTypeLabel(selectedCatch.fishType)}
+                      className="w-full h-64 object-cover"
+                    />
+                  </div>
+                )}
+
+                {/* Basic Info */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <Weight className="w-5 h-5 text-slate-400" />
+                    <div>
+                      <div className="text-sm text-slate-400">Váha</div>
+                      <div className="font-semibold" data-testid="detail-weight">{selectedCatch.weight ? `${selectedCatch.weight} kg` : 'Neuvedené'}</div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <Ruler className="w-5 h-5 text-slate-400" />
+                    <div>
+                      <div className="text-sm text-slate-400">Dĺžka</div>
+                      <div className="font-semibold">{selectedCatch.lengthCm ? `${selectedCatch.lengthCm} cm` : 'Neuvedené'}</div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <MapPin className="w-5 h-5 text-slate-400" />
+                    <div>
+                      <div className="text-sm text-slate-400">Revír</div>
+                      <div className="font-semibold">{selectedCatch.spot || 'Neuvedené'}</div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <Target className="w-5 h-5 text-slate-400" />
+                    <div>
+                      <div className="text-sm text-slate-400">Nástraha</div>
+                      <div className="font-semibold">{selectedCatch.bait || 'Neuvedené'}</div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <CalendarIcon className="w-5 h-5 text-slate-400" />
+                    <div>
+                      <div className="text-sm text-slate-400">Dátum úlovku</div>
+                      <div className="font-semibold">
+                        {selectedCatch.capturedAt ? format(new Date(selectedCatch.capturedAt), "EEEE, d. MMMM yyyy", { locale: sk }) : 'Neuvedené'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Notes */}
+                {selectedCatch.notes && (
+                  <div>
+                    <div className="text-sm text-slate-400 mb-2">Poznámky</div>
+                    <div className="bg-slate-700/50 rounded-lg p-3 text-sm">
+                      {selectedCatch.notes}
+                    </div>
+                  </div>
+                )}
+
+                {/* GPS Coordinates */}
+                {(selectedCatch.latitude || selectedCatch.longitude) && (
+                  <div className="bg-slate-700/30 rounded-lg p-4 space-y-2">
+                    <div className="text-sm font-semibold text-slate-300 mb-3">📍 GPS Súradnice</div>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      {selectedCatch.latitude && (
+                        <div>
+                          <div className="text-slate-400">Zem. šírka</div>
+                          <div className="font-medium">{Number(selectedCatch.latitude).toFixed(6)}°</div>
+                        </div>
+                      )}
+                      {selectedCatch.longitude && (
+                        <div>
+                          <div className="text-slate-400">Zem. dĺžka</div>
+                          <div className="font-medium">{Number(selectedCatch.longitude).toFixed(6)}°</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Weather Conditions */}
+                {(selectedCatch.waterTemp !== null && selectedCatch.waterTemp !== undefined) || 
+                 (selectedCatch.airTemp !== null && selectedCatch.airTemp !== undefined) || 
+                 (selectedCatch.windSpeed !== null && selectedCatch.windSpeed !== undefined) || 
+                 (selectedCatch.airPressure !== null && selectedCatch.airPressure !== undefined) ? (
+                  <div className="border-t border-slate-700 pt-4">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Cloud className="w-5 h-5 text-slate-400" />
+                      <div className="text-sm text-slate-400">Podmienky počasia</div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      {(selectedCatch.waterTemp !== null && selectedCatch.waterTemp !== undefined) && (
+                        <div className="bg-slate-700/50 rounded-lg p-3">
+                          <div className="flex items-center gap-2 text-slate-400 mb-1">
+                            <Thermometer className="w-4 h-4" />
+                            <span className="text-xs">Teplota vody</span>
+                          </div>
+                          <div className="font-semibold" data-testid="detail-water-temp">{selectedCatch.waterTemp}°C</div>
+                        </div>
+                      )}
+                      {(selectedCatch.airTemp !== null && selectedCatch.airTemp !== undefined) && (
+                        <div className="bg-slate-700/50 rounded-lg p-3">
+                          <div className="flex items-center gap-2 text-slate-400 mb-1">
+                            <Thermometer className="w-4 h-4" />
+                            <span className="text-xs">Teplota vzduchu</span>
+                          </div>
+                          <div className="font-semibold" data-testid="detail-air-temp">{selectedCatch.airTemp}°C</div>
+                        </div>
+                      )}
+                      {(selectedCatch.windSpeed !== null && selectedCatch.windSpeed !== undefined) && (
+                        <div className="bg-slate-700/50 rounded-lg p-3">
+                          <div className="flex items-center gap-2 text-slate-400 mb-1">
+                            <Wind className="w-4 h-4" />
+                            <span className="text-xs">Vietor</span>
+                          </div>
+                          <div className="font-semibold" data-testid="detail-wind-speed">{selectedCatch.windSpeed} km/h</div>
+                        </div>
+                      )}
+                      {(selectedCatch.airPressure !== null && selectedCatch.airPressure !== undefined) && (
+                        <div className="bg-slate-700/50 rounded-lg p-3">
+                          <div className="flex items-center gap-2 text-slate-400 mb-1">
+                            <Gauge className="w-4 h-4" />
+                            <span className="text-xs">Tlak vzduchu</span>
+                          </div>
+                          <div className="font-semibold" data-testid="detail-air-pressure">{selectedCatch.airPressure} hPa</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            )}
+          </SheetContent>
+        </Sheet>
       </div>
     </DiaryLayout>
   );
