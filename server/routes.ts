@@ -3723,10 +3723,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ? `${creator.firstName} ${creator.lastName}`
         : creator.firstName || creator.email || "Unknown";
       
-      // Add creator to participants automatically
+      // Remove creator from existing participants if they're already there (deduplication)
+      const filteredParticipants = (battleData.participants || []).filter((p: any) => {
+        // Filter by userId if available
+        if (p.userId) {
+          return p.userId !== creator.id;
+        }
+        // Otherwise filter by name (case-insensitive) - skip entries without name
+        if (typeof p.name === 'string') {
+          return p.name.toLowerCase() !== creatorName.toLowerCase();
+        }
+        return true; // Keep malformed entries
+      });
+      
+      // Add creator to participants automatically at the beginning
       const allParticipants = [
         { name: creatorName, userId: creator.id },
-        ...battleData.participants
+        ...filteredParticipants
       ];
       
       // Create trip automatically with same name and dates as battle
@@ -3837,10 +3850,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ? `${creator.firstName} ${creator.lastName}`
         : creator.firstName || creator.email || "Unknown";
       
-      // Add creator to participants automatically
+      // Remove creator from existing participants if they're already there (deduplication)
+      const filteredParticipants = (battleData.participants || []).filter((p: any) => {
+        // Filter by userId if available
+        if (p.userId) {
+          return p.userId !== creator.id;
+        }
+        // Otherwise filter by name (case-insensitive) - skip entries without name
+        if (typeof p.name === 'string') {
+          return p.name.toLowerCase() !== creatorName.toLowerCase();
+        }
+        return true; // Keep malformed entries
+      });
+      
+      // Add creator to participants automatically at the beginning
       const allParticipants = [
         { name: creatorName, userId: creator.id },
-        ...(battleData.participants || [])
+        ...filteredParticipants
       ];
       
       // Ensure dates are Date objects (double-check Zod transformation)
