@@ -15,12 +15,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
-import { CalendarIcon, Trophy, Users, Clock, Plus, X } from "lucide-react";
+import { CalendarIcon, Trophy, Users, Clock, Plus, X, User as UserIcon } from "lucide-react";
 import { useLocation } from "wouter";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import DiaryLayout from "@/components/DiaryLayout";
+import { UserSearch } from "@/components/diary/user-search";
 import type { DiaryTrip } from "@shared/schema";
 
 // Form validation schema
@@ -64,6 +65,7 @@ export default function BattleCreate() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [invitedUserIds, setInvitedUserIds] = useState<string[]>([]);
   
   // Fetch user's trips for the trip selector
   const { data: trips = [], isLoading: isLoadingTrips } = useQuery<DiaryTrip[]>({
@@ -91,7 +93,7 @@ export default function BattleCreate() {
   const useExistingTrip = form.watch("useExistingTrip");
 
   const createBattleMutation = useMutation({
-    mutationFn: async (data: CreateBattleForm) => {
+    mutationFn: async (data: CreateBattleForm & { invitedUserIds?: string[] }) => {
       if (data.useExistingTrip && data.tripId) {
         // Use existing trip (advanced flow)
         const requestData = {
@@ -100,6 +102,7 @@ export default function BattleCreate() {
           startAt: data.startAt.toISOString(),
           endAt: data.endAt.toISOString(),
           participants: data.participants,
+          invitedUserIds: data.invitedUserIds || [],
           tripId: data.tripId,
           rules: {
             mode: data.mode,
@@ -116,6 +119,7 @@ export default function BattleCreate() {
           startAt: data.startAt.toISOString(),
           endAt: data.endAt.toISOString(),
           participants: data.participants,
+          invitedUserIds: data.invitedUserIds || [],
           rules: {
             mode: data.mode,
             minWeightKg: data.minWeightKg,
@@ -166,8 +170,21 @@ export default function BattleCreate() {
     }
   };
 
+  const handleSelectUser = (userId: string) => {
+    setInvitedUserIds(prev => [...prev, userId]);
+  };
+
+  const handleRemoveUser = (userId: string) => {
+    setInvitedUserIds(prev => prev.filter(id => id !== userId));
+  };
+
   const onSubmit = (data: CreateBattleForm) => {
-    createBattleMutation.mutate(data);
+    // Add invited user IDs to mutation data
+    const mutationData = {
+      ...data,
+      invitedUserIds
+    };
+    createBattleMutation.mutate(mutationData as CreateBattleForm);
   };
 
   return (
@@ -411,48 +428,88 @@ export default function BattleCreate() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    {form.watch("participants").map((_, index) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <FormField
-                          control={form.control}
-                          name={`participants.${index}.name`}
-                          render={({ field }) => (
-                            <FormItem className="flex-1">
-                              <FormControl>
-                                <Input 
-                                  placeholder="Meno účastníka"
-                                  data-testid={`input-participant-${index}`}
-                                  {...field} 
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
+                  <div className="space-y-6">
+                    {/* Invite registered users */}
+                    <div className="space-y-3">
+                      <FormLabel>Pozvať registrovaných používateľov</FormLabel>
+                      <UserSearch
+                        selectedUsers={invitedUserIds}
+                        onSelectUser={handleSelectUser}
+                        onRemoveUser={handleRemoveUser}
+                      />
+                      {invitedUserIds.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {invitedUserIds.map((userId, index) => (
+                            <Badge 
+                              key={userId} 
+                              variant="secondary" 
+                              className="flex items-center gap-1"
+                              data-testid={`badge-invited-user-${index}`}
+                            >
+                              <UserIcon className="h-3 w-3" />
+                              Pozvaný používateľ
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveUser(userId)}
+                                className="ml-1 hover:bg-destructive/20 rounded-full p-0.5"
+                                data-testid={`button-remove-invited-${index}`}
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                      <FormDescription>
+                        Vyhľadajte používateľov podľa mena alebo emailu a pošlite im pozvánku
+                      </FormDescription>
+                    </div>
+
+                    {/* Manual participant names */}
+                    <div className="space-y-3">
+                      <FormLabel>Alebo zadajte mená účastníkov manuálne</FormLabel>
+                      {form.watch("participants").map((_, index) => (
+                        <div key={index} className="flex items-center gap-2">
+                          <FormField
+                            control={form.control}
+                            name={`participants.${index}.name`}
+                            render={({ field }) => (
+                              <FormItem className="flex-1">
+                                <FormControl>
+                                  <Input 
+                                    placeholder="Meno účastníka"
+                                    data-testid={`input-participant-${index}`}
+                                    {...field} 
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          {form.watch("participants").length > 1 && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              onClick={() => removeParticipant(index)}
+                              data-testid={`button-remove-participant-${index}`}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
                           )}
-                        />
-                        {form.watch("participants").length > 1 && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            onClick={() => removeParticipant(index)}
-                            data-testid={`button-remove-participant-${index}`}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    ))}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={addParticipant}
-                      className="w-full"
-                      data-testid="button-add-participant"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Pridať účastníka
-                    </Button>
+                        </div>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={addParticipant}
+                        className="w-full"
+                        data-testid="button-add-participant"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Pridať účastníka
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
