@@ -13,6 +13,7 @@ import { useQuery } from "@tanstack/react-query";
 import DiaryLayout from "@/components/DiaryLayout";
 import CatchFormDialog from "@/components/diary/CatchFormDialog";
 import type { DiaryBattle, DiaryCatch } from "@shared/schema";
+import { getFishTypeLabel } from "@/utils/fishTypeMapping";
 
 interface WebSocketMessage {
   type: string;
@@ -28,19 +29,6 @@ const getModeLabel = (mode: string) => {
     case "best_5_fish": return "Top 5 rýb";
     default: return mode;
   }
-};
-
-const getFishTypeLabel = (fishType: string) => {
-  const fishTypes: Record<string, string> = {
-    'carp': 'Kapor',
-    'pike': 'Šťuka',
-    'catfish': 'Sumec',
-    'zander': 'Zubáč',
-    'perch': 'Ostriež',
-    'bream': 'Pleskáč',
-    'other': 'Iné'
-  };
-  return fishTypes[fishType] || fishType;
 };
 
 export default function BattleDetail() {
