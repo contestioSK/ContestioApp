@@ -2,12 +2,13 @@ import { useParams, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
-import { ArrowLeft, MapPin, Calendar as CalendarIcon, Fish, Weight, Trophy, FileText } from "lucide-react";
+import { ArrowLeft, MapPin, Calendar as CalendarIcon, Fish, Weight, Trophy, FileText, Medal } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import DiaryLayout from "@/components/DiaryLayout";
 
 import type { DiaryTrip, DiaryCatch } from "@shared/schema";
@@ -52,6 +53,11 @@ export default function TripDetail() {
   const biggestCatch = totalCatches > 0 
     ? tripCatches.reduce((max, c) => parseFloat(c.weight) > parseFloat(max.weight) ? c : max)
     : null;
+
+  // Sort catches by weight (descending) and split into TOP 3 and rest
+  const sortedCatches = [...tripCatches].sort((a, b) => parseFloat(b.weight) - parseFloat(a.weight));
+  const top3Catches = sortedCatches.slice(0, 3);
+  const remainingCatches = sortedCatches.slice(3);
 
   if (tripLoading) {
     return (
@@ -183,7 +189,7 @@ export default function TripDetail() {
           </Card>
         )}
 
-        {/* Catches Gallery */}
+        {/* Catches Section */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -191,7 +197,7 @@ export default function TripDetail() {
               Úlovky z výpravy
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-6">
             {totalCatches === 0 ? (
               <div className="text-center py-8" data-testid="empty-catches">
                 <Fish className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
@@ -200,57 +206,127 @@ export default function TripDetail() {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {tripCatches.map((catch_) => (
-                  <Card 
-                    key={catch_.id}
-                    className="cursor-pointer hover:shadow-lg transition-shadow"
-                    onClick={() => setLocation(`/diary/catches/${catch_.id}`)}
-                    data-testid={`card-catch-${catch_.id}`}
-                  >
-                    <CardContent className="p-4">
-                      {/* Photo if available */}
-                      {catch_.photos && catch_.photos.length > 0 && (
-                        <div className="mb-3 rounded-lg overflow-hidden bg-muted">
-                          <img 
-                            src={typeof catch_.photos[0] === 'string' ? catch_.photos[0] : catch_.photos[0].url}
-                            alt={getFishTypeLabel(catch_.fishType)}
-                            className="w-full h-40 object-cover"
-                          />
-                        </div>
-                      )}
-
-                      {/* Fish Type Badge */}
-                      <div className="flex items-center gap-2 mb-2">
-                        <Fish className={`w-4 h-4 ${getFishIconColor(catch_.fishType)}`} />
-                        <Badge variant="secondary" className="font-medium">
-                          {getFishTypeLabel(catch_.fishType)}
-                        </Badge>
-                      </div>
-
-                      {/* Weight and Length */}
-                      <div className="space-y-1">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground">Váha:</span>
-                          <span className="font-semibold">{parseFloat(catch_.weight).toFixed(1)} kg</span>
-                        </div>
-                        {catch_.lengthCm && (
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm text-muted-foreground">Dĺžka:</span>
-                            <span className="font-semibold">{catch_.lengthCm} cm</span>
+              <>
+                {/* TOP 3 Catches - Cards */}
+                {top3Catches.length > 0 && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Medal className="w-5 h-5 text-yellow-500" />
+                      <h3 className="font-semibold text-lg">TOP {top3Catches.length} najväčšie úlovky</h3>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {top3Catches.map((catch_, index) => (
+                        <Card 
+                          key={catch_.id}
+                          className="cursor-pointer hover:shadow-lg transition-shadow relative"
+                          onClick={() => setLocation(`/diary/catches/${catch_.id}`)}
+                          data-testid={`card-top-catch-${catch_.id}`}
+                        >
+                          {/* Medal Badge */}
+                          <div className="absolute top-2 right-2 z-10">
+                            <Badge 
+                              variant={index === 0 ? "default" : "secondary"}
+                              className={index === 0 ? "bg-yellow-500 hover:bg-yellow-600" : ""}
+                            >
+                              #{index + 1}
+                            </Badge>
                           </div>
-                        )}
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-muted-foreground">Čas:</span>
-                          <span className="text-sm">
-                            {format(new Date(catch_.capturedAt), "HH:mm", { locale: sk })}
-                          </span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+
+                          <CardContent className="p-4">
+                            {/* Photo if available */}
+                            {catch_.photos && catch_.photos.length > 0 && (
+                              <div className="mb-3 rounded-lg overflow-hidden bg-muted">
+                                <img 
+                                  src={typeof catch_.photos[0] === 'string' ? catch_.photos[0] : catch_.photos[0].url}
+                                  alt={getFishTypeLabel(catch_.fishType)}
+                                  className="w-full h-40 object-cover"
+                                />
+                              </div>
+                            )}
+
+                            {/* Fish Type Badge */}
+                            <div className="flex items-center gap-2 mb-2">
+                              <Fish className={`w-4 h-4 ${getFishIconColor(catch_.fishType)}`} />
+                              <Badge variant="secondary" className="font-medium">
+                                {getFishTypeLabel(catch_.fishType)}
+                              </Badge>
+                            </div>
+
+                            {/* Weight and Length */}
+                            <div className="space-y-1">
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm text-muted-foreground">Váha:</span>
+                                <span className="font-semibold text-lg">{parseFloat(catch_.weight).toFixed(1)} kg</span>
+                              </div>
+                              {catch_.lengthCm && (
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm text-muted-foreground">Dĺžka:</span>
+                                  <span className="font-semibold">{catch_.lengthCm} cm</span>
+                                </div>
+                              )}
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm text-muted-foreground">Čas:</span>
+                                <span className="text-sm">
+                                  {format(new Date(catch_.capturedAt), "HH:mm", { locale: sk })}
+                                </span>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Remaining Catches - Table */}
+                {remainingCatches.length > 0 && (
+                  <div>
+                    <h3 className="font-semibold text-lg mb-4">Ostatné úlovky ({remainingCatches.length})</h3>
+                    <div className="border rounded-lg overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="w-12">#</TableHead>
+                            <TableHead>Druh ryby</TableHead>
+                            <TableHead className="text-right">Váha</TableHead>
+                            <TableHead className="text-right">Dĺžka</TableHead>
+                            <TableHead className="text-right">Čas</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {remainingCatches.map((catch_, index) => (
+                            <TableRow 
+                              key={catch_.id}
+                              className="cursor-pointer hover:bg-muted/50"
+                              onClick={() => setLocation(`/diary/catches/${catch_.id}`)}
+                              data-testid={`row-catch-${catch_.id}`}
+                            >
+                              <TableCell className="font-medium text-muted-foreground">
+                                {index + 4}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <Fish className={`w-4 h-4 ${getFishIconColor(catch_.fishType)}`} />
+                                  <span>{getFishTypeLabel(catch_.fishType)}</span>
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-right font-semibold">
+                                {parseFloat(catch_.weight).toFixed(1)} kg
+                              </TableCell>
+                              <TableCell className="text-right">
+                                {catch_.lengthCm ? `${catch_.lengthCm} cm` : "—"}
+                              </TableCell>
+                              <TableCell className="text-right text-muted-foreground">
+                                {format(new Date(catch_.capturedAt), "HH:mm", { locale: sk })}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </CardContent>
         </Card>
