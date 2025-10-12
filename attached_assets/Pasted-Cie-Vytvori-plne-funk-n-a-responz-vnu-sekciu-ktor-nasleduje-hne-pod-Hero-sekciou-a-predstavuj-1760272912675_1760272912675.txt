@@ -1,0 +1,58 @@
+Cieľ: Vytvoriť plne funkčnú a responzívnu sekciu, ktorá nasleduje hneď pod Hero sekciou a predstavuje dva hlavné piliere aplikácie.
+Technológie: React.js, TailwindCSS
+Dizajnový Jazyk: Moderný, prémiový, tmavý (dark mode), v súlade s dizajnom Hero sekcie.
+
+1. Celková Architektúra a Rozloženie (Layout)
+Vytvorte sekciu s id="features", ktorá bude umiestnená hneď pod Hero sekciou.
+
+Celkové Pozadie: Tmavé, #0c1f28.
+
+Štruktúra: Sekcia bude obsahovať dva hlavné prvky:
+
+Úvodný Nadpis: Centrovaný hlavný nadpis a podnadpis.
+
+Dva Bloky Funkcií: Dva hlavné bloky pod sebou, ktoré budú mať na desktope striedavé rozloženie (text vľavo/obrázok vpravo a naopak).
+
+2. Komponenty a Ich Funkcionalita
+2.1. Úvodný Nadpis
+Nadpis h2: Centrovaný, viacriadkový text: "Viac Než Len Aplikácia. <br> Tvoj Partner Pri Vode."
+
+Podnadpis p: Centrovaný, vysvetľujúci text pod nadpisom.
+
+2.2. Blok 1: "Centrum Súťaží"
+Rozloženie (Desktop): Dvojstĺpcový grid (lg:grid-cols-2).
+
+Ľavý Stĺpec: Textový obsah zarovnaný doľava.
+
+Nadpis h3: "Centrum Súťaží" s použitím gradient-text štýlu.
+
+Popis p: Detailný popis funkcií pre súťaže.
+
+Odkaz (CTA): Odkaz s textom "Zistiť viac o súťažiach →" v modrej farbe.
+
+Pravý Stĺpec: Zástupný obrázok (img) reprezentujúci "Mockup Súťaží". Musí mať zaoblené rohy a tieň.
+
+2.3. Blok 2: "Inteligentný Denník"
+Rozloženie (Desktop): Dvojstĺpcový grid (lg:grid-cols-2) so prehodeným poradím stĺpcov.
+
+Pravý Stĺpec (lg:order-2): Textový obsah zarovnaný doprava na desktope.
+
+Nadpis h3: "Inteligentný Denník" s použitím gradient-text štýlu.
+
+Popis p: Detailný popis funkcií denníka.
+
+Odkaz (CTA): Odkaz s textom "Preskúmať denník →" v zelenej farbe.
+
+Ľavý Stĺpec (lg:order-1): Zástupný obrázok (img) reprezentujúci "Mockup Denníka". Musí mať zaoblené rohy a tieň.
+
+3. Responzivita
+Mobil (< 1024px):
+
+Oba bloky funkcií sa zmenia na jednostĺpcové rozloženie.
+
+Pre oba bloky platí rovnaké poradie: najprv obrázok, pod ním textový obsah. Text bude vždy zarovnaný doľava.
+
+4. Dáta a Štýl
+Použite statické texty a zástupné obrázky (placehold.co) podľa finálneho návrhu landing page.
+
+Všetky farby, fonty a medzery musia byť konzistentné s dizajnom Hero sekcie, ktorú sme už definovali
