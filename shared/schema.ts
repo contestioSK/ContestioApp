@@ -332,6 +332,22 @@ export const diaryBattles = pgTable("diary_battles", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Battle invitations table (for inviting users to battles)
+export const battleInvitations = pgTable("battle_invitations", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  battleId: varchar("battle_id").notNull().references(() => diaryBattles.id),
+  invitedUserId: varchar("invited_user_id").notNull().references(() => users.id),
+  invitedByUserId: varchar("invited_by_user_id").notNull().references(() => users.id),
+  status: varchar("status").notNull().default("pending"), // "pending", "accepted", "rejected"
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  // Unique constraint to prevent duplicate invitations
+  uniqueIndex("unique_battle_invitation").on(table.battleId, table.invitedUserId),
+  // Index for efficient queries
+  index("battle_invitations_invited_user_idx").on(table.invitedUserId, table.status),
+]);
+
 // Official announcements table
 export const announcements = pgTable("announcements", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -515,10 +531,26 @@ export const diaryCatchesRelations = relations(diaryCatches, ({ one }) => ({
   }),
 }));
 
-export const diaryBattlesRelations = relations(diaryBattles, ({ one }) => ({
+export const diaryBattlesRelations = relations(diaryBattles, ({ one, many }) => ({
   trip: one(diaryTrips, {
     fields: [diaryBattles.tripId],
     references: [diaryTrips.id],
+  }),
+  invitations: many(battleInvitations),
+}));
+
+export const battleInvitationsRelations = relations(battleInvitations, ({ one }) => ({
+  battle: one(diaryBattles, {
+    fields: [battleInvitations.battleId],
+    references: [diaryBattles.id],
+  }),
+  invitedUser: one(users, {
+    fields: [battleInvitations.invitedUserId],
+    references: [users.id],
+  }),
+  invitedByUser: one(users, {
+    fields: [battleInvitations.invitedByUserId],
+    references: [users.id],
   }),
 }));
 
@@ -843,6 +875,13 @@ export const insertDiaryBattleSchema = createInsertSchema(diaryBattles).omit({
   path: ["endAt"]
 });
 
+// Battle invitation insert schema
+export const insertBattleInvitationSchema = createInsertSchema(battleInvitations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Team status update schema
 export const updateTeamStatusSchema = z.object({
   status: z.enum(["pending", "approved", "rejected"], {
@@ -1088,6 +1127,8 @@ export type DiaryCatch = typeof diaryCatches.$inferSelect;
 export type InsertDiaryCatch = z.infer<typeof insertDiaryCatchSchema>;
 export type DiaryBattle = typeof diaryBattles.$inferSelect;
 export type InsertDiaryBattle = z.infer<typeof insertDiaryBattleSchema>;
+export type BattleInvitation = typeof battleInvitations.$inferSelect;
+export type InsertBattleInvitation = z.infer<typeof insertBattleInvitationSchema>;
 
 // Seasonal Goals types
 export type Season = typeof seasons.$inferSelect;
