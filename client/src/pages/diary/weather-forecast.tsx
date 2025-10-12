@@ -25,7 +25,8 @@ import {
   Sunset,
   Fish,
   Crown,
-  ArrowUp
+  ArrowUp,
+  Moon
 } from "lucide-react";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
@@ -49,6 +50,7 @@ interface ForecastDay {
   astro: {
     sunrise: string;
     sunset: string;
+    moon_phase: string;
   };
   hour: Array<{
     time: string;
@@ -760,15 +762,8 @@ export default function WeatherForecast() {
                   }}
                 >
                   <h3 className="text-lg font-semibold mb-4">Detailné podmienky</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Wind className="w-4 h-4" />
-                        <span className="text-sm">Vietor</span>
-                      </div>
-                      <p className="text-2xl font-bold">{Math.round(selectedDay.day.maxwind_kph)} km/h</p>
-                    </div>
-
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {/* Tlak */}
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Gauge className="w-4 h-4" />
@@ -777,14 +772,7 @@ export default function WeatherForecast() {
                       <p className="text-2xl font-bold">{getAvgPressure(selectedDay.hour)} mb</p>
                     </div>
 
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Droplets className="w-4 h-4" />
-                        <span className="text-sm">Zrážky</span>
-                      </div>
-                      <p className="text-2xl font-bold">{selectedDay.day.totalprecip_mm} mm</p>
-                    </div>
-
+                    {/* Vlhkosť */}
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Droplets className="w-4 h-4" />
@@ -795,6 +783,16 @@ export default function WeatherForecast() {
                       </p>
                     </div>
 
+                    {/* Šanca na dážď */}
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <CloudRain className="w-4 h-4" />
+                        <span className="text-sm">Šanca na dážď</span>
+                      </div>
+                      <p className="text-2xl font-bold">{selectedDay.day.daily_chance_of_rain}%</p>
+                    </div>
+
+                    {/* Východ slnka */}
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Sunrise className="w-4 h-4" />
@@ -803,6 +801,7 @@ export default function WeatherForecast() {
                       <p className="text-xl font-semibold">{selectedDay.astro.sunrise}</p>
                     </div>
 
+                    {/* Západ slnka */}
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Sunset className="w-4 h-4" />
@@ -811,12 +810,13 @@ export default function WeatherForecast() {
                       <p className="text-xl font-semibold">{selectedDay.astro.sunset}</p>
                     </div>
 
+                    {/* Fáza mesiaca */}
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-muted-foreground">
-                        <Cloud className="w-4 h-4" />
-                        <span className="text-sm">Šanca dažďa</span>
+                        <Moon className="w-4 h-4" />
+                        <span className="text-sm">Fáza mesiaca</span>
                       </div>
-                      <p className="text-2xl font-bold">{selectedDay.day.daily_chance_of_rain}%</p>
+                      <p className="text-lg font-semibold">{selectedDay.astro.moon_phase}</p>
                     </div>
                   </div>
                 </div>
