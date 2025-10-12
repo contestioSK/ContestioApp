@@ -1,0 +1,129 @@
+1. Dáta pre tabuľku "Lovné miery":
+
+Amur biely: 60 cm
+
+Amur čierny: 60 cm
+
+Boleň dravý: 40 cm
+
+Hlavátka podunajská: 80 cm
+
+Jalec hlavatý: 25 cm
+
+Jalec maloústy: 20 cm
+
+Jalec tmavý: 30 cm
+
+Jeseter malý: 45 cm
+
+Jeseter sibírsky: 45 cm
+
+Kapor rybničný: 40 cm
+
+Lieň sliznatý: 30 cm
+
+Lipeň tymianový: 33 cm
+
+Mieň sladkovodný: 35 cm
+
+Mrena severná: 40 cm
+
+Nosáľ sťahovavý: 30 cm
+
+Pleskáč siný: 25 cm
+
+Pleskáč tuponosý: 25 cm
+
+Pleskáč vysoký: 30 cm
+
+Podustva severná: 30 cm
+
+Pstruh dúhový: 27 cm
+
+Pstruh jazerný: 50 cm
+
+Pstruh potočný: 27 cm
+
+Sih peleď: 25 cm
+
+Sivoň potočný: 27 cm
+
+Sumec veľký: 70 cm
+
+Šťuka severná: 60 cm
+
+Tolstolobik: 45 cm
+
+Úhor európsky: 50 cm
+
+Zubáč veľkoústy: 50 cm
+
+Zubáč volžský: 35 cm
+
+2. Dáta pre tabuľku "Doby hájenia":
+
+Boleň dravý: 15.03. - 31.05.
+
+Hlavátka podunajská: 01.01. - 31.10.
+
+Jalec hlavatý: 15.03. - 31.05.
+
+Jalec maloústy: 15.03. - 31.05.
+
+Jalec tmavý: 15.03. - 31.05.
+
+Jeseter malý: 15.03. - 31.05.
+
+Jeseter sibírsky: 15.03. - 31.05.
+
+Kapor rybničný: 15.03. - 31.05.
+
+Lieň sliznatý: 15.03. - 31.05.
+
+Lipeň tymianový: 01.01. - 31.05.
+
+Mieň sladkovodný: 01.01. - 15.03.
+
+Mrena severná: 15.03. - 15.05.
+
+Nosáľ sťahovavý: 15.03. - 31.05.
+
+Pleskáč siný: 15.03. - 31.05.
+
+Pleskáč tuponosý: 15.03. - 31.05.
+
+Pleskáč vysoký: 15.03. - 31.05.
+
+Ploska pásavá: 01.01. - 31.05.
+
+Podustva severná: 15.03. - 31.05.
+
+Pstruh jazerný: 01.09. - 15.04.
+
+Pstruh potočný: 01.09. - 15.04.
+
+Sih peleď: 01.09. - 28.02.
+
+Sumec veľký: 01.01. - 15.06.
+
+Šťuka severná: 01.01. - 31.05.
+
+Zubáč veľkoústy: 01.01. - 15.06.
+
+Zubáč volžský: 01.01. - 15.06.
+
+Ryby bez stanovenej lovnej miery a doby hájenia: celoročne povolený lov
+
+3. Dáta pre tabuľku "Denná doba lovu":
+
+Január, Február, Marec, Apríl: 06:00 - 21:00 (Kapr.), 07:00 - 17:00 (Pstr.)
+
+Máj: 04:00 - 24:00 (Kapr.), 05:00 - 21:00 (Pstr.)
+
+Jún, Júl: 00:00 - 24:00 (Kapr.), 05:00 - 21:00 (Pstr.)
+
+August: 00:00 - 24:00 (Kapr.), 06:00 - 20:00 (Pstr.)
+
+September, Október: 00:00 - 24:00 (Kapr.), 07:00 - 19:00 (Pstr.)
+
+November, December: 06:00 - 21:00 (Kapr.), 07:00 - 17:00 (Pstr.)
