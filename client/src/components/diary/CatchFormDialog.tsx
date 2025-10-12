@@ -79,7 +79,7 @@ type CatchFormData = z.infer<typeof catchFormSchema>;
 
 // Fish type options
 const fishTypeOptions = [
-  { value: "kapor_supinac", label: "Kapor šupinkatý" },
+  { value: "kapor_supinac", label: "Kapor šupináč" },
   { value: "kapor_lysec", label: "Kapor lysec" },
   { value: "amur", label: "Amur" },
   { value: "sumec", label: "Sumec" },
