@@ -4329,16 +4329,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let battleId = req.body.battleId;
       
       if (!battleId) {
-        // Find active battles for this user
-        const acceptedInvitations = await storage.getUserBattleInvitations(userId, 'accepted');
         const today = new Date();
         
-        // Filter for active battles (based on battle dates)
+        // First, try to find battles where user is invited
+        const acceptedInvitations = await storage.getUserBattleInvitations(userId, 'accepted');
         const activeBattleInvitation = acceptedInvitations.find((inv: any) => {
           if (!inv.battle) return false;
           
-          const startDate = new Date(inv.battle.startDate);
-          const endDate = new Date(inv.battle.endDate);
+          const startDate = new Date(inv.battle.startAt);
+          const endDate = new Date(inv.battle.endAt);
           startDate.setHours(0, 0, 0, 0);
           endDate.setHours(23, 59, 59, 999);
           
@@ -4347,6 +4346,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         if (activeBattleInvitation?.battle) {
           battleId = activeBattleInvitation.battle.id;
+        } else if (tripId) {
+          // If no invited battle found, check if trip has an active battle (user is trip owner)
+          const tripBattles = await storage.getDiaryBattles(tripId, userId);
+          const activeTripBattle = tripBattles.find((battle: any) => {
+            const startDate = new Date(battle.startAt);
+            const endDate = new Date(battle.endAt);
+            startDate.setHours(0, 0, 0, 0);
+            endDate.setHours(23, 59, 59, 999);
+            
+            return startDate <= today && today <= endDate && battle.status === 'active';
+          });
+          
+          if (activeTripBattle) {
+            battleId = activeTripBattle.id;
+          }
         }
       }
       
