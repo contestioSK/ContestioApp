@@ -4301,12 +4301,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Premium status endpoint
   app.get('/api/auth/premium-status', isAuthenticated, async (req: any, res) => {
     try {
-      // TEMPORARY: All authenticated users get premium access for testing
-      // TODO: Re-enable Stripe subscription check when payment gateway is ready
-      // const userId = getUserId(req);
-      // const subscription = await storage.getUserSubscription(userId, "diary_premium");
-      // const isPremium = !!subscription && subscription.status === 'active';
-      const isPremium = true; // Temporary: everyone is premium
+      const userId = getUserId(req);
+      const user = await storage.getUserById(userId);
+      const isPremium = user?.isPremium ?? false;
       res.json({ isPremium });
     } catch (error) {
       console.error("Error checking premium status:", error);
