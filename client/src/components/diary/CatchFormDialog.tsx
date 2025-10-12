@@ -30,7 +30,8 @@ import {
   Cloud,
   Thermometer,
   Wind,
-  Gauge
+  Gauge,
+  Trophy
 } from "lucide-react";
 
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -121,9 +122,10 @@ interface CatchFormDialogProps {
   onClose: () => void;
   editingCatch: DiaryCatch | null;
   onSuccess?: () => void;
+  battleId?: string; // Optional: if opened from a battle page
 }
 
-export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSuccess }: CatchFormDialogProps) {
+export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSuccess, battleId }: CatchFormDialogProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [selectedPhotos, setSelectedPhotos] = useState<File[]>([]);
@@ -143,6 +145,12 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
     enabled: !!user
   });
 
+  // Fetch active battles to auto-assign catches to ongoing battles
+  const { data: activeBattles = [] } = useQuery<any[]>({
+    queryKey: ["/api/diary/battles/active"],
+    enabled: !!user && isOpen
+  });
+
   // Check premium status for photo limits
   const { data: premiumStatus } = useQuery<{ isPremium: boolean }>({
     queryKey: ["/api/auth/premium-status"],
@@ -151,6 +159,14 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
 
   const isPremium = premiumStatus?.isPremium || false;
   const maxPhotos = isPremium ? 5 : 1;
+
+  // Find active battle (either from battleId prop or first active battle)
+  const activeBattle = battleId 
+    ? activeBattles.find(b => b.id === battleId)
+    : activeBattles[0]; // Use first active battle if any
+
+  // State for tripId (will be auto-set if active battle exists)
+  const [selectedTripId, setSelectedTripId] = useState<string | undefined>(undefined);
 
   const form = useForm<CatchFormData>({
     resolver: zodResolver(catchFormSchema),
@@ -165,10 +181,18 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
     }
   });
 
+  // Auto-set tripId when active battle exists
+  useEffect(() => {
+    if (isOpen && !editingCatch && activeBattle) {
+      setSelectedTripId(activeBattle.tripId);
+    }
+  }, [isOpen, editingCatch, activeBattle]);
+
   // Update form when editing catch changes
   useEffect(() => {
     if (editingCatch) {
       setExistingPhotos(editingCatch.photos || []);
+      setSelectedTripId(editingCatch.tripId || undefined);
       
       // Parse date safely
       let capturedDate = new Date();
@@ -196,6 +220,7 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
       });
     } else {
       setExistingPhotos([]);
+      setSelectedTripId(activeBattle?.tripId);
       form.reset({
         capturedAt: new Date(),
         weight: "",
@@ -206,7 +231,7 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
         verified: false
       });
     }
-  }, [editingCatch, form]);
+  }, [editingCatch, form, activeBattle]);
 
   // Create catch mutation
   const createCatchMutation = useMutation({
@@ -251,9 +276,11 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
 
   const handleSubmit = async (data: CatchFormData) => {
     // Convert "none" values to undefined (no selection)
-    // CRITICAL: Always include userId in angler object - server will auto-assign trip
+    // CRITICAL: Always include userId in angler object
+    // Include tripId if active battle exists (so it gets assigned to battle trip, not just today's active trip)
     const processedData = {
       ...data,
+      tripId: selectedTripId, // Include tripId from active battle or selected trip
       angler: {
         name: user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : "",
         userId: user?.id || ''
@@ -547,6 +574,14 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
               : "Pridajte nový úlovok do vášeho rybárskeho denníka."
             }
           </DialogDescription>
+          {!editingCatch && activeBattle && (
+            <div className="mt-3">
+              <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+                <Trophy className="w-3 h-3 mr-1" />
+                Pridáva sa do aktívneho battle: {activeBattle.name}
+              </Badge>
+            </div>
+          )}
         </DialogHeader>
 
         <Form {...form}>
