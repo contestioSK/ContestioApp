@@ -1,0 +1,53 @@
+Projekt: Contestio - Modul Rybárske Výpravy
+Cieľ: Vytvoriť plne funkčnú a vizuálne atraktívnu obrazovku "Rybárske Výpravy" podľa finálneho UX/UI návrhu.
+Technológie: React.js, TailwindCSS
+Dizajnový Jazyk: Moderný, prémiový, tmavý (dark mode), zameraný na vizuálnu prezentáciu a emócie.
+
+1. Celková Architektúra a Rozloženie (Layout)
+Vytvorte hlavnú stránku pre sekciu "Rybárske Výpravy", ktorá bude slúžiť ako prehľad všetkých výprav používateľa.
+
+Hlavička: Musí obsahovať nadpis "Rybárske Výpravy", popisný text a výrazné tlačidlo "Nová Výprava".
+
+Hlavný Obsah: Bude rozdelený do dvoch hlavných sekcií pod sebou:
+
+"Aktívne a Plánované"
+
+"Ukončené Výpravy"
+
+Mriežka (Grid): Obe sekcie budú používať responzívnu mriežku (grid) na zobrazenie kariet s výpravami (md:grid-cols-2, lg:grid-cols-3).
+
+2. Komponent: Karta Výpravy (TripCard)
+Toto je kľúčový a vizuálne najdôležitejší komponent.
+
+Dizajn a Štruktúra:
+
+Karta musí byť div kontajner s fotografiou na pozadí, ktorá vypĺňa celý priestor (background-size: cover). Používateľ musí mať možnosť pri vytváraní alebo úprave výpravy nahrať vlastnú titulnú fotografiu. Ak používateľ žiadnu fotku nenahrá, aplikácia musí automaticky priradiť jednu z predvolených, vysokokvalitných fotografií s rybárskou tematikou (napr. scenéria pri vode).
+
+V spodnej časti karty musí byť tmavý gradientový prekryv (trip-card-overlay), ktorý zabezpečí perfektnú čitateľnosť textu.
+
+Celá karta musí byť klikateľná.
+
+Obsah Karty (zobrazený na prekryve):
+
+Statusový Odznak: V ľavom hornom rohu karty musí byť výrazný, farebne odlíšený odznak, ktorý zobrazuje status výpravy:
+
+"AKTÍVNA" (červené pozadie s jemnou pulzujúcou animáciou).
+
+"PLÁNOVANÁ" (modré pozadie).
+
+"UKONČENÁ" (sivé pozadie).
+
+Názov Výpravy: Výrazný nadpis h3.
+
+Dátum: Termín konania výpravy.
+
+Kľúčové Štatistiky: V spodnej časti karty musia byť zobrazené dva najdôležitejšie výsledky výpravy: počet úlovkov a najväčšia ryba (váha alebo dĺžka).
+
+Interaktivita: Pri prejdení myšou (hover) sa karta musí jemne zväčšiť (transform: scale(1.03)) a zobraziť tieň, čo naznačuje, že je interaktívna.
+
+3. Dáta a Stav Aplikácie
+Pre účely prototypu vytvorte statické pole objektov, ktoré bude reprezentovať zoznam výprav. Každý objekt musí obsahovať: id, name, startDate, endDate, status ('active', 'planned', 'finished'), imageUrl. Hodnota imageUrl bude odkazovať buď na používateľom nahranú fotku, alebo na predvolenú fotku, ak vlastná neexistuje.
+
+Aplikácia musí správne triediť a zobrazovať výpravy v príslušných sekciách ("Aktívne a Plánované" vs. "Ukončené").
+
+Tento prompt definuje kompletný rozsah prác na vytvorenie vizuálne atraktívnej a informatívnej sekcie, ktorá premení jednoduchý zoznam na kroniku rybárskych dobrodružstiev.

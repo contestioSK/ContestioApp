@@ -278,6 +278,7 @@ export const diaryTrips = pgTable("diary_trips", {
   notes: text("notes"),
   participants: jsonb("participants").$type<Array<{ userId?: string; name: string }>>().default([]), // Array of participants
   visibility: varchar("visibility").notNull().default("private"), // "private", "shared"
+  coverImageUrl: text("cover_image_url"), // Cover photo for the trip
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
