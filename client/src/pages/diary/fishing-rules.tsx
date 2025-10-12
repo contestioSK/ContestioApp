@@ -32,45 +32,83 @@ const quickLinks: QuickLinkCard[] = [
   }
 ];
 
-// Statické dáta pre tabuľku "Lovné miery"
+// Statické dáta pre tabuľku "Lovné miery" (2025)
 const sizeLimitsData = [
-  { fish: "Kapor", minMax: "40 cm", note: "Najmenšia miera" },
-  { fish: "Šťuka", minMax: "50 cm / 90 cm", note: "Najmenšia / najväčšia" },
-  { fish: "Zubáč", minMax: "50 cm", note: "Najmenšia miera" },
-  { fish: "Sumec", minMax: "70 cm", note: "Najmenšia miera" },
-  { fish: "Amur", minMax: "60 cm", note: "Najmenšia miera" },
-  { fish: "Pstruh potočný", minMax: "25 cm", note: "Najmenšia miera" },
-  { fish: "Pstruh dúhový", minMax: "25 cm", note: "Najmenšia miera" },
-  { fish: "Lipeň", minMax: "30 cm", note: "Najmenšia miera" },
-  { fish: "Mrena", minMax: "40 cm", note: "Najmenšia miera" }
+  { fish: "Amur biely", minMax: "60 cm", note: "Najmenšia miera" },
+  { fish: "Amur čierny", minMax: "60 cm", note: "Najmenšia miera" },
+  { fish: "Boleň dravý", minMax: "40 cm", note: "Najmenšia miera" },
+  { fish: "Hlavátka podunajská", minMax: "80 cm", note: "Najmenšia miera" },
+  { fish: "Jalec hlavatý", minMax: "25 cm", note: "Najmenšia miera" },
+  { fish: "Jalec maloústy", minMax: "20 cm", note: "Najmenšia miera" },
+  { fish: "Jalec tmavý", minMax: "30 cm", note: "Najmenšia miera" },
+  { fish: "Jeseter malý", minMax: "45 cm", note: "Najmenšia miera" },
+  { fish: "Jeseter sibírsky", minMax: "45 cm", note: "Najmenšia miera" },
+  { fish: "Kapor rybničný", minMax: "40 cm", note: "Najmenšia miera" },
+  { fish: "Lieň sliznatý", minMax: "30 cm", note: "Najmenšia miera" },
+  { fish: "Lipeň tymianový", minMax: "33 cm", note: "Najmenšia miera" },
+  { fish: "Mieň sladkovodný", minMax: "35 cm", note: "Najmenšia miera" },
+  { fish: "Mrena severná", minMax: "40 cm", note: "Najmenšia miera" },
+  { fish: "Nosáľ sťahovavý", minMax: "30 cm", note: "Najmenšia miera" },
+  { fish: "Pleskáč siný", minMax: "25 cm", note: "Najmenšia miera" },
+  { fish: "Pleskáč tuponosý", minMax: "25 cm", note: "Najmenšia miera" },
+  { fish: "Pleskáč vysoký", minMax: "30 cm", note: "Najmenšia miera" },
+  { fish: "Podustva severná", minMax: "30 cm", note: "Najmenšia miera" },
+  { fish: "Pstruh dúhový", minMax: "27 cm", note: "Najmenšia miera" },
+  { fish: "Pstruh jazerný", minMax: "50 cm", note: "Najmenšia miera" },
+  { fish: "Pstruh potočný", minMax: "27 cm", note: "Najmenšia miera" },
+  { fish: "Sih peleď", minMax: "25 cm", note: "Najmenšia miera" },
+  { fish: "Sivoň potočný", minMax: "27 cm", note: "Najmenšia miera" },
+  { fish: "Sumec veľký", minMax: "70 cm", note: "Najmenšia miera" },
+  { fish: "Šťuka severná", minMax: "60 cm", note: "Najmenšia miera" },
+  { fish: "Tolstolobik", minMax: "45 cm", note: "Najmenšia miera" },
+  { fish: "Úhor európsky", minMax: "50 cm", note: "Najmenšia miera" },
+  { fish: "Zubáč veľkoústy", minMax: "50 cm", note: "Najmenšia miera" },
+  { fish: "Zubáč volžský", minMax: "35 cm", note: "Najmenšia miera" }
 ];
 
-// Statické dáta pre tabuľku "Doby hájenia"
+// Statické dáta pre tabuľku "Doby hájenia" (2025)
 const closedSeasonsData = [
-  { fish: "Šťuka", from: "1. január", to: "31. marec" },
-  { fish: "Zubáč", from: "1. január", to: "31. marec" },
-  { fish: "Sumec", from: "1. máj", to: "30. jún" },
-  { fish: "Pstruh potočný", from: "1. október", to: "31. január" },
-  { fish: "Pstruh dúhový", from: "1. október", to: "31. január" },
-  { fish: "Lipeň", from: "1. apríl", to: "31. máj" },
-  { fish: "Mrena", from: "1. apríl", to: "31. máj" },
-  { fish: "Jalec", from: "1. apríl", to: "30. jún" }
+  { fish: "Boleň dravý", from: "15.03.", to: "31.05." },
+  { fish: "Hlavátka podunajská", from: "01.01.", to: "31.10." },
+  { fish: "Jalec hlavatý", from: "15.03.", to: "31.05." },
+  { fish: "Jalec maloústy", from: "15.03.", to: "31.05." },
+  { fish: "Jalec tmavý", from: "15.03.", to: "31.05." },
+  { fish: "Jeseter malý", from: "15.03.", to: "31.05." },
+  { fish: "Jeseter sibírsky", from: "15.03.", to: "31.05." },
+  { fish: "Kapor rybničný", from: "15.03.", to: "31.05." },
+  { fish: "Lieň sliznatý", from: "15.03.", to: "31.05." },
+  { fish: "Lipeň tymianový", from: "01.01.", to: "31.05." },
+  { fish: "Mieň sladkovodný", from: "01.01.", to: "15.03." },
+  { fish: "Mrena severná", from: "15.03.", to: "15.05." },
+  { fish: "Nosáľ sťahovavý", from: "15.03.", to: "31.05." },
+  { fish: "Pleskáč siný", from: "15.03.", to: "31.05." },
+  { fish: "Pleskáč tuponosý", from: "15.03.", to: "31.05." },
+  { fish: "Pleskáč vysoký", from: "15.03.", to: "31.05." },
+  { fish: "Ploska pásavá", from: "01.01.", to: "31.05." },
+  { fish: "Podustva severná", from: "15.03.", to: "31.05." },
+  { fish: "Pstruh jazerný", from: "01.09.", to: "15.04." },
+  { fish: "Pstruh potočný", from: "01.09.", to: "15.04." },
+  { fish: "Sih peleď", from: "01.09.", to: "28.02." },
+  { fish: "Sumec veľký", from: "01.01.", to: "15.06." },
+  { fish: "Šťuka severná", from: "01.01.", to: "31.05." },
+  { fish: "Zubáč veľkoústy", from: "01.01.", to: "15.06." },
+  { fish: "Zubáč volžský", from: "01.01.", to: "15.06." }
 ];
 
-// Statické dáta pre tabuľku "Denná doba lovu"
+// Statické dáta pre tabuľku "Denná doba lovu" (2025)
 const dailyHoursData = [
-  { month: "Január", carpWaters: "8:00 - 16:00", troutWaters: "9:00 - 15:00" },
-  { month: "Február", carpWaters: "8:00 - 17:00", troutWaters: "9:00 - 16:00" },
-  { month: "Marec", carpWaters: "7:00 - 18:00", troutWaters: "8:00 - 17:00" },
-  { month: "Apríl", carpWaters: "6:00 - 19:00", troutWaters: "7:00 - 18:00" },
-  { month: "Máj", carpWaters: "5:00 - 20:00", troutWaters: "6:00 - 19:00" },
-  { month: "Jún", carpWaters: "5:00 - 21:00", troutWaters: "6:00 - 20:00" },
-  { month: "Júl", carpWaters: "5:00 - 21:00", troutWaters: "6:00 - 20:00" },
-  { month: "August", carpWaters: "6:00 - 20:00", troutWaters: "7:00 - 19:00" },
-  { month: "September", carpWaters: "7:00 - 19:00", troutWaters: "8:00 - 18:00" },
-  { month: "Október", carpWaters: "7:00 - 18:00", troutWaters: "8:00 - 17:00" },
-  { month: "November", carpWaters: "8:00 - 16:00", troutWaters: "9:00 - 15:00" },
-  { month: "December", carpWaters: "8:00 - 16:00", troutWaters: "9:00 - 15:00" }
+  { month: "Január", carpWaters: "06:00 - 21:00", troutWaters: "07:00 - 17:00" },
+  { month: "Február", carpWaters: "06:00 - 21:00", troutWaters: "07:00 - 17:00" },
+  { month: "Marec", carpWaters: "06:00 - 21:00", troutWaters: "07:00 - 17:00" },
+  { month: "Apríl", carpWaters: "06:00 - 21:00", troutWaters: "07:00 - 17:00" },
+  { month: "Máj", carpWaters: "04:00 - 24:00", troutWaters: "05:00 - 21:00" },
+  { month: "Jún", carpWaters: "00:00 - 24:00", troutWaters: "05:00 - 21:00" },
+  { month: "Júl", carpWaters: "00:00 - 24:00", troutWaters: "05:00 - 21:00" },
+  { month: "August", carpWaters: "00:00 - 24:00", troutWaters: "06:00 - 20:00" },
+  { month: "September", carpWaters: "00:00 - 24:00", troutWaters: "07:00 - 19:00" },
+  { month: "Október", carpWaters: "00:00 - 24:00", troutWaters: "07:00 - 19:00" },
+  { month: "November", carpWaters: "06:00 - 21:00", troutWaters: "07:00 - 17:00" },
+  { month: "December", carpWaters: "06:00 - 21:00", troutWaters: "07:00 - 17:00" }
 ];
 
 export default function FishingRulesPage() {
