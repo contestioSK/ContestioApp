@@ -167,7 +167,6 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
   // Update form when editing catch changes
   useEffect(() => {
     if (editingCatch) {
-      console.log('[CatchFormDialog] Editing catch:', editingCatch);
       setExistingPhotos(editingCatch.photos || []);
       
       // Parse date safely
@@ -674,26 +673,35 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
                 control={form.control}
                 name="capturedAt"
                 render={({ field }) => {
-                  const dateValue = field.value ? format(field.value, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd");
-                  const timeValue = field.value ? format(field.value, "HH:mm") : format(new Date(), "HH:mm");
+                  // Ensure we have a valid date object
+                  const currentValue = field.value instanceof Date && !isNaN(field.value.getTime()) 
+                    ? field.value 
+                    : new Date();
+                  
+                  const dateValue = format(currentValue, "yyyy-MM-dd");
+                  const timeValue = format(currentValue, "HH:mm");
                   
                   const handleDateChange = (newDate: string) => {
-                    const currentDate = field.value || new Date();
+                    if (!newDate) return;
+                    const baseDate = field.value instanceof Date && !isNaN(field.value.getTime()) 
+                      ? new Date(field.value) 
+                      : new Date();
                     const [year, month, day] = newDate.split('-').map(Number);
-                    const updatedDate = new Date(currentDate);
-                    updatedDate.setFullYear(year);
-                    updatedDate.setMonth(month - 1);
-                    updatedDate.setDate(day);
-                    field.onChange(updatedDate);
+                    baseDate.setFullYear(year);
+                    baseDate.setMonth(month - 1);
+                    baseDate.setDate(day);
+                    field.onChange(baseDate);
                   };
                   
                   const handleTimeChange = (newTime: string) => {
-                    const currentDate = field.value || new Date();
+                    if (!newTime) return;
+                    const baseDate = field.value instanceof Date && !isNaN(field.value.getTime()) 
+                      ? new Date(field.value) 
+                      : new Date();
                     const [hours, minutes] = newTime.split(':').map(Number);
-                    const updatedDate = new Date(currentDate);
-                    updatedDate.setHours(hours);
-                    updatedDate.setMinutes(minutes);
-                    field.onChange(updatedDate);
+                    baseDate.setHours(hours);
+                    baseDate.setMinutes(minutes);
+                    field.onChange(baseDate);
                   };
                   
                   return (
