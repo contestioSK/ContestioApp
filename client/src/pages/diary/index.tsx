@@ -50,6 +50,35 @@ const getFishIconColor = (fishType?: string) => {
   return "text-blue-400"; // default
 };
 
+// Function to get catch thumbnail - photo or fish icon
+const getCatchThumbnail = (catch_: any) => {
+  // If catch has photos, show first photo thumbnail
+  if (catch_.photos && catch_.photos.length > 0) {
+    const firstPhoto = catch_.photos[0];
+    
+    // Get best thumbnail URL (prefer 400w variant)
+    let thumbnailUrl = '';
+    if (typeof firstPhoto === 'string') {
+      thumbnailUrl = firstPhoto;
+    } else {
+      const webp400 = firstPhoto.variants?.find((v: any) => v.width === 400 && v.format === 'webp');
+      const any400 = firstPhoto.variants?.find((v: any) => v.width === 400);
+      thumbnailUrl = webp400?.url || any400?.url || firstPhoto.url;
+    }
+    
+    return (
+      <img 
+        src={thumbnailUrl} 
+        alt="Miniatúra úlovku" 
+        className="w-full h-full object-cover rounded-lg"
+      />
+    );
+  }
+  
+  // Otherwise show fish icon
+  return getFishIcon(catch_.fishType);
+};
+
 // Photo type for carousel
 type PhotoObject = {
   id: string;
@@ -1187,8 +1216,8 @@ export default function DiaryIndex() {
                   {/* Desktop Row */}
                   <div className="hidden md:grid grid-cols-5 gap-4 p-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-slate-600/50 rounded-lg flex items-center justify-center">
-                        {getFishIcon(catch_.fishType)}
+                      <div className="w-10 h-10 bg-slate-600/50 rounded-lg flex items-center justify-center overflow-hidden">
+                        {getCatchThumbnail(catch_)}
                       </div>
                       <div className="text-white font-medium">
                         {catch_.fishType ? getFishTypeLabel(catch_.fishType) : 'Neznámy druh'}
@@ -1215,8 +1244,8 @@ export default function DiaryIndex() {
                   {/* Mobile Card */}
                   <div className="md:hidden p-4">
                     <div className="flex items-start gap-3">
-                      <div className="w-12 h-12 bg-slate-600/50 rounded-lg flex items-center justify-center flex-shrink-0">
-                        {getFishIcon(catch_.fishType)}
+                      <div className="w-12 h-12 bg-slate-600/50 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                        {getCatchThumbnail(catch_)}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-white font-medium mb-1">
