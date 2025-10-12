@@ -21,6 +21,7 @@ import {
   MapPin,
   Cloud
 } from "lucide-react";
+import contestioLogo from "@assets/contestio logo_1760283270014.png";
 
 // Type for premium check
 type PremiumStatus = {
@@ -123,13 +124,10 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
           <div className="flex items-center justify-between p-4 md:p-6 border-b border-sidebar-border">
             <Link 
               href="/" 
-              className="flex items-center space-x-2 md:space-x-3 hover:opacity-80 transition-opacity cursor-pointer"
+              className="flex items-center hover:opacity-80 transition-opacity cursor-pointer"
               data-testid="link-home-logo"
             >
-              <div className="w-8 h-8 bg-sidebar-primary rounded-lg flex items-center justify-center">
-                <Fish className="h-5 w-5 text-sidebar-primary-foreground" />
-              </div>
-              <h1 className="text-lg md:text-xl font-bold text-sidebar-foreground">Contestio</h1>
+              <img src={contestioLogo} alt="Contestio" className="h-10 md:h-12" />
             </Link>
             <Button
               variant="ghost"

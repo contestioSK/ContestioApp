@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Loader2, Mail, User, Eye, EyeOff, FishIcon, Chrome } from "lucide-react";
 import { Link } from "wouter";
+import contestioLogo from "@assets/contestio logo_1760283270014.png";
 
 // Registration validation schema
 const registerSchema = z.object({
@@ -113,9 +114,8 @@ export default function RegisterPage() {
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="flex items-center justify-center space-x-2 mb-4">
-            <FishIcon className="w-8 h-8 text-primary" />
-            <h1 className="text-2xl font-bold text-primary">Contestio</h1>
+          <div className="flex items-center justify-center mb-4">
+            <img src={contestioLogo} alt="Contestio" className="h-10" />
           </div>
           <CardTitle className="text-2xl font-bold" data-testid="text-register-title">
             Vytvorte si účet
