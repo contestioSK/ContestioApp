@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import DiaryLayout from "@/components/DiaryLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input";
 import { 
   Cloud, 
   MapPin, 
@@ -15,7 +16,8 @@ import {
   CloudRain,
   CloudSnow,
   Sun,
-  CloudDrizzle
+  CloudDrizzle,
+  Search
 } from "lucide-react";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
@@ -43,6 +45,8 @@ interface ForecastDay {
     time: string;
     temp_c: number;
     pressure_mb: number;
+    precip_mm: number;
+    humidity: number;
   }>;
 }
 
@@ -67,11 +71,64 @@ interface WeatherForecast {
   };
 }
 
+interface LocationResult {
+  id: number;
+  name: string;
+  region: string;
+  country: string;
+  lat: number;
+  lon: number;
+  url: string;
+}
+
 export default function WeatherForecast() {
   const [forecast, setForecast] = useState<WeatherForecast | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<LocationResult[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowResults(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Debounced search
+  useEffect(() => {
+    if (searchQuery.trim().length < 2) {
+      setSearchResults([]);
+      setShowResults(false);
+      return;
+    }
+
+    setSearchLoading(true);
+    const timer = setTimeout(async () => {
+      try {
+        const response = await fetch(`/api/weather/search?q=${encodeURIComponent(searchQuery)}`);
+        if (response.ok) {
+          const data = await response.json();
+          setSearchResults(data);
+          setShowResults(true);
+        }
+      } catch (err) {
+        console.error("Search error:", err);
+      } finally {
+        setSearchLoading(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const getWeatherIcon = (code: number) => {
     // WeatherAPI condition codes
@@ -84,6 +141,32 @@ export default function WeatherForecast() {
     if ([1072, 1150, 1153, 1168, 1171].includes(code)) 
       return <CloudDrizzle className="w-12 h-12 text-blue-300" />;
     return <Cloud className="w-12 h-12 text-gray-400" />;
+  };
+
+  const fetchForecast = async (query: string) => {
+    setLoading(true);
+    setError(null);
+    setShowResults(false);
+
+    try {
+      const response = await fetch(`/api/weather/forecast?q=${encodeURIComponent(query)}`);
+      
+      if (!response.ok) {
+        throw new Error('Nepodarilo sa načítať predpoveď počasia');
+      }
+
+      const data = await response.json();
+      setForecast(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Chyba pri načítaní predpovede');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLocationSelect = (location: LocationResult) => {
+    setSearchQuery(`${location.name}, ${location.region || location.country}`);
+    fetchForecast(`${location.lat},${location.lon}`);
   };
 
   const getMyLocation = () => {
@@ -99,7 +182,6 @@ export default function WeatherForecast() {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
-        setLocation({ lat: latitude, lon: longitude });
         
         try {
           const response = await fetch(
@@ -112,6 +194,7 @@ export default function WeatherForecast() {
 
           const data = await response.json();
           setForecast(data);
+          setSearchQuery(`${data.location.name}, ${data.location.region || data.location.country}`);
         } catch (err) {
           setError(err instanceof Error ? err.message : 'Chyba pri načítaní predpovede');
         } finally {
@@ -148,28 +231,71 @@ export default function WeatherForecast() {
           <div>
             <h1 className="text-3xl font-bold text-foreground">Predpoveď počasia</h1>
             <p className="text-muted-foreground mt-2">
-              3-dňová predpoveď pre vaše rybárske výpravy
+              Plánuj svoje výpravy ako profesionál
             </p>
           </div>
 
-          <Button 
-            onClick={getMyLocation} 
-            disabled={loading}
-            data-testid="button-get-location"
-            className="w-fit"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Načítavam...
-              </>
-            ) : (
-              <>
-                <MapPin className="w-4 h-4 mr-2" />
-                Získať predpoveď pre moju polohu
-              </>
-            )}
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-3">
+            {/* Search Input with Autocomplete */}
+            <div ref={searchRef} className="relative flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Hľadať lokalitu..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                  data-testid="input-location-search"
+                />
+                {searchLoading && (
+                  <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground" />
+                )}
+              </div>
+
+              {/* Autocomplete Dropdown */}
+              {showResults && searchResults.length > 0 && (
+                <div className="absolute z-50 w-full mt-1 bg-card border border-border rounded-md shadow-lg max-h-60 overflow-auto">
+                  {searchResults.map((location) => (
+                    <button
+                      key={location.id}
+                      onClick={() => handleLocationSelect(location)}
+                      className="w-full px-4 py-2 text-left hover:bg-accent transition-colors flex items-start gap-2"
+                      data-testid={`button-location-${location.id}`}
+                    >
+                      <MapPin className="w-4 h-4 mt-1 text-muted-foreground flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{location.name}</p>
+                        <p className="text-sm text-muted-foreground truncate">
+                          {[location.region, location.country].filter(Boolean).join(', ')}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <Button 
+              onClick={getMyLocation} 
+              disabled={loading}
+              data-testid="button-get-location"
+              variant="outline"
+              className="w-full sm:w-auto"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Načítavam...
+                </>
+              ) : (
+                <>
+                  <MapPin className="w-4 h-4 mr-2" />
+                  Moja poloha
+                </>
+              )}
+            </Button>
+          </div>
 
           {error && (
             <Alert variant="destructive" data-testid="alert-error">

@@ -4599,14 +4599,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Search/Autocomplete for locations from WeatherAPI.com
+  app.get('/api/weather/search', isAuthenticated, async (req: any, res) => {
+    try {
+      const { q } = req.query;
+
+      if (!q || typeof q !== 'string' || q.trim().length === 0) {
+        return res.json([]);
+      }
+
+      const apiKey = process.env.WEATHER_API_KEY;
+      if (!apiKey) {
+        console.error("[WEATHER] WEATHER_API_KEY not configured");
+        return res.status(500).json({ message: "Weather API not configured" });
+      }
+
+      // Call WeatherAPI Search/Autocomplete API
+      const apiUrl = `https://api.weatherapi.com/v1/search.json?key=${apiKey}&q=${encodeURIComponent(q)}`;
+      
+      const response = await fetch(apiUrl);
+      
+      if (!response.ok) {
+        console.error(`[WEATHER] Search API error: ${response.status} ${response.statusText}`);
+        return res.status(response.status).json({ 
+          message: "Failed to search locations" 
+        });
+      }
+
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error("[WEATHER] Error searching locations:", error);
+      res.status(500).json({ message: "Failed to search weather locations" });
+    }
+  });
+
   // Get weather forecast from WeatherAPI.com
   app.get('/api/weather/forecast', isAuthenticated, async (req: any, res) => {
     try {
-      const { lat, lon } = req.query;
+      const { lat, lon, q } = req.query;
 
-      if (!lat || !lon) {
+      // Support both lat/lon and location query - strict validation
+      const hasCoordinates = lat && lon;
+      const hasLocationQuery = q && typeof q === 'string';
+      
+      if (!hasCoordinates && !hasLocationQuery) {
         return res.status(400).json({ 
-          message: "Missing required parameters: lat, lon" 
+          message: "Missing required parameters: either both lat and lon, or q" 
         });
       }
 
@@ -4616,8 +4655,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ message: "Weather API not configured" });
       }
 
-      // Call WeatherAPI Forecast API for 3 days
-      const apiUrl = `https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${lat},${lon}&days=3&lang=sk`;
+      // Build query parameter - either coordinates or location name
+      const queryParam = hasLocationQuery ? encodeURIComponent(q as string) : `${lat},${lon}`;
+      
+      // Call WeatherAPI Forecast API for 3 days with hourly data
+      const apiUrl = `https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${queryParam}&days=3&lang=sk`;
       
       const response = await fetch(apiUrl);
       
