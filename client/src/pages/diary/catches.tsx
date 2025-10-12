@@ -44,7 +44,11 @@ import {
   Upload,
   X,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Cloud,
+  Thermometer,
+  Wind,
+  Gauge
 } from "lucide-react";
 
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -92,6 +96,13 @@ const catchFormSchema = z.object({
   notes: z.string().optional(),
   spot: z.string().optional(),
   verified: z.boolean().default(false),
+  // Weather data (optional)
+  waterTemp: z.coerce.number().min(-50).max(50).optional(),
+  airTemp: z.coerce.number().min(-50).max(50).optional(),
+  windSpeed: z.coerce.number().min(0).max(500).optional(),
+  airPressure: z.coerce.number().min(800).max(1200).optional(),
+  latitude: z.coerce.number().min(-90).max(90).optional(),
+  longitude: z.coerce.number().min(-180).max(180).optional(),
 });
 
 type CatchFormData = z.infer<typeof catchFormSchema>;
@@ -379,6 +390,9 @@ export default function DiaryCatches() {
   const [selectedSpot, setSelectedSpot] = useState<string>("all");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   
+  // Weather state
+  const [isLoadingWeather, setIsLoadingWeather] = useState(false);
+  
   // Offline functionality
   const { 
     isOffline, 
@@ -610,6 +624,62 @@ export default function DiaryCatches() {
           }
         });
       }
+    }
+  };
+
+  // Load weather data from API
+  const loadWeatherData = async () => {
+    const lat = form.getValues("latitude");
+    const lon = form.getValues("longitude");
+    const datetime = form.getValues("capturedAt");
+
+    if (!lat || !lon || !datetime) {
+      toast({
+        title: "Chýbajúce údaje",
+        description: "Prosím zadajte GPS súradnice (široká/dĺžka) a čas chytenia.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoadingWeather(true);
+    
+    try {
+      const response = await fetch(
+        `/api/weather?lat=${lat}&lon=${lon}&datetime=${datetime.toISOString()}`,
+        { credentials: 'include' }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch weather data');
+      }
+
+      const weatherData = await response.json();
+
+      // Update form with weather data
+      if (weatherData.temperature !== null && weatherData.temperature !== undefined) {
+        form.setValue("airTemp", weatherData.temperature);
+      }
+      if (weatherData.windSpeed !== null && weatherData.windSpeed !== undefined) {
+        form.setValue("windSpeed", weatherData.windSpeed);
+      }
+      if (weatherData.pressure !== null && weatherData.pressure !== undefined) {
+        form.setValue("airPressure", weatherData.pressure);
+      }
+
+      toast({
+        title: "Počasie načítané!",
+        description: `Teplota: ${weatherData.temperature}°C, Vietor: ${weatherData.windSpeed} km/h, Tlak: ${weatherData.pressure} mb`,
+      });
+    } catch (error) {
+      console.error('Weather fetch error:', error);
+      toast({
+        title: "Chyba pri načítaní počasia",
+        description: "Nepodarilo sa načítať údaje o počasí. Skúste to znova.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingWeather(false);
     }
   };
 
@@ -1259,6 +1329,183 @@ export default function DiaryCatches() {
                           </FormItem>
                         )}
                       />
+                    </div>
+
+                    {/* Weather Section */}
+                    <div className="space-y-4 pt-4 border-t border-border">
+                      <div className="flex items-center gap-2">
+                        <Cloud className="h-5 w-5 text-muted-foreground" />
+                        <h3 className="text-sm font-medium">Podmienky počasia (voliteľné)</h3>
+                      </div>
+                      
+                      {/* GPS Coordinates for weather lookup */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="latitude"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs">Širka (GPS)</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  type="number" 
+                                  step="0.000001"
+                                  placeholder="napr. 48.148636" 
+                                  data-testid="input-latitude"
+                                  {...field}
+                                  value={field.value ?? ''}
+                                  onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="longitude"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs">Dĺžka (GPS)</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  type="number" 
+                                  step="0.000001"
+                                  placeholder="napr. 17.107748" 
+                                  data-testid="input-longitude"
+                                  {...field}
+                                  value={field.value ?? ''}
+                                  onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      {/* Load Weather Button */}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={loadWeatherData}
+                        disabled={isLoadingWeather}
+                        className="w-full"
+                        data-testid="button-load-weather"
+                      >
+                        {isLoadingWeather ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Načítavam počasie...
+                          </>
+                        ) : (
+                          <>
+                            <Cloud className="mr-2 h-4 w-4" />
+                            Načítať počasie z API
+                          </>
+                        )}
+                      </Button>
+
+                      {/* Weather Data Fields */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="waterTemp"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs flex items-center gap-1">
+                                <Thermometer className="h-3 w-3" />
+                                Teplota vody (°C)
+                              </FormLabel>
+                              <FormControl>
+                                <Input 
+                                  type="number" 
+                                  step="0.1"
+                                  placeholder="napr. 18.5" 
+                                  data-testid="input-water-temp"
+                                  value={field.value ?? ''}
+                                  onChange={(e) => field.onChange(e.target.value && e.target.value.trim() !== '' ? parseFloat(e.target.value) : undefined)}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="airTemp"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs flex items-center gap-1">
+                                <Thermometer className="h-3 w-3" />
+                                Teplota vzduchu (°C)
+                              </FormLabel>
+                              <FormControl>
+                                <Input 
+                                  type="number" 
+                                  step="0.1"
+                                  placeholder="z API" 
+                                  data-testid="input-air-temp"
+                                  value={field.value ?? ''}
+                                  onChange={(e) => field.onChange(e.target.value && e.target.value.trim() !== '' ? parseFloat(e.target.value) : undefined)}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="windSpeed"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs flex items-center gap-1">
+                                <Wind className="h-3 w-3" />
+                                Vietor (km/h)
+                              </FormLabel>
+                              <FormControl>
+                                <Input 
+                                  type="number" 
+                                  step="0.1"
+                                  placeholder="z API" 
+                                  data-testid="input-wind-speed"
+                                  value={field.value ?? ''}
+                                  onChange={(e) => field.onChange(e.target.value && e.target.value.trim() !== '' ? parseFloat(e.target.value) : undefined)}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="airPressure"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-xs flex items-center gap-1">
+                                <Gauge className="h-3 w-3" />
+                                Tlak (mb)
+                              </FormLabel>
+                              <FormControl>
+                                <Input 
+                                  type="number" 
+                                  step="0.1"
+                                  placeholder="z API" 
+                                  data-testid="input-air-pressure"
+                                  value={field.value ?? ''}
+                                  onChange={(e) => field.onChange(e.target.value && e.target.value.trim() !== '' ? parseFloat(e.target.value) : undefined)}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                     </div>
 
                     <div className="flex gap-3 pt-4">
