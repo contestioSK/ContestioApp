@@ -1,0 +1,54 @@
+Cieľ: Upraviť a zjednodušiť existujúcu sekciu "Podmienky počasia" vo formulári "Nový Úlovok" tak, aby bola pre používateľa rýchlejšia a intuitívnejšia.
+Technológie: React.js, TailwindCSS
+
+1. Hlavný Cieľ Úpravy
+Súčasná implementácia vyžaduje od používateľa dva samostatné kroky (získať polohu, načítať počasie) a zobrazuje nadbytočné polia. Cieľom je zlúčiť tieto dve akcie do jedného inteligentného tlačidla a odstrániť všetky nepotrebné UI prvky, aby bol proces plne automatizovaný.
+
+2. Požiadavky na Zmeny
+2.1. Odstránenie Súčasných Prvkov
+V existujúcej sekcii "Podmienky počasia" je potrebné kompletne odstrániť nasledujúce prvky:
+
+input pole "Šírka (GPS)"
+
+input pole "Dĺžka (GPS)"
+
+Tlačidlo "Získať moju polohu"
+
+Tlačidlo "Načítať počasie z API"
+
+Všetky input polia pre manuálne zadanie počasia ("Teplota vody", "Teplota vzduchu", "Vietor", "Tlak"). Tieto dáta budú po novom získané výlučne cez API a uložené na pozadí.
+
+2.2. Implementácia Nového Komponentu
+Namiesto odstránených prvkov vytvorte novú, zjednodušenú sekciu, ktorá bude obsahovať:
+
+Hlavičku: Nadpis h2 "Prémiové Dáta" a vedľa neho výrazný odznak (span) s textom "PREMIUM".
+
+Hlavné Tlačidlo: Vytvorte jedno, inteligentné tlačidlo s textom "Získať Polohu a Počasie". Musí obsahovať aj ikonu GPS polohy.
+
+Popisný Text: Pod tlačidlom zobrazte krátky vysvetľujúci text: "Automaticky získa GPS súradnice a načíta kompletnú predpoveď počasia z API pre čas úlovku."
+
+3. Kľúčová Funkcionalita Nového Tlačidla
+Kliknutie na tlačidlo "Získať Polohu a Počasie" musí spustiť nasledujúcu jednotnú a automatizovanú sekvenciu akcií:
+
+Zobraziť Načítavací Stav: Tlačidlo sa musí dočasne zablokovať a zobraziť indikátor načítavania (spinner).
+
+Získať GPS Polohu: Spustite požiadavku na geolokačné API prehliadača (navigator.geolocation.getCurrentPosition), aby ste získali aktuálne GPS súradnice.
+
+Zavolať WeatherAPI: Okamžite po získaní GPS súradníc ich použite (spolu s dátumom a časom zadaným vo formulári) na zavolanie "History API" od WeatherAPI.com.
+
+Spracovať Odpoveď a Ukončiť Načítavanie:
+
+Po úspešnom získaní dát z API skryte načítavací indikátor.
+
+Zobrazte Správu o Úspechu: Tlačidlo musí zmeniť farbu a text, napríklad na "Dáta o polohe a počasí načítané ✔", aby mal používateľ jasnú spätnú väzbu, že akcia prebehla úspešne.
+
+(Voliteľné, pre budúcnosť): Načítané dáta (teplota, tlak, vietor...) sa môžu zobraziť v disabled input poliach pod tlačidlom, aby ich používateľ videl, ale nemohol ich upraviť.
+
+4. Štýl a Dizajn
+Striktne dodržte tmavý dizajnový jazyk podľa finálneho návrhu.
+
+Tlačidlo musí mať modrú farbu (bg-[#3b82f6]).
+
+Odznak "PREMIUM" musí byť žltý (bg-yellow-400).
+
+Tento refaktoring premení zložitý proces na jeden jediný, inteligentný a pre používateľa oveľa príjemnejší krok.
