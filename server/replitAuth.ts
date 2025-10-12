@@ -191,17 +191,32 @@ export async function setupAuth(app: Express) {
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
   const user = req.user as any;
 
-  if (!req.isAuthenticated() || !user.expires_at) {
+  console.log('[isAuthenticated] Check - isAuthenticated():', req.isAuthenticated(), 'user:', user ? 'exists' : 'null');
+
+  // Check if user is authenticated
+  if (!req.isAuthenticated()) {
+    console.log('[isAuthenticated] FAIL - Not authenticated');
     return res.status(401).json({ message: "Unauthorized" });
   }
 
-  const now = Math.floor(Date.now() / 1000);
-  if (now <= user.expires_at) {
+  // If user doesn't have expires_at, it's the new auth system (email/password)
+  // Just verify they're authenticated and continue
+  if (!user.expires_at) {
+    console.log('[isAuthenticated] SUCCESS - New auth system (no expires_at)');
     return next();
   }
 
+  // For Replit OAuth users, check token expiration
+  const now = Math.floor(Date.now() / 1000);
+  if (now <= user.expires_at) {
+    console.log('[isAuthenticated] SUCCESS - OAuth token valid');
+    return next();
+  }
+
+  // Token expired, try to refresh
   const refreshToken = user.refresh_token;
   if (!refreshToken) {
+    console.log('[isAuthenticated] FAIL - Token expired, no refresh token');
     res.status(401).json({ message: "Unauthorized" });
     return;
   }
@@ -210,8 +225,10 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
     const config = await getOidcConfig();
     const tokenResponse = await client.refreshTokenGrant(config, refreshToken);
     updateUserSession(user, tokenResponse);
+    console.log('[isAuthenticated] SUCCESS - Token refreshed');
     return next();
   } catch (error) {
+    console.log('[isAuthenticated] FAIL - Token refresh failed:', error);
     res.status(401).json({ message: "Unauthorized" });
     return;
   }
