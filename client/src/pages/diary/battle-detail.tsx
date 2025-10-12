@@ -11,6 +11,7 @@ import { format, formatDistanceToNow } from "date-fns";
 import { sk } from "date-fns/locale";
 import { useQuery } from "@tanstack/react-query";
 import DiaryLayout from "@/components/DiaryLayout";
+import CatchFormDialog from "@/components/diary/CatchFormDialog";
 import type { DiaryBattle, DiaryCatch } from "@shared/schema";
 
 interface WebSocketMessage {
@@ -48,6 +49,7 @@ export default function BattleDetail() {
   const [, setLocation] = useLocation();
   const [battle, setBattle] = useState<DiaryBattle | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<string>("");
+  const [isAddCatchDialogOpen, setIsAddCatchDialogOpen] = useState(false);
 
   // WebSocket connection for live updates
   useWebSocket((message: WebSocketMessage) => {
@@ -205,7 +207,7 @@ export default function BattleDetail() {
               </p>
             </div>
             <Button 
-              onClick={() => setLocation(`/diary/catches/new?battleId=${id}`)}
+              onClick={() => setIsAddCatchDialogOpen(true)}
               className="gap-2"
               data-testid="button-add-catch"
             >
@@ -460,6 +462,18 @@ export default function BattleDetail() {
           </div>
         </div>
       </div>
+
+      {/* Catch Form Dialog */}
+      <CatchFormDialog
+        isOpen={isAddCatchDialogOpen}
+        onClose={() => setIsAddCatchDialogOpen(false)}
+        editingCatch={null}
+        battleId={id}
+        onSuccess={() => {
+          // Invalidate catches query to refresh the feed
+          // This is handled automatically by CatchFormDialog
+        }}
+      />
     </DiaryLayout>
   );
 }

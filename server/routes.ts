@@ -3532,6 +3532,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get active battles for current user (must come before :id route)
+  app.get('/api/diary/battles/active', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      
+      // Get all user battles
+      const allBattles = await storage.getAllUserBattles(userId);
+      
+      const now = new Date();
+      
+      // Filter for active battles only (started but not finished)
+      const activeBattles = allBattles.filter(battle => {
+        const startAt = new Date(battle.startAt);
+        const endAt = new Date(battle.endAt);
+        
+        // Battle is active if it has started and not yet ended
+        return startAt <= now && endAt >= now;
+      });
+      
+      res.json(activeBattles);
+    } catch (error) {
+      console.error("Error fetching active battles:", error);
+      res.status(500).json({ message: "Failed to fetch active battles" });
+    }
+  });
+
   // Get catches for specific battle
   app.get('/api/diary/battles/:id/catches', isAuthenticated, async (req: any, res) => {
     try {
