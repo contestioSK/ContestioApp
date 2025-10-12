@@ -659,48 +659,67 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
                 )}
               </div>
 
-              <FormField
-                control={form.control}
-                name="capturedAt"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Čas chytenia</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                            data-testid="button-capture-date"
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP", { locale: sk })
-                            ) : (
-                              <span>Vyberte dátum</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={(date) =>
-                            date > new Date() || date < new Date("1900-01-01")
-                          }
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Date and Time - Split into two inputs */}
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="capturedAt"
+                  render={({ field }) => {
+                    const dateValue = field.value ? format(field.value, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd");
+                    const timeValue = field.value ? format(field.value, "HH:mm") : format(new Date(), "HH:mm");
+                    
+                    const handleDateChange = (newDate: string) => {
+                      const currentDate = field.value || new Date();
+                      const [year, month, day] = newDate.split('-').map(Number);
+                      const updatedDate = new Date(currentDate);
+                      updatedDate.setFullYear(year);
+                      updatedDate.setMonth(month - 1);
+                      updatedDate.setDate(day);
+                      field.onChange(updatedDate);
+                    };
+                    
+                    const handleTimeChange = (newTime: string) => {
+                      const currentDate = field.value || new Date();
+                      const [hours, minutes] = newTime.split(':').map(Number);
+                      const updatedDate = new Date(currentDate);
+                      updatedDate.setHours(hours);
+                      updatedDate.setMinutes(minutes);
+                      field.onChange(updatedDate);
+                    };
+                    
+                    return (
+                      <>
+                        <FormItem>
+                          <FormLabel>Dátum</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="date"
+                              value={dateValue}
+                              onChange={(e) => handleDateChange(e.target.value)}
+                              data-testid="input-capture-date"
+                              max={format(new Date(), "yyyy-MM-dd")}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                        
+                        <FormItem>
+                          <FormLabel>Čas</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="time"
+                              value={timeValue}
+                              onChange={(e) => handleTimeChange(e.target.value)}
+                              data-testid="input-capture-time"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      </>
+                    );
+                  }}
+                />
+              </div>
             </div>
 
             {/* Fish Details */}
