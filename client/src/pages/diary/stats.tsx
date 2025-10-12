@@ -250,6 +250,19 @@ export default function DiaryStats() {
     efficiency: month.trips > 0 ? month.catches / month.trips : 0
   }));
 
+  // Hourly distribution data for chart
+  const hourlyDistributionData = Array.from({ length: 24 }, (_, hour) => {
+    const hourCatches = catches.filter(c => new Date(c.capturedAt).getHours() === hour);
+    const totalWeight = hourCatches.reduce((sum, c) => sum + parseFloat(c.weight), 0);
+    
+    return {
+      hour,
+      hourLabel: String(hour).padStart(2, '0') + ':00',
+      count: hourCatches.length,
+      totalWeight: parseFloat(totalWeight.toFixed(2))
+    };
+  });
+
   // ===== ADVANCED METRICS CALCULATIONS =====
 
   // 1. ADVANCED SUCCESS RATE ANALYSIS
