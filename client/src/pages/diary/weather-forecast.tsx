@@ -24,7 +24,8 @@ import {
   Sunrise,
   Sunset,
   Fish,
-  Crown
+  Crown,
+  ArrowUp
 } from "lucide-react";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
@@ -304,6 +305,29 @@ export default function WeatherForecast() {
     if (score >= 70) return { label: 'Vysoká', color: '#22c55e' };
     if (score >= 40) return { label: 'Stredná', color: '#eab308' };
     return { label: 'Nízka', color: '#ef4444' };
+  };
+
+  // Convert wind direction to rotation degrees for arrow icon
+  const getWindRotation = (direction: string): number => {
+    const directions: Record<string, number> = {
+      'N': 0,
+      'NNE': 22.5,
+      'NE': 45,
+      'ENE': 67.5,
+      'E': 90,
+      'ESE': 112.5,
+      'SE': 135,
+      'SSE': 157.5,
+      'S': 180,
+      'SSW': 202.5,
+      'SW': 225,
+      'WSW': 247.5,
+      'W': 270,
+      'WNW': 292.5,
+      'NW': 315,
+      'NNW': 337.5
+    };
+    return directions[direction.toUpperCase()] || 0;
   };
 
   const selectedDay = forecast?.forecast.forecastday[selectedDayIndex];
