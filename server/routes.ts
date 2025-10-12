@@ -3806,7 +3806,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updatedInvitation = await storage.updateInvitationStatus(invitationId, "accepted");
       
       // Get the battle to notify the organizer
-      const battle = await storage.getDiaryBattle(invitation.battleId);
+      const battle = await storage.getDiaryBattle(invitation.battleId, userId);
       
       // Broadcast to organizer that invitation was accepted
       broadcastToUsers([invitation.invitedByUserId], {
@@ -3956,7 +3956,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Diary Trips endpoints
   app.get('/api/diary/trips', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user?.id || req.user?.claims?.sub;
       const trips = await storage.getDiaryTrips(userId);
       res.json(trips);
     } catch (error) {
@@ -3967,7 +3967,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/diary/trips', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user?.id || req.user?.claims?.sub;
       
       // Check freemium limits
       const tripLimit = await storage.checkDiaryTripLimit(userId);
@@ -4089,7 +4089,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Diary Catches endpoints  
   app.get('/api/diary/catches', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user?.id || req.user?.claims?.sub;
       const { tripId } = req.query;
       
       let catches;
@@ -4116,7 +4116,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/diary/catches/all', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user?.id || req.user?.claims?.sub;
       const catches = await storage.getAllUserCatches(userId);
       res.json(catches);
     } catch (error) {
@@ -4127,7 +4127,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/diary/catches', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user?.id || req.user?.claims?.sub;
       
       // Check freemium limits (optimized - skips count query for premium users)
       const catchLimit = await storage.checkDiaryCatchLimit(userId);
@@ -4273,7 +4273,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Diary Limits endpoints
   app.get('/api/diary/trip-limits', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user?.id || req.user?.claims?.sub;
       const limits = await storage.checkDiaryTripLimit(userId);
       res.json(limits);
     } catch (error) {
@@ -4284,7 +4284,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/diary/catch-limits', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user?.id || req.user?.claims?.sub;
       const limits = await storage.checkDiaryCatchLimit(userId);
       res.json(limits);
     } catch (error) {
