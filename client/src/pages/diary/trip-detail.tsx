@@ -160,11 +160,12 @@ export default function TripDetail() {
               <Button
                 variant="outline"
                 onClick={() => setShowEndTripDialog(true)}
+                disabled={endTripMutation.isPending}
                 className="gap-2 text-orange-600 hover:text-orange-700 border-orange-600 hover:border-orange-700"
                 data-testid="button-end-trip"
               >
                 <XCircle className="w-4 h-4" />
-                Ukončiť výpravu
+                {endTripMutation.isPending ? "Ukončujem..." : "Ukončiť výpravu"}
               </Button>
             )}
           </div>
@@ -175,7 +176,7 @@ export default function TripDetail() {
                 {trip.name}
               </h1>
               {/* Badge for ended trip */}
-              {isPast(new Date(trip.endDate)) && (
+              {(isPast(new Date(trip.endDate)) || isToday(new Date(trip.endDate))) && (
                 <Badge variant="secondary" className="text-xs">
                   Ukončená
                 </Badge>
