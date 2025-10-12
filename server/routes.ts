@@ -3989,6 +3989,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Diary Trips endpoints
+  app.get('/api/diary/trips/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id || req.user?.claims?.sub;
+      const tripId = req.params.id;
+      
+      const trip = await storage.getDiaryTrip(tripId, userId);
+      if (!trip) {
+        return res.status(404).json({ message: "Trip not found" });
+      }
+      
+      res.json(trip);
+    } catch (error) {
+      console.error("Error fetching diary trip:", error);
+      res.status(500).json({ message: "Failed to fetch trip" });
+    }
+  });
+
   app.get('/api/diary/trips', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.id || req.user?.claims?.sub;
