@@ -27,6 +27,26 @@ Complete systematic dark theme implementation across entire application:
 - **Architecture**: Zero dark: overrides remaining, full reliance on bg-background, text-foreground, text-primary, etc. design tokens
 - **User Experience**: Seamless light/dark mode switching with consistent visual hierarchy and branding
 
+## ✅ COMPLETED: Weather Forecast Module (October 2025)
+Comprehensive weather forecasting system for fishing trip planning with intelligent location handling:
+- **Smart Location System**: 
+  - Auto-loads last used location on return visits via localStorage
+  - First-time visitors: automatic GPS location request with graceful fallback
+  - Manual search with autocomplete for worldwide locations
+  - "My Location" button for quick GPS access
+- **7-Day Forecast Display**:
+  - Interactive day selection with detailed hourly breakdown
+  - Visual weather chart (temperature + precipitation combined view)
+  - Horizontal hourly scroll with wind speed, rotating directional arrows, and condition icons
+- **PREMIUM Fish Activity Index**: Algorithm-based fishing conditions score (0-100) using pressure, temperature, precipitation, and wind data
+- **Detailed Conditions Widget**: 6-metric grid showing pressure, humidity, rain chance, sunrise/sunset, and moon phase
+- **Slovak Localization**: Complete translation including moon phases and wind directions (N→S, NE→SV, etc.)
+- **UX Enhancements**: 
+  - Empty state with friendly message when no location selected
+  - Skeleton loaders during data fetch
+  - Error handling with user-friendly messages
+- **WeatherAPI Integration**: Backend proxy with location search and 7-day forecast endpoints
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
