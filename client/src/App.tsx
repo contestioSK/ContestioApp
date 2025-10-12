@@ -36,6 +36,7 @@ import DiarySeasonalGoalsCreate from "@/pages/diary/seasonal-goals-create.tsx";
 import DiarySeasonalGoalsEdit from "@/pages/diary/seasonal-goals-edit.tsx";
 import DiaryProfile from "@/pages/diary/profile";
 import WeatherForecast from "@/pages/diary/weather-forecast";
+import FishingRules from "@/pages/diary/fishing-rules";
 import BattlePaywall from "@/pages/diary/battle-paywall";
 import BattleIndex from "@/pages/diary/battle-index";
 import BattleCreate from "@/pages/diary/battle-create";
@@ -121,6 +122,11 @@ function Router() {
       <Route path="/diary/weather-forecast">
         <ProtectedRoute>
           <WeatherForecast />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/diary/fishing-rules">
+        <ProtectedRoute>
+          <FishingRules />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/seasonal-goals">

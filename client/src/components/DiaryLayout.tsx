@@ -19,7 +19,8 @@ import {
   X,
   Swords,
   MapPin,
-  Cloud
+  Cloud,
+  Scale
 } from "lucide-react";
 import contestioLogo from "@assets/contestio logo_1760283270014.png";
 
@@ -56,6 +57,12 @@ const navigationItems = [
     label: "Predpoveď počasia",
     href: "/diary/weather-forecast",
     description: "3-dňová predpoveď"
+  },
+  {
+    icon: Scale,
+    label: "Rybársky poriadok",
+    href: "/diary/fishing-rules",
+    description: "Pravidlá a predpisy"
   },
   {
     icon: BarChart3,
