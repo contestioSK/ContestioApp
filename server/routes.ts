@@ -4355,6 +4355,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }, express.static(path.join(process.cwd(), 'attached_assets')));
 
   // Seasonal Goals API endpoints
+  // Get all seasons
+  app.get('/api/seasons', async (req, res) => {
+    try {
+      const seasons = await storage.getSeasons();
+      res.json(seasons);
+    } catch (error) {
+      console.error("[SEASONS] Error fetching seasons:", error);
+      res.status(500).json({ message: "Failed to fetch seasons" });
+    }
+  });
+
   // Get current season
   app.get('/api/seasons/current', async (req, res) => {
     try {

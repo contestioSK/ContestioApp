@@ -2780,34 +2780,21 @@ export class DatabaseStorage implements IStorage {
     });
   }
 
-  // Calculate season dates based on January 15th reset rule
+  // Calculate season dates based on calendar year (January 1 - December 31)
   private calculateCurrentSeasonDates(referenceDate: Date): { startDate: Date; endDate: Date } {
     const year = referenceDate.getFullYear();
-    const month = referenceDate.getMonth(); // 0-based (0 = January)
-    const day = referenceDate.getDate();
     
-    let seasonStartYear: number;
-    
-    // If we're before January 15th, we're still in the previous season
-    if (month === 0 && day < 15) { // January 1-14
-      seasonStartYear = year - 1;
-    } else {
-      // If we're January 15th or later, we're in the current season
-      seasonStartYear = year;
-    }
-    
-    // Season runs from January 15th to January 14th next year
-    const startDate = new Date(seasonStartYear, 0, 15, 0, 0, 0, 0); // January 15th, 00:00:00
-    const endDate = new Date(seasonStartYear + 1, 0, 14, 23, 59, 59, 999); // January 14th next year, 23:59:59
+    // Season runs for the entire calendar year
+    const startDate = new Date(year, 0, 1, 0, 0, 0, 0); // January 1st, 00:00:00
+    const endDate = new Date(year, 11, 31, 23, 59, 59, 999); // December 31st, 23:59:59
     
     return { startDate, endDate };
   }
 
-  // Generate season name in format "2024/2025"
+  // Generate season name in calendar year format "2024"
   private generateSeasonName(startDate: Date): string {
-    const startYear = startDate.getFullYear();
-    const endYear = startYear + 1;
-    return `${startYear}/${endYear}`;
+    const year = startDate.getFullYear();
+    return `${year}`;
   }
 
   async getActiveSeason(): Promise<Season | undefined> {
