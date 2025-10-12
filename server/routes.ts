@@ -4135,6 +4135,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch('/api/diary/trips/:id/end', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const tripId = req.params.id;
+      
+      // Check if user owns this trip
+      const trip = await storage.getDiaryTrip(tripId, userId);
+      if (!trip) {
+        return res.status(404).json({ message: "Trip not found" });
+      }
+      
+      // Set end date to today
+      const today = new Date();
+      today.setHours(23, 59, 59, 999); // Set to end of day
+      
+      const updatedTrip = await storage.updateDiaryTrip(tripId, { endDate: today }, userId);
+      
+      // Update seasonal goals progress after trip end
+      await storage.updateAllUserGoalsProgress(userId);
+      
+      res.json(updatedTrip);
+    } catch (error) {
+      console.error("Error ending diary trip:", error);
+      res.status(500).json({ message: "Failed to end trip" });
+    }
+  });
+
   // Diary Catches endpoints  
   app.get('/api/diary/catches', isAuthenticated, async (req: any, res) => {
     try {
