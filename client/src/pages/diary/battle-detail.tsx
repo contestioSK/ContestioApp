@@ -187,21 +187,22 @@ export default function BattleDetail() {
 
   return (
     <DiaryLayout>
-      <div className="p-6">
-        <div className="max-w-7xl mx-auto space-y-6">
+      <div className="p-3 md:p-6">
+        <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
           {/* Header */}
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div>
-              <h1 className="text-3xl font-bold text-foreground mb-2">
+              <h1 className="text-xl md:text-3xl font-bold text-foreground mb-1 md:mb-2">
                 {battle.name}
               </h1>
-              <p className="text-muted-foreground">
+              <p className="text-sm md:text-base text-muted-foreground">
                 {getModeLabel(battle.rules.mode)}
               </p>
             </div>
             <Button 
               onClick={() => setIsAddCatchDialogOpen(true)}
-              className="gap-2"
+              size="sm"
+              className="gap-2 w-full sm:w-auto"
               data-testid="button-add-catch"
             >
               <Plus className="w-4 h-4" />
@@ -210,18 +211,18 @@ export default function BattleDetail() {
           </div>
 
           {/* Three Column Layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
             {/* Left Section (2 columns) */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="lg:col-span-2 space-y-4 md:space-y-6">
               {/* Leaderboard */}
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Trophy className="w-5 h-5 text-yellow-500" />
+                <CardHeader className="p-4 md:p-6">
+                  <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                    <Trophy className="w-4 h-4 md:w-5 md:h-5 text-yellow-500" />
                     Priebežné Poradie
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-2 md:space-y-3 p-4 md:p-6 pt-0">
                   {leaderboardData.map((entry, index) => {
                     const isCurrentUser = entry.participant.userId === user?.id;
                     const isLeader = index === 0;
@@ -277,13 +278,13 @@ export default function BattleDetail() {
 
               {/* Live Feed of Catches */}
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Fish className="w-5 h-5" />
+                <CardHeader className="p-4 md:p-6">
+                  <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                    <Fish className="w-4 h-4 md:w-5 md:h-5" />
                     Live Feed Úlovkov
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-4 md:p-6 pt-0">
                   <div className="space-y-4">
                     {catches.length === 0 ? (
                       <p className="text-center text-muted-foreground py-8">
