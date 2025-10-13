@@ -66,6 +66,41 @@ Optimized user experience for diary-focused usage:
 - **Streamlined Flow**: Eliminates extra navigation step for primary use case (diary management)
 - **Implementation**: Modified `successReturnToOrRedirect` in `server/replitAuth.ts` authentication callback
 
+## ⚠️ KNOWN ISSUES & TECHNICAL DEBT
+
+### Premium Status Implementation (October 2025)
+**Current Implementation (Temporary):**
+- Premium access is determined by `users.isPremium` boolean field in database
+- Function `isUserPremium()` in `server/storage.ts` queries this field directly
+- Battle features check premium status using this simple boolean check
+
+**Issue:**
+- Database has TWO separate premium tracking systems:
+  1. `users.isPremium` (boolean) - currently used
+  2. `userSubscriptions` table - prepared for Stripe but not yet used
+- Backend was hardcoded to return `false` in production, ignoring `users.isPremium`
+- This caused 403 Forbidden errors when users tried to create battles despite having `isPremium = TRUE`
+
+**Resolution Required (After Stripe Integration):**
+1. Implement Stripe webhook handlers to manage `userSubscriptions` table
+2. Migrate premium checks to use `userSubscriptions` instead of `users.isPremium`
+3. Ensure subscription expiry, renewals, and cancellations are properly handled
+4. Consider either:
+   - Remove `users.isPremium` field and use only `userSubscriptions`
+   - OR keep `users.isPremium` synchronized with `userSubscriptions` status
+5. Update all premium feature checks to use subscription-based logic
+
+**Files Affected:**
+- `server/storage.ts` - `isUserPremium()` function (lines 2607-2661)
+- `server/routes.ts` - All routes checking `canAccessBattleFeatures()`
+- Future Stripe integration code
+
+### Navigation Issue (October 2025)
+**Problem:** Users cannot access competitions from Diary layout
+- DiaryLayout logo (`/`) redirects authenticated users back to `/diary`
+- No way to navigate to landing page with competitions list from within diary
+- **Solution needed:** Add "Súťaže" navigation item to DiaryLayout sidebar or create `/competitions` route
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
