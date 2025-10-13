@@ -3931,14 +3931,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user?.id || req.user?.claims?.sub;
       const { id: invitationId } = req.params;
       
+      console.log('[ACCEPT INVITATION] userId:', userId, 'type:', typeof userId);
+      console.log('[ACCEPT INVITATION] invitationId:', invitationId);
+      
       // Get the invitation
       const invitation = await storage.getBattleInvitation(invitationId);
       
+      console.log('[ACCEPT INVITATION] invitation:', invitation);
+      
       if (!invitation) {
+        console.log('[ACCEPT INVITATION] ERROR: Invitation not found');
         return res.status(404).json({ message: "Pozvánka nebola nájdená" });
       }
       
+      console.log('[ACCEPT INVITATION] invitation.invitedUserId:', invitation.invitedUserId, 'type:', typeof invitation.invitedUserId);
+      console.log('[ACCEPT INVITATION] Comparing:', invitation.invitedUserId, '!==', userId, '=', invitation.invitedUserId !== userId);
+      
       if (invitation.invitedUserId !== userId) {
+        console.log('[ACCEPT INVITATION] ERROR: User not authorized');
         return res.status(403).json({ message: "Nemáte oprávnenie prijať túto pozvánku" });
       }
       
