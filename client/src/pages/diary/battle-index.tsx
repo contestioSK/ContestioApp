@@ -208,54 +208,55 @@ export default function BattleIndex() {
 
   return (
     <DiaryLayout>
-      <div className="p-6">
+      <div className="p-3 md:p-6">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
-          <div className="mb-8">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="mb-6 md:mb-8">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
               <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <Swords className="w-8 h-8 text-primary" />
-                  <h1 className="text-3xl font-bold text-foreground" data-testid="heading-fishing-battle">
+                <div className="flex items-center gap-2 md:gap-3 mb-2">
+                  <Swords className="w-6 h-6 md:w-8 md:h-8 text-primary" />
+                  <h1 className="text-xl md:text-3xl font-bold text-foreground" data-testid="heading-fishing-battle">
                     Fishing Battle
                   </h1>
-                  <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-                    <Crown className="w-4 h-4 mr-1" />
+                  <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 text-xs md:text-sm">
+                    <Crown className="w-3 h-3 md:w-4 md:h-4 mr-1" />
                     PREMIUM
                   </Badge>
                 </div>
-                <p className="text-muted-foreground text-lg" data-testid="text-battle-description">
+                <p className="text-muted-foreground text-sm md:text-lg" data-testid="text-battle-description">
                   Súťažte s kamarátmi v priateľských rybárskych dueloch a zistite, kto je najlepší rybár!
                 </p>
               </div>
               
               <Button
-                size="lg"
+                size="sm"
                 onClick={() => setLocation("/diary/battles/create")}
-                className="bg-green-600 hover:bg-green-700 text-white"
+                className="bg-green-600 hover:bg-green-700 text-white w-full md:w-auto"
                 data-testid="button-create-new-battle"
               >
-                <Plus className="w-5 h-5 mr-2" />
-                Vytvoriť Nový Súboj
+                <Plus className="w-4 h-4 md:w-5 md:h-5 md:mr-2" />
+                <span className="hidden sm:inline">Vytvoriť Nový Súboj</span>
+                <span className="sm:hidden">Vytvoriť Súboj</span>
               </Button>
             </div>
           </div>
 
           {/* Main Grid Layout: 3 columns (2+1) */}
-          <div className="grid lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
             
             {/* Left Block (2 columns) */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="lg:col-span-2 space-y-4 md:space-y-6">
               
               {/* Section: Moje Aktuálne Súboje */}
               <Card className="bg-card border-border">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-foreground">
-                    <Clock className="w-5 h-5 text-orange-500" />
+                <CardHeader className="p-4 md:p-6">
+                  <CardTitle className="flex items-center gap-2 text-foreground text-base md:text-lg">
+                    <Clock className="w-4 h-4 md:w-5 md:h-5 text-orange-500" />
                     Moje Aktuálne Súboje
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-3 md:space-y-4 p-4 md:p-6 pt-0">
                   {activeBattles.length > 0 ? (
                     activeBattles.map((battle, index) => {
                       const progress = 45 + (index * 15); // Mock progress
