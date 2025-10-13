@@ -2512,7 +2512,7 @@ export class DatabaseStorage implements IStorage {
       conditions.push(eq(battleInvitations.status, status));
     }
     
-    const invitations = await db
+    const results = await db
       .select({
         invitation: battleInvitations,
         battle: diaryBattles,
@@ -2524,7 +2524,12 @@ export class DatabaseStorage implements IStorage {
       .where(and(...conditions))
       .orderBy(desc(battleInvitations.createdAt));
     
-    return invitations;
+    // Map to flat structure expected by frontend
+    return results.map(result => ({
+      ...result.invitation,
+      battle: result.battle,
+      invitedByUser: result.invitedByUser,
+    }));
   }
 
   async updateInvitationStatus(id: string, status: string) {
