@@ -817,7 +817,7 @@ export default function WeatherForecast() {
                 {/* Detailed Conditions Widget */}
                 <div className="p-4 md:p-6 rounded-lg border-2 bg-card border-border">
                   <h3 className="text-lg font-semibold mb-4">Detailné podmienky</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     {/* Tlak */}
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-muted-foreground">
