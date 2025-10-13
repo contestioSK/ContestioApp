@@ -3925,68 +3925,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Accept battle invitation
+  // Accept battle invitation (SIMPLIFIED VERSION)
   app.post('/api/diary/battles/invitations/:id/accept', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.id || req.user?.claims?.sub;
       const { id: invitationId } = req.params;
       
-      // Get the invitation first
+      // Get invitation
       const invitation = await storage.getBattleInvitation(invitationId);
-      
       if (!invitation) {
         return res.status(404).json({ message: "Pozvánka nebola nájdená" });
       }
       
+      // Verify ownership
       if (invitation.invitedUserId !== userId) {
-        return res.status(403).json({ message: "Nemáte oprávnenie prijať túto pozvánku" });
+        return res.status(403).json({ message: "Nemáte oprávnenie" });
       }
       
+      // Check status
       if (invitation.status !== "pending") {
         return res.status(400).json({ message: "Pozvánka už bola spracovaná" });
       }
       
-      // TODO: Re-enable premium check after production database is fixed
-      // const canAccessBattles = await storage.canAccessBattleFeatures(userId);
-      // if (!canAccessBattles) {
-      //   return res.status(403).json({ 
-      //     message: "Battle je dostupný iba v PREMIUM verzii",
-      //     code: "PREMIUM_REQUIRED"
-      //   });
-      // }
+      // Update status
+      const updated = await storage.updateInvitationStatus(invitationId, "accepted");
       
-      // Update invitation status
-      const updatedInvitation = await storage.updateInvitationStatus(invitationId, "accepted");
-      
-      // Broadcast to organizer that invitation was accepted (if invitedByUserId exists)
-      if (invitation.invitedByUserId) {
-        try {
-          broadcastToUsers([invitation.invitedByUserId], {
-            type: 'battle_invitation_accepted',
-            invitationId,
-            payload: updatedInvitation
-          });
-        } catch (broadcastError) {
-          console.error(`[Accept Invitation] Broadcast to organizer failed:`, broadcastError);
-        }
-      }
-      
-      // Broadcast to invited user to update their UI
-      try {
-        broadcastToUsers([userId], {
-          type: 'battle_invitation_updated',
-          invitationId,
-          payload: updatedInvitation
-        });
-      } catch (broadcastError) {
-        console.error(`[Accept Invitation] Broadcast to invited user failed:`, broadcastError);
-      }
-      
-      res.json(updatedInvitation);
+      res.json(updated);
     } catch (error) {
-      console.error("Error accepting battle invitation:", error);
-      console.error("Error stack:", error instanceof Error ? error.stack : 'No stack trace');
-      res.status(500).json({ message: "Nepodarilo sa prijať pozvánku" });
+      console.error("Accept invitation error:", error);
+      res.status(500).json({ message: "Chyba servera" });
     }
   });
 

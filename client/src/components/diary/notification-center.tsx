@@ -59,19 +59,6 @@ export function NotificationCenter() {
     mutationFn: async (invitationId: string) => {
       return await apiRequest('POST', `/api/diary/battles/invitations/${invitationId}/accept`);
     },
-    onMutate: async (invitationId) => {
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ['/api/diary/battles/invitations'] });
-      
-      // Optimistically remove invitation from UI
-      const previousInvitations = queryClient.getQueryData<BattleInvitation[]>(['/api/diary/battles/invitations']);
-      queryClient.setQueryData<BattleInvitation[]>(
-        ['/api/diary/battles/invitations'],
-        (old) => old?.filter(inv => inv.id !== invitationId) || []
-      );
-      
-      return { previousInvitations };
-    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/diary/battles/invitations'] });
       queryClient.invalidateQueries({ queryKey: ['/api/diary/battles'] });
@@ -80,14 +67,10 @@ export function NotificationCenter() {
         description: "Úspešne ste sa pridali do battle",
       });
     },
-    onError: (_error, _invitationId, context) => {
-      // Rollback on error
-      if (context?.previousInvitations) {
-        queryClient.setQueryData(['/api/diary/battles/invitations'], context.previousInvitations);
-      }
+    onError: (error: any) => {
       toast({
         title: "Chyba",
-        description: "Nepodarilo sa prijať pozvánku",
+        description: error?.message || "Nepodarilo sa prijať pozvánku",
         variant: "destructive",
       });
     },
@@ -98,19 +81,6 @@ export function NotificationCenter() {
     mutationFn: async (invitationId: string) => {
       return await apiRequest('POST', `/api/diary/battles/invitations/${invitationId}/reject`);
     },
-    onMutate: async (invitationId) => {
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ['/api/diary/battles/invitations'] });
-      
-      // Optimistically remove invitation from UI
-      const previousInvitations = queryClient.getQueryData<BattleInvitation[]>(['/api/diary/battles/invitations']);
-      queryClient.setQueryData<BattleInvitation[]>(
-        ['/api/diary/battles/invitations'],
-        (old) => old?.filter(inv => inv.id !== invitationId) || []
-      );
-      
-      return { previousInvitations };
-    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/diary/battles/invitations'] });
       toast({
@@ -118,14 +88,10 @@ export function NotificationCenter() {
         description: "Pozvánka bola odmietnutá",
       });
     },
-    onError: (_error, _invitationId, context) => {
-      // Rollback on error
-      if (context?.previousInvitations) {
-        queryClient.setQueryData(['/api/diary/battles/invitations'], context.previousInvitations);
-      }
+    onError: (error: any) => {
       toast({
         title: "Chyba",
-        description: "Nepodarilo sa odmietnuť pozvánku",
+        description: error?.message || "Nepodarilo sa odmietnuť pozvánku",
         variant: "destructive",
       });
     },
