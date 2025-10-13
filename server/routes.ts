@@ -3931,8 +3931,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user?.id || req.user?.claims?.sub;
       const { id: invitationId } = req.params;
       
+      console.log(`[Accept Invitation] User ${userId} accepting invitation ${invitationId}`);
+      
       // Get the invitation
       const invitation = await storage.getBattleInvitation(invitationId);
+      console.log(`[Accept Invitation] Invitation found:`, invitation);
       
       if (!invitation) {
         return res.status(404).json({ message: "Pozvánka nebola nájdená" });
@@ -3948,24 +3951,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Update invitation status
       const updatedInvitation = await storage.updateInvitationStatus(invitationId, "accepted");
+      console.log(`[Accept Invitation] Updated invitation:`, updatedInvitation);
       
-      // Broadcast to organizer that invitation was accepted
-      broadcastToUsers([invitation.invitedByUserId], {
-        type: 'battle_invitation_accepted',
-        invitationId,
-        payload: updatedInvitation
-      });
+      // Broadcast to organizer that invitation was accepted (if invitedByUserId exists)
+      if (invitation.invitedByUserId) {
+        try {
+          broadcastToUsers([invitation.invitedByUserId], {
+            type: 'battle_invitation_accepted',
+            invitationId,
+            payload: updatedInvitation
+          });
+        } catch (broadcastError) {
+          console.error(`[Accept Invitation] Broadcast to organizer failed:`, broadcastError);
+        }
+      }
       
       // Broadcast to invited user to update their UI
-      broadcastToUsers([userId], {
-        type: 'battle_invitation_updated',
-        invitationId,
-        payload: updatedInvitation
-      });
+      try {
+        broadcastToUsers([userId], {
+          type: 'battle_invitation_updated',
+          invitationId,
+          payload: updatedInvitation
+        });
+      } catch (broadcastError) {
+        console.error(`[Accept Invitation] Broadcast to invited user failed:`, broadcastError);
+      }
       
       res.json(updatedInvitation);
     } catch (error) {
       console.error("Error accepting battle invitation:", error);
+      console.error("Error stack:", error instanceof Error ? error.stack : 'No stack trace');
       res.status(500).json({ message: "Nepodarilo sa prijať pozvánku" });
     }
   });
