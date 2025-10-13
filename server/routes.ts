@@ -3,6 +3,9 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { randomUUID } from "crypto";
 import { storage } from "./storage";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
+import { diaryBattles } from "@shared/schema";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { hashPassword, validatePassword, generateVerificationToken, generateTokenExpiration } from "./utils/auth";
 import { emailService } from "./utils/email";
@@ -3947,8 +3950,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Pozvánka už bola spracovaná" });
       }
       
-      // Get battle to update participants
-      const battle = await storage.getDiaryBattle(invitation.battleId, invitation.invitedUserId);
+      // Get battle directly from DB (without ownership checks)
+      const [battle] = await db
+        .select()
+        .from(diaryBattles)
+        .where(eq(diaryBattles.id, invitation.battleId));
+      
       if (!battle) {
         return res.status(404).json({ message: "Battle nebolo nájdené" });
       }
@@ -3982,10 +3989,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           { userId, name: participantName }
         ];
         
-        // Update battle with new participant
-        await storage.updateDiaryBattle(invitation.battleId, {
-          participants: updatedParticipants
-        }, invitation.invitedUserId);
+        // Update battle directly in DB (bypass storage layer ownership checks)
+        await db
+          .update(diaryBattles)
+          .set({ 
+            participants: updatedParticipants,
+            updatedAt: new Date() 
+          })
+          .where(eq(diaryBattles.id, invitation.battleId));
       }
       
       // Update invitation status
