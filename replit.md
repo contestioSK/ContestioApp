@@ -59,6 +59,7 @@ Fixed critical battle functionality with automatic catch assignment and minimum 
 - **Database Schema**: Added battleId column to diary_catches for direct battle-catch relationships
 - **Edge Case Handling**: Safe deduplication (handles missing userId/name), empty participants, malformed entries
 - **Active Battle CTA**: Quick-access button on diary homepage to jump to active battle (with toast notification if none active)
+- **Invitation Acceptance Bug Fix (October 13, 2025)**: Fixed undefined invitation.id error by restructuring getUserBattleInvitations() to return flat object structure instead of nested {invitation, battle, invitedByUser} objects
 
 ## ✅ COMPLETED: Diary-First Login Experience (October 2025)
 Optimized user experience for diary-focused usage:
