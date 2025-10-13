@@ -429,6 +429,11 @@ export default function WeatherForecast() {
     return directions[direction.toUpperCase()] || direction;
   };
 
+  // Convert wind speed from km/h to m/s
+  const convertKphToMs = (kph: number): string => {
+    return (kph / 3.6).toFixed(1);
+  };
+
   const selectedDay = forecast?.forecast.forecastday[selectedDayIndex];
 
   return (
@@ -563,8 +568,9 @@ export default function WeatherForecast() {
           </div>
         )}
 
+        {/* Desktop Version */}
         {forecast && (
-          <div className="grid lg:grid-cols-4 gap-6">
+          <div className="hidden md:grid lg:grid-cols-4 gap-6">
             {/* Left Column - Day List */}
             <div className="lg:col-span-1 space-y-3">
               <h2 className="text-xl font-bold">3-dňová predpoveď</h2>
@@ -792,10 +798,29 @@ export default function WeatherForecast() {
                             {Math.round(hour.temp_c)}°
                           </p>
 
-                          {/* Wind Speed */}
-                          <p className="text-xs text-muted-foreground">
-                            {Math.round(hour.wind_kph)} km/h
-                          </p>
+                          {/* Wind Speed (m/s) */}
+                          <div className="space-y-1">
+                            <p className="text-xs text-muted-foreground">Vietor</p>
+                            <p className="text-sm font-semibold">
+                              {convertKphToMs(hour.wind_kph)} m/s
+                            </p>
+                          </div>
+
+                          {/* Wind Gust (m/s) */}
+                          <div className="space-y-1">
+                            <p className="text-xs text-muted-foreground">Nárazy</p>
+                            <p className="text-sm font-semibold">
+                              {convertKphToMs(hour.gust_kph || hour.wind_kph)} m/s
+                            </p>
+                          </div>
+
+                          {/* Pressure */}
+                          <div className="space-y-1">
+                            <p className="text-xs text-muted-foreground">Tlak</p>
+                            <p className="text-sm font-semibold">
+                              {hour.pressure_mb} mb
+                            </p>
+                          </div>
 
                           {/* Wind Direction - Arrow + Text */}
                           <div className="flex flex-col items-center gap-1">
@@ -879,6 +904,261 @@ export default function WeatherForecast() {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Mobile Version */}
+        {forecast && selectedDay && (
+          <div className="md:hidden space-y-4">
+            {/* Current Temperature & Location */}
+            <div className="bg-card border-2 border-border rounded-lg p-4">
+              <h2 className="text-lg font-semibold mb-1">
+                {forecast.location.name}
+                {forecast.location.region && `, ${forecast.location.region}`}
+              </h2>
+              <p className="text-sm text-muted-foreground mb-3 capitalize">
+                {getFullDate(selectedDay.date)}
+              </p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-5xl font-bold">{Math.round(selectedDay.day.avgtemp_c)}°</p>
+                  <p className="text-muted-foreground mt-1">{selectedDay.day.condition.text}</p>
+                </div>
+                {getWeatherIcon(selectedDay.day.condition.code, "w-20 h-20")}
+              </div>
+            </div>
+
+            {/* Day Selector - Horizontal Scroll */}
+            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent">
+              {forecast.forecast.forecastday.map((day, index) => (
+                <button
+                  key={day.date}
+                  onClick={() => setSelectedDayIndex(index)}
+                  data-testid={`button-mobile-day-${index}`}
+                  className={`flex-shrink-0 p-3 rounded-lg border-2 transition-all min-w-[90px] ${
+                    selectedDayIndex === index
+                      ? 'border-primary bg-primary/10'
+                      : 'border-border bg-card'
+                  }`}
+                >
+                  <p className="text-xs font-semibold uppercase mb-2">
+                    {index === 0 ? 'DNES' : getDayName(day.date).substring(0, 2).toUpperCase()}
+                  </p>
+                  {getWeatherIcon(day.day.condition.code, "w-8 h-8 mx-auto")}
+                  <p className="text-lg font-bold mt-2">{Math.round(day.day.maxtemp_c)}°</p>
+                  <p className="text-xs text-muted-foreground">{Math.round(day.day.mintemp_c)}°</p>
+                </button>
+              ))}
+            </div>
+
+            {/* Interactive Chart */}
+            <div className="bg-card border-2 border-border rounded-lg p-4">
+              <ResponsiveContainer width="100%" height={200}>
+                <ComposedChart 
+                  data={selectedDay.hour.map(h => ({
+                    time: format(new Date(h.time), 'HH:mm'),
+                    teplota: Math.round(h.temp_c),
+                    zrážky: h.precip_mm
+                  }))}
+                  margin={{ top: 5, right: 5, left: -20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1e3a5f" opacity={0.3} />
+                  <XAxis 
+                    dataKey="time" 
+                    stroke="#94a3b8"
+                    tick={{ fill: '#94a3b8', fontSize: 10 }}
+                    interval={3}
+                  />
+                  <YAxis 
+                    yAxisId="left"
+                    stroke="#94a3b8"
+                    tick={{ fill: '#94a3b8', fontSize: 10 }}
+                  />
+                  <YAxis 
+                    yAxisId="right"
+                    orientation="right"
+                    stroke="#94a3b8"
+                    tick={{ fill: '#94a3b8', fontSize: 10 }}
+                  />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--muted))', 
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '6px',
+                      color: 'hsl(var(--foreground))',
+                      fontSize: '12px'
+                    }}
+                  />
+                  <Line 
+                    yAxisId="left"
+                    type="monotone" 
+                    dataKey="teplota" 
+                    stroke="#f59e0b" 
+                    strokeWidth={2}
+                    dot={{ fill: '#f59e0b', r: 2 }}
+                  />
+                  <Bar 
+                    yAxisId="right"
+                    dataKey="zrážky" 
+                    fill="#3b82f6" 
+                    opacity={0.5}
+                  />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Hourly Forecast - Horizontal Scroll */}
+            <div className="bg-card border-2 border-border rounded-lg p-4">
+              <h3 className="text-sm font-semibold mb-3">Hodinová predpoveď</h3>
+              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent">
+                {selectedDay.hour.map((hour, index) => (
+                  <div
+                    key={index}
+                    className="flex-shrink-0 p-2 rounded-lg border border-border min-w-[75px] space-y-1 text-center bg-card/50"
+                    data-testid={`hour-mobile-card-${index}`}
+                  >
+                    <p className="text-xs font-semibold">
+                      {format(new Date(hour.time), 'HH:mm')}
+                    </p>
+                    <img
+                      src={`https:${hour.condition.icon}`}
+                      alt={hour.condition.text}
+                      className="w-10 h-10 mx-auto"
+                    />
+                    <p className="text-xl font-bold">
+                      {Math.round(hour.temp_c)}°
+                    </p>
+                    <div className="flex justify-center">
+                      <ArrowUp
+                        className="w-4 h-4 text-blue-400"
+                        style={{
+                          transform: `rotate(${getWindRotation(hour.wind_dir)}deg)`
+                        }}
+                      />
+                    </div>
+                    <p className="text-xs text-blue-400 font-medium">
+                      {convertKphToMs(hour.wind_kph)} m/s
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {convertKphToMs(hour.gust_kph || hour.wind_kph)} m/s
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {hour.pressure_mb} mb
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* PREMIUM: Fish Activity Index */}
+            {isPremiumLoading ? (
+              <div className="bg-card border-2 border-border rounded-lg p-4">
+                <Skeleton className="h-5 w-32 mb-3" />
+                <Skeleton className="h-10 w-full rounded-full mb-3" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+            ) : isPremium ? (
+              <div className="bg-card border-2 border-border rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold flex items-center gap-2">
+                    <Fish className="w-4 h-4" />
+                    Index aktivity rýb
+                  </h3>
+                  <span className="text-xs px-2 py-0.5 rounded bg-amber-500/20 text-amber-500 font-semibold flex items-center gap-1">
+                    <Crown className="w-3 h-3" />
+                    PREMIUM
+                  </span>
+                </div>
+                
+                {(() => {
+                  const activityScore = calculateFishActivity(selectedDay);
+                  const activityInfo = getActivityLevel(activityScore);
+                  const position = `${activityScore}%`;
+                  
+                  return (
+                    <div className="space-y-3">
+                      <div className="relative h-10 rounded-full overflow-hidden bg-gradient-to-r from-red-500 via-yellow-500 to-green-500">
+                        <div 
+                          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 transition-all duration-500"
+                          style={{ left: position }}
+                        >
+                          <div className="relative">
+                            <div className="w-5 h-5 rounded-full bg-white border-2 border-slate-900 shadow-lg" />
+                            <div className="absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-semibold">
+                              {activityScore}%
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground">Nízka</span>
+                        <span className="font-semibold" style={{ color: activityInfo.color }}>
+                          {activityInfo.label}
+                        </span>
+                        <span className="text-muted-foreground">Vysoká</span>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            ) : null}
+
+            {/* Detailed Conditions */}
+            <div className="bg-card border-2 border-border rounded-lg p-4">
+              <h3 className="text-sm font-semibold mb-3">Detailné podmienky</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex items-center gap-2">
+                  <Gauge className="w-4 h-4 text-blue-400" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Tlak</p>
+                    <p className="text-sm font-semibold">{getAvgPressure(selectedDay.hour)} mb</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Droplets className="w-4 h-4 text-blue-400" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Vlhkosť</p>
+                    <p className="text-sm font-semibold">
+                      {Math.round(selectedDay.hour.reduce((acc, h) => acc + h.humidity, 0) / selectedDay.hour.length)}%
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <CloudRain className="w-4 h-4 text-blue-400" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Šanca dážď</p>
+                    <p className="text-sm font-semibold">{selectedDay.day.daily_chance_of_rain}%</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Sunrise className="w-4 h-4 text-orange-400" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Východ</p>
+                    <p className="text-sm font-semibold">{selectedDay.astro.sunrise}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Sunset className="w-4 h-4 text-orange-600" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Západ</p>
+                    <p className="text-sm font-semibold">{selectedDay.astro.sunset}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Moon className="w-4 h-4 text-indigo-400" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Mesiac</p>
+                    <p className="text-sm font-semibold">{getMoonPhaseSlovak(selectedDay.astro.moon_phase)}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
