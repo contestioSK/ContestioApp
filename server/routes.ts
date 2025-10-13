@@ -3705,7 +3705,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }),
         participants: z.array(z.object({
           name: z.string().min(1)
-        })),
+        })).optional().default([]),
         startAt: z.string().or(z.date()).transform((val) => val instanceof Date ? val : new Date(val)),
         endAt: z.string().or(z.date()).transform((val) => val instanceof Date ? val : new Date(val))
       });

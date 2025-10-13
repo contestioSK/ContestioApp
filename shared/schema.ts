@@ -879,7 +879,7 @@ export const insertDiaryBattleSchema = createInsertSchema(diaryBattles).omit({
   participants: z.array(z.object({
     userId: z.string().optional(),
     name: z.string().min(1, "Meno účastníka je povinné")
-  })).min(2, "Battle musí mať aspoň 2 účastníkov"),
+  })).optional().default([]),
   status: z.enum(["active", "finished", "canceled"]).default("active"),
 }).refine((data) => {
   return data.endAt >= data.startAt;
