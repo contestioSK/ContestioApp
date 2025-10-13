@@ -15,6 +15,14 @@ export default function Home() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
 
+  // Redirect authenticated users to diary
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      setLocation("/diary");
+      return;
+    }
+  }, [isAuthenticated, isLoading, setLocation]);
+
   // Redirect to home if not authenticated
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
