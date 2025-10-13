@@ -105,8 +105,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
   const isPremium = premiumStatus?.isPremium || false;
 
   const handleLogout = () => {
-    // TODO: Implement logout functionality
-    setLocation("/");
+    window.location.href = '/api/logout';
   };
 
   const isActivePath = (href: string) => {
