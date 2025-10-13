@@ -96,6 +96,35 @@ Optimized user experience for diary-focused usage:
 - `server/routes.ts` - All routes checking `canAccessBattleFeatures()`
 - Future Stripe integration code
 
+### Mock Data v Battle Archive (October 2025)
+**Problem:** Battle Index zobrazuje hardcoded testovacie dáta namiesto skutočných archivovaných battles
+- **Archív Súbojov**: Zobrazuje 3 mock battles (`mockArchivedBattles`) pre všetkých používateľov
+  - Nový používateľ bez žiadnych battles vidí cudzie testovacie súboje (Víkend na Domaši vs Peter M., atď.)
+- **Sieň Slávy**: Používa mock štatistiky (12 víťazstiev z 18 battles) namiesto skutočných dát
+- Backend endpoint `/api/diary/battles/archive` už existuje, ale frontend ho nepoužíva
+
+**Riešenie:**
+1. Nahradiť `mockArchivedBattles` API volaním na `/api/diary/battles/archive`
+2. Implementovať empty state pre používateľov bez archivovaných battles
+3. Nahradiť `mockHallOfFame` skutočným výpočtom z používateľových battles
+4. Zobraziť loading state počas načítavania dát
+
+**Súbory na úpravu:**
+- `client/src/pages/diary/battle-index.tsx` (riadky 45-56 - mock data definície)
+
+### Text Overflow v Battle Notification (October 2025)
+**Problem:** Dlhé názvy battles sú orezané v notification dropdowne
+- **Vizuálny problém**: Text "Októbrový mašaker na šírave" je orezaný, vidno len 2/3
+- **Príčina**: Battle názov používa `text-xs text-muted-foreground mb-1` bez word-wrap
+- **Dôsledok**: Používatelia nevidia celý názov battle v pozvánke
+
+**Riešenie:**
+1. Pridať `line-clamp-2` pre zalamovanie na 2 riadky: `className="text-xs text-muted-foreground mb-1 line-clamp-2"`
+2. Alebo použiť `break-words` pre lepšie zalamovanie dlhých slov
+
+**Súbor na úpravu:**
+- `client/src/components/diary/notification-center.tsx` (riadok 204-206)
+
 ### Navigation Issue (October 2025)
 **Problem:** Users cannot access competitions from Diary layout
 - DiaryLayout logo (`/`) redirects authenticated users back to `/diary`
