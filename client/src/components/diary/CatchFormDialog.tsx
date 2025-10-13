@@ -563,7 +563,7 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {editingCatch ? "Upraviť úlovok" : "Nový úlovok"}
@@ -696,7 +696,7 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
               </div>
 
               {/* Date and Time - Split into two inputs */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="capturedAt"
@@ -804,7 +804,7 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
                 )}
               />
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="weight"
