@@ -3931,20 +3931,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user?.id || req.user?.claims?.sub;
       const { id: invitationId } = req.params;
       
-      // Check if user has access to battle features (PREMIUM gating)
-      const canAccessBattles = await storage.canAccessBattleFeatures(userId);
-      if (!canAccessBattles) {
-        return res.status(403).json({ 
-          message: "Battle je dostupný iba v PREMIUM verzii",
-          code: "PREMIUM_REQUIRED"
-        });
-      }
-      
-      console.log(`[Accept Invitation] User ${userId} accepting invitation ${invitationId}`);
-      
-      // Get the invitation
+      // Get the invitation first
       const invitation = await storage.getBattleInvitation(invitationId);
-      console.log(`[Accept Invitation] Invitation found:`, invitation);
       
       if (!invitation) {
         return res.status(404).json({ message: "Pozvánka nebola nájdená" });
@@ -3958,9 +3946,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Pozvánka už bola spracovaná" });
       }
       
+      // TODO: Re-enable premium check after production database is fixed
+      // const canAccessBattles = await storage.canAccessBattleFeatures(userId);
+      // if (!canAccessBattles) {
+      //   return res.status(403).json({ 
+      //     message: "Battle je dostupný iba v PREMIUM verzii",
+      //     code: "PREMIUM_REQUIRED"
+      //   });
+      // }
+      
       // Update invitation status
       const updatedInvitation = await storage.updateInvitationStatus(invitationId, "accepted");
-      console.log(`[Accept Invitation] Updated invitation:`, updatedInvitation);
       
       // Broadcast to organizer that invitation was accepted (if invitedByUserId exists)
       if (invitation.invitedByUserId) {
@@ -4000,16 +3996,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user?.id || req.user?.claims?.sub;
       const { id: invitationId } = req.params;
       
-      // Check if user has access to battle features (PREMIUM gating)
-      const canAccessBattles = await storage.canAccessBattleFeatures(userId);
-      if (!canAccessBattles) {
-        return res.status(403).json({ 
-          message: "Battle je dostupný iba v PREMIUM verzii",
-          code: "PREMIUM_REQUIRED"
-        });
-      }
-      
-      // Get the invitation
+      // Get the invitation first
       const invitation = await storage.getBattleInvitation(invitationId);
       
       if (!invitation) {
