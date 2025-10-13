@@ -3949,14 +3949,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update invitation status
       const updatedInvitation = await storage.updateInvitationStatus(invitationId, "accepted");
       
-      // Get the battle to notify the organizer (use creator ID for ownership check)
-      const battle = await storage.getDiaryBattle(invitation.battleId, invitation.invitedByUserId);
-      
       // Broadcast to organizer that invitation was accepted
       broadcastToUsers([invitation.invitedByUserId], {
         type: 'battle_invitation_accepted',
         invitationId,
-        payload: { ...updatedInvitation, battle }
+        payload: updatedInvitation
       });
       
       // Broadcast to invited user to update their UI
