@@ -68,6 +68,8 @@ export function NotificationCenter() {
       });
     },
     onError: (error: any) => {
+      // Refresh invitations even on error (might already be accepted)
+      queryClient.invalidateQueries({ queryKey: ['/api/diary/battles/invitations'] });
       toast({
         title: "Chyba",
         description: error?.message || "Nepodarilo sa prijať pozvánku",
@@ -89,6 +91,8 @@ export function NotificationCenter() {
       });
     },
     onError: (error: any) => {
+      // Refresh invitations even on error (might already be rejected)
+      queryClient.invalidateQueries({ queryKey: ['/api/diary/battles/invitations'] });
       toast({
         title: "Chyba",
         description: error?.message || "Nepodarilo sa odmietnuť pozvánku",
