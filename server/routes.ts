@@ -3931,6 +3931,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user?.id || req.user?.claims?.sub;
       const { id: invitationId } = req.params;
       
+      // Check if user has access to battle features (PREMIUM gating)
+      const canAccessBattles = await storage.canAccessBattleFeatures(userId);
+      if (!canAccessBattles) {
+        return res.status(403).json({ 
+          message: "Battle je dostupný iba v PREMIUM verzii",
+          code: "PREMIUM_REQUIRED"
+        });
+      }
+      
       console.log(`[Accept Invitation] User ${userId} accepting invitation ${invitationId}`);
       
       // Get the invitation
@@ -3990,6 +3999,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user?.id || req.user?.claims?.sub;
       const { id: invitationId } = req.params;
+      
+      // Check if user has access to battle features (PREMIUM gating)
+      const canAccessBattles = await storage.canAccessBattleFeatures(userId);
+      if (!canAccessBattles) {
+        return res.status(403).json({ 
+          message: "Battle je dostupný iba v PREMIUM verzii",
+          code: "PREMIUM_REQUIRED"
+        });
+      }
       
       // Get the invitation
       const invitation = await storage.getBattleInvitation(invitationId);
