@@ -529,7 +529,7 @@ export default function WeatherForecast() {
 
             {/* Right Column - Day Detail Skeleton */}
             <div className="lg:col-span-3 space-y-6">
-              <div className="p-6 rounded-lg border-2 border-border space-y-4">
+              <div className="p-4 md:p-6 rounded-lg border-2 border-border space-y-4">
                 <Skeleton className="h-6 w-64" />
                 <Skeleton className="h-10 w-48" />
                 <div className="flex gap-4">
@@ -541,7 +541,7 @@ export default function WeatherForecast() {
                 </div>
               </div>
 
-              <div className="p-6 rounded-lg border-2 border-border">
+              <div className="p-4 md:p-6 rounded-lg border-2 border-border">
                 <Skeleton className="h-6 w-40 mb-4" />
                 <Skeleton className="h-[300px] w-full" />
               </div>
