@@ -64,6 +64,7 @@ interface ForecastDay {
     };
     wind_kph: number;
     wind_dir: string;
+    gust_kph: number;
   }>;
 }
 
@@ -80,6 +81,7 @@ interface WeatherForecast {
       icon: string;
     };
     wind_kph: number;
+    gust_kph: number;
     pressure_mb: number;
     humidity: number;
   };
