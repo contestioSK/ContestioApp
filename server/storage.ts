@@ -2646,13 +2646,15 @@ export class DatabaseStorage implements IStorage {
       //   return periodEnd > now;
       // }
       
-      // SECURITY: Default to FREE in production until subscription system is ready
-      if (isProduction) {
-        return false; // All users are FREE in production by default
-      }
-      
-      // Development: Default to PREMIUM for easier testing
-      return true;
+      // TEMPORARY SOLUTION: Check user's isPremium field in database
+      // TODO: After Stripe integration, migrate to userSubscriptions table for proper subscription management
+      const user = await db
+        .select({ isPremium: users.isPremium })
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1);
+
+      return user[0]?.isPremium ?? false; // Default to FREE if user not found
       
     } catch (error) {
       console.error('Error checking premium status:', error);
