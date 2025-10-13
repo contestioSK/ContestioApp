@@ -32,9 +32,6 @@ const createBattleSchema = z.object({
   includeOnlyVerified: z.boolean().default(false),
   startAt: z.date(),
   endAt: z.date(),
-  participants: z.array(z.object({
-    name: z.string().min(1, "Meno je povinné")
-  })).min(1, "Aspoň jeden účastník je povinný"),
   useExistingTrip: z.boolean().default(false),
   tripId: z.string().optional()
 }).refine((data) => data.endAt > data.startAt, {
@@ -82,7 +79,6 @@ export default function BattleCreate() {
       name: "",
       mode: "most_fish",
       includeOnlyVerified: false,
-      participants: [{ name: "" }],
       startAt: new Date(),
       endAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // Default to 24 hours later
       useExistingTrip: false,
@@ -101,7 +97,6 @@ export default function BattleCreate() {
           mode: data.mode,
           startAt: data.startAt.toISOString(),
           endAt: data.endAt.toISOString(),
-          participants: data.participants,
           invitedUserIds: data.invitedUserIds || [],
           tripId: data.tripId,
           rules: {
@@ -118,7 +113,6 @@ export default function BattleCreate() {
           name: data.name,
           startAt: data.startAt.toISOString(),
           endAt: data.endAt.toISOString(),
-          participants: data.participants,
           invitedUserIds: data.invitedUserIds || [],
           rules: {
             mode: data.mode,
@@ -157,18 +151,6 @@ export default function BattleCreate() {
       setLocation("/diary/battles/paywall");
     }
   }, [isPremium, setLocation]);
-
-  const addParticipant = () => {
-    const currentParticipants = form.getValues("participants");
-    form.setValue("participants", [...currentParticipants, { name: "" }]);
-  };
-
-  const removeParticipant = (index: number) => {
-    const currentParticipants = form.getValues("participants");
-    if (currentParticipants.length > 1) {
-      form.setValue("participants", currentParticipants.filter((_, i) => i !== index));
-    }
-  };
 
   const handleSelectUser = (userId: string) => {
     setInvitedUserIds(prev => [...prev, userId]);
@@ -461,54 +443,8 @@ export default function BattleCreate() {
                         </div>
                       )}
                       <FormDescription>
-                        Vyhľadajte používateľov podľa mena alebo emailu a pošlite im pozvánku
+                        Vyhľadajte používateľov podľa mena alebo emailu a pošlite im pozvánku. Tvorca battle je automaticky pridaný ako účastník.
                       </FormDescription>
-                    </div>
-
-                    {/* Manual participant names */}
-                    <div className="space-y-3">
-                      <FormLabel>Alebo zadajte mená účastníkov manuálne</FormLabel>
-                      {form.watch("participants").map((_, index) => (
-                        <div key={index} className="flex items-center gap-2">
-                          <FormField
-                            control={form.control}
-                            name={`participants.${index}.name`}
-                            render={({ field }) => (
-                              <FormItem className="flex-1">
-                                <FormControl>
-                                  <Input 
-                                    placeholder="Meno účastníka"
-                                    data-testid={`input-participant-${index}`}
-                                    {...field} 
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          {form.watch("participants").length > 1 && (
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="icon"
-                              onClick={() => removeParticipant(index)}
-                              data-testid={`button-remove-participant-${index}`}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
-                      ))}
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={addParticipant}
-                        className="w-full"
-                        data-testid="button-add-participant"
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Pridať účastníka
-                      </Button>
                     </div>
                   </div>
                 </CardContent>
