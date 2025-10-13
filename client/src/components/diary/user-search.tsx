@@ -25,8 +25,18 @@ export function UserSearch({ battleId, selectedUsers, onSelectUser, onRemoveUser
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Build query URL with proper encoding
+  const buildQueryUrl = () => {
+    const params = new URLSearchParams();
+    params.append('q', searchQuery);
+    if (battleId) {
+      params.append('battleId', battleId);
+    }
+    return `/api/users/search?${params.toString()}`;
+  };
+
   const { data: users = [], isLoading } = useQuery<UserSearchResult[]>({
-    queryKey: ['/api/users/search', { q: searchQuery, ...(battleId && { battleId }) }],
+    queryKey: [buildQueryUrl()],
     enabled: searchQuery.length >= 2,
   });
 
