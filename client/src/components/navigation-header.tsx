@@ -177,14 +177,8 @@ export default function NavigationHeader() {
                 <NotificationCenter />
                 <Button 
                   variant="outline"
-                  onClick={async () => {
-                    try {
-                      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
-                      window.location.href = '/';
-                    } catch (error) {
-                      console.error('Logout error:', error);
-                      window.location.href = '/';
-                    }
+                  onClick={() => {
+                    window.location.href = '/api/logout';
                   }}
                   data-testid="button-logout"
                   className="bg-transparent border-sidebar-border text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground focus:bg-sidebar-accent focus:text-sidebar-foreground"
