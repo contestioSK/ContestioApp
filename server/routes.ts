@@ -3925,7 +3925,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Accept battle invitation (SIMPLIFIED VERSION)
+  // Accept battle invitation
   app.post('/api/diary/battles/invitations/:id/accept', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.id || req.user?.claims?.sub;
@@ -3947,7 +3947,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Pozvánka už bola spracovaná" });
       }
       
-      // Update status
+      // Get battle to update participants
+      const battle = await storage.getDiaryBattle(invitation.battleId, invitation.invitedUserId);
+      if (!battle) {
+        return res.status(404).json({ message: "Battle nebolo nájdené" });
+      }
+      
+      // Get invited user info to add as participant
+      const invitedUser = await storage.getUser(userId);
+      if (!invitedUser) {
+        return res.status(404).json({ message: "Používateľ nebol nájdený" });
+      }
+      
+      // Build participant name (firstName + lastName, or firstName, or email)
+      const participantName = invitedUser.firstName && invitedUser.lastName 
+        ? `${invitedUser.firstName} ${invitedUser.lastName}`
+        : invitedUser.firstName || invitedUser.email || "Unknown";
+      
+      // Check if user is already a participant (by userId or name)
+      const isAlreadyParticipant = battle.participants.some((p: any) => {
+        if (p.userId) {
+          return p.userId === userId;
+        }
+        if (typeof p.name === 'string') {
+          return p.name.toLowerCase() === participantName.toLowerCase();
+        }
+        return false;
+      });
+      
+      // Add participant to battle if not already there
+      if (!isAlreadyParticipant) {
+        const updatedParticipants = [
+          ...battle.participants,
+          { userId, name: participantName }
+        ];
+        
+        // Update battle with new participant
+        await storage.updateDiaryBattle(invitation.battleId, {
+          participants: updatedParticipants
+        }, invitation.invitedUserId);
+      }
+      
+      // Update invitation status
       const updated = await storage.updateInvitationStatus(invitationId, "accepted");
       
       res.json(updated);
