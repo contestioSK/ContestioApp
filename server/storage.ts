@@ -2470,11 +2470,11 @@ export class DatabaseStorage implements IStorage {
 
   // Battle invitation operations
   async createBattleInvitation(battleId: string, invitedUserId: string, invitedByUserId: string) {
-    // Check if invited user has PREMIUM access (mandatory for battles)
-    const invitedUserCanAccessBattles = await this.canAccessBattleFeatures(invitedUserId);
-    if (!invitedUserCanAccessBattles) {
-      throw new Error("Nemôžete pozvať FREE používateľa. Battle je dostupný iba pre PREMIUM používateľov.");
-    }
+    // TODO: Re-enable premium check for invited users after production database is fixed
+    // const invitedUserCanAccessBattles = await this.canAccessBattleFeatures(invitedUserId);
+    // if (!invitedUserCanAccessBattles) {
+    //   throw new Error("Nemôžete pozvať FREE používateľa. Battle je dostupný iba pre PREMIUM používateľov.");
+    // }
     
     // Check if invitation already exists
     const [existing] = await db
