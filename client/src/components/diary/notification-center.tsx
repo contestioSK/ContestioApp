@@ -155,7 +155,7 @@ export function NotificationCenter() {
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-96 bg-[hsl(192,52%,9%)] border border-[hsl(192,30%,20%)] rounded-lg shadow-2xl max-h-[500px] overflow-y-auto" data-testid="dropdown-notifications">
+        <div className="absolute left-full ml-2 mt-2 w-96 bg-[hsl(192,52%,9%)] border border-[hsl(192,30%,20%)] rounded-lg shadow-2xl max-h-[500px] overflow-y-auto" data-testid="dropdown-notifications">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-[hsl(192,30%,20%)]">
             <h3 className="text-sm font-semibold text-foreground">
