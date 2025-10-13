@@ -546,9 +546,9 @@ export default function WeatherForecast() {
                 <Skeleton className="h-[300px] w-full" />
               </div>
 
-              <div className="p-6 rounded-lg border-2 border-border">
+              <div className="p-4 md:p-6 rounded-lg border-2 border-border">
                 <Skeleton className="h-6 w-40 mb-4" />
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                   {[1, 2, 3, 4, 5, 6, 7].map((i) => (
                     <div key={i} className="space-y-2">
                       <Skeleton className="h-4 w-20" />
