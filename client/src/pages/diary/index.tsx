@@ -165,7 +165,7 @@ function PhotoCarousel({ photos, onPhotoClick }: { photos: (string | PhotoObject
                 <img 
                   src={photoUrl} 
                   alt={`Fotografia úlovku ${index + 1}`}
-                  className="w-full h-64 object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                  className="w-full h-48 sm:h-64 object-cover cursor-pointer hover:opacity-80 transition-opacity"
                   onClick={() => status !== 'processing' && onPhotoClick(photoUrl)}
                   data-testid={`catch-photo-${index}`}
                 />
@@ -557,30 +557,32 @@ export default function DiaryIndex() {
 
   return (
     <DiaryLayout>
-      <div className="p-6">
+      <div className="p-3 md:p-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-white">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6 md:mb-8">
+          <h1 className="text-xl md:text-3xl font-bold text-white">
             Môj rybársky denník
           </h1>
-          <div className="flex gap-3">
+          <div className="flex gap-2 w-full sm:w-auto">
             <Button 
               variant="outline"
+              size="sm"
               onClick={() => setIsStartFishingOpen(true)}
-              className="border-cyan-500/50 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-100 hover:text-white transition-all"
+              className="border-cyan-500/50 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-100 hover:text-white transition-all flex-1 sm:flex-none"
               data-testid="button-start-fishing"
             >
-              <Play className="w-4 h-4 mr-2" />
-              Začať rybačku
+              <Play className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Začať rybačku</span>
             </Button>
             <Button 
               onClick={() => setIsCreateCatchOpen(true)}
               disabled={limits && !limits.canCreate}
-              className="bg-emerald-600/90 hover:bg-emerald-600 text-white border border-emerald-500/50 transition-all"
+              size="sm"
+              className="bg-emerald-600/90 hover:bg-emerald-600 text-white border border-emerald-500/50 transition-all flex-1 sm:flex-none"
               data-testid="button-add-catch"
             >
-              <Plus className="w-4 h-4 mr-2" />
-              Pridať Úlovok
+              <Plus className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Pridať Úlovok</span>
             </Button>
           </div>
         </div>
@@ -633,39 +635,41 @@ export default function DiaryIndex() {
         </div>
 
         {/* Fishing Battle CTA */}
-        <Card className="bg-gradient-to-r from-yellow-600/20 to-orange-600/20 border-yellow-600/30 mb-8" data-testid="card-battle-cta">
-          <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-yellow-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Swords className="w-6 h-6 text-yellow-400" />
+        <Card className="bg-gradient-to-r from-yellow-600/20 to-orange-600/20 border-yellow-600/30 mb-6 md:mb-8" data-testid="card-battle-cta">
+          <CardContent className="p-4 md:p-6">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 md:gap-4">
+              <div className="flex items-start gap-3 md:gap-4">
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-yellow-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Swords className="w-5 h-5 md:w-6 md:h-6 text-yellow-400" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-lg font-bold text-white">Fishing Battle</h3>
+                    <h3 className="text-base md:text-lg font-bold text-white">Fishing Battle</h3>
                     {!isPremium && (
                       <Crown className="w-4 h-4 text-yellow-400" />
                     )}
                   </div>
-                  <p className="text-slate-300 text-sm">
+                  <p className="text-slate-300 text-xs md:text-sm">
                     Súťažte s karamátmi v priatelských rybárskych dueloch!
                   </p>
                 </div>
               </div>
-              <div className="flex gap-3">
+              <div className="flex flex-wrap gap-2 md:gap-3 w-full md:w-auto">
                 {isPremium ? (
                   <>
                     <Button
                       variant="outline"
+                      size="sm"
                       onClick={() => setLocation("/diary/battles/archive")}
-                      className="border-yellow-600/50 bg-yellow-600/10 hover:bg-yellow-600/20 text-yellow-100"
+                      className="border-yellow-600/50 bg-yellow-600/10 hover:bg-yellow-600/20 text-yellow-100 text-xs md:text-sm"
                       data-testid="button-battle-archive"
                     >
-                      <Trophy className="w-4 h-4 mr-2" />
-                      Archív
+                      <Trophy className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
+                      <span className="hidden md:inline">Archív</span>
                     </Button>
                     <Button
                       variant="outline"
+                      size="sm"
                       onClick={() => {
                         if (firstActiveBattle) {
                           setLocation(`/diary/battles/${firstActiveBattle.id}`);
@@ -677,29 +681,33 @@ export default function DiaryIndex() {
                         }
                       }}
                       className={cn(
-                        "border-yellow-600/50 hover:bg-yellow-600/20",
+                        "border-yellow-600/50 hover:bg-yellow-600/20 text-xs md:text-sm",
                         firstActiveBattle 
                           ? "bg-yellow-600/20 text-yellow-100" 
                           : "bg-yellow-600/5 text-yellow-100/50"
                       )}
                       data-testid="button-active-battle"
                     >
-                      <Play className="w-4 h-4 mr-2" />
-                      Aktívny Battle
+                      <Play className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
+                      <span className="hidden sm:inline">Aktívny Battle</span>
+                      <span className="sm:hidden">Aktívny</span>
                     </Button>
                     <Button
+                      size="sm"
                       onClick={() => setLocation("/diary/battles/create")}
-                      className="bg-yellow-600 hover:bg-yellow-700 text-white"
+                      className="bg-yellow-600 hover:bg-yellow-700 text-white text-xs md:text-sm"
                       data-testid="button-create-battle-cta"
                     >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Vytvoriť Battle
+                      <Plus className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
+                      <span className="hidden sm:inline">Vytvoriť Battle</span>
+                      <span className="sm:hidden">Vytvoriť</span>
                     </Button>
                   </>
                 ) : (
                   <Button
+                    size="sm"
                     onClick={() => setLocation("/diary/battles/paywall")}
-                    className="bg-yellow-600 hover:bg-yellow-700 text-white"
+                    className="bg-yellow-600 hover:bg-yellow-700 text-white text-xs md:text-sm w-full md:w-auto"
                     data-testid="button-unlock-battle"
                   >
                     <Crown className="w-4 h-4 mr-2" />

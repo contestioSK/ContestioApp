@@ -244,9 +244,9 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
       )}
 
       {/* Main content */}
-      <div className="flex-1 lg:ml-0">
+      <div className="flex-1 w-full max-w-full overflow-x-hidden">
         {/* Mobile header */}
-        <div className="md:hidden bg-sidebar border-b border-sidebar-border p-4">
+        <div className="md:hidden bg-sidebar border-b border-sidebar-border p-3">
           <div className="flex items-center justify-between">
             <Button
               variant="ghost"
@@ -256,20 +256,22 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
             >
               <Menu className="h-5 w-5" />
             </Button>
-            <h1 className="text-lg font-semibold text-sidebar-foreground">Môj rybársky denník</h1>
+            <h1 className="text-base font-semibold text-sidebar-foreground truncate px-2">Môj rybársky denník</h1>
             <div className="w-8" /> {/* Spacer */}
           </div>
         </div>
 
         {/* Content area */}
-        <main className="min-h-screen bg-background pb-16 md:pb-0">
-          {children}
+        <main className="min-h-screen bg-background pb-16 md:pb-0 w-full max-w-full">
+          <div className="w-full max-w-full overflow-x-hidden">
+            {children}
+          </div>
         </main>
         
         {/* Mobile Bottom Navigation */}
-        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50">
-          <div className="grid grid-cols-4 h-16">
-            {navigationItems.map((item) => {
+        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50 overflow-x-auto">
+          <div className="flex min-w-max">
+            {navigationItems.slice(0, 5).map((item) => {
               const Icon = item.icon;
               const isActive = isActivePath(item.href);
               
@@ -286,7 +288,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                     }
                   }}
                   className={`
-                    flex flex-col items-center justify-center space-y-1 transition-colors
+                    flex flex-col items-center justify-center space-y-1 transition-colors px-4 py-2 min-w-[20%] flex-1
                     ${isActive 
                       ? 'text-primary' 
                       : 'text-muted-foreground hover:text-foreground'
@@ -295,7 +297,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                   data-testid={`mobile-nav-${item.label.toLowerCase().replace(' ', '-')}`}
                 >
                   <Icon className="h-5 w-5 flex-shrink-0" />
-                  <span className="text-xs font-medium">{item.label}</span>
+                  <span className="text-[10px] font-medium truncate max-w-full">{item.label}</span>
                 </button>
               );
             })}
