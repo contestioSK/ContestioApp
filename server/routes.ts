@@ -3551,10 +3551,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ? `${user.firstName} ${user.lastName}`
         : user.firstName || user.email || "Unknown";
       
-      // Get all battles where user owns the trip
-      const ownedBattles = await storage.getAllUserBattles(userId);
+      // Get all battles where user owns the trip (only if premium)
+      let ownedBattles: any[] = [];
+      try {
+        ownedBattles = await storage.getAllUserBattles(userId);
+      } catch (error: any) {
+        // If user is not premium, they can't own battles, but can still be participants
+        console.log(`User ${userId} cannot access owned battles:`, error.message);
+      }
       
-      // Get all battles where user is a participant (but doesn't own the trip)
+      // Get all battles where user is a participant (no premium check needed)
       const allBattles = await db
         .select()
         .from(diaryBattles)
