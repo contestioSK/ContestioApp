@@ -3525,7 +3525,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/diary/battles/invitations', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.id || req.user?.claims?.sub;
-      const status = req.query.status as string | undefined;
+      // Default to 'pending' if no status is specified
+      const status = req.query.status as string | undefined || 'pending';
       
       const invitations = await storage.getUserBattleInvitations(userId, status);
       res.json(invitations);
