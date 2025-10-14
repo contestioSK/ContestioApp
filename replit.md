@@ -4,6 +4,15 @@ Contestio is a comprehensive live fishing competition platform for managing and 
 
 The platform is expanding with a "Fishing Diary" module, providing personal catch logging with freemium tiers (FREE: 1 trip/20 catches; PREMIUM: unlimited, battles). Key recent developments include instant catch saving with background photo uploads, a systematic dark theme rollout, and a comprehensive weather forecast module with intelligent location handling and a premium "Fish Activity Index". The battle system has been enhanced with automatic catch assignment and minimum weight filtering, alongside critical bug fixes for invitation acceptance. The login experience has been optimized for direct redirection to the diary.
 
+## Recent Battle Invitation Fixes (October 13-14, 2025)
+- **CRITICAL FIX**: Accept endpoint now properly adds participant to battle.participants array before updating invitation status
+- **Fixed ownership bypass**: Accept endpoint queries battle directly from DB without trip ownership validation (invited users don't own the trip)
+- **Fixed invitation list**: Endpoint defaults to returning only 'pending' status invitations (accepted/rejected no longer reappear)
+- **Fixed battle visibility for participants**: `/api/diary/battles/active` returns battles where user is EITHER trip owner OR participant
+- **Fixed FREE user participation**: FREE users can now be invited and participate in battles (they see battles where they're participants, even though they can't create their own battles). The endpoint gracefully handles premium check failures when fetching owned battles.
+- **Cache invalidation**: Added to mutation error handlers to prevent stale UI state
+- **Participant deduplication**: By userId or name to prevent duplicates
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
