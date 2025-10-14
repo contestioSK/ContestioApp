@@ -3541,13 +3541,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = getUserId(req);
       
-      // Get all user battles
-      const allBattles = await storage.getAllUserBattles(userId);
+      // Get user info for participant matching
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      const userName = user.firstName && user.lastName 
+        ? `${user.firstName} ${user.lastName}`
+        : user.firstName || user.email || "Unknown";
+      
+      // Get all battles where user owns the trip
+      const ownedBattles = await storage.getAllUserBattles(userId);
+      
+      // Get all battles where user is a participant (but doesn't own the trip)
+      const allBattles = await db
+        .select()
+        .from(diaryBattles)
+        .where(eq(diaryBattles.status, 'active'));
+      
+      const participantBattles = allBattles.filter(battle => {
+        // Check if user is in participants array
+        return battle.participants.some((p: any) => {
+          if (p.userId) {
+            return p.userId === userId;
+          }
+          if (typeof p.name === 'string') {
+            return p.name.toLowerCase() === userName.toLowerCase();
+          }
+          return false;
+        });
+      });
+      
+      // Combine and deduplicate battles (by id)
+      const allUserBattles = [...ownedBattles, ...participantBattles];
+      const uniqueBattles = Array.from(new Map(allUserBattles.map(b => [b.id, b])).values());
       
       const now = new Date();
       
       // Filter for active battles only (started but not finished)
-      const activeBattles = allBattles.filter(battle => {
+      const activeBattles = uniqueBattles.filter(battle => {
         const startAt = new Date(battle.startAt);
         const endAt = new Date(battle.endAt);
         
