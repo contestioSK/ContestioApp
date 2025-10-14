@@ -59,9 +59,11 @@ Fixed critical battle functionality with automatic catch assignment and minimum 
 - **Database Schema**: Added battleId column to diary_catches for direct battle-catch relationships
 - **Edge Case Handling**: Safe deduplication (handles missing userId/name), empty participants, malformed entries
 - **Active Battle CTA**: Quick-access button on diary homepage to jump to active battle (with toast notification if none active)
-- **Invitation Acceptance Bug Fixes (October 13, 2025)**: 
+- **Invitation Acceptance Bug Fixes (October 13-14, 2025)**: 
   - Fixed undefined invitation.id error by restructuring getUserBattleInvitations() to return flat object structure
   - **CRITICAL FIX**: Accept endpoint now properly adds participant to battle.participants array before updating invitation status
+  - Fixed ownership check bypass - accept endpoint now queries battle directly from DB without trip ownership validation
+  - Fixed invitation list showing accepted/rejected invitations - endpoint now defaults to returning only 'pending' status invitations
   - Added cache invalidation to mutation error handlers to prevent stale UI state
   - Participants are deduplicated by userId or name to prevent duplicates
 
