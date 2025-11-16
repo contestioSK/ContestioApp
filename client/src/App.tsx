@@ -170,6 +170,11 @@ function Router() {
           <BattleCreate />
         </ProtectedRoute>
       </Route>
+      <Route path="/diary/battles/archive">
+        <ProtectedRoute>
+          <BattleArchive />
+        </ProtectedRoute>
+      </Route>
       <Route path="/diary/battles/:id/edit">
         <ProtectedRoute>
           <BattleEdit />
@@ -178,11 +183,6 @@ function Router() {
       <Route path="/diary/battles/:id">
         <ProtectedRoute>
           <BattleDetail />
-        </ProtectedRoute>
-      </Route>
-      <Route path="/diary/battles/archive">
-        <ProtectedRoute>
-          <BattleArchive />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/battles">
