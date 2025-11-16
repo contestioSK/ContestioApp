@@ -67,7 +67,7 @@ function getUserId(req: any): string {
   return req.user?.id || req.user?.claims?.sub;
 }
 
-export async function registerRoutes(app: Express): Promise<Server> {
+export async function registerRoutes(app: Express): Promise<{ server: Server; broadcastToUsers: (userIds: string[], data: any) => void }> {
   // Serve uploads directory with proper cache headers
   app.use('/uploads', (req, res, next) => {
     // Set cache headers for images
@@ -5541,5 +5541,5 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  return httpServer;
+  return { server: httpServer, broadcastToUsers };
 }
