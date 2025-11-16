@@ -85,6 +85,12 @@ export default function BattleArchive() {
     queryKey: ['/api/diary/battles/archive'],
     enabled: !!user,
   });
+  
+  // Debug: Log what we get from API
+  useEffect(() => {
+    console.log("[BATTLE ARCHIVE] Raw battles from API:", rawBattles);
+    console.log("[BATTLE ARCHIVE] Battles length:", rawBattles?.length);
+  }, [rawBattles]);
 
   // Normalize date strings to Date objects
   const battles = useMemo(() => {
