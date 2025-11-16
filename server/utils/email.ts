@@ -14,7 +14,7 @@ const SMTP_CONFIG = {
   },
 };
 
-const FROM_EMAIL = process.env.SMTP_FROM || 'noreply@contestio.sk';
+const FROM_EMAIL = process.env.SMTP_FROM || 'info@contestio.sk';
 const APP_ORIGIN = process.env.APP_ORIGIN || process.env.REPL_SLUG 
   ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co` 
   : 'https://contestio.sk';
