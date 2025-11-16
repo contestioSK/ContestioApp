@@ -154,7 +154,7 @@ export default function NavigationHeader() {
               </div>
             )}
             
-            {(user?.role === 'organizer' || user?.role === 'admin') && (
+            {user?.role === 'admin' && (
               <Button 
                 className="bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90"
                 onClick={() => setLocation('/admin-panel')}
