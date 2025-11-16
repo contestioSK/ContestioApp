@@ -5310,6 +5310,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           id: userArsenalBaits.id,
           diameter: userArsenalBaits.diameter,
           notes: userArsenalBaits.notes,
+          isFavorite: userArsenalBaits.isFavorite,
           createdAt: userArsenalBaits.createdAt,
           manufacturer: {
             id: baitManufacturers.id,
@@ -5429,6 +5430,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("[ARSENAL] Error bulk adding baits to arsenal:", error);
       res.status(500).json({ message: "Failed to bulk add baits to arsenal" });
+    }
+  });
+
+  app.patch('/api/diary/arsenal/baits/:id/favorite', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const baitId = parseInt(req.params.id);
+
+      if (isNaN(baitId)) {
+        return res.status(400).json({ message: "Invalid bait ID" });
+      }
+
+      // Get current bait to verify ownership and get current favorite status
+      const [bait] = await db
+        .select()
+        .from(userArsenalBaits)
+        .where(
+          and(
+            eq(userArsenalBaits.id, baitId),
+            eq(userArsenalBaits.userId, userId)
+          )
+        );
+
+      if (!bait) {
+        return res.status(404).json({ message: "Bait not found or does not belong to you" });
+      }
+
+      // Toggle favorite status
+      const [updatedBait] = await db
+        .update(userArsenalBaits)
+        .set({ isFavorite: !bait.isFavorite })
+        .where(eq(userArsenalBaits.id, baitId))
+        .returning();
+
+      res.json(updatedBait);
+    } catch (error) {
+      console.error("[ARSENAL] Error toggling favorite bait:", error);
+      res.status(500).json({ message: "Failed to toggle favorite bait" });
     }
   });
 
