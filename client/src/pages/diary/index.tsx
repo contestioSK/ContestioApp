@@ -28,6 +28,7 @@ import { format } from "date-fns";
 import { sk } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import type { DiaryCatch, DiaryTrip } from "@shared/schema";
+import type { DateRange } from "react-day-picker";
 
 // Function to get fish icon based on fish type
 const getFishIcon = (fishType?: string) => {
@@ -284,7 +285,7 @@ export default function DiaryIndex() {
   const [selectedTechnique, setSelectedTechnique] = useState<string>("all");
   const [selectedFishType, setSelectedFishType] = useState<string>("all");
   const [selectedSpot, setSelectedSpot] = useState<string>("all");
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
   // Load all catches for statistics
   const { data: allCatches = [] } = useQuery({
@@ -416,11 +417,25 @@ export default function DiaryIndex() {
       return false;
     }
     
-    // Filter by date
-    if (selectedDate) {
+    // Filter by date range
+    if (dateRange?.from) {
       const catchDate = new Date(catch_.capturedAt);
-      if (catchDate.toDateString() !== selectedDate.toDateString()) {
-        return false;
+      const fromDate = new Date(dateRange.from);
+      fromDate.setHours(0, 0, 0, 0);
+      
+      if (dateRange.to) {
+        const toDate = new Date(dateRange.to);
+        toDate.setHours(23, 59, 59, 999);
+        if (catchDate < fromDate || catchDate > toDate) {
+          return false;
+        }
+      } else {
+        // If only 'from' is selected, filter for that single day
+        const singleDayEnd = new Date(fromDate);
+        singleDayEnd.setHours(23, 59, 59, 999);
+        if (catchDate < fromDate || catchDate > singleDayEnd) {
+          return false;
+        }
       }
     }
     
@@ -428,7 +443,7 @@ export default function DiaryIndex() {
   });
 
   // Check if any filters are active
-  const hasActiveFilters = selectedTechnique !== "all" || selectedFishType !== "all" || selectedSpot !== "all" || selectedDate !== undefined;
+  const hasActiveFilters = selectedTechnique !== "all" || selectedFishType !== "all" || selectedSpot !== "all" || dateRange?.from !== undefined;
 
   // Display catches: show top 5 when no filters are active, otherwise show all filtered results
   const displayedCatches = hasActiveFilters ? filteredCatches : filteredCatches.slice(0, 5);
@@ -858,33 +873,44 @@ export default function DiaryIndex() {
               <Button
                 variant="outline"
                 className={cn(
-                  "w-[200px] justify-start text-left font-normal bg-slate-700/50 border text-white hover:bg-slate-700/70",
-                  !selectedDate && "text-slate-400"
+                  "w-[240px] justify-start text-left font-normal bg-slate-700/50 border text-white hover:bg-slate-700/70",
+                  !dateRange?.from && "text-slate-400"
                 )}
                 data-testid="filter-date"
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {selectedDate ? format(selectedDate, "dd. MMM yyyy", { locale: sk }) : "Vybrať dátum"}
+                {dateRange?.from ? (
+                  dateRange.to ? (
+                    dateRange.from.getFullYear() === dateRange.to.getFullYear() 
+                      ? `${format(dateRange.from, "dd. MMM", { locale: sk })} - ${format(dateRange.to, "dd. MMM yyyy", { locale: sk })}`
+                      : `${format(dateRange.from, "dd. MMM yyyy", { locale: sk })} - ${format(dateRange.to, "dd. MMM yyyy", { locale: sk })}`
+                  ) : (
+                    format(dateRange.from, "dd. MMM yyyy", { locale: sk })
+                  )
+                ) : (
+                  "Vybrať obdobie"
+                )}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
               <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={setSelectedDate}
+                mode="range"
+                selected={dateRange}
+                onSelect={setDateRange}
                 initialFocus
+                numberOfMonths={2}
               />
             </PopoverContent>
           </Popover>
 
-          {(selectedTechnique !== "all" || selectedFishType !== "all" || selectedSpot !== "all" || selectedDate) && (
+          {(selectedTechnique !== "all" || selectedFishType !== "all" || selectedSpot !== "all" || dateRange?.from) && (
             <Button
               variant="ghost"
               onClick={() => {
                 setSelectedTechnique("all");
                 setSelectedFishType("all");
                 setSelectedSpot("all");
-                setSelectedDate(undefined);
+                setDateRange(undefined);
               }}
               className="text-slate-400 hover:text-white"
               data-testid="button-clear-filters"
