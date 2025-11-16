@@ -3156,7 +3156,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Reset user password (admin)
+  // Reset user password (admin) - sends password reset email
   app.post('/api/admin/users/:userId/reset-password', isAuthenticated, async (req: any, res) => {
     try {
       const userId = getUserId(req);
@@ -3177,24 +3177,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "User has no email address" });
       }
 
-      // Generate random password
-      const newPassword = Math.random().toString(36).slice(-12) + Math.random().toString(36).slice(-12);
+      // Generate password reset token
+      const resetToken = generateVerificationToken();
+      const resetTokenExpires = generateTokenExpiration();
       
-      // Hash and update password
-      const bcrypt = await import('bcrypt');
-      const hashedPassword = await bcrypt.hash(newPassword, 10);
-      await storage.updateUserPassword(targetUserId, hashedPassword);
+      // Save reset token to database
+      await storage.setPasswordResetToken(targetUserId, resetToken, resetTokenExpires);
 
-      // TODO: Send email with new password
-      // For now, return the password in response (in production, this should be emailed)
+      // Send password reset email
+      const emailSent = await emailService.sendPasswordResetEmail(
+        targetUser.email,
+        targetUser.firstName || 'User',
+        resetToken
+      );
+
+      if (!emailSent) {
+        return res.status(500).json({ message: "Failed to send password reset email" });
+      }
+
       res.json({ 
-        message: "Password reset successful", 
-        newPassword,
-        note: "Please send this password to the user securely"
+        message: "Password reset email sent successfully",
+        email: targetUser.email
       });
     } catch (error) {
-      console.error("Error resetting password:", error);
-      res.status(500).json({ message: "Failed to reset password" });
+      console.error("Error sending password reset email:", error);
+      res.status(500).json({ message: "Failed to send password reset email" });
     }
   });
 
