@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectSeparator } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
@@ -31,7 +31,8 @@ import {
   Thermometer,
   Wind,
   Gauge,
-  Trophy
+  Trophy,
+  Star
 } from "lucide-react";
 
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -159,6 +160,18 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
 
   const isPremium = premiumStatus?.isPremium || false;
   const maxPhotos = isPremium ? 5 : 1;
+
+  // Fetch favorite baits from arsenal
+  const { data: favoriteBaits = [] } = useQuery<Array<{
+    id: number;
+    diameter: string | null;
+    manufacturer: { id: number; name: string; };
+    productLine: { id: number; name: string; };
+    flavor: { id: number; name: string; };
+  }>>({
+    queryKey: ["/api/diary/arsenal/baits/favorites"],
+    enabled: !!user && isOpen
+  });
 
   // Find active battle (either from battleId prop or first active battle)
   const activeBattle = battleId 
@@ -860,6 +873,30 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="none">Neuvedené</SelectItem>
+                        
+                        {/* Favorite baits from arsenal */}
+                        {favoriteBaits.length > 0 && (
+                          <>
+                            {favoriteBaits.map((bait) => {
+                              const label = `${bait.manufacturer.name} - ${bait.productLine.name} - ${bait.flavor.name}${bait.diameter ? ` (${bait.diameter})` : ''}`;
+                              return (
+                                <SelectItem 
+                                  key={`fav-${bait.id}`} 
+                                  value={label}
+                                  data-testid={`select-favorite-bait-${bait.id}`}
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
+                                    <span>{label}</span>
+                                  </div>
+                                </SelectItem>
+                              );
+                            })}
+                            <SelectSeparator />
+                          </>
+                        )}
+                        
+                        {/* Classic fishing methods */}
                         {fishingMethods.map((method) => (
                           <SelectItem key={method} value={method}>
                             {method}
