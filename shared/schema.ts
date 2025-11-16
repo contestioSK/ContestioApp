@@ -1140,6 +1140,7 @@ export const userArsenalBaits = pgTable("user_arsenal_baits", {
   flavorId: integer("flavor_id").notNull().references(() => baitFlavors.id),
   diameter: varchar("diameter", { length: 10 }),
   notes: text("notes"),
+  isFavorite: boolean("is_favorite").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
