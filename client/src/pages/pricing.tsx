@@ -30,7 +30,7 @@ export default function Pricing() {
     {
       id: "basic",
       name: "Basic",
-      price: "49",
+      price: "69",
       currency: "€",
       period: "/ súťaž",
       description: "Ideálne pre menšie súťaže",
@@ -50,7 +50,7 @@ export default function Pricing() {
     {
       id: "pro",
       name: "Pro",
-      price: "149",
+      price: "199",
       currency: "€",
       period: "/ súťaž",
       description: "Najobľúbenejší balík pre väčšinu súťaží",
@@ -72,7 +72,7 @@ export default function Pricing() {
     {
       id: "premium",
       name: "Premium",
-      price: "499",
+      price: "599",
       currency: "€",
       period: "/ súťaž",
       description: "Pre veľké súťaže s vlastným brandingom",
@@ -138,7 +138,7 @@ export default function Pricing() {
     {
       id: "premium-monthly",
       name: "PREMIUM",
-      price: "4,90",
+      price: "5,90",
       currency: "€",
       period: "/ mesiac",
       description: "Všetky funkcie bez obmedzení",
@@ -160,7 +160,7 @@ export default function Pricing() {
     {
       id: "premium-yearly",
       name: "PREMIUM",
-      price: "49",
+      price: "59,90",
       currency: "€",
       period: "/ rok",
       description: "Ušetrite ~11€ pri ročnom predplatnom",

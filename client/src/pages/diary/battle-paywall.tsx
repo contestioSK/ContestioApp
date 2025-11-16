@@ -156,7 +156,7 @@ export default function BattlePaywall() {
               data-testid="button-upgrade-premium-footer"
             >
               <Crown className="w-5 h-5 mr-2" />
-              Začať s Premium za 4,90€
+              Začať s Premium za 5,90€
             </Button>
             <p className="text-sm text-muted-foreground mt-2">
               Prvý mesiac zdarma • Kedykoľvek zrušiteľné
