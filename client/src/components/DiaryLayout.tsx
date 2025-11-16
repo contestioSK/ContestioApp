@@ -220,8 +220,8 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
             })}
           </nav>
 
-          {/* Admin Panel Button (for admin/organizer users) */}
-          {(user?.role === 'admin' || user?.role === 'organizer') && (
+          {/* Admin Panel Button (only for admin users) */}
+          {user?.role === 'admin' && (
             <div className="px-6 pb-4">
               <Button
                 variant="default"
