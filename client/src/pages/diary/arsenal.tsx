@@ -1,9 +1,13 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import DiaryLayout from "@/components/DiaryLayout";
-import { FishSymbol, Loader2 } from "lucide-react";
+import { FishSymbol, Loader2, Plus, Trash2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import {
   Select,
   SelectContent,
@@ -11,6 +15,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface BaitManufacturer {
   id: number;
@@ -29,10 +41,31 @@ interface BaitFlavor {
   name: string;
 }
 
+interface ArsenalBait {
+  id: number;
+  notes: string | null;
+  createdAt: string;
+  manufacturer: {
+    id: number;
+    name: string;
+  };
+  productLine: {
+    id: number;
+    name: string;
+  };
+  flavor: {
+    id: number;
+    name: string;
+  };
+}
+
 export default function ArsenalPage() {
+  const { toast } = useToast();
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedManufacturer, setSelectedManufacturer] = useState<string | null>(null);
   const [selectedProductLine, setSelectedProductLine] = useState<string | null>(null);
   const [selectedFlavor, setSelectedFlavor] = useState<string | null>(null);
+  const [notes, setNotes] = useState("");
 
   // Fetch manufacturers
   const { data: manufacturers, isLoading: loadingManufacturers } = useQuery<BaitManufacturer[]>({
@@ -61,6 +94,55 @@ export default function ArsenalPage() {
     enabled: !!selectedProductLine,
   });
 
+  // Fetch user's arsenal baits
+  const { data: arsenalBaits, isLoading: loadingArsenal } = useQuery<ArsenalBait[]>({
+    queryKey: ['/api/diary/arsenal/baits'],
+  });
+
+  // Add bait mutation
+  const addBaitMutation = useMutation({
+    mutationFn: async (data: { manufacturerId: number; productLineId: number; flavorId: number; notes?: string }) => {
+      return await apiRequest('/api/diary/arsenal/baits', 'POST', data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/diary/arsenal/baits'] });
+      toast({
+        title: "Boilies pridané",
+        description: "Boilies boli úspešne pridané do arzenálu",
+      });
+      setDialogOpen(false);
+      resetForm();
+    },
+    onError: () => {
+      toast({
+        title: "Chyba",
+        description: "Nepodarilo sa pridať boilies do arzenálu",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete bait mutation
+  const deleteBaitMutation = useMutation({
+    mutationFn: async (id: number) => {
+      return await apiRequest(`/api/diary/arsenal/baits/${id}`, 'DELETE');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/diary/arsenal/baits'] });
+      toast({
+        title: "Boilies odstránené",
+        description: "Boilies boli úspešne odstránené z arzenálu",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Chyba",
+        description: "Nepodarilo sa odstrániť boilies z arzenálu",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Reset dependent selections when parent changes
   const handleManufacturerChange = (value: string) => {
     setSelectedManufacturer(value);
@@ -73,33 +155,65 @@ export default function ArsenalPage() {
     setSelectedFlavor(null);
   };
 
+  const resetForm = () => {
+    setSelectedManufacturer(null);
+    setSelectedProductLine(null);
+    setSelectedFlavor(null);
+    setNotes("");
+  };
+
+  const handleAddBait = () => {
+    if (!selectedManufacturer || !selectedProductLine || !selectedFlavor) {
+      toast({
+        title: "Chyba",
+        description: "Vyberte výrobcu, produktový rad a príchuť",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    addBaitMutation.mutate({
+      manufacturerId: parseInt(selectedManufacturer),
+      productLineId: parseInt(selectedProductLine),
+      flavorId: parseInt(selectedFlavor),
+      notes: notes || undefined,
+    });
+  };
+
   return (
     <DiaryLayout>
       <div className="container mx-auto px-4 py-6 md:py-8 max-w-4xl">
         {/* Header */}
         <div className="mb-6 md:mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <FishSymbol className="h-8 w-8 text-primary" />
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-foreground dark:text-white">
-                Arzenál Boilies
-              </h1>
-              <p className="text-sm md:text-base text-muted-foreground dark:text-gray-400">
-                Databáza boilies od najväčších výrobcov
-              </p>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <FishSymbol className="h-8 w-8 text-primary" />
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold text-foreground dark:text-white">
+                  Arzenál Boilies
+                </h1>
+                <p className="text-sm md:text-base text-muted-foreground dark:text-gray-400">
+                  Databáza boilies od najväčších výrobcov
+                </p>
+              </div>
             </div>
-          </div>
-        </div>
+            
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <DialogTrigger asChild>
+                <Button data-testid="button-add-bait">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Pridať boilies
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-lg dark:bg-gray-800 dark:border-gray-700">
+                <DialogHeader>
+                  <DialogTitle className="dark:text-white">Pridať boilies do arzenálu</DialogTitle>
+                  <DialogDescription className="dark:text-gray-400">
+                    Vyberte boilies z databázy a pridajte ich do svojho arzenálu
+                  </DialogDescription>
+                </DialogHeader>
 
-        {/* Cascade Selection */}
-        <Card className="mb-6 dark:bg-gray-800 dark:border-gray-700">
-          <CardHeader>
-            <CardTitle className="dark:text-white">Vyberte Boilies</CardTitle>
-            <CardDescription className="dark:text-gray-400">
-              Kaskádový výber: Výrobca → Produktový rad → Príchuť
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
+                <div className="space-y-4 py-4">
             {/* Manufacturer Selection */}
             <div className="space-y-2">
               <Label htmlFor="manufacturer" className="dark:text-gray-200">
@@ -214,44 +328,100 @@ export default function ArsenalPage() {
                 </Select>
               )}
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Selected Bait Summary */}
-        {selectedManufacturer && (
+            {/* Notes */}
+            <div className="space-y-2">
+              <Label htmlFor="notes" className="dark:text-gray-200">
+                Poznámky (voliteľné)
+              </Label>
+              <Textarea
+                id="notes"
+                placeholder="Napríklad: veľkosť, farba, efektivita..."
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                rows={3}
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => setDialogOpen(false)}
+                className="dark:bg-gray-700 dark:text-gray-200"
+              >
+                Zrušiť
+              </Button>
+              <Button
+                onClick={handleAddBait}
+                disabled={!selectedManufacturer || !selectedProductLine || !selectedFlavor || addBaitMutation.isPending}
+                data-testid="button-save-bait"
+              >
+                {addBaitMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Pridať do arzenálu
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+          </div>
+        </div>
+
+        {/* Arsenal List */}
+        {loadingArsenal ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : arsenalBaits && arsenalBaits.length > 0 ? (
+          <div className="space-y-4">
+            {arsenalBaits.map((bait) => (
+              <Card key={bait.id} className="dark:bg-gray-800 dark:border-gray-700">
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-lg text-foreground dark:text-white mb-2">
+                        {bait.manufacturer.name} - {bait.productLine.name}
+                      </h3>
+                      <div className="space-y-1">
+                        <p className="text-sm text-muted-foreground dark:text-gray-400">
+                          <span className="font-medium">Príchuť:</span> {bait.flavor.name}
+                        </p>
+                        {bait.notes && (
+                          <p className="text-sm text-muted-foreground dark:text-gray-400">
+                            <span className="font-medium">Poznámky:</span> {bait.notes}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => deleteBaitMutation.mutate(bait.id)}
+                      disabled={deleteBaitMutation.isPending}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950"
+                      data-testid={`button-delete-bait-${bait.id}`}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
           <Card className="dark:bg-gray-800 dark:border-gray-700">
-            <CardHeader>
-              <CardTitle className="dark:text-white">Vybraté Boilies</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div>
-                <span className="text-sm font-medium text-muted-foreground dark:text-gray-400">
-                  Výrobca:
-                </span>
-                <p className="text-base font-semibold text-foreground dark:text-white">
-                  {manufacturers?.find(m => m.id.toString() === selectedManufacturer)?.name}
-                </p>
-              </div>
-              {selectedProductLine && (
-                <div>
-                  <span className="text-sm font-medium text-muted-foreground dark:text-gray-400">
-                    Produktový rad:
-                  </span>
-                  <p className="text-base font-semibold text-foreground dark:text-white">
-                    {productLines?.find(p => p.id.toString() === selectedProductLine)?.name}
-                  </p>
-                </div>
-              )}
-              {selectedFlavor && (
-                <div>
-                  <span className="text-sm font-medium text-muted-foreground dark:text-gray-400">
-                    Príchuť:
-                  </span>
-                  <p className="text-base font-semibold text-foreground dark:text-white">
-                    {flavors?.find(f => f.id.toString() === selectedFlavor)?.name}
-                  </p>
-                </div>
-              )}
+            <CardContent className="py-12 text-center">
+              <FishSymbol className="h-12 w-12 mx-auto mb-4 text-muted-foreground dark:text-gray-500" />
+              <h3 className="text-lg font-medium text-foreground dark:text-white mb-2">
+                Žiadne boilies v arzenáli
+              </h3>
+              <p className="text-sm text-muted-foreground dark:text-gray-400 mb-4">
+                Začnite pridaním svojich prvých boilies
+              </p>
+              <Button variant="outline" onClick={() => setDialogOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Pridať boilies
+              </Button>
             </CardContent>
           </Card>
         )}

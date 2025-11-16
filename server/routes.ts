@@ -4,8 +4,8 @@ import { WebSocketServer, WebSocket } from "ws";
 import { randomUUID } from "crypto";
 import { storage } from "./storage";
 import { db } from "./db";
-import { eq, and, gt } from "drizzle-orm";
-import { diaryBattles, users, baitManufacturers, baitProductLines, baitFlavors } from "@shared/schema";
+import { eq, and, gt, desc } from "drizzle-orm";
+import { diaryBattles, users, baitManufacturers, baitProductLines, baitFlavors, userArsenalBaits } from "@shared/schema";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { hashPassword, validatePassword, generateVerificationToken, generateTokenExpiration } from "./utils/auth";
 import { emailService } from "./utils/email";
@@ -31,6 +31,7 @@ import {
   insertSeasonGoalSchema,
   updateSeasonGoalSchema,
   insertSeasonGoalProgressSchema,
+  insertUserArsenalBaitSchema,
 } from "@shared/schema";
 import { z } from "zod";
 import { canUseFeature } from "@shared/plan-capabilities";
@@ -5296,6 +5297,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("[BAITS] Error fetching flavors:", error);
       res.status(500).json({ message: "Failed to fetch flavors" });
+    }
+  });
+
+  // User Arsenal Baits endpoints
+  app.get('/api/diary/arsenal/baits', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      
+      const arsenalBaits = await db
+        .select({
+          id: userArsenalBaits.id,
+          notes: userArsenalBaits.notes,
+          createdAt: userArsenalBaits.createdAt,
+          manufacturer: {
+            id: baitManufacturers.id,
+            name: baitManufacturers.name,
+          },
+          productLine: {
+            id: baitProductLines.id,
+            name: baitProductLines.name,
+          },
+          flavor: {
+            id: baitFlavors.id,
+            name: baitFlavors.name,
+          },
+        })
+        .from(userArsenalBaits)
+        .leftJoin(baitManufacturers, eq(userArsenalBaits.manufacturerId, baitManufacturers.id))
+        .leftJoin(baitProductLines, eq(userArsenalBaits.productLineId, baitProductLines.id))
+        .leftJoin(baitFlavors, eq(userArsenalBaits.flavorId, baitFlavors.id))
+        .where(eq(userArsenalBaits.userId, userId))
+        .orderBy(desc(userArsenalBaits.createdAt));
+      
+      res.json(arsenalBaits);
+    } catch (error) {
+      console.error("[ARSENAL] Error fetching user arsenal baits:", error);
+      res.status(500).json({ message: "Failed to fetch arsenal baits" });
+    }
+  });
+
+  app.post('/api/diary/arsenal/baits', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const validatedData = insertUserArsenalBaitSchema.parse({
+        ...req.body,
+        userId,
+      });
+
+      const [newBait] = await db
+        .insert(userArsenalBaits)
+        .values(validatedData)
+        .returning();
+
+      res.status(201).json(newBait);
+    } catch (error) {
+      console.error("[ARSENAL] Error adding bait to arsenal:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to add bait to arsenal" });
+    }
+  });
+
+  app.delete('/api/diary/arsenal/baits/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const baitId = parseInt(req.params.id);
+
+      if (isNaN(baitId)) {
+        return res.status(400).json({ message: "Invalid bait ID" });
+      }
+
+      const [deletedBait] = await db
+        .delete(userArsenalBaits)
+        .where(and(
+          eq(userArsenalBaits.id, baitId),
+          eq(userArsenalBaits.userId, userId)
+        ))
+        .returning();
+
+      if (!deletedBait) {
+        return res.status(404).json({ message: "Bait not found in arsenal" });
+      }
+
+      res.json({ message: "Bait removed from arsenal" });
+    } catch (error) {
+      console.error("[ARSENAL] Error deleting bait from arsenal:", error);
+      res.status(500).json({ message: "Failed to delete bait from arsenal" });
     }
   });
 
