@@ -110,6 +110,7 @@ export interface IStorage {
   }): Promise<User>;
   verifyUserEmail(token: string): Promise<User | null>;
   updateUserPassword(userId: string, hashedPassword: string): Promise<User>;
+  setPasswordResetToken(userId: string, resetToken: string, expiresAt: Date): Promise<User>;
   updateUserEmailVerification(userId: string, emailVerified: boolean): Promise<User>;
   updateUserProfile(userId: string, profileData: {
     firstName?: string;
@@ -676,6 +677,23 @@ export class DatabaseStorage implements IStorage {
       .update(users)
       .set({
         password: hashedPassword,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId))
+      .returning();
+
+    if (!updatedUser) {
+      throw new Error('User not found');
+    }
+    return updatedUser;
+  }
+
+  async setPasswordResetToken(userId: string, resetToken: string, expiresAt: Date): Promise<User> {
+    const [updatedUser] = await db
+      .update(users)
+      .set({
+        verificationToken: resetToken,
+        verificationTokenExpires: expiresAt,
         updatedAt: new Date(),
       })
       .where(eq(users.id, userId))
