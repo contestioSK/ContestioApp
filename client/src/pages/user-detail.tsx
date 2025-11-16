@@ -72,7 +72,7 @@ export default function UserDetail() {
       firstName: user?.firstName || "",
       lastName: user?.lastName || "",
       nickname: user?.nickname || "",
-      role: user?.role || 'public',
+      role: (user?.role as "public" | "organizer" | "referee" | "admin") || 'public',
       active: user?.active ?? true,
     },
   });
@@ -95,7 +95,7 @@ export default function UserDetail() {
       firstName: user.firstName || "",
       lastName: user.lastName || "",
       nickname: user.nickname || "",
-      role: user.role,
+      role: user.role as "public" | "organizer" | "referee" | "admin",
       active: user.active,
     });
     
@@ -118,10 +118,8 @@ export default function UserDetail() {
         role: data.role,
         active: data.active,
       };
-      return apiRequest(`/api/admin/users/${userId}`, {
-        method: 'PUT',
-        body: JSON.stringify(cleanData),
-      });
+      const response = await apiRequest('PUT', `/api/admin/users/${userId}`, cleanData);
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users', userId] });
@@ -143,9 +141,8 @@ export default function UserDetail() {
   // Reset password mutation
   const resetPasswordMutation = useMutation({
     mutationFn: async () => {
-      return apiRequest(`/api/admin/users/${userId}/reset-password`, {
-        method: 'POST',
-      });
+      const response = await apiRequest('POST', `/api/admin/users/${userId}/reset-password`);
+      return response.json();
     },
     onSuccess: (data: any) => {
       toast({
@@ -166,13 +163,11 @@ export default function UserDetail() {
   // Update premium mutation
   const updatePremiumMutation = useMutation({
     mutationFn: async (data: PremiumUpdateForm) => {
-      return apiRequest(`/api/admin/users/${userId}/premium-manual`, {
-        method: 'PUT',
-        body: JSON.stringify({
-          isPremium: data.isPremium,
-          expiresAt: data.expiresAt || null,
-        }),
+      const response = await apiRequest('PUT', `/api/admin/users/${userId}/premium-manual`, {
+        isPremium: data.isPremium,
+        expiresAt: data.expiresAt || null,
       });
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users', userId] });

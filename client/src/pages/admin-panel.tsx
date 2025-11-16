@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -257,6 +258,7 @@ interface DashboardStats {
 export default function AdminPanel() {
   const { toast } = useToast();
   const { user, isAuthenticated, isLoading } = useAuth();
+  const [, navigate] = useLocation();
   const [selectedCompetition, setSelectedCompetition] = useState<string>("");
   const [activeTab, setActiveTab] = useState<string>("dashboard");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -1920,7 +1922,12 @@ export default function AdminPanel() {
                         ) : (
                           <div className="space-y-4">
                             {filteredUsers?.map((user: any) => (
-                            <div key={user.id} className="flex items-center space-x-4 p-4 border border-border rounded-lg bg-card">
+                            <div 
+                              key={user.id} 
+                              className="flex items-center space-x-4 p-4 border border-border rounded-lg bg-card cursor-pointer hover:bg-accent transition-colors"
+                              onClick={() => navigate(`/admin/users/${user.id}`)}
+                              data-testid={`row-user-${user.id}`}
+                            >
                               {/* User Info */}
                               <div className="flex items-center space-x-3 flex-1">
                                 <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">

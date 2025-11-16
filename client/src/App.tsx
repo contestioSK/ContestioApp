@@ -13,6 +13,7 @@ import CompetitionCatches from "@/pages/competition-catches";
 import TeamDetail from "@/pages/team-detail";
 import SectorDetail from "@/pages/sector-detail";
 import AdminPanel from "@/pages/admin-panel";
+import UserDetail from "@/pages/user-detail";
 import RefereeInterface from "@/pages/referee-interface";
 import RegisterCompetition from "@/pages/register-competition";
 import RegisterTeam from "@/pages/register-team";
@@ -79,6 +80,11 @@ function Router() {
       <Route path="/competition/:id/catches" component={CompetitionCatches} />
       <Route path="/competition/:competitionId/sector/:sector" component={SectorDetail} />
       <Route path="/team/:teamId" component={TeamDetail} />
+      <Route path="/admin/users/:userId">
+        <ProtectedRoute roles={["admin"]}>
+          <UserDetail />
+        </ProtectedRoute>
+      </Route>
       <Route path="/admin">
         <ProtectedRoute roles={["admin"]}>
           <AdminPanel />
