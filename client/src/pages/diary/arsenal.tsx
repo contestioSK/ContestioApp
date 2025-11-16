@@ -43,6 +43,7 @@ interface BaitFlavor {
 
 interface ArsenalBait {
   id: number;
+  diameter: string | null;
   notes: string | null;
   createdAt: string;
   manufacturer: {
@@ -59,12 +60,15 @@ interface ArsenalBait {
   };
 }
 
+const DIAMETER_OPTIONS = ["16mm", "20mm", "24mm", "30mm"] as const;
+
 export default function ArsenalPage() {
   const { toast } = useToast();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedManufacturer, setSelectedManufacturer] = useState<string | null>(null);
   const [selectedProductLine, setSelectedProductLine] = useState<string | null>(null);
   const [selectedFlavor, setSelectedFlavor] = useState<string | null>(null);
+  const [selectedDiameter, setSelectedDiameter] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
 
   // Fetch manufacturers
@@ -101,7 +105,7 @@ export default function ArsenalPage() {
 
   // Add bait mutation
   const addBaitMutation = useMutation({
-    mutationFn: async (data: { manufacturerId: number; productLineId: number; flavorId: number; notes?: string }) => {
+    mutationFn: async (data: { manufacturerId: number; productLineId: number; flavorId: number; diameter?: string; notes?: string }) => {
       return await apiRequest('POST', '/api/diary/arsenal/baits', data);
     },
     onSuccess: () => {
@@ -159,6 +163,7 @@ export default function ArsenalPage() {
     setSelectedManufacturer(null);
     setSelectedProductLine(null);
     setSelectedFlavor(null);
+    setSelectedDiameter(null);
     setNotes("");
   };
 
@@ -176,6 +181,7 @@ export default function ArsenalPage() {
       manufacturerId: parseInt(selectedManufacturer),
       productLineId: parseInt(selectedProductLine),
       flavorId: parseInt(selectedFlavor),
+      diameter: selectedDiameter || undefined,
       notes: notes || undefined,
     });
   };
@@ -329,6 +335,32 @@ export default function ArsenalPage() {
               )}
             </div>
 
+            {/* Diameter Selection */}
+            <div className="space-y-2">
+              <Label htmlFor="diameter" className="dark:text-gray-200">
+                4. Priemer (voliteľné)
+              </Label>
+              <Select
+                value={selectedDiameter || ""}
+                onValueChange={setSelectedDiameter}
+              >
+                <SelectTrigger
+                  id="diameter"
+                  className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  data-testid="select-diameter"
+                >
+                  <SelectValue placeholder="Vyberte priemer..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {DIAMETER_OPTIONS.map((diameter) => (
+                    <SelectItem key={diameter} value={diameter}>
+                      {diameter}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* Notes */}
             <div className="space-y-2">
               <Label htmlFor="notes" className="dark:text-gray-200">
@@ -336,7 +368,7 @@ export default function ArsenalPage() {
               </Label>
               <Textarea
                 id="notes"
-                placeholder="Napríklad: veľkosť, farba, efektivita..."
+                placeholder="Napríklad: farba, efektivita, kde najlepšie funguje..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
@@ -386,6 +418,11 @@ export default function ArsenalPage() {
                         <p className="text-sm text-muted-foreground dark:text-gray-400">
                           <span className="font-medium">Príchuť:</span> {bait.flavor.name}
                         </p>
+                        {bait.diameter && (
+                          <p className="text-sm text-muted-foreground dark:text-gray-400">
+                            <span className="font-medium">Priemer:</span> {bait.diameter}
+                          </p>
+                        )}
                         {bait.notes && (
                           <p className="text-sm text-muted-foreground dark:text-gray-400">
                             <span className="font-medium">Poznámky:</span> {bait.notes}
