@@ -962,7 +962,7 @@ export default function DiaryIndex() {
                             <span className="text-slate-500">Miesto:</span> {catch_.spot || 'N/A'}
                           </div>
                           <div>
-                            <span className="text-slate-500">Technika:</span> {catch_.bait || 'N/A'}
+                            <span className="text-slate-500">Návnada/Nástraha:</span> {catch_.bait || 'N/A'}
                           </div>
                           <div className="col-span-2">
                             <span className="text-slate-500">Dátum:</span> {catch_.capturedAt ? format(new Date(catch_.capturedAt), "dd. MMM yyyy", { locale: sk }) : 'N/A'}
