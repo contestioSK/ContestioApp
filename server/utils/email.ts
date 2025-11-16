@@ -1,7 +1,9 @@
 import nodemailer from 'nodemailer';
 import type { Transporter } from 'nodemailer';
+import sgMail from '@sendgrid/mail';
 
-// Email configuration from environment variables (all required)
+// Email configuration from environment variables
+const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
 const SMTP_CONFIG = {
   host: process.env.SMTP_HOST,
   port: process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT) : undefined,
@@ -12,8 +14,10 @@ const SMTP_CONFIG = {
   },
 };
 
-const FROM_EMAIL = process.env.SMTP_FROM || 'noreply@contestio.app';
-const APP_ORIGIN = process.env.APP_ORIGIN || 'https://contestio.app'; // Use HTTPS by default
+const FROM_EMAIL = process.env.SMTP_FROM || 'noreply@contestio.sk';
+const APP_ORIGIN = process.env.APP_ORIGIN || process.env.REPL_SLUG 
+  ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co` 
+  : 'https://contestio.sk';
 
 interface EmailOptions {
   to: string;
@@ -25,16 +29,30 @@ interface EmailOptions {
 class EmailService {
   private transporter: Transporter | null = null;
   private isConfigured = false;
+  private useSendGrid = false;
 
   constructor() {
     this.initializeTransporter();
   }
 
   private initializeTransporter() {
-    // Check if all required SMTP configuration is provided
+    // Try SendGrid first
+    if (SENDGRID_API_KEY) {
+      try {
+        sgMail.setApiKey(SENDGRID_API_KEY);
+        this.isConfigured = true;
+        this.useSendGrid = true;
+        console.log('[EmailService] SendGrid configured successfully');
+        return;
+      } catch (error) {
+        console.error('[EmailService] Failed to configure SendGrid:', error);
+      }
+    }
+
+    // Fall back to SMTP if SendGrid is not available
     if (!SMTP_CONFIG.host || !SMTP_CONFIG.port || !SMTP_CONFIG.auth.user || !SMTP_CONFIG.auth.pass) {
-      console.warn('[EmailService] SMTP configuration incomplete. Email functionality will be disabled.');
-      console.warn('[EmailService] Required environment variables: SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD');
+      console.warn('[EmailService] Email configuration incomplete. Email functionality will be disabled.');
+      console.warn('[EmailService] Required: SENDGRID_API_KEY or (SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD)');
       console.warn('[EmailService] Optional: SMTP_FROM, APP_ORIGIN');
       return;
     }
@@ -42,6 +60,7 @@ class EmailService {
     try {
       this.transporter = nodemailer.createTransport(SMTP_CONFIG);
       this.isConfigured = true;
+      this.useSendGrid = false;
       console.log('[EmailService] SMTP transporter configured successfully');
       
       // Verify connection on startup
@@ -55,10 +74,14 @@ class EmailService {
   }
 
   /**
-   * Verify SMTP connection
+   * Verify SMTP connection (only for SMTP, not SendGrid)
    * @returns Promise<boolean> - True if connection is successful
    */
   async verifyConnection(): Promise<boolean> {
+    if (this.useSendGrid) {
+      return true; // SendGrid doesn't need verification
+    }
+
     if (!this.transporter) {
       return false;
     }
@@ -79,23 +102,42 @@ class EmailService {
    * @returns Promise<boolean> - True if email was sent successfully
    */
   async sendEmail(options: EmailOptions): Promise<boolean> {
-    if (!this.isConfigured || !this.transporter) {
+    if (!this.isConfigured) {
       console.error('[EmailService] Email service not configured. Cannot send email.');
       return false;
     }
 
     try {
-      const mailOptions = {
-        from: FROM_EMAIL,
-        to: options.to,
-        subject: options.subject,
-        html: options.html,
-        text: options.text || this.stripHtml(options.html),
-      };
+      if (this.useSendGrid) {
+        // Use SendGrid
+        await sgMail.send({
+          to: options.to,
+          from: FROM_EMAIL,
+          subject: options.subject,
+          html: options.html,
+          text: options.text || this.stripHtml(options.html),
+        });
+        console.log('[EmailService] Email sent successfully via SendGrid to:', options.to);
+        return true;
+      } else {
+        // Use SMTP
+        if (!this.transporter) {
+          console.error('[EmailService] SMTP transporter not available.');
+          return false;
+        }
 
-      const result = await this.transporter.sendMail(mailOptions);
-      console.log('[EmailService] Email sent successfully:', result.messageId);
-      return true;
+        const mailOptions = {
+          from: FROM_EMAIL,
+          to: options.to,
+          subject: options.subject,
+          html: options.html,
+          text: options.text || this.stripHtml(options.html),
+        };
+
+        const result = await this.transporter.sendMail(mailOptions);
+        console.log('[EmailService] Email sent successfully via SMTP:', result.messageId);
+        return true;
+      }
     } catch (error) {
       console.error('[EmailService] Failed to send email:', error);
       return false;
