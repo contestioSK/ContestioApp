@@ -560,41 +560,45 @@ export default function ArsenalPage() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : arsenalBaits && arsenalBaits.length > 0 ? (
-          <div className="space-y-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
             {arsenalBaits.map((bait) => (
-              <Card key={bait.id} className="dark:bg-gray-800 dark:border-gray-700">
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-lg text-foreground dark:text-white mb-2">
-                        {bait.manufacturer.name} - {bait.productLine.name}
-                      </h3>
-                      <div className="space-y-1">
-                        <p className="text-sm text-muted-foreground dark:text-gray-400">
-                          <span className="font-medium">Príchuť:</span> {bait.flavor.name}
-                        </p>
-                        {bait.diameter && (
-                          <p className="text-sm text-muted-foreground dark:text-gray-400">
-                            <span className="font-medium">Priemer:</span> {bait.diameter}
-                          </p>
-                        )}
-                        {bait.notes && (
-                          <p className="text-sm text-muted-foreground dark:text-gray-400">
-                            <span className="font-medium">Poznámky:</span> {bait.notes}
-                          </p>
-                        )}
+              <Card key={bait.id} className="dark:bg-gray-800 dark:border-gray-700 relative">
+                <CardContent className="p-3">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => deleteBaitMutation.mutate(bait.id)}
+                    disabled={deleteBaitMutation.isPending}
+                    className="absolute top-1 right-1 h-7 w-7 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950"
+                    data-testid={`button-delete-bait-${bait.id}`}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                  
+                  <div className="pr-6">
+                    <p className="text-xs text-muted-foreground dark:text-gray-400 mb-1 line-clamp-1">
+                      {bait.manufacturer.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground dark:text-gray-400 mb-2 line-clamp-1">
+                      {bait.productLine.name}
+                    </p>
+                    <h3 className="font-semibold text-sm text-foreground dark:text-white mb-2 line-clamp-2">
+                      {bait.flavor.name}
+                    </h3>
+                    
+                    {bait.diameter && (
+                      <div className="flex items-center gap-1 mb-1">
+                        <span className="text-xs px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">
+                          {bait.diameter}
+                        </span>
                       </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => deleteBaitMutation.mutate(bait.id)}
-                      disabled={deleteBaitMutation.isPending}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950"
-                      data-testid={`button-delete-bait-${bait.id}`}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    )}
+                    
+                    {bait.notes && (
+                      <p className="text-xs text-muted-foreground dark:text-gray-400 mt-2 line-clamp-2">
+                        {bait.notes}
+                      </p>
+                    )}
                   </div>
                 </CardContent>
               </Card>
