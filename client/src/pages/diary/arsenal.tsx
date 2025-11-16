@@ -156,10 +156,20 @@ export default function ArsenalPage() {
     },
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ['/api/diary/arsenal/baits'] });
-      toast({
-        title: "Príchute pridané",
-        description: `Úspešne pridaných ${data.count} príchutí do arzenálu`,
-      });
+      
+      if (data.count === 0) {
+        toast({
+          title: "Už máte všetky príchute",
+          description: `Všetky príchute (${data.skipped}) z tohto radu už máte v arzenáli`,
+        });
+      } else {
+        const skipMessage = data.skipped > 0 ? ` (${data.skipped} už v arzenáli)` : '';
+        toast({
+          title: "Príchute pridané",
+          description: `Úspešne pridaných ${data.count} príchutí${skipMessage}`,
+        });
+      }
+      
       setBulkDialogOpen(false);
       setBulkDiameter(null);
     },

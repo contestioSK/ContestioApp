@@ -5380,8 +5380,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "No flavors found for this product line" });
       }
 
-      // Create bulk insert values
-      const bulkValues = flavors.map(flavor => ({
+      // Get existing baits for this user and product line to avoid duplicates
+      const existingBaits = await db
+        .select({ flavorId: userArsenalBaits.flavorId })
+        .from(userArsenalBaits)
+        .where(
+          and(
+            eq(userArsenalBaits.userId, userId),
+            eq(userArsenalBaits.productLineId, parseInt(productLineId as string))
+          )
+        );
+
+      const existingFlavorIds = new Set(existingBaits.map(b => b.flavorId));
+      
+      // Filter out flavors that already exist
+      const newFlavors = flavors.filter(flavor => !existingFlavorIds.has(flavor.id));
+      const skippedCount = flavors.length - newFlavors.length;
+
+      if (newFlavors.length === 0) {
+        return res.status(200).json({ 
+          count: 0, 
+          skipped: flavors.length,
+          message: "All flavors from this product line are already in your arsenal" 
+        });
+      }
+
+      // Create bulk insert values for new flavors only
+      const bulkValues = newFlavors.map(flavor => ({
         userId,
         manufacturerId: parseInt(manufacturerId as string),
         productLineId: parseInt(productLineId as string),
@@ -5390,15 +5415,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         notes: notes || null,
       }));
 
-      // Insert all baits at once
+      // Insert all new baits at once
       const insertedBaits = await db
         .insert(userArsenalBaits)
         .values(bulkValues)
         .returning();
 
       res.status(201).json({ 
-        count: insertedBaits.length, 
-        message: `Successfully added ${insertedBaits.length} baits to arsenal` 
+        count: insertedBaits.length,
+        skipped: skippedCount,
+        message: `Successfully added ${insertedBaits.length} baits to arsenal${skippedCount > 0 ? ` (${skippedCount} already existed)` : ''}` 
       });
     } catch (error) {
       console.error("[ARSENAL] Error bulk adding baits to arsenal:", error);
