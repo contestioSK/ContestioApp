@@ -164,11 +164,13 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                   <p className="text-xs md:text-sm font-medium text-sidebar-foreground truncate">
                     {user?.email || "Používateľ"}
                   </p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Badge variant="secondary" className="bg-sidebar-primary/20 text-sidebar-primary border-sidebar-primary/30 text-xs">
-                      PREMIUM
-                    </Badge>
-                  </div>
+                  {isPremium && (
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge variant="secondary" className="bg-sidebar-primary/20 text-sidebar-primary border-sidebar-primary/30 text-xs">
+                        PREMIUM
+                      </Badge>
+                    </div>
+                  )}
                 </div>
               </button>
               <NotificationCenter />
