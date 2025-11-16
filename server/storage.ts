@@ -66,7 +66,7 @@ import {
   type InsertSeasonGoalProgress,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, sql, ne, count, gt, gte, lte, inArray } from "drizzle-orm";
+import { eq, desc, and, or, sql, ne, count, gt, gte, lte, inArray } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (required for Replit Auth)
@@ -2355,25 +2355,65 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllUserBattles(userId: string): Promise<DiaryBattle[]> {
-    // Check PREMIUM access (mandatory for battles)
-    if (!(await this.isUserPremium(userId))) {
-      throw new Error("Fishing Battle je dostupný iba v PREMIUM verzii. Prejdite na PREMIUM pre súboje medzi kamarátmi!");
-    }
-    
-    // Get all user's trips first
-    const userTrips = await this.getDiaryTrips(userId);
-    const tripIds = userTrips.map(trip => trip.id);
-    
-    if (tripIds.length === 0) {
+    // Get user info for participant matching
+    const user = await this.getUser(userId);
+    if (!user) {
       return [];
     }
     
-    // Get all battles from user's trips
-    return await db
+    const userName = user.firstName && user.lastName 
+      ? `${user.firstName} ${user.lastName}`
+      : user.firstName || user.email || "Unknown";
+    
+    // Get all user's trips (battles where user is owner)
+    const userTrips = await this.getDiaryTrips(userId);
+    const tripIds = userTrips.map(trip => trip.id);
+    
+    // Query 1: Get battles where user owns the trip
+    let ownedBattles: DiaryBattle[] = [];
+    if (tripIds.length > 0) {
+      ownedBattles = await db
+        .select()
+        .from(diaryBattles)
+        .where(inArray(diaryBattles.tripId, tripIds))
+        .orderBy(desc(diaryBattles.createdAt));
+    }
+    
+    // Query 2: Get battles where user is participant (but not owner) using SQL JSON queries
+    // PostgreSQL: participants @> '[{"userId":"..."}]' OR participants @> '[{"name":"..."}]'
+    const participantBattles = await db
       .select()
       .from(diaryBattles)
-      .where(inArray(diaryBattles.tripId, tripIds))
+      .where(
+        or(
+          sql`${diaryBattles.participants}::jsonb @> ${JSON.stringify([{ userId }])}::jsonb`,
+          sql`${diaryBattles.participants}::jsonb @> ${JSON.stringify([{ name: userName }])}::jsonb`
+        )
+      )
       .orderBy(desc(diaryBattles.createdAt));
+    
+    // Merge and deduplicate by battle ID
+    const battleMap = new Map<string, DiaryBattle>();
+    
+    // Add owned battles first (they take precedence)
+    for (const battle of ownedBattles) {
+      battleMap.set(battle.id, battle);
+    }
+    
+    // Add participant battles (skip if already in map)
+    for (const battle of participantBattles) {
+      if (!battleMap.has(battle.id)) {
+        battleMap.set(battle.id, battle);
+      }
+    }
+    
+    // Convert to array and sort by creation date
+    const allUserBattles = Array.from(battleMap.values());
+    allUserBattles.sort((a, b) => 
+      new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime()
+    );
+    
+    return allUserBattles;
   }
 
   async getDiaryBattle(id: string, userId: string): Promise<DiaryBattle | undefined> {
