@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import DiaryLayout from "@/components/DiaryLayout";
-import { FishSymbol, Loader2, Package, Plus, Trash2 } from "lucide-react";
+import { FishSymbol, Loader2, Package, Plus, Star, Trash2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -45,6 +45,7 @@ interface ArsenalBait {
   id: number;
   diameter: string | null;
   notes: string | null;
+  isFavorite: boolean;
   createdAt: string;
   manufacturer: {
     id: number;
@@ -177,6 +178,24 @@ export default function ArsenalPage() {
       toast({
         title: "Chyba",
         description: "Nepodarilo sa pridať príchute do arzenálu",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Toggle favorite mutation
+  const toggleFavoriteMutation = useMutation({
+    mutationFn: async (id: number) => {
+      return await apiRequest('PATCH', `/api/diary/arsenal/baits/${id}/favorite`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/diary/arsenal/baits'] });
+    },
+    onError: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/diary/arsenal/baits'] });
+      toast({
+        title: "Chyba",
+        description: "Nepodarilo sa označiť obľúbené",
         variant: "destructive",
       });
     },
@@ -567,6 +586,23 @@ export default function ArsenalPage() {
                   <Button
                     variant="ghost"
                     size="sm"
+                    onClick={() => toggleFavoriteMutation.mutate(bait.id)}
+                    disabled={toggleFavoriteMutation.isPending}
+                    className="absolute top-1 left-1 h-7 w-7 p-0 hover:bg-yellow-50 dark:hover:bg-yellow-950"
+                    data-testid={`button-favorite-bait-${bait.id}`}
+                  >
+                    <Star 
+                      className={`h-3.5 w-3.5 ${
+                        bait.isFavorite 
+                          ? 'fill-yellow-400 text-yellow-400' 
+                          : 'text-gray-400 dark:text-gray-600'
+                      }`} 
+                    />
+                  </Button>
+                  
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={() => deleteBaitMutation.mutate(bait.id)}
                     disabled={deleteBaitMutation.isPending}
                     className="absolute top-1 right-1 h-7 w-7 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950"
@@ -575,7 +611,7 @@ export default function ArsenalPage() {
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
                   
-                  <div className="pr-6">
+                  <div className="px-6">
                     <p className="text-xs text-muted-foreground dark:text-gray-400 mb-1 line-clamp-1">
                       {bait.manufacturer.name}
                     </p>
