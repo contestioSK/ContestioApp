@@ -1,6 +1,7 @@
 import { useParams, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
@@ -40,12 +41,30 @@ type PremiumUpdateForm = z.infer<typeof premiumUpdateSchema>;
 export default function UserDetail() {
   const { userId } = useParams<{ userId: string }>();
   const [, navigate] = useLocation();
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
 
-  // Redirect if not admin
+  // Redirect if not admin (wait for auth to load first)
+  useEffect(() => {
+    if (!authLoading && (!currentUser || currentUser.role !== 'admin')) {
+      navigate('/diary');
+    }
+  }, [authLoading, currentUser, navigate]);
+
+  // Show loading while checking auth
+  if (authLoading) {
+    return (
+      <DiaryLayout>
+        <div className="container max-w-4xl mx-auto p-4 space-y-6">
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-96 w-full" />
+        </div>
+      </DiaryLayout>
+    );
+  }
+
+  // Early return if not admin
   if (!currentUser || currentUser.role !== 'admin') {
-    navigate('/diary');
     return null;
   }
 
@@ -89,23 +108,25 @@ export default function UserDetail() {
   });
 
   // Update forms when user data loads
-  if (user && !form.formState.isDirty) {
-    form.reset({
-      email: user.email || "",
-      firstName: user.firstName || "",
-      lastName: user.lastName || "",
-      nickname: user.nickname || "",
-      role: user.role as "public" | "organizer" | "referee" | "admin",
-      active: user.active,
-    });
-    
-    premiumForm.reset({
-      isPremium: user.isPremium || false,
-      expiresAt: user.premiumExpiresAt 
-        ? new Date(user.premiumExpiresAt).toISOString().split('T')[0] 
-        : "",
-    });
-  }
+  useEffect(() => {
+    if (user) {
+      form.reset({
+        email: user.email || "",
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        nickname: user.nickname || "",
+        role: user.role as "public" | "organizer" | "referee" | "admin",
+        active: user.active,
+      });
+      
+      premiumForm.reset({
+        isPremium: user.isPremium || false,
+        expiresAt: user.premiumExpiresAt 
+          ? new Date(user.premiumExpiresAt).toISOString().split('T')[0] 
+          : "",
+      });
+    }
+  }, [user]);
 
   // Update user mutation
   const updateUserMutation = useMutation({
