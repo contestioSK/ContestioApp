@@ -1,6 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
+import { queryClient } from "@/lib/queryClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -71,6 +72,13 @@ export default function BattleArchive() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterMode, setFilterMode] = useState<string>("all");
   const [filterResult, setFilterResult] = useState<string>("all");
+  
+  // Force refresh archive data on mount to clear stale cache
+  useEffect(() => {
+    if (user) {
+      queryClient.invalidateQueries({ queryKey: ['/api/diary/battles/archive'] });
+    }
+  }, [user]);
   
   // Fetch archived battles from API
   const { data: rawBattles = [], isLoading } = useQuery<ArchivedBattle[]>({

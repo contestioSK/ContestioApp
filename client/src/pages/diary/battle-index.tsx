@@ -129,6 +129,14 @@ export default function BattleIndex() {
     totalBattles: archivedBattles.length,
   };
 
+  // Force refresh archive data on mount to clear stale cache
+  useEffect(() => {
+    if (user && isPremium) {
+      queryClient.invalidateQueries({ queryKey: ['/api/diary/battles/archive'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/diary/battles'] });
+    }
+  }, [user, isPremium]);
+
   // Update local invitations when data is fetched
   useEffect(() => {
     if (invitations) {
