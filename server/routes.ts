@@ -3743,6 +3743,11 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       // Sort by end date descending (most recent first)
       archivedBattles.sort((a, b) => new Date(b.endAt).getTime() - new Date(a.endAt).getTime());
       
+      console.log(`[BATTLE ARCHIVE] Returning ${archivedBattles.length} archived battles for user ${userId}`);
+      if (archivedBattles.length > 0) {
+        console.log(`[BATTLE ARCHIVE] First battle:`, JSON.stringify(archivedBattles[0], null, 2));
+      }
+      
       res.json(archivedBattles);
     } catch (error) {
       console.error("Error fetching archived battles:", error);
