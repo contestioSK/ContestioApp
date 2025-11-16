@@ -1094,6 +1094,43 @@ export const insertSeasonGoalProgressSchema = createInsertSchema(seasonGoalProgr
   value: z.string().or(z.number()).transform(val => typeof val === 'string' ? val : val.toString()),
 });
 
+// Bait (Nástrahy) tables
+export const baitManufacturers = pgTable("bait_manufacturers", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  name: varchar("name", { length: 255 }).notNull().unique(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const baitProductLines = pgTable("bait_product_lines", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  manufacturerId: integer("manufacturer_id").notNull().references(() => baitManufacturers.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 255 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const baitFlavors = pgTable("bait_flavors", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  productLineId: integer("product_line_id").notNull().references(() => baitProductLines.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 255 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Bait insert schemas
+export const insertBaitManufacturerSchema = createInsertSchema(baitManufacturers).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertBaitProductLineSchema = createInsertSchema(baitProductLines).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertBaitFlavorSchema = createInsertSchema(baitFlavors).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -1151,3 +1188,11 @@ export type SeasonGoal = typeof seasonGoals.$inferSelect;
 export type InsertSeasonGoal = z.infer<typeof insertSeasonGoalSchema>;
 export type SeasonGoalProgress = typeof seasonGoalProgress.$inferSelect;
 export type InsertSeasonGoalProgress = z.infer<typeof insertSeasonGoalProgressSchema>;
+
+// Bait types
+export type BaitManufacturer = typeof baitManufacturers.$inferSelect;
+export type InsertBaitManufacturer = z.infer<typeof insertBaitManufacturerSchema>;
+export type BaitProductLine = typeof baitProductLines.$inferSelect;
+export type InsertBaitProductLine = z.infer<typeof insertBaitProductLineSchema>;
+export type BaitFlavor = typeof baitFlavors.$inferSelect;
+export type InsertBaitFlavor = z.infer<typeof insertBaitFlavorSchema>;
