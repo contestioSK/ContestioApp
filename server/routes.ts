@@ -3095,6 +3095,148 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get user detail for admin panel
+  app.get('/api/admin/users/:userId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const user = await storage.getUser(userId);
+      
+      if (!isAdmin(user)) {
+        return res.status(403).json({ message: "Only admins can view user details" });
+      }
+
+      const targetUser = await storage.getUser(req.params.userId);
+      if (!targetUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Remove password from response
+      const { password: _, ...userWithoutPassword } = targetUser;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      console.error("Error fetching user detail:", error);
+      res.status(500).json({ message: "Failed to fetch user detail" });
+    }
+  });
+
+  // Update user profile (admin)
+  app.put('/api/admin/users/:userId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const user = await storage.getUser(userId);
+      
+      if (!isAdmin(user)) {
+        return res.status(403).json({ message: "Only admins can update users" });
+      }
+
+      // Zod validation for user update
+      const updateSchema = z.object({
+        email: z.string().email().optional(),
+        firstName: z.string().optional(),
+        lastName: z.string().optional(),
+        nickname: z.string().optional(),
+        role: z.enum(['public', 'organizer', 'referee', 'admin']).optional(),
+        active: z.boolean().optional(),
+      });
+      
+      const validation = updateSchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ message: "Invalid update data", errors: validation.error.errors });
+      }
+
+      const targetUserId = req.params.userId;
+      const updatedUser = await storage.updateUser(targetUserId, validation.data);
+      
+      // Remove password from response
+      const { password: _, ...userWithoutPassword } = updatedUser;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      console.error("Error updating user:", error);
+      res.status(500).json({ message: "Failed to update user" });
+    }
+  });
+
+  // Reset user password (admin)
+  app.post('/api/admin/users/:userId/reset-password', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const user = await storage.getUser(userId);
+      
+      if (!isAdmin(user)) {
+        return res.status(403).json({ message: "Only admins can reset passwords" });
+      }
+
+      const targetUserId = req.params.userId;
+      const targetUser = await storage.getUser(targetUserId);
+      
+      if (!targetUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      if (!targetUser.email) {
+        return res.status(400).json({ message: "User has no email address" });
+      }
+
+      // Generate random password
+      const newPassword = Math.random().toString(36).slice(-12) + Math.random().toString(36).slice(-12);
+      
+      // Hash and update password
+      const bcrypt = await import('bcrypt');
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      await storage.updateUserPassword(targetUserId, hashedPassword);
+
+      // TODO: Send email with new password
+      // For now, return the password in response (in production, this should be emailed)
+      res.json({ 
+        message: "Password reset successful", 
+        newPassword,
+        note: "Please send this password to the user securely"
+      });
+    } catch (error) {
+      console.error("Error resetting password:", error);
+      res.status(500).json({ message: "Failed to reset password" });
+    }
+  });
+
+  // Manually set premium with expiry date (admin)
+  app.put('/api/admin/users/:userId/premium-manual', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const user = await storage.getUser(userId);
+      
+      if (!isAdmin(user)) {
+        return res.status(403).json({ message: "Only admins can manage premium manually" });
+      }
+
+      // Zod validation for manual premium management
+      const premiumManualSchema = z.object({
+        isPremium: z.boolean(),
+        expiresAt: z.string().nullable().optional(), // ISO date string or null for no expiry
+      });
+      
+      const validation = premiumManualSchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ message: "Invalid premium data", errors: validation.error.errors });
+      }
+
+      const { isPremium, expiresAt } = validation.data;
+      const targetUserId = req.params.userId;
+
+      const updatedUser = await storage.updateUserPremiumManual(
+        targetUserId, 
+        isPremium, 
+        expiresAt ? new Date(expiresAt) : null
+      );
+      
+      // Remove password from response
+      const { password: _, ...userWithoutPassword } = updatedUser;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      console.error("Error updating premium manually:", error);
+      res.status(500).json({ message: "Failed to update premium" });
+    }
+  });
+
   // Competition registration routes
   app.post('/api/competition-registrations', upload.single('competitionLogo'), async (req: any, res) => {
     try {

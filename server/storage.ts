@@ -77,6 +77,15 @@ export interface IStorage {
   updateUserRole(userId: string, newRole: string): Promise<User>;
   updateUserStatus(userId: string, active: boolean): Promise<User>;
   updateUserPremiumStatus(userId: string, isPremium: boolean): Promise<User>;
+  updateUser(userId: string, userData: {
+    email?: string;
+    firstName?: string;
+    lastName?: string;
+    nickname?: string;
+    role?: string;
+    active?: boolean;
+  }): Promise<User>;
+  updateUserPremiumManual(userId: string, isPremium: boolean, expiresAt: Date | null): Promise<User>;
   getUserFromSession(sessionId: string): Promise<User | null>;
   
   // New auth methods
@@ -444,6 +453,48 @@ export class DatabaseStorage implements IStorage {
       .update(users)
       .set({ 
         isPremium,
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    
+    if (!updatedUser) {
+      throw new Error("Používateľ nenájdený");
+    }
+    return updatedUser;
+  }
+
+  async updateUser(userId: string, userData: {
+    email?: string;
+    firstName?: string;
+    lastName?: string;
+    nickname?: string;
+    role?: string;
+    active?: boolean;
+  }): Promise<User> {
+    const updateData: any = {
+      ...userData,
+      updatedAt: new Date()
+    };
+
+    const [updatedUser] = await db
+      .update(users)
+      .set(updateData)
+      .where(eq(users.id, userId))
+      .returning();
+    
+    if (!updatedUser) {
+      throw new Error("Používateľ nenájdený");
+    }
+    return updatedUser;
+  }
+
+  async updateUserPremiumManual(userId: string, isPremium: boolean, expiresAt: Date | null): Promise<User> {
+    const [updatedUser] = await db
+      .update(users)
+      .set({ 
+        isPremium,
+        premiumExpiresAt: expiresAt,
         updatedAt: new Date() 
       })
       .where(eq(users.id, userId))
