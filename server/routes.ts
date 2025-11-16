@@ -5361,6 +5361,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post('/api/diary/arsenal/baits/bulk', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const { manufacturerId, productLineId, diameter, notes } = req.body;
+
+      if (!manufacturerId || !productLineId) {
+        return res.status(400).json({ message: "manufacturerId and productLineId are required" });
+      }
+
+      // Get all flavors for this product line
+      const flavors = await db
+        .select()
+        .from(baitFlavors)
+        .where(eq(baitFlavors.productLineId, parseInt(productLineId as string)));
+
+      if (flavors.length === 0) {
+        return res.status(404).json({ message: "No flavors found for this product line" });
+      }
+
+      // Create bulk insert values
+      const bulkValues = flavors.map(flavor => ({
+        userId,
+        manufacturerId: parseInt(manufacturerId as string),
+        productLineId: parseInt(productLineId as string),
+        flavorId: flavor.id,
+        diameter: diameter || null,
+        notes: notes || null,
+      }));
+
+      // Insert all baits at once
+      const insertedBaits = await db
+        .insert(userArsenalBaits)
+        .values(bulkValues)
+        .returning();
+
+      res.status(201).json({ 
+        count: insertedBaits.length, 
+        message: `Successfully added ${insertedBaits.length} baits to arsenal` 
+      });
+    } catch (error) {
+      console.error("[ARSENAL] Error bulk adding baits to arsenal:", error);
+      res.status(500).json({ message: "Failed to bulk add baits to arsenal" });
+    }
+  });
+
   app.delete('/api/diary/arsenal/baits/:id', isAuthenticated, async (req: any, res) => {
     try {
       const userId = getUserId(req);
