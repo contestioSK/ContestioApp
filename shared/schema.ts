@@ -1131,6 +1131,24 @@ export const insertBaitFlavorSchema = createInsertSchema(baitFlavors).omit({
   createdAt: true,
 });
 
+// User Arsenal Baits - stored boilies for each user
+export const userArsenalBaits = pgTable("user_arsenal_baits", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  manufacturerId: integer("manufacturer_id").notNull().references(() => baitManufacturers.id),
+  productLineId: integer("product_line_id").notNull().references(() => baitProductLines.id),
+  flavorId: integer("flavor_id").notNull().references(() => baitFlavors.id),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertUserArsenalBaitSchema = createInsertSchema(userArsenalBaits).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type UserArsenalBait = typeof userArsenalBaits.$inferSelect;
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
