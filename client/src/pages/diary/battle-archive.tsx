@@ -73,6 +73,8 @@ export default function BattleArchive() {
   const [filterMode, setFilterMode] = useState<string>("all");
   const [filterResult, setFilterResult] = useState<string>("all");
   
+  console.log("[BATTLE ARCHIVE MOUNT] Component mounted, user:", user?.id);
+  
   // Force refresh archive data on mount to clear stale cache
   useEffect(() => {
     if (user) {
@@ -129,6 +131,9 @@ export default function BattleArchive() {
     return { totalBattles, wins, podiums, winRate };
   }, [battles]);
 
+  // Debug: Show what we have
+  console.log("[BATTLE ARCHIVE DEBUG] isLoading:", isLoading, "rawBattles.length:", rawBattles.length, "user:", user?.id);
+  
   // Show loading state
   if (isLoading) {
     return (
@@ -141,6 +146,11 @@ export default function BattleArchive() {
         </div>
       </DiaryLayout>
     );
+  }
+  
+  // Debug: Show empty state reason
+  if (rawBattles.length === 0) {
+    console.log("[BATTLE ARCHIVE DEBUG] Empty battles array! User:", user?.id);
   }
 
   return (
