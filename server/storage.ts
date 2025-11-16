@@ -66,7 +66,7 @@ import {
   type InsertSeasonGoalProgress,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, or, sql, ne, count, gt, gte, lte, inArray } from "drizzle-orm";
+import { eq, desc, and, or, not, sql, ne, count, gt, gte, lte, inArray } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (required for Replit Auth)
@@ -2380,17 +2380,32 @@ export class DatabaseStorage implements IStorage {
     }
     
     // Query 2: Get battles where user is participant (but not owner) using SQL JSON queries
-    // PostgreSQL: participants @> '[{"userId":"..."}]' OR participants @> '[{"name":"..."}]'
-    const participantBattles = await db
-      .select()
-      .from(diaryBattles)
-      .where(
-        or(
-          sql`${diaryBattles.participants}::jsonb @> ${JSON.stringify([{ userId }])}::jsonb`,
-          sql`${diaryBattles.participants}::jsonb @> ${JSON.stringify([{ name: userName }])}::jsonb`
-        )
-      )
-      .orderBy(desc(diaryBattles.createdAt));
+    // PostgreSQL: Check if any participant object in array has matching userId or name
+    // Exclude battles from owned trips to avoid duplicates using NOT IN with safe parameterization
+    const participantBattles = tripIds.length > 0
+      ? await db
+          .select()
+          .from(diaryBattles)
+          .where(
+            and(
+              sql`EXISTS (
+                SELECT 1 FROM jsonb_array_elements(${diaryBattles.participants}) AS participant
+                WHERE (participant->>'userId' = ${userId} OR participant->>'name' = ${userName})
+              )`,
+              not(inArray(diaryBattles.tripId, tripIds))
+            )
+          )
+          .orderBy(desc(diaryBattles.createdAt))
+      : await db
+          .select()
+          .from(diaryBattles)
+          .where(
+            sql`EXISTS (
+              SELECT 1 FROM jsonb_array_elements(${diaryBattles.participants}) AS participant
+              WHERE (participant->>'userId' = ${userId} OR participant->>'name' = ${userName})
+            )`
+          )
+          .orderBy(desc(diaryBattles.createdAt));
     
     // Merge and deduplicate by battle ID
     const battleMap = new Map<string, DiaryBattle>();

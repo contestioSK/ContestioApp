@@ -35,65 +35,6 @@ interface ArchivedBattle {
   }>;
 }
 
-// DEPRECATED: Mock archived battles data - replaced with API call
-const getMockArchivedBattles = (): ArchivedBattle[] => [
-  {
-    id: "battle-1", 
-    name: "Víkendový súboj kamarátov",
-    mode: "total_weight",
-    status: "finished",
-    startAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
-    endAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000 + 6 * 60 * 60 * 1000), // 6 hours duration
-    participantCount: 4,
-    winner: "Tomáš K.",
-    userPosition: 3,
-    userScore: 9.3,
-    totalScore: 12.5,
-    participants: ["Tomáš K.", "Peter M.", "Vy", "Martin D."]
-  },
-  {
-    id: "battle-2",
-    name: "Ranný súboj na jazere",
-    mode: "most_fish", 
-    status: "finished",
-    startAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000), // 14 days ago
-    endAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000 + 4 * 60 * 60 * 1000), // 4 hours duration
-    participantCount: 3,
-    winner: "Vy",
-    userPosition: 1,
-    userScore: 12,
-    totalScore: 12,
-    participants: ["Vy", "Jozef S.", "Anna K."]
-  },
-  {
-    id: "battle-3",
-    name: "Večerný duel na Dunaji",
-    mode: "biggest_fish",
-    status: "finished", 
-    startAt: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000), // 21 days ago
-    endAt: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000 + 3 * 60 * 60 * 1000), // 3 hours duration
-    participantCount: 2,
-    winner: "Milan R.",
-    userPosition: 2,
-    userScore: 3.1,
-    totalScore: 4.2,
-    participants: ["Milan R.", "Vy"]
-  },
-  {
-    id: "battle-4",
-    name: "Turnaj majstrov",
-    mode: "best_3_fish",
-    status: "finished",
-    startAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
-    endAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000 + 8 * 60 * 60 * 1000), // 8 hours duration
-    participantCount: 6,
-    winner: "Ľuboš P.",
-    userPosition: 4,
-    userScore: 15.2,
-    totalScore: 18.7,
-    participants: ["Ľuboš P.", "Erik N.", "Dominik H.", "Vy", "Michal T.", "Robert F."]
-  }
-];
 
 const getModeLabel = (mode: string) => {
   switch (mode) {
