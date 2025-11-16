@@ -102,7 +102,7 @@ export default function ArsenalPage() {
   // Add bait mutation
   const addBaitMutation = useMutation({
     mutationFn: async (data: { manufacturerId: number; productLineId: number; flavorId: number; notes?: string }) => {
-      return await apiRequest('/api/diary/arsenal/baits', 'POST', data);
+      return await apiRequest('POST', '/api/diary/arsenal/baits', data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/diary/arsenal/baits'] });
@@ -125,7 +125,7 @@ export default function ArsenalPage() {
   // Delete bait mutation
   const deleteBaitMutation = useMutation({
     mutationFn: async (id: number) => {
-      return await apiRequest(`/api/diary/arsenal/baits/${id}`, 'DELETE');
+      return await apiRequest('DELETE', `/api/diary/arsenal/baits/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/diary/arsenal/baits'] });
