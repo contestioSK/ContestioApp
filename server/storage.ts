@@ -2170,6 +2170,15 @@ export class DatabaseStorage implements IStorage {
     return { ...trip, catches, battles };
   }
 
+  async getDiaryTripById(id: string): Promise<DiaryTrip | undefined> {
+    const [trip] = await db
+      .select()
+      .from(diaryTrips)
+      .where(eq(diaryTrips.id, id));
+    
+    return trip;
+  }
+
   async createDiaryTrip(trip: InsertDiaryTrip, userId: string): Promise<DiaryTrip> {
     // Enforce ownership - ignore any incoming ownerUserId and use authenticated userId
     const tripData = { ...trip, ownerUserId: userId };
@@ -2447,18 +2456,58 @@ export class DatabaseStorage implements IStorage {
     await db.delete(diaryBattles).where(eq(diaryBattles.id, id));
   }
 
-  async calculateBattleResults(battleId: string, userId: string): Promise<DiaryBattle> {
-    // Check PREMIUM access (mandatory for battles)
-    if (!(await this.isUserPremium(userId))) {
+  async getExpiredActiveBattles(): Promise<DiaryBattle[]> {
+    const now = new Date();
+    
+    return await db
+      .select()
+      .from(diaryBattles)
+      .where(
+        and(
+          eq(diaryBattles.status, "active"),
+          sql`${diaryBattles.endAt} < ${now}`
+        )
+      );
+  }
+
+  async calculateBattleResults(battleId: string, userId: string, skipPremiumCheck: boolean = false): Promise<DiaryBattle> {
+    // Check PREMIUM access (mandatory for battles) - skip for automated scheduler
+    if (!skipPremiumCheck && !(await this.isUserPremium(userId))) {
       throw new Error("Fishing Battle je dostupný iba v PREMIUM verzii. Prejdite na PREMIUM pre súboje medzi kamarátmi!");
     }
     
-    const battle = await this.getDiaryBattle(battleId, userId);
-    if (!battle) {
-      throw new Error("Battle nenájdené");
+    let battle;
+    let catches;
+    
+    if (skipPremiumCheck) {
+      // Automated scheduler path - skip ownership and premium checks
+      const [battleData] = await db
+        .select()
+        .from(diaryBattles)
+        .where(eq(diaryBattles.id, battleId));
+      
+      if (!battleData) {
+        throw new Error("Battle nenájdené");
+      }
+      battle = battleData;
+      
+      // Get catches directly without ownership check
+      catches = await db
+        .select()
+        .from(diaryCatches)
+        .where(eq(diaryCatches.tripId, battle.tripId))
+        .orderBy(desc(diaryCatches.capturedAt));
+    } else {
+      // Manual finish path - enforce ownership and premium checks
+      const battleData = await this.getDiaryBattle(battleId, userId);
+      if (!battleData) {
+        throw new Error("Battle nenájdené");
+      }
+      battle = battleData;
+      
+      // Get catches with ownership check
+      catches = await this.getDiaryCatches(battle.tripId, userId);
     }
-
-    const catches = await this.getDiaryCatches(battle.tripId, userId);
     const battleCatches = catches.filter(c => 
       c.capturedAt >= battle.startAt && 
       c.capturedAt <= battle.endAt &&

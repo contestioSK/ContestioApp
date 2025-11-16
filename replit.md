@@ -13,6 +13,12 @@ The platform is expanding with a "Fishing Diary" module, providing personal catc
 - **UI Flow**: Confirmation dialog → Status update → Redirect to archive → Toast notification
 - **Cache Management**: Automatically invalidates battle detail, catches, battle list, and archive queries after successful finish
 - **Archive Integration**: Finished battles appear in `/diary/battles/archive` page
+- **Automatic Battle Finish**: Background scheduler runs every 60 seconds to automatically finish expired battles
+  - Scheduler checks for battles where `status === "active"` and `endAt < now`
+  - Automatically calculates final results using `calculateBattleResults` with premium check bypassed
+  - Broadcasts WebSocket notification (`battle_finished`) to all participants
+  - Logs each auto-finished battle with battle name and ID
+  - Works for both premium and free user trip owners
 
 ## Recent Password Reset Implementation (November 16, 2025)
 - **Secure Password Reset Flow**: Implemented email-based password reset using time-limited tokens (24h expiration)
