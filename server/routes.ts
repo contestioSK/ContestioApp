@@ -5,7 +5,7 @@ import { randomUUID } from "crypto";
 import { storage } from "./storage";
 import { db } from "./db";
 import { eq, and, gt } from "drizzle-orm";
-import { diaryBattles, users } from "@shared/schema";
+import { diaryBattles, users, baitManufacturers, baitProductLines, baitFlavors } from "@shared/schema";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { hashPassword, validatePassword, generateVerificationToken, generateTokenExpiration } from "./utils/auth";
 import { emailService } from "./utils/email";
@@ -5243,6 +5243,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("[WEATHER] Error fetching forecast:", error);
       res.status(500).json({ message: "Failed to fetch weather forecast" });
+    }
+  });
+
+  // Bait (Nástrahy) API endpoints
+  app.get('/api/baits/manufacturers', isAuthenticated, async (req: any, res) => {
+    try {
+      const manufacturers = await db.select().from(baitManufacturers).orderBy(baitManufacturers.name);
+      res.json(manufacturers);
+    } catch (error) {
+      console.error("[BAITS] Error fetching manufacturers:", error);
+      res.status(500).json({ message: "Failed to fetch bait manufacturers" });
+    }
+  });
+
+  app.get('/api/baits/product-lines', isAuthenticated, async (req: any, res) => {
+    try {
+      const { manufacturerId } = req.query;
+      
+      if (!manufacturerId) {
+        return res.status(400).json({ message: "manufacturerId is required" });
+      }
+
+      const productLines = await db
+        .select()
+        .from(baitProductLines)
+        .where(eq(baitProductLines.manufacturerId, parseInt(manufacturerId as string)))
+        .orderBy(baitProductLines.name);
+        
+      res.json(productLines);
+    } catch (error) {
+      console.error("[BAITS] Error fetching product lines:", error);
+      res.status(500).json({ message: "Failed to fetch product lines" });
+    }
+  });
+
+  app.get('/api/baits/flavors', isAuthenticated, async (req: any, res) => {
+    try {
+      const { productLineId } = req.query;
+      
+      if (!productLineId) {
+        return res.status(400).json({ message: "productLineId is required" });
+      }
+
+      const flavors = await db
+        .select()
+        .from(baitFlavors)
+        .where(eq(baitFlavors.productLineId, parseInt(productLineId as string)))
+        .orderBy(baitFlavors.name);
+        
+      res.json(flavors);
+    } catch (error) {
+      console.error("[BAITS] Error fetching flavors:", error);
+      res.status(500).json({ message: "Failed to fetch flavors" });
     }
   });
 
