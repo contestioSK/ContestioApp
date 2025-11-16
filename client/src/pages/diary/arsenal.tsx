@@ -42,12 +42,22 @@ export default function ArsenalPage() {
   // Fetch product lines when manufacturer is selected
   const { data: productLines, isLoading: loadingProductLines } = useQuery<BaitProductLine[]>({
     queryKey: ['/api/baits/product-lines', selectedManufacturer],
+    queryFn: async () => {
+      const response = await fetch(`/api/baits/product-lines?manufacturerId=${selectedManufacturer}`);
+      if (!response.ok) throw new Error('Failed to fetch product lines');
+      return response.json();
+    },
     enabled: !!selectedManufacturer,
   });
 
   // Fetch flavors when product line is selected
   const { data: flavors, isLoading: loadingFlavors } = useQuery<BaitFlavor[]>({
     queryKey: ['/api/baits/flavors', selectedProductLine],
+    queryFn: async () => {
+      const response = await fetch(`/api/baits/flavors?productLineId=${selectedProductLine}`);
+      if (!response.ok) throw new Error('Failed to fetch flavors');
+      return response.json();
+    },
     enabled: !!selectedProductLine,
   });
 
