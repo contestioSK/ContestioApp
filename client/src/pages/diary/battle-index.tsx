@@ -34,26 +34,21 @@ interface BattleInvitation {
   };
 }
 
-// Archived battle interface (static data)
+// Archived battle interface (from API)
 interface ArchivedBattle {
   id: string;
   name: string;
-  opponent: string;
-  result: 'win' | 'loss';
+  mode: string;
+  status: "finished";
+  startAt: Date | string;
+  endAt: Date | string;
+  participantCount: number;
+  winner: string;
+  userPosition: number | null;
+  userScore: number;
+  totalScore: number;
+  participants: string[];
 }
-
-// Mock data pre archív (statické pre prototyp)
-const mockArchivedBattles: ArchivedBattle[] = [
-  { id: '1', name: 'Víkend na Domaši', opponent: 'Peter M.', result: 'win' },
-  { id: '2', name: 'Ranný súboj', opponent: 'Tomáš K.', result: 'loss' },
-  { id: '3', name: 'Večerný duel', opponent: 'Martin D.', result: 'win' },
-];
-
-// Mock data pre sieň slávy (statické pre prototyp)
-const mockHallOfFame = {
-  totalWins: 12,
-  totalBattles: 18,
-};
 
 // Helper function to calculate time remaining
 const getTimeRemaining = (endDate: Date | string): string => {
@@ -121,6 +116,18 @@ export default function BattleIndex() {
     queryKey: ['/api/diary/battles/invitations'],
     enabled: !!user && isPremium === true,
   });
+
+  // Fetch archived battles
+  const { data: archivedBattles = [] } = useQuery<ArchivedBattle[]>({
+    queryKey: ['/api/diary/battles/archive'],
+    enabled: !!user && isPremium === true,
+  });
+
+  // Calculate Hall of Fame stats from archived battles
+  const hallOfFameStats = {
+    totalWins: archivedBattles.filter(b => b.userPosition === 1).length,
+    totalBattles: archivedBattles.length,
+  };
 
   // Update local invitations when data is fetched
   useEffect(() => {
@@ -416,35 +423,42 @@ export default function BattleIndex() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
-                    {mockArchivedBattles.map((battle) => (
-                      <div
-                        key={battle.id}
-                        className="p-3 rounded-lg border border-border/50 bg-muted/30"
-                        data-testid={`card-archived-battle-${battle.id}`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="min-w-0 flex-1">
-                            <p className="text-sm font-medium text-foreground truncate" data-testid={`text-archived-name-${battle.id}`}>
-                              {battle.name}
-                            </p>
-                            <p className="text-xs text-muted-foreground" data-testid={`text-archived-opponent-${battle.id}`}>
-                              vs {battle.opponent}
-                            </p>
+                    {archivedBattles.length > 0 ? (
+                      archivedBattles.slice(0, 3).map((battle) => (
+                        <div
+                          key={battle.id}
+                          className="p-3 rounded-lg border border-border/50 bg-muted/30"
+                          data-testid={`card-archived-battle-${battle.id}`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-medium text-foreground truncate" data-testid={`text-archived-name-${battle.id}`}>
+                                {battle.name}
+                              </p>
+                              <p className="text-xs text-muted-foreground" data-testid={`text-archived-opponent-${battle.id}`}>
+                                {battle.participantCount} účastníkov
+                              </p>
+                            </div>
+                            <Badge
+                              variant={battle.userPosition === 1 ? 'default' : 'secondary'}
+                              className={
+                                battle.userPosition === 1
+                                  ? 'bg-green-600 text-white hover:bg-green-700'
+                                  : 'bg-muted text-muted-foreground'
+                              }
+                              data-testid={`badge-result-${battle.id}`}
+                            >
+                              {battle.userPosition === 1 ? 'Víťazstvo' : `${battle.userPosition}. miesto`}
+                            </Badge>
                           </div>
-                          <Badge
-                            variant={battle.result === 'win' ? 'default' : 'secondary'}
-                            className={
-                              battle.result === 'win'
-                                ? 'bg-green-600 text-white hover:bg-green-700'
-                                : 'bg-red-600 text-white hover:bg-red-700'
-                            }
-                            data-testid={`badge-result-${battle.id}`}
-                          >
-                            {battle.result === 'win' ? 'Víťazstvo' : 'Prehra'}
-                          </Badge>
                         </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <Archive className="w-12 h-12 mx-auto mb-2 opacity-40" />
+                        <p className="text-sm">Zatiaľ žiadne dokončené súboje</p>
                       </div>
-                    ))}
+                    )}
                   </div>
                   
                   <Button
@@ -470,14 +484,14 @@ export default function BattleIndex() {
                       Sieň Slávy
                     </h3>
                     <div className="text-3xl font-bold text-yellow-500 mb-2" data-testid="text-total-wins">
-                      {mockHallOfFame.totalWins}
+                      {hallOfFameStats.totalWins}
                     </div>
                     <p className="text-sm text-muted-foreground" data-testid="text-hall-description">
                       Celkový počet vyhratých súbojov
                     </p>
                     <div className="mt-4 pt-4 border-t border-border/50">
                       <p className="text-xs text-muted-foreground" data-testid="text-success-rate">
-                        Úspešnosť: {Math.round((mockHallOfFame.totalWins / mockHallOfFame.totalBattles) * 100)}%
+                        Úspešnosť: {hallOfFameStats.totalBattles > 0 ? Math.round((hallOfFameStats.totalWins / hallOfFameStats.totalBattles) * 100) : 0}%
                       </p>
                     </div>
                   </div>
