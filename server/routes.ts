@@ -3864,7 +3864,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Battle sa nenašiel" });
       }
       
-      res.json(battle);
+      // Check if user is the trip owner (for UI permissions)
+      const isOwner = await storage.checkTripOwnership(battle.tripId, userId);
+      
+      res.json({ ...battle, isOwner });
     } catch (error) {
       console.error("Error fetching battle:", error);
       res.status(500).json({ message: "Failed to fetch battle" });
