@@ -309,7 +309,7 @@ export default function BattleDetail() {
                                 {isLeader && <Medal className="w-4 h-4 text-yellow-500" />}
                               </div>
                               <div className="text-lg font-bold">
-                                {entry.score.toFixed(1)} {battle.rules.mode === "most_fish" ? "ks" : "kg"}
+                                {entry.score.toFixed(1)} {battle?.rules.mode === "most_fish" ? "ks" : "kg"}
                               </div>
                             </div>
                             <div className="relative">
