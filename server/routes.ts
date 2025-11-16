@@ -5308,6 +5308,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const arsenalBaits = await db
         .select({
           id: userArsenalBaits.id,
+          diameter: userArsenalBaits.diameter,
           notes: userArsenalBaits.notes,
           createdAt: userArsenalBaits.createdAt,
           manufacturer: {
