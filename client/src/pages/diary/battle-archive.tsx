@@ -77,13 +77,16 @@ export default function BattleArchive() {
   useEffect(() => {
     if (user) {
       queryClient.invalidateQueries({ queryKey: ['/api/diary/battles/archive'] });
+      queryClient.removeQueries({ queryKey: ['/api/diary/battles/archive'] });
     }
   }, [user]);
   
-  // Fetch archived battles from API
+  // Fetch archived battles from API with cache busting
   const { data: rawBattles = [], isLoading } = useQuery<ArchivedBattle[]>({
     queryKey: ['/api/diary/battles/archive'],
     enabled: !!user,
+    staleTime: 0,
+    gcTime: 0,
   });
   
   // Debug: Log what we get from API
