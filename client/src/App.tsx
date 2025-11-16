@@ -49,6 +49,7 @@ import Register from "@/pages/register";
 import AuthRegister from "@/pages/auth/register";
 import AuthLogin from "@/pages/auth/login";
 import VerifyEmail from "@/pages/auth/verify-email";
+import ResetPassword from "@/pages/auth/reset-password";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 function Router() {
@@ -63,6 +64,7 @@ function Router() {
       <Route path="/auth/register" component={AuthRegister} />
       <Route path="/auth/login" component={AuthLogin} />
       <Route path="/auth/verify-email" component={VerifyEmail} />
+      <Route path="/reset-password" component={ResetPassword} />
       
       <Route path="/register-competition" component={RegisterCompetition} />
       <Route path="/register-team" component={RegisterTeam} />

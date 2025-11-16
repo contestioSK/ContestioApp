@@ -167,15 +167,15 @@ export default function UserDetail() {
     },
     onSuccess: (data: any) => {
       toast({
-        title: "Heslo bolo resetované",
-        description: `Nové heslo: ${data.newPassword}`,
-        duration: 10000,
+        title: "Email bol odoslaný",
+        description: `Reset link bol odoslaný na ${data.email}. Používateľ dostane email s odkazom na zmenu hesla.`,
+        duration: 8000,
       });
     },
     onError: (error: Error) => {
       toast({
         title: "Chyba",
-        description: error.message || "Nepodarilo sa resetovať heslo",
+        description: error.message || "Nepodarilo sa odoslať reset email",
         variant: "destructive",
       });
     },
