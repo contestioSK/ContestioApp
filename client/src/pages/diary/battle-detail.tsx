@@ -6,14 +6,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Trophy, Plus, AlertCircle, Clock, Fish, CheckCircle2, Medal } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Trophy, Plus, AlertCircle, Clock, Fish, CheckCircle2, Medal, Flag } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 import { sk } from "date-fns/locale";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import DiaryLayout from "@/components/DiaryLayout";
 import CatchFormDialog from "@/components/diary/CatchFormDialog";
-import type { DiaryBattle, DiaryCatch } from "@shared/schema";
+import type { DiaryBattle, DiaryCatch, DiaryTrip } from "@shared/schema";
 import { getFishTypeLabel } from "@/utils/fishTypeMapping";
+
+// Extended battle type to include isOwner flag from backend
+type DiaryBattleExtended = DiaryBattle & { isOwner?: boolean };
 
 interface WebSocketMessage {
   type: string;
@@ -35,9 +41,11 @@ export default function BattleDetail() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const [, setLocation] = useLocation();
-  const [battle, setBattle] = useState<DiaryBattle | null>(null);
+  const { toast } = useToast();
+  const [battle, setBattle] = useState<DiaryBattleExtended | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<string>("");
   const [isAddCatchDialogOpen, setIsAddCatchDialogOpen] = useState(false);
+  const [showEndBattleDialog, setShowEndBattleDialog] = useState(false);
 
   // WebSocket connection for live updates
   useWebSocket((message: WebSocketMessage) => {
@@ -57,7 +65,7 @@ export default function BattleDetail() {
   });
 
   // Load battle data from API
-  const { data: battleData, isLoading: battleLoading } = useQuery<DiaryBattle>({
+  const { data: battleData, isLoading: battleLoading } = useQuery<DiaryBattleExtended>({
     queryKey: ['/api/diary/battles', id],
     enabled: !!id && !!user,
   });
@@ -67,6 +75,41 @@ export default function BattleDetail() {
     queryKey: ['/api/diary/battles', id, 'catches'],
     enabled: !!id && !!user && !!battle,
   });
+
+  // End battle mutation
+  const endBattleMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest("PUT", `/api/diary/battles/${id}`, {
+        status: "finished"
+      });
+    },
+    onSuccess: () => {
+      // Update local battle state immediately
+      setBattle(prev => prev ? { ...prev, status: "finished" } : null);
+      
+      // Invalidate all related queries
+      queryClient.invalidateQueries({ queryKey: ['/api/diary/battles', id] });
+      queryClient.invalidateQueries({ queryKey: ['/api/diary/battles', id, 'catches'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/diary/battles'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/diary/battles/archive'] });
+      
+      toast({
+        title: "Battle ukončený!",
+        description: "Battle bol úspešne ukončený a presunutý do archívu.",
+      });
+      setShowEndBattleDialog(false);
+      setLocation("/diary/battles/archive");
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Chyba",
+        description: error.message || "Nepodarilo sa ukončiť battle",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const canEndBattle = battle?.isOwner && battle?.status === "active";
 
   // Update local state when data is loaded
   useEffect(() => {
@@ -199,15 +242,29 @@ export default function BattleDetail() {
                 {getModeLabel(battle.rules.mode)}
               </p>
             </div>
-            <Button 
-              onClick={() => setIsAddCatchDialogOpen(true)}
-              size="sm"
-              className="gap-2 w-full sm:w-auto"
-              data-testid="button-add-catch"
-            >
-              <Plus className="w-4 h-4" />
-              Pridať úlovok
-            </Button>
+            <div className="flex gap-2 w-full sm:w-auto">
+              <Button 
+                onClick={() => setIsAddCatchDialogOpen(true)}
+                size="sm"
+                className="gap-2 flex-1 sm:flex-none"
+                data-testid="button-add-catch"
+              >
+                <Plus className="w-4 h-4" />
+                Pridať úlovok
+              </Button>
+              {canEndBattle && (
+                <Button
+                  onClick={() => setShowEndBattleDialog(true)}
+                  size="sm"
+                  variant="destructive"
+                  className="gap-2 flex-1 sm:flex-none"
+                  data-testid="button-end-battle"
+                >
+                  <Flag className="w-4 h-4" />
+                  Ukončiť Battle
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* Three Column Layout */}
@@ -482,6 +539,31 @@ export default function BattleDetail() {
           // This is handled automatically by CatchFormDialog
         }}
       />
+
+      {/* End Battle Confirmation Dialog */}
+      <AlertDialog open={showEndBattleDialog} onOpenChange={setShowEndBattleDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Ukončiť Battle?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Týmto ukončíte tento súboj a presuniete ho do archívu. Výsledky budú automaticky vypočítané podľa aktuálneho stavu. Túto akciu nie je možné vrátiť späť.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-end-battle">
+              Zrušiť
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => endBattleMutation.mutate()}
+              disabled={endBattleMutation.isPending}
+              className="bg-orange-600 hover:bg-orange-700"
+              data-testid="button-confirm-end-battle"
+            >
+              {endBattleMutation.isPending ? "Ukončujem..." : "Ukončiť Battle"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DiaryLayout>
   );
 }
