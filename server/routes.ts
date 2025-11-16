@@ -5339,6 +5339,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get('/api/diary/arsenal/baits/favorites', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+
+      const favoriteBaits = await db
+        .select({
+          id: userArsenalBaits.id,
+          diameter: userArsenalBaits.diameter,
+          manufacturer: {
+            id: baitManufacturers.id,
+            name: baitManufacturers.name,
+          },
+          productLine: {
+            id: baitProductLines.id,
+            name: baitProductLines.name,
+          },
+          flavor: {
+            id: baitFlavors.id,
+            name: baitFlavors.name,
+          },
+        })
+        .from(userArsenalBaits)
+        .leftJoin(baitManufacturers, eq(userArsenalBaits.manufacturerId, baitManufacturers.id))
+        .leftJoin(baitProductLines, eq(userArsenalBaits.productLineId, baitProductLines.id))
+        .leftJoin(baitFlavors, eq(userArsenalBaits.flavorId, baitFlavors.id))
+        .where(and(
+          eq(userArsenalBaits.userId, userId),
+          eq(userArsenalBaits.isFavorite, true)
+        ))
+        .orderBy(baitManufacturers.name, baitProductLines.name, baitFlavors.name);
+
+      res.json(favoriteBaits);
+    } catch (error) {
+      console.error("[ARSENAL] Error fetching favorite baits:", error);
+      res.status(500).json({ message: "Failed to fetch favorite baits" });
+    }
+  });
+
   app.post('/api/diary/arsenal/baits', isAuthenticated, async (req: any, res) => {
     try {
       const userId = getUserId(req);
