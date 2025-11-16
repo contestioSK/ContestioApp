@@ -903,7 +903,7 @@ export default function DiaryIndex() {
               <div>DRUH RYBY</div>
               <div>VÁHA / DĹŽKA</div>
               <div>REVÍR</div>
-              <div>TECHNIKA</div>
+              <div>NÁVNADA/NÁSTRAHA</div>
               <div>DÁTUM</div>
             </div>
             
