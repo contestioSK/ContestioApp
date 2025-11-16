@@ -20,7 +20,8 @@ import {
   Swords,
   MapPin,
   Cloud,
-  Scale
+  Scale,
+  Shield
 } from "lucide-react";
 import contestioLogo from "@assets/contestio logo_1760283270014.png";
 
@@ -218,6 +219,24 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
               );
             })}
           </nav>
+
+          {/* Admin Panel Button (for admin/organizer users) */}
+          {(user?.role === 'admin' || user?.role === 'organizer') && (
+            <div className="px-6 pb-4">
+              <Button
+                variant="default"
+                onClick={() => {
+                  setLocation('/admin-panel');
+                  setSidebarOpen(false);
+                }}
+                className="w-full justify-start bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90"
+                data-testid="button-admin-panel"
+              >
+                <Shield className="mr-3 h-5 w-5" />
+                Admin panel
+              </Button>
+            </div>
+          )}
 
           {/* Logout */}
           <div className="p-6 border-t border-sidebar-border">
