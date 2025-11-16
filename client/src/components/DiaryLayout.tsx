@@ -83,13 +83,13 @@ const navigationItems = [
     label: "Rybársky poriadok",
     href: "/diary/fishing-rules",
     description: "Pravidlá a predpisy"
+  },
+  {
+    icon: Trophy,
+    label: "Arzenál",
+    href: "/diary/arsenal",
+    description: "Vybavenie a návnady"
   }
-  // {
-  //   icon: Trophy,
-  //   label: "Arzenál",
-  //   href: "/diary/arsenal",
-  //   description: "Vybavenie a návnady"
-  // }
 ];
 
 export default function DiaryLayout({ children }: DiaryLayoutProps) {
