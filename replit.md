@@ -4,6 +4,20 @@ Contestio is a comprehensive live fishing competition platform for managing and 
 
 The platform is expanding with a "Fishing Diary" module, providing personal catch logging with freemium tiers (FREE: 1 trip/20 catches; PREMIUM: unlimited, battles). Key recent developments include instant catch saving with background photo uploads, a systematic dark theme rollout, and a comprehensive weather forecast module with intelligent location handling and a premium "Fish Activity Index". The battle system has been enhanced with automatic catch assignment and minimum weight filtering, alongside critical bug fixes for invitation acceptance. The login experience has been optimized for direct redirection to the diary.
 
+## Recent Password Reset Implementation (November 16, 2025)
+- **Secure Password Reset Flow**: Implemented email-based password reset using time-limited tokens (24h expiration)
+- **Admin-triggered reset**: Admins can trigger password reset from user detail page (`/admin/users/:userId`)
+- **Backend endpoints**: 
+  - `POST /api/admin/users/:userId/reset-password` - Admin triggers reset, generates token, sends email
+  - `POST /api/auth/reset-password` - User submits new password with token
+- **Frontend page**: `/reset-password` - User-facing page for entering new password via email link
+- **Email service**: Uses EmailService (server/utils/email.ts) with nodemailer
+- **⚠️ EMAIL CONFIGURATION REQUIRED**: Email functionality requires either:
+  - SMTP credentials: SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD (env vars)
+  - OR SendGrid API key: SENDGRID_API_KEY (recommended, simpler setup)
+- **Security**: Passwords validated (min 7 chars, special char required), hashed with bcrypt, tokens expire after 24h
+- **Token reuse**: Reuses existing email verification token infrastructure (verificationToken, verificationTokenExpires fields)
+
 ## Recent Battle Invitation Fixes (October 13-14, 2025)
 - **CRITICAL FIX**: Accept endpoint now properly adds participant to battle.participants array before updating invitation status
 - **Fixed ownership bypass**: Accept endpoint queries battle directly from DB without trip ownership validation (invited users don't own the trip)
