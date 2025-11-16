@@ -5452,6 +5452,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         flavorId: flavor.id,
         diameter: diameter || null,
         notes: notes || null,
+        isFavorite: false,
       }));
 
       // Insert all new baits at once
