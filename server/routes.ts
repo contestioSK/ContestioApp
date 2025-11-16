@@ -459,6 +459,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Reset password with token endpoint
+  app.post('/api/auth/reset-password', async (req, res) => {
+    try {
+      const { token, password } = req.body;
+
+      if (!token || typeof token !== 'string') {
+        return res.status(400).json({ 
+          message: 'Reset token is required' 
+        });
+      }
+
+      if (!password || typeof password !== 'string') {
+        return res.status(400).json({ 
+          message: 'New password is required' 
+        });
+      }
+
+      // Validate password
+      const passwordValidation = validatePassword(password);
+      if (!passwordValidation.isValid) {
+        return res.status(400).json({ 
+          message: passwordValidation.error 
+        });
+      }
+
+      // Find user by token and check expiration
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(
+          and(
+            eq(users.verificationToken, token),
+            gt(users.verificationTokenExpires, new Date())
+          )
+        );
+
+      if (!user) {
+        return res.status(400).json({ 
+          message: 'Invalid or expired reset token' 
+        });
+      }
+
+      // Hash new password
+      const hashedPassword = await hashPassword(password);
+
+      // Update password and clear reset token
+      const [updatedUser] = await db
+        .update(users)
+        .set({
+          password: hashedPassword,
+          verificationToken: null,
+          verificationTokenExpires: null,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, user.id))
+        .returning();
+
+      if (!updatedUser) {
+        return res.status(500).json({ 
+          message: 'Failed to reset password' 
+        });
+      }
+
+      res.json({
+        message: 'Password reset successfully. You can now sign in with your new password.',
+        user: {
+          id: updatedUser.id,
+          email: updatedUser.email,
+          firstName: updatedUser.firstName,
+          lastName: updatedUser.lastName
+        }
+      });
+
+    } catch (error) {
+      console.error('[AUTH] Password reset error:', error);
+      res.status(500).json({ message: 'Password reset failed. Please try again.' });
+    }
+  });
+
   // Google OAuth routes
   app.get('/api/auth/google', passport.authenticate('google', {
     scope: ['profile', 'email']
