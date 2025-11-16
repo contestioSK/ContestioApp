@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import DiaryLayout from "@/components/DiaryLayout";
-import { FishSymbol, Loader2, Plus, Trash2 } from "lucide-react";
+import { FishSymbol, Loader2, Package, Plus, Trash2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -65,10 +65,12 @@ const DIAMETER_OPTIONS = ["16mm", "20mm", "24mm", "30mm"] as const;
 export default function ArsenalPage() {
   const { toast } = useToast();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [bulkDialogOpen, setBulkDialogOpen] = useState(false);
   const [selectedManufacturer, setSelectedManufacturer] = useState<string | null>(null);
   const [selectedProductLine, setSelectedProductLine] = useState<string | null>(null);
   const [selectedFlavor, setSelectedFlavor] = useState<string | null>(null);
   const [selectedDiameter, setSelectedDiameter] = useState<string | null>(null);
+  const [bulkDiameter, setBulkDiameter] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
 
   // Fetch manufacturers
@@ -147,6 +149,29 @@ export default function ArsenalPage() {
     },
   });
 
+  // Bulk add mutation
+  const bulkAddMutation = useMutation({
+    mutationFn: async (data: { manufacturerId: number; productLineId: number; diameter?: string }) => {
+      return await apiRequest('POST', '/api/diary/arsenal/baits/bulk', data);
+    },
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/diary/arsenal/baits'] });
+      toast({
+        title: "Príchute pridané",
+        description: `Úspešne pridaných ${data.count} príchutí do arzenálu`,
+      });
+      setBulkDialogOpen(false);
+      setBulkDiameter(null);
+    },
+    onError: () => {
+      toast({
+        title: "Chyba",
+        description: "Nepodarilo sa pridať príchute do arzenálu",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Reset dependent selections when parent changes
   const handleManufacturerChange = (value: string) => {
     setSelectedManufacturer(value);
@@ -183,6 +208,23 @@ export default function ArsenalPage() {
       flavorId: parseInt(selectedFlavor),
       diameter: selectedDiameter || undefined,
       notes: notes || undefined,
+    });
+  };
+
+  const handleBulkAdd = () => {
+    if (!selectedManufacturer || !selectedProductLine) {
+      toast({
+        title: "Chyba",
+        description: "Vyberte výrobcu a produktový rad",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    bulkAddMutation.mutate({
+      manufacturerId: parseInt(selectedManufacturer),
+      productLineId: parseInt(selectedProductLine),
+      diameter: bulkDiameter || undefined,
     });
   };
 
@@ -376,23 +418,126 @@ export default function ArsenalPage() {
               />
             </div>
 
-            <div className="flex justify-end gap-2 pt-4">
-              <Button
-                variant="outline"
-                onClick={() => setDialogOpen(false)}
-                className="dark:bg-gray-700 dark:text-gray-200"
-              >
-                Zrušiť
-              </Button>
-              <Button
-                onClick={handleAddBait}
-                disabled={!selectedManufacturer || !selectedProductLine || !selectedFlavor || addBaitMutation.isPending}
-                data-testid="button-save-bait"
-              >
-                {addBaitMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Pridať do arzenálu
-              </Button>
+            <div className="flex flex-col gap-2 pt-4">
+              {selectedProductLine && flavors && flavors.length > 0 && (
+                <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                      Rýchle pridanie
+                    </p>
+                    <p className="text-xs text-blue-700 dark:text-blue-300">
+                      Pridať všetky príchute ({flavors.length}) z tohto radu naraz
+                    </p>
+                  </div>
+                  <Button
+                    onClick={() => setBulkDialogOpen(true)}
+                    variant="outline"
+                    size="sm"
+                    className="ml-2 border-blue-300 dark:border-blue-700"
+                    data-testid="button-bulk-add"
+                  >
+                    <Package className="mr-2 h-4 w-4" />
+                    Pridať všetky
+                  </Button>
+                </div>
+              )}
+              
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setDialogOpen(false)}
+                  className="dark:bg-gray-700 dark:text-gray-200"
+                >
+                  Zrušiť
+                </Button>
+                <Button
+                  onClick={handleAddBait}
+                  disabled={!selectedManufacturer || !selectedProductLine || !selectedFlavor || addBaitMutation.isPending}
+                  data-testid="button-save-bait"
+                >
+                  {addBaitMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Pridať do arzenálu
+                </Button>
+              </div>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Add Confirmation Dialog */}
+      <Dialog open={bulkDialogOpen} onOpenChange={setBulkDialogOpen}>
+        <DialogContent className="max-w-md dark:bg-gray-800 dark:border-gray-700">
+          <DialogHeader>
+            <DialogTitle className="dark:text-white">Pridať všetky príchute</DialogTitle>
+            <DialogDescription className="dark:text-gray-400">
+              Potvrďte hromadné pridanie všetkých príchutí z vybraného produktového radu
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {selectedManufacturer && selectedProductLine && (
+              <div className="p-4 bg-muted dark:bg-gray-700 rounded-lg space-y-2">
+                <p className="text-sm font-medium dark:text-white">
+                  Výrobca: {manufacturers?.find(m => m.id === parseInt(selectedManufacturer))?.name}
+                </p>
+                <p className="text-sm font-medium dark:text-white">
+                  Rad: {productLines?.find(p => p.id === parseInt(selectedProductLine))?.name}
+                </p>
+                <p className="text-sm text-muted-foreground dark:text-gray-400">
+                  Počet príchutí: <span className="font-bold">{flavors?.length || 0}</span>
+                </p>
+              </div>
+            )}
+
+            {/* Diameter Selection for Bulk */}
+            <div className="space-y-2">
+              <Label htmlFor="bulk-diameter" className="dark:text-gray-200">
+                Priemer pre všetky (voliteľné)
+              </Label>
+              <Select
+                value={bulkDiameter || ""}
+                onValueChange={setBulkDiameter}
+              >
+                <SelectTrigger
+                  id="bulk-diameter"
+                  className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  data-testid="select-bulk-diameter"
+                >
+                  <SelectValue placeholder="Vyberte priemer..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {DIAMETER_OPTIONS.map((diameter) => (
+                    <SelectItem key={diameter} value={diameter}>
+                      {diameter}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground dark:text-gray-500">
+                Ak vyberiete priemer, všetky príchute budú mať rovnaký priemer
+              </p>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setBulkDialogOpen(false);
+                setBulkDiameter(null);
+              }}
+              className="dark:bg-gray-700 dark:text-gray-200"
+            >
+              Zrušiť
+            </Button>
+            <Button
+              onClick={handleBulkAdd}
+              disabled={bulkAddMutation.isPending}
+              data-testid="button-confirm-bulk-add"
+            >
+              {bulkAddMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Pridať {flavors?.length || 0} príchutí
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
