@@ -4,6 +4,16 @@ Contestio is a comprehensive live fishing competition platform for managing and 
 
 The platform is expanding with a "Fishing Diary" module, providing personal catch logging with freemium tiers (FREE: 1 trip/20 catches; PREMIUM: unlimited, battles). Key recent developments include instant catch saving with background photo uploads, a systematic dark theme rollout, and a comprehensive weather forecast module with intelligent location handling and a premium "Fish Activity Index". The battle system has been enhanced with automatic catch assignment and minimum weight filtering, alongside critical bug fixes for invitation acceptance. The login experience has been optimized for direct redirection to the diary.
 
+## Recent Battle Finish Functionality (November 16, 2025)
+- **Battle Termination Feature**: Implemented "Ukončiť Battle" (Finish Battle) functionality for battle owners
+- **Ownership-Gated UI**: Only trip owners see the finish button when battle status is "active"
+- **Backend Enhancement**: Added `isOwner` flag to `GET /api/diary/battles/:id` response for simplified frontend ownership checks
+- **Authorization**: Server-side ownership validation via `storage.updateDiaryBattle` → `getDiaryBattle` → `checkTripOwnership`
+- **Status Update**: Battle owners can finish battles via `PUT /api/diary/battles/:id` with `{ status: "finished" }`
+- **UI Flow**: Confirmation dialog → Status update → Redirect to archive → Toast notification
+- **Cache Management**: Automatically invalidates battle detail, catches, battle list, and archive queries after successful finish
+- **Archive Integration**: Finished battles appear in `/diary/battles/archive` page
+
 ## Recent Password Reset Implementation (November 16, 2025)
 - **Secure Password Reset Flow**: Implemented email-based password reset using time-limited tokens (24h expiration)
 - **Admin-triggered reset**: Admins can trigger password reset from user detail page (`/admin/users/:userId`)
