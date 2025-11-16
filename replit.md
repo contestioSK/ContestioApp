@@ -34,6 +34,15 @@ The platform is expanding with a "Fishing Diary" module, providing personal catc
 - **Security**: Passwords validated (min 7 chars, special char required), hashed with bcrypt, tokens expire after 24h
 - **Token reuse**: Reuses existing email verification token infrastructure (verificationToken, verificationTokenExpires fields)
 
+## Recent Battle Archive Display Fix (November 16, 2025)
+- **Fixed getAllUserBattles()**: Now returns battles where user is EITHER trip owner OR participant
+- **Removed PREMIUM check**: FREE users can now see battles where they participate (when invited)
+- **SQL participant filtering**: Uses `jsonb_array_elements` with EXISTS to match userId and userName in participants array
+- **Duplicate prevention**: Participant query excludes owned trips using `not(inArray())` for safe parameterization
+- **Mock data removed**: Removed all mock battle data from battle-index.tsx and battle-archive.tsx
+- **Auto cache invalidation**: Added `useEffect` hooks to invalidate stale React Query cache on page mount
+- **Archive now shows real data**: Battle archive and battle index cards display actual finished battles from API
+
 ## Recent Battle Invitation Fixes (October 13-14, 2025)
 - **CRITICAL FIX**: Accept endpoint now properly adds participant to battle.participants array before updating invitation status
 - **Fixed ownership bypass**: Accept endpoint queries battle directly from DB without trip ownership validation (invited users don't own the trip)
