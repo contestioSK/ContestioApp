@@ -197,13 +197,14 @@ export default function TripDetail() {
               {/* Gallery Button - only show if there are photos */}
               {tripCatches.some(c => c.photos && c.photos.length > 0) && (
                 <Button
-                  variant="outline"
+                  variant="default"
+                  size="lg"
                   onClick={() => setLocation(`/diary/trips/${id}/gallery`)}
                   className="gap-2"
                   data-testid="button-gallery"
                 >
-                  <Grid3x3 className="w-4 h-4" />
-                  Galéria
+                  <Grid3x3 className="w-5 h-5" />
+                  Galéria výpravy
                 </Button>
               )}
 
