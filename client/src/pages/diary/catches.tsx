@@ -693,8 +693,16 @@ export default function DiaryCatches() {
                     {/* Desktop Row */}
                     <div className="hidden md:grid grid-cols-5 gap-4 p-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-slate-600/50 rounded-lg flex items-center justify-center">
-                          {getFishIcon(catch_.fishType)}
+                        <div className="w-10 h-10 bg-slate-600/50 rounded-lg flex items-center justify-center overflow-hidden">
+                          {catch_.photos && catch_.photos.length > 0 ? (
+                            <img 
+                              src={catch_.photos[0]} 
+                              alt={catch_.fishType ? getFishTypeLabel(catch_.fishType) : 'Úlovok'}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            getFishIcon(catch_.fishType)
+                          )}
                         </div>
                         <div className="text-white font-medium">
                           {catch_.fishType ? getFishTypeLabel(catch_.fishType) : 'Neznámy druh'}
@@ -721,8 +729,16 @@ export default function DiaryCatches() {
                     {/* Mobile Card */}
                     <div className="md:hidden p-4">
                       <div className="flex items-start gap-3">
-                        <div className="w-12 h-12 bg-slate-600/50 rounded-lg flex items-center justify-center flex-shrink-0">
-                          {getFishIcon(catch_.fishType)}
+                        <div className="w-12 h-12 bg-slate-600/50 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                          {catch_.photos && catch_.photos.length > 0 ? (
+                            <img 
+                              src={catch_.photos[0]} 
+                              alt={catch_.fishType ? getFishTypeLabel(catch_.fishType) : 'Úlovok'}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            getFishIcon(catch_.fishType)
+                          )}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="text-white font-medium mb-1">
