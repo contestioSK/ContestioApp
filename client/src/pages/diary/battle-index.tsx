@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
-import { Trophy, Plus, Archive, Swords, Users, Clock, Crown, ArrowRight, Check, X } from "lucide-react";
+import { Trophy, Plus, Archive, Swords, Users, Clock, Crown, ArrowRight, Check, X, Bell, UserPlus } from "lucide-react";
 import { useLocation } from "wouter";
 import DiaryLayout from "@/components/DiaryLayout";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -331,9 +331,27 @@ export default function BattleIndex() {
                       );
                     })
                   ) : (
-                    <div className="text-center py-8" data-testid="empty-active-battles">
-                      <Swords className="w-12 h-12 text-muted-foreground/40 mx-auto mb-3" />
-                      <p className="text-muted-foreground">Žiadne aktívne súboje</p>
+                    <div 
+                      className="border-2 border-dashed border-border/60 rounded-lg p-8 text-center bg-muted/20"
+                      data-testid="empty-active-battles"
+                    >
+                      <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <UserPlus className="w-8 h-8 text-primary" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-foreground mb-2">
+                        Žiadne aktívne súboje.
+                      </h3>
+                      <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                        Je čas preveriť svoje rybárske zručnosti. Vyzvite svojich kamarátov!
+                      </p>
+                      <Button
+                        onClick={() => setLocation("/diary/battles/create")}
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                        data-testid="button-create-first-battle"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Vytvoriť môj prvý Súboj
+                      </Button>
                     </div>
                   )}
                 </CardContent>
@@ -409,9 +427,32 @@ export default function BattleIndex() {
                       </div>
                     ))
                   ) : (
-                    <div className="text-center py-8" data-testid="empty-invitations">
-                      <Users className="w-12 h-12 text-muted-foreground/40 mx-auto mb-3" />
-                      <p className="text-muted-foreground">Žiadne nové výzvy</p>
+                    <div 
+                      className="border-2 border-dashed border-border/60 rounded-lg p-8 text-center bg-muted/20"
+                      data-testid="empty-invitations"
+                    >
+                      <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Bell className="w-8 h-8 text-blue-500" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-foreground mb-2">
+                        Žiadne nové výzvy.
+                      </h3>
+                      <p className="text-muted-foreground mb-4 max-w-md mx-auto">
+                        Požiadajte kamarátov, nech vás vyzvú, alebo ich predbehnite a vytvorte súboj sami!
+                      </p>
+                      <Button
+                        variant="link"
+                        className="text-primary"
+                        onClick={() => {
+                          toast({
+                            title: "Ako funguje vyzývanie?",
+                            description: "Vytvorte nový súboj a pozvite do neho svojich kamarátov. Oni dostanú výzvu a môžu ju prijať alebo odmietnuť.",
+                          });
+                        }}
+                        data-testid="link-learn-challenges"
+                      >
+                        Naučte sa, ako funguje vyzývanie.
+                      </Button>
                     </div>
                   )}
                 </CardContent>

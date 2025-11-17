@@ -1,0 +1,59 @@
+Úloha: Implementácia Fishing Battle Dashboardu (UX/UI Revízia s Konkrétnymi Textami)
+
+Vychádzajúc z priloženého HTML/CSS/JS kódu hlavnej stránky Fishing Battle, aplikujte finálnu UX/UI revíziu podľa priloženého grafického návrhu (predpokladá sa tmavý režim, moderné, ostré rohy a Tailwind CSS).
+
+1. Vizuálna Estetika & Všeobecné Texty
+
+Header (Hlavička):
+
+Hlavný názov: "Fishing Battle"
+
+Podtitul: "Súťažte s kamarátmi v priateľských rybárskych dueloch a zistite, kto je najlepší rybár!"
+
+Primárne CTA tlačidlo: "Vytvoriť Nový Súboj"
+
+Názvy Sekcií: Zabezpečte presné slovenské názvy pre hlavné sekcie: "Moje Aktuálne Súboje", "Výzvy pre Teba", "Archív Súbojov", "Sieň Slávy".
+
+2. Dynamické Stavy: Moje Aktuálne Súboje
+
+A. Aktívne súboje (Dynamický Stav)
+
+Ak existujú aktívne súboje, zobraziť ich ako karty s názvom, súperom, zostávajúcim časom (napr. 1D 5H), progresom (napr. 45.2 kg / 68.9 kg) a tlačidlom "Zobraziť detail".
+
+B. Prázdny Stav (Empty State) - Ak nie sú aktívne súboje
+
+Nahraďte zoznam jednou veľkou, výraznou kartou s prerušovaným okrajom (border-dashed).
+
+Text 1 (Hlavný nadpis): "Žiadne aktívne súboje."
+
+Text 2 (Popis): "Je čas preveriť svoje rybárske zručnosti. Vyzvite svojich kamarátov!"
+
+CTA Tlačidlo: "Vytvoriť môj prvý Súboj" (Toto tlačidlo má byť výrazné, napr. modré: bg-blue-600).
+
+Vizuál: Pridajte vhodnú ikonu (napr. SVG alebo Lucide-react ikonu pre viacerých užívateľov/komunitu).
+
+3. Dynamické Stavy: Výzvy pre Teba
+
+A. Aktívne výzvy (Dynamický Stav)
+
+Ak existujú výzvy, zobraziť ich ako riadky s menom vyzývateľa, krátkym popisom a tlačidlami "Prijať" a "Odmietnuť".
+
+B. Prázdny Stav (Empty State) - Ak nie sú výzvy
+
+Nahraďte zoznam jednou veľkou, výraznou kartou s prerušovaným okrajom.
+
+Text 1 (Hlavný nadpis): "Žiadne nové výzvy."
+
+Text 2 (Popis): "Požiadajte kamarátov, nech vás vyzvú, alebo ich predbehnite a vytvorte súboj sami!"
+
+Doplnkový Odkaz: "Naučte sa, ako funguje vyzývanie." (Ako bežný textový odkaz).
+
+Vizuál: Pridajte vhodnú ikonu (napr. SVG zvončeka pre notifikácie).
+
+4. Statické Sekcie (Archív a Sieň Slávy)
+
+Tieto sekcie ponechajte ako menšie karty so základnými (mock) štatistickými dátami, aby sa demonštroval celkový layout.
+
+ZÁVER
+
+Vytvorte kompletný a čistý HTML súbor, ktorý používa Tailwind CSS a implementuje oba prázdne stavy presne s uvedenými textami. Kód musí byť pripravený na vloženie dynamickej logiky pre neskoršie pripojenie dát.
