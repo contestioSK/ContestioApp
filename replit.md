@@ -34,6 +34,15 @@ The platform is expanding with a "Fishing Diary" module, providing personal catc
 - **Security**: Passwords validated (min 7 chars, special char required), hashed with bcrypt, tokens expire after 24h
 - **Token reuse**: Reuses existing email verification token infrastructure (verificationToken, verificationTokenExpires fields)
 
+## Recent Battle Score Fix (November 17, 2025)
+- **CRITICAL FIX**: Battle scores were showing 0 kg because catches were marked `verified=false` while battle rules required `includeOnlyVerified: true`
+- **Auto-verification**: Catches created during active battles are now automatically verified (`verified=true`) in POST /api/diary/catches
+- **Logic**: Server detects when battleId is assigned (catch created during active battle timeframe) and sets verified=true
+- **Historical fix**: Updated 6 existing catches in "Októbrový masaker na šírave" battle to verified=true via SQL
+- **Results recalculation**: Created and ran scripts/recalculate-battles.ts to update all 3 finished battles
+- **Outcome**: Battle archive now displays correct scores (e.g., "Októbrový masaker" shows 25.3kg winner score)
+- **Design rationale**: User-created catches with photos during battles are trusted content and should count in scoring
+
 ## Recent Battle Archive Display Fix (November 16, 2025)
 - **Fixed getAllUserBattles()**: Now returns battles where user is EITHER trip owner OR participant
 - **Removed PREMIUM check**: FREE users can now see battles where they participate (when invited)
