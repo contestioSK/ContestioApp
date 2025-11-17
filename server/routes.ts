@@ -4722,6 +4722,13 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         }
       }
       
+      // Auto-verify catches created during active battles (user's own catches with photos)
+      let verified = false;
+      if (battleId) {
+        // Catch is being created during an active battle - auto-verify it
+        verified = true;
+      }
+      
       // Server controls angler.userId, tripId (auto-assigned), battleId (auto-assigned), and verified status
       const catchData = {
         ...req.body,
@@ -4731,7 +4738,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
           ...req.body.angler,
           userId: userId
         },
-        verified: false, // Only server can set verified status
+        verified, // Auto-verified if created during active battle
         photos: req.body.photos || [], // Photos will be uploaded separately
         capturedAt: new Date(req.body.capturedAt) // Convert string date to Date object
       };
