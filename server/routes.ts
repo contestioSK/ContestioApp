@@ -3913,7 +3913,42 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
 
       const updateData = updateSchema.parse(req.body);
       
-      const updatedBattle = await storage.updateDiaryBattle(id, updateData, userId);
+      let updatedBattle = await storage.updateDiaryBattle(id, updateData, userId);
+      
+      // Calculate final results and send notifications when battle is manually finished
+      if (updateData.status === 'finished') {
+        updatedBattle = await storage.calculateBattleResults(id, userId);
+        
+        // Send push notifications to all participants
+        const participantUserIds = updatedBattle.participants
+          .map(p => p.userId)
+          .filter((id): id is string => !!id);
+        
+        if (participantUserIds.length > 0) {
+          const winnerName = updatedBattle.results && updatedBattle.results.length > 0
+            ? updatedBattle.results[0].participant.name
+            : 'Nikto';
+          const winnerScore = updatedBattle.results && updatedBattle.results.length > 0
+            ? updatedBattle.results[0].score
+            : 0;
+          
+          // Send battle finished notification in background
+          setTimeout(async () => {
+            try {
+              await notificationService.notifyBattleFinished(
+                updatedBattle.id,
+                updatedBattle.name,
+                participantUserIds,
+                winnerName,
+                winnerScore,
+                updatedBattle.results
+              );
+            } catch (notifError) {
+              console.error('[BG] Error sending battle finished notification:', notifError);
+            }
+          }, 0);
+        }
+      }
       
       // Handle new invitations
       const invitedUserIds = req.body.invitedUserIds || [];
@@ -4744,6 +4779,32 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       };
       
       const newCatch = await storage.createDiaryCatch(catchData, userId);
+      
+      // Send battle catch notification if catch was created during active battle
+      if (battleId) {
+        setTimeout(async () => {
+          try {
+            const battle = await storage.getDiaryBattleById(battleId);
+            if (battle && battle.status === 'active') {
+              const participantUserIds = battle.participants
+                .map(p => p.userId)
+                .filter((id): id is string => !!id);
+              
+              await notificationService.notifyBattleCatchAdded(
+                battle.id,
+                battle.name,
+                parseFloat(newCatch.weight),
+                newCatch.fishType,
+                newCatch.angler.name,
+                userId,
+                participantUserIds
+              );
+            }
+          } catch (notifError) {
+            console.error('[BG] Error sending battle catch notification:', notifError);
+          }
+        }, 0);
+      }
       
       // Update seasonal goals progress in background (non-blocking)
       setTimeout(() => {

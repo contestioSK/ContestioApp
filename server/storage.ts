@@ -2454,6 +2454,16 @@ export class DatabaseStorage implements IStorage {
     return battle;
   }
 
+  async getDiaryBattleById(id: string): Promise<DiaryBattle | undefined> {
+    // No ownership or premium check - used by schedulers and notifications
+    const [battle] = await db
+      .select()
+      .from(diaryBattles)
+      .where(eq(diaryBattles.id, id));
+    
+    return battle;
+  }
+
   async createDiaryBattle(battle: InsertDiaryBattle, userId: string): Promise<DiaryBattle> {
     // Check PREMIUM access (mandatory for battles)
     if (!(await this.isUserPremium(userId))) {
