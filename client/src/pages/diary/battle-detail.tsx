@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Trophy, Plus, AlertCircle, Clock, Fish, CheckCircle2, Medal, Flag } from "lucide-react";
+import { Trophy, Plus, AlertCircle, Clock, Fish, CheckCircle2, Medal, Flag, BarChart3, TrendingUp, Award } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 import { sk } from "date-fns/locale";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -17,6 +17,7 @@ import DiaryLayout from "@/components/DiaryLayout";
 import CatchFormDialog from "@/components/diary/CatchFormDialog";
 import type { DiaryBattle, DiaryCatch, DiaryTrip } from "@shared/schema";
 import { getFishTypeLabel } from "@/utils/fishTypeMapping";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend } from "recharts";
 
 // Extended battle type to include isOwner flag from backend
 type DiaryBattleExtended = DiaryBattle & { isOwner?: boolean };
@@ -309,7 +310,7 @@ export default function BattleDetail() {
                                 {isLeader && <Medal className="w-4 h-4 text-yellow-500" />}
                               </div>
                               <div className="text-lg font-bold">
-                                {entry.score.toFixed(1)} {battle?.rules.mode === "most_fish" ? "ks" : "kg"}
+                                {battle?.rules.mode === "most_fish" ? entry.score.toFixed(0) : entry.score.toFixed(1)} {battle?.rules.mode === "most_fish" ? "ks" : "kg"}
                               </div>
                             </div>
                             <div className="relative">
@@ -332,6 +333,136 @@ export default function BattleDetail() {
                   })}
                 </CardContent>
               </Card>
+
+              {/* Score Comparison Chart (only for finished battles) */}
+              {battle.status === "finished" && leaderboardData.length > 0 && (
+                <Card>
+                  <CardHeader className="p-4 md:p-6">
+                    <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                      <BarChart3 className="w-4 h-4 md:w-5 md:h-5 text-primary" />
+                      Porovnanie Výsledkov
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-4 md:p-6 pt-0">
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={leaderboardData.map((entry, index) => ({
+                        name: entry.participant.name,
+                        score: entry.score,
+                        position: index + 1
+                      }))}>
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                        <XAxis 
+                          dataKey="name" 
+                          tick={{ fontSize: 12 }}
+                          angle={-45}
+                          textAnchor="end"
+                          height={80}
+                        />
+                        <YAxis 
+                          tick={{ fontSize: 12 }}
+                          label={{ 
+                            value: battle?.rules.mode === "most_fish" ? "Počet rýb" : "Váha (kg)", 
+                            angle: -90, 
+                            position: 'insideLeft',
+                            style: { fontSize: 12 }
+                          }}
+                        />
+                        <Tooltip 
+                          contentStyle={{ 
+                            backgroundColor: 'hsl(var(--background))', 
+                            border: '1px solid hsl(var(--border))',
+                            borderRadius: '8px'
+                          }}
+                          formatter={(value: number) => {
+                            const unit = battle?.rules.mode === "most_fish" ? "ks" : "kg";
+                            const formatted = battle?.rules.mode === "most_fish" 
+                              ? value.toFixed(0) 
+                              : value.toFixed(1);
+                            return [`${formatted} ${unit}`, 'Výsledok'];
+                          }}
+                        />
+                        <Bar dataKey="score" radius={[8, 8, 0, 0]}>
+                          {leaderboardData.map((entry, index) => (
+                            <Cell 
+                              key={`cell-${index}`}
+                              fill={
+                                entry.participant.userId === user?.id 
+                                  ? 'hsl(var(--primary))' 
+                                  : index === 0 
+                                  ? '#eab308' 
+                                  : '#94a3b8'
+                              }
+                            />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Fish Types Distribution (only for finished battles with catches) */}
+              {battle.status === "finished" && catches.length > 0 && (
+                <Card>
+                  <CardHeader className="p-4 md:p-6">
+                    <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                      <Fish className="w-4 h-4 md:w-5 md:h-5 text-primary" />
+                      Rozdelenie Druhov Rýb
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-4 md:p-6 pt-0">
+                    {(() => {
+                      const fishTypeData = catches.reduce((acc, c) => {
+                        const type = getFishTypeLabel(c.fishType);
+                        if (!acc[type]) {
+                          acc[type] = { name: type, value: 0, weight: 0 };
+                        }
+                        acc[type].value += 1;
+                        acc[type].weight += parseFloat(c.weight);
+                        return acc;
+                      }, {} as Record<string, { name: string; value: number; weight: number }>);
+
+                      const chartData = Object.values(fishTypeData);
+                      const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
+
+                      return (
+                        <ResponsiveContainer width="100%" height={300}>
+                          <PieChart>
+                            <Pie
+                              data={chartData}
+                              cx="50%"
+                              cy="50%"
+                              labelLine={false}
+                              label={({ name, percent }) => {
+                                const pct = percent ?? 0;
+                                return `${name} (${(pct * 100).toFixed(0)}%)`;
+                              }}
+                              outerRadius={80}
+                              fill="#8884d8"
+                              dataKey="value"
+                            >
+                              {chartData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                              ))}
+                            </Pie>
+                            <Tooltip 
+                              contentStyle={{ 
+                                backgroundColor: 'hsl(var(--background))', 
+                                border: '1px solid hsl(var(--border))',
+                                borderRadius: '8px'
+                              }}
+                              formatter={(value: number, name: string, props: any) => [
+                                `${value} rýb (${props.payload.weight.toFixed(1)} kg)`,
+                                props.payload.name
+                              ]}
+                            />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      );
+                    })()}
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Live Feed of Catches */}
               <Card>
@@ -414,25 +545,216 @@ export default function BattleDetail() {
 
             {/* Right Section (1 column) - Highlights */}
             <div className="space-y-6">
-              {/* Time Remaining */}
-              <Card className="border-primary">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-primary">
-                    <Clock className="w-5 h-5" />
-                    Zostáva do Konca
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-primary mb-2">
-                      {timeRemaining}
+              {/* Time Remaining or Battle Results */}
+              {battle.status === "finished" ? (
+                <Card className="border-yellow-500 bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-950/20 dark:to-amber-950/20">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-yellow-700 dark:text-yellow-400">
+                      <Trophy className="w-5 h-5" />
+                      Víťaz Battle
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-center space-y-4">
+                      <div className="text-5xl">🏆</div>
+                      <div>
+                        <div className="text-2xl font-bold text-foreground mb-1">
+                          {leaderboardData[0]?.participant.name || "Nikto"}
+                        </div>
+                        <div className="text-3xl font-bold text-yellow-600 dark:text-yellow-400 mb-1">
+                          {battle?.rules.mode === "most_fish" 
+                            ? (leaderboardData[0]?.score.toFixed(0) || "0")
+                            : (leaderboardData[0]?.score.toFixed(1) || "0.0")
+                          } {battle?.rules.mode === "most_fish" ? "ks" : "kg"}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {leaderboardData[0]?.catchCount || 0} úlovkov
+                        </div>
+                      </div>
+                      {user && leaderboardData[0]?.participant.userId === user.id && (
+                        <Badge className="bg-yellow-500 hover:bg-yellow-600 text-white">
+                          Gratulujeme! 🎉
+                        </Badge>
+                      )}
                     </div>
-                    <div className="text-sm text-muted-foreground">
-                      Koniec: {format(battle.endAt, "HH:mm", { locale: sk })}
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card className="border-primary">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-primary">
+                      <Clock className="w-5 h-5" />
+                      Zostáva do Konca
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-center">
+                      <div className="text-4xl font-bold text-primary mb-2">
+                        {timeRemaining}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Koniec: {format(battle.endAt, "HH:mm", { locale: sk })}
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Personal Statistics (only for finished battles) */}
+              {battle.status === "finished" && user && (
+                <Card className="border-primary/50">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <Award className="w-5 h-5 text-primary" />
+                      Vaše Výsledky
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {(() => {
+                      const userResult = leaderboardData.find(entry => entry.participant.userId === user.id);
+                      const userCatches = catches.filter(c => c.angler.userId === user.id);
+                      const userPosition = leaderboardData.findIndex(entry => entry.participant.userId === user.id) + 1;
+                      
+                      if (!userResult) {
+                        return (
+                          <p className="text-sm text-muted-foreground text-center">
+                            Nezúčastnili ste sa tohto battle
+                          </p>
+                        );
+                      }
+                      
+                      const scoreGap = leaderboardData[0]?.score - userResult.score;
+                      
+                      return (
+                        <div className="space-y-4">
+                          <div className="text-center p-4 bg-primary/5 rounded-lg">
+                            <div className="text-4xl font-bold text-primary mb-1">
+                              #{userPosition}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              z {leaderboardData.length} účastníkov
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Váš výsledok:</span>
+                              <span className="font-bold">
+                                {battle?.rules.mode === "most_fish" ? userResult.score.toFixed(0) : userResult.score.toFixed(1)} {battle?.rules.mode === "most_fish" ? "ks" : "kg"}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Počet úlovkov:</span>
+                              <span className="font-bold">{userCatches.length}</span>
+                            </div>
+                            {userPosition > 1 && scoreGap > 0 && (
+                              <div className="flex justify-between text-orange-600 dark:text-orange-400">
+                                <span>Rozdiel od víťaza:</span>
+                                <span className="font-bold">
+                                  -{battle?.rules.mode === "most_fish" ? scoreGap.toFixed(0) : scoreGap.toFixed(1)} {battle?.rules.mode === "most_fish" ? "ks" : "kg"}
+                                </span>
+                              </div>
+                            )}
+                            {userCatches.length > 0 && (
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Najväčší úlovok:</span>
+                                <span className="font-bold">
+                                  {Math.max(...userCatches.map(c => parseFloat(c.weight))).toFixed(1)} kg
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Battle Insights (only for finished battles) */}
+              {battle.status === "finished" && catches.length > 0 && (
+                <Card className="border-blue-500/50">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <BarChart3 className="w-5 h-5 text-blue-500" />
+                      Battle Insights
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {(() => {
+                      const totalFish = catches.length;
+                      const totalWeight = catches.reduce((sum, c) => sum + parseFloat(c.weight), 0);
+                      
+                      // Find most active angler (most catches)
+                      const catchesByAngler = catches.reduce((acc, c) => {
+                        const name = c.angler.name;
+                        acc[name] = (acc[name] || 0) + 1;
+                        return acc;
+                      }, {} as Record<string, number>);
+                      const mostActiveAngler = Object.entries(catchesByAngler).sort((a, b) => b[1] - a[1])[0];
+                      
+                      // Find biggest catch
+                      const biggest = catches.reduce((max, c) => 
+                        parseFloat(c.weight) > parseFloat(max.weight) ? c : max
+                      );
+                      
+                      // Calculate score gap between 1st and 2nd place
+                      const scoreGap = leaderboardData.length > 1 
+                        ? leaderboardData[0].score - leaderboardData[1].score 
+                        : 0;
+                      
+                      return (
+                        <div className="space-y-3 text-sm">
+                          <div className="flex items-start gap-2">
+                            <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0"></div>
+                            <div className="flex-1">
+                              <div className="font-medium">Celkový počet rýb</div>
+                              <div className="text-foreground font-bold">{totalFish} rýb ({totalWeight.toFixed(1)} kg)</div>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0"></div>
+                            <div className="flex-1">
+                              <div className="font-medium">Najaktívnejší rybár</div>
+                              <div className="text-foreground font-bold">
+                                {mostActiveAngler[0]} ({mostActiveAngler[1]} úlovkov)
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0"></div>
+                            <div className="flex-1">
+                              <div className="font-medium">Najväčší úlovok</div>
+                              <div className="text-foreground font-bold">
+                                {parseFloat(biggest.weight).toFixed(1)} kg ({getFishTypeLabel(biggest.fishType)})
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                Chytil: {biggest.angler.name}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {leaderboardData.length >= 2 && scoreGap > 0 && (
+                            <div className="flex items-start gap-2">
+                              <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0"></div>
+                              <div className="flex-1">
+                                <div className="font-medium">
+                                  {scoreGap < 2 ? "Tesný súboj! 🔥" : "Rozdiel na vedení"}
+                                </div>
+                                <div className="text-foreground font-bold">
+                                  {battle?.rules.mode === "most_fish" ? scoreGap.toFixed(0) : scoreGap.toFixed(1)} {battle?.rules.mode === "most_fish" ? "ks" : "kg"}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Highlight Súboja */}
               <Card>
