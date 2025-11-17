@@ -696,7 +696,7 @@ export default function DiaryCatches() {
                         <div className="w-10 h-10 bg-slate-600/50 rounded-lg flex items-center justify-center overflow-hidden">
                           {catch_.photos && catch_.photos.length > 0 ? (
                             <img 
-                              src={catch_.photos[0]} 
+                              src={catch_.photos[0].url || catch_.photos[0]} 
                               alt={catch_.fishType ? getFishTypeLabel(catch_.fishType) : 'Úlovok'}
                               className="w-full h-full object-cover"
                             />
@@ -732,7 +732,7 @@ export default function DiaryCatches() {
                         <div className="w-12 h-12 bg-slate-600/50 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
                           {catch_.photos && catch_.photos.length > 0 ? (
                             <img 
-                              src={catch_.photos[0]} 
+                              src={catch_.photos[0].url || catch_.photos[0]} 
                               alt={catch_.fishType ? getFishTypeLabel(catch_.fishType) : 'Úlovok'}
                               className="w-full h-full object-cover"
                             />
