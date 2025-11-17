@@ -2525,6 +2525,42 @@ export class DatabaseStorage implements IStorage {
       );
   }
 
+  async getBattlesStartingSoon(): Promise<DiaryBattle[]> {
+    const now = new Date();
+    const in15Minutes = new Date(now.getTime() + 15 * 60 * 1000);
+    const in16Minutes = new Date(now.getTime() + 16 * 60 * 1000);
+    
+    // Get battles starting between 15-16 minutes from now (1-minute window to avoid duplicate notifications)
+    return await db
+      .select()
+      .from(diaryBattles)
+      .where(
+        and(
+          eq(diaryBattles.status, "pending"),
+          sql`${diaryBattles.startAt} >= ${in15Minutes}`,
+          sql`${diaryBattles.startAt} < ${in16Minutes}`
+        )
+      );
+  }
+
+  async getBattlesEndingSoon(): Promise<DiaryBattle[]> {
+    const now = new Date();
+    const in30Minutes = new Date(now.getTime() + 30 * 60 * 1000);
+    const in31Minutes = new Date(now.getTime() + 31 * 60 * 1000);
+    
+    // Get battles ending between 30-31 minutes from now (1-minute window to avoid duplicate notifications)
+    return await db
+      .select()
+      .from(diaryBattles)
+      .where(
+        and(
+          eq(diaryBattles.status, "active"),
+          sql`${diaryBattles.endAt} >= ${in30Minutes}`,
+          sql`${diaryBattles.endAt} < ${in31Minutes}`
+        )
+      );
+  }
+
   async calculateBattleResults(battleId: string, userId: string, skipPremiumCheck: boolean = false): Promise<DiaryBattle> {
     // Check PREMIUM access (mandatory for battles) - skip for automated scheduler
     if (!skipPremiumCheck && !(await this.isUserPremium(userId))) {

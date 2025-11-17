@@ -554,4 +554,222 @@ export class NotificationService {
       console.error('[NotificationService] Error sending battle invitation:', error);
     }
   }
+
+  // Notify battle starting soon (15 minutes before)
+  async notifyBattleStarting(battleId: string, battleName: string, participantUserIds: string[]): Promise<void> {
+    try {
+      console.log(`[NotificationService] Notifying battle starting: ${battleName}`);
+      
+      if (participantUserIds.length === 0) {
+        console.log(`[NotificationService] No participants to notify for battle ${battleId}`);
+        return;
+      }
+
+      // WebSocket notification
+      if (this.broadcaster) {
+        this.broadcaster.broadcastToUsers(participantUserIds, {
+          type: 'battle_starting',
+          battleId,
+          battleName,
+          timestamp: new Date()
+        });
+      }
+
+      // Push notification
+      await this.sendPushNotifications(participantUserIds, {
+        title: '⏰ Battle začína o 15 minút!',
+        body: `Priprav si prúty! "${battleName}" už čoskoro začína`,
+        icon: '/favicon.ico',
+        tag: `battle-starting-${battleId}`,
+        url: `/diary/battles/${battleId}`,
+        data: {
+          type: 'battle_starting',
+          battleId
+        }
+      });
+
+      console.log(`[NotificationService] Battle starting notification sent to ${participantUserIds.length} participants`);
+    } catch (error) {
+      console.error('[NotificationService] Error sending battle starting notification:', error);
+    }
+  }
+
+  // Notify battle ending soon (30 minutes before)
+  async notifyBattleEnding(
+    battleId: string, 
+    battleName: string, 
+    participantUserIds: string[],
+    currentLeader?: { name: string; score: number }
+  ): Promise<void> {
+    try {
+      console.log(`[NotificationService] Notifying battle ending: ${battleName}`);
+      
+      if (participantUserIds.length === 0) {
+        console.log(`[NotificationService] No participants to notify for battle ${battleId}`);
+        return;
+      }
+
+      const leaderInfo = currentLeader 
+        ? ` Aktuálne vedie ${currentLeader.name} s ${currentLeader.score}kg`
+        : '';
+
+      // WebSocket notification
+      if (this.broadcaster) {
+        this.broadcaster.broadcastToUsers(participantUserIds, {
+          type: 'battle_ending',
+          battleId,
+          battleName,
+          currentLeader,
+          timestamp: new Date()
+        });
+      }
+
+      // Push notification
+      await this.sendPushNotifications(participantUserIds, {
+        title: '⏰ Battle končí o 30 minút!',
+        body: `Záverečná šanca v "${battleName}"!${leaderInfo}`,
+        icon: '/favicon.ico',
+        tag: `battle-ending-${battleId}`,
+        url: `/diary/battles/${battleId}`,
+        data: {
+          type: 'battle_ending',
+          battleId,
+          currentLeader
+        }
+      });
+
+      console.log(`[NotificationService] Battle ending notification sent to ${participantUserIds.length} participants`);
+    } catch (error) {
+      console.error('[NotificationService] Error sending battle ending notification:', error);
+    }
+  }
+
+  // Notify when opponent adds a catch in battle
+  async notifyBattleCatchAdded(
+    battleId: string,
+    battleName: string,
+    catchWeight: number,
+    catchSpecies: string,
+    anglerName: string,
+    anglerUserId: string,
+    participantUserIds: string[]
+  ): Promise<void> {
+    try {
+      console.log(`[NotificationService] Notifying battle catch: ${anglerName} caught ${catchWeight}kg ${catchSpecies}`);
+      
+      // Notify all participants EXCEPT the angler who caught the fish
+      const usersToNotify = participantUserIds.filter(id => id !== anglerUserId);
+      
+      if (usersToNotify.length === 0) {
+        console.log(`[NotificationService] No other participants to notify for battle catch`);
+        return;
+      }
+
+      // WebSocket notification
+      if (this.broadcaster) {
+        this.broadcaster.broadcastToUsers(usersToNotify, {
+          type: 'battle_catch_added',
+          battleId,
+          battleName,
+          catchWeight,
+          catchSpecies,
+          anglerName,
+          timestamp: new Date()
+        });
+      }
+
+      // Push notification
+      await this.sendPushNotifications(usersToNotify, {
+        title: `🎣 Nový úlovok v "${battleName}"!`,
+        body: `${anglerName} práve chytil ${catchWeight}kg ${catchSpecies}`,
+        icon: '/favicon.ico',
+        tag: `battle-catch-${battleId}-${Date.now()}`,
+        url: `/diary/battles/${battleId}`,
+        data: {
+          type: 'battle_catch',
+          battleId,
+          catchWeight,
+          catchSpecies,
+          anglerName
+        }
+      });
+
+      console.log(`[NotificationService] Battle catch notification sent to ${usersToNotify.length} participants`);
+    } catch (error) {
+      console.error('[NotificationService] Error sending battle catch notification:', error);
+    }
+  }
+
+  // Notify battle finished with results
+  async notifyBattleFinished(
+    battleId: string,
+    battleName: string,
+    participantUserIds: string[],
+    winnerName: string,
+    winnerScore: number,
+    userResults?: Array<{ userId?: string; name: string; score: number; position: number }>
+  ): Promise<void> {
+    try {
+      console.log(`[NotificationService] Notifying battle finished: ${battleName}, winner: ${winnerName}`);
+      
+      if (participantUserIds.length === 0) {
+        console.log(`[NotificationService] No participants to notify for battle finish`);
+        return;
+      }
+
+      // WebSocket notification
+      if (this.broadcaster) {
+        this.broadcaster.broadcastToUsers(participantUserIds, {
+          type: 'battle_finished',
+          battleId,
+          battleName,
+          winnerName,
+          winnerScore,
+          userResults,
+          timestamp: new Date()
+        });
+      }
+
+      // Send personalized push notifications
+      for (const userId of participantUserIds) {
+        const userResult = userResults?.find(r => r.userId === userId);
+        
+        let title: string;
+        let body: string;
+        
+        if (userResult && userResult.position === 1) {
+          // Winner notification
+          title = '🏆 Vyhral si battle!';
+          body = `Gratulujeme! Vyhral si "${battleName}" s ${userResult.score}kg`;
+        } else if (userResult) {
+          // Participant notification with position
+          title = `Battle "${battleName}" skončený`;
+          body = `Skončil si na ${userResult.position}. mieste s ${userResult.score}kg. Vyhral ${winnerName} s ${winnerScore}kg`;
+        } else {
+          // Generic notification (for participants without userId)
+          title = `Battle "${battleName}" skončený`;
+          body = `Vyhral ${winnerName} s ${winnerScore}kg`;
+        }
+
+        await this.sendPushNotifications([userId], {
+          title,
+          body,
+          icon: '/favicon.ico',
+          tag: `battle-finished-${battleId}`,
+          url: `/diary/battles/archive`,
+          data: {
+            type: 'battle_finished',
+            battleId,
+            winnerName,
+            winnerScore,
+            userPosition: userResult?.position
+          }
+        });
+      }
+
+      console.log(`[NotificationService] Battle finished notification sent to ${participantUserIds.length} participants`);
+    } catch (error) {
+      console.error('[NotificationService] Error sending battle finished notification:', error);
+    }
+  }
 }
