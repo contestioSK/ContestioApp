@@ -46,6 +46,7 @@ import BattleCreate from "@/pages/diary/battle-create";
 import BattleEdit from "@/pages/diary/battle-edit";
 import BattleDetail from "@/pages/diary/battle-detail";
 import BattleArchive from "@/pages/diary/battle-archive";
+import TripGallery from "@/pages/diary/trip-gallery";
 import Register from "@/pages/register";
 import AuthRegister from "@/pages/auth/register";
 import AuthLogin from "@/pages/auth/login";
@@ -107,6 +108,11 @@ function Router() {
       <Route path="/diary">
         <ProtectedRoute>
           <DiaryIndex />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/diary/trips/:id/gallery">
+        <ProtectedRoute>
+          <TripGallery />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/trips/:id">

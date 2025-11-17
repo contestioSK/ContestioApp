@@ -3,7 +3,7 @@ import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { format, isPast, isToday } from "date-fns";
 import { sk } from "date-fns/locale";
-import { ArrowLeft, MapPin, Calendar as CalendarIcon, Fish, Weight, Trophy, FileText, Medal, Ruler, Target, Cloud, Thermometer, Wind, Gauge, XCircle, Download } from "lucide-react";
+import { ArrowLeft, MapPin, Calendar as CalendarIcon, Fish, Weight, Trophy, FileText, Medal, Ruler, Target, Cloud, Thermometer, Wind, Gauge, XCircle, Download, Grid3x3 } from "lucide-react";
 import html2canvas from "html2canvas";
 import contestioLogo from "@assets/contestio logo_1760283270014.png";
 
@@ -194,6 +194,19 @@ export default function TripDetail() {
             </Button>
 
             <div className="flex gap-2">
+              {/* Gallery Button - only show if there are photos */}
+              {tripCatches.some(c => c.photos && c.photos.length > 0) && (
+                <Button
+                  variant="outline"
+                  onClick={() => setLocation(`/diary/trips/${id}/gallery`)}
+                  className="gap-2"
+                  data-testid="button-gallery"
+                >
+                  <Grid3x3 className="w-4 h-4" />
+                  Galéria
+                </Button>
+              )}
+
               {/* Export Trip Button */}
               <Button
                 variant="outline"
