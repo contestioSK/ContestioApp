@@ -138,6 +138,88 @@ async function startBattleScheduler(broadcastToUsers: (userIds: string[], data: 
   log('[SCHEDULER] Battle auto-finish scheduler started (60s intervals)');
 }
 
+// Background scheduler for battle notifications (starting/ending)
+async function startBattleNotificationScheduler() {
+  const SCHEDULE_INTERVAL = 60000; // 60 seconds
+  
+  // Create NotificationService instance (scheduler doesn't need WebSocket broadcasting)
+  const notificationService = new NotificationService();
+  
+  async function checkBattleNotifications() {
+    try {
+      // Check for battles starting soon (15 minutes before)
+      const battlesStarting = await storage.getBattlesStartingSoon();
+      
+      if (battlesStarting.length > 0) {
+        log(`[SCHEDULER] Found ${battlesStarting.length} battles starting soon`);
+        
+        for (const battle of battlesStarting) {
+          try {
+            const participantUserIds = battle.participants
+              .map(p => p.userId)
+              .filter((id): id is string => !!id);
+            
+            if (participantUserIds.length > 0) {
+              await notificationService.notifyBattleStarting(
+                battle.id,
+                battle.name,
+                participantUserIds
+              );
+              log(`[SCHEDULER] Sent starting notification for battle: ${battle.name}`);
+            }
+          } catch (error) {
+            console.error(`[SCHEDULER] Error sending battle starting notification for ${battle.id}:`, error);
+          }
+        }
+      }
+      
+      // Check for battles ending soon (30 minutes before)
+      const battlesEnding = await storage.getBattlesEndingSoon();
+      
+      if (battlesEnding.length > 0) {
+        log(`[SCHEDULER] Found ${battlesEnding.length} battles ending soon`);
+        
+        for (const battle of battlesEnding) {
+          try {
+            const participantUserIds = battle.participants
+              .map(p => p.userId)
+              .filter((id): id is string => !!id);
+            
+            if (participantUserIds.length > 0) {
+              // Get current leader from results
+              const currentLeader = battle.results && battle.results.length > 0
+                ? {
+                    name: battle.results[0].participant.name,
+                    score: battle.results[0].score
+                  }
+                : undefined;
+              
+              await notificationService.notifyBattleEnding(
+                battle.id,
+                battle.name,
+                participantUserIds,
+                currentLeader
+              );
+              log(`[SCHEDULER] Sent ending notification for battle: ${battle.name}`);
+            }
+          } catch (error) {
+            console.error(`[SCHEDULER] Error sending battle ending notification for ${battle.id}:`, error);
+          }
+        }
+      }
+    } catch (schedulerError) {
+      console.error('[SCHEDULER] Error in battle notification scheduler:', schedulerError);
+    }
+  }
+  
+  // Run immediately on startup
+  await checkBattleNotifications();
+  
+  // Then run every 60 seconds
+  setInterval(checkBattleNotifications, SCHEDULE_INTERVAL);
+  log('[SCHEDULER] Battle notification scheduler started (60s intervals)');
+}
+
 (async () => {
   const { server, broadcastToUsers } = await registerRoutes(app);
 
@@ -167,6 +249,7 @@ async function startBattleScheduler(broadcastToUsers: (userIds: string[], data: 
   // Start background schedulers
   startAnnouncementScheduler();
   startBattleScheduler(broadcastToUsers);
+  startBattleNotificationScheduler();
 
   server.listen({
     port,
