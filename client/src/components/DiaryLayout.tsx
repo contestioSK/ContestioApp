@@ -21,7 +21,8 @@ import {
   MapPin,
   Cloud,
   Scale,
-  Shield
+  Shield,
+  CalendarDays
 } from "lucide-react";
 import contestioLogo from "@assets/contestio logo_1760283270014.png";
 
@@ -89,6 +90,17 @@ const navigationItems = [
     label: "Arzenál",
     href: "/diary/arsenal",
     description: "Vybavenie a návnady"
+  }
+];
+
+// Competitions section - visually separated
+const competitionNavigationItems = [
+  {
+    icon: CalendarDays,
+    label: "Súťaže",
+    href: "/categories/live",
+    description: "Registrácia a live výsledky",
+    highlight: true // Special styling for competitions
   }
 ];
 
@@ -178,7 +190,8 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-2 md:px-3 py-4 md:py-6 space-y-1">
+          <nav className="flex-1 px-2 md:px-3 py-4 md:py-6 space-y-1 overflow-y-auto">
+            {/* Diary Section */}
             {navigationItems.map((item) => {
               const Icon = item.icon;
               const isActive = isActivePath(item.href);
@@ -216,6 +229,54 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                       )}
                     </div>
                     <div className="text-xs text-sidebar-foreground/50 hidden md:block">{item.description}</div>
+                  </div>
+                </button>
+              );
+            })}
+
+            {/* Section Divider */}
+            <div className="pt-4 pb-2">
+              <div className="px-2 md:px-3 mb-2">
+                <div className="h-px bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent"></div>
+              </div>
+              <div className="px-2 md:px-3">
+                <p className="text-[10px] md:text-xs font-bold text-emerald-500/80 uppercase tracking-wider">
+                  Oficiálne Súťaže
+                </p>
+              </div>
+            </div>
+
+            {/* Competition Section */}
+            {competitionNavigationItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = isActivePath(item.href);
+              
+              return (
+                <button
+                  key={item.href}
+                  onClick={() => {
+                    setLocation(item.href);
+                    setSidebarOpen(false);
+                  }}
+                  className={`
+                    w-full flex items-center px-2 md:px-3 py-2 md:py-3 text-sm font-medium rounded-lg transition-all
+                    border-2
+                    ${isActive 
+                      ? 'bg-gradient-to-r from-emerald-600/40 to-green-600/40 text-white border-emerald-500 shadow-lg shadow-emerald-500/30' 
+                      : 'text-sidebar-foreground bg-emerald-500/5 border-emerald-500/30 hover:bg-emerald-500/20 hover:border-emerald-500/50'
+                    }
+                  `}
+                  data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
+                >
+                  <Icon className="mr-2 md:mr-3 h-4 w-4 md:h-5 md:w-5 flex-shrink-0 text-emerald-400" />
+                  <div className="text-left flex-1">
+                    <div className="font-medium text-xs md:text-sm flex items-center gap-2">
+                      {item.label}
+                      <Badge className="bg-emerald-600 text-white hover:bg-emerald-700 text-[10px] px-1.5 py-0">
+                        LIVE
+                      </Badge>
+                    </div>
+                    <div className="text-xs text-sidebar-foreground/70 hidden md:block">{item.description}</div>
                   </div>
                 </button>
               );
@@ -291,7 +352,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
         {/* Mobile Bottom Navigation */}
         <div className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50 overflow-x-auto">
           <div className="flex min-w-max">
-            {navigationItems.slice(0, 5).map((item) => {
+            {navigationItems.slice(0, 4).map((item) => {
               const Icon = item.icon;
               const isActive = isActivePath(item.href);
               
@@ -312,6 +373,30 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                     ${isActive 
                       ? 'text-primary' 
                       : 'text-muted-foreground hover:text-foreground'
+                    }
+                  `}
+                  data-testid={`mobile-nav-${item.label.toLowerCase().replace(' ', '-')}`}
+                >
+                  <Icon className="h-5 w-5 flex-shrink-0" />
+                  <span className="text-[10px] font-medium truncate max-w-full">{item.label}</span>
+                </button>
+              );
+            })}
+            
+            {/* Competition button with special styling */}
+            {competitionNavigationItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = isActivePath(item.href);
+              
+              return (
+                <button
+                  key={item.href}
+                  onClick={() => setLocation(item.href)}
+                  className={`
+                    flex flex-col items-center justify-center space-y-1 transition-colors px-4 py-2 min-w-[20%] flex-1
+                    ${isActive 
+                      ? 'text-emerald-400 bg-emerald-500/20' 
+                      : 'text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10'
                     }
                   `}
                   data-testid={`mobile-nav-${item.label.toLowerCase().replace(' ', '-')}`}
