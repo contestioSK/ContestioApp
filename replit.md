@@ -34,6 +34,30 @@ The platform is expanding with a "Fishing Diary" module, providing personal catc
 - **Security**: Passwords validated (min 7 chars, special char required), hashed with bcrypt, tokens expire after 24h
 - **Token reuse**: Reuses existing email verification token infrastructure (verificationToken, verificationTokenExpires fields)
 
+## Recent Battle Statistics Dashboard (November 17, 2025)
+- **Comprehensive Post-Battle Analytics**: Finished battles now display extensive statistics and visualizations
+- **Winner Announcement**: Large winner card with trophy emoji, final score, and personalized "Gratulujeme!" badge for the winner
+- **Personal Results Card**: Shows user's position, final score, catch count, biggest catch, and score gap from winner
+- **Visual Charts** (Recharts integration):
+  - Bar chart comparing all participant scores with color-coding (gold for winner, primary for user, gray for others)
+  - Pie chart showing fish types distribution with catch counts and weights
+  - Both charts respect battle mode (integers for most_fish, decimals for weight modes)
+- **Battle Insights**: Fun facts including total fish count, most active angler, biggest catch, competition closeness indicator
+- **Mode-Specific Formatting**: All score displays properly format based on battle.rules.mode:
+  - most_fish: integers with "ks" unit (e.g., "3 ks")
+  - Weight modes: one decimal with "kg" unit (e.g., "25.3 kg")
+  - Applied to leaderboard, winner card, personal stats, tooltips, and insights
+- **Smart Guards**: Zero score gaps hidden, participant count checks prevent runtime errors
+- **Conditional UI**: Statistics only appear when battle.status === "finished", active battles show time remaining
+
+## Recent Battle Notifications System (November 17, 2025)
+- **4 Notification Types**: Battle starting (15 min before), battle ending (30 min with leader), new catch from opponent, battle finished with results
+- **NotificationService Methods**: notifyBattleStarting, notifyBattleEnding, notifyBattleCatchAdded, notifyBattleFinished
+- **Battle Notification Scheduler**: Runs every 60s with 1-minute time windows to prevent duplicates
+- **Integration Points**: Catch creation endpoint, auto-finish scheduler, manual finish endpoint
+- **Personalized Messages**: Winner gets "Vyhrali ste!", others see their position and score gap
+- **WebSocket + Push**: Dual notification delivery with VAPID infrastructure
+
 ## Recent Battle Score Fix (November 17, 2025)
 - **CRITICAL FIX**: Battle scores were showing 0 kg because catches were marked `verified=false` while battle rules required `includeOnlyVerified: true`
 - **Auto-verification**: Catches created during active battles are now automatically verified (`verified=true`) in POST /api/diary/catches
