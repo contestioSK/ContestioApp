@@ -86,6 +86,9 @@ async function startAnnouncementScheduler() {
 async function startBattleScheduler(broadcastToUsers: (userIds: string[], data: any) => void) {
   const SCHEDULE_INTERVAL = 60000; // 60 seconds
   
+  // Create NotificationService instance
+  const notificationService = new NotificationService();
+  
   async function checkAndFinishExpiredBattles() {
     try {
       const expiredBattles = await storage.getExpiredActiveBattles();
@@ -118,6 +121,23 @@ async function startBattleScheduler(broadcastToUsers: (userIds: string[], data: 
                 battleId: battle.id,
                 payload: finishedBattle
               });
+              
+              // Send push notifications with results
+              const winnerName = finishedBattle.results && finishedBattle.results.length > 0
+                ? finishedBattle.results[0].participant.name
+                : 'Nikto';
+              const winnerScore = finishedBattle.results && finishedBattle.results.length > 0
+                ? finishedBattle.results[0].score
+                : 0;
+              
+              await notificationService.notifyBattleFinished(
+                finishedBattle.id,
+                finishedBattle.name,
+                participantUserIds,
+                winnerName,
+                winnerScore,
+                finishedBattle.results
+              );
             }
             
           } catch (error) {
