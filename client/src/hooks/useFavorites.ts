@@ -13,7 +13,7 @@ export function useFavoriteCompetitions() {
   const { user, isLoading: authLoading } = useAuth();
   
   return useQuery<(FavoriteCompetition & { competition: any })[]>({
-    queryKey: ['/api/users/favorites/competitions', authLoading],
+    queryKey: ['/api/users/favorites/competitions', user?.id],
     enabled: !!user && !authLoading,
   });
 }
@@ -23,7 +23,7 @@ export function useFavoriteTeams() {
   const { user, isLoading: authLoading } = useAuth();
   
   return useQuery<(FavoriteTeam & { team: any })[]>({
-    queryKey: ['/api/users/favorites/teams', authLoading],
+    queryKey: ['/api/users/favorites/teams', user?.id],
     enabled: !!user && !authLoading,
   });
 }
@@ -41,13 +41,21 @@ export function useNotificationPreferences() {
 // Hook for toggling competition favorites
 export function useToggleFavoriteCompetition() {
   const { toast } = useToast();
+  const { user } = useAuth();
   
   const addMutation = useMutation({
-    mutationFn: (competitionId: string) => 
-      apiRequest('POST', `/api/users/favorites/competitions`, { competitionId }),
-    onSuccess: (_, competitionId) => {
-      // Invalidate all related queries
-      queryClient.invalidateQueries({ queryKey: ['/api/users/favorites/competitions'] });
+    mutationFn: (competitionId: string) => {
+      if (!user?.id) throw new Error('User not authenticated');
+      return apiRequest('POST', `/api/users/favorites/competitions`, { competitionId });
+    },
+    onMutate: () => {
+      return { userId: user?.id };
+    },
+    onSuccess: (_, competitionId, context: any) => {
+      const userId = context?.userId;
+      if (!userId) return;
+      // Invalidate all related queries with proper userId
+      queryClient.invalidateQueries({ queryKey: ['/api/users/favorites/competitions', userId] });
       queryClient.invalidateQueries({ queryKey: ['/api/competitions', competitionId] });
       queryClient.invalidateQueries({ queryKey: ['/api/competitions'] });
       toast({
@@ -65,26 +73,40 @@ export function useToggleFavoriteCompetition() {
   });
 
   const removeMutation = useMutation({
-    mutationFn: (competitionId: string) => 
-      apiRequest('DELETE', `/api/users/favorites/competitions/${competitionId}`),
-    onSuccess: (_, competitionId) => {
-      // Invalidate all related queries
-      queryClient.invalidateQueries({ queryKey: ['/api/users/favorites/competitions'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/competitions', competitionId] });
-      queryClient.invalidateQueries({ queryKey: ['/api/competitions'] });
-      
-      // Optimistically remove from favorites list
-      queryClient.setQueryData(['/api/users/favorites/competitions'], (old: any) => {
+    mutationFn: (competitionId: string) => {
+      if (!user?.id) throw new Error('User not authenticated');
+      return apiRequest('DELETE', `/api/users/favorites/competitions/${competitionId}`);
+    },
+    onMutate: async (competitionId) => {
+      const userId = user?.id;
+      if (!userId) return;
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['/api/users/favorites/competitions', userId] });
+      // Optimistically update
+      const previousFavorites = queryClient.getQueryData(['/api/users/favorites/competitions', userId]);
+      queryClient.setQueryData(['/api/users/favorites/competitions', userId], (old: any) => {
         if (!old) return old;
         return old.filter((fav: any) => fav.competitionId !== competitionId);
       });
-      
+      return { userId, previousFavorites };
+    },
+    onSuccess: (_, competitionId, context: any) => {
+      const userId = context?.userId;
+      if (!userId) return;
+      // Invalidate all related queries with proper userId
+      queryClient.invalidateQueries({ queryKey: ['/api/users/favorites/competitions', userId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/competitions', competitionId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/competitions'] });
       toast({
         title: "Úspech", 
         description: "Súťaž odstránená z obľúbených",
       });
     },
-    onError: () => {
+    onError: (_, __, context: any) => {
+      const userId = context?.userId;
+      if (!userId || !context?.previousFavorites) return;
+      // Rollback optimistic update
+      queryClient.setQueryData(['/api/users/favorites/competitions', userId], context.previousFavorites);
       toast({
         title: "Chyba",
         description: "Nepodarilo sa odstrániť súťaž z obľúbených",
@@ -94,8 +116,20 @@ export function useToggleFavoriteCompetition() {
   });
 
   return {
-    addFavorite: addMutation.mutate,
-    removeFavorite: removeMutation.mutate,
+    addFavorite: (id: string) => {
+      if (!user?.id) {
+        toast({ title: "Chyba", description: "Musíte byť prihlásený", variant: "destructive" });
+        return;
+      }
+      addMutation.mutate(id);
+    },
+    removeFavorite: (id: string) => {
+      if (!user?.id) {
+        toast({ title: "Chyba", description: "Musíte byť prihlásený", variant: "destructive" });
+        return;
+      }
+      removeMutation.mutate(id);
+    },
     isAdding: addMutation.isPending,
     isRemoving: removeMutation.isPending,
   };
@@ -104,13 +138,21 @@ export function useToggleFavoriteCompetition() {
 // Hook for toggling team favorites  
 export function useToggleFavoriteTeam() {
   const { toast } = useToast();
+  const { user } = useAuth();
   
   const addMutation = useMutation({
-    mutationFn: (teamId: string) => 
-      apiRequest('POST', `/api/users/favorites/teams`, { teamId }),
-    onSuccess: (_, teamId) => {
-      // Invalidate all related queries
-      queryClient.invalidateQueries({ queryKey: ['/api/users/favorites/teams'] });
+    mutationFn: (teamId: string) => {
+      if (!user?.id) throw new Error('User not authenticated');
+      return apiRequest('POST', `/api/users/favorites/teams`, { teamId });
+    },
+    onMutate: () => {
+      return { userId: user?.id };
+    },
+    onSuccess: (_, teamId, context: any) => {
+      const userId = context?.userId;
+      if (!userId) return;
+      // Invalidate all related queries with proper userId
+      queryClient.invalidateQueries({ queryKey: ['/api/users/favorites/teams', userId] });
       queryClient.invalidateQueries({ queryKey: ['/api/teams', teamId] });
       queryClient.invalidateQueries({ queryKey: ['/api/teams'] });
       toast({
@@ -128,26 +170,40 @@ export function useToggleFavoriteTeam() {
   });
 
   const removeMutation = useMutation({
-    mutationFn: (teamId: string) => 
-      apiRequest('DELETE', `/api/users/favorites/teams/${teamId}`),
-    onSuccess: (_, teamId) => {
-      // Invalidate all related queries
-      queryClient.invalidateQueries({ queryKey: ['/api/users/favorites/teams'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/teams', teamId] });
-      queryClient.invalidateQueries({ queryKey: ['/api/teams'] });
-      
-      // Optimistically remove from favorites list
-      queryClient.setQueryData(['/api/users/favorites/teams'], (old: any) => {
+    mutationFn: (teamId: string) => {
+      if (!user?.id) throw new Error('User not authenticated');
+      return apiRequest('DELETE', `/api/users/favorites/teams/${teamId}`);
+    },
+    onMutate: async (teamId) => {
+      const userId = user?.id;
+      if (!userId) return;
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['/api/users/favorites/teams', userId] });
+      // Optimistically update
+      const previousFavorites = queryClient.getQueryData(['/api/users/favorites/teams', userId]);
+      queryClient.setQueryData(['/api/users/favorites/teams', userId], (old: any) => {
         if (!old) return old;
         return old.filter((fav: any) => fav.teamId !== teamId);
       });
-      
+      return { userId, previousFavorites };
+    },
+    onSuccess: (_, teamId, context: any) => {
+      const userId = context?.userId;
+      if (!userId) return;
+      // Invalidate all related queries with proper userId
+      queryClient.invalidateQueries({ queryKey: ['/api/users/favorites/teams', userId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/teams', teamId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/teams'] });
       toast({
         title: "Úspech",
         description: "Tím odstránený z obľúbených", 
       });
     },
-    onError: () => {
+    onError: (_, __, context: any) => {
+      const userId = context?.userId;
+      if (!userId || !context?.previousFavorites) return;
+      // Rollback optimistic update
+      queryClient.setQueryData(['/api/users/favorites/teams', userId], context.previousFavorites);
       toast({
         title: "Chyba",
         description: "Nepodarilo sa odstrániť tím z obľúbených",
@@ -157,8 +213,20 @@ export function useToggleFavoriteTeam() {
   });
 
   return {
-    addFavorite: addMutation.mutate,
-    removeFavorite: removeMutation.mutate,
+    addFavorite: (id: string) => {
+      if (!user?.id) {
+        toast({ title: "Chyba", description: "Musíte byť prihlásený", variant: "destructive" });
+        return;
+      }
+      addMutation.mutate(id);
+    },
+    removeFavorite: (id: string) => {
+      if (!user?.id) {
+        toast({ title: "Chyba", description: "Musíte byť prihlásený", variant: "destructive" });
+        return;
+      }
+      removeMutation.mutate(id);
+    },
     isAdding: addMutation.isPending,
     isRemoving: removeMutation.isPending,
   };

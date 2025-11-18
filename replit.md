@@ -2,7 +2,20 @@
 
 Contestio is a comprehensive live fishing competition platform for managing and viewing competitive fishing events. It offers a multi-role system for spectators, organizers, and referees, featuring real-time competition tracking, team management, catch recording, and live leaderboards with WebSocket integration.
 
-The platform is expanding with a "Fishing Diary" module, providing personal catch logging with freemium tiers (FREE: 1 trip/20 catches; PREMIUM: unlimited, battles). Key recent developments include instant catch saving with background photo uploads, a systematic dark theme rollout, and a comprehensive weather forecast module with intelligent location handling and a premium "Fish Activity Index". The battle system has been enhanced with automatic catch assignment and minimum weight filtering, alongside critical bug fixes for invitation acceptance. The login experience has been optimized for direct redirection to the diary.
+The platform is expanding with a "Fishing Diary" module, providing personal catch logging with freemium tiers (FREE: 1 trip/20 catches; PREMIUM: unlimited, battles). Key recent developments include instant catch saving with background photo uploads, a systematic dark theme rollout, a comprehensive weather forecast module with intelligent location handling and a premium "Fish Activity Index", and a favorites system for competitions and teams. The battle system has been enhanced with automatic catch assignment and minimum weight filtering, alongside critical bug fixes for invitation acceptance. The login experience has been optimized for direct redirection to the diary.
+
+## Recent Favorites System Implementation (November 18, 2025)
+- **Toggle Favorites**: Users can mark competitions and teams as favorites from detail pages via heart button
+- **Favorites Page**: Dedicated `/favorites` page displays all favorited competitions and teams with removal functionality
+- **Navigation Integration**: Heart icon link in navigation header for quick access to favorites
+- **Authentication Guards**: Favorite buttons and queries properly gated with `isAuthenticated && !authLoading` checks
+- **Production-Ready Cache Management**: 
+  - Query keys include `user?.id` for proper cache partitioning per user
+  - Mutations capture stable `userId` in `onMutate` context to prevent cache desync across auth transitions
+  - Optimistic updates with proper rollback on error using `onMutate` context
+  - Cache invalidation targets all related queries (favorites, competitions, teams)
+- **Notification Filtering**: Notification preferences support filtering by favorite competitions/teams (already implemented)
+- **Technical Implementation**: TanStack Query with proper authentication timing handling, avoiding 401 spam and cache inconsistencies
 
 ## Recent Battle Finish Functionality (November 16, 2025)
 - **Battle Termination Feature**: Implemented "Ukončiť Battle" (Finish Battle) functionality for battle owners

@@ -48,7 +48,7 @@ export default function CompetitionDetail() {
   const { id } = useParams();
   const { toast } = useToast();
   const [isRegistrationDialogOpen, setIsRegistrationDialogOpen] = useState(false);
-  const { isAuthenticated, isLoading, user } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
   const [activeTab, setActiveTab] = useState("overview");
   
   // Favorite competitions (only for authenticated users)
@@ -122,7 +122,7 @@ export default function CompetitionDetail() {
 
   // Redirect if not authenticated
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (!authLoading && !isAuthenticated) {
       toast({
         title: "Neautorizovaný",
         description: "Ste odhlásený. Prihlasujem znovu...",
@@ -133,7 +133,7 @@ export default function CompetitionDetail() {
       }, 500);
       return;
     }
-  }, [isAuthenticated, isLoading, toast]);
+  }, [isAuthenticated, authLoading, toast]);
 
   const { data: competition, isLoading: competitionLoading, error } = useQuery<Competition>({
     queryKey: ["/api/competitions", id],
@@ -173,7 +173,7 @@ export default function CompetitionDetail() {
     }
   }, [error, toast]);
 
-  if (isLoading || competitionLoading) {
+  if (authLoading || competitionLoading) {
     return (
       <div className="min-h-screen bg-background">
         <NavigationHeader />
@@ -250,17 +250,19 @@ export default function CompetitionDetail() {
             <div className="mt-6 flex flex-wrap justify-center gap-4">
               
               {/* Favorite Button */}
-              <Button 
-                size="lg" 
-                variant={isFavorite ? "default" : "outline"}
-                onClick={handleToggleFavorite}
-                disabled={isAdding || isRemoving}
-                data-testid="button-toggle-favorite"
-                className={isFavorite ? "bg-red-500 hover:bg-red-600 text-white" : ""}
-              >
-                <Heart className={`w-4 h-4 mr-2 ${isFavorite ? "fill-current" : ""}`} />
-                {isFavorite ? "Obľúbené" : "Pridať do obľúbených"}
-              </Button>
+              {isAuthenticated && !authLoading && (
+                <Button 
+                  size="lg" 
+                  variant={isFavorite ? "default" : "outline"}
+                  onClick={handleToggleFavorite}
+                  disabled={isAdding || isRemoving}
+                  data-testid="button-toggle-favorite"
+                  className={isFavorite ? "bg-red-500 hover:bg-red-600 text-white" : ""}
+                >
+                  <Heart className={`w-4 h-4 mr-2 ${isFavorite ? "fill-current" : ""}`} />
+                  {isFavorite ? "Obľúbené" : "Pridať do obľúbených"}
+                </Button>
+              )}
               
               {/* Team Registration Button */}
               {competition.status === 'registration' && (
