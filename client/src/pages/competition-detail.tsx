@@ -25,9 +25,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Users, UserPlus, Trash2, Fish, Award, BarChart3, Trophy, FileText } from "lucide-react";
+import { Users, UserPlus, Trash2, Fish, Award, BarChart3, Trophy, FileText, Heart } from "lucide-react";
 import { getSideCompetitionLabels } from "@/lib/utils";
 import type { Competition, Team, Catch } from "@shared/schema";
+import { useFavoriteCompetitions, useToggleFavoriteCompetition } from "@/hooks/useFavorites";
 
 // Team registration form schema
 const teamRegistrationSchema = z.object({
@@ -49,6 +50,21 @@ export default function CompetitionDetail() {
   const [isRegistrationDialogOpen, setIsRegistrationDialogOpen] = useState(false);
   const { isAuthenticated, isLoading, user } = useAuth();
   const [activeTab, setActiveTab] = useState("overview");
+  
+  // Favorite competitions (only for authenticated users)
+  const { data: favoriteCompetitions } = useFavoriteCompetitions();
+  const { addFavorite, removeFavorite, isAdding, isRemoving } = useToggleFavoriteCompetition();
+  
+  const isFavorite = isAuthenticated && favoriteCompetitions?.some(fav => fav.competitionId === id);
+  
+  const handleToggleFavorite = () => {
+    if (!isAuthenticated || !id) return;
+    if (isFavorite) {
+      removeFavorite(id);
+    } else {
+      addFavorite(id);
+    }
+  };
 
   // Team registration form
   const form = useForm<TeamRegistrationForm>({
@@ -232,6 +248,19 @@ export default function CompetitionDetail() {
             
             {/* Action Buttons */}
             <div className="mt-6 flex flex-wrap justify-center gap-4">
+              
+              {/* Favorite Button */}
+              <Button 
+                size="lg" 
+                variant={isFavorite ? "default" : "outline"}
+                onClick={handleToggleFavorite}
+                disabled={isAdding || isRemoving}
+                data-testid="button-toggle-favorite"
+                className={isFavorite ? "bg-red-500 hover:bg-red-600 text-white" : ""}
+              >
+                <Heart className={`w-4 h-4 mr-2 ${isFavorite ? "fill-current" : ""}`} />
+                {isFavorite ? "Obľúbené" : "Pridať do obľúbených"}
+              </Button>
               
               {/* Team Registration Button */}
               {competition.status === 'registration' && (

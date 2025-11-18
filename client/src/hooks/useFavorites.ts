@@ -10,21 +10,21 @@ import type {
 
 // Hook for managing favorite competitions
 export function useFavoriteCompetitions() {
-  const { isAuthenticated } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   
   return useQuery<(FavoriteCompetition & { competition: any })[]>({
-    queryKey: ['/api/users/favorites/competitions'],
-    enabled: isAuthenticated,
+    queryKey: ['/api/users/favorites/competitions', authLoading],
+    enabled: !!user && !authLoading,
   });
 }
 
 // Hook for managing favorite teams
 export function useFavoriteTeams() {
-  const { isAuthenticated } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   
   return useQuery<(FavoriteTeam & { team: any })[]>({
-    queryKey: ['/api/users/favorites/teams'],
-    enabled: isAuthenticated,
+    queryKey: ['/api/users/favorites/teams', authLoading],
+    enabled: !!user && !authLoading,
   });
 }
 
@@ -45,8 +45,11 @@ export function useToggleFavoriteCompetition() {
   const addMutation = useMutation({
     mutationFn: (competitionId: string) => 
       apiRequest('POST', `/api/users/favorites/competitions`, { competitionId }),
-    onSuccess: () => {
+    onSuccess: (_, competitionId) => {
+      // Invalidate all related queries
       queryClient.invalidateQueries({ queryKey: ['/api/users/favorites/competitions'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/competitions', competitionId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/competitions'] });
       toast({
         title: "Úspech",
         description: "Súťaž pridaná do obľúbených",
@@ -64,8 +67,18 @@ export function useToggleFavoriteCompetition() {
   const removeMutation = useMutation({
     mutationFn: (competitionId: string) => 
       apiRequest('DELETE', `/api/users/favorites/competitions/${competitionId}`),
-    onSuccess: () => {
+    onSuccess: (_, competitionId) => {
+      // Invalidate all related queries
       queryClient.invalidateQueries({ queryKey: ['/api/users/favorites/competitions'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/competitions', competitionId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/competitions'] });
+      
+      // Optimistically remove from favorites list
+      queryClient.setQueryData(['/api/users/favorites/competitions'], (old: any) => {
+        if (!old) return old;
+        return old.filter((fav: any) => fav.competitionId !== competitionId);
+      });
+      
       toast({
         title: "Úspech", 
         description: "Súťaž odstránená z obľúbených",
@@ -95,8 +108,11 @@ export function useToggleFavoriteTeam() {
   const addMutation = useMutation({
     mutationFn: (teamId: string) => 
       apiRequest('POST', `/api/users/favorites/teams`, { teamId }),
-    onSuccess: () => {
+    onSuccess: (_, teamId) => {
+      // Invalidate all related queries
       queryClient.invalidateQueries({ queryKey: ['/api/users/favorites/teams'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/teams', teamId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/teams'] });
       toast({
         title: "Úspech",
         description: "Tím pridaný do obľúbených",
@@ -114,8 +130,18 @@ export function useToggleFavoriteTeam() {
   const removeMutation = useMutation({
     mutationFn: (teamId: string) => 
       apiRequest('DELETE', `/api/users/favorites/teams/${teamId}`),
-    onSuccess: () => {
+    onSuccess: (_, teamId) => {
+      // Invalidate all related queries
       queryClient.invalidateQueries({ queryKey: ['/api/users/favorites/teams'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/teams', teamId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/teams'] });
+      
+      // Optimistically remove from favorites list
+      queryClient.setQueryData(['/api/users/favorites/teams'], (old: any) => {
+        if (!old) return old;
+        return old.filter((fav: any) => fav.teamId !== teamId);
+      });
+      
       toast({
         title: "Úspech",
         description: "Tím odstránený z obľúbených", 

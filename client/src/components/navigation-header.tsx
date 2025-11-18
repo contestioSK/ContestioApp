@@ -4,7 +4,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Fish, Menu, DollarSign, Bell, Sun, Moon, Info, HelpCircle, Phone, Trophy } from "lucide-react";
+import { Fish, Menu, DollarSign, Bell, Sun, Moon, Info, HelpCircle, Phone, Trophy, Heart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { NotificationCenter } from "@/components/diary/notification-center";
 import contestioLogo from "@assets/contestio logo_1760283270014.png";
@@ -174,6 +174,15 @@ export default function NavigationHeader() {
                     data-testid="img-profile"
                   />
                 )}
+                <Link 
+                  href="/favorites"
+                  className={`p-2 rounded-md transition-colors hover:bg-sidebar-accent ${
+                    location.startsWith('/favorites') ? 'text-red-500' : 'text-sidebar-foreground hover:text-sidebar-primary'
+                  }`}
+                  data-testid="nav-favorites"
+                >
+                  <Heart className={`h-5 w-5 ${location.startsWith('/favorites') ? 'fill-current' : ''}`} />
+                </Link>
                 <NotificationCenter />
                 <Button 
                   variant="outline"
