@@ -29,7 +29,7 @@ export default function TeamDetail() {
   // Favorite teams (only for authenticated users)
   const { data: favoriteTeams } = useFavoriteTeams();
   const { addFavorite, removeFavorite, isAdding, isRemoving } = useToggleFavoriteTeam();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   
   const isFavorite = isAuthenticated && favoriteTeams?.some(fav => fav.teamId === teamId);
   
@@ -196,16 +196,18 @@ export default function TeamDetail() {
             </div>
             
             {/* Favorite Button */}
-            <Button 
-              variant={isFavorite ? "default" : "outline"}
-              onClick={handleToggleFavorite}
-              disabled={isAdding || isRemoving}
-              data-testid="button-toggle-favorite-team"
-              className={isFavorite ? "bg-red-500 hover:bg-red-600 text-white" : ""}
-            >
-              <Heart className={`w-4 h-4 mr-2 ${isFavorite ? "fill-current" : ""}`} />
-              {isFavorite ? "Obľúbené" : "Pridať do obľúbených"}
-            </Button>
+            {isAuthenticated && !authLoading && (
+              <Button 
+                variant={isFavorite ? "default" : "outline"}
+                onClick={handleToggleFavorite}
+                disabled={isAdding || isRemoving}
+                data-testid="button-toggle-favorite-team"
+                className={isFavorite ? "bg-red-500 hover:bg-red-600 text-white" : ""}
+              >
+                <Heart className={`w-4 h-4 mr-2 ${isFavorite ? "fill-current" : ""}`} />
+                {isFavorite ? "Obľúbené" : "Pridať do obľúbených"}
+              </Button>
+            )}
           </div>
         </div>
 
