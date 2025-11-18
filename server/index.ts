@@ -58,6 +58,11 @@ app.use(cors({
     // Allow requests with no origin (mobile apps, Postman, etc.)
     if (!origin) return callback(null, true);
     
+    // In development, allow Replit domains
+    if (process.env.NODE_ENV !== 'production' && origin.includes('.replit.dev')) {
+      return callback(null, true);
+    }
+    
     if (allowedOrigins.some(allowed => origin.startsWith(allowed))) {
       callback(null, true);
     } else {
