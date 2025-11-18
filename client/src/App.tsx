@@ -28,6 +28,7 @@ import UpcomingPage from "@/pages/upcoming";
 import LivePage from "@/pages/live";
 import FinishedPage from "@/pages/finished";
 import NotificationPreferences from "@/pages/notification-preferences";
+import Favorites from "@/pages/favorites";
 import DiaryIndex from "@/pages/diary/index";
 import DiaryTrips from "@/pages/diary/trips";
 import DiaryTripDetail from "@/pages/diary/trip-detail";
@@ -103,6 +104,11 @@ function Router() {
       <Route path="/notification-preferences">
         <ProtectedRoute>
           <NotificationPreferences />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/favorites">
+        <ProtectedRoute>
+          <Favorites />
         </ProtectedRoute>
       </Route>
       <Route path="/diary">

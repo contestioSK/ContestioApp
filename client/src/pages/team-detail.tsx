@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { useParams, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, Users, Trophy, Fish, MapPin, Camera, X } from "lucide-react";
+import { ArrowLeft, Users, Trophy, Fish, MapPin, Camera, X, Heart } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Team, TeamMember, Catch } from "@shared/schema";
 import { formatSectorPlace, getSectorLetter } from "@/lib/utils";
+import { useFavoriteTeams, useToggleFavoriteTeam } from "@/hooks/useFavorites";
 
 type TeamWithDetails = Team & {
   members?: TeamMember[];
@@ -23,6 +25,22 @@ export default function TeamDetail() {
     queryKey: ["/api/teams", teamId],
     enabled: !!teamId,
   });
+  
+  // Favorite teams (only for authenticated users)
+  const { data: favoriteTeams } = useFavoriteTeams();
+  const { addFavorite, removeFavorite, isAdding, isRemoving } = useToggleFavoriteTeam();
+  const { isAuthenticated } = useAuth();
+  
+  const isFavorite = isAuthenticated && favoriteTeams?.some(fav => fav.teamId === teamId);
+  
+  const handleToggleFavorite = () => {
+    if (!isAuthenticated || !teamId) return;
+    if (isFavorite) {
+      removeFavorite(teamId);
+    } else {
+      addFavorite(teamId);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -176,6 +194,18 @@ export default function TeamDetail() {
                 {getStatusBadge(teamData.status)}
               </div>
             </div>
+            
+            {/* Favorite Button */}
+            <Button 
+              variant={isFavorite ? "default" : "outline"}
+              onClick={handleToggleFavorite}
+              disabled={isAdding || isRemoving}
+              data-testid="button-toggle-favorite-team"
+              className={isFavorite ? "bg-red-500 hover:bg-red-600 text-white" : ""}
+            >
+              <Heart className={`w-4 h-4 mr-2 ${isFavorite ? "fill-current" : ""}`} />
+              {isFavorite ? "Obľúbené" : "Pridať do obľúbených"}
+            </Button>
           </div>
         </div>
 
