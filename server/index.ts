@@ -3,10 +3,78 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { storage } from "./storage";
 import { NotificationService } from "./notification-service";
+import helmet from "helmet";
+import cors from "cors";
+import { apiLimiter } from "./middleware/rate-limiting";
+import { sanitizeInput } from "./middleware/input-sanitization";
 
 const app = express();
+
+// Security: Helmet middleware for security headers
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      // In development: allow inline scripts/eval for Vite HMR
+      // In production: strict policy (no inline/eval)
+      scriptSrc: isDevelopment 
+        ? ["'self'", "'unsafe-inline'", "'unsafe-eval'"]
+        : ["'self'"],
+      styleSrc: isDevelopment
+        ? ["'self'", "'unsafe-inline'"]
+        : ["'self'", "'unsafe-inline'"], // Keep unsafe-inline for Tailwind runtime styles
+      imgSrc: ["'self'", "data:", "blob:", "https:"],
+      // Allow connections to self, WebSockets, and third-party APIs
+      connectSrc: [
+        "'self'", 
+        "wss:", 
+        "ws:",
+        "https://api.openweathermap.org", // Weather API
+        "https://*.contestio.sk", // Own domains
+      ],
+      fontSrc: ["'self'", "data:"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'none'"],
+    },
+  },
+  crossOriginEmbedderPolicy: false, // Disable for development compatibility
+  hsts: {
+    maxAge: 31536000, // 1 year
+    includeSubDomains: true,
+    preload: true,
+  },
+}));
+
+// Security: CORS configuration
+const allowedOrigins = process.env.NODE_ENV === 'production'
+  ? ['https://contestio.sk', 'https://www.contestio.sk']
+  : ['http://localhost:5000', 'http://127.0.0.1:5000'];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.some(allowed => origin.startsWith(allowed))) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Security: Input sanitization (removes XSS attempts from all request bodies)
+app.use(sanitizeInput);
+
+// Security: General API rate limiting (100 requests per 15 minutes)
+app.use('/api', apiLimiter);
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -136,7 +204,12 @@ async function startBattleScheduler(broadcastToUsers: (userIds: string[], data: 
                 participantUserIds,
                 winnerName,
                 winnerScore,
-                finishedBattle.results
+                finishedBattle.results?.map(r => ({
+                  userId: r.participant.userId,
+                  name: r.participant.name,
+                  score: r.score,
+                  position: r.position
+                }))
               );
             }
             

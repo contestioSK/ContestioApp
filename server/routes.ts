@@ -37,6 +37,13 @@ import { z } from "zod";
 import { canUseFeature } from "@shared/plan-capabilities";
 import { NotificationService } from "./notification-service";
 import { checkResultBlocking, checkPartialResultBlocking, checkPartialResultBlockingByTeam } from "./middleware/result-blocking";
+import {
+  authLimiter,
+  catchCreationLimiter,
+  battleCreationLimiter,
+  apiLimiter,
+  passwordResetLimiter
+} from "./middleware/rate-limiting";
 import multer from "multer";
 import path from "path";
 import fs, { existsSync } from "fs";
@@ -317,7 +324,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
   };
 
   // New auth endpoints for email/password + Google OAuth
-  app.post('/api/auth/register', async (req, res) => {
+  app.post('/api/auth/register', authLimiter, async (req, res) => {
     try {
       const { email, firstName, lastName, password } = req.body;
 
@@ -390,7 +397,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
-  app.post('/api/auth/login', (req, res, next) => {
+  app.post('/api/auth/login', authLimiter, (req, res, next) => {
     passport.authenticate('local', (err: any, user: any, info: any) => {
       if (err) {
         console.error('[AUTH] Login error:', err);
@@ -461,7 +468,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
   });
 
   // Reset password with token endpoint
-  app.post('/api/auth/reset-password', async (req, res) => {
+  app.post('/api/auth/reset-password', passwordResetLimiter, async (req, res) => {
     try {
       const { token, password } = req.body;
 
@@ -3237,7 +3244,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
   });
 
   // Reset user password (admin) - sends password reset email
-  app.post('/api/admin/users/:userId/reset-password', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/users/:userId/reset-password', isAuthenticated, passwordResetLimiter, async (req: any, res) => {
     try {
       const userId = getUserId(req);
       const user = await storage.getUser(userId);
@@ -3941,7 +3948,12 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
                 participantUserIds,
                 winnerName,
                 winnerScore,
-                updatedBattle.results
+                updatedBattle.results?.map(r => ({
+                  userId: r.participant.userId,
+                  name: r.participant.name,
+                  score: r.score,
+                  position: r.position
+                }))
               );
             } catch (notifError) {
               console.error('[BG] Error sending battle finished notification:', notifError);
@@ -4137,7 +4149,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
   });
 
   // Create battle with existing trip (advanced flow)
-  app.post('/api/diary/battles', isAuthenticated, async (req: any, res) => {
+  app.post('/api/diary/battles', isAuthenticated, battleCreationLimiter, async (req: any, res) => {
     try {
       const userId = getUserId(req);
       
@@ -4673,7 +4685,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
-  app.post('/api/diary/catches', isAuthenticated, async (req: any, res) => {
+  app.post('/api/diary/catches', isAuthenticated, catchCreationLimiter, async (req: any, res) => {
     try {
       const userId = req.user?.id || req.user?.claims?.sub;
       
