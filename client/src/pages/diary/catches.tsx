@@ -42,7 +42,9 @@ import {
   Cloud,
   Thermometer,
   Wind,
-  Gauge
+  Gauge,
+  Search,
+  ArrowUpDown
 } from "lucide-react";
 
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -50,6 +52,7 @@ import type { DiaryCatch, DiaryTrip } from "@shared/schema";
 import { getFishTypeLabel, getFishTypeOptions } from "@/utils/fishTypeMapping";
 import DiaryLayout from "@/components/DiaryLayout";
 import CatchFormDialog from "@/components/diary/CatchFormDialog";
+import { Input } from "@/components/ui/input";
 
 // Type for freemium limits response
 type FreemiumLimits = {
@@ -283,6 +286,10 @@ export default function DiaryCatches() {
   const [selectedFishType, setSelectedFishType] = useState<string>("all");
   const [selectedSpot, setSelectedSpot] = useState<string>("all");
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [minWeight, setMinWeight] = useState<string>("");
+  const [maxWeight, setMaxWeight] = useState<string>("");
+  const [sortBy, setSortBy] = useState<string>("newest");
   
   // Offline functionality
   const { 
@@ -457,46 +464,102 @@ export default function DiaryCatches() {
   }) : [];
 
   // Apply filters to catches
-  const filteredCatches = season2025Catches.filter((catch_: any) => {
-    // Filter by technique
-    if (selectedTechnique !== "all" && catch_.bait !== selectedTechnique) {
-      return false;
-    }
-    
-    // Filter by fish type
-    if (selectedFishType !== "all" && catch_.fishType !== selectedFishType) {
-      return false;
-    }
-    
-    // Filter by spot
-    if (selectedSpot !== "all" && catch_.spot !== selectedSpot) {
-      return false;
-    }
-    
-    // Filter by date range
-    if (dateRange?.from) {
-      const catchDate = new Date(catch_.capturedAt);
-      const fromDate = new Date(dateRange.from);
-      fromDate.setHours(0, 0, 0, 0);
+  const filteredCatches = season2025Catches
+    .filter((catch_: any) => {
+      // Filter by technique
+      if (selectedTechnique !== "all" && catch_.bait !== selectedTechnique) {
+        return false;
+      }
       
-      if (dateRange.to) {
-        const toDate = new Date(dateRange.to);
-        toDate.setHours(23, 59, 59, 999);
-        if (catchDate < fromDate || catchDate > toDate) {
-          return false;
+      // Filter by fish type
+      if (selectedFishType !== "all" && catch_.fishType !== selectedFishType) {
+        return false;
+      }
+      
+      // Filter by spot
+      if (selectedSpot !== "all" && catch_.spot !== selectedSpot) {
+        return false;
+      }
+      
+      // Filter by date range
+      if (dateRange?.from) {
+        const catchDate = new Date(catch_.capturedAt);
+        const fromDate = new Date(dateRange.from);
+        fromDate.setHours(0, 0, 0, 0);
+        
+        if (dateRange.to) {
+          const toDate = new Date(dateRange.to);
+          toDate.setHours(23, 59, 59, 999);
+          if (catchDate < fromDate || catchDate > toDate) {
+            return false;
+          }
+        } else {
+          // If only 'from' is selected, filter for that single day
+          const singleDayEnd = new Date(fromDate);
+          singleDayEnd.setHours(23, 59, 59, 999);
+          if (catchDate < fromDate || catchDate > singleDayEnd) {
+            return false;
+          }
         }
-      } else {
-        // If only 'from' is selected, filter for that single day
-        const singleDayEnd = new Date(fromDate);
-        singleDayEnd.setHours(23, 59, 59, 999);
-        if (catchDate < fromDate || catchDate > singleDayEnd) {
+      }
+
+      // Filter by search query
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase().trim();
+        const searchableText = [
+          catch_.notes || '',
+          catch_.spot || '',
+          catch_.bait || '',
+          catch_.fishType ? getFishTypeLabel(catch_.fishType) : '',
+          catch_.fishType || ''
+        ].join(' ').toLowerCase();
+        
+        if (!searchableText.includes(query)) {
           return false;
         }
       }
-    }
-    
-    return true;
-  });
+
+      // Filter by weight range
+      const hasWeightFilter = minWeight || maxWeight;
+      if (hasWeightFilter) {
+        // Exclude catches without weight when weight filter is active
+        // Allow 0 as valid weight, only exclude null, undefined, or non-numeric values
+        if (catch_.weight === undefined || catch_.weight === null || typeof catch_.weight !== 'number' || Number.isNaN(catch_.weight)) {
+          return false;
+        }
+        
+        if (minWeight) {
+          const min = parseFloat(minWeight);
+          if (!isNaN(min) && catch_.weight < min) {
+            return false;
+          }
+        }
+        
+        if (maxWeight) {
+          const max = parseFloat(maxWeight);
+          if (!isNaN(max) && catch_.weight > max) {
+            return false;
+          }
+        }
+      }
+      
+      return true;
+    })
+    .sort((a: any, b: any) => {
+      // Sort catches
+      switch (sortBy) {
+        case 'newest':
+          return new Date(b.capturedAt).getTime() - new Date(a.capturedAt).getTime();
+        case 'oldest':
+          return new Date(a.capturedAt).getTime() - new Date(b.capturedAt).getTime();
+        case 'heaviest':
+          return (b.weight || 0) - (a.weight || 0);
+        case 'lightest':
+          return (a.weight || 0) - (b.weight || 0);
+        default:
+          return 0;
+      }
+    });
 
   // Get unique techniques and spots for filter dropdowns
   const uniqueTechniques = Array.from(new Set(season2025Catches.map((c: any) => c.bait).filter(Boolean)));
@@ -573,100 +636,232 @@ export default function DiaryCatches() {
           />
 
           {/* Filters */}
-          <div className="flex flex-wrap gap-3">
-            <Select value={selectedTechnique} onValueChange={setSelectedTechnique}>
-              <SelectTrigger className="w-[200px] bg-slate-700/50 border text-white" data-testid="filter-technique">
-                <SelectValue placeholder="Všetky Techniky" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Všetky Techniky</SelectItem>
-                {uniqueTechniques.map((technique: string) => (
-                  <SelectItem key={technique} value={technique}>
-                    {technique}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={selectedFishType} onValueChange={setSelectedFishType}>
-              <SelectTrigger className="w-[200px] bg-slate-700/50 border text-white" data-testid="filter-fish-type">
-                <SelectValue placeholder="Všetky Druhy" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Všetky Druhy</SelectItem>
-                {getFishTypeOptions().map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={selectedSpot} onValueChange={setSelectedSpot}>
-              <SelectTrigger className="w-[200px] bg-slate-700/50 border text-white" data-testid="filter-spot">
-                <SelectValue placeholder="Všetky Revíry" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Všetky Revíry</SelectItem>
-                {uniqueSpots.map((spot: string) => (
-                  <SelectItem key={spot} value={spot}>
-                    {spot}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-[240px] justify-start text-left font-normal bg-slate-700/50 border text-white hover:bg-slate-700/70",
-                    !dateRange?.from && "text-slate-400"
-                  )}
-                  data-testid="filter-date"
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {dateRange?.from ? (
-                    dateRange.to ? (
-                      dateRange.from.getFullYear() === dateRange.to.getFullYear() 
-                        ? `${format(dateRange.from, "dd. MMM", { locale: sk })} - ${format(dateRange.to, "dd. MMM yyyy", { locale: sk })}`
-                        : `${format(dateRange.from, "dd. MMM yyyy", { locale: sk })} - ${format(dateRange.to, "dd. MMM yyyy", { locale: sk })}`
-                    ) : (
-                      format(dateRange.from, "dd. MMM yyyy", { locale: sk })
-                    )
-                  ) : (
-                    "Vybrať obdobie"
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="range"
-                  selected={dateRange}
-                  onSelect={setDateRange}
-                  initialFocus
-                  numberOfMonths={2}
+          <div className="space-y-4">
+            {/* Search and Sort Row */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input
+                  type="text"
+                  placeholder="Hľadať v úlovkoch..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 bg-slate-700/50 border text-white placeholder:text-slate-400"
+                  data-testid="input-search"
                 />
-              </PopoverContent>
-            </Popover>
+              </div>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-full sm:w-[200px] bg-slate-700/50 border text-white" data-testid="filter-sort">
+                  <ArrowUpDown className="w-4 h-4 mr-2" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Najnovšie</SelectItem>
+                  <SelectItem value="oldest">Najstaršie</SelectItem>
+                  <SelectItem value="heaviest">Najväčšie</SelectItem>
+                  <SelectItem value="lightest">Najmenšie</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-            {(selectedTechnique !== "all" || selectedFishType !== "all" || selectedSpot !== "all" || dateRange?.from) && (
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  setSelectedTechnique("all");
-                  setSelectedFishType("all");
-                  setSelectedSpot("all");
-                  setDateRange(undefined);
-                }}
-                className="text-slate-400 hover:text-white"
-                data-testid="button-clear-filters"
-              >
-                <X className="w-4 h-4 mr-2" />
-                Zrušiť filtre
-              </Button>
-            )}
+            {/* Filter Controls */}
+            <div className="flex flex-wrap gap-3">
+              <Select value={selectedTechnique} onValueChange={setSelectedTechnique}>
+                <SelectTrigger className="w-full sm:w-[180px] bg-slate-700/50 border text-white" data-testid="filter-technique">
+                  <SelectValue placeholder="Všetky Techniky" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Všetky Techniky</SelectItem>
+                  {uniqueTechniques.map((technique: string) => (
+                    <SelectItem key={technique} value={technique}>
+                      {technique}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={selectedFishType} onValueChange={setSelectedFishType}>
+                <SelectTrigger className="w-full sm:w-[180px] bg-slate-700/50 border text-white" data-testid="filter-fish-type">
+                  <SelectValue placeholder="Všetky Druhy" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Všetky Druhy</SelectItem>
+                  {getFishTypeOptions().map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={selectedSpot} onValueChange={setSelectedSpot}>
+                <SelectTrigger className="w-full sm:w-[180px] bg-slate-700/50 border text-white" data-testid="filter-spot">
+                  <SelectValue placeholder="Všetky Revíry" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Všetky Revíry</SelectItem>
+                  {uniqueSpots.map((spot: string) => (
+                    <SelectItem key={spot} value={spot}>
+                      {spot}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full sm:w-[240px] justify-start text-left font-normal bg-slate-700/50 border text-white hover:bg-slate-700/70",
+                      !dateRange?.from && "text-slate-400"
+                    )}
+                    data-testid="filter-date"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {dateRange?.from ? (
+                      dateRange.to ? (
+                        dateRange.from.getFullYear() === dateRange.to.getFullYear() 
+                          ? `${format(dateRange.from, "dd. MMM", { locale: sk })} - ${format(dateRange.to, "dd. MMM yyyy", { locale: sk })}`
+                          : `${format(dateRange.from, "dd. MMM yyyy", { locale: sk })} - ${format(dateRange.to, "dd. MMM yyyy", { locale: sk })}`
+                      ) : (
+                        format(dateRange.from, "dd. MMM yyyy", { locale: sk })
+                      )
+                    ) : (
+                      "Vybrať obdobie"
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="range"
+                    selected={dateRange}
+                    onSelect={setDateRange}
+                    initialFocus
+                    numberOfMonths={2}
+                  />
+                </PopoverContent>
+              </Popover>
+
+              <div className="flex gap-2 w-full sm:w-auto">
+                <Input
+                  type="number"
+                  placeholder="Min kg"
+                  value={minWeight}
+                  onChange={(e) => setMinWeight(e.target.value)}
+                  className="w-24 bg-slate-700/50 border text-white placeholder:text-slate-400"
+                  step="0.1"
+                  min="0"
+                  data-testid="input-min-weight"
+                />
+                <Input
+                  type="number"
+                  placeholder="Max kg"
+                  value={maxWeight}
+                  onChange={(e) => setMaxWeight(e.target.value)}
+                  className="w-24 bg-slate-700/50 border text-white placeholder:text-slate-400"
+                  step="0.1"
+                  min="0"
+                  data-testid="input-max-weight"
+                />
+              </div>
+            </div>
+
+            {/* Active Filters & Results Counter */}
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Results counter */}
+              <div className="text-sm text-slate-400" data-testid="text-results-count">
+                Nájdené: <span className="font-semibold text-white">{filteredCatches.length}</span> / {season2025Catches.length}
+              </div>
+
+              {/* Active filter badges */}
+              {searchQuery && (
+                <Badge variant="secondary" className="gap-1" data-testid="badge-search-active">
+                  <Search className="w-3 h-3" />
+                  {searchQuery}
+                  <X 
+                    className="w-3 h-3 cursor-pointer hover:text-destructive" 
+                    onClick={() => setSearchQuery("")}
+                  />
+                </Badge>
+              )}
+              {selectedTechnique !== "all" && (
+                <Badge variant="secondary" className="gap-1" data-testid="badge-technique-active">
+                  {selectedTechnique}
+                  <X 
+                    className="w-3 h-3 cursor-pointer hover:text-destructive" 
+                    onClick={() => setSelectedTechnique("all")}
+                  />
+                </Badge>
+              )}
+              {selectedFishType !== "all" && (
+                <Badge variant="secondary" className="gap-1" data-testid="badge-fish-type-active">
+                  {getFishTypeLabel(selectedFishType)}
+                  <X 
+                    className="w-3 h-3 cursor-pointer hover:text-destructive" 
+                    onClick={() => setSelectedFishType("all")}
+                  />
+                </Badge>
+              )}
+              {selectedSpot !== "all" && (
+                <Badge variant="secondary" className="gap-1" data-testid="badge-spot-active">
+                  <MapPin className="w-3 h-3" />
+                  {selectedSpot}
+                  <X 
+                    className="w-3 h-3 cursor-pointer hover:text-destructive" 
+                    onClick={() => setSelectedSpot("all")}
+                  />
+                </Badge>
+              )}
+              {dateRange?.from && (
+                <Badge variant="secondary" className="gap-1" data-testid="badge-date-active">
+                  <CalendarIcon className="w-3 h-3" />
+                  {dateRange.to 
+                    ? `${format(dateRange.from, "dd.MM", { locale: sk })} - ${format(dateRange.to, "dd.MM.yy", { locale: sk })}`
+                    : format(dateRange.from, "dd.MM.yyyy", { locale: sk })
+                  }
+                  <X 
+                    className="w-3 h-3 cursor-pointer hover:text-destructive" 
+                    onClick={() => setDateRange(undefined)}
+                  />
+                </Badge>
+              )}
+              {(minWeight || maxWeight) && (
+                <Badge variant="secondary" className="gap-1" data-testid="badge-weight-active">
+                  <Weight className="w-3 h-3" />
+                  {minWeight && maxWeight ? `${minWeight}-${maxWeight}kg` : minWeight ? `>${minWeight}kg` : `<${maxWeight}kg`}
+                  <X 
+                    className="w-3 h-3 cursor-pointer hover:text-destructive" 
+                    onClick={() => {
+                      setMinWeight("");
+                      setMaxWeight("");
+                    }}
+                  />
+                </Badge>
+              )}
+
+              {/* Clear all filters button */}
+              {(selectedTechnique !== "all" || selectedFishType !== "all" || selectedSpot !== "all" || dateRange?.from || searchQuery || minWeight || maxWeight) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedTechnique("all");
+                    setSelectedFishType("all");
+                    setSelectedSpot("all");
+                    setDateRange(undefined);
+                    setSearchQuery("");
+                    setMinWeight("");
+                    setMaxWeight("");
+                  }}
+                  className="text-slate-400 hover:text-white"
+                  data-testid="button-clear-all-filters"
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  Vyčistiť všetky filtre
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* Catches Table */}
