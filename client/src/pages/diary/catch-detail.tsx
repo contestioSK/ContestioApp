@@ -81,14 +81,17 @@ export default function CatchDetail() {
           Späť
         </Button>
 
+        {/* Title */}
+        <h1 className="text-3xl font-bold text-white mb-2">Môj osobný rekord</h1>
+
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
           <div className="w-12 h-12 bg-slate-600/50 rounded-lg flex items-center justify-center">
             <Fish className={`w-6 h-6 ${getFishIconColor(catch_.fishType)}`} />
           </div>
-          <h1 className="text-2xl font-bold text-white">
+          <h2 className="text-2xl font-bold text-white">
             {catch_.fishType ? getFishTypeLabel(catch_.fishType) : 'Detail úlovku'}
-          </h1>
+          </h2>
         </div>
 
         <Card className="bg-slate-800 border-slate-700">
