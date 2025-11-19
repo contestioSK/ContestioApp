@@ -89,16 +89,6 @@ export default function CatchDetail() {
           <div className="h-1 w-32 mx-auto bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 rounded-full"></div>
         </div>
 
-        {/* Header */}
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-12 h-12 bg-slate-600/50 rounded-lg flex items-center justify-center">
-            <Fish className={`w-6 h-6 ${getFishIconColor(catch_.fishType)}`} />
-          </div>
-          <h2 className="text-2xl font-bold text-white">
-            {catch_.fishType ? getFishTypeLabel(catch_.fishType) : 'Detail úlovku'}
-          </h2>
-        </div>
-
         <Card className="bg-slate-800 border-slate-700">
           <CardContent className="p-6 space-y-6">
             {/* Photo Display */}
