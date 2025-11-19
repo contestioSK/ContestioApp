@@ -2,7 +2,18 @@
 
 Contestio is a comprehensive live fishing competition platform for managing and viewing competitive fishing events. It offers a multi-role system for spectators, organizers, and referees, featuring real-time competition tracking, team management, catch recording, and live leaderboards with WebSocket integration.
 
-The platform is expanding with a "Fishing Diary" module, providing personal catch logging with freemium tiers (FREE: 1 trip/20 catches; PREMIUM: unlimited, battles). Key recent developments include instant catch saving with background photo uploads, a systematic dark theme rollout, a comprehensive weather forecast module with intelligent location handling and a premium "Fish Activity Index", and a favorites system for competitions and teams. The battle system has been enhanced with automatic catch assignment and minimum weight filtering, alongside critical bug fixes for invitation acceptance. The login experience has been optimized for direct redirection to the diary.
+The platform is expanding with a "Fishing Diary" module, providing personal catch logging with freemium tiers (FREE: 1 trip/20 catches; PREMIUM: unlimited, battles). Key recent developments include instant catch saving with background photo uploads, a systematic dark theme rollout, a comprehensive weather forecast module with intelligent location handling and a premium "Fish Activity Index", a favorites system for competitions and teams, and clickable statistics cards on the diary dashboard. The battle system has been enhanced with automatic catch assignment and minimum weight filtering, alongside critical bug fixes for invitation acceptance. The login experience has been optimized for direct redirection to the diary.
+
+## Recent Clickable Biggest Catch Card (November 19, 2025)
+- **Interactive Dashboard Stats**: "Najväčšia Ryba" card on diary dashboard (`/diary`) is now clickable
+- **Direct Navigation**: Clicking the card redirects to catch detail page (`/diary/catches/{catchId}`)
+- **Visual Feedback**: Hover effects include color transitions, shadow glow, and border highlighting
+- **Conditional Rendering**: Card is only clickable when catches exist (shows 0 kg static card when empty)
+- **Smart Calculation**: Uses `reduce` to find biggest catch object (not just weight) for proper ID tracking
+- **Reusable Component Enhancement**: Updated `CompetitionStatsBar` with optional `enableCatchDetailLink` prop
+  - Diary contexts: clickable heaviest fish stat with navigation
+  - Competition contexts: static display (prevents invalid navigation to non-user catches)
+- **UX Improvement**: Users can quickly access their biggest catch details from the dashboard overview
 
 ## Recent Favorites System Implementation (November 18, 2025)
 - **Toggle Favorites**: Users can mark competitions and teams as favorites from detail pages via heart button
