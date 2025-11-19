@@ -608,19 +608,21 @@ export default function DiaryIndex() {
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8">
-          <Card className="bg-gradient-to-br from-blue-600/20 to-cyan-600/20 border-blue-500/30" data-testid="card-season-catches">
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-blue-600/30 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Fish className="w-6 h-6 text-blue-300" />
+          <Link href="/diary/catches" data-testid="link-all-catches">
+            <Card className="bg-gradient-to-br from-blue-600/20 to-cyan-600/20 border-blue-500/30 cursor-pointer transition-all duration-200 hover:from-blue-600/30 hover:to-cyan-600/30 hover:border-blue-400/50 hover:shadow-lg hover:shadow-blue-500/20" data-testid="card-season-catches">
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-blue-600/30 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Fish className="w-6 h-6 text-blue-300" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-sm text-slate-300 mb-1">Úlovky (Sezóna 2025)</div>
+                    <div className="text-3xl font-bold text-white" data-testid="text-total-catches">{diaryStats.totalCatches}</div>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <div className="text-sm text-slate-300 mb-1">Úlovky (Sezóna 2025)</div>
-                  <div className="text-3xl font-bold text-white" data-testid="text-total-catches">{diaryStats.totalCatches}</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </Link>
           
           {diaryStats.biggestCatchId ? (
             <Link href={`/diary/catches/${diaryStats.biggestCatchId}`} data-testid="link-biggest-fish">
