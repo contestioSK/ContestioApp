@@ -2,7 +2,7 @@ import { useParams, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
-import { Fish, Weight, Ruler, MapPin, Target, Calendar as CalendarIcon, ArrowLeft } from "lucide-react";
+import { Fish, Weight, Ruler, MapPin, Target, Calendar as CalendarIcon, ArrowLeft, Thermometer, Wind, Droplets, Gauge } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -191,6 +191,51 @@ export default function CatchDetail() {
                     <div>
                       <div className="text-slate-400">Zem. dĺžka</div>
                       <div className="font-medium text-white">{Number(catch_.longitude).toFixed(6)}°</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Weather Data */}
+            {(catch_.airTemp || catch_.waterTemp || catch_.windSpeed || catch_.airPressure) && (
+              <div className="bg-blue-900/20 border border-blue-800/30 rounded-lg p-4">
+                <div className="text-sm font-semibold text-blue-300 mb-3">🌤️ Podmienky počasia</div>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  {catch_.airTemp && (
+                    <div className="flex items-center gap-2">
+                      <Thermometer className="w-4 h-4 text-orange-400" />
+                      <div>
+                        <div className="text-slate-400">Teplota vzduchu</div>
+                        <div className="font-medium text-white">{Number(catch_.airTemp).toFixed(1)}°C</div>
+                      </div>
+                    </div>
+                  )}
+                  {catch_.waterTemp && (
+                    <div className="flex items-center gap-2">
+                      <Droplets className="w-4 h-4 text-blue-400" />
+                      <div>
+                        <div className="text-slate-400">Teplota vody</div>
+                        <div className="font-medium text-white">{Number(catch_.waterTemp).toFixed(1)}°C</div>
+                      </div>
+                    </div>
+                  )}
+                  {catch_.windSpeed && (
+                    <div className="flex items-center gap-2">
+                      <Wind className="w-4 h-4 text-cyan-400" />
+                      <div>
+                        <div className="text-slate-400">Rýchlosť vetra</div>
+                        <div className="font-medium text-white">{Number(catch_.windSpeed).toFixed(1)} km/h</div>
+                      </div>
+                    </div>
+                  )}
+                  {catch_.airPressure && (
+                    <div className="flex items-center gap-2">
+                      <Gauge className="w-4 h-4 text-purple-400" />
+                      <div>
+                        <div className="text-slate-400">Tlak vzduchu</div>
+                        <div className="font-medium text-white">{Number(catch_.airPressure).toFixed(0)} hPa</div>
+                      </div>
                     </div>
                   )}
                 </div>
