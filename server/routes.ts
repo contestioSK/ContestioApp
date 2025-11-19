@@ -4646,7 +4646,39 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
-  // Diary Catches endpoints  
+  // Diary Catches endpoints
+  // NOTE: Order matters! Specific routes (like /all) must come before param routes (like /:id)
+  
+  app.get('/api/diary/catches/all', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id || req.user?.claims?.sub;
+      const catches = await storage.getAllUserCatches(userId);
+      res.json(catches);
+    } catch (error) {
+      console.error("Error fetching all diary catches:", error);
+      res.status(500).json({ message: "Failed to fetch catches" });
+    }
+  });
+
+  app.get('/api/diary/catches/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id || req.user?.claims?.sub;
+      const catch_ = await storage.getDiaryCatch(req.params.id, userId);
+      
+      if (!catch_) {
+        return res.status(404).json({ message: "Úlovok sa nenašiel" });
+      }
+      
+      res.json(catch_);
+    } catch (error) {
+      console.error("Error fetching diary catch:", error);
+      if (error instanceof Error && error.message.includes('oprávnenie')) {
+        return res.status(403).json({ message: error.message });
+      }
+      res.status(500).json({ message: "Failed to fetch catch" });
+    }
+  });
+
   app.get('/api/diary/catches', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.id || req.user?.claims?.sub;
@@ -4670,17 +4702,6 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       res.json(catches);
     } catch (error) {
       console.error("Error fetching diary catches:", error);
-      res.status(500).json({ message: "Failed to fetch catches" });
-    }
-  });
-
-  app.get('/api/diary/catches/all', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user?.id || req.user?.claims?.sub;
-      const catches = await storage.getAllUserCatches(userId);
-      res.json(catches);
-    } catch (error) {
-      console.error("Error fetching all diary catches:", error);
       res.status(500).json({ message: "Failed to fetch catches" });
     }
   });

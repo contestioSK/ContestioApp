@@ -33,6 +33,7 @@ import DiaryIndex from "@/pages/diary/index";
 import DiaryTrips from "@/pages/diary/trips";
 import DiaryTripDetail from "@/pages/diary/trip-detail";
 import DiaryCatches from "@/pages/diary/catches";
+import DiaryCatchDetail from "@/pages/diary/catch-detail";
 import DiaryStats from "@/pages/diary/stats";
 import DiarySeasonalGoals from "@/pages/diary/seasonal-goals";
 import DiarySeasonalGoalsCreate from "@/pages/diary/seasonal-goals-create.tsx";
@@ -129,6 +130,11 @@ function Router() {
       <Route path="/diary/trips">
         <ProtectedRoute>
           <DiaryTrips />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/diary/catches/:id">
+        <ProtectedRoute>
+          <DiaryCatchDetail />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/catches">
