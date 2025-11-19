@@ -82,7 +82,12 @@ export default function CatchDetail() {
         </Button>
 
         {/* Title */}
-        <h1 className="text-3xl font-bold text-white mb-2">Môj osobný rekord</h1>
+        <div className="text-center mb-8">
+          <h1 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 bg-clip-text text-transparent mb-2 drop-shadow-lg">
+            🏆 Môj osobný rekord 🏆
+          </h1>
+          <div className="h-1 w-32 mx-auto bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 rounded-full"></div>
+        </div>
 
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
