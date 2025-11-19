@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Fish, Plus, X, MapPin, Target, Ruler, Weight, Swords, Trophy, Crown, Play, Edit2, Trash2, CalendarIcon, CalendarDays, ChevronLeft, ChevronRight, Loader2, AlertCircle, Check, UserPlus } from "lucide-react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -453,14 +453,18 @@ export default function DiaryIndex() {
   const uniqueSpots = Array.from(new Set(season2025Catches.map((c: any) => c.spot).filter(Boolean)));
 
   // Calculate statistics from 2025 season catches
+  const biggestCatchObject = season2025Catches.length > 0
+    ? season2025Catches.reduce((max: any, current: any) => {
+        const currentWeight = parseFloat(current.weight || '0');
+        const maxWeight = parseFloat(max.weight || '0');
+        return (isNaN(currentWeight) ? 0 : currentWeight) > (isNaN(maxWeight) ? 0 : maxWeight) ? current : max;
+      })
+    : null;
+
   const diaryStats = {
     totalCatches: season2025Catches.length,
-    biggestFish: season2025Catches.length > 0 
-      ? Math.max(...season2025Catches.map((c: any) => {
-          const weight = parseFloat(c.weight || '0');
-          return isNaN(weight) ? 0 : weight;
-        }))
-      : 0,
+    biggestFish: biggestCatchObject ? parseFloat(biggestCatchObject.weight || '0') : 0,
+    biggestCatchId: biggestCatchObject?.id || null,
     daysAtWater: (() => {
       if (season2025Catches.length === 0) return 0;
       
@@ -618,21 +622,41 @@ export default function DiaryIndex() {
             </CardContent>
           </Card>
           
-          <Card className="bg-gradient-to-br from-emerald-600/20 to-green-600/20 border-emerald-500/30" data-testid="card-biggest-fish">
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-emerald-600/30 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Weight className="w-6 h-6 text-emerald-300" />
-                </div>
-                <div className="flex-1">
-                  <div className="text-sm text-slate-300 mb-1">Najväčšia Ryba</div>
-                  <div className="text-3xl font-bold text-white" data-testid="text-biggest-fish">
-                    {diaryStats.biggestFish > 0 ? `${diaryStats.biggestFish.toFixed(1)} kg` : '0 kg'}
+          {diaryStats.biggestCatchId ? (
+            <Link href={`/diary/catches/${diaryStats.biggestCatchId}`} data-testid="link-biggest-fish">
+              <Card className="bg-gradient-to-br from-emerald-600/20 to-green-600/20 border-emerald-500/30 cursor-pointer transition-all duration-200 hover:from-emerald-600/30 hover:to-green-600/30 hover:border-emerald-400/50 hover:shadow-lg hover:shadow-emerald-500/20" data-testid="card-biggest-fish">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-emerald-600/30 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <Weight className="w-6 h-6 text-emerald-300" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-sm text-slate-300 mb-1">Najväčšia Ryba</div>
+                      <div className="text-3xl font-bold text-white" data-testid="text-biggest-fish">
+                        {diaryStats.biggestFish > 0 ? `${diaryStats.biggestFish.toFixed(1)} kg` : '0 kg'}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ) : (
+            <Card className="bg-gradient-to-br from-emerald-600/20 to-green-600/20 border-emerald-500/30" data-testid="card-biggest-fish">
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-emerald-600/30 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Weight className="w-6 h-6 text-emerald-300" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-sm text-slate-300 mb-1">Najväčšia Ryba</div>
+                    <div className="text-3xl font-bold text-white" data-testid="text-biggest-fish">
+                      {diaryStats.biggestFish > 0 ? `${diaryStats.biggestFish.toFixed(1)} kg` : '0 kg'}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
           
           <Card className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 border-purple-500/30" data-testid="card-days-at-water">
             <CardContent className="p-6">

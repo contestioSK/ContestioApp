@@ -1,13 +1,15 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Fish, Scale, Trophy, TrendingUp } from "lucide-react";
+import { Link } from "wouter";
 import type { Catch, Team } from "@shared/schema";
 
 interface CompetitionStatsBarProps {
   catches: (Catch & { team?: Team })[];
   isLoading?: boolean;
+  enableCatchDetailLink?: boolean;
 }
 
-export default function CompetitionStatsBar({ catches, isLoading }: CompetitionStatsBarProps) {
+export default function CompetitionStatsBar({ catches, isLoading, enableCatchDetailLink = false }: CompetitionStatsBarProps) {
   if (isLoading) {
     return (
       <Card className="mb-6 border-0 shadow-md bg-gradient-to-r from-background to-muted/20">
@@ -108,20 +110,39 @@ export default function CompetitionStatsBar({ catches, isLoading }: CompetitionS
           </div>
           
           {/* Heaviest Fish */}
-          <div className="text-center" data-testid="stat-heaviest-fish">
-            <div className="w-8 h-8 bg-secondary/20 rounded-lg flex items-center justify-center mx-auto mb-2">
-              <Trophy className="w-4 h-4 text-secondary-foreground" />
-            </div>
-            <p className="text-xs text-muted-foreground mb-1">Najťažšia ryba</p>
-            <p className="text-lg font-bold text-foreground" data-testid="value-heaviest-fish">
-              {(Number(heaviestFish.weight) || 0).toFixed(2)} kg
-            </p>
-            {heaviestFish.team && (
-              <p className="text-xs text-muted-foreground mt-0.5" data-testid="heaviest-fish-team">
-                {heaviestFish.team.name}
+          {enableCatchDetailLink ? (
+            <Link href={`/diary/catches/${heaviestFish.id}`} data-testid="link-heaviest-fish">
+              <div className="text-center cursor-pointer transition-all duration-200 hover:bg-muted/30 dark:hover:bg-muted/20 rounded-lg p-2 -m-2" data-testid="stat-heaviest-fish">
+                <div className="w-8 h-8 bg-secondary/20 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <Trophy className="w-4 h-4 text-secondary-foreground" />
+                </div>
+                <p className="text-xs text-muted-foreground mb-1">Najťažšia ryba</p>
+                <p className="text-lg font-bold text-foreground" data-testid="value-heaviest-fish">
+                  {(Number(heaviestFish.weight) || 0).toFixed(2)} kg
+                </p>
+                {heaviestFish.team && (
+                  <p className="text-xs text-muted-foreground mt-0.5" data-testid="heaviest-fish-team">
+                    {heaviestFish.team.name}
+                  </p>
+                )}
+              </div>
+            </Link>
+          ) : (
+            <div className="text-center" data-testid="stat-heaviest-fish">
+              <div className="w-8 h-8 bg-secondary/20 rounded-lg flex items-center justify-center mx-auto mb-2">
+                <Trophy className="w-4 h-4 text-secondary-foreground" />
+              </div>
+              <p className="text-xs text-muted-foreground mb-1">Najťažšia ryba</p>
+              <p className="text-lg font-bold text-foreground" data-testid="value-heaviest-fish">
+                {(Number(heaviestFish.weight) || 0).toFixed(2)} kg
               </p>
-            )}
-          </div>
+              {heaviestFish.team && (
+                <p className="text-xs text-muted-foreground mt-0.5" data-testid="heaviest-fish-team">
+                  {heaviestFish.team.name}
+                </p>
+              )}
+            </div>
+          )}
           
           {/* Average Weight */}
           <div className="text-center" data-testid="stat-average-weight">
