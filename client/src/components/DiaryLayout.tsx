@@ -5,6 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { NotificationCenter } from "@/components/diary/notification-center";
+import CatchFormDialog from "@/components/diary/CatchFormDialog";
+import { queryClient } from "@/lib/queryClient";
 import { 
   BookOpen, 
   BarChart3, 
@@ -108,6 +110,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
   const { user } = useAuth();
   const [location, setLocation] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isCreateCatchOpen, setIsCreateCatchOpen] = useState(false);
 
   // Check premium status
   const { data: premiumStatus } = useQuery<PremiumStatus>({
@@ -408,6 +411,32 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
             })}
           </div>
         </div>
+
+        {/* Floating Action Button for Quick Catch Entry */}
+        <Button
+          onClick={() => setIsCreateCatchOpen(true)}
+          className="fixed bottom-20 right-6 md:bottom-6 h-14 w-14 rounded-full shadow-lg bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 z-50 transition-all hover:scale-110"
+          data-testid="fab-add-catch"
+          aria-label="Pridať úlovok"
+        >
+          <Plus className="h-6 w-6 text-white" />
+        </Button>
+
+        {/* Global Catch Creation Dialog */}
+        <CatchFormDialog
+          isOpen={isCreateCatchOpen}
+          onClose={() => setIsCreateCatchOpen(false)}
+          editingCatch={null}
+          onSuccess={() => {
+            // Invalidate all diary-related queries to ensure UI updates everywhere
+            queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
+            queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/recent"] });
+            queryClient.invalidateQueries({ queryKey: ["/api/diary/catch-limits"] });
+            queryClient.invalidateQueries({ queryKey: ["/api/diary/trips"] });
+            queryClient.invalidateQueries({ queryKey: ["/api/diary/dashboard"] });
+            queryClient.invalidateQueries({ queryKey: ["/api/diary/stats"] });
+          }}
+        />
       </div>
     </div>
   );
