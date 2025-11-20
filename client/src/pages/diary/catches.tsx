@@ -322,8 +322,9 @@ export default function DiaryCatches() {
       queryClient.invalidateQueries({ queryKey: ["/api/diary/catch-limits"] });
       setDeletingCatch(null);
       toast({
-        title: "Úlovok zmazaný!",
+        title: "✅ Úlovok zmazaný!",
         description: "Úlovok bol úspešne zmazaný.",
+        variant: "success" as any,
       });
     },
     onError: (error: Error) => {
@@ -346,14 +347,14 @@ export default function DiaryCatches() {
         setDeletingCatch(null);
         
         toast({
-          title: "Uložené offline",
+          title: "📤 Uložené offline",
           description: "Úlovok sa zmaže automaticky po obnovení pripojenia",
           variant: "default",
         });
       } catch (error) {
         console.error('Failed to save delete draft:', error);
         toast({
-          title: "Chyba",
+          title: "❌ Chyba",
           description: "Nepodarilo sa uložiť operáciu offline",
           variant: "destructive",
         });
@@ -378,7 +379,7 @@ export default function DiaryCatches() {
             photo = await getPhoto(catchDraft.id);
             if (!photo) {
               toast({
-                title: "Chyba synchronizácie",
+                title: "❌ Chyba synchronizácie",
                 description: `Fotka pre úlovok z ${new Date(catchDraft.timestamp).toLocaleTimeString()} chýba`,
                 variant: "destructive",
               });

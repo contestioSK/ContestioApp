@@ -144,8 +144,9 @@ export default function DiaryTrips() {
       setCoverImageFile(null);
       setCoverImagePreview(null);
       toast({
-        title: "Výprava vytvorená!",
+        title: "✅ Výprava vytvorená!",
         description: "Vaša rybárska výprava bola úspešne vytvorená.",
+        variant: "success" as any,
       });
     },
     onError: (error: Error) => {
@@ -166,8 +167,9 @@ export default function DiaryTrips() {
       setCoverImageFile(null);
       setCoverImagePreview(null);
       toast({
-        title: "Výprava aktualizovaná!",
+        title: "✅ Výprava aktualizovaná!",
         description: "Vaša rybárska výprava bola úspešne aktualizovaná.",
+        variant: "success" as any,
       });
     },
     onError: (error: Error) => {
@@ -185,8 +187,9 @@ export default function DiaryTrips() {
       queryClient.invalidateQueries({ queryKey: ["/api/diary/trip-limits"] });
       setDeletingTrip(null);
       toast({
-        title: "Výprava zmazaná!",
+        title: "✅ Výprava zmazaná!",
         description: "Rybárska výprava bola úspešne zmazaná.",
+        variant: "success" as any,
       });
     },
     onError: (error: Error) => {
@@ -230,7 +233,7 @@ export default function DiaryTrips() {
     } catch (error) {
       console.error('Error uploading cover image:', error);
       toast({
-        title: "Chyba uploadu",
+        title: "❌ Chyba uploadu",
         description: "Nepodarilo sa nahrať titulnú fotografiu",
         variant: "destructive"
       });
@@ -251,14 +254,14 @@ export default function DiaryTrips() {
         form.reset();
         
         toast({
-          title: "Uložené offline",
+          title: "📤 Uložené offline",
           description: "Výprava sa odošle automaticky po obnovení pripojenia",
           variant: "default",
         });
       } catch (error) {
         console.error('Failed to save trip draft:', error);
         toast({
-          title: "Chyba",
+          title: "❌ Chyba",
           description: "Nepodarilo sa uložiť výpravu offline",
           variant: "destructive",
         });
@@ -329,14 +332,14 @@ export default function DiaryTrips() {
         setDeletingTrip(null);
         
         toast({
-          title: "Uložené offline",
+          title: "📤 Uložené offline",
           description: "Výprava sa zmaže automaticky po obnovení pripojenia",
           variant: "default",
         });
       } catch (error) {
         console.error('Failed to save delete draft:', error);
         toast({
-          title: "Chyba",
+          title: "❌ Chyba",
           description: "Nepodarilo sa uložiť operáciu offline",
           variant: "destructive",
         });
@@ -360,8 +363,9 @@ export default function DiaryTrips() {
           await removeTripDraft(tripDraft.id);
           
           toast({
-            title: "Synchronizované",
+            title: "✅ Synchronizované",
             description: `Výprava "${tripDraft.data.name}" bola úspešne vytvorená`,
+            variant: "success" as any,
           });
         } else if (tripDraft.type === 'update' && tripDraft.originalId) {
           const response = await apiRequest("PUT", `/api/diary/trips/${tripDraft.originalId}`, tripDraft.data);
@@ -369,16 +373,18 @@ export default function DiaryTrips() {
           await removeTripDraft(tripDraft.id);
           
           toast({
-            title: "Synchronizované",
+            title: "✅ Synchronizované",
             description: `Výprava "${tripDraft.data.name}" bola úspešne aktualizovaná`,
+            variant: "success" as any,
           });
         } else if (tripDraft.type === 'delete' && tripDraft.originalId) {
           await apiRequest("DELETE", `/api/diary/trips/${tripDraft.originalId}`);
           await removeTripDraft(tripDraft.id);
           
           toast({
-            title: "Synchronizované",
+            title: "✅ Synchronizované",
             description: "Výprava bola úspešne zmazaná",
+            variant: "success" as any,
           });
         }
         
@@ -388,7 +394,7 @@ export default function DiaryTrips() {
       } catch (error) {
         console.error('Failed to sync trip:', error);
         toast({
-          title: "Chyba synchronizácie",
+          title: "❌ Chyba synchronizácie",
           description: `Nepodarilo sa synchronizovať výpravu z ${new Date(tripDraft.timestamp).toLocaleTimeString()}`,
           variant: "destructive",
         });
