@@ -257,8 +257,9 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
       queryClient.invalidateQueries({ queryKey: ["/api/diary/catch-limits"] });
       handleClose();
       toast({
-        title: "Úlovok pridaný!",
+        title: "✅ Úlovok pridaný!",
         description: "Váš úlovok bol úspešne pridaný do denníka.",
+        variant: "success" as any,
       });
       onSuccess?.();
     },
@@ -277,8 +278,9 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
       queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
       handleClose();
       toast({
-        title: "Úlovok aktualizovaný!",
+        title: "✅ Úlovok aktualizovaný!",
         description: "Váš úlovok bol úspešne aktualizovaný.",
+        variant: "success" as any,
       });
       onSuccess?.();
     },
@@ -313,7 +315,7 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
         handleClose();
         
         toast({
-          title: "Uložené offline",
+          title: "📤 Uložené offline",
           description: selectedPhotos.length > 0
             ? "Úlovok s fotkou sa odošle automaticky po obnovení pripojenia"
             : "Úlovok sa odošle automaticky po obnovení pripojenia",
@@ -322,7 +324,7 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
       } catch (error) {
         console.error('Failed to save catch draft:', error);
         toast({
-          title: "Chyba",
+          title: "❌ Chyba",
           description: "Nepodarilo sa uložiť úlovok offline",
           variant: "destructive",
         });
@@ -356,7 +358,7 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
           } catch (error) {
             console.error('Photo upload error:', error);
             toast({
-              title: "Chyba pri nahrávaní fotiek",
+              title: "❌ Chyba pri nahrávaní fotiek",
               description: "Úlovok bude aktualizovaný bez nových fotiek",
               variant: "destructive",
             });
@@ -386,8 +388,9 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
             // 3. If there are photos, upload them in background
             if (photosToUpload.length > 0) {
               toast({
-                title: "Úlovok uložený!",
+                title: "✅ Úlovok uložený!",
                 description: `${photosToUpload.length} ${photosToUpload.length === 1 ? 'fotka sa nahráva' : 'fotky sa nahrávajú'} na pozadí...`,
+                variant: "success" as any,
               });
               
               // Background photo upload (async, non-blocking)
