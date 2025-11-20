@@ -2,7 +2,7 @@
 
 Contestio is a live fishing competition platform offering multi-role management for spectators, organizers, and referees. It features real-time competition tracking, team management, catch recording, and live leaderboards with WebSocket integration.
 
-The platform is expanding with a "Fishing Diary" module for personal catch logging, including freemium tiers (FREE: 1 trip/20 catches; PREMIUM: unlimited, battles). Recent key features include instant catch saving with background photo uploads, a dark theme, a weather forecast module with a premium "Fish Activity Index", a favorites system for competitions and teams, and clickable statistics cards on the diary dashboard. The battle system has been enhanced with automatic catch assignment, minimum weight filtering, and optimized login.
+The platform is expanding with a "Fishing Diary" module for personal catch logging, including freemium tiers (FREE: 1 trip/20 catches; PREMIUM: unlimited, battles). Recent key features include instant catch saving with background photo uploads, a dark theme, a weather forecast module with a premium "Fish Activity Index", a favorites system for competitions and teams, clickable statistics cards on the diary dashboard, enhanced toast notifications with emoji icons and color-coded success states, and a global Floating Action Button (FAB) for instant catch entry across all diary pages. The battle system has been enhanced with automatic catch assignment, minimum weight filtering, and optimized login.
 
 # User Preferences
 
