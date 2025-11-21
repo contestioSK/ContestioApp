@@ -1151,6 +1151,23 @@ export const insertUserArsenalBaitSchema = createInsertSchema(userArsenalBaits).
 
 export type UserArsenalBait = typeof userArsenalBaits.$inferSelect;
 
+// User Badges - Gamification system
+export const userBadges = pgTable("user_badges", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  badgeType: varchar("badge_type", { length: 50 }).notNull(), // "fishing_fanatic", "predator_threat", "big_mama_hunter", etc.
+  tier: varchar("tier", { length: 20 }).notNull(), // "bronze", "silver", "gold"
+  unlockedAt: timestamp("unlocked_at").defaultNow(),
+});
+
+export const insertUserBadgeSchema = createInsertSchema(userBadges).omit({
+  id: true,
+  unlockedAt: true,
+});
+
+export type UserBadge = typeof userBadges.$inferSelect;
+export type InsertUserBadge = z.infer<typeof insertUserBadgeSchema>;
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -1216,3 +1233,7 @@ export type BaitProductLine = typeof baitProductLines.$inferSelect;
 export type InsertBaitProductLine = z.infer<typeof insertBaitProductLineSchema>;
 export type BaitFlavor = typeof baitFlavors.$inferSelect;
 export type InsertBaitFlavor = z.infer<typeof insertBaitFlavorSchema>;
+
+// Badge types
+export type UserBadgeRecord = typeof userBadges.$inferSelect;
+export type InsertUserBadgeRecord = z.infer<typeof insertUserBadgeSchema>;
