@@ -24,7 +24,8 @@ import {
   Cloud,
   Scale,
   Shield,
-  CalendarDays
+  CalendarDays,
+  Award
 } from "lucide-react";
 import contestioLogo from "@assets/contestio logo_1760283270014.png";
 
@@ -92,6 +93,12 @@ const navigationItems = [
     label: "Arzenál",
     href: "/diary/arsenal",
     description: "Vybavenie a návnady"
+  },
+  {
+    icon: Award,
+    label: "Moje Odznaky",
+    href: "/diary/badges",
+    description: "Zbieranie odznakov"
   }
 ];
 

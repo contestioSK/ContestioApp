@@ -42,6 +42,7 @@ import DiaryProfile from "@/pages/diary/profile";
 import WeatherForecast from "@/pages/diary/weather-forecast";
 import FishingRules from "@/pages/diary/fishing-rules";
 import Arsenal from "@/pages/diary/arsenal";
+import Badges from "@/pages/diary/badges";
 import BattlePaywall from "@/pages/diary/battle-paywall";
 import BattleIndex from "@/pages/diary/battle-index";
 import BattleCreate from "@/pages/diary/battle-create";
@@ -165,6 +166,11 @@ function Router() {
       <Route path="/diary/arsenal">
         <ProtectedRoute>
           <Arsenal />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/diary/badges">
+        <ProtectedRoute>
+          <Badges />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/seasonal-goals">
