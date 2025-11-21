@@ -5,7 +5,7 @@ import { randomUUID } from "crypto";
 import { storage } from "./storage";
 import { db } from "./db";
 import { eq, and, gt, desc } from "drizzle-orm";
-import { diaryBattles, users, baitManufacturers, baitProductLines, baitFlavors, userArsenalBaits, userBadges } from "@shared/schema";
+import { diaryBattles, users, baitManufacturers, baitProductLines, baitFlavors, userArsenalBaits, userBadges, fishingAreas } from "@shared/schema";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { hashPassword, validatePassword, generateVerificationToken, generateTokenExpiration } from "./utils/auth";
 import { emailService } from "./utils/email";
