@@ -80,47 +80,45 @@ export function FishingAreaSelect({ value, onChange }: FishingAreaSelectProps) {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0" side="bottom" align="start">
-        <Command shouldFilter={false}>
-          <div className="p-3 border-b">
-            <Input
-              placeholder="Hľadať číslo (2-4120-1-1) alebo názov (Váh)..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              data-testid="input-search-fishing-area"
-              className="h-8"
-            />
-          </div>
-          <CommandList>
-            {areas.length === 0 ? (
-              <CommandEmpty>Žiadne revíry nenájdené</CommandEmpty>
-            ) : (
-              <CommandGroup>
-                {areas.map((area) => (
-                  <CommandItem
-                    key={area.id}
-                    value={area.number}
-                    onSelect={(currentValue) => {
-                      onChange(currentValue === value ? "" : currentValue);
-                      setOpen(false);
-                    }}
-                    data-testid={`option-fishing-area-${area.id}`}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        (value === area.number || value === area.name) ? "opacity-100" : "opacity-0"
-                      )}
-                    />
-                    <div className="flex-1">
-                      <div className="font-semibold text-sm">{area.number}</div>
-                      <div className="text-xs text-muted-foreground">{area.name}</div>
-                    </div>
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            )}
-          </CommandList>
-        </Command>
+        <div className="p-3 border-b">
+          <Input
+            placeholder="Hľadať číslo (2-4120-1-1) alebo názov (Váh)..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            data-testid="input-search-fishing-area"
+            className="h-8"
+          />
+        </div>
+        <CommandList>
+          {areas.length === 0 ? (
+            <CommandEmpty>Žiadne revíry nenájdené</CommandEmpty>
+          ) : (
+            <CommandGroup>
+              {areas.map((area) => (
+                <CommandItem
+                  key={area.id}
+                  value={area.number}
+                  onSelect={(currentValue) => {
+                    onChange(currentValue === value ? "" : currentValue);
+                    setOpen(false);
+                  }}
+                  data-testid={`option-fishing-area-${area.id}`}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      (value === area.number || value === area.name) ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  <div className="flex-1">
+                    <div className="font-semibold text-sm">{area.number}</div>
+                    <div className="text-xs text-muted-foreground">{area.name}</div>
+                  </div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          )}
+        </CommandList>
       </PopoverContent>
     </Popover>
   );
