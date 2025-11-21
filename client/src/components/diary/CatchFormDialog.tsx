@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { showErrorToast } from "@/lib/errorUtils";
+import { FishingAreaSelect } from "@/components/FishingAreaSelect";
 
 import { 
   Calendar as CalendarIcon, 
@@ -917,14 +918,8 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
                 name="spot"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Revír / Miesto</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="napr. Dunaj pri Bratislave" 
-                        data-testid="input-spot"
-                        {...field} 
-                      />
-                    </FormControl>
+                    <FormLabel>Revír (Rybársky revír)</FormLabel>
+                    <FishingAreaSelect value={field.value} onChange={field.onChange} />
                     <FormMessage />
                   </FormItem>
                 )}

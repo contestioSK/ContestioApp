@@ -1242,7 +1242,7 @@ export type InsertUserBadgeRecord = z.infer<typeof insertUserBadgeSchema>;
 
 // Fishing Areas table - Global database of Slovak fishing areas (rybárske revíry)
 export const fishingAreas = pgTable("fishing_areas", {
-  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  id: serial("id").primaryKey(),
   number: varchar("number", { length: 50 }).notNull().unique(), // e.g., "2-4120-1-1"
   name: varchar("name", { length: 500 }).notNull(), // e.g., "Váh Žilina, MsO..."
   createdAt: timestamp("created_at").defaultNow(),
