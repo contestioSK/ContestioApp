@@ -5,7 +5,7 @@ import { randomUUID } from "crypto";
 import { storage } from "./storage";
 import { db } from "./db";
 import { eq, and, gt, desc } from "drizzle-orm";
-import { diaryBattles, users, baitManufacturers, baitProductLines, baitFlavors, userArsenalBaits } from "@shared/schema";
+import { diaryBattles, users, baitManufacturers, baitProductLines, baitFlavors, userArsenalBaits, userBadges } from "@shared/schema";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { hashPassword, validatePassword, generateVerificationToken, generateTokenExpiration } from "./utils/auth";
 import { emailService } from "./utils/email";
@@ -4991,6 +4991,20 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     } catch (error) {
       console.error("Error fetching diary catch limits:", error);
       res.status(500).json({ message: "Failed to fetch catch limits" });
+    }
+  });
+
+  // Get user badges
+  app.get('/api/diary/badges', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id || req.user?.claims?.sub;
+      const badges = await db.query.userBadges.findMany({
+        where: (badges: any) => eq(badges.userId, userId),
+      });
+      res.json(badges || []);
+    } catch (error) {
+      console.error("Error fetching user badges:", error);
+      res.status(500).json({ message: "Failed to fetch badges" });
     }
   });
 
