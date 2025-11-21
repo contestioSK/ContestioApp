@@ -1116,18 +1116,21 @@ export const baitFlavors = pgTable("bait_flavors", {
 });
 
 // Bait insert schemas
-export const insertBaitManufacturerSchema = createInsertSchema(baitManufacturers).omit({
-  id: true,
+export const insertBaitManufacturerSchema = createInsertSchema(baitManufacturers, {
+  name: z.string().min(1, "Názov je povinný")
+}).omit({
   createdAt: true,
 });
 
-export const insertBaitProductLineSchema = createInsertSchema(baitProductLines).omit({
-  id: true,
+export const insertBaitProductLineSchema = createInsertSchema(baitProductLines, {
+  name: z.string().min(1, "Názov je povinný")
+}).omit({
   createdAt: true,
 });
 
-export const insertBaitFlavorSchema = createInsertSchema(baitFlavors).omit({
-  id: true,
+export const insertBaitFlavorSchema = createInsertSchema(baitFlavors, {
+  name: z.string().min(1, "Názov je povinný")
+}).omit({
   createdAt: true,
 });
 
@@ -1145,7 +1148,6 @@ export const userArsenalBaits = pgTable("user_arsenal_baits", {
 });
 
 export const insertUserArsenalBaitSchema = createInsertSchema(userArsenalBaits).omit({
-  id: true,
   createdAt: true,
 });
 
@@ -1161,7 +1163,6 @@ export const userBadges = pgTable("user_badges", {
 });
 
 export const insertUserBadgeSchema = createInsertSchema(userBadges).omit({
-  id: true,
   unlockedAt: true,
 });
 
