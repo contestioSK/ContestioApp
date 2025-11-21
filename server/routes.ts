@@ -5008,6 +5008,33 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
+  // Fishing areas endpoint - Get all fishing areas with optional search
+  app.get('/api/fishing-areas', async (req, res) => {
+    try {
+      const { search = '' } = req.query;
+      
+      let areas = await db.select().from(fishingAreas);
+      
+      if (search && typeof search === 'string') {
+        const searchLower = search.toLowerCase();
+        areas = areas.filter(area => 
+          area.number.toLowerCase().includes(searchLower) || 
+          area.name.toLowerCase().includes(searchLower)
+        );
+      }
+      
+      // Sort by number, limit to 100 results
+      areas = areas
+        .sort((a, b) => a.number.localeCompare(b.number))
+        .slice(0, 100);
+      
+      res.json(areas);
+    } catch (error) {
+      console.error("Error fetching fishing areas:", error);
+      res.status(500).json({ message: "Failed to fetch fishing areas" });
+    }
+  });
+
   // Premium status endpoint
   app.get('/api/auth/premium-status', isAuthenticated, async (req: any, res) => {
     try {
