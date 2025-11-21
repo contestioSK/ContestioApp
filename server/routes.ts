@@ -5510,7 +5510,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
 
       const [newBait] = await db
         .insert(userArsenalBaits)
-        .values(validatedData)
+        .values(validatedData as any)
         .returning();
 
       res.status(201).json(newBait);
