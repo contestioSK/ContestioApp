@@ -1195,7 +1195,25 @@ export class DatabaseStorage implements IStorage {
     // Calculate 24 hours ago
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
     
-    const refereesWithCompetitions = await db
+    // Step 1: Get all users with active referee assignments (including both expired and still-active)
+    const usersWithActiveAssignments = await db
+      .selectDistinct({ userId: referees.userId })
+      .from(referees)
+      .innerJoin(competitions, eq(referees.competitionId, competitions.id))
+      .where(
+        and(
+          eq(referees.isActive, true),
+          or(
+            ne(competitions.status, 'finished'),
+            sql`${competitions.endDate} >= ${twentyFourHoursAgo}`
+          )
+        )
+      );
+    
+    const activeUserIds = new Set(usersWithActiveAssignments.map(r => r.userId));
+    
+    // Step 2: Get all expired referee assignments where user is 'referee' role
+    const expiredReferees = await db
       .select()
       .from(referees)
       .innerJoin(users, eq(referees.userId, users.id))
@@ -1208,12 +1226,15 @@ export class DatabaseStorage implements IStorage {
           eq(referees.isActive, true)
         )
       );
-
-    return refereesWithCompetitions.map(row => ({
-      ...row.referees,
-      user: row.users,
-      competition: row.competitions,
-    }));
+    
+    // Step 3: Filter to only users who have NO active assignments
+    return expiredReferees
+      .filter(row => !activeUserIds.has(row.referees.userId))
+      .map(row => ({
+        ...row.referees,
+        user: row.users,
+        competition: row.competitions,
+      }));
   }
 
   // Catch operations

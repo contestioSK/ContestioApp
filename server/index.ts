@@ -245,19 +245,27 @@ async function startRefereeCleanupScheduler() {
       const expiredReferees = await storage.getRefereesWithExpiredCompetitions();
       
       if (expiredReferees.length > 0) {
-        log(`[SCHEDULER] Found ${expiredReferees.length} referees with expired competitions (>24h finished)`);
+        log(`[SCHEDULER] Found ${expiredReferees.length} referee(s) with ALL competitions expired (>24h finished)`);
         
-        for (const referee of expiredReferees) {
+        // Group by user to process once per user
+        const userIds = Array.from(new Set(expiredReferees.map(r => r.userId)));
+        
+        for (const userId of userIds) {
+          const userReferees = expiredReferees.filter(r => r.userId === userId);
+          const userEmail = userReferees[0].user.email;
+          
           try {
             // Change user role from 'referee' to 'public'
-            await storage.updateUserRole(referee.userId, 'public');
+            await storage.updateUserRole(userId, 'public');
             
-            // Optionally deactivate the referee assignment
-            await storage.updateReferee(referee.id, { isActive: false });
+            // Deactivate all expired referee assignments for this user
+            for (const referee of userReferees) {
+              await storage.updateReferee(referee.id, { isActive: false });
+            }
             
-            log(`[SCHEDULER] Changed referee ${referee.user.email} to public role (competition: ${referee.competition.name})`);
+            log(`[SCHEDULER] Changed referee ${userEmail} to public role (${userReferees.length} assignment(s) deactivated)`);
           } catch (error) {
-            console.error(`[SCHEDULER] Error updating referee ${referee.id}:`, error);
+            console.error(`[SCHEDULER] Error updating referee ${userId}:`, error);
           }
         }
       }
