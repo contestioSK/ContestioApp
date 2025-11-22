@@ -61,7 +61,8 @@ import {
   ChevronDown,
   MoreVertical,
   Ban,
-  KeyRound
+  KeyRound,
+  User
 } from "lucide-react";
 import type { Competition, Team, TeamMember, CompetitionRegistration, InsertSponsor, Sponsor, SponsorLevel, Catch, Referee, InsertReferee } from "@shared/schema";
 import { getSideCompetitionLabel } from "@/lib/utils";
@@ -334,6 +335,9 @@ export default function AdminPanel() {
   const [bulkAction, setBulkAction] = useState<'approve' | 'reject' | null>(null);
   const [isPremiumDialogOpen, setIsPremiumDialogOpen] = useState(false);
   const [premiumExpiryDate, setPremiumExpiryDate] = useState<Date | undefined>(undefined);
+  const [isEditProfileDialogOpen, setIsEditProfileDialogOpen] = useState(false);
+  const [editProfileData, setEditProfileData] = useState({ email: '', firstName: '', lastName: '', nickname: '' });
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
   
   // Referee state
   const [editingReferee, setEditingReferee] = useState<Referee | null>(null);
@@ -937,6 +941,52 @@ export default function AdminPanel() {
         variant: "destructive",
         title: "❌ Chyba",
         description: "Nepodarilo sa aktualizovať premium status"
+      });
+    },
+  });
+
+  // Update user profile mutation
+  const updateUserProfileMutation = useMutation({
+    mutationFn: async ({ userId, data }: { userId: string; data: any }) => {
+      const response = await apiRequest("PUT", `/api/admin/users/${userId}`, data);
+      return response.json();
+    },
+    onSuccess: () => {
+      refetchUsers();
+      setIsEditProfileDialogOpen(false);
+      toast({
+        title: "✅ Úspech",
+        description: "Profil používateľa bol aktualizovaný"
+      });
+    },
+    onError: (error) => {
+      console.error("Error updating user profile:", error);
+      toast({
+        variant: "destructive",
+        title: "❌ Chyba",
+        description: "Nepodarilo sa aktualizovať profil"
+      });
+    },
+  });
+
+  // Reset user password mutation
+  const resetUserPasswordMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const response = await apiRequest("POST", `/api/admin/users/${userId}/reset-password`, {});
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "✅ Email odoslaný",
+        description: "Používateľovi bol odoslaný email na reset hesla"
+      });
+    },
+    onError: (error) => {
+      console.error("Error sending password reset:", error);
+      toast({
+        variant: "destructive",
+        title: "❌ Chyba",
+        description: "Nepodarilo sa odoslať reset email"
       });
     },
   });
@@ -2430,7 +2480,7 @@ export default function AdminPanel() {
                           : selectedUserForAction?.email}
                       </DialogDescription>
                     </DialogHeader>
-                    {selectedUserForAction && (
+                    {selectedUserForAction ? (
                       <div className="space-y-2">
                         {/* Premium Management with Expiry Date */}
                         <Dialog open={isPremiumDialogOpen} onOpenChange={setIsPremiumDialogOpen}>
@@ -2548,6 +2598,46 @@ export default function AdminPanel() {
                             </div>
                           </DialogContent>
                         </Dialog>
+
+                        {/* Edit Profile Button */}
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Persist user ID for edit dialog
+                            setEditingUserId(selectedUserForAction.id);
+                            // Load current user data into form
+                            setEditProfileData({
+                              email: selectedUserForAction.email || '',
+                              firstName: selectedUserForAction.firstName || '',
+                              lastName: selectedUserForAction.lastName || '',
+                              nickname: selectedUserForAction.nickname || ''
+                            });
+                            // Open edit dialog (User Action Dialog stays open in background)
+                            setIsEditProfileDialogOpen(true);
+                          }}
+                          data-testid={`button-edit-profile-${selectedUserForAction.id}`}
+                        >
+                          <User className="w-4 h-4 mr-2" />
+                          Upraviť profil
+                        </Button>
+
+                        {/* Reset Password */}
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start"
+                          onClick={() => {
+                            if (confirm(`Odoslať email na reset hesla používateľovi ${selectedUserForAction.email}?`)) {
+                              resetUserPasswordMutation.mutate(selectedUserForAction.id);
+                            }
+                          }}
+                          disabled={resetUserPasswordMutation.isPending}
+                          data-testid={`button-reset-password-${selectedUserForAction.id}`}
+                        >
+                          <KeyRound className="w-4 h-4 mr-2" />
+                          Resetovať heslo
+                        </Button>
                         
                         {/* Change Role */}
                         <div className="border border-border rounded-md p-3">
@@ -2655,7 +2745,89 @@ export default function AdminPanel() {
                           </DialogContent>
                         </Dialog>
                       </div>
-                    )}
+                    ) : null}
+                  </DialogContent>
+                </Dialog>
+
+                {/* Edit Profile Dialog - Separate from User Action Dialog */}
+                <Dialog 
+                  open={isEditProfileDialogOpen} 
+                  onOpenChange={(open) => {
+                    setIsEditProfileDialogOpen(open);
+                    if (!open) {
+                      // Reset form data and user ID when dialog closes
+                      setEditProfileData({ email: '', firstName: '', lastName: '', nickname: '' });
+                      setEditingUserId(null);
+                    }
+                  }}
+                >
+                  <DialogContent className="max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Upraviť profil</DialogTitle>
+                      <DialogDescription>
+                        Zmena údajov používateľa
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label>Email</Label>
+                        <Input
+                          type="email"
+                          value={editProfileData.email}
+                          onChange={(e) => setEditProfileData({ ...editProfileData, email: e.target.value })}
+                          data-testid="input-edit-email"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Meno</Label>
+                        <Input
+                          value={editProfileData.firstName}
+                          onChange={(e) => setEditProfileData({ ...editProfileData, firstName: e.target.value })}
+                          data-testid="input-edit-firstname"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Priezvisko</Label>
+                        <Input
+                          value={editProfileData.lastName}
+                          onChange={(e) => setEditProfileData({ ...editProfileData, lastName: e.target.value })}
+                          data-testid="input-edit-lastname"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Prezývka</Label>
+                        <Input
+                          value={editProfileData.nickname}
+                          onChange={(e) => setEditProfileData({ ...editProfileData, nickname: e.target.value })}
+                          data-testid="input-edit-nickname"
+                        />
+                      </div>
+                      <div className="flex justify-end space-x-2 pt-4">
+                        <Button variant="outline" onClick={() => setIsEditProfileDialogOpen(false)}>
+                          Zrušiť
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            if (!editingUserId) {
+                              toast({
+                                variant: "destructive",
+                                title: "❌ Chyba",
+                                description: "Používateľ nebol nájdený. Skúste to znova."
+                              });
+                              return;
+                            }
+                            updateUserProfileMutation.mutate({
+                              userId: editingUserId,
+                              data: editProfileData
+                            });
+                          }}
+                          disabled={updateUserProfileMutation.isPending}
+                          data-testid="button-save-profile"
+                        >
+                          Uložiť zmeny
+                        </Button>
+                      </div>
+                    </div>
                   </DialogContent>
                 </Dialog>
 
