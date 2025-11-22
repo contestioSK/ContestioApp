@@ -14,6 +14,7 @@ import {
   Trophy, 
   LogOut, 
   User,
+  Users,
   Fish,
   Calendar,
   Plus,
@@ -74,6 +75,12 @@ const navigationItems = [
     label: "Ciele",
     href: "/diary/seasonal-goals", 
     description: "Sezónne ciele"
+  },
+  {
+    icon: Users,
+    label: "Priatelia",
+    href: "/friends",
+    description: "Správa priateľov"
   },
   {
     icon: Swords,
