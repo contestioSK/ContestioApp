@@ -2029,11 +2029,6 @@ export default function AdminPanel() {
                                   </Select>
                                 </div>
                               </div>
-
-                              {/* Additional Info */}
-                              <div className="text-right min-w-[80px]">
-                                <p className="text-xs text-muted-foreground">ID: {user.id}</p>
-                              </div>
                             </div>
                           ))}
                         </div>
