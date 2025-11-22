@@ -332,6 +332,8 @@ export default function AdminPanel() {
   const [isUserActionDialogOpen, setIsUserActionDialogOpen] = useState(false);
   const [userActionType, setUserActionType] = useState<'role' | 'ban' | 'unban' | null>(null);
   const [bulkAction, setBulkAction] = useState<'approve' | 'reject' | null>(null);
+  const [isPremiumDialogOpen, setIsPremiumDialogOpen] = useState(false);
+  const [premiumExpiryDate, setPremiumExpiryDate] = useState<Date | undefined>(undefined);
   
   // Referee state
   const [editingReferee, setEditingReferee] = useState<Referee | null>(null);
@@ -910,6 +912,31 @@ export default function AdminPanel() {
         title: "Chyba",
         description: "Nepodarilo sa aktualizovať premium status",
         variant: "destructive",
+      });
+    },
+  });
+
+  // Manual premium management with expiry date
+  const updateUserPremiumManualMutation = useMutation({
+    mutationFn: async ({ userId, isPremium, expiresAt }: { userId: string; isPremium: boolean; expiresAt: string | null }) => {
+      const response = await apiRequest("PUT", `/api/admin/users/${userId}/premium-manual`, { isPremium, expiresAt });
+      return response.json();
+    },
+    onSuccess: () => {
+      refetchUsers();
+      setIsPremiumDialogOpen(false);
+      setPremiumExpiryDate(undefined);
+      toast({
+        title: "✅ Úspech",
+        description: "Premium status bol aktualizovaný"
+      });
+    },
+    onError: (error) => {
+      console.error("Error updating premium status:", error);
+      toast({
+        variant: "destructive",
+        title: "❌ Chyba",
+        description: "Nepodarilo sa aktualizovať premium status"
       });
     },
   });
@@ -2405,24 +2432,122 @@ export default function AdminPanel() {
                     </DialogHeader>
                     {selectedUserForAction && (
                       <div className="space-y-2">
-                        {/* Toggle Premium */}
-                        <Button
-                          variant="outline"
-                          className="w-full justify-start"
-                          onClick={() => {
-                            updateUserPremiumMutation.mutate({ 
-                              userId: selectedUserForAction.id, 
-                              isPremium: !selectedUserForAction.isPremium 
-                            });
-                            setIsUserActionDialogOpen(false);
-                            setSelectedUserForAction(null);
-                          }}
-                          disabled={updateUserPremiumMutation.isPending}
-                          data-testid={`button-toggle-premium-${selectedUserForAction.id}`}
-                        >
-                          <Star className="w-4 h-4 mr-2" />
-                          {selectedUserForAction.isPremium ? 'Zrušiť Premium' : 'Aktivovať Premium'}
-                        </Button>
+                        {/* Premium Management with Expiry Date */}
+                        <Dialog open={isPremiumDialogOpen} onOpenChange={setIsPremiumDialogOpen}>
+                          <DialogTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className="w-full justify-start"
+                              onClick={() => {
+                                setIsPremiumDialogOpen(true);
+                                // Set current expiry date if user has premium
+                                if (selectedUserForAction.premiumExpiresAt) {
+                                  setPremiumExpiryDate(new Date(selectedUserForAction.premiumExpiresAt));
+                                } else {
+                                  setPremiumExpiryDate(undefined);
+                                }
+                              }}
+                              data-testid={`button-manage-premium-${selectedUserForAction.id}`}
+                            >
+                              <Star className="w-4 h-4 mr-2" />
+                              Spravovať Premium
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-md">
+                            <DialogHeader>
+                              <DialogTitle>Spravovať Premium</DialogTitle>
+                              <DialogDescription>
+                                {selectedUserForAction.firstName && selectedUserForAction.lastName 
+                                  ? `${selectedUserForAction.firstName} ${selectedUserForAction.lastName}` 
+                                  : selectedUserForAction.email}
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-4 py-4">
+                              {/* Current Status */}
+                              <div className="bg-muted/30 p-3 rounded-lg">
+                                <p className="text-sm font-medium mb-1">Aktuálny status</p>
+                                <Badge className={selectedUserForAction.isPremium ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20' : 'bg-gray-500/10 text-gray-600 dark:text-gray-400 border-gray-500/20'}>
+                                  {selectedUserForAction.isPremium ? '⭐ Premium' : 'Free'}
+                                </Badge>
+                                {selectedUserForAction.premiumExpiresAt && (
+                                  <p className="text-xs text-muted-foreground mt-2">
+                                    Platné do: {new Date(selectedUserForAction.premiumExpiresAt).toLocaleDateString('sk-SK')}
+                                  </p>
+                                )}
+                              </div>
+
+                              {/* Expiry Date Picker */}
+                              <div className="space-y-2">
+                                <Label>Dátum vypršania (voliteľné)</Label>
+                                <Input
+                                  type="date"
+                                  value={premiumExpiryDate ? premiumExpiryDate.toISOString().split('T')[0] : ''}
+                                  onChange={(e) => setPremiumExpiryDate(e.target.value ? new Date(e.target.value) : undefined)}
+                                  min={new Date().toISOString().split('T')[0]}
+                                  data-testid="input-premium-expiry"
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                  Ak nevyberiete dátum, premium bude trvať donekonečna
+                                </p>
+                              </div>
+
+                              {/* Action Buttons */}
+                              <div className="flex space-x-2">
+                                {selectedUserForAction.isPremium ? (
+                                  <Button
+                                    variant="destructive"
+                                    className="flex-1"
+                                    onClick={() => {
+                                      updateUserPremiumManualMutation.mutate({
+                                        userId: selectedUserForAction.id,
+                                        isPremium: false,
+                                        expiresAt: null
+                                      });
+                                    }}
+                                    disabled={updateUserPremiumManualMutation.isPending}
+                                    data-testid="button-deactivate-premium"
+                                  >
+                                    Deaktivovať Premium
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    className="flex-1"
+                                    onClick={() => {
+                                      updateUserPremiumManualMutation.mutate({
+                                        userId: selectedUserForAction.id,
+                                        isPremium: true,
+                                        expiresAt: premiumExpiryDate ? premiumExpiryDate.toISOString() : null
+                                      });
+                                    }}
+                                    disabled={updateUserPremiumManualMutation.isPending}
+                                    data-testid="button-activate-premium"
+                                  >
+                                    <Star className="w-4 h-4 mr-2" />
+                                    Aktivovať Premium
+                                  </Button>
+                                )}
+                                
+                                {selectedUserForAction.isPremium && (
+                                  <Button
+                                    variant="outline"
+                                    className="flex-1"
+                                    onClick={() => {
+                                      updateUserPremiumManualMutation.mutate({
+                                        userId: selectedUserForAction.id,
+                                        isPremium: true,
+                                        expiresAt: premiumExpiryDate ? premiumExpiryDate.toISOString() : null
+                                      });
+                                    }}
+                                    disabled={updateUserPremiumManualMutation.isPending}
+                                    data-testid="button-update-premium-expiry"
+                                  >
+                                    Aktualizovať dátum
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
                         
                         {/* Change Role */}
                         <div className="border border-border rounded-md p-3">
