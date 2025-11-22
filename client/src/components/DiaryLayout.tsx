@@ -39,13 +39,17 @@ interface DiaryLayoutProps {
   children: React.ReactNode;
 }
 
-const navigationItems = [
+// Navigation organized into logical sections
+const mainSection = [
   {
     icon: BookOpen,
     label: "Denník",
     href: "/diary",
     description: "Hlavný prehľad"
-  },
+  }
+];
+
+const fishingLifeSection = [
   {
     icon: Fish,
     label: "Moje úlovky",
@@ -59,23 +63,20 @@ const navigationItems = [
     description: "Viacdenné výlety"
   },
   {
-    icon: Cloud,
-    label: "Predpoveď počasia",
-    href: "/diary/weather-forecast",
-    description: "3-dňová predpoveď"
+    icon: Trophy,
+    label: "Arzenál",
+    href: "/diary/arsenal",
+    description: "Vybavenie a návnady"
   },
   {
     icon: BarChart3,
     label: "Štatistiky", 
     href: "/diary/stats",
     description: "Analýzy úlovkov"
-  },
-  {
-    icon: Target,
-    label: "Ciele",
-    href: "/diary/seasonal-goals", 
-    description: "Sezónne ciele"
-  },
+  }
+];
+
+const communitySection = [
   {
     icon: Users,
     label: "Priatelia",
@@ -88,6 +89,15 @@ const navigationItems = [
     href: "/diary/battles",
     description: "Súťažné súboje",
     premium: true
+  }
+];
+
+const toolsSection = [
+  {
+    icon: Cloud,
+    label: "Predpoveď počasia",
+    href: "/diary/weather-forecast",
+    description: "3-dňová predpoveď"
   },
   {
     icon: Scale,
@@ -96,10 +106,10 @@ const navigationItems = [
     description: "Pravidlá a predpisy"
   },
   {
-    icon: Trophy,
-    label: "Arzenál",
-    href: "/diary/arsenal",
-    description: "Vybavenie a návnady"
+    icon: Target,
+    label: "Ciele",
+    href: "/diary/seasonal-goals", 
+    description: "Sezónne ciele"
   },
   {
     icon: Award,
@@ -208,8 +218,92 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
 
           {/* Navigation */}
           <nav className="flex-1 px-2 md:px-3 py-4 md:py-6 space-y-1 overflow-y-auto">
-            {/* Diary Section */}
-            {navigationItems.map((item) => {
+            {/* HLAVNÉ Section */}
+            {mainSection.map((item) => {
+              const Icon = item.icon;
+              const isActive = isActivePath(item.href);
+              
+              return (
+                <button
+                  key={item.href}
+                  onClick={() => {
+                    setLocation(item.href);
+                    setSidebarOpen(false);
+                  }}
+                  className={`
+                    w-full flex items-center px-2 md:px-3 py-2 md:py-3 text-sm font-medium rounded-lg transition-all
+                    ${isActive 
+                      ? 'bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-white border border-blue-500/50 shadow-lg shadow-blue-500/20' 
+                      : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent'
+                    }
+                  `}
+                  data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
+                >
+                  <Icon className="mr-2 md:mr-3 h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
+                  <div className="text-left flex-1">
+                    <div className="font-medium text-xs md:text-sm">{item.label}</div>
+                    <div className="text-xs text-sidebar-foreground/50 hidden md:block">{item.description}</div>
+                  </div>
+                </button>
+              );
+            })}
+
+            {/* Section Divider - MÔJ RYBÁRSKY ŽIVOT */}
+            <div className="pt-4 pb-2">
+              <div className="px-2 md:px-3 mb-2">
+                <div className="h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent"></div>
+              </div>
+              <div className="px-2 md:px-3">
+                <p className="text-[10px] md:text-xs font-bold text-blue-400/70 uppercase tracking-wider">
+                  🎣 Môj Rybársky Život
+                </p>
+              </div>
+            </div>
+
+            {/* Fishing Life Section */}
+            {fishingLifeSection.map((item) => {
+              const Icon = item.icon;
+              const isActive = isActivePath(item.href);
+              
+              return (
+                <button
+                  key={item.href}
+                  onClick={() => {
+                    setLocation(item.href);
+                    setSidebarOpen(false);
+                  }}
+                  className={`
+                    w-full flex items-center px-2 md:px-3 py-2 md:py-3 text-sm font-medium rounded-lg transition-all
+                    ${isActive 
+                      ? 'bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-white border border-blue-500/50 shadow-lg shadow-blue-500/20' 
+                      : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent'
+                    }
+                  `}
+                  data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
+                >
+                  <Icon className="mr-2 md:mr-3 h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
+                  <div className="text-left flex-1">
+                    <div className="font-medium text-xs md:text-sm">{item.label}</div>
+                    <div className="text-xs text-sidebar-foreground/50 hidden md:block">{item.description}</div>
+                  </div>
+                </button>
+              );
+            })}
+
+            {/* Section Divider - SÚŤAŽE & KOMUNITA */}
+            <div className="pt-4 pb-2">
+              <div className="px-2 md:px-3 mb-2">
+                <div className="h-px bg-gradient-to-r from-transparent via-purple-500/30 to-transparent"></div>
+              </div>
+              <div className="px-2 md:px-3">
+                <p className="text-[10px] md:text-xs font-bold text-purple-400/70 uppercase tracking-wider">
+                  ⚔️ Súťaže & Komunita
+                </p>
+              </div>
+            </div>
+
+            {/* Community Section */}
+            {communitySection.map((item) => {
               const Icon = item.icon;
               const isActive = isActivePath(item.href);
               
@@ -251,14 +345,56 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
               );
             })}
 
-            {/* Section Divider */}
+            {/* Section Divider - NÁSTROJE & PROGRES */}
+            <div className="pt-4 pb-2">
+              <div className="px-2 md:px-3 mb-2">
+                <div className="h-px bg-gradient-to-r from-transparent via-orange-500/30 to-transparent"></div>
+              </div>
+              <div className="px-2 md:px-3">
+                <p className="text-[10px] md:text-xs font-bold text-orange-400/70 uppercase tracking-wider">
+                  🛠️ Nástroje & Progres
+                </p>
+              </div>
+            </div>
+
+            {/* Tools Section */}
+            {toolsSection.map((item) => {
+              const Icon = item.icon;
+              const isActive = isActivePath(item.href);
+              
+              return (
+                <button
+                  key={item.href}
+                  onClick={() => {
+                    setLocation(item.href);
+                    setSidebarOpen(false);
+                  }}
+                  className={`
+                    w-full flex items-center px-2 md:px-3 py-2 md:py-3 text-sm font-medium rounded-lg transition-all
+                    ${isActive 
+                      ? 'bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-white border border-blue-500/50 shadow-lg shadow-blue-500/20' 
+                      : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent'
+                    }
+                  `}
+                  data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
+                >
+                  <Icon className="mr-2 md:mr-3 h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
+                  <div className="text-left flex-1">
+                    <div className="font-medium text-xs md:text-sm">{item.label}</div>
+                    <div className="text-xs text-sidebar-foreground/50 hidden md:block">{item.description}</div>
+                  </div>
+                </button>
+              );
+            })}
+
+            {/* Section Divider - OFICIÁLNE SÚŤAŽE */}
             <div className="pt-4 pb-2">
               <div className="px-2 md:px-3 mb-2">
                 <div className="h-px bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent"></div>
               </div>
               <div className="px-2 md:px-3">
                 <p className="text-[10px] md:text-xs font-bold text-emerald-500/80 uppercase tracking-wider">
-                  Oficiálne Súťaže
+                  🏆 Oficiálne Súťaže
                 </p>
               </div>
             </div>
@@ -369,7 +505,8 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
         {/* Mobile Bottom Navigation */}
         <div className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50 overflow-x-auto">
           <div className="flex min-w-max">
-            {navigationItems.slice(0, 4).map((item) => {
+            {/* Top 4 most important items for mobile */}
+            {[...mainSection, ...fishingLifeSection.slice(0, 2), ...communitySection.slice(0, 1)].map((item) => {
               const Icon = item.icon;
               const isActive = isActivePath(item.href);
               
@@ -377,13 +514,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                 <button
                   key={item.href}
                   onClick={() => {
-                    // Handle premium routing for Fishing Battle
-                    if (item.premium && item.label === "Fishing Battle") {
-                      const targetHref = isPremium ? "/diary/battles" : "/diary/battles/paywall";
-                      setLocation(targetHref);
-                    } else {
-                      setLocation(item.href);
-                    }
+                    setLocation(item.href);
                   }}
                   className={`
                     flex flex-col items-center justify-center space-y-1 transition-colors px-4 py-2 min-w-[20%] flex-1
