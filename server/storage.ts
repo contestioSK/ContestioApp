@@ -18,6 +18,7 @@ import {
   diaryCatches,
   diaryBattles,
   battleInvitations,
+  friendships,
   type User,
   type UpsertUser,
   type Competition,
@@ -64,6 +65,7 @@ import {
   type InsertSeasonGoal,
   type SeasonGoalProgress,
   type InsertSeasonGoalProgress,
+  type Friendship,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, not, sql, ne, count, gt, gte, lte, inArray } from "drizzle-orm";
@@ -337,6 +339,14 @@ export interface IStorage {
   // Season goal auto-update from diary data
   recalculateGoalProgress(goalId: string): Promise<void>;
   updateAllUserGoalsProgress(userId: string): Promise<void>;
+  
+  // Friendship operations
+  getUserFriends(userId: string): Promise<(User & { friendship?: Friendship })[]>;
+  getFriendRequests(userId: string): Promise<(User & { friendship: Friendship })[]>;
+  sendFriendRequest(senderId: string, recipientId: string): Promise<Friendship>;
+  acceptFriendRequest(friendshipId: string): Promise<Friendship>;
+  rejectFriendRequest(friendshipId: string): Promise<void>;
+  removeFriend(userId: string, friendId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -3353,6 +3363,105 @@ export class DatabaseStorage implements IStorage {
     for (const goal of userGoals) {
       await this.recalculateGoalProgress(goal.id);
     }
+  }
+
+  // Friendship operations
+  async getUserFriends(userId: string): Promise<(User & { friendship?: Friendship })[]> {
+    const friendsList = await db
+      .select()
+      .from(friendships)
+      .where(and(
+        or(
+          eq(friendships.senderId, userId),
+          eq(friendships.recipientId, userId)
+        ),
+        eq(friendships.status, 'accepted')
+      ));
+
+    const friendIds = friendsList.map(f => 
+      f.senderId === userId ? f.recipientId : f.senderId
+    );
+
+    if (friendIds.length === 0) return [];
+
+    return db
+      .select()
+      .from(users)
+      .where(inArray(users.id, friendIds));
+  }
+
+  async getFriendRequests(userId: string): Promise<(User & { friendship: Friendship })[]> {
+    const requests = await db
+      .select()
+      .from(friendships)
+      .where(and(
+        eq(friendships.recipientId, userId),
+        eq(friendships.status, 'pending')
+      ));
+
+    const senderIds = requests.map(r => r.senderId);
+    if (senderIds.length === 0) return [];
+
+    const senders = await db
+      .select()
+      .from(users)
+      .where(inArray(users.id, senderIds));
+
+    return senders.map(sender => ({
+      ...sender,
+      friendship: requests.find(r => r.senderId === sender.id)!
+    }));
+  }
+
+  async sendFriendRequest(senderId: string, recipientId: string): Promise<Friendship> {
+    // Check if already friends or request exists
+    const existing = await db
+      .select()
+      .from(friendships)
+      .where(or(
+        and(eq(friendships.senderId, senderId), eq(friendships.recipientId, recipientId)),
+        and(eq(friendships.senderId, recipientId), eq(friendships.recipientId, senderId))
+      ))
+      .limit(1);
+
+    if (existing.length > 0) {
+      throw new Error('Žiadosť už existuje');
+    }
+
+    const [friendship] = await db
+      .insert(friendships)
+      .values({ senderId, recipientId, status: 'pending' })
+      .returning();
+
+    return friendship;
+  }
+
+  async acceptFriendRequest(friendshipId: string): Promise<Friendship> {
+    const [updated] = await db
+      .update(friendships)
+      .set({ status: 'accepted', updatedAt: new Date() })
+      .where(eq(friendships.id, friendshipId))
+      .returning();
+
+    return updated;
+  }
+
+  async rejectFriendRequest(friendshipId: string): Promise<void> {
+    await db
+      .delete(friendships)
+      .where(eq(friendships.id, friendshipId));
+  }
+
+  async removeFriend(userId: string, friendId: string): Promise<void> {
+    await db
+      .delete(friendships)
+      .where(and(
+        or(
+          and(eq(friendships.senderId, userId), eq(friendships.recipientId, friendId)),
+          and(eq(friendships.senderId, friendId), eq(friendships.recipientId, userId))
+        ),
+        eq(friendships.status, 'accepted')
+      ));
   }
 }
 

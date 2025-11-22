@@ -4,8 +4,8 @@ import { WebSocketServer, WebSocket } from "ws";
 import { randomUUID } from "crypto";
 import { storage } from "./storage";
 import { db } from "./db";
-import { eq, and, gt, desc } from "drizzle-orm";
-import { diaryBattles, users, baitManufacturers, baitProductLines, baitFlavors, userArsenalBaits, userBadges, fishingAreas } from "@shared/schema";
+import { eq, and, gt, desc, or, inArray } from "drizzle-orm";
+import { diaryBattles, users, baitManufacturers, baitProductLines, baitFlavors, userArsenalBaits, userBadges, fishingAreas, friendships } from "@shared/schema";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { hashPassword, validatePassword, generateVerificationToken, generateTokenExpiration } from "./utils/auth";
 import { emailService } from "./utils/email";
@@ -32,6 +32,7 @@ import {
   updateSeasonGoalSchema,
   insertSeasonGoalProgressSchema,
   insertUserArsenalBaitSchema,
+  insertFriendshipSchema,
 } from "@shared/schema";
 import { z } from "zod";
 import { canUseFeature } from "@shared/plan-capabilities";
@@ -5688,5 +5689,219 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
+  // Friends API endpoints
+  app.get('/api/friends', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const friends = await storage.getUserFriends(userId);
+      res.json(friends);
+    } catch (error) {
+      console.error('[FRIENDS] Error fetching friends:', error);
+      res.status(500).json({ message: 'Chyba pri načítaní priateľov' });
+    }
+  });
+
+  app.get('/api/friend-requests', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const requests = await storage.getFriendRequests(userId);
+      res.json(requests);
+    } catch (error) {
+      console.error('[FRIENDS] Error fetching friend requests:', error);
+      res.status(500).json({ message: 'Chyba pri načítaní žiadostí' });
+    }
+  });
+
+  app.get('/api/users/search', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const query = req.query.q as string;
+      
+      if (!query || query.length < 2) {
+        return res.json([]);
+      }
+      
+      const results = await storage.searchUsers(query, userId);
+      res.json(results);
+    } catch (error) {
+      console.error('[FRIENDS] Error searching users:', error);
+      res.status(500).json({ message: 'Chyba pri vyhľadávaní' });
+    }
+  });
+
+  app.post('/api/friend-requests', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const { recipientId } = req.body;
+      
+      if (!recipientId) {
+        return res.status(400).json({ message: 'Chýba recipientId' });
+      }
+      
+      const friendship = await storage.sendFriendRequest(userId, recipientId);
+      res.status(201).json(friendship);
+    } catch (error: any) {
+      console.error('[FRIENDS] Error sending friend request:', error);
+      res.status(400).json({ message: error.message || 'Chyba pri odoslaní žiadosti' });
+    }
+  });
+
+  app.put('/api/friend-requests/:id/accept', isAuthenticated, async (req: any, res) => {
+    try {
+      const friendshipId = req.params.id;
+      
+      const [friendship] = await db.select().from(friendships).where(eq(friendships.id, friendshipId));
+      
+      if (!friendship || friendship.recipientId !== getUserId(req)) {
+        return res.status(403).json({ message: 'Nemáte oprávnenie' });
+      }
+      
+      const updated = await storage.acceptFriendRequest(friendshipId);
+      res.json(updated);
+    } catch (error) {
+      console.error('[FRIENDS] Error accepting friend request:', error);
+      res.status(500).json({ message: 'Chyba pri prijatí žiadosti' });
+    }
+  });
+
+  app.put('/api/friend-requests/:id/reject', isAuthenticated, async (req: any, res) => {
+    try {
+      const friendshipId = req.params.id;
+      
+      const [friendship] = await db.select().from(friendships).where(eq(friendships.id, friendshipId));
+      
+      if (!friendship || friendship.recipientId !== getUserId(req)) {
+        return res.status(403).json({ message: 'Nemáte oprávnenie' });
+      }
+      
+      await storage.rejectFriendRequest(friendshipId);
+      res.json({ message: 'Žiadosť odmenená' });
+    } catch (error) {
+      console.error('[FRIENDS] Error rejecting friend request:', error);
+      res.status(500).json({ message: 'Chyba pri odmietnutí žiadosti' });
+    }
+  });
+
+  app.delete('/api/friends/:friendId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const friendId = req.params.friendId;
+      
+      await storage.removeFriend(userId, friendId);
+      res.json({ message: 'Priateľ odobraný' });
+    } catch (error) {
+      console.error('[FRIENDS] Error removing friend:', error);
+      res.status(500).json({ message: 'Chyba pri odstránení priateľa' });
+    }
+  });
+
   return { server: httpServer, broadcastToUsers };
 }
+
+  // Friends API endpoints
+  app.get('/api/friends', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const friends = await storage.getUserFriends(userId);
+      res.json(friends);
+    } catch (error) {
+      console.error('[FRIENDS] Error fetching friends:', error);
+      res.status(500).json({ message: 'Chyba pri načítaní priateľov' });
+    }
+  });
+
+  app.get('/api/friend-requests', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const requests = await storage.getFriendRequests(userId);
+      res.json(requests);
+    } catch (error) {
+      console.error('[FRIENDS] Error fetching friend requests:', error);
+      res.status(500).json({ message: 'Chyba pri načítaní žiadostí' });
+    }
+  });
+
+  app.get('/api/users/search', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const query = req.query.q as string;
+      
+      if (!query || query.length < 2) {
+        return res.json([]);
+      }
+      
+      const results = await storage.searchUsers(query, userId);
+      res.json(results);
+    } catch (error) {
+      console.error('[FRIENDS] Error searching users:', error);
+      res.status(500).json({ message: 'Chyba pri vyhľadávaní' });
+    }
+  });
+
+  app.post('/api/friend-requests', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const { recipientId } = req.body;
+      
+      if (!recipientId) {
+        return res.status(400).json({ message: 'Chýba recipientId' });
+      }
+      
+      const friendship = await storage.sendFriendRequest(userId, recipientId);
+      res.status(201).json(friendship);
+    } catch (error: any) {
+      console.error('[FRIENDS] Error sending friend request:', error);
+      res.status(400).json({ message: error.message || 'Chyba pri odoslaní žiadosti' });
+    }
+  });
+
+  app.put('/api/friend-requests/:id/accept', isAuthenticated, async (req: any, res) => {
+    try {
+      const friendshipId = req.params.id;
+      
+      // Verify ownership
+      const [friendship] = await db.select().from(friendships).where(eq(friendships.id, friendshipId));
+      
+      if (!friendship || friendship.recipientId !== getUserId(req)) {
+        return res.status(403).json({ message: 'Nemáte oprávnenie' });
+      }
+      
+      const updated = await storage.acceptFriendRequest(friendshipId);
+      res.json(updated);
+    } catch (error) {
+      console.error('[FRIENDS] Error accepting friend request:', error);
+      res.status(500).json({ message: 'Chyba pri prijatí žiadosti' });
+    }
+  });
+
+  app.put('/api/friend-requests/:id/reject', isAuthenticated, async (req: any, res) => {
+    try {
+      const friendshipId = req.params.id;
+      
+      // Verify ownership
+      const [friendship] = await db.select().from(friendships).where(eq(friendships.id, friendshipId));
+      
+      if (!friendship || friendship.recipientId !== getUserId(req)) {
+        return res.status(403).json({ message: 'Nemáte oprávnenie' });
+      }
+      
+      await storage.rejectFriendRequest(friendshipId);
+      res.json({ message: 'Žiadosť odmenená' });
+    } catch (error) {
+      console.error('[FRIENDS] Error rejecting friend request:', error);
+      res.status(500).json({ message: 'Chyba pri odmietnutí žiadosti' });
+    }
+  });
+
+  app.delete('/api/friends/:friendId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const friendId = req.params.friendId;
+      
+      await storage.removeFriend(userId, friendId);
+      res.json({ message: 'Priateľ odobraný' });
+    } catch (error) {
+      console.error('[FRIENDS] Error removing friend:', error);
+      res.status(500).json({ message: 'Chyba pri odstránení priateľa' });
+    }
+  });
