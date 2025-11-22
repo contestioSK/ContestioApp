@@ -426,11 +426,13 @@ export default function AdminPanel() {
       location: "",
       startDate: new Date().toISOString().slice(0, 16),
       endDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
-      firstPlacePrize: "",
-      secondPlacePrize: "",
-      thirdPlacePrize: "",
-      registrationFee: "",
-      maxTeams: "",
+      status: "registration",
+      firstPlacePrize: undefined,
+      secondPlacePrize: undefined,
+      thirdPlacePrize: undefined,
+      registrationFee: undefined,
+      maxTeams: undefined,
+      maxReferees: undefined,
       hasSectors: false,
       sectorPlaces: [
         { sectorName: "Sektor A", places: ["Miesto 1", "Miesto 2", "Miesto 3"] },
@@ -440,9 +442,8 @@ export default function AdminPanel() {
       scoringType: "total",
       minWeight: 2,
       selectedPlan: "basic",
-      requestedSubdomain: "",
-      brandingPrimaryColor: "",
-      brandingSecondaryColor: "",
+      mediaAccess: false,
+      prioritySupport: false,
     },
   });
 
@@ -522,20 +523,20 @@ export default function AdminPanel() {
         location: editingCompetition.location || "",
         startDate: editingCompetition.startDate ? new Date(editingCompetition.startDate).toISOString().slice(0, 16) : "",
         endDate: editingCompetition.endDate ? new Date(editingCompetition.endDate).toISOString().slice(0, 16) : "",
-        status: editingCompetition.status || "registration",
+        status: (editingCompetition.status || "registration") as "registration" | "live" | "finished",
         imageUrl: editingCompetition.imageUrl || "",
-        firstPlacePrize: editingCompetition.firstPlacePrize?.toString() || "",
-        secondPlacePrize: editingCompetition.secondPlacePrize?.toString() || "",
-        thirdPlacePrize: editingCompetition.thirdPlacePrize?.toString() || "",
-        registrationFee: editingCompetition.registrationFee?.toString() || "",
-        maxTeams: editingCompetition.maxTeams?.toString() || "",
-        maxReferees: editingCompetition.maxReferees?.toString() || "",
+        firstPlacePrize: editingCompetition.firstPlacePrize ? Number(editingCompetition.firstPlacePrize) : undefined,
+        secondPlacePrize: editingCompetition.secondPlacePrize ? Number(editingCompetition.secondPlacePrize) : undefined,
+        thirdPlacePrize: editingCompetition.thirdPlacePrize ? Number(editingCompetition.thirdPlacePrize) : undefined,
+        registrationFee: editingCompetition.registrationFee ? Number(editingCompetition.registrationFee) : undefined,
+        maxTeams: editingCompetition.maxTeams || undefined,
+        maxReferees: editingCompetition.maxReferees || undefined,
         hasSectors: editingCompetition.hasSectors || false,
         sectorPlaces: editingCompetition.sectorPlaces || [],
         sideCompetitions: editingCompetition.sideCompetitions || [],
-        scoringType: editingCompetition.scoringType || "total",
+        scoringType: (editingCompetition.scoringType || "total") as "total" | "avg3" | "avg5",
         minWeight: editingCompetition.minWeight ? parseFloat(editingCompetition.minWeight.toString()) : 2,
-        selectedPlan: editingCompetition.planTier || "basic",
+        selectedPlan: (editingCompetition.planTier || "basic") as "basic" | "pro" | "premium" | "enterprise",
         branding: {
           primaryColor: editingCompetition.branding?.primaryColor || "",
           secondaryColor: editingCompetition.branding?.secondaryColor || "",
@@ -571,7 +572,7 @@ export default function AdminPanel() {
       editRefereeForm.reset({
         userId: editingReferee.userId || "",
         assignedSector: editingReferee.assignedSector || "",
-        isActive: editingReferee.isActive,
+        isActive: editingReferee.isActive ?? true,
       });
     }
   }, [editingReferee, isEditRefereeDialogOpen, editRefereeForm]);
@@ -614,7 +615,7 @@ export default function AdminPanel() {
   }
 
   // Queries
-  const { data: competitions, isLoading: competitionsLoading } = useQuery({
+  const { data: competitions, isLoading: competitionsLoading } = useQuery<Competition[]>({
     queryKey: ["/api/competitions"],
     enabled: isAuthenticated,
   });
@@ -624,12 +625,12 @@ export default function AdminPanel() {
     enabled: isAuthenticated && !!selectedCompetition,
   });
 
-  const { data: referees, isLoading: refereesLoading } = useQuery<any[]>({
+  const { data: referees, isLoading: refereesLoading } = useQuery<Array<Referee & { user: { email: string } }>>({
     queryKey: ["/api/competitions", selectedCompetition, "referees"],
     enabled: isAuthenticated && !!selectedCompetition,
   });
 
-  const { data: sponsors, isLoading: sponsorsLoading } = useQuery<any[]>({
+  const { data: sponsors, isLoading: sponsorsLoading } = useQuery<Sponsor[]>({
     queryKey: ["/api/competitions", selectedCompetition, "sponsors"],
     enabled: isAuthenticated && !!selectedCompetition,
   });
@@ -805,13 +806,13 @@ export default function AdminPanel() {
   });
 
   // Users query for user management
-  const { data: allUsers, isLoading: usersLoading, refetch: refetchUsers } = useQuery({
+  const { data: allUsers, isLoading: usersLoading, refetch: refetchUsers } = useQuery<any[]>({
     queryKey: ["/api/admin/users"],
     enabled: isAuthenticated && isAdmin,
   });
 
   // Registrations queries
-  const { data: registrations, isLoading: registrationsLoading, refetch: refetchRegistrations } = useQuery({
+  const { data: registrations, isLoading: registrationsLoading, refetch: refetchRegistrations } = useQuery<CompetitionRegistration[]>({
     queryKey: ["/api/admin/registrations", registrationFilter === "all" ? undefined : registrationFilter],
     enabled: isAuthenticated && isAdmin,
   });
@@ -1227,7 +1228,7 @@ export default function AdminPanel() {
     const competition = competitions?.find((c: Competition) => c.id === selectedCompetition);
     if (!competition) return { canAdd: false, message: "Súťaž nebola nájdená" };
     
-    const planTier = competition.planTier || "basic";
+    const planTier = (competition.planTier || "basic") as "basic" | "pro" | "premium" | "enterprise";
     const maxReferees = getMaxReferees(planTier);
     const currentRefereeCount = referees?.length || 0;
     
@@ -1503,7 +1504,7 @@ export default function AdminPanel() {
           </div>
 
           {/* Competition Selector */}
-          {(!isAdmin || competitions?.length > 0) && (
+          {(!isAdmin || (competitions && competitions.length > 0)) && (
             <div className="p-4 border-b border-sidebar-border">
               <Label className="text-xs text-sidebar-foreground/60 mb-2 block">Aktívna súťaž</Label>
               <Select value={selectedCompetition} onValueChange={(value) => { setSelectedCompetition(value); setSidebarOpen(false); }}>
@@ -1630,7 +1631,7 @@ export default function AdminPanel() {
                   <div className="flex-1 text-left">
                     <p className="text-sm font-medium">Registrácie</p>
                   </div>
-                  {dashboardStats?.pendingRegistrations > 0 && (
+                  {dashboardStats?.pendingRegistrations && dashboardStats.pendingRegistrations > 0 && (
                     <Badge variant="secondary" className="bg-orange-500/20 text-orange-500 border-orange-500/30">
                       {dashboardStats.pendingRegistrations}
                     </Badge>
@@ -2465,7 +2466,7 @@ export default function AdminPanel() {
                                     <div className="grid grid-cols-2 gap-4">
                                       <FormField
                                         control={form.control}
-                                        name="brandingPrimaryColor"
+                                        name="branding.primaryColor"
                                         render={({ field }) => (
                                           <FormItem>
                                             <FormLabel>Primárna farba</FormLabel>
@@ -2478,7 +2479,7 @@ export default function AdminPanel() {
                                       />
                                       <FormField
                                         control={form.control}
-                                        name="brandingSecondaryColor"
+                                        name="branding.secondaryColor"
                                         render={({ field }) => (
                                           <FormItem>
                                             <FormLabel>Sekundárna farba</FormLabel>
@@ -2492,7 +2493,7 @@ export default function AdminPanel() {
                                     </div>
                                     <FormField
                                       control={form.control}
-                                      name="requestedSubdomain"
+                                      name="branding.subdomain"
                                       render={({ field }) => (
                                         <FormItem>
                                           <FormLabel>Vlastná subdoména</FormLabel>
@@ -2730,8 +2731,8 @@ export default function AdminPanel() {
                                     imageUrl: data.imageUrl || null,
                                     startDate: new Date(data.startDate),
                                     endDate: new Date(data.endDate),
-                                    maxTeams: data.maxTeams ? parseInt(data.maxTeams) : null,
-                                    maxReferees: data.maxReferees ? parseInt(data.maxReferees) : null,
+                                    maxTeams: data.maxTeams || null,
+                                    maxReferees: data.maxReferees || null,
                                     registrationFee: data.registrationFee ? data.registrationFee.toString() : null,
                                     firstPlacePrize: data.firstPlacePrize ? data.firstPlacePrize.toString() : null,
                                     secondPlacePrize: data.secondPlacePrize ? data.secondPlacePrize.toString() : null,
@@ -3949,8 +3950,8 @@ export default function AdminPanel() {
                             const limitsCheck = checkRefereePlanLimits();
                             return (
                               <div className="mt-2 text-sm text-muted-foreground">
-                                Rozhodcovia: {limitsCheck.currentCount} / {limitsCheck.planLimit === null ? '∞' : limitsCheck.planLimit}
-                                {limitsCheck.planLimit !== null && limitsCheck.currentCount >= limitsCheck.planLimit && (
+                                Rozhodcovia: {limitsCheck.currentCount ?? 0} / {limitsCheck.planLimit === null ? '∞' : limitsCheck.planLimit ?? '∞'}
+                                {limitsCheck.planLimit !== null && limitsCheck.currentCount !== undefined && limitsCheck.planLimit !== undefined && limitsCheck.currentCount >= limitsCheck.planLimit && (
                                   <span className="text-red-600 dark:text-red-400 ml-2">
                                     (Limit dosiahnutý)
                                   </span>
@@ -4023,7 +4024,9 @@ export default function AdminPanel() {
                                   </div>
                                   <div className="mt-2 flex items-center space-x-4 text-sm text-muted-foreground">
                                     <span>Sektor: {referee.assignedSector}</span>
-                                    <span>Priradený: {new Date(referee.createdAt).toLocaleDateString('sk-SK')}</span>
+                                    {referee.createdAt && (
+                                      <span>Priradený: {new Date(referee.createdAt).toLocaleDateString('sk-SK')}</span>
+                                    )}
                                   </div>
                                 </div>
                                 <div className="flex items-center space-x-2">
@@ -4205,7 +4208,7 @@ export default function AdminPanel() {
                                 name="assignedSector"
                                 render={({ field }) => {
                                   const competition = competitions?.find((c: Competition) => c.id === selectedCompetition);
-                                  const hasSectors = competition?.hasSectors && competition?.sectorPlaces?.length > 0;
+                                  const hasSectors = competition?.hasSectors && competition?.sectorPlaces && competition.sectorPlaces.length > 0;
                                   
                                   if (hasSectors) {
                                     // Dropdown for sector assignment
@@ -4318,7 +4321,7 @@ export default function AdminPanel() {
                                 name="assignedSector"
                                 render={({ field }) => {
                                   const competition = competitions?.find((c: Competition) => c.id === selectedCompetition);
-                                  const hasSectors = competition?.hasSectors && competition?.sectorPlaces?.length > 0;
+                                  const hasSectors = competition?.hasSectors && competition?.sectorPlaces && competition.sectorPlaces.length > 0;
                                   
                                   if (hasSectors) {
                                     // Dropdown for sector assignment
@@ -4543,25 +4546,17 @@ export default function AdminPanel() {
                                        sponsor.sponsorshipLevel === 'media' ? 'Mediálny partner' : sponsor.sponsorshipLevel}
                                     </Badge>
                                   </div>
-                                  <div className="mt-2 flex items-center space-x-4 text-sm text-muted-foreground">
-                                    {sponsor.description && (
-                                      <span>{sponsor.description}</span>
-                                    )}
-                                    {sponsor.contactEmail && (
-                                      <span>Email: {sponsor.contactEmail}</span>
-                                    )}
-                                  </div>
-                                  {sponsor.website && (
+                                  {sponsor.websiteUrl && (
                                     <div className="mt-2">
                                       <a 
-                                        href={sponsor.website} 
+                                        href={sponsor.websiteUrl} 
                                         target="_blank" 
                                         rel="noopener noreferrer"
                                         className="inline-flex items-center text-sm text-primary hover:underline"
                                         data-testid={`link-sponsor-website-${sponsor.id}`}
                                       >
                                         <ExternalLink className="w-3 h-3 mr-1" />
-                                        {sponsor.website}
+                                        {sponsor.websiteUrl}
                                       </a>
                                     </div>
                                   )}
@@ -4576,7 +4571,7 @@ export default function AdminPanel() {
                                         name: sponsor.name,
                                         logoUrl: sponsor.logoUrl || "",
                                         websiteUrl: sponsor.websiteUrl || "",
-                                        sponsorshipLevel: sponsor.sponsorshipLevel,
+                                        sponsorshipLevel: sponsor.sponsorshipLevel as "main" | "media" | "regular",
                                         competitionId: selectedCompetition || "",
                                       });
                                       // Clear file states when editing
@@ -5011,7 +5006,7 @@ export default function AdminPanel() {
                                   size="sm"
                                   onClick={() => {
                                     if (confirm('Naozaj chcete resetovať všetky úlovky? Táto akcia sa nedá vrátiť späť.')) {
-                                      resetCatchesMutation.mutate();
+                                      resetCatchesMutation.mutate(selectedCompetition);
                                     }
                                   }}
                                   disabled={resetCatchesMutation.isPending}
@@ -5032,7 +5027,7 @@ export default function AdminPanel() {
                                   size="sm"
                                   onClick={() => {
                                     if (confirm('Naozaj chcete zmazať túto súťaž? Odstránia sa všetky súvisiace údaje a táto akcia sa nedá vrátiť späť.')) {
-                                      deleteCompetitionMutation.mutate();
+                                      deleteCompetitionMutation.mutate(selectedCompetition);
                                     }
                                   }}
                                   disabled={deleteCompetitionMutation.isPending}
@@ -5180,7 +5175,7 @@ export default function AdminPanel() {
                   Členovia tímu ({selectedTeamDetails.members?.length || 0})
                 </Label>
                 <div className="mt-3 space-y-3">
-                  {selectedTeamDetails.members?.length > 0 ? (
+                  {selectedTeamDetails.members && selectedTeamDetails.members.length > 0 ? (
                     selectedTeamDetails.members.map((member: TeamMember, index: number) => (
                       <div 
                         key={member.id || index} 
@@ -5307,7 +5302,7 @@ export default function AdminPanel() {
                   name="sectorName"
                   render={({ field }) => {
                     const availablePlaces = getAvailableSectorPlaces();
-                    const availableSectors = [...new Set(availablePlaces.map(p => p.sectorName))];
+                    const availableSectors = Array.from(new Set(availablePlaces.map(p => p.sectorName)));
                     return (
                       <FormItem>
                         <FormLabel>Sektor</FormLabel>
@@ -5542,7 +5537,7 @@ export default function AdminPanel() {
                   onClick={() => {
                     bulkUpdateTeamStatusMutation.mutate({
                       teamIds: selectedTeamsForBulk,
-                      status: bulkAction
+                      status: bulkAction === 'approve' ? 'approved' : 'rejected'
                     });
                   }}
                   disabled={bulkUpdateTeamStatusMutation.isPending}
