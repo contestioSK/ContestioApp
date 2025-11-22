@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
@@ -1466,91 +1465,279 @@ export default function AdminPanel() {
     });
   };
 
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const isActivePath = (tabValue: string) => {
+    return activeTab === tabValue;
+  };
+
   return (
-    <div className="min-h-screen bg-background">
-      <NavigationHeader />
-      <div className="h-16" />
-      <div className="container mx-auto py-8 px-4">
-        <Card className="w-full">
+    <div className="min-h-screen bg-background flex">
+      {/* Sidebar */}
+      <div className={`
+        fixed inset-y-0 left-0 z-50 bg-sidebar border-r border-sidebar-border transform transition-transform duration-300 ease-in-out
+        w-[280px] md:w-[240px] lg:w-[280px]
+        lg:translate-x-0 lg:static lg:inset-0
+        md:translate-x-0 md:static md:inset-0
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+      `}>
+        <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="p-6 border-b border-border">
-            <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between p-4 md:p-6 border-b border-sidebar-border">
+            <div className="flex items-center gap-2">
+              <Shield className="h-8 w-8 text-sidebar-primary" />
               <div>
-                <h1 className="text-2xl font-bold text-foreground">
-                  {isAdmin ? "Správa systému" : "Správa súťaží"}
-                </h1>
-                <p className="text-muted-foreground">
-                  {isAdmin ? "Celkový prehľad a správa platformy" : "Spravujte svoje súťaže a tímy"}
-                </p>
+                <h2 className="text-lg font-bold text-sidebar-foreground">Admin Panel</h2>
+                <p className="text-xs text-sidebar-foreground/60">{isAdmin ? "Systémová správa" : "Organizátor"}</p>
               </div>
-              
-              {/* Competition Selector (for non-admin or admin with competitions) */}
-              {(!isAdmin || competitions?.length > 0) && (
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <Label htmlFor="competition-select">Súťaž:</Label>
-                    <Select value={selectedCompetition} onValueChange={setSelectedCompetition}>
-                      <SelectTrigger className="w-64">
-                        <SelectValue placeholder="Vyberte súťaž" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {competitions?.map((comp: Competition) => (
-                          <SelectItem key={comp.id} value={comp.id}>
-                            {comp.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Nová súťaž
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-2xl">
-                      <DialogHeader>
-                        <DialogTitle>Vytvorenie novej súťaže</DialogTitle>
-                      </DialogHeader>
-                      <Form {...form}>
-                        <form className="space-y-4">
-                          <FormField
-                            control={form.control}
-                            name="name"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Názov súťaže</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="Zadajte názov súťaže" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <div className="flex space-x-2">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              onClick={() => setIsCreateDialogOpen(false)}
-                            >
-                              Zrušiť
-                            </Button>
-                            <Button type="submit">
-                              Vytvoriť súťaž
-                            </Button>
-                          </div>
-                        </form>
-                      </Form>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-              )}
             </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSidebarOpen(false)}
+              className="md:hidden text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
+            >
+              <X className="h-5 w-5" />
+            </Button>
           </div>
 
-          {/* Main Content */}
+          {/* Competition Selector */}
+          {(!isAdmin || competitions?.length > 0) && (
+            <div className="p-4 border-b border-sidebar-border">
+              <Label className="text-xs text-sidebar-foreground/60 mb-2 block">Aktívna súťaž</Label>
+              <Select value={selectedCompetition} onValueChange={(value) => { setSelectedCompetition(value); setSidebarOpen(false); }}>
+                <SelectTrigger className="w-full bg-sidebar-accent border-sidebar-border text-sidebar-foreground">
+                  <SelectValue placeholder="Vyberte súťaž" />
+                </SelectTrigger>
+                <SelectContent>
+                  {competitions?.map((comp: Competition) => (
+                    <SelectItem key={comp.id} value={comp.id}>
+                      {comp.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="w-full mt-2 bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Nová súťaž
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Vytvorenie novej súťaže</DialogTitle>
+                  </DialogHeader>
+                  <Form {...form}>
+                    <form className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Názov súťaže</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Zadajte názov súťaže" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <div className="flex space-x-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setIsCreateDialogOpen(false)}
+                        >
+                          Zrušiť
+                        </Button>
+                        <Button type="submit">
+                          Vytvoriť súťaž
+                        </Button>
+                      </div>
+                    </form>
+                  </Form>
+                </DialogContent>
+              </Dialog>
+            </div>
+          )}
+
+          {/* Navigation */}
+          <nav className="flex-1 px-2 md:px-3 py-4 md:py-6 space-y-1 overflow-y-auto">
+            {/* Admin Section */}
+            {isAdmin && (
+              <>
+                <div className="px-3 mb-2">
+                  <h3 className="text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider">Správa systému</h3>
+                </div>
+                
+                <button
+                  onClick={() => { setActiveTab('dashboard'); setSidebarOpen(false); }}
+                  className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors ${
+                    isActivePath('dashboard')
+                      ? 'bg-sidebar-primary text-sidebar-primary-foreground'
+                      : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                  }`}
+                  data-testid="nav-dashboard"
+                >
+                  <BarChart3 className="h-5 w-5 flex-shrink-0" />
+                  <div className="flex-1 text-left">
+                    <p className="text-sm font-medium">Dashboard</p>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => { setActiveTab('users'); setSidebarOpen(false); }}
+                  className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors ${
+                    isActivePath('users')
+                      ? 'bg-sidebar-primary text-sidebar-primary-foreground'
+                      : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                  }`}
+                  data-testid="nav-users"
+                >
+                  <Users className="h-5 w-5 flex-shrink-0" />
+                  <div className="flex-1 text-left">
+                    <p className="text-sm font-medium">Používatelia</p>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => { setActiveTab('competitions'); setSidebarOpen(false); }}
+                  className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors ${
+                    isActivePath('competitions')
+                      ? 'bg-sidebar-primary text-sidebar-primary-foreground'
+                      : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                  }`}
+                  data-testid="nav-competitions"
+                >
+                  <Trophy className="h-5 w-5 flex-shrink-0" />
+                  <div className="flex-1 text-left">
+                    <p className="text-sm font-medium">Súťaže</p>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => { setActiveTab('registrations'); setSidebarOpen(false); }}
+                  className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors ${
+                    isActivePath('registrations')
+                      ? 'bg-sidebar-primary text-sidebar-primary-foreground'
+                      : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                  }`}
+                  data-testid="nav-registrations"
+                >
+                  <FileText className="h-5 w-5 flex-shrink-0" />
+                  <div className="flex-1 text-left">
+                    <p className="text-sm font-medium">Registrácie</p>
+                  </div>
+                  {dashboardStats?.pendingRegistrations > 0 && (
+                    <Badge variant="secondary" className="bg-orange-500/20 text-orange-500 border-orange-500/30">
+                      {dashboardStats.pendingRegistrations}
+                    </Badge>
+                  )}
+                </button>
+              </>
+            )}
+
+            {/* Competition Section */}
+            {selectedCompetition && (
+              <>
+                <div className="px-3 mb-2 mt-6">
+                  <h3 className="text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider">Správa súťaže</h3>
+                </div>
+
+                <button
+                  onClick={() => { setActiveTab('teams'); setSidebarOpen(false); }}
+                  className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors ${
+                    isActivePath('teams')
+                      ? 'bg-sidebar-primary text-sidebar-primary-foreground'
+                      : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                  }`}
+                  data-testid="nav-teams"
+                >
+                  <Users className="h-5 w-5 flex-shrink-0" />
+                  <div className="flex-1 text-left">
+                    <p className="text-sm font-medium">Tímy</p>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => { setActiveTab('referees'); setSidebarOpen(false); }}
+                  className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors ${
+                    isActivePath('referees')
+                      ? 'bg-sidebar-primary text-sidebar-primary-foreground'
+                      : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                  }`}
+                  data-testid="nav-referees"
+                >
+                  <UserCheck className="h-5 w-5 flex-shrink-0" />
+                  <div className="flex-1 text-left">
+                    <p className="text-sm font-medium">Rozhodcovia</p>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => { setActiveTab('sponsors'); setSidebarOpen(false); }}
+                  className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors ${
+                    isActivePath('sponsors')
+                      ? 'bg-sidebar-primary text-sidebar-primary-foreground'
+                      : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                  }`}
+                  data-testid="nav-sponsors"
+                >
+                  <Award className="h-5 w-5 flex-shrink-0" />
+                  <div className="flex-1 text-left">
+                    <p className="text-sm font-medium">Sponzori</p>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => { setActiveTab('settings'); setSidebarOpen(false); }}
+                  className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors ${
+                    isActivePath('settings')
+                      ? 'bg-sidebar-primary text-sidebar-primary-foreground'
+                      : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                  }`}
+                  data-testid="nav-settings"
+                >
+                  <Settings className="h-5 w-5 flex-shrink-0" />
+                  <div className="flex-1 text-left">
+                    <p className="text-sm font-medium">Nastavenia</p>
+                  </div>
+                </button>
+              </>
+            )}
+          </nav>
+        </div>
+      </div>
+
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Top bar with hamburger */}
+        <div className="sticky top-0 z-30 flex items-center justify-between p-4 bg-background border-b border-border md:hidden">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSidebarOpen(true)}
+            className="text-foreground"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+          <h1 className="text-lg font-semibold text-foreground">
+            {isAdmin ? "Správa systému" : "Správa súťaží"}
+          </h1>
+          <div className="w-10" /> {/* Spacer for centering */}
+        </div>
+
+        {/* Main content */}
+        <div className="flex-1 overflow-auto">
           {competitionsLoading ? (
             <div className="p-6">
               <div className="space-y-4">
@@ -1559,7 +1746,7 @@ export default function AdminPanel() {
               </div>
             </div>
           ) : !selectedCompetition && !isAdmin ? (
-            <div className="text-center py-12">
+            <div className="text-center py-12 px-4">
               <Trophy className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-medium text-foreground mb-2">
                 {competitions?.length === 0 ? "Zatiaľ žiadne súťaže" : "Vyberte súťaž"}
@@ -1567,63 +1754,15 @@ export default function AdminPanel() {
               <p className="text-muted-foreground mb-6">
                 {competitions?.length === 0 
                   ? "Vytvorte svoju prvú súťaž a začnite spravovať tímy a udalosti." 
-                  : "Vyberte súťaž z rozbaľovacieho menu vyššie pre správu jej detailov."
+                  : "Vyberte súťaž zo sidebar menu pre správu jej detailov."
                 }
               </p>
             </div>
           ) : (
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              
-              {/* Tab Navigation */}
-              <div className="border-b border-border">
-                <TabsList className="flex space-x-8 px-6 bg-transparent">
-                  {isAdmin && (
-                    <>
-                      <TabsTrigger value="dashboard" className="py-4 border-b-2 border-primary text-primary font-medium text-sm">
-                        <BarChart3 className="w-4 h-4 mr-2" />
-                        Dashboard
-                      </TabsTrigger>
-                      <TabsTrigger value="users" className="py-4 text-muted-foreground hover:text-foreground font-medium text-sm">
-                        <Users className="w-4 h-4 mr-2" />
-                        Používatelia
-                      </TabsTrigger>
-                      <TabsTrigger value="competitions" className="py-4 text-muted-foreground hover:text-foreground font-medium text-sm">
-                        <Trophy className="w-4 h-4 mr-2" />
-                        Súťaže
-                      </TabsTrigger>
-                      <TabsTrigger value="registrations" className="py-4 text-muted-foreground hover:text-foreground font-medium text-sm">
-                        <FileText className="w-4 h-4 mr-2" />
-                        Registrácie
-                      </TabsTrigger>
-                    </>
-                  )}
-                  {selectedCompetition && (
-                    <>
-                      <TabsTrigger value="teams" className="py-4 text-muted-foreground hover:text-foreground font-medium text-sm">
-                        <Users className="w-4 h-4 mr-2" />
-                        Tímy
-                      </TabsTrigger>
-                      <TabsTrigger value="referees" className="py-4 text-muted-foreground hover:text-foreground font-medium text-sm">
-                        <UserCheck className="w-4 h-4 mr-2" />
-                        Rozhodcovia
-                      </TabsTrigger>
-                      <TabsTrigger value="sponsors" className="py-4 text-muted-foreground hover:text-foreground font-medium text-sm">
-                        <Award className="w-4 h-4 mr-2" />
-                        Sponzori
-                      </TabsTrigger>
-                      <TabsTrigger value="settings" className="py-4 text-muted-foreground hover:text-foreground font-medium text-sm">
-                        <Settings className="w-4 h-4 mr-2" />
-                        Nastavenia
-                      </TabsTrigger>
-                    </>
-                  )}
-                </TabsList>
-              </div>
-              
+            <div className="w-full">
               {/* Admin-only Tabs */}
-              {isAdmin && (
-                <>
-                  <TabsContent value="dashboard" className="p-6 flex flex-col min-h-0">
+              {isAdmin && activeTab === 'dashboard' && (
+                  <div className="p-6 flex flex-col min-h-0">
                     <div className="space-y-6 flex-1 min-h-0">
                       <div>
                         <h2 className="text-2xl font-bold text-foreground mb-2">Prehľad systému</h2>
@@ -1731,9 +1870,11 @@ export default function AdminPanel() {
                         </>
                       )}
                     </div>
-                  </TabsContent>
+                  </div>
+                )}
 
-                  <TabsContent value="users" className="p-6">
+                  {activeTab === 'users' && (
+                  <div className="p-6">
                     <div className="space-y-6">
                       <div>
                         <h2 className="text-2xl font-bold text-foreground mb-2">Správa používateľov</h2>
@@ -1898,9 +2039,11 @@ export default function AdminPanel() {
                         );
                       })()}
                     </div>
-                  </TabsContent>
+                  </div>
+                )}
 
-                  <TabsContent value="competitions" className="p-6">
+                  {activeTab === 'competitions' && (
+                  <div className="p-6">
                     <div className="space-y-6">
                       <div className="flex justify-between items-center">
                         <div>
@@ -3361,9 +3504,11 @@ export default function AdminPanel() {
                         </DialogContent>
                       </Dialog>
                     </div>
-                  </TabsContent>
+                  </div>
+                )}
 
-                  <TabsContent value="registrations" className="p-6">
+                  {activeTab === 'registrations' && (
+                  <div className="p-6">
                     <div className="space-y-6">
                       <div className="flex items-center justify-between">
                         <div>
@@ -3578,14 +3723,14 @@ export default function AdminPanel() {
                         </DialogContent>
                       </Dialog>
                     </div>
-                  </TabsContent>
-                </>
-              )}
+                  </div>
+                )}
 
               {/* Competition-specific tabs */}
               {selectedCompetition && (
                 <>
-                  <TabsContent value="teams" className="p-6">
+                  {activeTab === 'teams' && (
+                  <div className="p-6">
                     <div className="space-y-6">
                       <div className="flex items-center justify-between">
                         <div>
@@ -3792,9 +3937,11 @@ export default function AdminPanel() {
                         </div>
                       )}
                     </div>
-                  </TabsContent>
+                  </div>
+                )}
                   
-                  <TabsContent value="referees" className="p-6">
+                  {activeTab === 'referees' && (
+                  <div className="p-6">
                     <div className="space-y-6">
                       <div className="flex items-center justify-between">
                         <div>
@@ -4315,9 +4462,11 @@ export default function AdminPanel() {
                         </DialogContent>
                       </Dialog>
                     </div>
-                  </TabsContent>
+                  </div>
+                )}
                   
-                  <TabsContent value="sponsors" className="p-6">
+                  {activeTab === 'sponsors' && (
+                  <div className="p-6">
                     <div className="space-y-6">
                       <div className="flex items-center justify-between">
                         <div>
@@ -4706,9 +4855,11 @@ export default function AdminPanel() {
                       </Dialog>
 
                     </div>
-                  </TabsContent>
+                  </div>
+                )}
                   
-                  <TabsContent value="settings" className="p-6">
+                  {activeTab === 'settings' && (
+                  <div className="p-6">
                     <div className="space-y-6">
                       <div>
                         <h3 className="text-lg font-medium text-foreground">Nastavenia súťaže</h3>
@@ -4900,13 +5051,13 @@ export default function AdminPanel() {
                         </Card>
                       </div>
                     </div>
-                  </TabsContent>
+                  </div>
+                )}
                 </>
               )}
-            </Tabs>
+            </div>
           )}
-
-        </Card>
+        </div>
       </div>
 
       {/* Team Details Dialog - Moved to top level to avoid z-index conflicts */}
