@@ -203,6 +203,7 @@ export interface IStorage {
   createReferee(referee: InsertReferee): Promise<Referee>;
   updateReferee(refereeId: string, updates: Partial<InsertReferee>): Promise<Referee>;
   deleteReferee(refereeId: string): Promise<void>;
+  getRefereesWithExpiredCompetitions(): Promise<Array<Referee & { user: User; competition: Competition }>>;
   
   // Catch operations
   getCatchesByCompetition(competitionId: string): Promise<(Catch & { team: Team; referee: Referee })[]>;
@@ -1188,6 +1189,31 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(referees)
       .where(eq(referees.id, refereeId));
+  }
+
+  async getRefereesWithExpiredCompetitions(): Promise<Array<Referee & { user: User; competition: Competition }>> {
+    // Calculate 24 hours ago
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    
+    const refereesWithCompetitions = await db
+      .select()
+      .from(referees)
+      .innerJoin(users, eq(referees.userId, users.id))
+      .innerJoin(competitions, eq(referees.competitionId, competitions.id))
+      .where(
+        and(
+          eq(competitions.status, 'finished'),
+          sql`${competitions.endDate} < ${twentyFourHoursAgo}`,
+          eq(users.role, 'referee'),
+          eq(referees.isActive, true)
+        )
+      );
+
+    return refereesWithCompetitions.map(row => ({
+      ...row.referees,
+      user: row.users,
+      competition: row.competitions,
+    }));
   }
 
   // Catch operations

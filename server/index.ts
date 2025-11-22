@@ -236,6 +236,44 @@ async function startBattleScheduler(broadcastToUsers: (userIds: string[], data: 
   log('[SCHEDULER] Battle auto-finish scheduler started (60s intervals)');
 }
 
+// Background scheduler for referee status cleanup
+async function startRefereeCleanupScheduler() {
+  const SCHEDULE_INTERVAL = 3600000; // 60 minutes (1 hour)
+  
+  async function cleanupExpiredReferees() {
+    try {
+      const expiredReferees = await storage.getRefereesWithExpiredCompetitions();
+      
+      if (expiredReferees.length > 0) {
+        log(`[SCHEDULER] Found ${expiredReferees.length} referees with expired competitions (>24h finished)`);
+        
+        for (const referee of expiredReferees) {
+          try {
+            // Change user role from 'referee' to 'public'
+            await storage.updateUserRole(referee.userId, 'public');
+            
+            // Optionally deactivate the referee assignment
+            await storage.updateReferee(referee.id, { isActive: false });
+            
+            log(`[SCHEDULER] Changed referee ${referee.user.email} to public role (competition: ${referee.competition.name})`);
+          } catch (error) {
+            console.error(`[SCHEDULER] Error updating referee ${referee.id}:`, error);
+          }
+        }
+      }
+    } catch (schedulerError) {
+      console.error('[SCHEDULER] Error in referee cleanup scheduler:', schedulerError);
+    }
+  }
+  
+  // Run immediately on startup
+  await cleanupExpiredReferees();
+  
+  // Then run every hour
+  setInterval(cleanupExpiredReferees, SCHEDULE_INTERVAL);
+  log('[SCHEDULER] Referee status cleanup scheduler started (60min intervals)');
+}
+
 // Background scheduler for battle notifications (starting/ending)
 async function startBattleNotificationScheduler() {
   const SCHEDULE_INTERVAL = 60000; // 60 seconds
@@ -348,6 +386,7 @@ async function startBattleNotificationScheduler() {
   startAnnouncementScheduler();
   startBattleScheduler(broadcastToUsers);
   startBattleNotificationScheduler();
+  startRefereeCleanupScheduler();
 
   server.listen({
     port,
