@@ -54,7 +54,14 @@ import {
   Square,
   ArrowRight,
   Palette,
-  Menu
+  Menu,
+  Star,
+  UserPlus,
+  ChevronUp,
+  ChevronDown,
+  MoreVertical,
+  Ban,
+  KeyRound
 } from "lucide-react";
 import type { Competition, Team, TeamMember, CompetitionRegistration, InsertSponsor, Sponsor, SponsorLevel, Catch, Referee, InsertReferee } from "@shared/schema";
 import { getSideCompetitionLabel } from "@/lib/utils";
@@ -312,6 +319,18 @@ export default function AdminPanel() {
   const [teamsSearchTerm, setTeamsSearchTerm] = useState("");
   const [selectedTeamsForBulk, setSelectedTeamsForBulk] = useState<string[]>([]);
   const [isBulkActionOpen, setIsBulkActionOpen] = useState(false);
+  
+  // User management filters and pagination
+  const [userRoleFilter, setUserRoleFilter] = useState<string>("all");
+  const [userStatusFilter, setUserStatusFilter] = useState<string>("all");
+  const [userPremiumFilter, setUserPremiumFilter] = useState<string>("all");
+  const [userSortField, setUserSortField] = useState<string>("createdAt");
+  const [userSortDirection, setUserSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(20);
+  const [selectedUserForAction, setSelectedUserForAction] = useState<any | null>(null);
+  const [isUserActionDialogOpen, setIsUserActionDialogOpen] = useState(false);
+  const [userActionType, setUserActionType] = useState<'role' | 'ban' | 'unban' | null>(null);
   const [bulkAction, setBulkAction] = useState<'approve' | 'reject' | null>(null);
   
   // Referee state
@@ -1883,30 +1902,176 @@ export default function AdminPanel() {
                         <p className="text-muted-foreground">Spravujte roly a oprávnenia používateľov</p>
                       </div>
 
-                      {/* Search Users */}
-                      <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          placeholder="Vyhľadať používateľa podľa mena, priezviska alebo emailu..."
-                          value={userSearchTerm}
-                          onChange={(e) => setUserSearchTerm(e.target.value)}
-                          className="pl-9"
-                          data-testid="input-search-users"
-                        />
-                      </div>
+                      {/* User Statistics Cards */}
+                      {usersLoading ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                          {[...Array(4)].map((_, i) => (
+                            <Card key={i} className="p-4">
+                              <Skeleton className="h-6 w-20 mb-2" />
+                              <Skeleton className="h-8 w-16 mb-1" />
+                              <Skeleton className="h-3 w-24" />
+                            </Card>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                          <Card className="border border-border">
+                            <CardContent className="p-4">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="text-sm font-medium text-muted-foreground">Celkom používateľov</p>
+                                  <p className="text-2xl font-bold text-foreground">{allUsers?.length || 0}</p>
+                                  <p className="text-xs text-muted-foreground mt-1">Všetci registrovaní</p>
+                                </div>
+                                <div className="h-12 w-12 rounded-full bg-blue-500/10 flex items-center justify-center">
+                                  <Users className="h-6 w-6 text-blue-500" />
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                          
+                          <Card className="border border-border">
+                            <CardContent className="p-4">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="text-sm font-medium text-muted-foreground">Premium používatelia</p>
+                                  <p className="text-2xl font-bold text-foreground">
+                                    {allUsers?.filter((u: any) => u.isPremium).length || 0}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    {allUsers?.length ? Math.round((allUsers.filter((u: any) => u.isPremium).length / allUsers.length) * 100) : 0}% z celku
+                                  </p>
+                                </div>
+                                <div className="h-12 w-12 rounded-full bg-amber-500/10 flex items-center justify-center">
+                                  <Star className="h-6 w-6 text-amber-500" />
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                          
+                          <Card className="border border-border">
+                            <CardContent className="p-4">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="text-sm font-medium text-muted-foreground">Noví (7 dní)</p>
+                                  <p className="text-2xl font-bold text-foreground">
+                                    {allUsers?.filter((u: any) => {
+                                      const created = new Date(u.createdAt);
+                                      const sevenDaysAgo = new Date();
+                                      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+                                      return created >= sevenDaysAgo;
+                                    }).length || 0}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground mt-1">Za posledný týždeň</p>
+                                </div>
+                                <div className="h-12 w-12 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                                  <UserPlus className="h-6 w-6 text-emerald-500" />
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                          
+                          <Card className="border border-border">
+                            <CardContent className="p-4">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="text-sm font-medium text-muted-foreground">Neaktívni/Banned</p>
+                                  <p className="text-2xl font-bold text-foreground">
+                                    {allUsers?.filter((u: any) => !u.active).length || 0}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground mt-1">Deaktivované účty</p>
+                                </div>
+                                <div className="h-12 w-12 rounded-full bg-red-500/10 flex items-center justify-center">
+                                  <UserX className="h-6 w-6 text-red-500" />
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
+                      )}
+
+                      {/* Advanced Filters */}
+                      <Card className="border border-border">
+                        <CardContent className="p-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                            {/* Search */}
+                            <div className="relative lg:col-span-2">
+                              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                              <Input
+                                placeholder="Vyhľadať používateľa..."
+                                value={userSearchTerm}
+                                onChange={(e) => setUserSearchTerm(e.target.value)}
+                                className="pl-9"
+                                data-testid="input-search-users"
+                              />
+                            </div>
+                            
+                            {/* Role Filter */}
+                            <Select value={userRoleFilter} onValueChange={setUserRoleFilter}>
+                              <SelectTrigger data-testid="select-filter-role">
+                                <SelectValue placeholder="Všetky roly" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="all">Všetky roly</SelectItem>
+                                <SelectItem value="admin">Admin</SelectItem>
+                                <SelectItem value="organizer">Organizátor</SelectItem>
+                                <SelectItem value="referee">Rozhodca</SelectItem>
+                                <SelectItem value="public">Verejnosť</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            
+                            {/* Status Filter */}
+                            <Select value={userStatusFilter} onValueChange={setUserStatusFilter}>
+                              <SelectTrigger data-testid="select-filter-status">
+                                <SelectValue placeholder="Všetky statusy" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="all">Všetky statusy</SelectItem>
+                                <SelectItem value="active">Aktívni</SelectItem>
+                                <SelectItem value="inactive">Neaktívni</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            
+                            {/* Premium Filter */}
+                            <Select value={userPremiumFilter} onValueChange={setUserPremiumFilter}>
+                              <SelectTrigger data-testid="select-filter-premium">
+                                <SelectValue placeholder="Premium status" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="all">Všetci</SelectItem>
+                                <SelectItem value="premium">Premium</SelectItem>
+                                <SelectItem value="free">Free</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          
+                          {/* Clear Filters Button */}
+                          {(userSearchTerm || userRoleFilter !== 'all' || userStatusFilter !== 'all' || userPremiumFilter !== 'all') && (
+                            <div className="mt-3 flex justify-end">
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => {
+                                  setUserSearchTerm('');
+                                  setUserRoleFilter('all');
+                                  setUserStatusFilter('all');
+                                  setUserPremiumFilter('all');
+                                }}
+                                data-testid="button-clear-filters"
+                              >
+                                <XCircle className="w-4 h-4 mr-2" />
+                                Vymazať filtre
+                              </Button>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
 
                       {usersLoading ? (
-                        <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Skeleton className="h-12 w-full" />
                           {[...Array(10)].map((_, i) => (
-                            <div key={i} className="flex items-center space-x-4 p-4 border border-border rounded-lg">
-                              <Skeleton className="h-10 w-10 rounded-full" />
-                              <div className="space-y-2 flex-1">
-                                <Skeleton className="h-4 w-48" />
-                                <Skeleton className="h-3 w-32" />
-                              </div>
-                              <Skeleton className="h-6 w-20" />
-                              <Skeleton className="h-8 w-32" />
-                            </div>
+                            <Skeleton key={i} className="h-16 w-full" />
                           ))}
                         </div>
                       ) : allUsers?.length === 0 ? (
@@ -1915,129 +2080,459 @@ export default function AdminPanel() {
                           <p className="text-muted-foreground text-lg">Žiadni používatelia nenájdení</p>
                         </div>
                       ) : (() => {
-                        // Filter users based on search term (name, lastname, or email)
-                        const filteredUsers = allUsers?.filter((user: any) => {
-                          const searchLower = userSearchTerm.toLowerCase();
-                          return user.email.toLowerCase().includes(searchLower) ||
-                                 (user.firstName && user.firstName.toLowerCase().includes(searchLower)) ||
-                                 (user.lastName && user.lastName.toLowerCase().includes(searchLower)) ||
-                                 (user.firstName && user.lastName && 
-                                  `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchLower))
+                        // Apply all filters and sorting
+                        let filteredUsers = allUsers?.filter((user: any) => {
+                          // Search filter
+                          if (userSearchTerm) {
+                            const searchLower = userSearchTerm.toLowerCase();
+                            const matchesSearch = user.email.toLowerCase().includes(searchLower) ||
+                                   (user.firstName && user.firstName.toLowerCase().includes(searchLower)) ||
+                                   (user.lastName && user.lastName.toLowerCase().includes(searchLower)) ||
+                                   (user.firstName && user.lastName && 
+                                    `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchLower));
+                            if (!matchesSearch) return false;
+                          }
+                          
+                          // Role filter
+                          if (userRoleFilter !== 'all' && user.role !== userRoleFilter) {
+                            return false;
+                          }
+                          
+                          // Status filter
+                          if (userStatusFilter === 'active' && !user.active) return false;
+                          if (userStatusFilter === 'inactive' && user.active) return false;
+                          
+                          // Premium filter
+                          if (userPremiumFilter === 'premium' && !user.isPremium) return false;
+                          if (userPremiumFilter === 'free' && user.isPremium) return false;
+                          
+                          return true;
                         }) || [];
                         
-                        return filteredUsers.length === 0 && userSearchTerm ? (
+                        // Sort users
+                        filteredUsers = [...filteredUsers].sort((a, b) => {
+                          let aVal, bVal;
+                          
+                          if (userSortField === 'name') {
+                            aVal = (a.firstName && a.lastName ? `${a.firstName} ${a.lastName}` : a.email).toLowerCase();
+                            bVal = (b.firstName && b.lastName ? `${b.firstName} ${b.lastName}` : b.email).toLowerCase();
+                          } else if (userSortField === 'email') {
+                            aVal = a.email.toLowerCase();
+                            bVal = b.email.toLowerCase();
+                          } else if (userSortField === 'role') {
+                            aVal = a.role;
+                            bVal = b.role;
+                          } else if (userSortField === 'createdAt') {
+                            aVal = new Date(a.createdAt).getTime();
+                            bVal = new Date(b.createdAt).getTime();
+                          } else {
+                            return 0;
+                          }
+                          
+                          if (userSortDirection === 'asc') {
+                            return aVal > bVal ? 1 : -1;
+                          } else {
+                            return aVal < bVal ? 1 : -1;
+                          }
+                        });
+                        
+                        // Pagination
+                        const totalUsers = filteredUsers.length;
+                        const totalPages = Math.ceil(totalUsers / itemsPerPage);
+                        const startIndex = (currentPage - 1) * itemsPerPage;
+                        const endIndex = startIndex + itemsPerPage;
+                        const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
+                        
+                        // Helper for role badge color
+                        const getRoleBadgeClass = (role: string) => {
+                          if (role === 'admin') return 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20';
+                          if (role === 'organizer') return 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20';
+                          if (role === 'referee') return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20';
+                          return 'bg-gray-500/10 text-gray-600 dark:text-gray-400 border-gray-500/20';
+                        };
+                        
+                        const getRoleLabel = (role: string) => {
+                          if (role === 'admin') return 'Admin';
+                          if (role === 'organizer') return 'Organizátor';
+                          if (role === 'referee') return 'Rozhodca';
+                          return 'Verejnosť';
+                        };
+                        
+                        const handleSort = (field: string) => {
+                          if (userSortField === field) {
+                            setUserSortDirection(userSortDirection === 'asc' ? 'desc' : 'asc');
+                          } else {
+                            setUserSortField(field);
+                            setUserSortDirection('asc');
+                          }
+                        };
+                        
+                        return filteredUsers.length === 0 ? (
                           <div className="text-center py-12">
                             <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                             <p className="text-muted-foreground text-lg">
-                              Žiadni používatelia pre "{userSearchTerm}" nenájdení
+                              Žiadni používatelia nenájdení
                             </p>
-                            <p className="text-muted-foreground text-sm">
-                              Skúste upraviť vyhľadávací výraz
+                            <p className="text-muted-foreground text-sm mt-2">
+                              Skúste upraviť filtre alebo vyhľadávací výraz
                             </p>
                           </div>
                         ) : (
-                          <div className="space-y-4">
-                            {filteredUsers?.map((user: any) => (
-                            <div 
-                              key={user.id} 
-                              className="flex items-center space-x-4 p-4 border border-border rounded-lg bg-card cursor-pointer hover:bg-accent transition-colors"
-                              onClick={() => navigate(`/admin/users/${user.id}`)}
-                              data-testid={`row-user-${user.id}`}
-                            >
-                              {/* User Info */}
-                              <div className="flex items-center space-x-3 flex-1">
-                                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                  <Users className="h-5 w-5 text-primary" />
-                                </div>
-                                <div>
-                                  <p className="font-medium text-foreground" data-testid={`text-user-name-${user.id}`}>
-                                    {user.firstName && user.lastName 
-                                      ? `${user.firstName} ${user.lastName}` 
-                                      : user.firstName || user.lastName || user.email}
-                                  </p>
-                                  <p className="text-sm text-muted-foreground">{user.email}</p>
-                                  {user.createdAt && (
-                                    <p className="text-xs text-muted-foreground">
-                                      Registrovaný {new Date(user.createdAt).toLocaleDateString('sk-SK')}
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-
-                              {/* Status and Role Badges */}
-                              <div className="flex items-center space-x-2">
-                                <Badge variant={user.active ? 'default' : 'destructive'} data-testid={`badge-status-${user.id}`}>
-                                  {user.active ? 'Aktívny' : 'Neaktívny'}
-                                </Badge>
-                                <Badge variant={
-                                  user.role === 'admin' ? 'destructive' :
-                                  user.role === 'organizer' ? 'default' :
-                                  user.role === 'referee' ? 'secondary' : 'outline'
-                                } data-testid={`badge-role-${user.id}`}>
-                                  {user.role === 'admin' ? 'Admin' :
-                                   user.role === 'organizer' ? 'Organizátor' :
-                                   user.role === 'referee' ? 'Rozhodca' : 'Verejnosť'}
-                                </Badge>
-                                <Badge variant={user.isPremium ? 'default' : 'outline'} data-testid={`badge-premium-${user.id}`}>
-                                  {user.isPremium ? 'PREMIUM' : 'FREE'}
-                                </Badge>
-                              </div>
-
-                              {/* Status Toggle and Role Change Select */}
-                              <div className="flex items-center space-x-2">
-                                {/* Status Toggle Switch */}
-                                <div className="flex items-center space-x-2 min-w-[100px]">
-                                  <Switch 
-                                    checked={user.active}
-                                    onCheckedChange={(active) => updateUserStatusMutation.mutate({ userId: user.id, active })}
-                                    disabled={updateUserStatusMutation.isPending}
-                                    data-testid={`switch-status-${user.id}`}
-                                  />
-                                  <span className="text-xs text-muted-foreground">
-                                    {user.active ? 'Aktívny' : 'Neaktívny'}
-                                  </span>
-                                </div>
-
-                                {/* Premium Toggle Switch */}
-                                <div className="flex items-center space-x-2 min-w-[100px]">
-                                  <Switch 
-                                    checked={user.isPremium ?? false}
-                                    onCheckedChange={(isPremium) => updateUserPremiumMutation.mutate({ userId: user.id, isPremium })}
-                                    disabled={updateUserPremiumMutation.isPending}
-                                    data-testid={`switch-premium-${user.id}`}
-                                  />
-                                  <span className="text-xs text-muted-foreground">
-                                    {user.isPremium ? 'Premium' : 'Free'}
-                                  </span>
-                                </div>
-
-                                {/* Role Change Select */}
-                                <div className="min-w-[140px]">
-                                  <Select 
-                                    value={user.role} 
-                                    onValueChange={(newRole) => updateUserRoleMutation.mutate({ userId: user.id, role: newRole })}
-                                    disabled={updateUserRoleMutation.isPending}
-                                  >
-                                    <SelectTrigger data-testid={`select-role-${user.id}`}>
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="public">Verejnosť</SelectItem>
-                                      <SelectItem value="referee">Rozhodca</SelectItem>
-                                      <SelectItem value="organizer">Organizátor</SelectItem>
-                                      <SelectItem value="admin">Admin</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </div>
+                          <>
+                            {/* Data Table */}
+                            <div className="border border-border rounded-lg overflow-hidden">
+                              <div className="overflow-x-auto">
+                                <table className="w-full">
+                                  <thead className="bg-muted/50 border-b border-border">
+                                    <tr>
+                                      <th 
+                                        className="text-left p-3 text-sm font-medium text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
+                                        onClick={() => handleSort('name')}
+                                      >
+                                        <div className="flex items-center space-x-1">
+                                          <span>Používateľ</span>
+                                          {userSortField === 'name' && (
+                                            userSortDirection === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
+                                          )}
+                                        </div>
+                                      </th>
+                                      <th 
+                                        className="text-left p-3 text-sm font-medium text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
+                                        onClick={() => handleSort('email')}
+                                      >
+                                        <div className="flex items-center space-x-1">
+                                          <span>Email</span>
+                                          {userSortField === 'email' && (
+                                            userSortDirection === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
+                                          )}
+                                        </div>
+                                      </th>
+                                      <th 
+                                        className="text-left p-3 text-sm font-medium text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
+                                        onClick={() => handleSort('role')}
+                                      >
+                                        <div className="flex items-center space-x-1">
+                                          <span>Rola</span>
+                                          {userSortField === 'role' && (
+                                            userSortDirection === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
+                                          )}
+                                        </div>
+                                      </th>
+                                      <th className="text-left p-3 text-sm font-medium text-muted-foreground">Status</th>
+                                      <th className="text-left p-3 text-sm font-medium text-muted-foreground">Premium</th>
+                                      <th 
+                                        className="text-left p-3 text-sm font-medium text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
+                                        onClick={() => handleSort('createdAt')}
+                                      >
+                                        <div className="flex items-center space-x-1">
+                                          <span>Registrácia</span>
+                                          {userSortField === 'createdAt' && (
+                                            userSortDirection === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
+                                          )}
+                                        </div>
+                                      </th>
+                                      <th className="text-right p-3 text-sm font-medium text-muted-foreground">Akcie</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-border">
+                                    {paginatedUsers.map((user: any) => (
+                                      <tr 
+                                        key={user.id} 
+                                        className="hover:bg-muted/30 transition-colors"
+                                        data-testid={`row-user-${user.id}`}
+                                      >
+                                        {/* User Info */}
+                                        <td className="p-3">
+                                          <div className="flex items-center space-x-3">
+                                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                              <Users className="h-5 w-5 text-primary" />
+                                            </div>
+                                            <div className="min-w-0">
+                                              <p className="font-medium text-foreground truncate" data-testid={`text-user-name-${user.id}`}>
+                                                {user.firstName && user.lastName 
+                                                  ? `${user.firstName} ${user.lastName}` 
+                                                  : user.firstName || user.lastName || 'Bez mena'}
+                                              </p>
+                                            </div>
+                                          </div>
+                                        </td>
+                                        
+                                        {/* Email */}
+                                        <td className="p-3">
+                                          <p className="text-sm text-foreground truncate max-w-xs">{user.email}</p>
+                                        </td>
+                                        
+                                        {/* Role */}
+                                        <td className="p-3">
+                                          <Badge 
+                                            className={getRoleBadgeClass(user.role)}
+                                            data-testid={`badge-role-${user.id}`}
+                                          >
+                                            {getRoleLabel(user.role)}
+                                          </Badge>
+                                        </td>
+                                        
+                                        {/* Status */}
+                                        <td className="p-3">
+                                          <Badge 
+                                            variant={user.active ? 'default' : 'secondary'}
+                                            className={user.active ? '' : 'bg-gray-500/10 text-gray-600 dark:text-gray-400'}
+                                            data-testid={`badge-status-${user.id}`}
+                                          >
+                                            {user.active ? 'Aktívny' : 'Banned'}
+                                          </Badge>
+                                        </td>
+                                        
+                                        {/* Premium */}
+                                        <td className="p-3">
+                                          <Badge 
+                                            className={user.isPremium ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20' : 'bg-gray-500/10 text-gray-600 dark:text-gray-400 border-gray-500/20'}
+                                            data-testid={`badge-premium-${user.id}`}
+                                          >
+                                            {user.isPremium ? '⭐ Premium' : 'Free'}
+                                          </Badge>
+                                        </td>
+                                        
+                                        {/* Registration Date */}
+                                        <td className="p-3">
+                                          <p className="text-sm text-muted-foreground">
+                                            {user.createdAt ? new Date(user.createdAt).toLocaleDateString('sk-SK') : '-'}
+                                          </p>
+                                        </td>
+                                        
+                                        {/* Actions Button */}
+                                        <td className="p-3 text-right">
+                                          <Button 
+                                            variant="ghost" 
+                                            size="sm"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              setSelectedUserForAction(user);
+                                              setIsUserActionDialogOpen(true);
+                                            }}
+                                            data-testid={`button-user-actions-${user.id}`}
+                                          >
+                                            <MoreVertical className="w-4 h-4" />
+                                          </Button>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
                               </div>
                             </div>
-                          ))}
-                        </div>
+                            
+                            {/* Pagination */}
+                            {totalPages > 1 && (
+                              <div className="flex items-center justify-between px-2 mt-4">
+                                <p className="text-sm text-muted-foreground">
+                                  Zobrazených {startIndex + 1}-{Math.min(endIndex, totalUsers)} z {totalUsers} používateľov
+                                </p>
+                                <div className="flex items-center space-x-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setCurrentPage(currentPage - 1)}
+                                    disabled={currentPage === 1}
+                                    data-testid="button-prev-page"
+                                  >
+                                    Predchádzajúca
+                                  </Button>
+                                  <div className="flex items-center space-x-1">
+                                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                                      let pageNum;
+                                      if (totalPages <= 5) {
+                                        pageNum = i + 1;
+                                      } else if (currentPage <= 3) {
+                                        pageNum = i + 1;
+                                      } else if (currentPage >= totalPages - 2) {
+                                        pageNum = totalPages - 4 + i;
+                                      } else {
+                                        pageNum = currentPage - 2 + i;
+                                      }
+                                      
+                                      return (
+                                        <Button
+                                          key={pageNum}
+                                          variant={currentPage === pageNum ? "default" : "outline"}
+                                          size="sm"
+                                          onClick={() => setCurrentPage(pageNum)}
+                                          data-testid={`button-page-${pageNum}`}
+                                        >
+                                          {pageNum}
+                                        </Button>
+                                      );
+                                    })}
+                                  </div>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setCurrentPage(currentPage + 1)}
+                                    disabled={currentPage === totalPages}
+                                    data-testid="button-next-page"
+                                  >
+                                    Nasledujúca
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
+                          </>
                         );
                       })()}
                     </div>
                   </div>
                 )}
+
+                {/* User Action Dialog - Single Instance Outside Table Mapping */}
+                <Dialog 
+                  open={isUserActionDialogOpen}
+                  onOpenChange={(open) => {
+                    setIsUserActionDialogOpen(open);
+                    if (!open) {
+                      setSelectedUserForAction(null);
+                      setUserActionType(null);
+                    }
+                  }}
+                >
+                  <DialogContent className="max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Akcie používateľa</DialogTitle>
+                      <DialogDescription>
+                        {selectedUserForAction?.firstName && selectedUserForAction?.lastName 
+                          ? `${selectedUserForAction.firstName} ${selectedUserForAction.lastName}` 
+                          : selectedUserForAction?.email}
+                      </DialogDescription>
+                    </DialogHeader>
+                    {selectedUserForAction && (
+                      <div className="space-y-2">
+                        {/* Toggle Premium */}
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start"
+                          onClick={() => {
+                            updateUserPremiumMutation.mutate({ 
+                              userId: selectedUserForAction.id, 
+                              isPremium: !selectedUserForAction.isPremium 
+                            });
+                            setIsUserActionDialogOpen(false);
+                            setSelectedUserForAction(null);
+                          }}
+                          disabled={updateUserPremiumMutation.isPending}
+                          data-testid={`button-toggle-premium-${selectedUserForAction.id}`}
+                        >
+                          <Star className="w-4 h-4 mr-2" />
+                          {selectedUserForAction.isPremium ? 'Zrušiť Premium' : 'Aktivovať Premium'}
+                        </Button>
+                        
+                        {/* Change Role */}
+                        <div className="border border-border rounded-md p-3">
+                          <Label className="text-xs text-muted-foreground mb-2 block">Zmeniť rolu</Label>
+                          <Select 
+                            value={selectedUserForAction.role} 
+                            onValueChange={(newRole) => {
+                              if (newRole === 'admin') {
+                                if (confirm(`UPOZORNENIE: Naozaj chcete zmeniť rolu používateľa na Admin? Admin má plný prístup k systému.`)) {
+                                  updateUserRoleMutation.mutate({ userId: selectedUserForAction.id, role: newRole });
+                                  setIsUserActionDialogOpen(false);
+                                  setSelectedUserForAction(null);
+                                }
+                              } else {
+                                updateUserRoleMutation.mutate({ userId: selectedUserForAction.id, role: newRole });
+                                setIsUserActionDialogOpen(false);
+                                setSelectedUserForAction(null);
+                              }
+                            }}
+                            disabled={updateUserRoleMutation.isPending}
+                          >
+                            <SelectTrigger data-testid={`select-role-${selectedUserForAction.id}`}>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="public">Verejnosť</SelectItem>
+                              <SelectItem value="referee">Rozhodca</SelectItem>
+                              <SelectItem value="organizer">Organizátor</SelectItem>
+                              <SelectItem value="admin">Admin</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        {/* Ban/Unban User with Confirmation Dialog */}
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button
+                              variant={selectedUserForAction.active ? "destructive" : "default"}
+                              className="w-full justify-start"
+                              onClick={() => setUserActionType(selectedUserForAction.active ? 'ban' : 'unban')}
+                              data-testid={`button-ban-dialog-${selectedUserForAction.id}`}
+                            >
+                              <Ban className="w-4 h-4 mr-2" />
+                              {selectedUserForAction.active ? 'Zabanovať používateľa' : 'Odbanovať používateľa'}
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-sm">
+                            <DialogHeader>
+                              <DialogTitle className="text-destructive flex items-center">
+                                {selectedUserForAction.active ? (
+                                  <>
+                                    <Ban className="w-5 h-5 mr-2" />
+                                    Potvrďte zabanovanie
+                                  </>
+                                ) : (
+                                  <>
+                                    <CheckCircle className="w-5 h-5 mr-2" />
+                                    Potvrďte odbanovanie
+                                  </>
+                                )}
+                              </DialogTitle>
+                              <DialogDescription className="pt-4">
+                                {selectedUserForAction.active ? (
+                                  <>
+                                    <p className="font-medium mb-2">
+                                      Naozaj chcete zabanovať používateľa <span className="text-foreground">{selectedUserForAction.email}</span>?
+                                    </p>
+                                    <p className="text-sm">
+                                      Zabanovanie znamená, že používateľ nebude mať prístup k aplikácii. Túto akciu je možné vrátiť späť.
+                                    </p>
+                                  </>
+                                ) : (
+                                  <>
+                                    <p className="font-medium mb-2">
+                                      Naozaj chcete odbanovať používateľa <span className="text-foreground">{selectedUserForAction.email}</span>?
+                                    </p>
+                                    <p className="text-sm">
+                                      Používateľ získa späť prístup k aplikácii.
+                                    </p>
+                                  </>
+                                )}
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="flex space-x-2 justify-end mt-4">
+                              <Button variant="outline" onClick={() => setUserActionType(null)}>
+                                Zrušiť
+                              </Button>
+                              <Button
+                                variant={selectedUserForAction.active ? "destructive" : "default"}
+                                onClick={() => {
+                                  updateUserStatusMutation.mutate({ 
+                                    userId: selectedUserForAction.id, 
+                                    active: !selectedUserForAction.active 
+                                  });
+                                  setUserActionType(null);
+                                  setIsUserActionDialogOpen(false);
+                                  setSelectedUserForAction(null);
+                                }}
+                                disabled={updateUserStatusMutation.isPending}
+                                data-testid={`button-confirm-ban-${selectedUserForAction.id}`}
+                              >
+                                {selectedUserForAction.active ? 'Áno, zabanovať' : 'Áno, odbanovať'}
+                              </Button>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
+                    )}
+                  </DialogContent>
+                </Dialog>
 
                   {activeTab === 'competitions' && (
                   <div className="p-6">
