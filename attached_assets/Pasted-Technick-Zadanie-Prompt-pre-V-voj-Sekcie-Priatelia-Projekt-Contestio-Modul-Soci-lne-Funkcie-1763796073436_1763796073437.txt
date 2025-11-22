@@ -1,0 +1,84 @@
+Technické Zadanie (Prompt) pre Vývoj Sekcie "Priatelia"
+
+Projekt: Contestio - Modul Sociálne Funkcie
+Cieľ: Vytvoriť plne funkčnú obrazovku "Priatelia" podľa finálneho UX/UI návrhu. Táto sekcia bude slúžiť na správu kontaktov a iniciovanie súbojov.
+Technológie: React.js, TailwindCSS
+Dizajnový Jazyk: Moderný, prémiový, tmavý (dark mode), v súlade s existujúcim dizajnom aplikácie.
+
+1. Celková Architektúra a Rozloženie (Layout)
+
+Vytvorte novú stránku/komponent pre sekciu "Priatelia".
+
+Layout: Použite existujúci layout aplikácie (Sidebar vľavo, Hlavný obsah vpravo).
+
+Pozadie: Tmavé (#0c1f28).
+
+Hlavička:
+
+Nadpis: "Priatelia"
+
+Popis: "Spravuj svoje kontakty a vyzývaj ich na súboje."
+
+Hlavné tlačidlo (vpravo hore): "Pridať Priateľa" (modré).
+
+2. Navigácia (Záložky)
+
+Pod hlavičkou implementujte navigačný panel s tromi záložkami:
+
+Moji Priatelia (zobrazuje počet, napr. "(12)") - Predvolene aktívna.
+
+Žiadosti (zobrazuje počet, napr. "(2)").
+
+Hľadať (pre vyhľadávanie nových používateľov).
+
+3. Komponenty a Obsah
+
+3.1. Sekcia "Žiadosti" (Pending Requests)
+
+Zobrazte túto sekciu, len ak existujú čakajúce žiadosti.
+
+Dizajn: Zoznam kariet pod sebou alebo mriežka.
+
+Obsah Karty Žiadosti:
+
+Avatar a meno používateľa (napr. "Marek Rybár").
+
+Doplňujúce info (napr. "Spoloční priatelia: 3").
+
+Akcie: Dve tlačidlá vedľa seba:
+
+✅ (Odfajknutie/Prijať) - Zelené tlačidlo.
+
+❌ (Krížik/Odmietnuť) - Sivé tlačidlo.
+
+3.2. Sekcia "Moji Priatelia" (Friends Grid)
+
+Rozloženie: Responzívna mriežka (grid-cols-1 md:grid-cols-2 lg:grid-cols-4).
+
+Komponent Karta Priateľa (FriendCard):
+
+Vizuál: Tmavá karta s jemným okrajom (border-[#1e3a5f]).
+
+Obsah:
+
+Veľký okrúhly avatar v strede.
+
+Meno priateľa (tučné písmo, biele).
+
+Status (napr. "Online teraz" so zelenou bodkou, alebo "Naposledy pred 2h").
+
+Akcie (Tlačidlá): Dve tlačidlá pod sebou na celú šírku karty:
+
+"Vyzvať na Súboj ⚔️" - Výrazné tlačidlo (napr. priehľadné so zeleným okrajom a textom). Toto je kľúčová akcia pre modul Fishing Battle.
+
+"Zobraziť Profil" - Sekundárne sivé tlačidlo.
+
+4. Dáta a Stav
+
+Vytvorte mockData pre priateľov a žiadosti o priateľstvo.
+
+Použite useState na prepínanie medzi záložkami (Moji Priatelia / Žiadosti / Hľadať).
+
+Implementujte interakciu pre tlačidlá "Prijať/Odmietnuť" v sekcii žiadostí (po kliknutí by mala žiadosť zmiznúť zo zoznamu).
+
+Tento prompt definuje vytvorenie sociálneho centra aplikácie, ktoré je nevyhnutné pre fungovanie funkcie Fishing Battle.
