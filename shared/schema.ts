@@ -358,6 +358,22 @@ export const battleInvitations = pgTable("battle_invitations", {
   index("battle_invitations_invited_user_idx").on(table.invitedUserId, table.status),
 ]);
 
+// Friendships table (for managing friend relationships)
+export const friendships = pgTable("friendships", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  senderId: varchar("sender_id").notNull().references(() => users.id),
+  recipientId: varchar("recipient_id").notNull().references(() => users.id),
+  status: varchar("status").notNull().default("pending"), // "pending", "accepted", "rejected"
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  // Unique constraint to prevent duplicate friend requests
+  uniqueIndex("unique_friendship").on(table.senderId, table.recipientId),
+  // Index for efficient queries
+  index("friendships_recipient_idx").on(table.recipientId, table.status),
+  index("friendships_sender_idx").on(table.senderId, table.status),
+]);
+
 // Official announcements table
 export const announcements = pgTable("announcements", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -1219,6 +1235,15 @@ export type DiaryBattle = typeof diaryBattles.$inferSelect;
 export type InsertDiaryBattle = z.infer<typeof insertDiaryBattleSchema>;
 export type BattleInvitation = typeof battleInvitations.$inferSelect;
 export type InsertBattleInvitation = z.infer<typeof insertBattleInvitationSchema>;
+
+// Friendship types
+export type Friendship = typeof friendships.$inferSelect;
+export const insertFriendshipSchema = createInsertSchema(friendships).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertFriendship = z.infer<typeof insertFriendshipSchema>;
 
 // Seasonal Goals types
 export type Season = typeof seasons.$inferSelect;
