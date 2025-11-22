@@ -2589,7 +2589,6 @@ export default function AdminPanel() {
                                         {competition.planTier?.toUpperCase() || 'BASIC'}
                                       </Badge>
                                     </div>
-                                    <p className="text-muted-foreground text-sm mb-2">{competition.description}</p>
                                     <div className="flex items-center space-x-6 text-sm text-muted-foreground">
                                       <div className="flex items-center space-x-1">
                                         <MapPin className="w-4 h-4" />
