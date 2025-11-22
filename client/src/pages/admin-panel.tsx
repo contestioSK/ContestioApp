@@ -53,7 +53,8 @@ import {
   Play,
   Square,
   ArrowRight,
-  Palette
+  Palette,
+  Menu
 } from "lucide-react";
 import type { Competition, Team, TeamMember, CompetitionRegistration, InsertSponsor, Sponsor, SponsorLevel, Catch, Referee, InsertReferee } from "@shared/schema";
 import { getSideCompetitionLabel } from "@/lib/utils";
