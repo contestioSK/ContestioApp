@@ -62,6 +62,9 @@ import { insertSponsorSchema, sponsorLevels } from "@shared/schema";
 import { getMaxReferees, getMaxTeams } from "@shared/plan-capabilities";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import NavigationHeader from "@/components/navigation-header";
+import { TrendCard } from "@/components/admin/TrendCard";
+import { DonutChart } from "@/components/admin/DonutChart";
+import { ActivityTable } from "@/components/admin/ActivityTable";
 
 // Type for team with members and catches
 type TeamWithDetails = Team & {
@@ -253,6 +256,24 @@ interface DashboardStats {
   }>;
   usersByRole: Array<{ role: string; count: number }>;
   competitionsByStatus: Array<{ status: string; count: number }>;
+  trends?: {
+    users: {
+      thisWeek: number;
+      previousWeek: number;
+      weeklyChange: number;
+      thisMonth: number;
+      previousMonth: number;
+      monthlyChange: number;
+    };
+    competitions: {
+      thisWeek: number;
+      previousWeek: number;
+      weeklyChange: number;
+      thisMonth: number;
+      previousMonth: number;
+      monthlyChange: number;
+    };
+  };
 }
 
 export default function AdminPanel() {
@@ -1611,7 +1632,7 @@ export default function AdminPanel() {
 
                       {dashboardLoading ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                          {[...Array(8)].map((_, i) => (
+                          {[...Array(4)].map((_, i) => (
                             <Card key={i} className="p-6">
                               <Skeleton className="h-8 w-24 mb-2" />
                               <Skeleton className="h-12 w-16 mb-1" />
@@ -1621,240 +1642,92 @@ export default function AdminPanel() {
                         </div>
                       ) : (
                         <>
-                          {/* Statistics Cards */}
+                          {/* Trend Cards Row */}
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            <Card className="p-6" data-testid="card-total-users">
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <p className="text-sm font-medium text-muted-foreground">Celkový počet užívateľov</p>
-                                  <p className="text-3xl font-bold text-foreground">
-                                    {dashboardStats?.totalUsers || 0}
-                                  </p>
-                                </div>
-                                <div className="h-12 w-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                                  <Users className="h-6 w-6 text-primary" />
-                                </div>
-                              </div>
-                            </Card>
-
-                            <Card className="p-6" data-testid="card-total-competitions">
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <p className="text-sm font-medium text-muted-foreground">Celkový počet súťaží</p>
-                                  <p className="text-3xl font-bold text-foreground">
-                                    {dashboardStats?.totalCompetitions || 0}
-                                  </p>
-                                </div>
-                                <div className="h-12 w-12 bg-secondary/10 rounded-lg flex items-center justify-center">
-                                  <Trophy className="h-6 w-6 text-secondary" />
-                                </div>
-                              </div>
-                            </Card>
-
-                            <Card className="p-6" data-testid="card-active-competitions">
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <p className="text-sm font-medium text-muted-foreground">Aktívne súťaže</p>
-                                  <p className="text-3xl font-bold text-foreground">
-                                    {dashboardStats?.activeCompetitions || 0}
-                                  </p>
-                                </div>
-                                <div className="h-12 w-12 bg-accent/10 rounded-lg flex items-center justify-center">
-                                  <Activity className="h-6 w-6 text-accent" />
-                                </div>
-                              </div>
-                            </Card>
-
-                            <Card className="p-6" data-testid="card-pending-registrations">
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <p className="text-sm font-medium text-muted-foreground">Čakajúce registrácie</p>
-                                  <p className="text-3xl font-bold text-foreground">
-                                    {dashboardStats?.pendingRegistrations || 0}
-                                  </p>
-                                </div>
-                                <div className="h-12 w-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                                  <Clock className="h-6 w-6 text-orange-600" />
-                                </div>
-                              </div>
-                            </Card>
+                            <TrendCard
+                              title="Celkový počet užívateľov"
+                              value={dashboardStats?.totalUsers || 0}
+                              trend={dashboardStats?.trends?.users ? {
+                                value: dashboardStats.trends.users.monthlyChange,
+                                label: "od minulého mesiaca"
+                              } : undefined}
+                              icon={Users}
+                              iconColor="text-blue-500"
+                              iconBgColor="bg-blue-500/10"
+                            />
+                            
+                            <TrendCard
+                              title="Celkový počet súťaží"
+                              value={dashboardStats?.totalCompetitions || 0}
+                              trend={dashboardStats?.trends?.competitions ? {
+                                value: dashboardStats.trends.competitions.thisWeek > 0 ? dashboardStats.trends.competitions.weeklyChange : 0,
+                                label: dashboardStats.trends.competitions.thisWeek > 0 ? `+${dashboardStats.trends.competitions.thisWeek} nové tento týždeň` : ""
+                              } : undefined}
+                              icon={Trophy}
+                              iconColor="text-purple-500"
+                              iconBgColor="bg-purple-500/10"
+                            />
+                            
+                            <TrendCard
+                              title="Aktívne súťaže (Live)"
+                              value={dashboardStats?.activeCompetitions || 0}
+                              trend={{
+                                value: 0,
+                                label: "Práve prebiehajú"
+                              }}
+                              icon={Activity}
+                              iconColor="text-emerald-500"
+                              iconBgColor="bg-emerald-500/10"
+                            />
+                            
+                            <TrendCard
+                              title="Čakajúce registrácie"
+                              value={dashboardStats?.pendingRegistrations || 0}
+                              trend={{
+                                value: 0,
+                                label: dashboardStats?.pendingRegistrations === 0 ? "Všetko vybavené ✓" : ""
+                              }}
+                              icon={Clock}
+                              iconColor="text-orange-500"
+                              iconBgColor="bg-orange-500/10"
+                            />
                           </div>
 
-                          {/* Charts Row */}
+                          {/* Charts Row - Donut Charts */}
                           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            {/* Users by Role */}
-                            <Card className="p-6">
-                              <CardHeader className="pb-4">
-                                <CardTitle className="text-lg font-semibold">Užívatelia podľa rolí</CardTitle>
-                              </CardHeader>
-                              <CardContent>
-                                <div className="space-y-3">
-                                  {dashboardStats?.usersByRole?.map((item, index) => (
-                                    <div key={item.role} className="flex items-center justify-between">
-                                      <div className="flex items-center space-x-3">
-                                        <div className={`w-3 h-3 rounded-full ${
-                                          item.role === 'admin' ? 'bg-red-500' :
-                                          item.role === 'organizer' ? 'bg-blue-500' :
-                                          item.role === 'referee' ? 'bg-green-500' : 'bg-gray-500'
-                                        }`} />
-                                        <span className="text-sm font-medium capitalize">
-                                          {item.role === 'admin' ? 'Admin' :
-                                           item.role === 'organizer' ? 'Organizátor' :
-                                           item.role === 'referee' ? 'Rozhodca' : 'Verejnosť'}
-                                        </span>
-                                      </div>
-                                      <span className="text-sm font-semibold">{item.count}</span>
-                                    </div>
-                                  ))}
-                                </div>
-                              </CardContent>
-                            </Card>
-
-                            {/* Competitions by Status */}
-                            <Card className="p-6">
-                              <CardHeader className="pb-4">
-                                <CardTitle className="text-lg font-semibold">Súťaže podľa statusu</CardTitle>
-                              </CardHeader>
-                              <CardContent>
-                                <div className="space-y-3">
-                                  {dashboardStats?.competitionsByStatus?.map((item) => (
-                                    <div key={item.status} className="flex items-center justify-between">
-                                      <div className="flex items-center space-x-3">
-                                        <div className={`w-3 h-3 rounded-full ${
-                                          item.status === 'live' ? 'bg-green-500' :
-                                          item.status === 'registration' ? 'bg-yellow-500' :
-                                          item.status === 'finished' ? 'bg-gray-500' : 'bg-blue-500'
-                                        }`} />
-                                        <span className="text-sm font-medium capitalize">
-                                          {item.status === 'live' ? 'Živo' :
-                                           item.status === 'registration' ? 'Registrácia' :
-                                           item.status === 'finished' ? 'Ukončené' : item.status}
-                                        </span>
-                                      </div>
-                                      <span className="text-sm font-semibold">{item.count}</span>
-                                    </div>
-                                  ))}
-                                </div>
-                              </CardContent>
-                            </Card>
+                            <DonutChart
+                              title="Užívatelia podľa rolí"
+                              data={(dashboardStats?.usersByRole || []).map(item => ({
+                                name: item.role === 'admin' ? 'Admin' :
+                                      item.role === 'organizer' ? 'Organizátor' :
+                                      item.role === 'referee' ? 'Rozhodca' : 'Verejnosť',
+                                value: item.count,
+                                color: item.role === 'admin' ? '#ef4444' :
+                                       item.role === 'organizer' ? '#f97316' :
+                                       item.role === 'referee' ? '#10b981' : '#3b82f6'
+                              }))}
+                            />
+                            
+                            <DonutChart
+                              title="Súťaže podľa statusu"
+                              data={(dashboardStats?.competitionsByStatus || []).map(item => ({
+                                name: item.status === 'live' ? 'Živo (Live)' :
+                                      item.status === 'registration' ? 'Registrácia' :
+                                      item.status === 'finished' ? 'Ukončené' : item.status,
+                                value: item.count,
+                                color: item.status === 'live' ? '#10b981' :
+                                       item.status === 'registration' ? '#f59e0b' :
+                                       item.status === 'finished' ? '#6b7280' : '#3b82f6'
+                              }))}
+                            />
                           </div>
 
-                          {/* Recent Activity - 4 Columns */}
-                          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6 min-h-0">
-                            {/* New Users Column */}
-                            <Card className="p-4 flex flex-col min-h-0">
-                              <CardHeader className="pb-3 flex-shrink-0">
-                                <CardTitle className="text-base font-semibold flex items-center">
-                                  <Users className="h-4 w-4 mr-2 text-blue-600" />
-                                  Noví používatelia
-                                </CardTitle>
-                              </CardHeader>
-                              <CardContent className="flex-1 min-h-0 p-0">
-                                <div className="max-h-80 overflow-y-auto pr-2" data-testid="list-new-users">
-                                  <div className="space-y-3">
-                                    {dashboardStats?.newUsers?.length ? (
-                                      dashboardStats.newUsers.map((user) => (
-                                        <div key={user.id} className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                                          <p className="text-xs font-medium text-foreground truncate">{user.description}</p>
-                                          <p className="text-xs text-muted-foreground">
-                                            {new Date(user.timestamp).toLocaleDateString('sk-SK')}
-                                          </p>
-                                        </div>
-                                      ))
-                                    ) : (
-                                      <p className="text-xs text-muted-foreground text-center py-4">Žiadni noví používatelia</p>
-                                    )}
-                                  </div>
-                                </div>
-                              </CardContent>
-                            </Card>
-
-                            {/* New Competitions Column */}
-                            <Card className="p-4 flex flex-col min-h-0">
-                              <CardHeader className="pb-3 flex-shrink-0">
-                                <CardTitle className="text-base font-semibold flex items-center">
-                                  <Trophy className="h-4 w-4 mr-2 text-green-600" />
-                                  Nové súťaže
-                                </CardTitle>
-                              </CardHeader>
-                              <CardContent className="flex-1 min-h-0 p-0">
-                                <div className="max-h-80 overflow-y-auto pr-2" data-testid="list-new-competitions">
-                                  <div className="space-y-3">
-                                    {dashboardStats?.newCompetitions?.length ? (
-                                      dashboardStats.newCompetitions.map((competition) => (
-                                        <div key={competition.id} className="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                                          <p className="text-xs font-medium text-foreground truncate">{competition.description}</p>
-                                          <p className="text-xs text-muted-foreground">
-                                            {new Date(competition.timestamp).toLocaleDateString('sk-SK')}
-                                          </p>
-                                        </div>
-                                      ))
-                                    ) : (
-                                      <p className="text-xs text-muted-foreground text-center py-4">Žiadne nové súťaže</p>
-                                    )}
-                                  </div>
-                                </div>
-                              </CardContent>
-                            </Card>
-
-                            {/* New Catches Column */}
-                            <Card className="p-4 flex flex-col min-h-0">
-                              <CardHeader className="pb-3 flex-shrink-0">
-                                <CardTitle className="text-base font-semibold flex items-center">
-                                  <Award className="h-4 w-4 mr-2 text-orange-600" />
-                                  Nové úlovky
-                                </CardTitle>
-                              </CardHeader>
-                              <CardContent className="flex-1 min-h-0 p-0">
-                                <div className="max-h-80 overflow-y-auto pr-2" data-testid="list-new-catches">
-                                  <div className="space-y-3">
-                                    {dashboardStats?.newCatches?.length ? (
-                                      dashboardStats.newCatches.map((catch_) => (
-                                        <div key={catch_.id} className="p-2 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
-                                          <p className="text-xs font-medium text-foreground truncate">{catch_.description}</p>
-                                          <p className="text-xs text-muted-foreground">
-                                            {new Date(catch_.timestamp).toLocaleDateString('sk-SK')}
-                                            {catch_.user && ` • ${catch_.user}`}
-                                          </p>
-                                        </div>
-                                      ))
-                                    ) : (
-                                      <p className="text-xs text-muted-foreground text-center py-4">Žiadne nové úlovky</p>
-                                    )}
-                                  </div>
-                                </div>
-                              </CardContent>
-                            </Card>
-
-                            {/* System Changes Column */}
-                            <Card className="p-4 flex flex-col min-h-0">
-                              <CardHeader className="pb-3 flex-shrink-0">
-                                <CardTitle className="text-base font-semibold flex items-center">
-                                  <Settings className="h-4 w-4 mr-2 text-purple-600" />
-                                  Zmeny v systéme
-                                </CardTitle>
-                              </CardHeader>
-                              <CardContent className="flex-1 min-h-0 p-0">
-                                <div className="max-h-80 overflow-y-auto pr-2" data-testid="list-system-changes">
-                                  <div className="space-y-3">
-                                    {dashboardStats?.systemChanges?.length ? (
-                                      dashboardStats.systemChanges.map((change) => (
-                                        <div key={change.id} className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                                          <p className="text-xs font-medium text-foreground truncate">{change.description}</p>
-                                          <p className="text-xs text-muted-foreground">
-                                            {new Date(change.timestamp).toLocaleDateString('sk-SK')}
-                                            {change.user && ` • ${change.user}`}
-                                          </p>
-                                        </div>
-                                      ))
-                                    ) : (
-                                      <p className="text-xs text-muted-foreground text-center py-4">Žiadne zmeny</p>
-                                    )}
-                                  </div>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          </div>
+                          {/* Recent Registrations Table */}
+                          <ActivityTable
+                            users={dashboardStats?.newUsers || []}
+                            allUsers={allUsers || []}
+                            onViewAll={() => setActiveTab('users')}
+                          />
                         </>
                       )}
                     </div>

@@ -68,7 +68,7 @@ import {
   type Friendship,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, or, not, sql, ne, count, gt, gte, lte, inArray } from "drizzle-orm";
+import { eq, desc, and, or, not, sql, ne, count, gt, gte, lt, lte, inArray } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (required for Replit Auth)
@@ -1449,6 +1449,9 @@ export class DatabaseStorage implements IStorage {
   async getDashboardStats() {
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+    const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
 
     // Get basic counts
     const [totalUsersResult] = await db.select({ count: count() }).from(users);
@@ -1459,6 +1462,42 @@ export class DatabaseStorage implements IStorage {
     const [totalCatchesResult] = await db.select({ count: count() }).from(catches);
     const [pendingRegistrationsResult] = await db.select({ count: count() }).from(competitionRegistrations)
       .where(eq(competitionRegistrations.status, 'submitted'));
+
+    // Get trend data for users
+    const [newUsersThisWeek] = await db.select({ count: count() }).from(users)
+      .where(gte(users.createdAt, sevenDaysAgo));
+    const [newUsersPreviousWeek] = await db.select({ count: count() }).from(users)
+      .where(and(gte(users.createdAt, fourteenDaysAgo), lt(users.createdAt, sevenDaysAgo)));
+    const [newUsersThisMonth] = await db.select({ count: count() }).from(users)
+      .where(gte(users.createdAt, thirtyDaysAgo));
+    const [newUsersPreviousMonth] = await db.select({ count: count() }).from(users)
+      .where(and(gte(users.createdAt, sixtyDaysAgo), lt(users.createdAt, thirtyDaysAgo)));
+
+    // Get trend data for competitions
+    const [newCompetitionsThisWeek] = await db.select({ count: count() }).from(competitions)
+      .where(gte(competitions.createdAt, sevenDaysAgo));
+    const [newCompetitionsPreviousWeek] = await db.select({ count: count() }).from(competitions)
+      .where(and(gte(competitions.createdAt, fourteenDaysAgo), lt(competitions.createdAt, sevenDaysAgo)));
+    const [newCompetitionsThisMonth] = await db.select({ count: count() }).from(competitions)
+      .where(gte(competitions.createdAt, thirtyDaysAgo));
+    const [newCompetitionsPreviousMonth] = await db.select({ count: count() }).from(competitions)
+      .where(and(gte(competitions.createdAt, sixtyDaysAgo), lt(competitions.createdAt, thirtyDaysAgo)));
+
+    // Calculate percentage changes - guard against division by zero and ensure finite values
+    const calculateSafePercentage = (current: number, previous: number): number => {
+      if (previous === 0) {
+        if (current > 0) return 100;
+        if (current < 0) return -100;
+        return 0;
+      }
+      const percentage = ((current - previous) / previous) * 100;
+      return Number.isFinite(percentage) ? percentage : 0;
+    };
+
+    const userWeeklyChange = calculateSafePercentage(newUsersThisWeek.count, newUsersPreviousWeek.count);
+    const userMonthlyChange = calculateSafePercentage(newUsersThisMonth.count, newUsersPreviousMonth.count);
+    const competitionWeeklyChange = calculateSafePercentage(newCompetitionsThisWeek.count, newCompetitionsPreviousWeek.count);
+    const competitionMonthlyChange = calculateSafePercentage(newCompetitionsThisMonth.count, newCompetitionsPreviousMonth.count);
 
     // Get users by role
     const usersByRole = await db
@@ -1602,6 +1641,25 @@ export class DatabaseStorage implements IStorage {
       systemChanges,
       usersByRole,
       competitionsByStatus,
+      // Trend data
+      trends: {
+        users: {
+          thisWeek: newUsersThisWeek.count,
+          previousWeek: newUsersPreviousWeek.count,
+          weeklyChange: Math.round(userWeeklyChange * 10) / 10, // Round to 1 decimal
+          thisMonth: newUsersThisMonth.count,
+          previousMonth: newUsersPreviousMonth.count,
+          monthlyChange: Math.round(userMonthlyChange * 10) / 10,
+        },
+        competitions: {
+          thisWeek: newCompetitionsThisWeek.count,
+          previousWeek: newCompetitionsPreviousWeek.count,
+          weeklyChange: Math.round(competitionWeeklyChange * 10) / 10,
+          thisMonth: newCompetitionsThisMonth.count,
+          previousMonth: newCompetitionsPreviousMonth.count,
+          monthlyChange: Math.round(competitionMonthlyChange * 10) / 10,
+        },
+      },
     };
   }
 
