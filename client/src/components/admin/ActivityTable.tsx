@@ -204,16 +204,14 @@ export function ActivityTable({ users, allUsers = [], onViewAll, onUserClick }: 
                     size="sm"
                     className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
                     onClick={() => {
-                      // Find the real user by name from activity
-                      if (item.user) {
-                        const realUser = allUsers?.find((u: User) => {
-                          const fullName = `${u.firstName || ''} ${u.lastName || ''}`.trim();
-                          return fullName === item.user || u.email === item.user;
-                        });
-                        if (realUser) {
-                          onUserClick?.(realUser);
-                        }
-                      }
+                      // Try to find the real user by name from activity
+                      const realUser = item.user ? allUsers?.find((u: User) => {
+                        const fullName = `${u.firstName || ''} ${u.lastName || ''}`.trim().toLowerCase();
+                        const searchName = item.user?.toLowerCase() || '';
+                        return fullName === searchName || u.email?.toLowerCase() === searchName;
+                      }) : null;
+                      // Use real user if found, otherwise use the enriched fallback
+                      onUserClick?.(realUser || item.fullUser);
                     }}
                   >
                     Detail
