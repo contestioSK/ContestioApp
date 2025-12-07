@@ -350,8 +350,10 @@ export default function AdminPanel() {
     code: '',
     name: '',
     description: '',
+    scope: 'diary' as 'diary' | 'competition' | 'all',
     type: 'days' as 'percent' | 'days',
     value: 15,
+    competitionId: null as string | null,
     validFrom: new Date().toISOString().split('T')[0],
     validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     maxUsages: null as number | null,
@@ -871,6 +873,12 @@ export default function AdminPanel() {
     enabled: isAuthenticated && isAdmin,
   });
 
+  // All competitions for promo code scope selection
+  const { data: allCompetitions } = useQuery<any[]>({
+    queryKey: ["/api/competitions"],
+    enabled: isAuthenticated && isAdmin,
+  });
+
   // Update editingCompetition when competitions data changes
   useEffect(() => {
     if (editingCompetition && competitions) {
@@ -1036,8 +1044,10 @@ export default function AdminPanel() {
         code: '',
         name: '',
         description: '',
+        scope: 'diary',
         type: 'days',
         value: 15,
+        competitionId: null,
         validFrom: new Date().toISOString().split('T')[0],
         validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         maxUsages: null,
@@ -4723,6 +4733,14 @@ export default function AdminPanel() {
                                             <><CalendarDays className="w-3 h-3 mr-1" />{promo.value} dní</>
                                           )}
                                         </Badge>
+                                        <Badge variant="outline" className={
+                                          promo.scope === 'competition' ? 'border-blue-500 text-blue-600' : 
+                                          promo.scope === 'all' ? 'border-purple-500 text-purple-600' : 
+                                          'border-green-500 text-green-600'
+                                        }>
+                                          {promo.scope === 'competition' ? 'Súťaže' : 
+                                           promo.scope === 'all' ? 'Všetko' : 'Denník'}
+                                        </Badge>
                                         {!promo.isActive && (
                                           <Badge variant="outline" className="text-muted-foreground">Neaktívny</Badge>
                                         )}
@@ -4830,6 +4848,52 @@ export default function AdminPanel() {
                                 onChange={(e) => setPromoFormData({ ...promoFormData, description: e.target.value })}
                                 data-testid="input-promo-description"
                               />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <Label>Platí pre</Label>
+                                <Select
+                                  value={promoFormData.scope}
+                                  onValueChange={(value: 'diary' | 'competition' | 'all') => setPromoFormData({ 
+                                    ...promoFormData, 
+                                    scope: value,
+                                    competitionId: value === 'competition' ? promoFormData.competitionId : null 
+                                  })}
+                                >
+                                  <SelectTrigger data-testid="select-promo-scope">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="diary">Rybársky denník</SelectItem>
+                                    <SelectItem value="competition">Súťaže</SelectItem>
+                                    <SelectItem value="all">Všetko</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              {promoFormData.scope === 'competition' && (
+                                <div>
+                                  <Label>Konkrétna súťaž (voliteľné)</Label>
+                                  <Select
+                                    value={promoFormData.competitionId || 'all'}
+                                    onValueChange={(value) => setPromoFormData({ 
+                                      ...promoFormData, 
+                                      competitionId: value === 'all' ? null : value 
+                                    })}
+                                  >
+                                    <SelectTrigger data-testid="select-promo-competition">
+                                      <SelectValue placeholder="Všetky súťaže" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="all">Všetky súťaže</SelectItem>
+                                      {Array.isArray(allCompetitions) && allCompetitions.map((comp: any) => (
+                                        <SelectItem key={comp.id} value={comp.id}>
+                                          {comp.name}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              )}
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                               <div>
