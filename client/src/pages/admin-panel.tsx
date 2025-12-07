@@ -4857,7 +4857,8 @@ export default function AdminPanel() {
                                   onValueChange={(value: 'diary' | 'competition' | 'all') => setPromoFormData({ 
                                     ...promoFormData, 
                                     scope: value,
-                                    competitionId: value === 'competition' ? promoFormData.competitionId : null 
+                                    competitionId: value === 'competition' ? promoFormData.competitionId : null,
+                                    type: value === 'competition' ? 'percent' : promoFormData.type
                                   })}
                                 >
                                   <SelectTrigger data-testid="select-promo-scope">
@@ -4898,28 +4899,34 @@ export default function AdminPanel() {
                             <div className="grid grid-cols-2 gap-4">
                               <div>
                                 <Label>Typ akcie</Label>
-                                <Select
-                                  value={promoFormData.type}
-                                  onValueChange={(value: 'percent' | 'days') => setPromoFormData({ ...promoFormData, type: value })}
-                                >
-                                  <SelectTrigger data-testid="select-promo-type">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="days">Dni zadarmo</SelectItem>
-                                    <SelectItem value="percent">Percentuálna zľava</SelectItem>
-                                  </SelectContent>
-                                </Select>
+                                {promoFormData.scope === 'competition' ? (
+                                  <div className="h-10 px-3 py-2 rounded-md border border-input bg-muted text-sm flex items-center">
+                                    Percentuálna zľava (na štartovné)
+                                  </div>
+                                ) : (
+                                  <Select
+                                    value={promoFormData.type}
+                                    onValueChange={(value: 'percent' | 'days') => setPromoFormData({ ...promoFormData, type: value })}
+                                  >
+                                    <SelectTrigger data-testid="select-promo-type">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="days">Dni zadarmo</SelectItem>
+                                      <SelectItem value="percent">Percentuálna zľava</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                )}
                               </div>
                               <div>
                                 <Label htmlFor="promo-value">
-                                  {promoFormData.type === 'percent' ? 'Zľava (%)' : 'Počet dní'}
+                                  {promoFormData.scope === 'competition' ? 'Zľava (%)' : (promoFormData.type === 'percent' ? 'Zľava (%)' : 'Počet dní')}
                                 </Label>
                                 <Input
                                   id="promo-value"
                                   type="number"
                                   min="1"
-                                  max={promoFormData.type === 'percent' ? 100 : 365}
+                                  max={promoFormData.scope === 'competition' || promoFormData.type === 'percent' ? 100 : 365}
                                   value={promoFormData.value}
                                   onChange={(e) => setPromoFormData({ ...promoFormData, value: parseInt(e.target.value) || 0 })}
                                   data-testid="input-promo-value"
