@@ -127,8 +127,9 @@ export default function Pricing() {
       popular: false,
       cta: "Používať zadarmo",
       features: [
-        "📝 **1 rybárska výprava**",
-        "🐟 **20 úlovkov**",
+        "📝 **Neobmedzené výpravy** (posledné 3 prístupné)",
+        "🐟 **50 úlovkov**",
+        "📷 **1 fotka na úlovok**",
         "Zápis úlovkov s fotkami",
         "Ukladanie lokalít (GPS)",
         "Nástrahy a poznámky",
