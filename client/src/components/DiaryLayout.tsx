@@ -198,6 +198,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                 onClick={() => {
                   setLocation("/diary/profile");
                   setSidebarOpen(false);
+                  window.scrollTo(0, 0);
                 }}
                 className="flex-1 flex items-center space-x-2 md:space-x-3 hover:bg-sidebar-accent rounded-lg p-2 transition-colors group"
                 data-testid="button-profile"
@@ -237,6 +238,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                       onClick={() => {
                         setLocation(item.href);
                         setSidebarOpen(false);
+                        window.scrollTo(0, 0);
                       }}
                       className={`
                         w-full flex items-center px-2 md:px-3 py-2 md:py-3 text-sm font-medium rounded-lg transition-all
@@ -282,6 +284,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                       onClick={() => {
                         setLocation(item.href);
                         setSidebarOpen(false);
+                        window.scrollTo(0, 0);
                       }}
                       className={`
                         w-full flex items-center px-2 md:px-3 py-2 md:py-3 text-sm font-medium rounded-lg transition-all
@@ -333,6 +336,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                           setLocation(item.href);
                         }
                         setSidebarOpen(false);
+                        window.scrollTo(0, 0);
                       }}
                       className={`
                         w-full flex items-center px-2 md:px-3 py-2 md:py-3 text-sm font-medium rounded-lg transition-all
@@ -385,6 +389,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                       onClick={() => {
                         setLocation(item.href);
                         setSidebarOpen(false);
+                        window.scrollTo(0, 0);
                       }}
                       className={`
                         w-full flex items-center px-2 md:px-3 py-2 md:py-3 text-sm font-medium rounded-lg transition-all
@@ -430,6 +435,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                       onClick={() => {
                         setLocation(item.href);
                         setSidebarOpen(false);
+                        window.scrollTo(0, 0);
                       }}
                       className={`
                         w-full flex items-center px-2 md:px-3 py-2 md:py-3 text-sm font-medium rounded-lg transition-all
@@ -467,6 +473,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                 onClick={() => {
                   setLocation('/admin-panel');
                   setSidebarOpen(false);
+                  window.scrollTo(0, 0);
                 }}
                 className="w-full justify-start bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90"
                 data-testid="button-admin-panel"
@@ -538,6 +545,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                   key={item.href}
                   onClick={() => {
                     setLocation(item.href);
+                    window.scrollTo(0, 0);
                   }}
                   className={`
                     flex flex-col items-center justify-center space-y-1 transition-colors px-4 py-2 min-w-[20%] flex-1
@@ -562,7 +570,10 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
               return (
                 <button
                   key={item.href}
-                  onClick={() => setLocation(item.href)}
+                  onClick={() => {
+                    setLocation(item.href);
+                    window.scrollTo(0, 0);
+                  }}
                   className={`
                     flex flex-col items-center justify-center space-y-1 transition-colors px-4 py-2 min-w-[20%] flex-1
                     ${isActive 
