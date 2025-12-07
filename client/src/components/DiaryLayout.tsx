@@ -4,6 +4,12 @@ import { useLocation, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { NotificationCenter } from "@/components/diary/notification-center";
 import CatchFormDialog from "@/components/diary/CatchFormDialog";
 import { queryClient } from "@/lib/queryClient";
@@ -218,33 +224,37 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
 
           {/* Navigation */}
           <nav className="flex-1 px-2 md:px-3 py-4 md:py-6 space-y-1 overflow-y-auto">
+            <TooltipProvider delayDuration={300}>
             {/* HLAVNÉ Section */}
             {mainSection.map((item) => {
               const Icon = item.icon;
               const isActive = isActivePath(item.href);
               
               return (
-                <button
-                  key={item.href}
-                  onClick={() => {
-                    setLocation(item.href);
-                    setSidebarOpen(false);
-                  }}
-                  className={`
-                    w-full flex items-center px-2 md:px-3 py-2 md:py-3 text-sm font-medium rounded-lg transition-all
-                    ${isActive 
-                      ? 'bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-white border border-blue-500/50 shadow-lg shadow-blue-500/20' 
-                      : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent'
-                    }
-                  `}
-                  data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
-                >
-                  <Icon className="mr-2 md:mr-3 h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
-                  <div className="text-left flex-1">
-                    <div className="font-medium text-xs md:text-sm">{item.label}</div>
-                    <div className="text-xs text-sidebar-foreground/50 hidden md:block">{item.description}</div>
-                  </div>
-                </button>
+                <Tooltip key={item.href}>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => {
+                        setLocation(item.href);
+                        setSidebarOpen(false);
+                      }}
+                      className={`
+                        w-full flex items-center px-2 md:px-3 py-2 md:py-3 text-sm font-medium rounded-lg transition-all
+                        ${isActive 
+                          ? 'bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-white border border-blue-500/50 shadow-lg shadow-blue-500/20' 
+                          : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent'
+                        }
+                      `}
+                      data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
+                    >
+                      <Icon className="mr-2 md:mr-3 h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
+                      <span className="font-medium text-xs md:text-sm">{item.label}</span>
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="bg-popover text-popover-foreground border shadow-md">
+                    <p>{item.description}</p>
+                  </TooltipContent>
+                </Tooltip>
               );
             })}
 
@@ -266,27 +276,30 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
               const isActive = isActivePath(item.href);
               
               return (
-                <button
-                  key={item.href}
-                  onClick={() => {
-                    setLocation(item.href);
-                    setSidebarOpen(false);
-                  }}
-                  className={`
-                    w-full flex items-center px-2 md:px-3 py-2 md:py-3 text-sm font-medium rounded-lg transition-all
-                    ${isActive 
-                      ? 'bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-white border border-blue-500/50 shadow-lg shadow-blue-500/20' 
-                      : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent'
-                    }
-                  `}
-                  data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
-                >
-                  <Icon className="mr-2 md:mr-3 h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
-                  <div className="text-left flex-1">
-                    <div className="font-medium text-xs md:text-sm">{item.label}</div>
-                    <div className="text-xs text-sidebar-foreground/50 hidden md:block">{item.description}</div>
-                  </div>
-                </button>
+                <Tooltip key={item.href}>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => {
+                        setLocation(item.href);
+                        setSidebarOpen(false);
+                      }}
+                      className={`
+                        w-full flex items-center px-2 md:px-3 py-2 md:py-3 text-sm font-medium rounded-lg transition-all
+                        ${isActive 
+                          ? 'bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-white border border-blue-500/50 shadow-lg shadow-blue-500/20' 
+                          : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent'
+                        }
+                      `}
+                      data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
+                    >
+                      <Icon className="mr-2 md:mr-3 h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
+                      <span className="font-medium text-xs md:text-sm">{item.label}</span>
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="bg-popover text-popover-foreground border shadow-md">
+                    <p>{item.description}</p>
+                  </TooltipContent>
+                </Tooltip>
               );
             })}
 
@@ -308,40 +321,43 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
               const isActive = isActivePath(item.href);
               
               return (
-                <button
-                  key={item.href}
-                  onClick={() => {
-                    // Handle premium routing for Fishing Battle
-                    if (item.premium && item.label === "Fishing Battle") {
-                      const targetHref = isPremium ? "/diary/battles" : "/diary/battles/paywall";
-                      setLocation(targetHref);
-                    } else {
-                      setLocation(item.href);
-                    }
-                    setSidebarOpen(false);
-                  }}
-                  className={`
-                    w-full flex items-center px-2 md:px-3 py-2 md:py-3 text-sm font-medium rounded-lg transition-all
-                    ${isActive 
-                      ? 'bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-white border border-blue-500/50 shadow-lg shadow-blue-500/20' 
-                      : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent'
-                    }
-                  `}
-                  data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
-                >
-                  <Icon className="mr-2 md:mr-3 h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
-                  <div className="text-left flex-1">
-                    <div className="font-medium text-xs md:text-sm flex items-center gap-2">
-                      {item.label}
-                      {item.premium && !isPremium && (
-                        <Badge variant="secondary" className="bg-sidebar-primary/20 text-sidebar-primary border-sidebar-primary/30 text-xs px-1 py-0">
-                          PREMIUM
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="text-xs text-sidebar-foreground/50 hidden md:block">{item.description}</div>
-                  </div>
-                </button>
+                <Tooltip key={item.href}>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => {
+                        // Handle premium routing for Fishing Battle
+                        if (item.premium && item.label === "Fishing Battle") {
+                          const targetHref = isPremium ? "/diary/battles" : "/diary/battles/paywall";
+                          setLocation(targetHref);
+                        } else {
+                          setLocation(item.href);
+                        }
+                        setSidebarOpen(false);
+                      }}
+                      className={`
+                        w-full flex items-center px-2 md:px-3 py-2 md:py-3 text-sm font-medium rounded-lg transition-all
+                        ${isActive 
+                          ? 'bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-white border border-blue-500/50 shadow-lg shadow-blue-500/20' 
+                          : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent'
+                        }
+                      `}
+                      data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
+                    >
+                      <Icon className="mr-2 md:mr-3 h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
+                      <span className="font-medium text-xs md:text-sm flex items-center gap-2">
+                        {item.label}
+                        {item.premium && !isPremium && (
+                          <Badge variant="secondary" className="bg-sidebar-primary/20 text-sidebar-primary border-sidebar-primary/30 text-xs px-1 py-0">
+                            PREMIUM
+                          </Badge>
+                        )}
+                      </span>
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="bg-popover text-popover-foreground border shadow-md">
+                    <p>{item.description}</p>
+                  </TooltipContent>
+                </Tooltip>
               );
             })}
 
@@ -363,27 +379,30 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
               const isActive = isActivePath(item.href);
               
               return (
-                <button
-                  key={item.href}
-                  onClick={() => {
-                    setLocation(item.href);
-                    setSidebarOpen(false);
-                  }}
-                  className={`
-                    w-full flex items-center px-2 md:px-3 py-2 md:py-3 text-sm font-medium rounded-lg transition-all
-                    ${isActive 
-                      ? 'bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-white border border-blue-500/50 shadow-lg shadow-blue-500/20' 
-                      : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent'
-                    }
-                  `}
-                  data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
-                >
-                  <Icon className="mr-2 md:mr-3 h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
-                  <div className="text-left flex-1">
-                    <div className="font-medium text-xs md:text-sm">{item.label}</div>
-                    <div className="text-xs text-sidebar-foreground/50 hidden md:block">{item.description}</div>
-                  </div>
-                </button>
+                <Tooltip key={item.href}>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => {
+                        setLocation(item.href);
+                        setSidebarOpen(false);
+                      }}
+                      className={`
+                        w-full flex items-center px-2 md:px-3 py-2 md:py-3 text-sm font-medium rounded-lg transition-all
+                        ${isActive 
+                          ? 'bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-white border border-blue-500/50 shadow-lg shadow-blue-500/20' 
+                          : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent'
+                        }
+                      `}
+                      data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
+                    >
+                      <Icon className="mr-2 md:mr-3 h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
+                      <span className="font-medium text-xs md:text-sm">{item.label}</span>
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="bg-popover text-popover-foreground border shadow-md">
+                    <p>{item.description}</p>
+                  </TooltipContent>
+                </Tooltip>
               );
             })}
 
@@ -405,35 +424,39 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
               const isActive = isActivePath(item.href);
               
               return (
-                <button
-                  key={item.href}
-                  onClick={() => {
-                    setLocation(item.href);
-                    setSidebarOpen(false);
-                  }}
-                  className={`
-                    w-full flex items-center px-2 md:px-3 py-2 md:py-3 text-sm font-medium rounded-lg transition-all
-                    border-2
-                    ${isActive 
-                      ? 'bg-gradient-to-r from-emerald-600/40 to-green-600/40 text-white border-emerald-500 shadow-lg shadow-emerald-500/30' 
-                      : 'text-sidebar-foreground bg-emerald-500/5 border-emerald-500/30 hover:bg-emerald-500/20 hover:border-emerald-500/50'
-                    }
-                  `}
-                  data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
-                >
-                  <Icon className="mr-2 md:mr-3 h-4 w-4 md:h-5 md:w-5 flex-shrink-0 text-emerald-400" />
-                  <div className="text-left flex-1">
-                    <div className="font-medium text-xs md:text-sm flex items-center gap-2">
-                      {item.label}
-                      <Badge className="bg-emerald-600 text-white hover:bg-emerald-700 text-[10px] px-1.5 py-0">
-                        LIVE
-                      </Badge>
-                    </div>
-                    <div className="text-xs text-sidebar-foreground/70 hidden md:block">{item.description}</div>
-                  </div>
-                </button>
+                <Tooltip key={item.href}>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => {
+                        setLocation(item.href);
+                        setSidebarOpen(false);
+                      }}
+                      className={`
+                        w-full flex items-center px-2 md:px-3 py-2 md:py-3 text-sm font-medium rounded-lg transition-all
+                        border-2
+                        ${isActive 
+                          ? 'bg-gradient-to-r from-emerald-600/40 to-green-600/40 text-white border-emerald-500 shadow-lg shadow-emerald-500/30' 
+                          : 'text-sidebar-foreground bg-emerald-500/5 border-emerald-500/30 hover:bg-emerald-500/20 hover:border-emerald-500/50'
+                        }
+                      `}
+                      data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
+                    >
+                      <Icon className="mr-2 md:mr-3 h-4 w-4 md:h-5 md:w-5 flex-shrink-0 text-emerald-400" />
+                      <span className="font-medium text-xs md:text-sm flex items-center gap-2">
+                        {item.label}
+                        <Badge className="bg-emerald-600 text-white hover:bg-emerald-700 text-[10px] px-1.5 py-0">
+                          LIVE
+                        </Badge>
+                      </span>
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="bg-popover text-popover-foreground border shadow-md">
+                    <p>{item.description}</p>
+                  </TooltipContent>
+                </Tooltip>
               );
             })}
+            </TooltipProvider>
           </nav>
 
           {/* Admin Panel Button (only for admin users) */}
