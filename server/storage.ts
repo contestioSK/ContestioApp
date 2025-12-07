@@ -3679,6 +3679,20 @@ export class DatabaseStorage implements IStorage {
       usages,
     };
   }
+
+  async getUserPromoUsages(userId: string): Promise<Array<PromoCodeUsage & { promoCode: PromoCode }>> {
+    const usages = await db
+      .select()
+      .from(promoCodeUsages)
+      .leftJoin(promoCodes, eq(promoCodeUsages.promoCodeId, promoCodes.id))
+      .where(eq(promoCodeUsages.userId, userId))
+      .orderBy(desc(promoCodeUsages.appliedAt));
+
+    return usages.map((row) => ({
+      ...row.promo_code_usages,
+      promoCode: row.promo_codes as PromoCode,
+    })) as Array<PromoCodeUsage & { promoCode: PromoCode }>;
+  }
 }
 
 export const storage = new DatabaseStorage();

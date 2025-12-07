@@ -3568,6 +3568,20 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
+  // Get user's promo code usages
+  app.get('/api/admin/users/:id/promo-usages', isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      const usages = await storage.getUserPromoUsages(req.params.id);
+      res.json(usages);
+    } catch (error) {
+      console.error("Error fetching user promo usages:", error);
+      res.status(500).json({ message: "Failed to fetch promo usages" });
+    }
+  });
+
   // Competition registration routes
   app.post('/api/competition-registrations', upload.single('competitionLogo'), async (req: any, res) => {
     try {

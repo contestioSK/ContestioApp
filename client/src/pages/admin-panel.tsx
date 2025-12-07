@@ -879,6 +879,17 @@ export default function AdminPanel() {
     enabled: isAuthenticated && isAdmin,
   });
 
+  // User's promo code usages
+  const { data: userPromoUsages, refetch: refetchUserPromoUsages } = useQuery<any[]>({
+    queryKey: ["/api/admin/users", selectedUserForAction?.id, "promo-usages"],
+    queryFn: async () => {
+      if (!selectedUserForAction?.id) return [];
+      const response = await apiRequest("GET", `/api/admin/users/${selectedUserForAction.id}/promo-usages`);
+      return response.json();
+    },
+    enabled: !!selectedUserForAction?.id,
+  });
+
   // Update editingCompetition when competitions data changes
   useEffect(() => {
     if (editingCompetition && competitions) {
@@ -2638,7 +2649,23 @@ export default function AdminPanel() {
                       </DialogDescription>
                     </DialogHeader>
                     {selectedUserForAction ? (
-                      <div className="space-y-2">
+                      <div className="space-y-3">
+                        {/* Promo Codes Used */}
+                        {userPromoUsages && userPromoUsages.length > 0 && (
+                          <div className="bg-muted/30 p-3 rounded-lg">
+                            <p className="text-sm font-medium mb-2">Použité promo kódy</p>
+                            <div className="space-y-2">
+                              {userPromoUsages.map((usage: any) => (
+                                <div key={usage.id} className="flex items-center justify-between text-sm bg-background p-2 rounded">
+                                  <code className="font-mono font-bold">{usage.promoCode?.code}</code>
+                                  <span className="text-xs text-muted-foreground">
+                                    {new Date(usage.appliedAt).toLocaleDateString('sk-SK')}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                         {/* Premium Management with Expiry Date */}
                         <Dialog open={isPremiumDialogOpen} onOpenChange={setIsPremiumDialogOpen}>
                           <DialogTrigger asChild>
