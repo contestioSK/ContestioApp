@@ -1,0 +1,103 @@
+Úloha: Implementácia Free vs. Premium logiky a Upsell Modalu (Finálna Verzia)
+
+Vychádzajúc z aktuálneho kódu pre dashboard, prosím implementuj kompletnú biznis logiku pre rozlíšenie Free a Premium používateľov.
+
+1. Definícia User State (Global State)
+
+Vytvor stavovú premennú userTier, ktorá môže mať hodnoty: 'FREE' alebo 'PREMIUM'.
+
+Default: 'FREE'.
+
+2. Implementácia Obmedzení (Limits Logic)
+
+A. Kapacita Úlovkov (Catch Limit)
+
+Free: Kapacita 50 úlovkov.
+
+UI: Ak má user 50 úlovkov a chce pridať ďalší -> Blokovať akciu -> Otvoriť Premium Modal.
+
+Counter: Niekde v UI zobraz stav (napr. "42/50 úlovkov").
+
+Premium: Neobmedzené.
+
+B. Rybárske Výpravy (Trips) - Logika Histórie
+
+Free:
+
+Vytváranie: Neobmedzené (môže pridať novú výpravu).
+
+Zobrazenie: V zozname výprav sú plne viditeľné a rozkliknuteľné len posledné 3 najnovšie výpravy.
+
+Staršie výpravy: Sú v zozname zobrazené, ale majú efekt opacity-50, ikonu zámky (Lock) a nie sú rozkliknuteľné. Kliknutie na ne otvorí Premium Modal.
+
+Premium: Plný prístup k celej histórii.
+
+C. Fotografie
+
+Free: Max 1 fotka k úlovku.
+
+Premium: Neobmedzená galéria (Viac fotiek).
+
+Poznámka: Video neimplementujeme.
+
+D. Fishing Battle (Súťaže)
+
+Free:
+
+Môže PRIJAŤ (Accept) existujúcu výzvu.
+
+Nemôže VYTVORIŤ (Create) novú výzvu -> Tlačidlo "Vytvoriť súboj" má ikonu zámky a otvára Premium Modal.
+
+Premium: Plný prístup.
+
+3. Komponent: Premium Upsell Modal
+
+Nový, moderný "Glassmorphism" modal s tmavým pozadím.
+
+Copywriting (Obsah):
+
+Nadpis: "Lovte bez obmedzení s Contestio Premium"
+
+Zoznam benefitov:
+
+✅ Neobmedzená kapacita úlovkov (Free: 50)
+
+✅ Neobmedzená história výprav (Free: posl. 3)
+
+📸 Viac fotiek k úlovkom (Free: 1 fotka)
+
+⚔️ Vytváranie vlastných Súbojov
+
+🌤️ Predpoveď počasia a aktivity rýb
+
+Cenník (Karty):
+
+Mesačne:
+
+5,90 € / mesiac
+
+"Flexibilné zrušenie."
+
+Ročne (Zvýraznené):
+
+59,90 € / rok
+
+Odznak: "Ušetríte ~11 €"
+
+Prepočet: "(Len 4,99 € mesačne)"
+
+Logika Promo Kódu:
+
+Input: "Máte promo kód?".
+
+Po zadaní (napr. RYBAR20) znížiť ceny o 20% (na 4,72 € a 47,92 €) a zobraziť preškrtnuté staré ceny.
+
+4. Technické detaily
+
+Použi Tailwind CSS.
+
+Ikony z lucide-react.
+
+Modal musí byť responzívny (mobile-first).
+
+Cieľ: Chcem vidieť funkčné obmedzenie na históriu výprav (len 3 aktívne) a funkčný modal s novými cenami.

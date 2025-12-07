@@ -1,0 +1,101 @@
+Úloha: Implementácia Free vs. Premium logiky a Upsell Modalu (Business Logic Update)
+
+Vychádzajúc z aktuálneho kódu pre dashboard, prosím implementuj kompletnú biznis logiku pre rozlíšenie Free a Premium používateľov podľa novej stratégie.
+
+1. Definícia User State (Global State)
+
+Vytvor stavovú premennú userTier, ktorá môže mať hodnoty: 'FREE' alebo 'PREMIUM'.
+
+Pre účely vývoja nastav default na 'FREE', aby sme videli obmedzenia.
+
+2. Implementácia Obmedzení (Limits Logic)
+
+Aplikácia sa musí správať podľa týchto pravidiel. Implementuj kontrolu týchto limitov v UI:
+
+A. Kapacita Úlovkov (Catch Limit)
+
+Free: Max 50 úlovkov.
+
+UI: Ak má user 50 úlovkov a chce pridať ďalší, zablokuj akciu a otvor Premium Modal.
+
+Premium: Neobmedzené.
+
+B. Fotografie
+
+Free: Max 1 fotka k úlovku.
+
+Premium: Neobmedzená galéria (Viac fotiek + Video).
+
+C. Fishing Battle (Súťaže)
+
+Free:
+
+Môže PRIJAŤ (Accept) existujúcu výzvu.
+
+Nemôže VYTVORIŤ (Create) novú výzvu -> Tlačidlo "Vytvoriť súboj" má ikonu zámky a otvára Premium Modal.
+
+Premium: Plný prístup (Vytváranie aj Prijímanie).
+
+D. Mapy a GPS
+
+Free: Vidí len zoznam revírov, nemôže otvoriť detailnú mapu/tajné miesta -> Otvára Premium Modal.
+
+Premium: Plný prístup.
+
+3. Komponent: Premium Upsell Modal
+
+Vytvor nový, vizuálne atraktívny modál (popup), ktorý sa zobrazí, keď Free user narazí na limit.
+
+Obsah Modalu (Copywriting):
+
+Nadpis: "Lovte bez obmedzení s Contestio Premium"
+
+Zoznam benefitov (Porovnanie):
+
+✅ Neobmedzené úlovky (Free: limit 50)
+
+✅ Galéria fotiek k úlovku (Free: len 1 fotka)
+
+⚔️ Vytváranie vlastných Súbojov (Free: len prijímanie)
+
+🗺️ Tajné GPS lokality a Mapy
+
+🌤️ Predpoveď počasia a aktivity rýb
+
+Cenník v Modale (Nové Ceny):
+
+Zobraz dve karty vedľa seba:
+
+Mesačne:
+
+Cena: 5,90 € / mesiac
+
+Text: "Flexibilné zrušenie kedykoľvek."
+
+Ročne (Zvýraznené - Best Value):
+
+Cena: 59,90 € / rok
+
+Odznak: "Ušetríte ~11 € ročne"
+
+Prepočet: "(Len 4,99 € mesačne)"
+
+Logika Promo Kódu (Influencer Marketing):
+
+Pridaj input field: "Máte promo kód?".
+
+Logika: Ak user zadá validný kód (napr. pre testovanie RYBAR20), ceny sa v modale dynamicky preškrtnú a znížia o 20%.
+
+Mesačne: ~~5,90 €~~ -> 4,72 €
+
+Ročne: ~~59,90 €~~ -> 47,92 €
+
+4. Technické požiadavky
+
+Použi lucide-react pre ikony (Lock, Check, Map, Fish...).
+
+Použi Tailwind CSS pre tmavý "gaming/fishing" dizajn (farby: Slate-900, Blue-600, Gold/Yellow-500 pre Premium prvky).
+
+Modal musí mať backdrop-blur efekt.
+
+Cieľ: Keď ako Free user kliknem na "Vytvoriť súboj" alebo "Pridať 51. rybu", chcem vidieť tento nový modal s aktuálnymi cenami a limitmi.

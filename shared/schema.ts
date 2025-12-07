@@ -39,6 +39,7 @@ export const users = pgTable("users", {
   role: varchar("role").notNull().default("public"), // "public", "organizer", "referee", "admin"
   active: boolean("active").default(true).notNull(),
   isPremium: boolean("isPremium").default(false).notNull(),
+  userTier: varchar("user_tier").notNull().default("FREE"), // "FREE" | "PREMIUM" - new tier system
   premiumExpiresAt: timestamp("premium_expires_at"), // When premium expires (null = no expiry or not premium)
   // Classic authentication fields
   password: varchar("password"), // hashed password (null for OAuth users)
