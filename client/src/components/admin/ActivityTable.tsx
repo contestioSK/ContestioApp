@@ -25,6 +25,7 @@ interface ActivityTableProps {
   }>;
   allUsers?: User[];
   onViewAll?: () => void;
+  onUserClick?: (user: User) => void;
 }
 
 // Role colors
@@ -56,7 +57,7 @@ const getRoleLabel = (role: string) => {
   }
 };
 
-export function ActivityTable({ users, allUsers = [], onViewAll }: ActivityTableProps) {
+export function ActivityTable({ users, allUsers = [], onViewAll, onUserClick }: ActivityTableProps) {
   // Transliterate Slovak diacritics to ASCII
   const transliterate = (text: string): string => {
     const diacriticsMap: { [key: string]: string } = {
@@ -202,6 +203,7 @@ export function ActivityTable({ users, allUsers = [], onViewAll }: ActivityTable
                     variant="ghost" 
                     size="sm"
                     className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+                    onClick={() => onUserClick?.(item.fullUser)}
                   >
                     Detail
                   </Button>
