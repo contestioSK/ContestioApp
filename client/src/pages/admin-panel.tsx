@@ -2490,18 +2490,26 @@ export default function AdminPanel() {
                                         className="hover:bg-muted/30 transition-colors"
                                         data-testid={`row-user-${user.id}`}
                                       >
-                                        {/* User Info */}
+                                        {/* User Info - Clickable Name */}
                                         <td className="p-3">
                                           <div className="flex items-center space-x-3">
                                             <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                                               <Users className="h-5 w-5 text-primary" />
                                             </div>
                                             <div className="min-w-0">
-                                              <p className="font-medium text-foreground truncate" data-testid={`text-user-name-${user.id}`}>
+                                              <button 
+                                                className="font-medium text-foreground truncate hover:text-primary hover:underline cursor-pointer transition-colors text-left"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  setSelectedUserForAction(user);
+                                                  setIsUserActionDialogOpen(true);
+                                                }}
+                                                data-testid={`text-user-name-${user.id}`}
+                                              >
                                                 {user.firstName && user.lastName 
                                                   ? `${user.firstName} ${user.lastName}` 
                                                   : user.firstName || user.lastName || 'Bez mena'}
-                                              </p>
+                                              </button>
                                             </div>
                                           </div>
                                         </td>
@@ -2632,7 +2640,7 @@ export default function AdminPanel() {
                   </div>
                 )}
 
-                {/* User Action Dialog - Single Instance Outside Table Mapping */}
+                {/* User Profile Dialog - Comprehensive User Card */}
                 <Dialog 
                   open={isUserActionDialogOpen}
                   onOpenChange={(open) => {
@@ -2643,25 +2651,81 @@ export default function AdminPanel() {
                     }
                   }}
                 >
-                  <DialogContent className="max-w-md">
+                  <DialogContent className="max-w-2xl">
                     <DialogHeader>
-                      <DialogTitle>Akcie používateľa</DialogTitle>
-                      <DialogDescription>
-                        {selectedUserForAction?.firstName && selectedUserForAction?.lastName 
-                          ? `${selectedUserForAction.firstName} ${selectedUserForAction.lastName}` 
-                          : selectedUserForAction?.email}
-                      </DialogDescription>
+                      <DialogTitle className="text-xl">Profil používateľa</DialogTitle>
                     </DialogHeader>
                     {selectedUserForAction ? (
-                      <div className="space-y-3">
+                      <div className="space-y-6">
+                        {/* User Header Card */}
+                        <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-6 rounded-xl border border-primary/20">
+                          <div className="flex items-start gap-4">
+                            <div className="h-16 w-16 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                              <Users className="h-8 w-8 text-primary" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-xl font-bold text-foreground">
+                                {selectedUserForAction.firstName && selectedUserForAction.lastName 
+                                  ? `${selectedUserForAction.firstName} ${selectedUserForAction.lastName}` 
+                                  : 'Bez mena'}
+                              </h3>
+                              <p className="text-muted-foreground">{selectedUserForAction.email}</p>
+                              {selectedUserForAction.nickname && (
+                                <p className="text-sm text-muted-foreground mt-1">Prezývka: {selectedUserForAction.nickname}</p>
+                              )}
+                              <div className="flex flex-wrap gap-2 mt-3">
+                                <Badge className={
+                                  selectedUserForAction.role === 'admin' ? 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20' :
+                                  selectedUserForAction.role === 'organizer' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20' :
+                                  selectedUserForAction.role === 'referee' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' :
+                                  'bg-gray-500/10 text-gray-600 dark:text-gray-400 border-gray-500/20'
+                                }>
+                                  {selectedUserForAction.role === 'admin' ? 'Admin' :
+                                   selectedUserForAction.role === 'organizer' ? 'Organizátor' :
+                                   selectedUserForAction.role === 'referee' ? 'Rozhodca' : 'Verejnosť'}
+                                </Badge>
+                                <Badge className={selectedUserForAction.isPremium ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20' : 'bg-gray-500/10 text-gray-600 dark:text-gray-400 border-gray-500/20'}>
+                                  {selectedUserForAction.isPremium ? '⭐ Premium' : 'Free'}
+                                </Badge>
+                                <Badge variant={selectedUserForAction.active ? 'default' : 'secondary'} className={!selectedUserForAction.active ? 'bg-red-500/10 text-red-600 dark:text-red-400' : ''}>
+                                  {selectedUserForAction.active ? 'Aktívny' : 'Banned'}
+                                </Badge>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Info Grid */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="bg-muted/30 p-4 rounded-lg">
+                            <p className="text-xs text-muted-foreground mb-1">Registrácia</p>
+                            <p className="font-medium">
+                              {selectedUserForAction.createdAt 
+                                ? new Date(selectedUserForAction.createdAt).toLocaleDateString('sk-SK', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                                : '-'}
+                            </p>
+                          </div>
+                          <div className="bg-muted/30 p-4 rounded-lg">
+                            <p className="text-xs text-muted-foreground mb-1">Premium do</p>
+                            <p className="font-medium">
+                              {selectedUserForAction.premiumExpiresAt 
+                                ? new Date(selectedUserForAction.premiumExpiresAt).toLocaleDateString('sk-SK', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                                : selectedUserForAction.isPremium ? 'Neobmedzene' : '-'}
+                            </p>
+                          </div>
+                        </div>
+
                         {/* Promo Codes Used */}
                         {userPromoUsages && userPromoUsages.length > 0 && (
-                          <div className="bg-muted/30 p-3 rounded-lg">
-                            <p className="text-sm font-medium mb-2">Použité promo kódy</p>
+                          <div className="bg-muted/30 p-4 rounded-lg">
+                            <p className="text-sm font-medium mb-3 flex items-center gap-2">
+                              <Ticket className="w-4 h-4" />
+                              Použité promo kódy
+                            </p>
                             <div className="space-y-2">
                               {userPromoUsages.map((usage: any) => (
-                                <div key={usage.id} className="flex items-center justify-between text-sm bg-background p-2 rounded">
-                                  <code className="font-mono font-bold">{usage.promoCode?.code}</code>
+                                <div key={usage.id} className="flex items-center justify-between text-sm bg-background p-3 rounded-lg border border-border">
+                                  <code className="font-mono font-bold text-primary">{usage.promoCode?.code}</code>
                                   <span className="text-xs text-muted-foreground">
                                     {new Date(usage.appliedAt).toLocaleDateString('sk-SK')}
                                   </span>
@@ -2670,7 +2734,12 @@ export default function AdminPanel() {
                             </div>
                           </div>
                         )}
-                        {/* Premium Management with Expiry Date */}
+
+                        {/* Actions Section */}
+                        <div className="border-t border-border pt-4">
+                          <p className="text-sm font-medium mb-3 text-muted-foreground">Akcie</p>
+                          <div className="space-y-3">
+                            {/* Premium Management with Expiry Date */}
                         <Dialog open={isPremiumDialogOpen} onOpenChange={setIsPremiumDialogOpen}>
                           <DialogTrigger asChild>
                             <Button
@@ -2932,6 +3001,8 @@ export default function AdminPanel() {
                             </div>
                           </DialogContent>
                         </Dialog>
+                          </div>
+                        </div>
                       </div>
                     ) : null}
                   </DialogContent>
