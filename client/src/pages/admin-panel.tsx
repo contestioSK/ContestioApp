@@ -2716,12 +2716,12 @@ export default function AdminPanel() {
                         </div>
 
                         {/* Promo Codes Used */}
-                        {userPromoUsages && userPromoUsages.length > 0 && (
-                          <div className="bg-muted/30 p-4 rounded-lg">
-                            <p className="text-sm font-medium mb-3 flex items-center gap-2">
-                              <Ticket className="w-4 h-4" />
-                              Použité promo kódy
-                            </p>
+                        <div className="bg-muted/30 p-4 rounded-lg">
+                          <p className="text-sm font-medium mb-3 flex items-center gap-2">
+                            <Ticket className="w-4 h-4" />
+                            Použité promo kódy
+                          </p>
+                          {userPromoUsages && userPromoUsages.length > 0 ? (
                             <div className="space-y-2">
                               {userPromoUsages.map((usage: any) => (
                                 <div key={usage.id} className="flex items-center justify-between text-sm bg-background p-3 rounded-lg border border-border">
@@ -2732,8 +2732,10 @@ export default function AdminPanel() {
                                 </div>
                               ))}
                             </div>
-                          </div>
-                        )}
+                          ) : (
+                            <p className="text-sm text-muted-foreground">Žiadne použité promo kódy</p>
+                          )}
+                        </div>
 
                         {/* Actions Section */}
                         <div className="border-t border-border pt-4">
