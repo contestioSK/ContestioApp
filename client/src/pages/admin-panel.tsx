@@ -62,9 +62,13 @@ import {
   MoreVertical,
   Ban,
   KeyRound,
-  User
+  User,
+  Ticket,
+  Gift,
+  Percent,
+  CalendarDays
 } from "lucide-react";
-import type { Competition, Team, TeamMember, CompetitionRegistration, InsertSponsor, Sponsor, SponsorLevel, Catch, Referee, InsertReferee } from "@shared/schema";
+import type { Competition, Team, TeamMember, CompetitionRegistration, InsertSponsor, Sponsor, SponsorLevel, Catch, Referee, InsertReferee, PromoCode } from "@shared/schema";
 import { getSideCompetitionLabel } from "@/lib/utils";
 import { insertSponsorSchema, sponsorLevels } from "@shared/schema";
 import { getMaxReferees, getMaxTeams } from "@shared/plan-capabilities";
@@ -338,6 +342,25 @@ export default function AdminPanel() {
   const [isEditProfileDialogOpen, setIsEditProfileDialogOpen] = useState(false);
   const [editProfileData, setEditProfileData] = useState({ email: '', firstName: '', lastName: '', nickname: '' });
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  
+  // Promo codes state
+  const [isCreatePromoDialogOpen, setIsCreatePromoDialogOpen] = useState(false);
+  const [isBulkPromoDialogOpen, setIsBulkPromoDialogOpen] = useState(false);
+  const [promoFormData, setPromoFormData] = useState({
+    code: '',
+    name: '',
+    description: '',
+    type: 'days' as 'percent' | 'days',
+    value: 15,
+    validFrom: new Date().toISOString().split('T')[0],
+    validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    maxUsages: null as number | null,
+  });
+  const [bulkPromoData, setBulkPromoData] = useState({
+    type: 'days' as 'percent' | 'days',
+    value: 15,
+    description: '',
+  });
   
   // Referee state
   const [editingReferee, setEditingReferee] = useState<Referee | null>(null);
@@ -842,6 +865,11 @@ export default function AdminPanel() {
     enabled: isAuthenticated && isAdmin,
   });
 
+  // Promo codes query
+  const { data: promoCodes, isLoading: promoCodesLoading, refetch: refetchPromoCodes } = useQuery<PromoCode[]>({
+    queryKey: ["/api/admin/promo-codes"],
+    enabled: isAuthenticated && isAdmin,
+  });
 
   // Update editingCompetition when competitions data changes
   useEffect(() => {
@@ -987,6 +1015,110 @@ export default function AdminPanel() {
         variant: "destructive",
         title: "❌ Chyba",
         description: "Nepodarilo sa odoslať reset email"
+      });
+    },
+  });
+
+  // Create promo code mutation
+  const createPromoCodeMutation = useMutation({
+    mutationFn: async (data: typeof promoFormData) => {
+      const response = await apiRequest("POST", "/api/admin/promo-codes", {
+        ...data,
+        validFrom: new Date(data.validFrom).toISOString(),
+        validUntil: new Date(data.validUntil).toISOString(),
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      refetchPromoCodes();
+      setIsCreatePromoDialogOpen(false);
+      setPromoFormData({
+        code: '',
+        name: '',
+        description: '',
+        type: 'days',
+        value: 15,
+        validFrom: new Date().toISOString().split('T')[0],
+        validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        maxUsages: null,
+      });
+      toast({
+        title: "✅ Promo kód vytvorený",
+        description: "Nový promo kód bol úspešne vytvorený"
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        variant: "destructive",
+        title: "❌ Chyba",
+        description: error.message || "Nepodarilo sa vytvoriť promo kód"
+      });
+    },
+  });
+
+  // Toggle promo code status mutation
+  const togglePromoCodeMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await apiRequest("PATCH", `/api/admin/promo-codes/${id}/toggle`, {});
+      return response.json();
+    },
+    onSuccess: () => {
+      refetchPromoCodes();
+      toast({
+        title: "✅ Status zmenený",
+        description: "Status promo kódu bol aktualizovaný"
+      });
+    },
+    onError: () => {
+      toast({
+        variant: "destructive",
+        title: "❌ Chyba",
+        description: "Nepodarilo sa zmeniť status"
+      });
+    },
+  });
+
+  // Delete promo code mutation
+  const deletePromoCodeMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await apiRequest("DELETE", `/api/admin/promo-codes/${id}`, {});
+      return response.json();
+    },
+    onSuccess: () => {
+      refetchPromoCodes();
+      toast({
+        title: "✅ Promo kód zmazaný",
+        description: "Promo kód bol úspešne odstránený"
+      });
+    },
+    onError: () => {
+      toast({
+        variant: "destructive",
+        title: "❌ Chyba",
+        description: "Nepodarilo sa zmazať promo kód"
+      });
+    },
+  });
+
+  // Apply bulk promo to all users mutation
+  const applyBulkPromoMutation = useMutation({
+    mutationFn: async (data: typeof bulkPromoData) => {
+      const response = await apiRequest("POST", "/api/admin/promo-codes/apply-to-all", data);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setIsBulkPromoDialogOpen(false);
+      setBulkPromoData({ type: 'days', value: 15, description: '' });
+      toast({
+        title: "✅ Akcia aplikovaná",
+        description: `Premium dni boli pridané ${data.affectedUsers} používateľom`
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        variant: "destructive",
+        title: "❌ Chyba",
+        description: error.message || "Nepodarilo sa aplikovať akciu"
       });
     },
   });
@@ -1732,6 +1864,21 @@ export default function AdminPanel() {
                       {dashboardStats.pendingRegistrations}
                     </Badge>
                   )}
+                </button>
+
+                <button
+                  onClick={() => { setActiveTab('promo'); setSidebarOpen(false); }}
+                  className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors ${
+                    isActivePath('promo')
+                      ? 'bg-sidebar-primary text-sidebar-primary-foreground'
+                      : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                  }`}
+                  data-testid="nav-promo"
+                >
+                  <Ticket className="h-5 w-5 flex-shrink-0" />
+                  <div className="flex-1 text-left">
+                    <p className="text-sm font-medium">Promo akcie</p>
+                  </div>
                 </button>
               </>
             )}
@@ -4508,6 +4655,317 @@ export default function AdminPanel() {
                               )}
                             </div>
                           )}
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+                  </div>
+                )}
+
+                {/* Promo Codes Section */}
+                {isAdmin && activeTab === 'promo' && (
+                  <div className="p-6">
+                    <div className="space-y-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h2 className="text-2xl font-bold text-foreground mb-2">Promo akcie</h2>
+                          <p className="text-muted-foreground">Spravujte zľavové kódy a hromadné akcie</p>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Button 
+                            variant="outline"
+                            onClick={() => setIsBulkPromoDialogOpen(true)}
+                            data-testid="button-bulk-promo"
+                          >
+                            <Gift className="w-4 h-4 mr-2" />
+                            Aktivovať pre všetkých
+                          </Button>
+                          <Button 
+                            onClick={() => setIsCreatePromoDialogOpen(true)}
+                            data-testid="button-create-promo"
+                          >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Nový promo kód
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Promo Codes List */}
+                      {promoCodesLoading ? (
+                        <div className="grid gap-4">
+                          {[...Array(3)].map((_, i) => (
+                            <Card key={i}>
+                              <CardContent className="p-4">
+                                <Skeleton className="h-6 w-48 mb-2" />
+                                <Skeleton className="h-4 w-32" />
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      ) : promoCodes && promoCodes.length > 0 ? (
+                        <div className="grid gap-4">
+                          {promoCodes.map((promo) => {
+                            const isExpired = new Date(promo.validUntil) < new Date();
+                            const isNotStarted = new Date(promo.validFrom) > new Date();
+                            return (
+                              <Card key={promo.id} className={`${!promo.isActive || isExpired ? 'opacity-60' : ''}`}>
+                                <CardContent className="p-4">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex-1">
+                                      <div className="flex items-center space-x-3 mb-2">
+                                        <code className="px-2 py-1 bg-muted rounded text-lg font-mono font-bold">
+                                          {promo.code}
+                                        </code>
+                                        <span className="text-muted-foreground">{promo.name}</span>
+                                        <Badge variant={promo.type === 'percent' ? 'default' : 'secondary'}>
+                                          {promo.type === 'percent' ? (
+                                            <><Percent className="w-3 h-3 mr-1" />{promo.value}% zľava</>
+                                          ) : (
+                                            <><CalendarDays className="w-3 h-3 mr-1" />{promo.value} dní</>
+                                          )}
+                                        </Badge>
+                                        {!promo.isActive && (
+                                          <Badge variant="outline" className="text-muted-foreground">Neaktívny</Badge>
+                                        )}
+                                        {isExpired && (
+                                          <Badge variant="destructive">Expirovaný</Badge>
+                                        )}
+                                        {isNotStarted && (
+                                          <Badge variant="secondary">Ešte nezačal</Badge>
+                                        )}
+                                      </div>
+                                      <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                                        <span>
+                                          Platnosť: {new Date(promo.validFrom).toLocaleDateString('sk-SK')} - {new Date(promo.validUntil).toLocaleDateString('sk-SK')}
+                                        </span>
+                                        <span>
+                                          Použití: {promo.currentUsages}{promo.maxUsages ? ` / ${promo.maxUsages}` : ' (neobmedzené)'}
+                                        </span>
+                                      </div>
+                                      {promo.description && (
+                                        <p className="text-sm text-muted-foreground mt-1">{promo.description}</p>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => togglePromoCodeMutation.mutate(promo.id)}
+                                        disabled={togglePromoCodeMutation.isPending}
+                                        data-testid={`button-toggle-promo-${promo.id}`}
+                                      >
+                                        {promo.isActive ? 'Deaktivovať' : 'Aktivovať'}
+                                      </Button>
+                                      <Button
+                                        variant="destructive"
+                                        size="sm"
+                                        onClick={() => {
+                                          if (confirm(`Naozaj chcete zmazať promo kód "${promo.code}"?`)) {
+                                            deletePromoCodeMutation.mutate(promo.id);
+                                          }
+                                        }}
+                                        disabled={deletePromoCodeMutation.isPending}
+                                        data-testid={`button-delete-promo-${promo.id}`}
+                                      >
+                                        <Trash2 className="w-4 h-4" />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <Card>
+                          <CardContent className="p-8 text-center">
+                            <Ticket className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                            <h3 className="text-lg font-medium mb-2">Žiadne promo kódy</h3>
+                            <p className="text-muted-foreground mb-4">Vytvorte prvý promo kód pre vašich používateľov</p>
+                            <Button onClick={() => setIsCreatePromoDialogOpen(true)}>
+                              <Plus className="w-4 h-4 mr-2" />
+                              Vytvoriť promo kód
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      )}
+
+                      {/* Create Promo Code Dialog */}
+                      <Dialog open={isCreatePromoDialogOpen} onOpenChange={setIsCreatePromoDialogOpen}>
+                        <DialogContent className="max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>Vytvoriť nový promo kód</DialogTitle>
+                            <DialogDescription>
+                              Vytvorte zľavový kód alebo kód pre bezplatné premium dni
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <Label htmlFor="promo-code">Kód</Label>
+                                <Input
+                                  id="promo-code"
+                                  placeholder="LETO2024"
+                                  value={promoFormData.code}
+                                  onChange={(e) => setPromoFormData({ ...promoFormData, code: e.target.value.toUpperCase() })}
+                                  data-testid="input-promo-code"
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="promo-name">Názov</Label>
+                                <Input
+                                  id="promo-name"
+                                  placeholder="Letná akcia"
+                                  value={promoFormData.name}
+                                  onChange={(e) => setPromoFormData({ ...promoFormData, name: e.target.value })}
+                                  data-testid="input-promo-name"
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <Label htmlFor="promo-description">Popis (voliteľné)</Label>
+                              <Textarea
+                                id="promo-description"
+                                placeholder="Popis promo akcie..."
+                                value={promoFormData.description}
+                                onChange={(e) => setPromoFormData({ ...promoFormData, description: e.target.value })}
+                                data-testid="input-promo-description"
+                              />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <Label>Typ akcie</Label>
+                                <Select
+                                  value={promoFormData.type}
+                                  onValueChange={(value: 'percent' | 'days') => setPromoFormData({ ...promoFormData, type: value })}
+                                >
+                                  <SelectTrigger data-testid="select-promo-type">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="days">Dni zadarmo</SelectItem>
+                                    <SelectItem value="percent">Percentuálna zľava</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div>
+                                <Label htmlFor="promo-value">
+                                  {promoFormData.type === 'percent' ? 'Zľava (%)' : 'Počet dní'}
+                                </Label>
+                                <Input
+                                  id="promo-value"
+                                  type="number"
+                                  min="1"
+                                  max={promoFormData.type === 'percent' ? 100 : 365}
+                                  value={promoFormData.value}
+                                  onChange={(e) => setPromoFormData({ ...promoFormData, value: parseInt(e.target.value) || 0 })}
+                                  data-testid="input-promo-value"
+                                />
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <Label htmlFor="promo-valid-from">Platnosť od</Label>
+                                <Input
+                                  id="promo-valid-from"
+                                  type="date"
+                                  value={promoFormData.validFrom}
+                                  onChange={(e) => setPromoFormData({ ...promoFormData, validFrom: e.target.value })}
+                                  data-testid="input-promo-valid-from"
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="promo-valid-until">Platnosť do</Label>
+                                <Input
+                                  id="promo-valid-until"
+                                  type="date"
+                                  value={promoFormData.validUntil}
+                                  onChange={(e) => setPromoFormData({ ...promoFormData, validUntil: e.target.value })}
+                                  data-testid="input-promo-valid-until"
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <Label htmlFor="promo-max-usages">Max. použití (prázdne = neobmedzené)</Label>
+                              <Input
+                                id="promo-max-usages"
+                                type="number"
+                                min="1"
+                                placeholder="Neobmedzené"
+                                value={promoFormData.maxUsages || ''}
+                                onChange={(e) => setPromoFormData({ 
+                                  ...promoFormData, 
+                                  maxUsages: e.target.value ? parseInt(e.target.value) : null 
+                                })}
+                                data-testid="input-promo-max-usages"
+                              />
+                            </div>
+                            <div className="flex justify-end space-x-2 pt-4">
+                              <Button variant="outline" onClick={() => setIsCreatePromoDialogOpen(false)}>
+                                Zrušiť
+                              </Button>
+                              <Button
+                                onClick={() => createPromoCodeMutation.mutate(promoFormData)}
+                                disabled={createPromoCodeMutation.isPending || !promoFormData.code || !promoFormData.name}
+                                data-testid="button-save-promo"
+                              >
+                                {createPromoCodeMutation.isPending ? 'Vytváram...' : 'Vytvoriť'}
+                              </Button>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+
+                      {/* Bulk Promo Dialog */}
+                      <Dialog open={isBulkPromoDialogOpen} onOpenChange={setIsBulkPromoDialogOpen}>
+                        <DialogContent className="max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>Aktivovať akciu pre všetkých</DialogTitle>
+                            <DialogDescription>
+                              Pridajte bezplatné premium dni všetkým aktívnym používateľom
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                              <p className="text-sm text-amber-700 dark:text-amber-400">
+                                Táto akcia pridá premium dni <strong>všetkým aktívnym používateľom</strong>. 
+                                Existujúce premium obdobie bude predĺžené.
+                              </p>
+                            </div>
+                            <div>
+                              <Label htmlFor="bulk-value">Počet dní</Label>
+                              <Input
+                                id="bulk-value"
+                                type="number"
+                                min="1"
+                                max="365"
+                                value={bulkPromoData.value}
+                                onChange={(e) => setBulkPromoData({ ...bulkPromoData, value: parseInt(e.target.value) || 0 })}
+                                data-testid="input-bulk-promo-value"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="bulk-description">Dôvod (voliteľné)</Label>
+                              <Input
+                                id="bulk-description"
+                                placeholder="Napr. Vianočná akcia"
+                                value={bulkPromoData.description}
+                                onChange={(e) => setBulkPromoData({ ...bulkPromoData, description: e.target.value })}
+                                data-testid="input-bulk-promo-description"
+                              />
+                            </div>
+                            <div className="flex justify-end space-x-2 pt-4">
+                              <Button variant="outline" onClick={() => setIsBulkPromoDialogOpen(false)}>
+                                Zrušiť
+                              </Button>
+                              <Button
+                                onClick={() => applyBulkPromoMutation.mutate(bulkPromoData)}
+                                disabled={applyBulkPromoMutation.isPending || bulkPromoData.value < 1}
+                                data-testid="button-apply-bulk-promo"
+                              >
+                                {applyBulkPromoMutation.isPending ? 'Aplikujem...' : 'Aplikovať pre všetkých'}
+                              </Button>
+                            </div>
+                          </div>
                         </DialogContent>
                       </Dialog>
                     </div>

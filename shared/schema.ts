@@ -1280,3 +1280,67 @@ export const insertFishingAreaSchema = createInsertSchema(fishingAreas).omit({
 
 export type FishingArea = typeof fishingAreas.$inferSelect;
 export type InsertFishingArea = z.infer<typeof insertFishingAreaSchema>;
+
+// Promo codes table - For discounts and free trial periods
+export const promoCodes = pgTable("promo_codes", {
+  id: serial("id").primaryKey(),
+  code: varchar("code", { length: 50 }).notNull().unique(), // Unique promo code
+  name: varchar("name", { length: 255 }).notNull(), // Display name for admin
+  description: text("description"), // Optional description
+  type: varchar("type", { length: 20 }).notNull(), // "percent" = % discount, "days" = free days
+  value: integer("value").notNull(), // Percentage (1-100) or number of free days
+  validFrom: timestamp("valid_from").notNull(),
+  validUntil: timestamp("valid_until").notNull(),
+  maxUsages: integer("max_usages"), // null = unlimited
+  currentUsages: integer("current_usages").notNull().default(0),
+  isActive: boolean("is_active").notNull().default(true),
+  createdById: varchar("created_by_id").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Track promo code usage by users
+export const promoCodeUsages = pgTable("promo_code_usages", {
+  id: serial("id").primaryKey(),
+  promoCodeId: integer("promo_code_id").notNull().references(() => promoCodes.id),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  appliedAt: timestamp("applied_at").defaultNow(),
+  discountAmount: decimal("discount_amount", { precision: 10, scale: 2 }), // For percent discounts
+  daysGranted: integer("days_granted"), // For days promotions
+});
+
+export const promoCodesRelations = relations(promoCodes, ({ one, many }) => ({
+  createdBy: one(users, {
+    fields: [promoCodes.createdById],
+    references: [users.id],
+  }),
+  usages: many(promoCodeUsages),
+}));
+
+export const promoCodeUsagesRelations = relations(promoCodeUsages, ({ one }) => ({
+  promoCode: one(promoCodes, {
+    fields: [promoCodeUsages.promoCodeId],
+    references: [promoCodes.id],
+  }),
+  user: one(users, {
+    fields: [promoCodeUsages.userId],
+    references: [users.id],
+  }),
+}));
+
+export const insertPromoCodeSchema = createInsertSchema(promoCodes).omit({
+  id: true,
+  currentUsages: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertPromoCodeUsageSchema = createInsertSchema(promoCodeUsages).omit({
+  id: true,
+  appliedAt: true,
+});
+
+export type PromoCode = typeof promoCodes.$inferSelect;
+export type InsertPromoCode = z.infer<typeof insertPromoCodeSchema>;
+export type PromoCodeUsage = typeof promoCodeUsages.$inferSelect;
+export type InsertPromoCodeUsage = z.infer<typeof insertPromoCodeUsageSchema>;

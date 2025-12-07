@@ -19,6 +19,8 @@ import {
   diaryBattles,
   battleInvitations,
   friendships,
+  promoCodes,
+  promoCodeUsages,
   type User,
   type UpsertUser,
   type Competition,
@@ -66,6 +68,9 @@ import {
   type SeasonGoalProgress,
   type InsertSeasonGoalProgress,
   type Friendship,
+  type PromoCode,
+  type InsertPromoCode,
+  type PromoCodeUsage,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, not, sql, ne, count, gt, gte, lt, lte, inArray } from "drizzle-orm";
@@ -348,6 +353,15 @@ export interface IStorage {
   acceptFriendRequest(friendshipId: string): Promise<Friendship>;
   rejectFriendRequest(friendshipId: string): Promise<void>;
   removeFriend(userId: string, friendId: string): Promise<void>;
+
+  // Promo codes
+  getPromoCodes(): Promise<PromoCode[]>;
+  createPromoCode(data: Omit<InsertPromoCode, 'id' | 'currentUsages' | 'createdAt' | 'updatedAt'>): Promise<PromoCode>;
+  updatePromoCode(id: number, data: Partial<PromoCode>): Promise<PromoCode>;
+  deletePromoCode(id: number): Promise<void>;
+  togglePromoCodeStatus(id: number): Promise<PromoCode>;
+  applyFreeDaysToAllUsers(days: number, description: string): Promise<{ affectedUsers: number }>;
+  getPromoCodeStats(id: number): Promise<{ totalUsages: number; usages: PromoCodeUsage[] }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -3567,6 +3581,103 @@ export class DatabaseStorage implements IStorage {
         ),
         eq(friendships.status, 'accepted')
       ));
+  }
+
+  // ============ PROMO CODE FUNCTIONS ============
+
+  async getPromoCodes(): Promise<PromoCode[]> {
+    return db
+      .select()
+      .from(promoCodes)
+      .orderBy(desc(promoCodes.createdAt));
+  }
+
+  async createPromoCode(data: Omit<InsertPromoCode, 'id' | 'currentUsages' | 'createdAt' | 'updatedAt'>): Promise<PromoCode> {
+    const [promoCode] = await db
+      .insert(promoCodes)
+      .values(data)
+      .returning();
+    return promoCode;
+  }
+
+  async updatePromoCode(id: number, data: Partial<PromoCode>): Promise<PromoCode> {
+    const [updated] = await db
+      .update(promoCodes)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(promoCodes.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deletePromoCode(id: number): Promise<void> {
+    // First delete usages
+    await db.delete(promoCodeUsages).where(eq(promoCodeUsages.promoCodeId, id));
+    // Then delete the promo code
+    await db.delete(promoCodes).where(eq(promoCodes.id, id));
+  }
+
+  async togglePromoCodeStatus(id: number): Promise<PromoCode> {
+    const [current] = await db.select().from(promoCodes).where(eq(promoCodes.id, id));
+    if (!current) {
+      throw new Error('Promo code not found');
+    }
+    const [updated] = await db
+      .update(promoCodes)
+      .set({ isActive: !current.isActive, updatedAt: new Date() })
+      .where(eq(promoCodes.id, id))
+      .returning();
+    return updated;
+  }
+
+  async applyFreeDaysToAllUsers(days: number, description: string): Promise<{ affectedUsers: number }> {
+    // Get all active users
+    const activeUsers = await db
+      .select()
+      .from(users)
+      .where(eq(users.active, true));
+
+    let affectedCount = 0;
+    const now = new Date();
+
+    for (const user of activeUsers) {
+      // Calculate new expiry date
+      let newExpiresAt: Date;
+      if (user.premiumExpiresAt && user.premiumExpiresAt > now) {
+        // Extend existing premium
+        newExpiresAt = new Date(user.premiumExpiresAt);
+        newExpiresAt.setDate(newExpiresAt.getDate() + days);
+      } else {
+        // Start fresh premium from today
+        newExpiresAt = new Date(now);
+        newExpiresAt.setDate(newExpiresAt.getDate() + days);
+      }
+
+      await db
+        .update(users)
+        .set({
+          isPremium: true,
+          premiumExpiresAt: newExpiresAt,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, user.id));
+
+      affectedCount++;
+    }
+
+    return { affectedUsers: affectedCount };
+  }
+
+  async getPromoCodeStats(id: number): Promise<{ totalUsages: number; usages: PromoCodeUsage[] }> {
+    const usages = await db
+      .select()
+      .from(promoCodeUsages)
+      .where(eq(promoCodeUsages.promoCodeId, id))
+      .orderBy(desc(promoCodeUsages.appliedAt));
+
+    return {
+      totalUsages: usages.length,
+      usages,
+    };
   }
 }
 
