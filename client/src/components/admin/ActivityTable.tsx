@@ -203,7 +203,18 @@ export function ActivityTable({ users, allUsers = [], onViewAll, onUserClick }: 
                     variant="ghost" 
                     size="sm"
                     className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
-                    onClick={() => onUserClick?.(item.fullUser)}
+                    onClick={() => {
+                      // Find the real user by name from activity
+                      if (item.user) {
+                        const realUser = allUsers?.find((u: User) => {
+                          const fullName = `${u.firstName || ''} ${u.lastName || ''}`.trim();
+                          return fullName === item.user || u.email === item.user;
+                        });
+                        if (realUser) {
+                          onUserClick?.(realUser);
+                        }
+                      }
+                    }}
                   >
                     Detail
                   </Button>
