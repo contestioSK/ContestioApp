@@ -164,7 +164,7 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
   });
 
   const isPremium = premiumStatus?.isPremium || false;
-  const maxPhotos = isPremium ? 5 : 1;
+  const maxPhotos = isPremium ? 99 : 1; // Premium: unlimited (99), Free: 1
 
   // Fetch favorite baits from arsenal
   const { data: favoriteBaits = [] } = useQuery<Array<{
@@ -620,7 +620,7 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
                   )}
                   {isPremium && (
                     <Badge variant="secondary" className="text-xs">
-                      PREMIUM: až {maxPhotos} fotiek
+                      PREMIUM: neobmedzené fotky
                     </Badge>
                   )}
                 </div>

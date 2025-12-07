@@ -300,7 +300,7 @@ export default function DiaryIndex() {
   });
 
   const isPremium = premiumStatus?.isPremium || false;
-  const maxPhotos = isPremium ? 5 : 1;
+  const maxPhotos = isPremium ? 99 : 1; // Premium: unlimited (99), Free: 1
 
   // Fetch user's trips for the trip selector
   const { data: trips = [] } = useQuery<DiaryTrip[]>({
