@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/tooltip";
 import { NotificationCenter } from "@/components/diary/notification-center";
 import CatchFormDialog from "@/components/diary/CatchFormDialog";
+import { PremiumUpsellModal } from "@/components/PremiumUpsellModal";
 import { queryClient } from "@/lib/queryClient";
 import { 
   BookOpen, 
@@ -32,9 +33,17 @@ import {
   Scale,
   Shield,
   CalendarDays,
-  Award
+  Award,
+  Lock
 } from "lucide-react";
 import contestioLogo from "@assets/contestio logo_1760283270014.png";
+
+// Type for catch limits response
+type CatchLimits = {
+  canCreate: boolean;
+  currentCount: number;
+  limit: number;
+};
 
 // Type for premium check
 type PremiumStatus = {
@@ -141,6 +150,8 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
   const [location, setLocation] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isCreateCatchOpen, setIsCreateCatchOpen] = useState(false);
+  const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
+  const [premiumTrigger, setPremiumTrigger] = useState<string | undefined>();
 
   // Check premium status
   const { data: premiumStatus } = useQuery<PremiumStatus>({
@@ -148,7 +159,23 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
     enabled: !!user?.id
   });
 
+  // Check catch limits for free users
+  const { data: catchLimits } = useQuery<CatchLimits>({
+    queryKey: ["/api/diary/catch-limits"],
+    enabled: !!user?.id
+  });
+
   const isPremium = premiumStatus?.isPremium || false;
+  
+  // Handle FAB click - check limits before opening catch dialog
+  const handleFabClick = () => {
+    if (!isPremium && catchLimits && !catchLimits.canCreate) {
+      setPremiumTrigger("catch_limit");
+      setIsPremiumModalOpen(true);
+    } else {
+      setIsCreateCatchOpen(true);
+    }
+  };
 
   const handleLogout = () => {
     window.location.href = '/api/logout';
@@ -591,21 +618,49 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
           </div>
         </div>
 
+        {/* Catch Limit Counter for FREE users */}
+        {!isPremium && catchLimits && catchLimits.limit > 0 && (
+          <div 
+            className="fixed bottom-20 right-24 md:bottom-6 md:right-24 z-50 px-3 py-1.5 rounded-full bg-slate-800/90 backdrop-blur-sm border border-slate-700 shadow-lg"
+            data-testid="catch-limit-counter"
+          >
+            <span className={`text-sm font-medium ${
+              catchLimits.currentCount >= catchLimits.limit 
+                ? 'text-red-400' 
+                : catchLimits.currentCount >= catchLimits.limit * 0.8 
+                  ? 'text-yellow-400' 
+                  : 'text-slate-300'
+            }`}>
+              {catchLimits.currentCount}/{catchLimits.limit} úlovkov
+            </span>
+          </div>
+        )}
+
         {/* Floating Action Button for Quick Catch Entry */}
         <TooltipProvider delayDuration={300}>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                onClick={() => setIsCreateCatchOpen(true)}
-                className="fixed bottom-20 right-6 md:bottom-6 h-14 w-14 rounded-full shadow-lg bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 z-50 transition-all hover:scale-110"
+                onClick={handleFabClick}
+                className={`fixed bottom-20 right-6 md:bottom-6 h-14 w-14 rounded-full shadow-lg z-50 transition-all hover:scale-110 ${
+                  !isPremium && catchLimits && !catchLimits.canCreate
+                    ? 'bg-slate-600 hover:bg-slate-500'
+                    : 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600'
+                }`}
                 data-testid="fab-add-catch"
                 aria-label="Pridať úlovok"
               >
-                <Plus className="h-6 w-6 text-white" />
+                {!isPremium && catchLimits && !catchLimits.canCreate ? (
+                  <Lock className="h-6 w-6 text-white" />
+                ) : (
+                  <Plus className="h-6 w-6 text-white" />
+                )}
               </Button>
             </TooltipTrigger>
             <TooltipContent side="left" className="bg-popover text-popover-foreground border shadow-md">
-              <p>Pridať nový úlovok</p>
+              <p>{!isPremium && catchLimits && !catchLimits.canCreate 
+                ? "Limit úlovkov dosiahnutý - prejdite na Premium" 
+                : "Pridať nový úlovok"}</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -624,6 +679,16 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
             queryClient.invalidateQueries({ queryKey: ["/api/diary/dashboard"] });
             queryClient.invalidateQueries({ queryKey: ["/api/diary/stats"] });
           }}
+        />
+
+        {/* Premium Upsell Modal */}
+        <PremiumUpsellModal
+          isOpen={isPremiumModalOpen}
+          onClose={() => {
+            setIsPremiumModalOpen(false);
+            setPremiumTrigger(undefined);
+          }}
+          trigger={premiumTrigger}
         />
       </div>
     </div>

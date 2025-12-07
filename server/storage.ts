@@ -2949,7 +2949,7 @@ export class DatabaseStorage implements IStorage {
     }
     
     // FREE users: Check limit with count query
-    const limit = 20;
+    const limit = 50;
     const currentCount = await db
       .select({ count: count() })
       .from(diaryCatches)
@@ -3005,15 +3005,21 @@ export class DatabaseStorage implements IStorage {
       //   return periodEnd > now;
       // }
       
-      // TEMPORARY SOLUTION: Check user's isPremium field in database
-      // TODO: After Stripe integration, migrate to userSubscriptions table for proper subscription management
+      // Check user's userTier field in database (new tier system)
+      // Falls back to isPremium for backward compatibility
       const user = await db
-        .select({ isPremium: users.isPremium })
+        .select({ userTier: users.userTier, isPremium: users.isPremium })
         .from(users)
         .where(eq(users.id, userId))
         .limit(1);
 
-      return user[0]?.isPremium ?? false; // Default to FREE if user not found
+      // Primary check: userTier field (new system)
+      if (user[0]?.userTier === 'PREMIUM') {
+        return true;
+      }
+      
+      // Fallback: isPremium field (backward compatibility)
+      return user[0]?.isPremium ?? false;
       
     } catch (error) {
       console.error('Error checking premium status:', error);
