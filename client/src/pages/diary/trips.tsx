@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useDiaryOffline } from "@/hooks/use-diary-offline";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -48,6 +48,15 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { DiaryTrip, InsertDiaryTrip, DiaryCatch } from "@shared/schema";
 import DiaryLayout from "@/components/DiaryLayout";
 import { TripCard } from "@/components/diary/TripCard";
+import { PremiumUpsellModal } from "@/components/PremiumUpsellModal";
+
+// Type for premium status
+type PremiumStatus = {
+  isPremium: boolean;
+};
+
+// FREE users can access only the last 3 trips
+const FREE_ACCESSIBLE_TRIPS = 3;
 
 // Type for freemium limits response
 type FreemiumLimits = {
@@ -85,6 +94,7 @@ export default function DiaryTrips() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
   const [coverImagePreview, setCoverImagePreview] = useState<string | null>(null);
+  const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
   
   // Offline functionality
   const { 
@@ -111,6 +121,14 @@ export default function DiaryTrips() {
     queryKey: ["/api/diary/trip-limits"],
     enabled: !!user
   });
+
+  // Check premium status
+  const { data: premiumStatus } = useQuery<PremiumStatus>({
+    queryKey: ["/api/auth/premium-status"],
+    enabled: !!user?.id
+  });
+  
+  const isPremium = premiumStatus?.isPremium || false;
 
   const form = useForm<TripFormData>({
     resolver: zodResolver(tripFormSchema),
@@ -439,13 +457,18 @@ export default function DiaryTrips() {
     return stats;
   }, [allCatches]);
 
-  // Split trips into active/planned and finished
-  const { activeAndPlannedTrips, finishedTrips } = useMemo(() => {
+  // Split trips into active/planned and finished, sorted by date (newest first)
+  const { activeAndPlannedTrips, finishedTrips, accessibleTripIds } = useMemo(() => {
     const now = new Date();
     const active: DiaryTrip[] = [];
     const finished: DiaryTrip[] = [];
     
-    trips.forEach((trip) => {
+    // Sort all trips by start date descending (newest first)
+    const sortedTrips = [...trips].sort((a, b) => 
+      new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+    );
+    
+    sortedTrips.forEach((trip) => {
       if (new Date(trip.endDate) >= now) {
         active.push(trip);
       } else {
@@ -453,11 +476,36 @@ export default function DiaryTrips() {
       }
     });
     
+    // For FREE users, only the last 3 trips (newest) are accessible
+    // Active/planned trips are always accessible
+    const accessibleIds = new Set<string>();
+    
+    if (isPremium) {
+      // Premium users can access all trips
+      sortedTrips.forEach(t => accessibleIds.add(t.id));
+    } else {
+      // FREE users: all active/planned trips + last 3 overall trips are accessible
+      active.forEach(t => accessibleIds.add(t.id));
+      sortedTrips.slice(0, FREE_ACCESSIBLE_TRIPS).forEach(t => accessibleIds.add(t.id));
+    }
+    
     return {
       activeAndPlannedTrips: active,
-      finishedTrips: finished
+      finishedTrips: finished,
+      accessibleTripIds: accessibleIds
     };
-  }, [trips]);
+  }, [trips, isPremium]);
+  
+  // Check if a trip is locked for FREE users
+  const isTripLocked = useCallback((tripId: string): boolean => {
+    if (isPremium) return false;
+    return !accessibleTripIds.has(tripId);
+  }, [isPremium, accessibleTripIds]);
+  
+  // Handle click on locked trip
+  const handleLockedTripClick = useCallback(() => {
+    setIsPremiumModalOpen(true);
+  }, []);
 
   return (
     <DiaryLayout>
@@ -831,6 +879,8 @@ export default function DiaryTrips() {
                         catchCount={tripStats[trip.id]?.catchCount || 0}
                         biggestCatch={tripStats[trip.id]?.biggestCatch || null}
                         onClick={() => setLocation(`/diary/trips/${trip.id}`)}
+                        isLocked={isTripLocked(trip.id)}
+                        onLockedClick={handleLockedTripClick}
                       />
                     ))}
                   </div>
@@ -840,9 +890,16 @@ export default function DiaryTrips() {
               {/* Finished Trips */}
               {finishedTrips.length > 0 && (
                 <div>
-                  <h2 className="text-2xl font-bold text-foreground mb-6" data-testid="heading-finished">
-                    Ukončené Výpravy
-                  </h2>
+                  <div className="flex items-center gap-3 mb-6">
+                    <h2 className="text-2xl font-bold text-foreground" data-testid="heading-finished">
+                      Ukončené Výpravy
+                    </h2>
+                    {!isPremium && finishedTrips.some(t => isTripLocked(t.id)) && (
+                      <span className="text-sm text-muted-foreground">
+                        (posledné 3 prístupné, staršie vyžadujú Premium)
+                      </span>
+                    )}
+                  </div>
                   <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                     {finishedTrips.map((trip) => (
                       <TripCard
@@ -851,6 +908,8 @@ export default function DiaryTrips() {
                         catchCount={tripStats[trip.id]?.catchCount || 0}
                         biggestCatch={tripStats[trip.id]?.biggestCatch || null}
                         onClick={() => setLocation(`/diary/trips/${trip.id}`)}
+                        isLocked={isTripLocked(trip.id)}
+                        onLockedClick={handleLockedTripClick}
                       />
                     ))}
                   </div>
@@ -885,6 +944,13 @@ export default function DiaryTrips() {
           </Dialog>
         </div>
       </div>
+
+      {/* Premium Upsell Modal */}
+      <PremiumUpsellModal
+        isOpen={isPremiumModalOpen}
+        onClose={() => setIsPremiumModalOpen(false)}
+        trigger="trip_history"
+      />
     </DiaryLayout>
   );
 }

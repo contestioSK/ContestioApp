@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
-import { Fish, TrendingUp } from "lucide-react";
+import { Fish, TrendingUp, Lock, Crown } from "lucide-react";
 import type { DiaryTrip } from "@shared/schema";
 
 import defaultImage1 from "@assets/stock_images/fishing_lake_sunrise_9eb3c89e.jpg";
@@ -26,6 +26,8 @@ interface TripCardProps {
   catchCount?: number;
   biggestCatch?: { weight: string; fishType: string } | null;
   onClick: () => void;
+  isLocked?: boolean;
+  onLockedClick?: () => void;
 }
 
 function getDefaultImage(tripId: string): string {
@@ -44,7 +46,7 @@ function getTripStatus(startDate: Date, endDate: Date): TripStatus {
   }
 }
 
-export function TripCard({ trip, catchCount = 0, biggestCatch, onClick }: TripCardProps) {
+export function TripCard({ trip, catchCount = 0, biggestCatch, onClick, isLocked = false, onLockedClick }: TripCardProps) {
   const status = getTripStatus(new Date(trip.startDate), new Date(trip.endDate));
   const coverImage = trip.coverImageUrl || getDefaultImage(trip.id);
 
@@ -63,26 +65,53 @@ export function TripCard({ trip, catchCount = 0, biggestCatch, onClick }: TripCa
     },
   };
 
+  const handleClick = () => {
+    if (isLocked && onLockedClick) {
+      onLockedClick();
+    } else if (!isLocked) {
+      onClick();
+    }
+  };
+
   return (
     <div
-      className="group relative h-72 rounded-xl overflow-hidden cursor-pointer transition-all duration-300 hover:scale-[1.03] hover:shadow-2xl"
-      onClick={onClick}
+      className={`group relative h-72 rounded-xl overflow-hidden cursor-pointer transition-all duration-300 ${
+        isLocked 
+          ? 'opacity-60 hover:opacity-80' 
+          : 'hover:scale-[1.03] hover:shadow-2xl'
+      }`}
+      onClick={handleClick}
       data-testid={`trip-card-${trip.id}`}
     >
       <div
-        className="absolute inset-0 bg-cover bg-center"
+        className={`absolute inset-0 bg-cover bg-center ${isLocked ? 'grayscale' : ''}`}
         style={{ backgroundImage: `url(${coverImage})` }}
       />
       
       <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/70 to-transparent" />
       
-      <div className="absolute top-4 left-4">
+      {/* Lock overlay for locked trips */}
+      {isLocked && (
+        <div className="absolute inset-0 flex items-center justify-center z-10">
+          <div className="bg-slate-900/80 backdrop-blur-sm rounded-xl p-4 flex flex-col items-center gap-2">
+            <Lock className="w-8 h-8 text-yellow-400" />
+            <span className="text-sm font-medium text-yellow-400">Premium</span>
+          </div>
+        </div>
+      )}
+      
+      <div className="absolute top-4 left-4 flex items-center gap-2">
         <div
           className={`px-3 py-1 rounded-full text-xs font-bold text-white ${statusConfig[status].className}`}
           data-testid={`trip-status-${trip.id}`}
         >
           {statusConfig[status].label}
         </div>
+        {isLocked && (
+          <div className="px-2 py-1 rounded-full text-xs font-bold bg-yellow-500/90 text-slate-900 flex items-center gap-1">
+            <Crown className="w-3 h-3" />
+          </div>
+        )}
       </div>
 
       <div className="absolute bottom-0 left-0 right-0 p-6">
