@@ -136,7 +136,8 @@ export default function Pricing() {
         "❌ Ukladanie GPS lokalít",
         "❌ Vytváranie vlastných Súbojov",
         "❌ Predpoveď počasia a aktivity",
-        "❌ Neobmedzená história výprav"
+        "❌ Neobmedzená história výprav",
+        "❌ Neobmedzené fotky k úlovkom"
       ]
     },
     {
@@ -153,6 +154,7 @@ export default function Pricing() {
       features: [
         "✅ **Neobmedzené výpravy**",
         "✅ **Neobmedzené úlovky**",
+        "📸 **Neobmedzené fotky k úlovkom**",
         "📊 Pokročilé štatistiky a grafy",
         "🎯 Sezónne ciele s progress tracking",
         "⚔️ Fishing Battle (súťaž s priateľmi)",
@@ -176,6 +178,7 @@ export default function Pricing() {
       features: [
         "✅ **Neobmedzené výpravy**",
         "✅ **Neobmedzené úlovky**",
+        "📸 **Neobmedzené fotky k úlovkom**",
         "📊 Pokročilé štatistiky a grafy",
         "🎯 Sezónne ciele s progress tracking",
         "⚔️ Fishing Battle (súťaž s priateľmi)",

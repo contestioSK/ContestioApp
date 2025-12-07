@@ -90,7 +90,7 @@ export function PremiumUpsellModal({ isOpen, onClose, trigger }: PremiumUpsellMo
     },
     { 
       icon: Camera, 
-      text: "Viac fotiek k úlovkom", 
+      text: "Neobmedzené fotky k úlovkom", 
       freeLimit: "Free: 1 fotka",
       color: "text-purple-400"
     },
