@@ -2132,6 +2132,10 @@ export default function AdminPanel() {
                             users={dashboardStats?.newUsers || []}
                             allUsers={allUsers || []}
                             onViewAll={() => setActiveTab('users')}
+                            onUserClick={(user) => {
+                              setSelectedUserForAction(user);
+                              setIsUserActionDialogOpen(true);
+                            }}
                           />
                         </>
                       )}
