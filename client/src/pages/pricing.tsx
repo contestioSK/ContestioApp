@@ -131,7 +131,6 @@ export default function Pricing() {
         "🐟 **50 úlovkov**",
         "📷 **1 fotka na úlovok**",
         "Zápis úlovkov s fotkami",
-        "Ukladanie lokalít (GPS)",
         "Nástrahy a poznámky",
         "Základné štatistiky"
       ]
@@ -155,7 +154,8 @@ export default function Pricing() {
         "⚔️ Fishing Battle (súťaž s priateľmi)",
         "📴 Offline režim so synchronizáciou",
         "🌤️ Predpoveď počasia a tlak",
-        "🗺️ Interaktívne mapy lokalít"
+        "🗺️ Interaktívne mapy lokalít",
+        "📍 Ukladanie lokalít (GPS)"
       ]
     },
     {
@@ -178,6 +178,7 @@ export default function Pricing() {
         "📴 Offline režim so synchronizáciou",
         "🌤️ Predpoveď počasia a tlak",
         "🗺️ Interaktívne mapy lokalít",
+        "📍 Ukladanie lokalít (GPS)",
         "💰 **Úspora ~11€ ročne**"
       ]
     }
