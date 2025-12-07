@@ -127,12 +127,16 @@ export default function Pricing() {
       popular: false,
       cta: "Používať zadarmo",
       features: [
-        "📝 **Neobmedzené výpravy** (posledné 3 prístupné)",
-        "🐟 **50 úlovkov**",
-        "📷 **1 fotka na úlovok**",
-        "Zápis úlovkov s fotkami",
-        "Nástrahy a poznámky",
-        "Základné štatistiky"
+        "✅ Neobmedzené výpravy (posledné 3 prístupné)",
+        "✅ Kapacita 50 úlovkov",
+        "✅ 1 fotka na úlovok",
+        "✅ Prijímanie výziev v Battle"
+      ],
+      missingFeatures: [
+        "❌ Ukladanie GPS lokalít",
+        "❌ Vytváranie vlastných Súbojov",
+        "❌ Predpoveď počasia a aktivity",
+        "❌ Neobmedzená história výprav"
       ]
     },
     {
@@ -382,17 +386,35 @@ export default function Pricing() {
                       </CardHeader>
 
                       <CardContent className="flex flex-col flex-grow">
-                        {/* Features List */}
-                        <ul className="space-y-3 mb-8 flex-grow">
+                        {/* Features List - Included */}
+                        <ul className="space-y-3 mb-4 flex-grow">
                           {plan.features.map((feature, index) => (
                             <li key={index} className="flex items-start">
-                              <Check className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                              {!isFree && (
+                                <Check className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                              )}
                               <span className="text-sm text-foreground leading-relaxed">
                                 {renderFeatureText(feature)}
                               </span>
                             </li>
                           ))}
                         </ul>
+
+                        {/* Missing Features - Only for FREE plan */}
+                        {isFree && plan.missingFeatures && (
+                          <div className="border-t border-border pt-4 mb-6">
+                            <p className="text-xs text-muted-foreground mb-3 font-medium uppercase tracking-wide">Chýba vo Free</p>
+                            <ul className="space-y-2">
+                              {plan.missingFeatures.map((feature: string, index: number) => (
+                                <li key={index} className="flex items-start">
+                                  <span className="text-sm text-slate-500 leading-relaxed opacity-70">
+                                    {renderFeatureText(feature)}
+                                  </span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
 
                         {/* CTA Button */}
                         <Button
