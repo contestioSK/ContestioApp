@@ -3332,6 +3332,238 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
+  // ============ PROMO CODES ADMIN ROUTES ============
+
+  // Get all promo codes
+  app.get('/api/admin/promo-codes', isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      const promoCodes = await storage.getPromoCodes();
+      res.json(promoCodes);
+    } catch (error) {
+      console.error("Error fetching promo codes:", error);
+      res.status(500).json({ message: "Failed to fetch promo codes" });
+    }
+  });
+
+  // Create new promo code
+  app.post('/api/admin/promo-codes', isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const promoCodeSchema = z.object({
+        code: z.string().min(3).max(50).transform(s => s.toUpperCase()),
+        name: z.string().min(1).max(255),
+        description: z.string().optional().nullable(),
+        type: z.enum(["percent", "days"]),
+        value: z.number().min(1).max(365),
+        validFrom: z.string(),
+        validUntil: z.string(),
+        maxUsages: z.number().min(1).optional().nullable(),
+        isActive: z.boolean().optional().default(true),
+      });
+
+      const validation = promoCodeSchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ message: "Invalid promo code data", errors: validation.error.errors });
+      }
+
+      // Additional business rule validation
+      const { type, value, validFrom, validUntil } = validation.data;
+      
+      // Validate value range based on type
+      if (type === 'percent' && (value < 1 || value > 100)) {
+        return res.status(400).json({ message: "Percentuálna zľava musí byť medzi 1 a 100" });
+      }
+      if (type === 'days' && (value < 1 || value > 365)) {
+        return res.status(400).json({ message: "Počet dní musí byť medzi 1 a 365" });
+      }
+
+      // Validate date range
+      const fromDate = new Date(validFrom);
+      const untilDate = new Date(validUntil);
+      if (fromDate >= untilDate) {
+        return res.status(400).json({ message: "Dátum ukončenia musí byť po dátume začiatku" });
+      }
+
+      const promoCode = await storage.createPromoCode({
+        ...validation.data,
+        validFrom: fromDate,
+        validUntil: untilDate,
+        createdById: req.user.id,
+      });
+
+      res.status(201).json(promoCode);
+    } catch (error: any) {
+      console.error("Error creating promo code:", error);
+      if (error.code === '23505') { // Unique constraint violation
+        return res.status(400).json({ message: "Promo code already exists" });
+      }
+      res.status(500).json({ message: "Failed to create promo code" });
+    }
+  });
+
+  // Update promo code
+  app.put('/api/admin/promo-codes/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const promoCodeId = parseInt(req.params.id, 10);
+      if (isNaN(promoCodeId)) {
+        return res.status(400).json({ message: "Invalid promo code ID" });
+      }
+
+      const updateSchema = z.object({
+        name: z.string().min(1).max(255).optional(),
+        description: z.string().optional().nullable(),
+        type: z.enum(["percent", "days"]).optional(),
+        value: z.number().min(1).max(365).optional(),
+        validFrom: z.string().optional(),
+        validUntil: z.string().optional(),
+        maxUsages: z.number().optional().nullable(),
+        isActive: z.boolean().optional(),
+      });
+
+      const validation = updateSchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ message: "Invalid update data", errors: validation.error.errors });
+      }
+
+      const { validFrom, validUntil, type, value, ...rest } = validation.data;
+      
+      // Validate type/value combination if both are provided
+      if (type && value !== undefined) {
+        if (type === 'percent' && (value < 1 || value > 100)) {
+          return res.status(400).json({ message: "Percentuálna zľava musí byť medzi 1 a 100" });
+        }
+        if (type === 'days' && (value < 1 || value > 365)) {
+          return res.status(400).json({ message: "Počet dní musí byť medzi 1 a 365" });
+        }
+      }
+
+      // Validate date range if both dates are provided
+      if (validFrom && validUntil) {
+        const fromDate = new Date(validFrom);
+        const untilDate = new Date(validUntil);
+        if (fromDate >= untilDate) {
+          return res.status(400).json({ message: "Dátum ukončenia musí byť po dátume začiatku" });
+        }
+      }
+
+      const updateData: Record<string, any> = { ...rest };
+      if (type) updateData.type = type;
+      if (value !== undefined) updateData.value = value;
+      if (validFrom) updateData.validFrom = new Date(validFrom);
+      if (validUntil) updateData.validUntil = new Date(validUntil);
+
+      const updatedPromoCode = await storage.updatePromoCode(promoCodeId, updateData);
+      res.json(updatedPromoCode);
+    } catch (error) {
+      console.error("Error updating promo code:", error);
+      res.status(500).json({ message: "Failed to update promo code" });
+    }
+  });
+
+  // Delete promo code
+  app.delete('/api/admin/promo-codes/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const promoCodeId = parseInt(req.params.id, 10);
+      if (isNaN(promoCodeId)) {
+        return res.status(400).json({ message: "Invalid promo code ID" });
+      }
+
+      await storage.deletePromoCode(promoCodeId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting promo code:", error);
+      res.status(500).json({ message: "Failed to delete promo code" });
+    }
+  });
+
+  // Toggle promo code active status
+  app.patch('/api/admin/promo-codes/:id/toggle', isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const promoCodeId = parseInt(req.params.id, 10);
+      if (isNaN(promoCodeId)) {
+        return res.status(400).json({ message: "Invalid promo code ID" });
+      }
+
+      const updatedPromoCode = await storage.togglePromoCodeStatus(promoCodeId);
+      res.json(updatedPromoCode);
+    } catch (error) {
+      console.error("Error toggling promo code:", error);
+      res.status(500).json({ message: "Failed to toggle promo code" });
+    }
+  });
+
+  // Apply promo to all users (bulk action)
+  app.post('/api/admin/promo-codes/apply-to-all', isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const bulkPromoSchema = z.object({
+        type: z.enum(["percent", "days"]),
+        value: z.number().min(1).max(365),
+        description: z.string().optional(),
+      });
+
+      const validation = bulkPromoSchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ message: "Invalid bulk promo data", errors: validation.error.errors });
+      }
+
+      const { type, value, description } = validation.data;
+      
+      if (type === "days") {
+        // Add free premium days to all active users
+        const result = await storage.applyFreeDaysToAllUsers(value, description || `Bulk promo: ${value} days`);
+        res.json({ success: true, affectedUsers: result.affectedUsers });
+      } else {
+        // For percent discounts, we just create a promo code that users can apply
+        res.status(400).json({ message: "Percent discounts require a promo code - cannot be applied directly to all users" });
+      }
+    } catch (error) {
+      console.error("Error applying bulk promo:", error);
+      res.status(500).json({ message: "Failed to apply bulk promo" });
+    }
+  });
+
+  // Get promo code usage statistics
+  app.get('/api/admin/promo-codes/:id/stats', isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const promoCodeId = parseInt(req.params.id, 10);
+      if (isNaN(promoCodeId)) {
+        return res.status(400).json({ message: "Invalid promo code ID" });
+      }
+
+      const stats = await storage.getPromoCodeStats(promoCodeId);
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching promo code stats:", error);
+      res.status(500).json({ message: "Failed to fetch promo code stats" });
+    }
+  });
+
   // Competition registration routes
   app.post('/api/competition-registrations', upload.single('competitionLogo'), async (req: any, res) => {
     try {
