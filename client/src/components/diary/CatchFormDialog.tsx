@@ -33,8 +33,11 @@ import {
   Wind,
   Gauge,
   Trophy,
-  Star
+  Star,
+  Lock
 } from "lucide-react";
+
+import { PremiumUpsellModal } from "@/components/PremiumUpsellModal";
 
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { DiaryCatch, DiaryTrip } from "@shared/schema";
@@ -134,6 +137,7 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
   const [existingPhotos, setExistingPhotos] = useState<Array<PhotoObject>>([]);
   const [isLoadingWeather, setIsLoadingWeather] = useState(false);
   const [weatherDataLoaded, setWeatherDataLoaded] = useState(false);
+  const [showGpsPremiumModal, setShowGpsPremiumModal] = useState(false);
 
   // Offline functionality
   const { 
@@ -955,20 +959,27 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
                 </span>
               </div>
 
-              {/* Intelligent Button */}
+              {/* Intelligent Button - Premium gated */}
               <Button
                 type="button"
                 size="lg"
-                onClick={getLocationAndWeather}
-                disabled={isLoadingWeather || weatherDataLoaded}
+                onClick={isPremium ? getLocationAndWeather : () => setShowGpsPremiumModal(true)}
+                disabled={isPremium && (isLoadingWeather || weatherDataLoaded)}
                 className={`w-full ${
-                  weatherDataLoaded 
-                    ? 'bg-green-600 hover:bg-green-700' 
-                    : 'bg-[#3b82f6] hover:bg-[#2563eb]'
+                  !isPremium
+                    ? 'bg-gray-500 hover:bg-gray-600'
+                    : weatherDataLoaded 
+                      ? 'bg-green-600 hover:bg-green-700' 
+                      : 'bg-[#3b82f6] hover:bg-[#2563eb]'
                 }`}
                 data-testid="button-get-location-weather"
               >
-                {isLoadingWeather ? (
+                {!isPremium ? (
+                  <>
+                    <Lock className="mr-2 h-5 w-5" />
+                    Získať Polohu a Počasie
+                  </>
+                ) : isLoadingWeather ? (
                   <>
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                     Načítavam dáta...
@@ -988,7 +999,10 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
 
               {/* Descriptive Text */}
               <p className="text-sm text-muted-foreground text-center">
-                Automaticky získa GPS súradnice a načíta kompletnú predpoveď počasia z API pre čas úlovku.
+                {isPremium 
+                  ? "Automaticky získa GPS súradnice a načíta kompletnú predpoveď počasia z API pre čas úlovku."
+                  : "Táto funkcia je dostupná len pre Premium používateľov."
+                }
               </p>
             </div>
 
@@ -1013,6 +1027,13 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
           </form>
         </Form>
       </DialogContent>
+
+      {/* GPS Premium Upsell Modal */}
+      <PremiumUpsellModal
+        isOpen={showGpsPremiumModal}
+        onClose={() => setShowGpsPremiumModal(false)}
+        trigger="gps"
+      />
     </Dialog>
   );
 }
