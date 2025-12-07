@@ -1287,8 +1287,10 @@ export const promoCodes = pgTable("promo_codes", {
   code: varchar("code", { length: 50 }).notNull().unique(), // Unique promo code
   name: varchar("name", { length: 255 }).notNull(), // Display name for admin
   description: text("description"), // Optional description
+  scope: varchar("scope", { length: 20 }).notNull().default("diary"), // "diary" | "competition" | "all"
   type: varchar("type", { length: 20 }).notNull(), // "percent" = % discount, "days" = free days
   value: integer("value").notNull(), // Percentage (1-100) or number of free days
+  competitionId: uuid("competition_id"), // Optional: specific competition
   validFrom: timestamp("valid_from").notNull(),
   validUntil: timestamp("valid_until").notNull(),
   maxUsages: integer("max_usages"), // null = unlimited
@@ -1313,6 +1315,10 @@ export const promoCodesRelations = relations(promoCodes, ({ one, many }) => ({
   createdBy: one(users, {
     fields: [promoCodes.createdById],
     references: [users.id],
+  }),
+  competition: one(competitions, {
+    fields: [promoCodes.competitionId],
+    references: [competitions.id],
   }),
   usages: many(promoCodeUsages),
 }));
