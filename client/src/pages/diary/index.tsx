@@ -747,7 +747,7 @@ export default function DiaryIndex() {
                 ) : (
                   <Button
                     size="sm"
-                    onClick={() => setLocation("/diary/battles/paywall")}
+                    onClick={() => setLocation("/diary/battle-paywall")}
                     className="bg-yellow-600 hover:bg-yellow-700 text-white text-xs md:text-sm w-full md:w-auto"
                     data-testid="button-unlock-battle"
                   >
