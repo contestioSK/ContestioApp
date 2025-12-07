@@ -346,6 +346,10 @@ export default function AdminPanel() {
   // Promo codes state
   const [isCreatePromoDialogOpen, setIsCreatePromoDialogOpen] = useState(false);
   const [isBulkPromoDialogOpen, setIsBulkPromoDialogOpen] = useState(false);
+  const [isExportPromoDialogOpen, setIsExportPromoDialogOpen] = useState(false);
+  const [exportPromoId, setExportPromoId] = useState<number | null>(null);
+  const [exportDateFrom, setExportDateFrom] = useState<string>('');
+  const [exportDateTo, setExportDateTo] = useState<string>('');
   const [promoFormData, setPromoFormData] = useState({
     code: '',
     name: '',
@@ -4871,6 +4875,20 @@ export default function AdminPanel() {
                                       <Button
                                         variant="outline"
                                         size="sm"
+                                        onClick={() => {
+                                          setExportPromoId(promo.id);
+                                          setExportDateFrom('');
+                                          setExportDateTo('');
+                                          setIsExportPromoDialogOpen(true);
+                                        }}
+                                        data-testid={`button-export-promo-${promo.id}`}
+                                      >
+                                        <Download className="w-4 h-4 mr-1" />
+                                        Export
+                                      </Button>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
                                         onClick={() => togglePromoCodeMutation.mutate(promo.id)}
                                         disabled={togglePromoCodeMutation.isPending}
                                         data-testid={`button-toggle-promo-${promo.id}`}
@@ -5138,6 +5156,68 @@ export default function AdminPanel() {
                                 data-testid="button-apply-bulk-promo"
                               >
                                 {applyBulkPromoMutation.isPending ? 'Aplikujem...' : 'Aplikovať pre všetkých'}
+                              </Button>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+
+                      {/* Export Promo Users Dialog */}
+                      <Dialog open={isExportPromoDialogOpen} onOpenChange={setIsExportPromoDialogOpen}>
+                        <DialogContent className="max-w-md">
+                          <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                              <Download className="w-5 h-5" />
+                              Export používateľov
+                            </DialogTitle>
+                            <DialogDescription>
+                              Exportujte zoznam používateľov, ktorí použili tento promo kód
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <Label htmlFor="export-date-from">Dátum od (voliteľné)</Label>
+                                <Input
+                                  id="export-date-from"
+                                  type="date"
+                                  value={exportDateFrom}
+                                  onChange={(e) => setExportDateFrom(e.target.value)}
+                                  data-testid="input-export-date-from"
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="export-date-to">Dátum do (voliteľné)</Label>
+                                <Input
+                                  id="export-date-to"
+                                  type="date"
+                                  value={exportDateTo}
+                                  onChange={(e) => setExportDateTo(e.target.value)}
+                                  data-testid="input-export-date-to"
+                                />
+                              </div>
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              Ak nevyberiete dátumy, export bude obsahovať všetkých používateľov.
+                            </p>
+                            <div className="flex justify-end space-x-2 pt-4">
+                              <Button variant="outline" onClick={() => setIsExportPromoDialogOpen(false)}>
+                                Zrušiť
+                              </Button>
+                              <Button
+                                onClick={() => {
+                                  if (!exportPromoId) return;
+                                  const params = new URLSearchParams();
+                                  if (exportDateFrom) params.append('dateFrom', exportDateFrom);
+                                  if (exportDateTo) params.append('dateTo', exportDateTo);
+                                  const url = `/api/admin/promo-codes/${exportPromoId}/export${params.toString() ? '?' + params.toString() : ''}`;
+                                  window.open(url, '_blank');
+                                  setIsExportPromoDialogOpen(false);
+                                }}
+                                data-testid="button-confirm-export"
+                              >
+                                <Download className="w-4 h-4 mr-2" />
+                                Stiahnuť CSV
                               </Button>
                             </div>
                           </div>

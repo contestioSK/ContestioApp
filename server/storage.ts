@@ -3693,6 +3693,40 @@ export class DatabaseStorage implements IStorage {
       promoCode: row.promo_codes as PromoCode,
     })) as Array<PromoCodeUsage & { promoCode: PromoCode }>;
   }
+
+  async getPromoCodeUsersForExport(
+    promoCodeId: number, 
+    dateFrom?: Date, 
+    dateTo?: Date
+  ): Promise<Array<{ firstName: string; lastName: string; email: string; appliedAt: Date }>> {
+    let query = db
+      .select({
+        firstName: users.firstName,
+        lastName: users.lastName,
+        email: users.email,
+        appliedAt: promoCodeUsages.appliedAt,
+      })
+      .from(promoCodeUsages)
+      .innerJoin(users, eq(promoCodeUsages.userId, users.id))
+      .where(eq(promoCodeUsages.promoCodeId, promoCodeId))
+      .orderBy(desc(promoCodeUsages.appliedAt));
+
+    const results = await query;
+
+    // Filter by date range if provided
+    return results.filter((row) => {
+      if (!row.appliedAt) return false;
+      const appliedDate = new Date(row.appliedAt);
+      if (dateFrom && appliedDate < dateFrom) return false;
+      if (dateTo && appliedDate > dateTo) return false;
+      return true;
+    }).map((row) => ({
+      firstName: row.firstName || '',
+      lastName: row.lastName || '',
+      email: row.email || '',
+      appliedAt: row.appliedAt as Date,
+    }));
+  }
 }
 
 export const storage = new DatabaseStorage();

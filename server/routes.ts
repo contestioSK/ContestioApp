@@ -3568,6 +3568,68 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
+  // Export promo code users as CSV
+  app.get('/api/admin/promo-codes/:id/export', isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const promoCodeId = parseInt(req.params.id, 10);
+      if (isNaN(promoCodeId)) {
+        return res.status(400).json({ message: "Invalid promo code ID" });
+      }
+
+      // Get promo code info for filename
+      const promoCodes = await storage.getPromoCodes();
+      const promoCode = promoCodes.find(p => p.id === promoCodeId);
+      if (!promoCode) {
+        return res.status(404).json({ message: "Promo code not found" });
+      }
+
+      // Parse date filters
+      const dateFrom = req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined;
+      const dateTo = req.query.dateTo ? new Date(req.query.dateTo as string) : undefined;
+      
+      // Adjust dateTo to end of day
+      if (dateTo) {
+        dateTo.setHours(23, 59, 59, 999);
+      }
+
+      const users = await storage.getPromoCodeUsersForExport(promoCodeId, dateFrom, dateTo);
+
+      // CSV escape function - handles quotes and formula injection
+      const escapeCSV = (value: string): string => {
+        if (!value) return '';
+        // Escape double quotes by doubling them
+        let escaped = value.replace(/"/g, '""');
+        // Prevent formula injection by prefixing with single quote if starts with dangerous chars
+        if (/^[=+\-@\t\r]/.test(escaped)) {
+          escaped = "'" + escaped;
+        }
+        return `"${escaped}"`;
+      };
+
+      // Generate CSV content
+      const csvHeader = 'Meno,Priezvisko,Email,Dátum použitia\n';
+      const csvRows = users.map(u => 
+        `${escapeCSV(u.firstName)},${escapeCSV(u.lastName)},${escapeCSV(u.email)},${escapeCSV(new Date(u.appliedAt).toLocaleDateString('sk-SK'))}`
+      ).join('\n');
+      const csvContent = csvHeader + csvRows;
+
+      // Set headers for file download
+      const filename = `promo_${promoCode.code}_export_${new Date().toISOString().split('T')[0]}.csv`;
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      
+      // Add BOM for Excel UTF-8 compatibility
+      res.send('\uFEFF' + csvContent);
+    } catch (error) {
+      console.error("Error exporting promo code users:", error);
+      res.status(500).json({ message: "Failed to export promo code users" });
+    }
+  });
+
   // Get user's promo code usages
   app.get('/api/admin/users/:id/promo-usages', isAuthenticated, async (req: any, res) => {
     try {
