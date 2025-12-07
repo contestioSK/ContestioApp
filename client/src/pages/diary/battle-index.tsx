@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
-import { Trophy, Plus, Archive, Swords, Users, Clock, Crown, ArrowRight, Check, X, Bell, UserPlus } from "lucide-react";
+import { Trophy, Plus, Archive, Swords, Users, Clock, Crown, ArrowRight, Check, X, Bell, UserPlus, Lock } from "lucide-react";
 import { useLocation } from "wouter";
 import DiaryLayout from "@/components/DiaryLayout";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -95,8 +95,6 @@ export default function BattleIndex() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   
-  // Local state for managing invitations (will be removed when accepted/rejected)
-  const [localInvitations, setLocalInvitations] = useState<BattleInvitation[]>([]);
 
   const { data: premiumStatus, isLoading: isPremiumLoading } = useQuery<{ isPremium: boolean }>({
     queryKey: ['/api/auth/premium-status'],
@@ -105,22 +103,22 @@ export default function BattleIndex() {
 
   const isPremium = premiumStatus?.isPremium;
 
-  // Fetch user's battles
+  // Fetch user's battles (enabled for all users - FREE users can be invited to battles)
   const { data: battles = [], isLoading: isBattlesLoading } = useQuery<DiaryBattle[]>({
     queryKey: ['/api/diary/battles'],
-    enabled: !!user && isPremium === true,
+    enabled: !!user,
   });
 
-  // Fetch battle invitations
+  // Fetch battle invitations (FREE users can receive invitations)
   const { data: invitations = [] } = useQuery<BattleInvitation[]>({
     queryKey: ['/api/diary/battles/invitations'],
-    enabled: !!user && isPremium === true,
+    enabled: !!user,
   });
 
-  // Fetch archived battles
+  // Fetch archived battles (FREE users can view their battle history)
   const { data: archivedBattles = [] } = useQuery<ArchivedBattle[]>({
     queryKey: ['/api/diary/battles/archive'],
-    enabled: !!user && isPremium === true,
+    enabled: !!user,
   });
 
   // Calculate Hall of Fame stats from archived battles
@@ -129,30 +127,26 @@ export default function BattleIndex() {
     totalBattles: archivedBattles.length,
   };
 
-  // Force refresh archive data on mount to clear stale cache
+  // Force refresh data on mount to clear stale cache (for all users)
   useEffect(() => {
-    if (user && isPremium) {
+    if (user) {
       queryClient.invalidateQueries({ queryKey: ['/api/diary/battles/archive'] });
       queryClient.invalidateQueries({ queryKey: ['/api/diary/battles'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/diary/battles/invitations'] });
     }
-  }, [user, isPremium]);
-
-  // Update local invitations when data is fetched
-  useEffect(() => {
-    if (invitations) {
-      setLocalInvitations(invitations);
-    }
-  }, [invitations]);
+  }, [user]);
 
   // Accept invitation mutation
   const acceptInvitationMutation = useMutation({
     mutationFn: async (invitationId: string) => {
-      return await apiRequest('POST', `/api/diary/battles/invitations/${invitationId}/accept`);
+      const response = await apiRequest('POST', `/api/diary/battles/invitations/${invitationId}/accept`);
+      // Check response and throw on failure so onError handles it
+      if (!response.ok) {
+        throw new Error('Failed to accept invitation');
+      }
+      return invitationId;
     },
-    onSuccess: (_, invitationId) => {
-      // Remove invitation from local state
-      setLocalInvitations(prev => prev.filter(inv => inv.id !== invitationId));
-      
+    onSuccess: (invitationId) => {      
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['/api/diary/battles'] });
       queryClient.invalidateQueries({ queryKey: ['/api/diary/battles/invitations'] });
@@ -174,12 +168,14 @@ export default function BattleIndex() {
   // Reject invitation mutation
   const rejectInvitationMutation = useMutation({
     mutationFn: async (invitationId: string) => {
-      return await apiRequest('POST', `/api/diary/battles/invitations/${invitationId}/reject`);
+      const response = await apiRequest('POST', `/api/diary/battles/invitations/${invitationId}/reject`);
+      // Check response and throw on failure so onError handles it
+      if (!response.ok) {
+        throw new Error('Failed to reject invitation');
+      }
+      return invitationId;
     },
-    onSuccess: (_, invitationId) => {
-      // Remove invitation from local state
-      setLocalInvitations(prev => prev.filter(inv => inv.id !== invitationId));
-      
+    onSuccess: () => {      
       // Invalidate queries
       queryClient.invalidateQueries({ queryKey: ['/api/diary/battles/invitations'] });
       
@@ -196,13 +192,6 @@ export default function BattleIndex() {
       });
     },
   });
-
-  // Redirect non-premium users to paywall
-  useEffect(() => {
-    if (user?.id && !isPremiumLoading && isPremium === false) {
-      setLocation('/diary/battles/paywall');
-    }
-  }, [user?.id, isPremium, isPremiumLoading, setLocation]);
 
   // Show loading state
   if (!user || isPremiumLoading || isPremium === undefined || isBattlesLoading) {
@@ -246,13 +235,26 @@ export default function BattleIndex() {
               
               <Button
                 size="sm"
-                onClick={() => setLocation("/diary/battles/create")}
-                className="bg-green-600 hover:bg-green-700 text-white w-full md:w-auto"
+                onClick={() => setLocation(isPremium ? "/diary/battles/create" : "/diary/battle-paywall")}
+                className={isPremium 
+                  ? "bg-green-600 hover:bg-green-700 text-white w-full md:w-auto"
+                  : "bg-yellow-600 hover:bg-yellow-700 text-white w-full md:w-auto"
+                }
                 data-testid="button-create-new-battle"
               >
-                <Plus className="w-4 h-4 md:w-5 md:h-5 md:mr-2" />
+                {isPremium ? (
+                  <Plus className="w-4 h-4 md:w-5 md:h-5 md:mr-2" />
+                ) : (
+                  <Lock className="w-4 h-4 md:w-5 md:h-5 md:mr-2" />
+                )}
                 <span className="hidden sm:inline">Vytvoriť Nový Súboj</span>
                 <span className="sm:hidden">Vytvoriť Súboj</span>
+                {!isPremium && (
+                  <Badge variant="secondary" className="ml-2 bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 text-xs">
+                    <Crown className="w-3 h-3 mr-1" />
+                    PREMIUM
+                  </Badge>
+                )}
               </Button>
             </div>
           </div>
@@ -345,12 +347,25 @@ export default function BattleIndex() {
                         Je čas preveriť svoje rybárske zručnosti. Vyzvite svojich kamarátov!
                       </p>
                       <Button
-                        onClick={() => setLocation("/diary/battles/create")}
-                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                        onClick={() => setLocation(isPremium ? "/diary/battles/create" : "/diary/battle-paywall")}
+                        className={isPremium 
+                          ? "bg-blue-600 hover:bg-blue-700 text-white"
+                          : "bg-yellow-600 hover:bg-yellow-700 text-white"
+                        }
                         data-testid="button-create-first-battle"
                       >
-                        <Plus className="w-4 h-4 mr-2" />
+                        {isPremium ? (
+                          <Plus className="w-4 h-4 mr-2" />
+                        ) : (
+                          <Lock className="w-4 h-4 mr-2" />
+                        )}
                         Vytvoriť môj prvý Súboj
+                        {!isPremium && (
+                          <Badge variant="secondary" className="ml-2 bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 text-xs">
+                            <Crown className="w-3 h-3 mr-1" />
+                            PREMIUM
+                          </Badge>
+                        )}
                       </Button>
                     </div>
                   )}
@@ -366,8 +381,8 @@ export default function BattleIndex() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {localInvitations.length > 0 ? (
-                    localInvitations.map((invitation) => (
+                  {invitations.length > 0 ? (
+                    invitations.map((invitation) => (
                       <div
                         key={invitation.id}
                         className="p-4 rounded-lg border border-border/50 bg-muted/30"

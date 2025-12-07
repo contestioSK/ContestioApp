@@ -70,8 +70,20 @@ export default function BattleCreate() {
     enabled: !!user
   });
   
-  // TODO: Replace with actual API call to check premium status
-  const isPremium = true; // Temporarily set to true for development - will be connected to actual premium check
+  // Check premium status for battle creation
+  const { data: premiumStatus, isLoading: isLoadingPremium } = useQuery<{ isPremium: boolean }>({
+    queryKey: ["/api/auth/premium-status"],
+    enabled: !!user?.id
+  });
+  
+  const isPremium = premiumStatus?.isPremium || false;
+  
+  // Redirect FREE users to paywall
+  useEffect(() => {
+    if (!isLoadingPremium && !isPremium && user) {
+      setLocation('/diary/battle-paywall');
+    }
+  }, [isPremium, isLoadingPremium, user, setLocation]);
 
   const form = useForm<CreateBattleForm>({
     resolver: zodResolver(createBattleSchema),
@@ -144,13 +156,6 @@ export default function BattleCreate() {
       });
     }
   });
-
-  // Redirect to paywall if not premium (moved to useEffect to avoid render loop)
-  useEffect(() => {
-    if (!isPremium) {
-      setLocation("/diary/battles/paywall");
-    }
-  }, [isPremium, setLocation]);
 
   const handleSelectUser = (userId: string) => {
     setInvitedUserIds(prev => [...prev, userId]);
