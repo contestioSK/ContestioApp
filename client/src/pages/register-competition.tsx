@@ -1044,20 +1044,7 @@ export default function RegisterCompetition() {
 
                 {/* Sectors and Places Configuration */}
                 <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-medium text-foreground">Konfigurácia sektorov a miest</h3>
-                    {form.watch("hasSectors") && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={addSector}
-                        data-testid="button-add-sector"
-                      >
-                        <Plus className="w-4 h-4 mr-2" />
-                        Pridať sektor
-                      </Button>
-                    )}
-                  </div>
+                  <h3 className="text-lg font-medium text-foreground">Konfigurácia sektorov a miest</h3>
                   
                   {/* Sector Toggle */}
                   {canUseFeature(selectedPlan, 'sectors') ? (
@@ -1113,9 +1100,20 @@ export default function RegisterCompetition() {
                   
                   {form.watch("hasSectors") && (
                     <>
-                      <FormDescription>
-                        Definujte sektory a miesta pre súťaž. Každý sektor môže mať viacero miest kde sa tímy môžu umiestniť.
-                      </FormDescription>
+                      <div className="flex items-center gap-4">
+                        <FormDescription className="flex-1">
+                          Definujte sektory a miesta pre súťaž. Každý sektor môže mať viacero miest kde sa tímy môžu umiestniť.
+                        </FormDescription>
+                        <Button
+                          type="button"
+                          onClick={addSector}
+                          data-testid="button-add-sector"
+                          className="whitespace-nowrap"
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          Pridať sektor
+                        </Button>
+                      </div>
 
                       {sectorPlaces.map((sector, sectorIndex) => (
                     <Card key={sectorIndex} className="p-4">
