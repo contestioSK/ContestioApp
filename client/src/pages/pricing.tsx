@@ -3,12 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Check, Star, Crown, Zap, Building, BookOpen, Sparkles } from "lucide-react";
+import { Check, Star, Crown, Zap, Building, BookOpen, Sparkles, Trophy, BookHeart } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
 
 export default function Pricing() {
-  const [activeTab, setActiveTab] = useState("competitions");
+  const [activeTab, setActiveTab] = useState("diary");
 
   // Helper function to render text with bold formatting
   const renderFeatureText = (text: string) => {
@@ -226,16 +226,46 @@ export default function Pricing() {
           <div className="w-24 h-1 bg-gradient-to-r from-primary to-primary/60 mx-auto mt-6 rounded-full"></div>
         </div>
 
-        {/* Tabs */}
+        {/* Enhanced Tab Switcher */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
-            <TabsTrigger value="competitions" data-testid="tab-competitions">
-              Rybárske súťaže
-            </TabsTrigger>
-            <TabsTrigger value="diary" data-testid="tab-diary">
-              Rybársky denník
-            </TabsTrigger>
-          </TabsList>
+          <div className="flex flex-col items-center mb-10">
+            <div className="relative bg-muted/50 dark:bg-slate-800/50 p-2 rounded-2xl border border-border/50 shadow-lg backdrop-blur-sm">
+              <TabsList className="grid grid-cols-2 gap-2 bg-transparent h-auto p-0">
+                <TabsTrigger 
+                  value="competitions" 
+                  data-testid="tab-competitions"
+                  className={`relative px-6 py-4 rounded-xl font-semibold text-base transition-all duration-300 flex items-center gap-3 ${
+                    activeTab === 'competitions' 
+                      ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30 scale-[1.02]' 
+                      : 'bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground hover:scale-[1.01]'
+                  }`}
+                >
+                  <Trophy className={`w-5 h-5 ${activeTab === 'competitions' ? 'text-white' : 'text-blue-500'}`} />
+                  <span>Rybárske súťaže</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="diary" 
+                  data-testid="tab-diary"
+                  className={`relative px-6 py-4 rounded-xl font-semibold text-base transition-all duration-300 flex items-center gap-3 ${
+                    activeTab === 'diary' 
+                      ? 'bg-gradient-to-br from-teal-500 to-teal-600 text-white shadow-lg shadow-teal-500/30 scale-[1.02]' 
+                      : 'bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground hover:scale-[1.01]'
+                  }`}
+                >
+                  <BookHeart className={`w-5 h-5 ${activeTab === 'diary' ? 'text-white' : 'text-teal-500'}`} />
+                  <span>Rybársky denník</span>
+                </TabsTrigger>
+              </TabsList>
+            </div>
+            
+            {/* Dynamic subtitle based on active tab */}
+            <p className="mt-4 text-sm text-muted-foreground text-center transition-all duration-300">
+              {activeTab === 'competitions' 
+                ? '🏆 Profesionálne riešenie pre organizátorov rybárskych súťaží'
+                : '📔 Váš osobný digitálny rybársky denník s Premium funkciami'
+              }
+            </p>
+          </div>
 
           {/* Competitions Tab */}
           <TabsContent value="competitions">
