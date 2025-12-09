@@ -85,7 +85,7 @@ export default function Pricing() {
         "Všetko z Pro +",
         "Branding (logo, farby, subdoména contestio.sk/nazovpreteku)",
         "Pokročilé štatistiky a grafy",
-        "👨‍⚖️ **Neobmedzený počet rozhodcovia**",
+        "👨‍⚖️ **Neobmedzený počet rozhodcov**",
         "Prístup pre médiá a live výsledky",
         "Prioritná podpora počas preteku"
       ]
