@@ -369,14 +369,20 @@ export default function RegisterCompetition() {
                                     </div>
 
                                     <div className="text-xs text-muted-foreground space-y-1">
+                                      <div>• Počet tímov: {capabilities.maxTeams ?? 'Neobmedzený'}</div>
                                       <div>• Počet rozhodcov: {capabilities.maxReferees ?? 'Neobmedzený'}</div>
-                                      {planTier === 'basic' && <div>• Základné funkcie</div>}
+                                      {planTier === 'basic' && <div>• Zápis úlovkov rozhodcami</div>}
                                       {canUseFeature(planTier, 'sectors') && <div>• Sektory</div>}
                                       {canUseFeature(planTier, 'sideCompetitions') && <div>• Doplnkové súťaže</div>}
                                       {canUseFeature(planTier, 'sponsors') && <div>• Sponzori</div>}
                                       {canUseFeature(planTier, 'export') && <div>• Export výsledkov</div>}
                                       {canUseFeature(planTier, 'branding') && <div>• Vlastný branding</div>}
+                                      {canUseFeature(planTier, 'advancedStats') && <div>• Pokročilé štatistiky</div>}
+                                      {canUseFeature(planTier, 'mediaAccess') && <div>• Prístup pre médiá</div>}
                                       {canUseFeature(planTier, 'prioritySupport') && <div>• Prioritná podpora</div>}
+                                      {canUseFeature(planTier, 'interactiveMap') && <div>• Interaktívna mapa</div>}
+                                      {canUseFeature(planTier, 'whiteLabel') && <div>• White-label riešenie</div>}
+                                      {canUseFeature(planTier, 'apiAccess') && <div>• API prístup</div>}
                                     </div>
                                   </label>
                                 </div>
