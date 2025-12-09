@@ -77,13 +77,13 @@ export default function AboutUs() {
               <div className="bg-muted/50 rounded-lg p-4 border border-border">
                 <h3 className="font-semibold text-foreground mb-1.5 text-sm">Verzia FREE</h3>
                 <p className="text-xs text-muted-foreground">
-                  Jedna výprava a 20 úlovkov.
+                  Neobmedzené výpravy (posledné 3 prístupné), 50 úlovkov, 1 fotka na úlovok, prijímanie battle výziev.
                 </p>
               </div>
               <div className="bg-muted/50 rounded-lg p-4 border border-primary">
                 <h3 className="font-semibold text-primary mb-1.5 text-sm">Verzia PREMIUM</h3>
                 <p className="text-xs text-muted-foreground">
-                  Neobmedzené výpravy, úlovky, štatistiky a grafy.
+                  Neobmedzené výpravy, úlovky a fotky, pokročilé štatistiky a grafy, ukladanie GPS lokalít, predpoveď počasia, offline režim so synchronizáciou, vytváranie battle súbojov.
                 </p>
               </div>
             </div>
