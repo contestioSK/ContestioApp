@@ -226,6 +226,7 @@ export default function RegisterCompetition() {
   // });
 
   const [sectorPlaces, setSectorPlaces] = useState(form.watch("sectorPlaces") || []);
+  const [numSectors, setNumSectors] = useState<number>(2);
 
   // Update form when sector places change
   const updateSectorPlaces = (newSectorPlaces: typeof sectorPlaces) => {
@@ -233,8 +234,20 @@ export default function RegisterCompetition() {
     form.setValue("sectorPlaces", newSectorPlaces);
   };
 
+  // Generate sectors automatically based on count
+  const generateSectors = (count: number) => {
+    const newSectors = [];
+    for (let i = 0; i < count; i++) {
+      newSectors.push({
+        sectorName: `Sektor ${String.fromCharCode(65 + i)}`,
+        places: ["Miesto 1", "Miesto 2", "Miesto 3", "Miesto 4"]
+      });
+    }
+    updateSectorPlaces(newSectors);
+  };
+
   const addSector = () => {
-    const newSector = { sectorName: `Sektor ${String.fromCharCode(65 + sectorPlaces.length)}`, places: ["Miesto 1"] };
+    const newSector = { sectorName: `Sektor ${String.fromCharCode(65 + sectorPlaces.length)}`, places: ["Miesto 1", "Miesto 2", "Miesto 3", "Miesto 4"] };
     updateSectorPlaces([...sectorPlaces, newSector]);
   };
 
@@ -1100,19 +1113,33 @@ export default function RegisterCompetition() {
                   
                   {form.watch("hasSectors") && (
                     <>
-                      <div className="flex items-center gap-4">
-                        <FormDescription className="flex-1">
-                          Definujte sektory a miesta pre súťaž. Každý sektor môže mať viacero miest kde sa tímy môžu umiestniť.
+                      <div className="space-y-4">
+                        <FormDescription>
+                          Zadajte počet sektorov a systém automaticky vygeneruje sektory so 4 miestami v každom. Potom môžete upraviť názvy a počet miest.
                         </FormDescription>
-                        <Button
-                          type="button"
-                          onClick={addSector}
-                          data-testid="button-add-sector"
-                          className="whitespace-nowrap"
-                        >
-                          <Plus className="w-4 h-4 mr-2" />
-                          Pridať sektor
-                        </Button>
+                        
+                        <div className="flex items-end gap-4 p-4 bg-muted/30 rounded-lg">
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium">Počet sektorov</label>
+                            <Input
+                              type="number"
+                              min={1}
+                              max={20}
+                              value={numSectors}
+                              onChange={(e) => setNumSectors(Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))}
+                              className="w-24"
+                              data-testid="input-num-sectors"
+                            />
+                          </div>
+                          <Button
+                            type="button"
+                            onClick={() => generateSectors(numSectors)}
+                            data-testid="button-generate-sectors"
+                          >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Vygenerovať sektory
+                          </Button>
+                        </div>
                       </div>
 
                       {sectorPlaces.map((sector, sectorIndex) => (
@@ -1180,7 +1207,7 @@ export default function RegisterCompetition() {
                       {(!sectorPlaces || sectorPlaces.length === 0) && (
                         <div className="text-center py-4 text-muted-foreground">
                           <MapPin className="mx-auto h-8 w-8 mb-2 text-muted-foreground" />
-                          <p>Žiadne sektory nie sú definované. Kliknite na "Pridať sektor" pre začatie.</p>
+                          <p>Žiadne sektory nie sú definované. Zadajte počet sektorov a kliknite na "Vygenerovať sektory".</p>
                         </div>
                       )}
                     </>
