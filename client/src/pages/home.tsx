@@ -32,11 +32,11 @@ export default function Home() {
         variant: "destructive",
       });
       setTimeout(() => {
-        window.location.href = "/auth/login";
+        setLocation("/auth/login");
       }, 500);
       return;
     }
-  }, [isAuthenticated, isLoading, toast]);
+  }, [isAuthenticated, isLoading, toast, setLocation]);
 
   const { data: competitions, isLoading: competitionsLoading, error } = useQuery<Competition[]>({
     queryKey: ["/api/competitions"],
@@ -51,10 +51,10 @@ export default function Home() {
         variant: "destructive",
       });
       setTimeout(() => {
-        window.location.href = "/auth/login";
+        setLocation("/auth/login");
       }, 500);
     }
-  }, [error, toast]);
+  }, [error, toast, setLocation]);
 
   if (isLoading) {
     return <div className="min-h-screen bg-background" />;

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams } from "wouter";
+import { useParams, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ interface CatchWithDetails extends Catch {
 
 export default function CompetitionCatches() {
   const { id } = useParams();
+  const [, navigate] = useLocation();
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedPhoto, setSelectedPhoto] = useState<{ url: string; teamName: string; weight: string; fishType: string } | null>(null);
 
@@ -110,7 +111,7 @@ export default function CompetitionCatches() {
             <Button 
               variant="ghost" 
               className="mb-4 hover:bg-primary/10"
-              onClick={() => window.location.href = `/competition/${id}`}
+              onClick={() => navigate(`/competition/${id}`)}
               data-testid="button-back-to-competition"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />

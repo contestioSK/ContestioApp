@@ -4,11 +4,12 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Check, Star, Crown, Zap, Building, BookOpen, Sparkles, Trophy, BookHeart } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useState } from "react";
 
 export default function Pricing() {
   const [activeTab, setActiveTab] = useState("diary");
+  const [, navigate] = useLocation();
 
   // Helper function to render text with bold formatting
   const renderFeatureText = (text: string) => {
@@ -202,10 +203,10 @@ export default function Pricing() {
 
   const handleDiaryPlanSelect = (planId: string) => {
     if (planId === 'free') {
-      window.location.href = '/diary';
+      navigate('/diary');
     } else {
       // TODO: Redirect to premium subscription page when implemented
-      window.location.href = '/diary';
+      navigate('/diary');
     }
   };
 

@@ -2,9 +2,10 @@ import NavigationHeader from "@/components/navigation-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { User, Building2, Trophy, BookOpen, Users, Calendar } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 
 export default function Register() {
+  const [, navigate] = useLocation();
   return (
     <div className="min-h-screen bg-background">
       <NavigationHeader />
@@ -62,7 +63,7 @@ export default function Register() {
                 </div>
               </div>
               <Button 
-                onClick={() => window.location.href = '/auth/login'}
+                onClick={() => navigate('/auth/login')}
                 className="w-full font-medium"
                 size="lg"
                 data-testid="button-register-individual"
@@ -136,7 +137,7 @@ export default function Register() {
           </p>
           <Button 
             variant="outline"
-            onClick={() => window.location.href = '/auth/login'}
+            onClick={() => navigate('/auth/login')}
             className="font-medium"
             data-testid="button-existing-login"
           >

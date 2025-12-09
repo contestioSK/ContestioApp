@@ -1,4 +1,4 @@
-import { useParams, Link } from "wouter";
+import { useParams, Link, useLocation } from "wouter";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -46,6 +46,7 @@ type TeamRegistrationForm = z.infer<typeof teamRegistrationSchema>;
 
 export default function CompetitionDetail() {
   const { id } = useParams();
+  const [, navigate] = useLocation();
   const { toast } = useToast();
   const [isRegistrationDialogOpen, setIsRegistrationDialogOpen] = useState(false);
   const { isAuthenticated, isLoading: authLoading, user } = useAuth();
@@ -129,11 +130,11 @@ export default function CompetitionDetail() {
         variant: "destructive",
       });
       setTimeout(() => {
-        window.location.href = "/auth/login";
+        navigate("/auth/login");
       }, 500);
       return;
     }
-  }, [isAuthenticated, authLoading, toast]);
+  }, [isAuthenticated, authLoading, toast, navigate]);
 
   const { data: competition, isLoading: competitionLoading, error } = useQuery<Competition>({
     queryKey: ["/api/competitions", id],
@@ -168,10 +169,10 @@ export default function CompetitionDetail() {
         variant: "destructive",
       });
       setTimeout(() => {
-        window.location.href = "/auth/login";
+        navigate("/auth/login");
       }, 500);
     }
-  }, [error, toast]);
+  }, [error, toast, navigate]);
 
   if (authLoading || competitionLoading) {
     return (
