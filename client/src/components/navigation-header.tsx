@@ -197,14 +197,15 @@ export default function NavigationHeader() {
               </div>
             ) : (
               <div className="flex items-center space-x-2">
-                <Button 
-                  variant="outline"
-                  onClick={() => window.location.href = '/auth/login'}
-                  data-testid="button-login"
-                  className="bg-transparent border-sidebar-border text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground focus:bg-sidebar-accent focus:text-sidebar-foreground"
-                >
-                  Prihlásiť sa
-                </Button>
+                <Link href="/auth/login">
+                  <Button 
+                    variant="outline"
+                    data-testid="button-login"
+                    className="bg-transparent border-sidebar-border text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground focus:bg-sidebar-accent focus:text-sidebar-foreground"
+                  >
+                    Prihlásiť sa
+                  </Button>
+                </Link>
                 <Link href="/register">
                   <Button 
                     className="bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90"
