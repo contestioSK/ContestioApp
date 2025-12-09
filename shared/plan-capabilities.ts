@@ -26,9 +26,9 @@ export const PLAN_CAPABILITIES: Record<PlanTier, {
 }> = {
   basic: {
     maxReferees: 2,
-    maxTeams: 10, // Limited to 10 teams
+    maxTeams: 15, // Limited to 15 teams
     features: new Set<PlanFeature>([]), // Only core features
-    price: 49,
+    price: 69,
     currency: '€'
   },
   pro: {
@@ -40,7 +40,7 @@ export const PLAN_CAPABILITIES: Record<PlanTier, {
       'sponsors',
       'export'
     ]),
-    price: 149,
+    price: 199,
     currency: '€'
   },
   premium: {
@@ -56,7 +56,7 @@ export const PLAN_CAPABILITIES: Record<PlanTier, {
       'mediaAccess',
       'prioritySupport'
     ]),
-    price: 499,
+    price: 599,
     currency: '€'
   },
   enterprise: {
