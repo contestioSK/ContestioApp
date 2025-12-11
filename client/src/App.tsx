@@ -16,6 +16,7 @@ import AdminPanel from "@/pages/admin-panel";
 import UserDetail from "@/pages/user-detail";
 import RefereeInterface from "@/pages/referee-interface";
 import RegisterCompetition from "@/pages/register-competition";
+import CompetitionSetup from "@/pages/competition-setup";
 import RegisterTeam from "@/pages/register-team";
 import AboutUs from "@/pages/about-us";
 import Pricing from "@/pages/pricing";
@@ -73,6 +74,7 @@ function Router() {
       <Route path="/reset-password" component={ResetPassword} />
       
       <Route path="/register-competition" component={RegisterCompetition} />
+      <Route path="/competition/:id/setup" component={CompetitionSetup} />
       <Route path="/register-team" component={RegisterTeam} />
       <Route path="/about-us" component={AboutUs} />
       <Route path="/pricing" component={Pricing} />
