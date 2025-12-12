@@ -82,12 +82,20 @@ export default function CompetitionSetup() {
   const [sectorPlaces, setSectorPlaces] = useState<Array<{ sectorName: string; places: string[] }>>([]);
   const [sideCompetitions, setSideCompetitions] = useState<string[]>([]);
 
+  // Demo mode detection - ONLY when id is 'demo' (not for real registrations)
+  const urlParams = new URLSearchParams(window.location.search);
+  const isDemoMode = id === 'demo';
+  const demoPlan = urlParams.get('plan') as PlanTier | null;
+
   const { data: registration, isLoading } = useQuery<{ selectedPlan?: string }>({
     queryKey: ['/api/competition-registrations', id],
-    enabled: !!id,
+    enabled: !!id && !isDemoMode,
   });
 
-  const selectedPlan = (registration?.selectedPlan || 'basic') as PlanTier;
+  // Use demo plan from URL or fallback to registration plan
+  const selectedPlan = isDemoMode 
+    ? (demoPlan && ['basic', 'pro', 'premium', 'enterprise'].includes(demoPlan) ? demoPlan : 'pro')
+    : (registration?.selectedPlan || 'basic') as PlanTier;
 
   const basicsForm = useForm<BasicsForm>({
     resolver: zodResolver(basicsSchema),
@@ -185,16 +193,24 @@ export default function CompetitionSetup() {
   };
 
   const handleFinish = async () => {
-    toast({
-      title: "Nastavenie dokončené!",
-      description: "Vaša súťaž bola úspešne nakonfigurovaná. Čaká na schválenie administrátorom.",
-    });
-    setLocation("/");
+    if (isDemoMode) {
+      toast({
+        title: "Demo ukážka dokončená",
+        description: "Toto bola len ukážka wizardu. Pre registráciu skutočnej súťaže vyberte balík na stránke cenníka.",
+      });
+      setLocation("/pricing");
+    } else {
+      toast({
+        title: "Nastavenie dokončené!",
+        description: "Vaša súťaž bola úspešne nakonfigurovaná. Čaká na schválenie administrátorom.",
+      });
+      setLocation("/");
+    }
   };
 
   const progress = (currentStep / STEPS.length) * 100;
 
-  if (isLoading) {
+  if (isLoading && !isDemoMode) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -220,6 +236,21 @@ export default function CompetitionSetup() {
           <p className="text-muted-foreground mt-2">
             Nakonfigurujte detaily vašej súťaže krok za krokom.
           </p>
+          
+          {/* Demo Mode Banner */}
+          {isDemoMode && (
+            <div className="mt-4 p-4 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg">
+              <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
+                <span className="text-xl">👁️</span>
+                <span className="font-medium">
+                  Demo režim - balík {selectedPlan.toUpperCase()}
+                </span>
+              </div>
+              <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+                Prezeráte si ukážku wizardu. Zmeny sa neuložia.
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="mb-8">

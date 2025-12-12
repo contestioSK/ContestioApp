@@ -356,6 +356,19 @@ export default function Pricing() {
                         >
                           {plan.cta}
                         </Button>
+                        
+                        {/* Demo Preview Link */}
+                        {!isEnterprise && (
+                          <Link href={`/competition/demo/setup?demo=true&plan=${plan.id}`}>
+                            <Button
+                              variant="ghost"
+                              className="w-full mt-2 text-sm text-muted-foreground hover:text-foreground"
+                              data-testid={`button-demo-${plan.id}`}
+                            >
+                              👁️ Vyskúšať wizard
+                            </Button>
+                          </Link>
+                        )}
                       </CardContent>
                     </Card>
                   </div>
