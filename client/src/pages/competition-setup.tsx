@@ -44,9 +44,9 @@ import { z } from "zod";
 const STEPS = [
   { id: 1, title: "Základy", icon: FileText, description: "Logo, popis, pravidlá a bodovanie" },
   { id: 2, title: "Sektory", icon: MapPin, description: "Rozdelenie na sektory a miesta" },
-  { id: 3, title: "Rozhodcovia", icon: Users, description: "Pridanie rozhodcov" },
-  { id: 4, title: "Špeciálne súťaže", icon: Trophy, description: "Doplnkové kategórie" },
-  { id: 5, title: "Sponzori", icon: Gift, description: "Sponzori a ceny" },
+  { id: 3, title: "Špeciálne súťaže", icon: Trophy, description: "Doplnkové kategórie" },
+  { id: 4, title: "Sponzori", icon: Gift, description: "Sponzori a ceny" },
+  { id: 5, title: "Rozhodcovia", icon: Users, description: "Pridanie rozhodcov" },
 ];
 
 const SIDE_COMPETITIONS = [
@@ -575,21 +575,6 @@ export default function CompetitionSetup() {
 
             {currentStep === 3 && (
               <div className="space-y-6">
-                <div className="p-8 bg-muted/30 rounded-lg text-center">
-                  <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                  <h4 className="font-medium mb-2">Pridávanie rozhodcov</h4>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Rozhodcov budete môcť pridať po schválení súťaže administrátorom.
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Váš balík ({selectedPlan}) povoľuje maximálne {selectedPlan === 'basic' ? '2' : selectedPlan === 'pro' ? '5' : 'neobmedzený počet'} rozhodcov.
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {currentStep === 4 && (
-              <div className="space-y-6">
                 {!canUseFeature(selectedPlan, 'sideCompetitions') ? (
                   <div className="p-6 bg-muted/30 rounded-lg text-center">
                     <p className="text-muted-foreground">
@@ -625,7 +610,7 @@ export default function CompetitionSetup() {
               </div>
             )}
 
-            {currentStep === 5 && (
+            {currentStep === 4 && (
               <div className="space-y-6">
                 <div className="p-8 bg-muted/30 rounded-lg text-center">
                   <Gift className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
@@ -638,6 +623,21 @@ export default function CompetitionSetup() {
                       Sponzori nie sú dostupní vo vašom balíku. Upgradujte na Pro alebo vyšší.
                     </p>
                   )}
+                </div>
+              </div>
+            )}
+
+            {currentStep === 5 && (
+              <div className="space-y-6">
+                <div className="p-8 bg-muted/30 rounded-lg text-center">
+                  <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                  <h4 className="font-medium mb-2">Pridávanie rozhodcov</h4>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Rozhodcov budete môcť pridať po schválení súťaže administrátorom.
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Váš balík ({selectedPlan}) povoľuje maximálne {selectedPlan === 'basic' ? '2' : selectedPlan === 'pro' ? '5' : 'neobmedzený počet'} rozhodcov.
+                  </p>
                 </div>
               </div>
             )}
