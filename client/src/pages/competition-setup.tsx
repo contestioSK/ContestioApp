@@ -527,6 +527,9 @@ export default function CompetitionSetup() {
                                     <Trash2 className="w-4 h-4" />
                                   </Button>
                                 </div>
+                                <p className="text-xs text-muted-foreground mb-2">
+                                  Kliknite na názov miesta pre úpravu
+                                </p>
                                 <div className="flex flex-wrap gap-2">
                                   {sector.places.map((place, placeIndex) => (
                                     <div key={placeIndex} className="flex items-center gap-1 bg-background rounded border px-1 py-1">
