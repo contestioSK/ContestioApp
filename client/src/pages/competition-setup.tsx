@@ -168,6 +168,12 @@ export default function CompetitionSetup() {
     setSectorPlaces(updated);
   };
 
+  const updatePlace = (sectorIndex: number, placeIndex: number, newName: string) => {
+    const updated = [...sectorPlaces];
+    updated[sectorIndex].places[placeIndex] = newName;
+    setSectorPlaces(updated);
+  };
+
   const toggleSideCompetition = (comp: string) => {
     if (sideCompetitions.includes(comp)) {
       setSideCompetitions(sideCompetitions.filter(c => c !== comp));
@@ -523,8 +529,13 @@ export default function CompetitionSetup() {
                                 </div>
                                 <div className="flex flex-wrap gap-2">
                                   {sector.places.map((place, placeIndex) => (
-                                    <div key={placeIndex} className="flex items-center gap-1 bg-background rounded px-2 py-1">
-                                      <span className="text-sm">{place}</span>
+                                    <div key={placeIndex} className="flex items-center gap-1 bg-background rounded border px-1 py-1">
+                                      <Input
+                                        value={place}
+                                        onChange={(e) => updatePlace(sectorIndex, placeIndex, e.target.value)}
+                                        className="h-7 w-24 text-sm border-0 p-1 focus-visible:ring-0"
+                                        data-testid={`input-place-${sectorIndex}-${placeIndex}`}
+                                      />
                                       <Button 
                                         variant="ghost" 
                                         size="icon" 
