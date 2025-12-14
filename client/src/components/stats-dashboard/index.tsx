@@ -18,6 +18,7 @@ import { SectorAverageWeightChart } from "./charts/sector-average-weight-chart";
 import { SectorActivityChart } from "./charts/sector-activity-chart";
 import { SectorPerformanceChart } from "./charts/sector-performance-chart";
 import { HourlyDistributionChart } from "./charts/hourly-distribution-chart";
+import { TeamPerformanceChart } from "./charts/team-performance-chart";
 
 // Hook
 import { useCompetitionStats } from "./hooks/use-competition-stats";
@@ -129,6 +130,12 @@ export default function StatsDashboard({ competitionId }: StatsDashboardProps) {
               <TopFishChart data={stats.topFish} />
             )}
             
+            {/* Team performance scatter plot */}
+            <TeamPerformanceChart 
+              data={stats.teamPerformance || []} 
+              competitionId={competitionId} 
+            />
+            
             {/* Hodinový graf na celú šírku - umiestnený úplne dole */}
             <div className="lg:col-span-2">
               <HourlyDistributionChart data={stats.hourlyDistribution || []} />
@@ -145,7 +152,7 @@ export default function StatsDashboard({ competitionId }: StatsDashboardProps) {
             
             {/* Druhý riadok - Druh ryby a Top sektory */}
             <SectorFishTypeChart data={stats.sectorFishTypes || []} />
-            <SectorPerformanceChart data={stats.sectorPerformance || []} />
+            <SectorPerformanceChart data={stats.sectorPerformance || []} competitionId={competitionId} />
             
             {/* Tretí riadok - Priemerná váha a Aktivita */}
             <SectorAverageWeightChart data={stats.sectorPerformance || []} />

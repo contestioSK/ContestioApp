@@ -30,6 +30,7 @@ export interface TeamTopAverageData {
 }
 
 export interface TeamPerformanceData {
+  teamId?: number;
   teamName: string;
   totalCount: number;
   totalWeight: number;
