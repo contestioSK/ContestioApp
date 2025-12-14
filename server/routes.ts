@@ -1653,6 +1653,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
           : 0;
         
         return {
+          teamId: team.id,
           teamName: team.name,
           averageWeight,
           fishCount: teamCatches.length,
@@ -1671,6 +1672,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
           : 0;
         
         return {
+          teamId: team.id,
           teamName: team.name,
           averageWeight,
           fishCount: teamCatches.length,

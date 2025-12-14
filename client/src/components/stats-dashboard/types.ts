@@ -23,6 +23,7 @@ export interface TopFishData {
 }
 
 export interface TeamTopAverageData {
+  teamId?: number;
   teamName: string;
   averageWeight: number;
   fishCount: number; // actual number of fish used for average (may be less than 3/5 for teams with fewer catches)
