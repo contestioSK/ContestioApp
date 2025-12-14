@@ -112,11 +112,20 @@ function getSideCompetitionIcon(sideCompetitionId: string) {
     case 'best-3-fish':
       return <Calculator className={iconClass} />;
     case 'daily-big-fish':
+    case 'dailyBigFish':
       return <Crown className={iconClass} />;
     case 'first-fish-over-15kg':
     case 'first-fish-over-20kg':
     case 'first-fish-over-25kg':
+    case 'firstOver20':
+    case 'firstOver25':
+    case 'firstOver30':
       return <Target className={iconClass} />;
+    case 'biggestFish':
+      return <Trophy className={iconClass} />;
+    case 'biggestScaly':
+    case 'biggestMirror':
+      return <Fish className={iconClass} />;
     default:
       return <Medal className={iconClass} />;
   }
@@ -293,8 +302,14 @@ function calculateSideCompetitions(
       case 'first-fish-over-15kg':
       case 'first-fish-over-20kg':
       case 'first-fish-over-25kg':
-        const targetWeight = sideCompetitionId === 'first-fish-over-15kg' ? 15 :
-                            sideCompetitionId === 'first-fish-over-20kg' ? 20 : 25;
+      case 'firstOver20':
+      case 'firstOver25':
+      case 'firstOver30':
+        const targetWeight = 
+          sideCompetitionId === 'first-fish-over-15kg' ? 15 :
+          sideCompetitionId === 'first-fish-over-20kg' || sideCompetitionId === 'firstOver20' ? 20 :
+          sideCompetitionId === 'first-fish-over-25kg' || sideCompetitionId === 'firstOver25' ? 25 :
+          sideCompetitionId === 'firstOver30' ? 30 : 20;
         
         const overWeightCatches = catches
           .filter(c => parseFloat(c.weight) >= targetWeight && c.submittedAt)
@@ -305,6 +320,75 @@ function calculateSideCompetitions(
           results[sideCompetitionId] = {
             value: `${parseFloat(firstOverWeight.weight).toFixed(2)} kg`,
             teamName: firstOverWeight.team?.name
+          };
+        } else {
+          results[sideCompetitionId] = { value: "0 kg" };
+        }
+        break;
+
+      case 'biggestFish':
+        if (catches.length > 0) {
+          const biggestFishCatch = catches.reduce((max, current) => 
+            parseFloat(current.weight) > parseFloat(max.weight) ? current : max
+          );
+          results[sideCompetitionId] = {
+            value: `${parseFloat(biggestFishCatch.weight).toFixed(2)} kg`,
+            teamName: biggestFishCatch.team?.name
+          };
+        } else {
+          results[sideCompetitionId] = { value: "0 kg" };
+        }
+        break;
+
+      case 'biggestScaly':
+        const scalyCatchesNew = catches.filter(c => c.fishType === 'scaly');
+        if (scalyCatchesNew.length > 0) {
+          const biggestScalyNew = scalyCatchesNew.reduce((max, current) => 
+            parseFloat(current.weight) > parseFloat(max.weight) ? current : max
+          );
+          results[sideCompetitionId] = {
+            value: `${parseFloat(biggestScalyNew.weight).toFixed(2)} kg`,
+            teamName: biggestScalyNew.team?.name
+          };
+        } else {
+          results[sideCompetitionId] = { value: "0 kg" };
+        }
+        break;
+
+      case 'biggestMirror':
+        const mirrorCatchesNew = catches.filter(c => c.fishType === 'mirror');
+        if (mirrorCatchesNew.length > 0) {
+          const biggestMirrorNew = mirrorCatchesNew.reduce((max, current) => 
+            parseFloat(current.weight) > parseFloat(max.weight) ? current : max
+          );
+          results[sideCompetitionId] = {
+            value: `${parseFloat(biggestMirrorNew.weight).toFixed(2)} kg`,
+            teamName: biggestMirrorNew.team?.name
+          };
+        } else {
+          results[sideCompetitionId] = { value: "0 kg" };
+        }
+        break;
+
+      case 'dailyBigFish':
+        const todayNew = new Date();
+        todayNew.setHours(0, 0, 0, 0);
+        const tomorrowNew = new Date(todayNew);
+        tomorrowNew.setDate(tomorrowNew.getDate() + 1);
+        
+        const todayCatchesNew = catches.filter(c => {
+          if (!c.submittedAt) return false;
+          const catchDate = new Date(c.submittedAt);
+          return catchDate >= todayNew && catchDate < tomorrowNew;
+        });
+
+        if (todayCatchesNew.length > 0) {
+          const dailyBiggestNew = todayCatchesNew.reduce((max, current) => 
+            parseFloat(current.weight) > parseFloat(max.weight) ? current : max
+          );
+          results[sideCompetitionId] = {
+            value: `${parseFloat(dailyBiggestNew.weight).toFixed(2)} kg`,
+            teamName: dailyBiggestNew.team?.name
           };
         } else {
           results[sideCompetitionId] = { value: "0 kg" };

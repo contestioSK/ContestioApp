@@ -56,6 +56,7 @@ const SIDE_COMPETITIONS = [
   "biggestFish",
   "biggestScaly",
   "biggestMirror",
+  "dailyBigFish",
 ];
 
 const basicsSchema = z.object({
