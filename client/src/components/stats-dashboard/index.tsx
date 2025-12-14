@@ -114,6 +114,7 @@ export default function StatsDashboard({ competitionId }: StatsDashboardProps) {
                 data={stats.teamTop5Average} 
                 title="Váhový priemer top 5 úlovkov"
                 description="TOP 5 tímov s najlepším priemernom váhy ich 5 najťažších úlovkov"
+                competitionId={competitionId}
               />
             )}
             
@@ -122,6 +123,7 @@ export default function StatsDashboard({ competitionId }: StatsDashboardProps) {
                 data={stats.teamTop3Average} 
                 title="Váhový priemer top 3 úlovkov"
                 description="TOP 5 tímov s najlepším priemernom váhy ich 3 najťažších úlovkov"
+                competitionId={competitionId}
               />
             )}
             
