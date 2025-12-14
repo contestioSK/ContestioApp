@@ -1,8 +1,21 @@
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Fish, Scale, Trophy, TrendingUp, Medal, Timer, Calculator, Target, Award, Crown } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Fish, Scale, Trophy, TrendingUp, Medal, Timer, Calculator, Target, Award, Crown, X } from "lucide-react";
 import { getSideCompetitionLabel } from "@/lib/utils";
+import { Link } from "wouter";
+import { format } from "date-fns";
+import { sk } from "date-fns/locale";
 import type { Catch, Team, Competition } from "@shared/schema";
 import SideCompetitionExport from "./side-competition-export";
+
+function getCompetitionFishTypeLabel(fishType: string): string {
+  switch (fishType) {
+    case 'scaly': return 'Šupináč';
+    case 'mirror': return 'Lysec';
+    default: return fishType;
+  }
+}
 
 interface SideCompetitionStatsBarProps {
   catches: (Catch & { team?: Team })[];
@@ -21,6 +34,9 @@ export default function SideCompetitionStatsBar({
   isOrganizer = false,
   userTeamId = null
 }: SideCompetitionStatsBarProps) {
+  const [selectedCatch, setSelectedCatch] = useState<(Catch & { team?: Team }) | null>(null);
+  const [selectedCompetitionLabel, setSelectedCompetitionLabel] = useState<string>("");
+
   // Don't show if no side competitions
   if (!competition.sideCompetitions || competition.sideCompetitions.length === 0) {
     return null;
@@ -76,16 +92,40 @@ export default function SideCompetitionStatsBar({
             const result = sideCompetitionResults[sideCompetitionId];
             if (!result) return null;
 
+            const hasClickableCatch = !!result.winningCatch;
+            const effectiveTeamId = result.winningCatch?.teamId || result.teamId;
+
             return (
               <div key={sideCompetitionId} className="text-center" data-testid={`side-competition-${sideCompetitionId}`}>
                 <div className="w-8 h-8 bg-gradient-to-br from-secondary/20 to-secondary/10 rounded-lg flex items-center justify-center mx-auto mb-2">
                   {getSideCompetitionIcon(sideCompetitionId)}
                 </div>
                 <p className="text-xs text-muted-foreground mb-1">{getSideCompetitionLabel(sideCompetitionId)}</p>
-                <p className="text-lg font-bold text-foreground" data-testid={`value-${sideCompetitionId}`}>
-                  {result.value}
-                </p>
-                {result.teamName && (
+                {hasClickableCatch ? (
+                  <button
+                    onClick={() => {
+                      setSelectedCatch(result.winningCatch!);
+                      setSelectedCompetitionLabel(getSideCompetitionLabel(sideCompetitionId));
+                    }}
+                    className="text-lg font-bold text-foreground hover:text-secondary transition-colors cursor-pointer underline decoration-dotted underline-offset-2"
+                    data-testid={`value-${sideCompetitionId}`}
+                  >
+                    {result.value}
+                  </button>
+                ) : (
+                  <p className="text-lg font-bold text-foreground" data-testid={`value-${sideCompetitionId}`}>
+                    {result.value}
+                  </p>
+                )}
+                {result.teamName && effectiveTeamId ? (
+                  <Link 
+                    href={`/competition/${competition.id}/team/${effectiveTeamId}`}
+                    className="text-xs text-muted-foreground mt-0.5 hover:text-secondary transition-colors cursor-pointer underline decoration-dotted underline-offset-2 block"
+                    data-testid={`team-${sideCompetitionId}`}
+                  >
+                    {result.teamName}
+                  </Link>
+                ) : result.teamName && (
                   <p className="text-xs text-muted-foreground mt-0.5" data-testid={`team-${sideCompetitionId}`}>
                     {result.teamName}
                   </p>
@@ -103,6 +143,60 @@ export default function SideCompetitionStatsBar({
           })}
         </div>
       </CardContent>
+
+      <Dialog open={!!selectedCatch} onOpenChange={(open) => !open && setSelectedCatch(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Trophy className="w-5 h-5 text-secondary" />
+              {selectedCompetitionLabel}
+            </DialogTitle>
+          </DialogHeader>
+          {selectedCatch && (
+            <div className="space-y-4">
+              {selectedCatch.photoUrl && (
+                <div className="relative rounded-lg overflow-hidden">
+                  <img 
+                    src={selectedCatch.photoUrl} 
+                    alt="Víťazný úlovok"
+                    className="w-full h-auto max-h-80 object-contain bg-muted"
+                  />
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-muted-foreground">Váha</p>
+                  <p className="font-bold text-lg">{parseFloat(selectedCatch.weight).toFixed(2)} kg</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Typ ryby</p>
+                  <p className="font-semibold">{getCompetitionFishTypeLabel(selectedCatch.fishType)}</p>
+                </div>
+                {selectedCatch.team?.name && (
+                  <div>
+                    <p className="text-muted-foreground">Tím</p>
+                    <Link 
+                      href={`/competition/${competition.id}/team/${selectedCatch.teamId}`}
+                      className="font-semibold text-secondary hover:underline"
+                      onClick={() => setSelectedCatch(null)}
+                    >
+                      {selectedCatch.team.name}
+                    </Link>
+                  </div>
+                )}
+                {selectedCatch.submittedAt && (
+                  <div>
+                    <p className="text-muted-foreground">Dátum</p>
+                    <p className="font-semibold">
+                      {format(new Date(selectedCatch.submittedAt), "d. MMMM yyyy, HH:mm", { locale: sk })}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
@@ -148,8 +242,8 @@ function calculateSideCompetitions(
   catches: (Catch & { team?: Team })[], 
   teams: Team[], 
   sideCompetitions: string[]
-): Record<string, { value: string; teamName?: string; winningCatch?: Catch & { team?: Team } }> {
-  const results: Record<string, { value: string; teamName?: string; winningCatch?: Catch & { team?: Team } }> = {};
+): Record<string, { value: string; teamName?: string; teamId?: string; winningCatch?: Catch & { team?: Team } }> {
+  const results: Record<string, { value: string; teamName?: string; teamId?: string; winningCatch?: Catch & { team?: Team } }> = {};
 
   for (const sideCompetitionId of sideCompetitions) {
     switch (sideCompetitionId) {
@@ -240,7 +334,8 @@ function calculateSideCompetitions(
         );
         results[sideCompetitionId] = {
           value: mostFishTeam.count.toString(),
-          teamName: mostFishTeam.team?.name
+          teamName: mostFishTeam.team?.name,
+          teamId: mostFishTeam.team?.id
         };
         break;
 
@@ -264,7 +359,8 @@ function calculateSideCompetitions(
         
         results[sideCompetitionId] = {
           value: bestSum5Team.team ? `${bestSum5Team.sum.toFixed(2)} kg` : "0 kg",
-          teamName: bestSum5Team.team?.name
+          teamName: bestSum5Team.team?.name,
+          teamId: bestSum5Team.team?.id
         };
         break;
 
@@ -288,7 +384,8 @@ function calculateSideCompetitions(
         
         results[sideCompetitionId] = {
           value: bestSum3Team.team ? `${bestSum3Team.sum.toFixed(2)} kg` : "0 kg",
-          teamName: bestSum3Team.team?.name
+          teamName: bestSum3Team.team?.name,
+          teamId: bestSum3Team.team?.id
         };
         break;
 
