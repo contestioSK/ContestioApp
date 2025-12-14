@@ -110,7 +110,7 @@ export default function SideCompetitionExport({
             padding: '24px'
           }}
         >
-          <div className="flex items-center justify-between mb-4">
+          <div className="mb-4">
             {competition.imageUrl ? (
               <img 
                 src={competition.imageUrl} 
@@ -123,9 +123,6 @@ export default function SideCompetitionExport({
                 <Trophy className="w-6 h-6 text-white/60" />
               </div>
             )}
-            <div className="text-right">
-              {getIcon()}
-            </div>
           </div>
 
           <h3 className="text-white font-bold text-lg mb-1">
