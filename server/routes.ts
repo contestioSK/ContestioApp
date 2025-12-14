@@ -1598,6 +1598,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
 
       // Team performance
       const teamPerformance = teams.map(team => ({
+        teamId: team.id,
         teamName: team.name,
         totalCount: team.fishCount || 0,
         totalWeight: team.totalWeight || 0
