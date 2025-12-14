@@ -2,19 +2,24 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Fish, Scale, Trophy, TrendingUp, Medal, Timer, Calculator, Target, Award, Crown } from "lucide-react";
 import { getSideCompetitionLabel } from "@/lib/utils";
 import type { Catch, Team, Competition } from "@shared/schema";
+import SideCompetitionExport from "./side-competition-export";
 
 interface SideCompetitionStatsBarProps {
   catches: (Catch & { team?: Team })[];
   teams: Team[];
   competition: Competition;
   isLoading?: boolean;
+  isOrganizer?: boolean;
+  userTeamId?: string | null;
 }
 
 export default function SideCompetitionStatsBar({ 
   catches, 
   teams, 
   competition, 
-  isLoading 
+  isLoading,
+  isOrganizer = false,
+  userTeamId = null
 }: SideCompetitionStatsBarProps) {
   // Don't show if no side competitions
   if (!competition.sideCompetitions || competition.sideCompetitions.length === 0) {
@@ -85,6 +90,14 @@ export default function SideCompetitionStatsBar({
                     {result.teamName}
                   </p>
                 )}
+                {result.winningCatch && (isOrganizer || (userTeamId && result.winningCatch.teamId === userTeamId)) && (
+                  <SideCompetitionExport
+                    competition={competition}
+                    sideCompetitionId={sideCompetitionId}
+                    winningCatch={result.winningCatch}
+                    canExport={true}
+                  />
+                )}
               </div>
             );
           })}
@@ -135,8 +148,8 @@ function calculateSideCompetitions(
   catches: (Catch & { team?: Team })[], 
   teams: Team[], 
   sideCompetitions: string[]
-): Record<string, { value: string; teamName?: string }> {
-  const results: Record<string, { value: string; teamName?: string }> = {};
+): Record<string, { value: string; teamName?: string; winningCatch?: Catch & { team?: Team } }> {
+  const results: Record<string, { value: string; teamName?: string; winningCatch?: Catch & { team?: Team } }> = {};
 
   for (const sideCompetitionId of sideCompetitions) {
     switch (sideCompetitionId) {
@@ -146,7 +159,8 @@ function calculateSideCompetitions(
         );
         results[sideCompetitionId] = {
           value: `${parseFloat(biggestCatch.weight).toFixed(2)} kg`,
-          teamName: biggestCatch.team?.name
+          teamName: biggestCatch.team?.name,
+          winningCatch: biggestCatch
         };
         break;
 
@@ -158,7 +172,8 @@ function calculateSideCompetitions(
           );
           results[sideCompetitionId] = {
             value: `${parseFloat(biggestScaly.weight).toFixed(2)} kg`,
-            teamName: biggestScaly.team?.name
+            teamName: biggestScaly.team?.name,
+            winningCatch: biggestScaly
           };
         } else {
           results[sideCompetitionId] = { value: "0 kg" };
@@ -173,7 +188,8 @@ function calculateSideCompetitions(
           );
           results[sideCompetitionId] = {
             value: `${parseFloat(biggestMirror.weight).toFixed(2)} kg`,
-            teamName: biggestMirror.team?.name
+            teamName: biggestMirror.team?.name,
+            winningCatch: biggestMirror
           };
         } else {
           results[sideCompetitionId] = { value: "0 kg" };
@@ -189,7 +205,8 @@ function calculateSideCompetitions(
           const firstCatch = sortedByTime[0];
           results[sideCompetitionId] = {
             value: `${parseFloat(firstCatch.weight).toFixed(2)} kg`,
-            teamName: firstCatch.team?.name
+            teamName: firstCatch.team?.name,
+            winningCatch: firstCatch
           };
         } else {
           results[sideCompetitionId] = { value: "0 kg" };
@@ -205,7 +222,8 @@ function calculateSideCompetitions(
           const lastCatch = sortedByTimeDesc[0];
           results[sideCompetitionId] = {
             value: `${parseFloat(lastCatch.weight).toFixed(2)} kg`,
-            teamName: lastCatch.team?.name
+            teamName: lastCatch.team?.name,
+            winningCatch: lastCatch
           };
         } else {
           results[sideCompetitionId] = { value: "0 kg" };
@@ -292,7 +310,8 @@ function calculateSideCompetitions(
           );
           results[sideCompetitionId] = {
             value: `${parseFloat(dailyBiggest.weight).toFixed(2)} kg`,
-            teamName: dailyBiggest.team?.name
+            teamName: dailyBiggest.team?.name,
+            winningCatch: dailyBiggest
           };
         } else {
           results[sideCompetitionId] = { value: "0 kg" };
@@ -319,7 +338,8 @@ function calculateSideCompetitions(
           const firstOverWeight = overWeightCatches[0];
           results[sideCompetitionId] = {
             value: `${parseFloat(firstOverWeight.weight).toFixed(2)} kg`,
-            teamName: firstOverWeight.team?.name
+            teamName: firstOverWeight.team?.name,
+            winningCatch: firstOverWeight
           };
         } else {
           results[sideCompetitionId] = { value: "0 kg" };
@@ -333,7 +353,8 @@ function calculateSideCompetitions(
           );
           results[sideCompetitionId] = {
             value: `${parseFloat(biggestFishCatch.weight).toFixed(2)} kg`,
-            teamName: biggestFishCatch.team?.name
+            teamName: biggestFishCatch.team?.name,
+            winningCatch: biggestFishCatch
           };
         } else {
           results[sideCompetitionId] = { value: "0 kg" };
@@ -348,7 +369,8 @@ function calculateSideCompetitions(
           );
           results[sideCompetitionId] = {
             value: `${parseFloat(biggestScalyNew.weight).toFixed(2)} kg`,
-            teamName: biggestScalyNew.team?.name
+            teamName: biggestScalyNew.team?.name,
+            winningCatch: biggestScalyNew
           };
         } else {
           results[sideCompetitionId] = { value: "0 kg" };
@@ -363,7 +385,8 @@ function calculateSideCompetitions(
           );
           results[sideCompetitionId] = {
             value: `${parseFloat(biggestMirrorNew.weight).toFixed(2)} kg`,
-            teamName: biggestMirrorNew.team?.name
+            teamName: biggestMirrorNew.team?.name,
+            winningCatch: biggestMirrorNew
           };
         } else {
           results[sideCompetitionId] = { value: "0 kg" };
@@ -388,7 +411,8 @@ function calculateSideCompetitions(
           );
           results[sideCompetitionId] = {
             value: `${parseFloat(dailyBiggestNew.weight).toFixed(2)} kg`,
-            teamName: dailyBiggestNew.team?.name
+            teamName: dailyBiggestNew.team?.name,
+            winningCatch: dailyBiggestNew
           };
         } else {
           results[sideCompetitionId] = { value: "0 kg" };
