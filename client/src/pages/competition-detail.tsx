@@ -451,7 +451,9 @@ export default function CompetitionDetail() {
             catches={(catches || []).map(c => ({ ...c, team: c.team }))} 
             teams={teams || []}
             competition={competition}
-            isLoading={catchesLoading || competitionLoading} 
+            isLoading={catchesLoading || competitionLoading}
+            isOrganizer={user?.role === 'admin' || user?.role === 'organizer'}
+            userTeamId={null}
           />
         </div>
         
