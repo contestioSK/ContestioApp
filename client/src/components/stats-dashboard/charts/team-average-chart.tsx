@@ -146,9 +146,9 @@ export function TeamAverageChart({ data, title, description, competitionId }: Te
                   Tento priemer je vypočítaný z <span className="font-semibold text-foreground">top {selectedTeam.maxFish}</span> najťažších úlovkov tímu
                 </p>
               </div>
-              {competitionId && selectedTeam.teamId && (
+              {selectedTeam.teamId && (
                 <Link 
-                  href={`/competition/${competitionId}/team/${selectedTeam.teamId}`}
+                  href={`/team/${selectedTeam.teamId}`}
                   onClick={() => setSelectedTeam(null)}
                 >
                   <Button className="w-full" variant="outline">
