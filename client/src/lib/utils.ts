@@ -59,6 +59,7 @@ export function getSideCompetitionLabel(id: string): string {
     "biggestFish": "Najväčší úlovok súťaže",
     "biggestScaly": "Najväčší šupináč",
     "biggestMirror": "Najväčší lysec",
+    "dailyBigFish": "Najväčšia ryba dňa",
   };
   
   return sideCompetitionLabels[id] || id;
