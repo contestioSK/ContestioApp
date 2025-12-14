@@ -52,6 +52,13 @@ export function getSideCompetitionLabel(id: string): string {
     "first-fish-over-15kg": "Prvá ryba nad 15 kg",
     "first-fish-over-20kg": "Prvá ryba nad 20 kg",
     "first-fish-over-25kg": "Prvá ryba nad 25 kg",
+    // Wizard competition codes
+    "firstOver20": "Prvá ryba nad 20 kg",
+    "firstOver25": "Prvá ryba nad 25 kg",
+    "firstOver30": "Prvá ryba nad 30 kg",
+    "biggestFish": "Najväčší úlovok súťaže",
+    "biggestScaly": "Najväčší šupináč",
+    "biggestMirror": "Najväčší lysec",
   };
   
   return sideCompetitionLabels[id] || id;
