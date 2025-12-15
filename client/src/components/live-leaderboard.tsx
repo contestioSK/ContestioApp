@@ -134,7 +134,7 @@ export default function LiveLeaderboard({ teams, isLoading, competitionId }: Liv
     
     return (
       <Link href={`/competition/${competitionId}/sector/${sectorLetter}`} data-testid={`link-leaderboard-sector-${team.id}`}>
-        <Badge className={`text-sm font-medium cursor-pointer hover:bg-primary/20 transition-colors border ${colors[sectorLetter as keyof typeof colors] || 'bg-muted/50'}`}>
+        <Badge className={`text-sm font-medium cursor-pointer hover:bg-cyan-500/30 transition-colors border ${colors[sectorLetter as keyof typeof colors] || 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30'}`}>
           {sectorPlace}
         </Badge>
       </Link>
