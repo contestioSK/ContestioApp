@@ -200,7 +200,7 @@ export default function CatchTimeline({ catches, isLoading, competitionId }: Cat
                     <td className="p-3 text-center w-24">
                       {getSectorBadge(catch_.sector)}
                     </td>
-                    <td className="p-3 text-right font-mono font-bold text-accent w-20" data-testid={`catch-weight-${catch_.id}`}>
+                    <td className="p-3 text-right font-mono font-bold text-foreground w-20" data-testid={`catch-weight-${catch_.id}`}>
                       {parseFloat(catch_.weight).toFixed(2)} kg
                     </td>
                     <td className="p-3 text-right text-xs text-muted-foreground w-24" data-testid={`catch-time-${catch_.id}`}>
