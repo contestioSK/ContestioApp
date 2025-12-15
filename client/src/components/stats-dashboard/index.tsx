@@ -108,12 +108,12 @@ export default function StatsDashboard({ competitionId }: StatsDashboardProps) {
             <WeightCategoryChart data={stats.weightCategories} />
             <FishTypeDistributionChart data={stats.fishTypeDistribution} />
             
-            {/* Conditionally show team average charts based on side competitions - moved down */}
+            {/* Conditionally show team average tables based on side competitions */}
             {hasTop5Contest && (
-              <TeamAverageChart 
+              <TeamAverageTable 
                 data={stats.teamTop5Average} 
                 title="Váhový priemer top 5 úlovkov"
-                description="TOP 5 tímov s najlepším priemernom váhy ich 5 najťažších úlovkov"
+                description="Tímy seradené podľa priemernej váhy ich 5 najťažších úlovkov"
                 competitionId={competitionId}
               />
             )}
