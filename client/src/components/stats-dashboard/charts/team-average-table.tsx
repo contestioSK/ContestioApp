@@ -20,6 +20,7 @@ export function TeamAverageTable({ data, title, description, competitionId }: Te
   const displayedTeams = data.slice(0, 10);
   const hasMoreTeams = data.length > 10;
 
+  // This is a table component, not a chart
   return (
     <>
       <Card>
@@ -27,7 +28,7 @@ export function TeamAverageTable({ data, title, description, competitionId }: Te
           <CardTitle>{title}</CardTitle>
           <CardDescription>{description}</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
