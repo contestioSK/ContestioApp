@@ -322,7 +322,7 @@ export default function TeamDetail() {
                   <div className="pt-3 border-t border-border">
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground">Najväčší úlovok:</span>
-                      <span className="font-mono font-bold text-accent" data-testid="stat-biggest-catch">
+                      <span className="font-bold text-foreground" data-testid="stat-biggest-catch">
                         {parseFloat(biggestCatch.weight).toFixed(2)} kg
                       </span>
                     </div>
@@ -386,7 +386,7 @@ export default function TeamDetail() {
                               </Badge>
                             </td>
                             <td className="p-3 text-right">
-                              <span className="font-mono font-bold text-foreground">
+                              <span className="font-bold text-foreground">
                                 {parseFloat(catch_.weight).toFixed(2)} kg
                               </span>
                             </td>
