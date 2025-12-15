@@ -299,21 +299,21 @@ export default function TeamDetail() {
               <CardContent className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Celková váha:</span>
-                  <span className="font-mono font-bold text-lg text-foreground" data-testid="stat-total-weight">
+                  <span className="font-bold text-lg text-foreground" data-testid="stat-total-weight">
                     {totalWeight.toFixed(2)} kg
                   </span>
                 </div>
                 
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Počet rýb:</span>
-                  <span className="font-mono font-medium text-foreground" data-testid="stat-fish-count">
+                  <span className="font-medium text-foreground" data-testid="stat-fish-count">
                     {catchCount}
                   </span>
                 </div>
                 
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Priemerná váha:</span>
-                  <span className="font-mono font-medium text-foreground" data-testid="stat-average-weight">
+                  <span className="font-medium text-foreground" data-testid="stat-average-weight">
                     {averageWeight.toFixed(2)} kg
                   </span>
                 </div>

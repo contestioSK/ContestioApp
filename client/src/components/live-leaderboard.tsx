@@ -225,7 +225,7 @@ export default function LiveLeaderboard({ teams, isLoading, competitionId }: Liv
                       {getSectorBadge(team)}
                     </td>
                     <td className="p-4 text-right">
-                      <div className="font-mono font-bold text-foreground" data-testid={`text-weight-${team.id}`}>
+                      <div className="font-bold text-foreground" data-testid={`text-weight-${team.id}`}>
                         {parseFloat(team.totalWeight || '0').toFixed(2)} kg
                       </div>
                       {index === 0 && parseFloat(team.totalWeight || '0') > 0 && (
@@ -233,7 +233,7 @@ export default function LiveLeaderboard({ teams, isLoading, competitionId }: Liv
                       )}
                     </td>
                     <td className="p-4 text-right">
-                      <span className="font-mono font-medium text-foreground" data-testid={`text-fish-count-${team.id}`}>
+                      <span className="font-medium text-foreground" data-testid={`text-fish-count-${team.id}`}>
                         {team.fishCount || 0}
                       </span>
                     </td>
