@@ -121,9 +121,9 @@ export function TeamPerformanceChart({ data, competitionId }: TeamPerformanceCha
                 </p>
                 <p className="text-xs text-muted-foreground">Priemerná váha úlovku</p>
               </div>
-              {competitionId && selectedTeam.teamId && (
+              {selectedTeam.teamId && (
                 <Link 
-                  href={`/competition/${competitionId}/team/${selectedTeam.teamId}`}
+                  href={`/team/${selectedTeam.teamId}`}
                   onClick={() => setSelectedTeam(null)}
                 >
                   <Button className="w-full" variant="outline">
