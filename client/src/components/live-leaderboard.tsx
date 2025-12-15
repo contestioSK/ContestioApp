@@ -128,7 +128,7 @@ export default function LiveLeaderboard({ teams, isLoading, competitionId }: Liv
     
     const colors = {
       'A': 'bg-primary/10 text-primary border-primary/20',
-      'B': 'bg-secondary/10 text-secondary-foreground border-secondary/20',
+      'B': 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30',
       'C': 'bg-accent/10 text-accent-foreground border-accent/20',
     };
     
