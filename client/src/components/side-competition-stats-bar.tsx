@@ -119,7 +119,7 @@ export default function SideCompetitionStatsBar({
                 )}
                 {result.teamName && effectiveTeamId ? (
                   <Link 
-                    href={`/competition/${competition.id}/team/${effectiveTeamId}`}
+                    href={`/team/${effectiveTeamId}`}
                     className="text-xs text-muted-foreground mt-0.5 hover:text-secondary transition-colors cursor-pointer underline decoration-dotted underline-offset-2 block"
                     data-testid={`team-${sideCompetitionId}`}
                   >
@@ -176,7 +176,7 @@ export default function SideCompetitionStatsBar({
                   <div>
                     <p className="text-muted-foreground">Tím</p>
                     <Link 
-                      href={`/competition/${competition.id}/team/${selectedCatch.teamId}`}
+                      href={`/team/${selectedCatch.teamId}`}
                       className="font-semibold text-secondary hover:underline"
                       onClick={() => setSelectedCatch(null)}
                     >
