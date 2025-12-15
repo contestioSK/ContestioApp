@@ -203,7 +203,7 @@ export default function SectorLeaderboards({ competitionId }: SectorLeaderboards
                             </div>
                           </TableCell>
                           <TableCell className="text-right">
-                            <span className="font-mono font-bold text-foreground" data-testid={`text-team-weight-${team.id}`}>
+                            <span className="font-bold text-foreground" data-testid={`text-team-weight-${team.id}`}>
                               {parseFloat(team.totalWeight || '0').toFixed(1)} kg
                             </span>
                           </TableCell>
