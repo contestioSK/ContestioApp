@@ -2,8 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Link } from "wouter";
-import { ExternalLink, Trophy, Eye } from "lucide-react";
+import { Eye, Trophy } from "lucide-react";
 import type { TeamTopAverageData } from "../types";
 
 interface TeamAverageTableProps {
@@ -37,7 +36,6 @@ export function TeamAverageTable({ data, title, description, competitionId }: Te
                   <th className="text-left p-3 font-medium text-muted-foreground">Tím</th>
                   <th className="text-right p-3 font-medium text-muted-foreground">Priemerná váha</th>
                   <th className="text-right p-3 font-medium text-muted-foreground">Počet rýb</th>
-                  <th className="text-center p-3 font-medium text-muted-foreground">Detail</th>
                 </tr>
               </thead>
               <tbody>
@@ -60,20 +58,6 @@ export function TeamAverageTable({ data, title, description, competitionId }: Te
                     </td>
                     <td className="p-3 text-right text-muted-foreground">
                       {team.fishCount} / {team.maxFish}
-                    </td>
-                    <td className="p-3 text-center">
-                      {team.teamId && competitionId && (
-                        <Link href={`/team/${team.teamId}`}>
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            className="h-8 w-8 p-0"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <ExternalLink className="w-4 h-4" />
-                          </Button>
-                        </Link>
-                      )}
                     </td>
                   </tr>
                 ))}
@@ -114,14 +98,13 @@ export function TeamAverageTable({ data, title, description, competitionId }: Te
                   <th className="text-left p-3 font-medium text-muted-foreground">Tím</th>
                   <th className="text-right p-3 font-medium text-muted-foreground">Priemerná váha</th>
                   <th className="text-right p-3 font-medium text-muted-foreground">Počet rýb</th>
-                  <th className="text-center p-3 font-medium text-muted-foreground">Detail</th>
                 </tr>
               </thead>
               <tbody>
                 {data.map((team, index) => (
                   <tr 
                     key={index}
-                    className="border-b border-border/50 hover:bg-muted/30 transition-colors"
+                    className="border-b border-border/50 hover:bg-muted/30 transition-colors cursor-pointer"
                   >
                     <td className="p-3">
                       <div className="flex items-center gap-2 font-bold">
@@ -136,19 +119,6 @@ export function TeamAverageTable({ data, title, description, competitionId }: Te
                     </td>
                     <td className="p-3 text-right text-muted-foreground">
                       {team.fishCount} / {team.maxFish}
-                    </td>
-                    <td className="p-3 text-center">
-                      {team.teamId && competitionId && (
-                        <Link href={`/team/${team.teamId}`}>
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            className="h-8 w-8 p-0"
-                          >
-                            <ExternalLink className="w-4 h-4" />
-                          </Button>
-                        </Link>
-                      )}
                     </td>
                   </tr>
                 ))}
@@ -179,17 +149,6 @@ export function TeamAverageTable({ data, title, description, competitionId }: Te
                   <p className="text-2xl font-bold">{selectedTeam.fishCount} / {selectedTeam.maxFish}</p>
                 </div>
               </div>
-              {selectedTeam.teamId && competitionId && (
-                <Link 
-                  href={`/team/${selectedTeam.teamId}`}
-                  onClick={() => setSelectedTeam(null)}
-                >
-                  <Button className="w-full" variant="outline">
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    Zobraziť detail tímu
-                  </Button>
-                </Link>
-              )}
             </div>
           )}
         </DialogContent>
