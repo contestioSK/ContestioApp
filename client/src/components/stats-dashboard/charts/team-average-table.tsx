@@ -37,7 +37,7 @@ export function TeamAverageTable({ data, title, description, competitionId }: Te
                   <th className="text-left p-3 font-medium text-muted-foreground">Tím</th>
                   <th className="text-right p-3 font-medium text-muted-foreground">Priemerná váha</th>
                   <th className="text-right p-3 font-medium text-muted-foreground">Počet rýb</th>
-                  <th className="text-center p-3 font-medium text-muted-foreground">Akcia</th>
+                  <th className="text-center p-3 font-medium text-muted-foreground">Detail</th>
                 </tr>
               </thead>
               <tbody>
@@ -114,7 +114,7 @@ export function TeamAverageTable({ data, title, description, competitionId }: Te
                   <th className="text-left p-3 font-medium text-muted-foreground">Tím</th>
                   <th className="text-right p-3 font-medium text-muted-foreground">Priemerná váha</th>
                   <th className="text-right p-3 font-medium text-muted-foreground">Počet rýb</th>
-                  <th className="text-center p-3 font-medium text-muted-foreground">Akcia</th>
+                  <th className="text-center p-3 font-medium text-muted-foreground">Detail</th>
                 </tr>
               </thead>
               <tbody>
