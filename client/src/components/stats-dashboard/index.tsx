@@ -10,6 +10,7 @@ import { TimelineCountChart } from "./charts/timeline-count-chart";
 import { WeightCategoryChart } from "./charts/weight-category-chart";
 import { TopFishChart } from "./charts/top-fish-chart";
 import { TeamAverageChart } from "./charts/team-average-chart";
+import { TeamAverageTable } from "./charts/team-average-table";
 import { FishTypeDistributionChart } from "./charts/fish-type-distribution-chart";
 import { SectorWeightTimelineChart } from "./charts/sector-weight-timeline-chart";
 import { SectorCountTimelineChart } from "./charts/sector-count-timeline-chart";
@@ -118,10 +119,10 @@ export default function StatsDashboard({ competitionId }: StatsDashboardProps) {
             )}
             
             {hasTop3Contest && (
-              <TeamAverageChart 
+              <TeamAverageTable 
                 data={stats.teamTop3Average} 
                 title="Váhový priemer top 3 úlovkov"
-                description="TOP 5 tímov s najlepším priemernom váhy ich 3 najťažších úlovkov"
+                description="Tímy seradené podľa priemernej váhy ich 3 najťažších úlovkov"
                 competitionId={competitionId}
               />
             )}
