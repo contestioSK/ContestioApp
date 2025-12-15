@@ -38,14 +38,14 @@ export default function CatchTimeline({ catches, isLoading, competitionId }: Cat
 
   const getSectorBadge = (sector: string) => {
     const colors = {
-      'A': 'bg-primary/10 text-primary',
-      'B': 'bg-secondary/10 text-secondary',
-      'C': 'bg-accent/10 text-accent',
+      'A': 'bg-cyan-500/20 text-cyan-400',
+      'B': 'bg-cyan-500/20 text-cyan-400',
+      'C': 'bg-cyan-500/20 text-cyan-400',
     };
     
     return (
       <Link href={`/competition/${competitionId}/sector/${sector}`} data-testid={`link-catch-sector-${sector}`}>
-        <Badge className={`text-xs font-medium cursor-pointer hover:bg-primary/20 transition-colors ${colors[sector as keyof typeof colors] || 'bg-muted/50'}`}>
+        <Badge className={`text-xs font-medium cursor-pointer hover:bg-cyan-500/30 transition-colors ${colors[sector as keyof typeof colors] || 'bg-cyan-500/20 text-cyan-400'}`}>
           Sektor {sector}
         </Badge>
       </Link>
