@@ -123,86 +123,93 @@ export default function CatchTimeline({ catches, isLoading, competitionId }: Cat
             </p>
           </div>
         ) : (
-          <div>
-            {sortedCatches.slice(0, 10).map((catch_) => (
-              <div 
-                key={catch_.id} 
-                className="py-3 px-4 border-b border-border hover:bg-muted/20 transition-colors"
-                data-testid={`catch-timeline-item-${catch_.id}`}
-              >
-                <div className="flex space-x-3 items-center">
-                  {/* Fish photo placeholder - would show actual photo if available */}
-                  <div className="w-8 h-8 rounded-lg bg-muted/20 flex items-center justify-center flex-shrink-0">
-                    {catch_.photoUrl ? (
-                      <div 
-                        className="w-8 h-8 rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all transform hover:scale-105"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          console.log('Kliknul si na fotku:', catch_.photoUrl);
-                          setSelectedPhoto({
-                            url: catch_.photoUrl!,
-                            teamName: catch_.team?.name || 'Neznámy tím',
-                            weight: `${parseFloat(catch_.weight).toFixed(2)} kg`,
-                            fishType: getFishTypeDisplay(catch_.fishType)
-                          });
-                        }}
-                        data-testid={`catch-photo-${catch_.id}`}
-                      >
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/20">
+                <tr className="border-b border-border">
+                  <th className="text-left p-3 font-medium text-muted-foreground w-12">Foto</th>
+                  <th className="text-left p-3 font-medium text-muted-foreground flex-1">Tím</th>
+                  <th className="text-center p-3 font-medium text-muted-foreground w-24">Sektor</th>
+                  <th className="text-right p-3 font-medium text-muted-foreground w-20">Váha</th>
+                  <th className="text-right p-3 font-medium text-muted-foreground w-24">Čas</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedCatches.slice(0, 10).map((catch_) => (
+                  <tr 
+                    key={catch_.id} 
+                    className="border-b border-border hover:bg-muted/20 transition-colors"
+                    data-testid={`catch-timeline-item-${catch_.id}`}
+                  >
+                    <td className="p-3 w-12">
+                      <div className="w-8 h-8 rounded-lg bg-muted/20 flex items-center justify-center flex-shrink-0">
+                        {catch_.photoUrl ? (
+                          <div 
+                            className="w-8 h-8 rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all transform hover:scale-105"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setSelectedPhoto({
+                                url: catch_.photoUrl!,
+                                teamName: catch_.team?.name || 'Neznámy tím',
+                                weight: `${parseFloat(catch_.weight).toFixed(2)} kg`,
+                                fishType: getFishTypeDisplay(catch_.fishType)
+                              });
+                            }}
+                            data-testid={`catch-photo-${catch_.id}`}
+                          >
+                            <img 
+                              src={catch_.photoUrl} 
+                              alt="Fotka úlovku" 
+                              className="w-full h-full object-cover pointer-events-none"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                          </div>
+                        ) : (
+                          <div className="text-xs text-muted-foreground text-center leading-tight">
+                            No<br/>img
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                    <td className="p-3 flex-1">
+                      <div className="flex items-center gap-2" data-testid={`catch-team-${catch_.id}`}>
                         <img 
-                          src={catch_.photoUrl} 
-                          alt="Fotka úlovku" 
-                          className="w-full h-full object-cover pointer-events-none"
+                          src={getCountryFlag(catch_.team?.country || 'SK')} 
+                          alt={`Vlajka ${catch_.team?.country || 'SK'}`}
+                          className="w-5 h-4 object-cover rounded-sm border border-gray-200"
+                          title={`Krajina: ${catch_.team?.country || 'SK'}`}
                           onError={(e) => {
-                            console.error('Chyba pri načítaní fotky:', catch_.photoUrl);
                             e.currentTarget.style.display = 'none';
+                            const span = document.createElement('span');
+                            span.textContent = '🏳️';
+                            span.className = 'text-sm';
+                            e.currentTarget.parentNode?.insertBefore(span, e.currentTarget);
                           }}
                         />
+                        <Link 
+                          href={catch_.teamId ? `/team/${catch_.teamId}` : '#'} 
+                          className="font-medium text-foreground text-sm hover:text-primary transition-colors"
+                        >
+                          {catch_.team?.name || 'Neznámy tím'}
+                        </Link>
                       </div>
-                    ) : (
-                      <div className="text-xs text-muted-foreground text-center leading-tight">
-                        No<br/>img
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="flex-1 min-w-0 flex items-center justify-between">
-                    <div className="flex items-center gap-2" data-testid={`catch-team-${catch_.id}`}>
-                      <img 
-                        src={getCountryFlag(catch_.team?.country || 'SK')} 
-                        alt={`Vlajka ${catch_.team?.country || 'SK'}`}
-                        className="w-5 h-4 object-cover rounded-sm border border-gray-200"
-                        title={`Krajina: ${catch_.team?.country || 'SK'}`}
-                        onError={(e) => {
-                          // Fallback to emoji if image fails to load
-                          e.currentTarget.style.display = 'none';
-                          const span = document.createElement('span');
-                          span.textContent = '🏳️';
-                          span.className = 'text-sm';
-                          e.currentTarget.parentNode?.insertBefore(span, e.currentTarget);
-                        }}
-                      />
-                      <Link 
-                        href={catch_.teamId ? `/team/${catch_.teamId}` : '#'} 
-                        className="font-medium text-foreground text-sm hover:text-primary transition-colors"
-                      >
-                        {catch_.team?.name || 'Neznámy tím'}
-                      </Link>
-                    </div>
-                    
-                    <div className="flex items-center gap-3">
+                    </td>
+                    <td className="p-3 text-center w-24">
                       {getSectorBadge(catch_.sector)}
-                      <div className="font-mono font-bold text-accent" data-testid={`catch-weight-${catch_.id}`}>
-                        {parseFloat(catch_.weight).toFixed(2)} kg
-                      </div>
-                      <div className="text-xs text-muted-foreground" data-testid={`catch-time-${catch_.id}`}>
-                        {formatTimeAgo(catch_.submittedAt!)}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
+                    </td>
+                    <td className="p-3 text-right font-mono font-bold text-accent w-20" data-testid={`catch-weight-${catch_.id}`}>
+                      {parseFloat(catch_.weight).toFixed(2)} kg
+                    </td>
+                    <td className="p-3 text-right text-xs text-muted-foreground w-24" data-testid={`catch-time-${catch_.id}`}>
+                      {formatTimeAgo(catch_.submittedAt!)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
         
