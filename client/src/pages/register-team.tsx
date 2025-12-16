@@ -11,11 +11,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Users, Plus, Trash2, Fish, Camera, User, X, Flag, LogIn, Bell, Check } from "lucide-react";
+import { Users, Plus, Trash2, Camera, User, X, Flag, LogIn, Bell, Check } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { COUNTRIES, getCountryFlag, getCountryDisplay, getCountryFlagEmoji } from "@/lib/countries";
 import { UserAutocomplete } from "@/components/user-autocomplete";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import logoImage from "@assets/contestio logo_1760283270014.png";
 
 // Team registration form schema - extended with userId for linked members
 const teamRegistrationSchema = z.object({
@@ -220,8 +221,7 @@ export default function RegisterTeam() {
           <div className="flex justify-between items-center h-16">
             <Link href="/">
               <div className="flex items-center space-x-2 cursor-pointer">
-                <Fish className="text-primary text-2xl" />
-                <h1 className="text-xl font-bold text-primary">Contestio</h1>
+                <img src={logoImage} alt="Contestio" className="h-8 w-auto" />
               </div>
             </Link>
           </div>
