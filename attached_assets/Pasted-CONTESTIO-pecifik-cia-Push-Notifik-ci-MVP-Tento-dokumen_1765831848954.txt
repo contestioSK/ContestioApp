@@ -1,0 +1,247 @@
+CONTESTIO: Špecifikácia Push Notifikácií (MVP)
+
+Tento dokument definuje zoznam notifikácií pre verziu 1.0. Sú rozdelené na Systémové (organizácia preteku) a Bezpečnostné (kritické varovania). Motivačné správy sú v tejto fáze vynechané.
+
+1. Bezpečnostné Notifikácie (Kritická priorita)
+
+Tieto notifikácie musia mať v systéme (FCM/OneSignal) nastavenú "High Priority", aby doručili zvukové upozornenie aj v prípade, že má telefón šetriaci režim.
+
+A. Meteorologické výstrahy (Pravidlo "Čierna vlajka")
+
+Týka sa všetkých pretekov (IBCC, ZK, KCC).
+
+Kód
+
+Názov (Title)
+
+Text (Body)
+
+Trigger (Spúšťač)
+
+Cieľová skupina
+
+SEC-01
+
+⚠️ VÝSTRAHA 1. STUPEŇ
+
+Blíži sa zhoršené počasie. Povinné vesty na vode! Zvýšte opatrnosť.
+
+Admin aktivuje "Level 1 Warning"
+
+Všetci (All)
+
+SEC-02
+
+⛔ ČIERNA VLAJKA (STOP)
+
+OKAMŽITÝ ZÁKAZ VSTUPU NA VODU! Všetky člny sa musia ihneď vrátiť na breh.
+
+Admin aktivuje "Black Flag"
+
+Všetci (All)
+
+SEC-03
+
+✅ Koniec výstrahy
+
+Čierna vlajka bola odvolaná. Pohyb na vode je opäť povolený.
+
+Admin deaktivuje varovanie
+
+Všetci (All)
+
+B. Pohyb a Logistika
+
+Týka sa pravidiel o návštevách a autách (ZK, KCC).
+
+Kód
+
+Názov (Title)
+
+Text (Body)
+
+Trigger (Spúšťač)
+
+Cieľová skupina
+
+SEC-04
+
+🚗 Zákaz pohybu áut
+
+Od tohto momentu platí zákaz pohybu vozidiel v areáli.
+
+Časový trigger (napr. 19:00)
+
+Tímy
+
+SEC-05
+
+🚫 Zákaz návštev
+
+Začína zákaz prijímania návštev (Piatok/Sobota).
+
+Časový trigger (podľa pravidiel ZK)
+
+Tímy
+
+2. Systémové Notifikácie (Organizácia a Pravidlá)
+
+Informujú o priebehu preteku a administratívnych úkonoch.
+
+A. Časový harmonogram
+
+Automatické správy na základe času preteku.
+
+Kód
+
+Názov (Title)
+
+Text (Body)
+
+Trigger (Spúšťač)
+
+Cieľová skupina
+
+SYS-01
+
+🎣 ŠTART PRETEKOV
+
+XI. Ročník bol oficiálne odštartovaný! Lov je povolený. Veľa šťastia.
+
+Čas začiatku (napr. Nedeľa 12:00)
+
+Všetci
+
+SYS-02
+
+⏳ Posledná hodina
+
+Do konca preteku ostáva 60 minút. Ryba zaseknutá pred 8:00 sa počíta.
+
+1 hodina pred koncom
+
+Tímy
+
+SYS-03
+
+🏁 KONIEC PRETEKOV
+
+Koniec lovu! Prosím, vytiahnite udice. Prebieha finálne váženie.
+
+Čas konca (napr. Sobota 08:00)
+
+Všetci
+
+SYS-04
+
+📢 Ukončenie protestov
+
+Čas na podanie protestov vypršal. Výsledky sú definitívne.
+
+X minút po zverejnení výsledkov
+
+Tímy
+
+B. Váženie a Rozhodcovia (Workflow)
+
+Zefektívnenie komunikácie medzi pretekárom a rozhodcom.
+
+Kód
+
+Názov (Title)
+
+Text (Body)
+
+Trigger (Spúšťač)
+
+Cieľová skupina
+
+SYS-05
+
+⚖️ Žiadosť o váženie
+
+Tím [Číslo/Názov] v sektore [Sektor] hlási úlovok.
+
+Tím klikne "Mám rybu"
+
+Rozhodcovia (v danom sektore)
+
+SYS-06
+
+✅ Ryba zapísaná
+
+Váha: [XX.XX] kg bola úspešne uložená a podpísaná.
+
+Rozhodca uloží váženie
+
+Konkrétny Tím
+
+SYS-07
+
+⚖️ Výzva pre svedka
+
+Prosím o asistenciu pri vážení v susednom sektore [Sektor].
+
+Rozhodca vyžiada svedka (IBCC pravidlo)
+
+Susedný Tím
+
+C. Sankcie a Karty (Penalty System)
+
+Automatizácia trestov (inšpirácia S2H/IBCC 12h ban).
+
+Kód
+
+Názov (Title)
+
+Text (Body)
+
+Trigger (Spúšťač)
+
+Cieľová skupina
+
+SYS-08
+
+🟨 Udelená ŽLTÁ KARTA
+
+Tímu bola udelená Žltá karta. STOP LOVU na 12 hodín. Dôvod: [Text].
+
+Rozhodca udelí kartu v appke
+
+Konkrétny Tím + Všetci Rozhodcovia
+
+SYS-09
+
+🕒 Trest uplynul
+
+12-hodinový trest vypršal. Môžete pokračovať v love.
+
+Timer odpočíta 00:00:00
+
+Konkrétny Tím
+
+SYS-10
+
+🟥 Udelená ČERVENÁ KARTA
+
+Tím bol DISKVALIFIKOVANÝ. Okamžite ukončite lov a opustite sektor.
+
+Rozhodca udelí Červenú kartu
+
+Konkrétny Tím + Všetci
+
+Technická implementácia (Pre vývojára)
+
+Topics (Odoberanie tém):
+
+Pretekári sa prihlásia na odber topicu: competition_{ID}_competitors
+
+Rozhodcovia na: competition_{ID}_marshals
+
+Konkrétny tím na svoje ID: team_{ID} (pre cielené správy o vážení/trestoch).
+
+Payload Data:
+
+Každá notifikácia by mala obsahovať JSON dáta, napr. { "type": "black_flag", "action": "stop_fishing" }.
+
+Aplikácia na základe toho môže zobraziť červenú obrazovku (overlay) priamo v appke, nielen v lište.

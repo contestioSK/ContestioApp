@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -11,11 +11,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Users, Plus, Trash2, Fish, Camera, User, X, Flag } from "lucide-react";
-import { Link } from "wouter";
+import { Users, Plus, Trash2, Fish, Camera, User, X, Flag, LogIn, Bell, Check } from "lucide-react";
+import { Link, useLocation } from "wouter";
 import { COUNTRIES, getCountryFlag, getCountryDisplay, getCountryFlagEmoji } from "@/lib/countries";
+import { UserAutocomplete } from "@/components/user-autocomplete";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
-// Team registration form schema
+// Team registration form schema - extended with userId for linked members
 const teamRegistrationSchema = z.object({
   competitionId: z.string().min(1, "Výber súťaže je povinný"),
   name: z.string().min(1, "Názov tímu je povinný").max(100, "Názov tímu je príliš dlhý"),
@@ -26,6 +28,7 @@ const teamRegistrationSchema = z.object({
     role: z.enum(["captain", "member"]),
     email: z.string().optional().refine((val) => !val || z.string().email().safeParse(val).success, "Zadajte platný e-mail"),
     phone: z.string().optional(),
+    userId: z.string().optional().nullable(), // Linked Contestio account
   })).min(1, "Aspoň jeden člen tímu je povinný").max(6, "Maximálne 6 členov je povolených"),
 });
 
@@ -33,8 +36,22 @@ type TeamRegistrationForm = z.infer<typeof teamRegistrationSchema>;
 
 export default function RegisterTeam() {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [memberPhotos, setMemberPhotos] = useState<{ [key: number]: File | null }>({});
   const [teamPhoto, setTeamPhoto] = useState<File | null>(null);
+
+  // Check if user is logged in
+  const { data: user, isLoading: userLoading } = useQuery<{
+    id: string;
+    email: string;
+    firstName: string | null;
+    lastName: string | null;
+  }>({
+    queryKey: ["/api/auth/user"],
+    retry: false,
+  });
+
+  const isLoggedIn = !!user;
 
   // Fetch all competitions and filter for those available for registration
   const { data: allCompetitions = [], isLoading: competitionsLoading } = useQuery({
@@ -50,6 +67,11 @@ export default function RegisterTeam() {
       )
     : [];
 
+  // Get captain's display name from user account
+  const captainName = user 
+    ? `${user.firstName || ""} ${user.lastName || ""}`.trim() || user.email
+    : "";
+
   const form = useForm<TeamRegistrationForm>({
     resolver: zodResolver(teamRegistrationSchema),
     defaultValues: {
@@ -58,17 +80,32 @@ export default function RegisterTeam() {
       description: "",
       country: "SK",
       members: [
-        { name: "", role: "captain", email: "", phone: "" }
+        { name: "", role: "captain", email: "", phone: "", userId: null }
       ],
     },
   });
+
+  // Auto-fill captain's name when user is logged in
+  useEffect(() => {
+    if (user && captainName) {
+      const currentMembers = form.getValues("members");
+      const captainIndex = currentMembers.findIndex(m => m.role === "captain");
+      if (captainIndex >= 0 && !currentMembers[captainIndex].name) {
+        form.setValue(`members.${captainIndex}.name`, captainName);
+        form.setValue(`members.${captainIndex}.userId`, user.id);
+        if (user.email) {
+          form.setValue(`members.${captainIndex}.email`, user.email);
+        }
+      }
+    }
+  }, [user, captainName, form]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const addMember = () => {
     const currentMembers = form.getValues("members");
     if (currentMembers.length < 6) {
-      form.setValue("members", [...currentMembers, { name: "", role: "member", email: "", phone: "" }]);
+      form.setValue("members", [...currentMembers, { name: "", role: "member", email: "", phone: "", userId: null }]);
     }
   };
 
@@ -136,6 +173,7 @@ export default function RegisterTeam() {
       formData.append(`members[${index}][role]`, member.role);
       if (member.email) formData.append(`members[${index}][email]`, member.email);
       if (member.phone) formData.append(`members[${index}][phone]`, member.phone);
+      if (member.userId) formData.append(`members[${index}][userId]`, member.userId);
       
       // Add photo if exists
       if (memberPhotos[index]) {
@@ -197,6 +235,49 @@ export default function RegisterTeam() {
             Vytvorte svoj tím a zaregistrujte sa do rybárskej súťaže
           </p>
         </div>
+
+        {/* Login requirement alert */}
+        {!userLoading && !isLoggedIn && (
+          <Alert className="mb-6 border-amber-500 bg-amber-50 dark:bg-amber-900/20">
+            <LogIn className="h-4 w-4 text-amber-600" />
+            <AlertDescription className="ml-2">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                  <p className="font-medium text-amber-800 dark:text-amber-200">
+                    Pre registráciu tímu sa musíte prihlásiť
+                  </p>
+                  <p className="text-sm text-amber-600 dark:text-amber-400">
+                    Ako kapitán budete automaticky dostávať notifikácie o súťaži
+                  </p>
+                </div>
+                <Link href="/auth/login">
+                  <Button variant="outline" className="border-amber-500 text-amber-700 hover:bg-amber-100">
+                    <LogIn className="w-4 h-4 mr-2" />
+                    Prihlásiť sa
+                  </Button>
+                </Link>
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Logged in confirmation */}
+        {isLoggedIn && (
+          <Alert className="mb-6 border-green-500 bg-green-50 dark:bg-green-900/20">
+            <Check className="h-4 w-4 text-green-600" />
+            <AlertDescription className="ml-2">
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-green-800 dark:text-green-200">
+                  Prihlásený ako {captainName}
+                </span>
+                <span className="text-sm text-green-600 dark:text-green-400 flex items-center gap-1">
+                  <Bell className="w-3 h-3" />
+                  Budete dostávať notifikácie
+                </span>
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
 
         <Card>
           <CardHeader>
@@ -395,7 +476,11 @@ export default function RegisterTeam() {
                   </div>
 
                   <div className="space-y-4">
-                    {form.watch("members").map((_, index) => (
+                    {form.watch("members").map((member, index) => {
+                      const isCaptain = member.role === "captain";
+                      const isLinkedCaptain = isCaptain && isLoggedIn && member.userId === user?.id;
+                      
+                      return (
                       <Card key={index} className="p-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <FormField
@@ -403,9 +488,41 @@ export default function RegisterTeam() {
                             name={`members.${index}.name`}
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Meno člena</FormLabel>
+                                <FormLabel className="flex items-center gap-2">
+                                  Meno člena
+                                  {form.watch(`members.${index}.userId`) && (
+                                    <span className="text-xs text-green-600 bg-green-100 dark:bg-green-900/50 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                      <Bell className="w-3 h-3" />
+                                      Notifikácie
+                                    </span>
+                                  )}
+                                </FormLabel>
                                 <FormControl>
-                                  <Input placeholder="Celé meno" {...field} data-testid={`input-member-name-${index}`} />
+                                  {isLinkedCaptain ? (
+                                    <div className="relative">
+                                      <Input 
+                                        value={field.value} 
+                                        disabled 
+                                        className="bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-700 pr-24"
+                                        data-testid={`input-member-name-${index}`} 
+                                      />
+                                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-green-600 bg-green-100 dark:bg-green-900/50 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                        <Check className="w-3 h-3" />
+                                        Kapitán
+                                      </span>
+                                    </div>
+                                  ) : (
+                                    <UserAutocomplete
+                                      value={field.value}
+                                      selectedUserId={form.watch(`members.${index}.userId`)}
+                                      onChange={(name, userId) => {
+                                        field.onChange(name);
+                                        form.setValue(`members.${index}.userId`, userId || null);
+                                      }}
+                                      placeholder="Začnite písať meno..."
+                                      data-testid={`input-member-name-${index}`}
+                                    />
+                                  )}
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -533,7 +650,8 @@ export default function RegisterTeam() {
                           </div>
                         )}
                       </Card>
-                    ))}
+                    );
+                    })}
                   </div>
                 </div>
 
