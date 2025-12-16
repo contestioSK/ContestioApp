@@ -159,10 +159,12 @@ export const teams = pgTable("teams", {
 export const teamMembers = pgTable("team_members", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   teamId: uuid("team_id").notNull().references(() => teams.id),
+  userId: varchar("user_id").references(() => users.id), // Optional: linked Contestio account for notifications
   name: varchar("name", { length: 255 }).notNull(),
   email: varchar("email"),
   phone: varchar("phone"),
   role: varchar("role").default("member"), // "captain", "member"
+  photoUrl: varchar("photo_url"), // Member photo
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -234,6 +236,11 @@ export const notificationPreferences = pgTable("notification_preferences", {
   officialAnnouncements: boolean("official_announcements").default(true), // Oficiálne oznamy
   leaderboardChanges: boolean("leaderboard_changes").default(false), // Zmeny v rebríčku
   pushNotifications: boolean("push_notifications").default(false), // Push notifikácie
+  // Voliteľné tímové notifikácie
+  ownTeamCatches: boolean("own_team_catches").default(true), // Úlovky vlastného tímu
+  ownTeamLeaderboard: boolean("own_team_leaderboard").default(true), // Zmeny pozície vlastného tímu
+  // Systémové notifikácie (POVINNÉ - nedajú sa vypnúť v UI, ale tracking pre doručenie)
+  systemNotifications: boolean("system_notifications").default(true).notNull(), // Bezpečnostné a systémové (vždy true)
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 }, (table) => ({
@@ -254,6 +261,83 @@ export const pushSubscriptions = pgTable("push_subscriptions", {
   // Unique constraint to prevent duplicate subscriptions per user
   uniqueUserSubscription: uniqueIndex("unique_user_push_subscription").on(table.userId),
 }));
+
+// Competition alerts table (safety warnings, schedule notifications)
+export const competitionAlerts = pgTable("competition_alerts", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  competitionId: uuid("competition_id").notNull().references(() => competitions.id),
+  // Alert type based on specification: SEC-01 to SEC-05, SYS-01 to SYS-10
+  alertCode: varchar("alert_code", { length: 10 }).notNull(), // "SEC-01", "SYS-01", etc.
+  alertType: varchar("alert_type").notNull(), // "security", "system", "penalty"
+  title: varchar("title", { length: 255 }).notNull(),
+  message: text("message").notNull(),
+  priority: varchar("priority").notNull().default("normal"), // "low", "normal", "high", "critical"
+  // Target audience
+  targetAudience: varchar("target_audience").notNull().default("all"), // "all", "competitors", "marshals", "team"
+  targetTeamId: uuid("target_team_id").references(() => teams.id), // For team-specific alerts
+  targetSector: varchar("target_sector"), // For sector-specific alerts
+  // Status tracking
+  isActive: boolean("is_active").default(true).notNull(), // For toggleable alerts like black flag
+  sentAt: timestamp("sent_at"), // When notifications were sent
+  expiresAt: timestamp("expires_at"), // Auto-expire for temporary alerts
+  // Metadata for payload
+  metadata: jsonb("metadata").$type<{ action?: string; data?: any }>(),
+  createdBy: varchar("created_by").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  index("competition_alerts_competition_idx").on(table.competitionId),
+  index("competition_alerts_active_idx").on(table.isActive, table.alertType),
+]);
+
+// Team penalties table (yellow/red cards, fishing bans)
+export const teamPenalties = pgTable("team_penalties", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  teamId: uuid("team_id").notNull().references(() => teams.id),
+  competitionId: uuid("competition_id").notNull().references(() => competitions.id),
+  // Penalty type
+  penaltyType: varchar("penalty_type").notNull(), // "yellow_card", "red_card"
+  reason: text("reason").notNull(),
+  // Duration for yellow card (fishing ban)
+  banDurationHours: integer("ban_duration_hours"), // 12 hours for yellow card
+  banStartsAt: timestamp("ban_starts_at"),
+  banEndsAt: timestamp("ban_ends_at"),
+  // Status
+  status: varchar("status").notNull().default("active"), // "active", "expired", "lifted"
+  // Who issued the penalty
+  issuedBy: varchar("issued_by").notNull().references(() => users.id), // Referee
+  issuedAt: timestamp("issued_at").defaultNow(),
+  // Notification tracking
+  notifiedTeam: boolean("notified_team").default(false).notNull(),
+  notifiedAll: boolean("notified_all").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  index("team_penalties_team_idx").on(table.teamId),
+  index("team_penalties_competition_idx").on(table.competitionId),
+  index("team_penalties_status_idx").on(table.status),
+]);
+
+// Notification topic subscriptions (for targeted notifications)
+export const notificationSubscriptions = pgTable("notification_subscriptions", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  // Topic format: "competition_{id}_all", "competition_{id}_competitors", "competition_{id}_marshals", "team_{id}"
+  topic: varchar("topic", { length: 255 }).notNull(),
+  // Subscription type for filtering
+  topicType: varchar("topic_type").notNull(), // "competition_all", "competition_competitors", "competition_marshals", "team"
+  // Reference IDs for easier querying
+  competitionId: uuid("competition_id").references(() => competitions.id),
+  teamId: uuid("team_id").references(() => teams.id),
+  // Subscription status
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  uniqueIndex("unique_user_topic").on(table.userId, table.topic),
+  index("notification_subscriptions_topic_idx").on(table.topic),
+  index("notification_subscriptions_user_idx").on(table.userId, table.isActive),
+]);
 
 // User subscriptions for diary premium features
 export const userSubscriptions = pgTable("user_subscriptions", {
@@ -1351,3 +1435,52 @@ export type PromoCode = typeof promoCodes.$inferSelect;
 export type InsertPromoCode = z.infer<typeof insertPromoCodeSchema>;
 export type PromoCodeUsage = typeof promoCodeUsages.$inferSelect;
 export type InsertPromoCodeUsage = z.infer<typeof insertPromoCodeUsageSchema>;
+
+// Competition Alerts insert schema and types
+export const insertCompetitionAlertSchema = createInsertSchema(competitionAlerts).omit({
+  id: true,
+  sentAt: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  alertCode: z.enum([
+    "SEC-01", "SEC-02", "SEC-03", "SEC-04", "SEC-05", // Security alerts
+    "SYS-01", "SYS-02", "SYS-03", "SYS-04", // Schedule alerts
+    "SYS-05", "SYS-06", "SYS-07", // Weighing workflow
+    "SYS-08", "SYS-09", "SYS-10" // Penalties
+  ]),
+  alertType: z.enum(["security", "system", "penalty"]),
+  priority: z.enum(["low", "normal", "high", "critical"]).default("normal"),
+  targetAudience: z.enum(["all", "competitors", "marshals", "team"]).default("all"),
+});
+
+export type CompetitionAlert = typeof competitionAlerts.$inferSelect;
+export type InsertCompetitionAlert = z.infer<typeof insertCompetitionAlertSchema>;
+
+// Team Penalties insert schema and types
+export const insertTeamPenaltySchema = createInsertSchema(teamPenalties).omit({
+  id: true,
+  issuedAt: true,
+  notifiedTeam: true,
+  notifiedAll: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  penaltyType: z.enum(["yellow_card", "red_card"]),
+  status: z.enum(["active", "expired", "lifted"]).default("active"),
+});
+
+export type TeamPenalty = typeof teamPenalties.$inferSelect;
+export type InsertTeamPenalty = z.infer<typeof insertTeamPenaltySchema>;
+
+// Notification Subscriptions insert schema and types
+export const insertNotificationSubscriptionSchema = createInsertSchema(notificationSubscriptions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  topicType: z.enum(["competition_all", "competition_competitors", "competition_marshals", "team"]),
+});
+
+export type NotificationSubscription = typeof notificationSubscriptions.$inferSelect;
+export type InsertNotificationSubscription = z.infer<typeof insertNotificationSubscriptionSchema>;
