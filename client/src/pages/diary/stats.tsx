@@ -735,22 +735,21 @@ export default function DiaryStats() {
               </Card>
             </div>
 
-            {/* Period Comparison Enhancement */}
+            {/* Year-over-Year Comparison */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <BarChart3 className="w-5 h-5" />
-                  Porovnanie s predchádzajúcim obdobím
+                  Porovnanie voči minulému roku
                 </CardTitle>
                 <CardDescription>
-                  Zmena výkonnosti oproti predošlému {selectedPeriodMonths === 3 ? "štvrťroku" : 
-                  selectedPeriodMonths === 6 ? "polroku" : selectedPeriodMonths === 12 ? "roku" : "obdobiu"}
+                  Zmena výkonnosti oproti minulému roku
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {(() => {
-                  // Get comprehensive period comparison using utility
-                  const comparison = getPeriodComparison(catches, trips, selectedPeriodMonths);
+                  // Get comprehensive year-over-year comparison
+                  const comparison = getPeriodComparison(catches, trips, 12);
                   const catchesTrend = formatTrendIndicator(comparison.changes.catches);
                   const tripsTrend = formatTrendIndicator(comparison.changes.trips);
                   const weightTrend = formatWeightTrendIndicator(comparison.changes.weight);
@@ -761,7 +760,7 @@ export default function DiaryStats() {
                       {/* Catches */}
                       <div className="text-center">
                         <div className="text-2xl font-bold text-primary">{comparison.current.catches}</div>
-                        <div className="text-xs text-muted-foreground">Úlovky za obdobie</div>
+                        <div className="text-xs text-muted-foreground">Úlovky za rok</div>
                         <div className="text-xs font-medium flex items-center justify-center gap-1">
                           <span className={catchesTrend.colorClass}>
                             {catchesTrend.arrow}
@@ -775,7 +774,7 @@ export default function DiaryStats() {
                       {/* Trips */}
                       <div className="text-center">
                         <div className="text-2xl font-bold text-primary">{comparison.current.trips}</div>
-                        <div className="text-xs text-muted-foreground">Výpravy za obdobie</div>
+                        <div className="text-xs text-muted-foreground">Výpravy za rok</div>
                         <div className="text-xs font-medium flex items-center justify-center gap-1">
                           <span className={tripsTrend.colorClass}>
                             {tripsTrend.arrow}
@@ -789,7 +788,7 @@ export default function DiaryStats() {
                       {/* Weight */}
                       <div className="text-center">
                         <div className="text-2xl font-bold text-primary">{comparison.current.weight.toFixed(1)} kg</div>
-                        <div className="text-xs text-muted-foreground">Váha za obdobie</div>
+                        <div className="text-xs text-muted-foreground">Váha za rok</div>
                         <div className="text-xs font-medium flex items-center justify-center gap-1">
                           <span className={weightTrend.colorClass}>
                             {weightTrend.arrow}
@@ -803,7 +802,7 @@ export default function DiaryStats() {
                       {/* Success Rate */}
                       <div className="text-center">
                         <div className="text-2xl font-bold text-primary">{comparison.current.successRate.toFixed(1)}</div>
-                        <div className="text-xs text-muted-foreground">Úspešnosť za obdobie</div>
+                        <div className="text-xs text-muted-foreground">Úspešnosť za rok</div>
                         <div className="text-xs font-medium flex items-center justify-center gap-1">
                           <span className={successRateTrend.colorClass}>
                             {successRateTrend.arrow}
