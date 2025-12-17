@@ -756,7 +756,7 @@ export default function DiaryStats() {
                   const successRateTrend = formatSuccessRateTrendIndicator(comparison.changes.successRate);
 
                   return (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-3 gap-4">
                       {/* Catches */}
                       <div className="text-center">
                         <div className="text-2xl font-bold text-primary">{comparison.current.catches}</div>
@@ -771,10 +771,10 @@ export default function DiaryStats() {
                         </div>
                       </div>
                       
-                      {/* Trips */}
+                      {/* Days at Water */}
                       <div className="text-center">
                         <div className="text-2xl font-bold text-primary">{comparison.current.trips}</div>
-                        <div className="text-xs text-muted-foreground">Výpravy za rok</div>
+                        <div className="text-xs text-muted-foreground">Dni pri vode</div>
                         <div className="text-xs font-medium flex items-center justify-center gap-1">
                           <span className={tripsTrend.colorClass}>
                             {tripsTrend.arrow}
@@ -795,20 +795,6 @@ export default function DiaryStats() {
                           </span>
                           <span className={weightTrend.colorClass}>
                             {weightTrend.text} ({comparison.changes.weight.percentage.toFixed(0)}%)
-                          </span>
-                        </div>
-                      </div>
-                      
-                      {/* Success Rate */}
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-primary">{comparison.current.successRate.toFixed(1)}</div>
-                        <div className="text-xs text-muted-foreground">Úspešnosť za rok</div>
-                        <div className="text-xs font-medium flex items-center justify-center gap-1">
-                          <span className={successRateTrend.colorClass}>
-                            {successRateTrend.arrow}
-                          </span>
-                          <span className={successRateTrend.colorClass}>
-                            {successRateTrend.text} ({comparison.changes.successRate.percentage.toFixed(0)}%)
                           </span>
                         </div>
                       </div>
