@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useDiaryOffline } from "@/hooks/use-diary-offline";
 import { useQuery, useMutation } from "@tanstack/react-query";
