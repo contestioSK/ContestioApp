@@ -755,8 +755,16 @@ export default function DiaryStats() {
                   const weightTrend = formatWeightTrendIndicator(comparison.changes.weight);
                   const successRateTrend = formatSuccessRateTrendIndicator(comparison.changes.successRate);
 
+                  // Count multi-day trips (where endDate exists and is different from startDate)
+                  const multiDayTrips = trips.filter(trip => {
+                    if (!trip.endDate || !trip.startDate) return false;
+                    const start = new Date(trip.startDate);
+                    const end = new Date(trip.endDate);
+                    return end.getTime() > start.getTime();
+                  }).length;
+
                   return (
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       {/* Catches */}
                       <div className="text-center">
                         <div className="text-2xl font-bold text-primary">{comparison.current.catches}</div>
@@ -782,6 +790,15 @@ export default function DiaryStats() {
                           <span className={tripsTrend.colorClass}>
                             {tripsTrend.text} ({comparison.changes.trips.percentage.toFixed(0)}%)
                           </span>
+                        </div>
+                      </div>
+                      
+                      {/* Multi-day Trips */}
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-primary">{multiDayTrips}</div>
+                        <div className="text-xs text-muted-foreground">Viacdenné výpravy</div>
+                        <div className="text-xs font-medium text-muted-foreground">
+                          celkovo
                         </div>
                       </div>
                       
