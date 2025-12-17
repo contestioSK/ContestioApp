@@ -53,7 +53,7 @@ import type { DiaryTrip, DiaryCatch } from "@shared/schema";
 // Import new chart components
 import { WeightProgressionChart } from "@/components/diary-charts/weight-progression-chart";
 import { CatchFrequencyChart } from "@/components/diary-charts/catch-frequency-chart";
-import { SeasonalTrendsChart } from "@/components/diary-charts/seasonal-trends-chart";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { MonthComparisonChart } from "@/components/diary-charts/month-comparison-chart";
 import { HourlyDistributionChart } from "@/components/stats-dashboard/charts/hourly-distribution-chart";
 
@@ -906,7 +906,46 @@ export default function DiaryStats() {
                 </div>
 
                 {/* Seasonal Trends */}
-                <SeasonalTrendsChart data={seasonalData.filter(s => s.catches > 0)} />
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Calendar className="w-5 h-5" />
+                      Sezónne trendy úlovkov
+                    </CardTitle>
+                    <CardDescription>
+                      Podiel úlovkov v jednotlivých ročných obdobiach
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-4">
+                      <TooltipProvider>
+                        {seasonalData.map(season => {
+                          const percentage = totalCatches > 0 ? ((season.catches / totalCatches) * 100).toFixed(0) : 0;
+                          return (
+                            <Tooltip key={season.season}>
+                              <TooltipTrigger asChild>
+                                <div className="text-center cursor-help p-3 rounded-lg border hover:bg-muted/50 transition-colors">
+                                  <div className="text-lg font-medium">{season.label}</div>
+                                  <div className="text-2xl font-bold text-primary">{percentage}%</div>
+                                  <div className="text-xs text-muted-foreground">
+                                    {season.catches} {season.catches === 1 ? 'úlovok' : 'úlovkov'}
+                                  </div>
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="space-y-1">
+                                <div className="font-medium">{season.label}</div>
+                                <div>Úlovky: {season.catches} ks</div>
+                                <div>Výpravy: {season.trips} ks</div>
+                                <div>Priemerná váha: {season.averageWeight.toFixed(1)} kg</div>
+                                <div className="font-medium">Efektívnosť: {season.efficiency.toFixed(1)} úlovkov/výpravu</div>
+                              </TooltipContent>
+                            </Tooltip>
+                          );
+                        })}
+                      </TooltipProvider>
+                    </div>
+                  </CardContent>
+                </Card>
 
                 {/* Monthly Comparison - Enhanced */}
                 <MonthComparisonChart 
