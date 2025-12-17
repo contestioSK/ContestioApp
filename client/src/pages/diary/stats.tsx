@@ -917,33 +917,75 @@ export default function DiaryStats() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex flex-wrap gap-4">
-                      <TooltipProvider>
-                        {seasonalData.map(season => {
-                          const percentage = totalCatches > 0 ? ((season.catches / totalCatches) * 100).toFixed(0) : 0;
-                          return (
-                            <Tooltip key={season.season}>
-                              <TooltipTrigger asChild>
-                                <div className="text-center cursor-help p-3 rounded-lg border hover:bg-muted/50 transition-colors">
-                                  <div className="text-lg font-medium">{season.label}</div>
-                                  <div className="text-2xl font-bold text-primary">{percentage}%</div>
-                                  <div className="text-xs text-muted-foreground">
-                                    {season.catches} {season.catches === 1 ? 'úlovok' : 'úlovkov'}
-                                  </div>
-                                </div>
-                              </TooltipTrigger>
-                              <TooltipContent side="top" className="space-y-1">
-                                <div className="font-medium">{season.label}</div>
-                                <div>Úlovky: {season.catches} ks</div>
-                                <div>Výpravy: {season.trips} ks</div>
-                                <div>Priemerná váha: {season.averageWeight.toFixed(1)} kg</div>
-                                <div className="font-medium">Efektívnosť: {season.efficiency.toFixed(1)} úlovkov/výpravu</div>
-                              </TooltipContent>
-                            </Tooltip>
-                          );
-                        })}
-                      </TooltipProvider>
-                    </div>
+                    {(() => {
+                      const bestSeason = seasonalData.reduce((best, season) => 
+                        season.catches > best.catches ? season : best
+                      );
+                      
+                      const getSeasonStyle = (season: string) => {
+                        switch (season) {
+                          case 'spring': return { bg: 'bg-emerald-500/10', text: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-500/30', progress: 'bg-emerald-500' };
+                          case 'summer': return { bg: 'bg-amber-500/10', text: 'text-amber-600 dark:text-amber-400', border: 'border-amber-500/30', progress: 'bg-amber-500' };
+                          case 'autumn': return { bg: 'bg-orange-500/10', text: 'text-orange-600 dark:text-orange-400', border: 'border-orange-500/30', progress: 'bg-orange-500' };
+                          case 'winter': return { bg: 'bg-blue-500/10', text: 'text-blue-600 dark:text-blue-400', border: 'border-blue-500/30', progress: 'bg-blue-500' };
+                          default: return { bg: 'bg-muted', text: 'text-foreground', border: 'border-border', progress: 'bg-primary' };
+                        }
+                      };
+
+                      return (
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                          <TooltipProvider>
+                            {seasonalData.map(season => {
+                              const percentage = totalCatches > 0 ? (season.catches / totalCatches) * 100 : 0;
+                              const style = getSeasonStyle(season.season);
+                              const isBest = season.season === bestSeason.season && season.catches > 0;
+                              
+                              return (
+                                <Tooltip key={season.season}>
+                                  <TooltipTrigger asChild>
+                                    <div className={`
+                                      relative text-center cursor-help p-4 rounded-xl border-2 transition-all duration-200
+                                      ${style.bg} ${style.border}
+                                      ${isBest ? 'ring-2 ring-primary ring-offset-2 ring-offset-background shadow-lg scale-[1.02]' : 'hover:scale-[1.01]'}
+                                    `}>
+                                      {isBest && (
+                                        <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full font-medium">
+                                          Top
+                                        </div>
+                                      )}
+                                      <div className={`text-sm font-semibold uppercase tracking-wide ${style.text}`}>
+                                        {season.label}
+                                      </div>
+                                      <div className={`text-3xl font-bold mt-1 ${style.text}`}>
+                                        {percentage.toFixed(0)}%
+                                      </div>
+                                      <div className="text-xs text-muted-foreground mt-1">
+                                        {season.catches} {season.catches === 1 ? 'úlovok' : 'úlovkov'}
+                                      </div>
+                                      <div className="mt-3 h-2 bg-muted rounded-full overflow-hidden">
+                                        <div 
+                                          className={`h-full ${style.progress} transition-all duration-500`}
+                                          style={{ width: `${percentage}%` }}
+                                        />
+                                      </div>
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top" className="space-y-1 p-3">
+                                    <div className="font-semibold text-base">{season.label}</div>
+                                    <div className="text-sm">Úlovky: {season.catches} ks</div>
+                                    <div className="text-sm">Výpravy: {season.trips} ks</div>
+                                    <div className="text-sm">Priemerná váha: {season.averageWeight.toFixed(1)} kg</div>
+                                    <div className="font-medium text-sm pt-1 border-t">
+                                      Efektívnosť: {season.efficiency.toFixed(1)} úlovkov/výpravu
+                                    </div>
+                                  </TooltipContent>
+                                </Tooltip>
+                              );
+                            })}
+                          </TooltipProvider>
+                        </div>
+                      );
+                    })()}
                   </CardContent>
                 </Card>
 
