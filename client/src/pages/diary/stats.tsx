@@ -820,37 +820,6 @@ export default function DiaryStats() {
                   )}
                 </CardContent>
               </Card>
-
-              {/* Carp Type Distribution */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Fish className="w-5 h-5" />
-                    Typy kaprov
-                  </CardTitle>
-                  <CardDescription>
-                    Rozdelenie úlovkov podľa typu kapra
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {fishTypeStats.map(stat => (
-                      <div key={stat.type} className="space-y-2">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="font-medium">{stat.label}</span>
-                          <span className="text-muted-foreground">
-                            {stat.count} úlovkov ({stat.totalWeight.toFixed(1)} kg)
-                          </span>
-                        </div>
-                        <Progress 
-                          value={totalCatches > 0 ? (stat.count / totalCatches) * 100 : 0} 
-                          className="h-2"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
             </div>
 
             {/* Basic Monthly Overview */}
