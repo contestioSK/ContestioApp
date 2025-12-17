@@ -630,13 +630,13 @@ export default function DiaryStats() {
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Úspešnosť</CardTitle>
-                  <Target className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-sm font-medium">Dni pri vode</CardTitle>
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{successRate}</div>
+                  <div className="text-2xl font-bold">{totalTrips}</div>
                   <p className="text-xs text-muted-foreground">
-                    úlovkov na výpravu
+                    celkovo dní
                   </p>
                 </CardContent>
               </Card>
