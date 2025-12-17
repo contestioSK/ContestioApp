@@ -160,6 +160,35 @@ export default function DiaryStats() {
   // Sort by count descending
   fishTypeStats.sort((a, b) => b.count - a.count);
 
+  // Calculate top baits statistics
+  type BaitStats = {
+    bait: string;
+    count: number;
+    totalWeight: number;
+    averageWeight: number;
+  };
+
+  const baitCounts = catches.reduce((acc, catch_) => {
+    const bait = catch_.bait?.trim();
+    if (!bait) return acc;
+    if (!acc[bait]) {
+      acc[bait] = { count: 0, totalWeight: 0 };
+    }
+    acc[bait].count++;
+    acc[bait].totalWeight += parseFloat(catch_.weight);
+    return acc;
+  }, {} as Record<string, { count: number; totalWeight: number }>);
+
+  const topBaits: BaitStats[] = Object.entries(baitCounts)
+    .map(([bait, stats]) => ({
+      bait,
+      count: stats.count,
+      totalWeight: stats.totalWeight,
+      averageWeight: stats.count > 0 ? stats.totalWeight / stats.count : 0
+    }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+
   // Calculate success rate (catches per trip)
   const successRate = totalTrips > 0 ? (totalCatches / totalTrips).toFixed(1) : "0";
 
@@ -1246,38 +1275,45 @@ export default function DiaryStats() {
                     <Card className="transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
                       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                         <div>
-                          <CardTitle className="text-sm font-semibold">Váhové percentily</CardTitle>
+                          <CardTitle className="text-sm font-semibold">Najlepšie nástrahy</CardTitle>
                           <CardDescription className="text-xs mt-1">
-                            Distribúcia váh vašich úlovkov
+                            Top 5 nástrah podľa počtu úlovkov
                           </CardDescription>
                         </div>
                         <div className="p-2 rounded-xl bg-blue-500/10">
-                          <BarChart3 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                          <Target className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                         </div>
                       </CardHeader>
                       <CardContent>
-                        <div className="space-y-3">
-                          <div className="flex justify-between text-sm p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                            <span>25. percentil:</span>
-                            <span className="font-medium">{catchQualityScores.weightPercentiles.p25.toFixed(1)} kg</span>
+                        {topBaits.length > 0 ? (
+                          <div className="space-y-3">
+                            {topBaits.map((bait, index) => (
+                              <div key={bait.bait} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                                <div className="flex items-center gap-2">
+                                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                                    index === 0 ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400' :
+                                    index === 1 ? 'bg-slate-400/20 text-slate-600 dark:text-slate-400' :
+                                    index === 2 ? 'bg-orange-600/20 text-orange-600 dark:text-orange-400' :
+                                    'bg-muted text-muted-foreground'
+                                  }`}>
+                                    {index + 1}
+                                  </span>
+                                  <span className="font-medium text-sm">{bait.bait}</span>
+                                </div>
+                                <div className="text-right">
+                                  <span className="font-bold text-sm">{bait.count} úlovkov</span>
+                                  <span className="text-xs text-muted-foreground ml-2">
+                                    Ø {bait.averageWeight.toFixed(1)} kg
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
                           </div>
-                          <div className="flex justify-between text-sm p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                            <span>Medián (50%):</span>
-                            <span className="font-medium">{catchQualityScores.weightPercentiles.p50.toFixed(1)} kg</span>
-                          </div>
-                          <div className="flex justify-between text-sm p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                            <span>75. percentil:</span>
-                            <span className="font-medium">{catchQualityScores.weightPercentiles.p75.toFixed(1)} kg</span>
-                          </div>
-                          <div className="flex justify-between text-sm p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                            <span>90. percentil:</span>
-                            <span className="font-medium">{catchQualityScores.weightPercentiles.p90.toFixed(1)} kg</span>
-                          </div>
-                          <div className="flex justify-between text-sm p-2 rounded-lg bg-primary/5 border border-primary/20">
-                            <span>95. percentil:</span>
-                            <span className="font-medium text-primary">{catchQualityScores.weightPercentiles.p95.toFixed(1)} kg</span>
-                          </div>
-                        </div>
+                        ) : (
+                          <p className="text-muted-foreground text-center py-4">
+                            Žiadne dáta o nástrahách
+                          </p>
+                        )}
                       </CardContent>
                     </Card>
                   </div>
