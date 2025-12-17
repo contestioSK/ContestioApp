@@ -588,54 +588,64 @@ export default function DiaryStats() {
             </Card>
 
             {/* Key Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Celkové úlovky</CardTitle>
-                  <Fish className="h-4 w-4 text-muted-foreground" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 xl:gap-5">
+              {/* Primary Metric - Highlighted */}
+              <Card className="relative overflow-hidden bg-gradient-to-br from-primary/15 via-primary/5 to-transparent ring-1 ring-primary/30 shadow-lg transition-all duration-200 hover:-translate-y-1 hover:shadow-xl">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                  <CardTitle className="text-sm font-semibold text-primary">Celkové úlovky</CardTitle>
+                  <div className="p-2 rounded-xl bg-primary/15">
+                    <Fish className="h-5 w-5 text-primary" />
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{totalCatches}</div>
-                  <p className="text-xs text-muted-foreground">
+                  <div className="text-4xl font-bold tracking-tight text-primary">{totalCatches}</div>
+                  <p className="text-sm text-muted-foreground mt-1">
                     {totalWeight.toFixed(1)} kg celkom
                   </p>
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Priemerná váha</CardTitle>
-                  <Weight className="h-4 w-4 text-muted-foreground" />
+              {/* Secondary Metrics */}
+              <Card className="transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                  <CardTitle className="text-sm font-semibold">Priemerná váha</CardTitle>
+                  <div className="p-2 rounded-xl bg-amber-500/10">
+                    <Weight className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{averageWeight.toFixed(1)} kg</div>
-                  <p className="text-xs text-muted-foreground">
+                  <div className="text-3xl font-bold tracking-tight">{averageWeight.toFixed(1)} kg</div>
+                  <p className="text-sm text-muted-foreground mt-1">
                     Najväčší: {biggestCatch.toFixed(1)} kg
                   </p>
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Výpravy</CardTitle>
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
+              <Card className="transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                  <CardTitle className="text-sm font-semibold">Výpravy</CardTitle>
+                  <div className="p-2 rounded-xl bg-emerald-500/10">
+                    <MapPin className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{totalTrips}</div>
-                  <p className="text-xs text-muted-foreground">
+                  <div className="text-3xl font-bold tracking-tight">{totalTrips}</div>
+                  <p className="text-sm text-muted-foreground mt-1">
                     {activeTripCount} aktívnych
                   </p>
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Dni pri vode</CardTitle>
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
+              <Card className="transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                  <CardTitle className="text-sm font-semibold">Dni pri vode</CardTitle>
+                  <div className="p-2 rounded-xl bg-blue-500/10">
+                    <Calendar className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{totalTrips}</div>
-                  <p className="text-xs text-muted-foreground">
+                  <div className="text-3xl font-bold tracking-tight">{totalTrips}</div>
+                  <p className="text-sm text-muted-foreground mt-1">
                     celkovo dní
                   </p>
                 </CardContent>
