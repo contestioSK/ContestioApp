@@ -692,6 +692,47 @@ export default function DiaryStats() {
                   )}
                 </CardContent>
               </Card>
+
+              {/* Top Locations */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MapPin className="w-5 h-5" />
+                    Najlepšie lokality
+                  </CardTitle>
+                  <CardDescription>
+                    Lokality s najväčším počtom úlovkov
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {topLocations.length > 0 ? (
+                    <div className="space-y-4">
+                      {topLocations.map((location, index) => (
+                        <div key={location.location} className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                              index === 0 ? 'bg-primary/10 text-primary' : 
+                              index === 1 ? 'bg-muted text-muted-foreground' : 
+                              index === 2 ? 'bg-secondary text-secondary-foreground' : 
+                              'bg-muted text-muted-foreground'
+                            }`}>
+                              {index + 1}
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium line-clamp-1">{location.location}</p>
+                            </div>
+                          </div>
+                          <Badge variant="secondary">{location.count} úlovkov</Badge>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground text-center py-8">
+                      Žiadne údaje o lokalitách
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
             </div>
 
             {/* Period Comparison Enhancement */}
@@ -777,50 +818,6 @@ export default function DiaryStats() {
                 })()}
               </CardContent>
             </Card>
-
-            {/* Top Locations and Activity Summary */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Top Locations */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MapPin className="w-5 h-5" />
-                    Najlepšie lokality
-                  </CardTitle>
-                  <CardDescription>
-                    Lokality s najväčším počtom úlovkov
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {topLocations.length > 0 ? (
-                    <div className="space-y-4">
-                      {topLocations.map((location, index) => (
-                        <div key={location.location} className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                              index === 0 ? 'bg-primary/10 text-primary' : 
-                              index === 1 ? 'bg-muted text-muted-foreground' : 
-                              index === 2 ? 'bg-secondary text-secondary-foreground' : 
-                              'bg-muted text-muted-foreground'
-                            }`}>
-                              {index + 1}
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium line-clamp-1">{location.location}</p>
-                            </div>
-                          </div>
-                          <Badge variant="secondary">{location.count} úlovkov</Badge>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-muted-foreground text-center py-8">
-                      Žiadne údaje o lokalitách
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
 
             {/* Basic Monthly Overview */}
             <Card>
