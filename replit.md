@@ -77,3 +77,27 @@ Preferred communication style: Simple, everyday language.
 - **OpenID Client**: Standard-compliant authentication integration
 - **Passport**: Authentication middleware
 - **Express Session**: Session management
+
+# Planned Features (TODO)
+
+## Communication Hub (Priority: Medium)
+Kompletný komunikačný modul pre súťaže s 3 tabmi:
+
+1. **Noticeboard (Oficiálne oznamy)**
+   - Admin môže písať, tímy len čítajú, verejnosť nemá prístup
+   - Tabuľka: `announcements` (id, competition_id, author_id, message, created_at, is_priority)
+   - WebSocket event: `new_announcement`
+
+2. **Public Chat (Verejný chat)**
+   - Otvorený pre všetkých (admin, tímy, hostia)
+   - Tímy majú zvýraznené správy, hostia zadávajú nickname
+   - Tabuľka: `public_chat_messages` (id, competition_id, sender_name, sender_id, is_team, message, created_at)
+   - Limit: posledných 50 správ
+   - WebSocket event: `public_chat_message`
+
+3. **Helpdesk (Podpora)**
+   - Súkromný 1:1 kanál medzi tímom a adminom
+   - Tabuľka: `support_messages` (id, competition_id, team_id, sender_id, message, created_at, is_read)
+   - WebSocket event: `support_message`
+
+Odhadovaný čas: 2-3 hodiny
