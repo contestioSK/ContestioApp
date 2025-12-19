@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
@@ -29,6 +30,7 @@ const registerSchema = z.object({
   role: z.enum(["fisherman", "organizer"], {
     required_error: "Vyberte typ účtu",
   }),
+  isNewsletterSubscribed: z.boolean().optional().default(false),
 });
 
 type RegisterFormData = z.infer<typeof registerSchema>;
@@ -47,6 +49,7 @@ export default function RegisterPage() {
       firstName: "",
       lastName: "",
       role: undefined,
+      isNewsletterSubscribed: false,
     },
   });
 
@@ -273,6 +276,28 @@ export default function RegisterPage() {
                       </SelectContent>
                     </Select>
                     <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="isNewsletterSubscribed"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        disabled={registerMutation.isPending}
+                        data-testid="checkbox-newsletter"
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="text-sm font-normal cursor-pointer">
+                        Chcem dostávať novinky o súťažiach a tipy na rybolov.
+                      </FormLabel>
+                    </div>
                   </FormItem>
                 )}
               />

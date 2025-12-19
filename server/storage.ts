@@ -114,6 +114,7 @@ export interface IStorage {
     password: string;
     verificationToken: string;
     verificationTokenExpires: Date;
+    isNewsletterSubscribed?: boolean;
   }): Promise<User>;
   verifyUserEmail(token: string): Promise<User | null>;
   updateUserPassword(userId: string, hashedPassword: string): Promise<User>;
@@ -642,6 +643,7 @@ export class DatabaseStorage implements IStorage {
     password: string;
     verificationToken: string;
     verificationTokenExpires: Date;
+    isNewsletterSubscribed?: boolean;
   }): Promise<User> {
     const normalizedEmail = userData.email.toLowerCase().trim();
     const [newUser] = await db
@@ -656,6 +658,7 @@ export class DatabaseStorage implements IStorage {
         emailVerified: false,
         role: 'public',
         active: true,
+        isNewsletterSubscribed: userData.isNewsletterSubscribed ?? false,
       })
       .returning();
     return newUser;
