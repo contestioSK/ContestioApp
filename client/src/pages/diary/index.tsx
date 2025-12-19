@@ -399,16 +399,19 @@ export default function DiaryIndex() {
     },
   });
 
-  // Filter catches for 2025 season (January 15, 2025 onwards)
-  const season2025Catches = Array.isArray(allCatches) ? allCatches.filter((catch_: any) => {
+  // Get current year for dynamic season
+  const currentYear = new Date().getFullYear();
+
+  // Filter catches for current season (January 15 of current year onwards)
+  const seasonCatches = Array.isArray(allCatches) ? allCatches.filter((catch_: any) => {
     if (!catch_.capturedAt) return false;
     const catchDate = new Date(catch_.capturedAt);
-    const season2025Start = new Date('2025-01-15');
-    return catchDate >= season2025Start;
+    const seasonStart = new Date(`${currentYear}-01-15`);
+    return catchDate >= seasonStart;
   }) : [];
 
   // Apply filters to catches
-  const filteredCatches = season2025Catches.filter((catch_: any) => {
+  const filteredCatches = seasonCatches.filter((catch_: any) => {
     // Filter by technique
     if (selectedTechnique !== "all" && catch_.bait !== selectedTechnique) {
       return false;
@@ -456,28 +459,36 @@ export default function DiaryIndex() {
   const displayedCatches = hasActiveFilters ? filteredCatches : filteredCatches.slice(0, 5);
 
   // Get unique techniques and spots for filter dropdowns
-  const uniqueTechniques = Array.from(new Set(season2025Catches.map((c: any) => c.bait).filter(Boolean)));
-  const uniqueSpots = Array.from(new Set(season2025Catches.map((c: any) => c.spot).filter(Boolean)));
+  const uniqueTechniques = Array.from(new Set(seasonCatches.map((c: any) => c.bait).filter(Boolean)));
+  const uniqueSpots = Array.from(new Set(seasonCatches.map((c: any) => c.spot).filter(Boolean)));
 
-  // Calculate statistics from 2025 season catches
-  const biggestCatchObject = season2025Catches.length > 0
-    ? season2025Catches.reduce((max: any, current: any) => {
+  // Calculate statistics from current season catches
+  const biggestCatchObject = seasonCatches.length > 0
+    ? seasonCatches.reduce((max: any, current: any) => {
         const currentWeight = parseFloat(current.weight || '0');
         const maxWeight = parseFloat(max.weight || '0');
         return (isNaN(currentWeight) ? 0 : currentWeight) > (isNaN(maxWeight) ? 0 : maxWeight) ? current : max;
       })
     : null;
 
+  // Calculate total weight for season
+  const seasonTotalWeight = seasonCatches.reduce((sum: number, catch_: any) => {
+    const weight = parseFloat(catch_.weight || '0');
+    return sum + (isNaN(weight) ? 0 : weight);
+  }, 0);
+
   const diaryStats = {
-    totalCatches: season2025Catches.length,
+    totalCatches: seasonCatches.length,
     biggestFish: biggestCatchObject ? parseFloat(biggestCatchObject.weight || '0') : 0,
     biggestCatchId: biggestCatchObject?.id || null,
+    totalWeight: seasonTotalWeight,
+    averageWeight: seasonCatches.length > 0 ? seasonTotalWeight / seasonCatches.length : 0,
     daysAtWater: (() => {
-      if (season2025Catches.length === 0) return 0;
+      if (seasonCatches.length === 0) return 0;
       
       // Get unique dates (days) with catches
       const uniqueDates = new Set(
-        season2025Catches.map((catch_: any) => {
+        seasonCatches.map((catch_: any) => {
           const date = new Date(catch_.capturedAt);
           return date.toDateString();
         })
@@ -494,7 +505,7 @@ export default function DiaryIndex() {
     const todayEnd = new Date(today);
     todayEnd.setHours(23, 59, 59, 999);
     
-    const todayCatches = season2025Catches.filter((catch_: any) => {
+    const todayCatches = seasonCatches.filter((catch_: any) => {
       const catchDate = new Date(catch_.capturedAt);
       return catchDate >= today && catchDate <= todayEnd;
     });
@@ -695,73 +706,90 @@ export default function DiaryIndex() {
           </div>
         </div>
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8">
-          <Link href="/diary/catches" data-testid="link-all-catches">
-            <Card className="bg-gradient-to-br from-blue-600/20 to-cyan-600/20 border-blue-500/30 cursor-pointer transition-all duration-200 hover:from-blue-600/30 hover:to-cyan-600/30 hover:border-blue-400/50 hover:shadow-lg hover:shadow-blue-500/20" data-testid="card-season-catches">
-              <CardContent className="p-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-blue-600/30 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <Fish className="w-6 h-6 text-blue-300" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-sm text-slate-300 mb-1">Úlovky (Sezóna 2025)</div>
-                    <div className="text-3xl font-bold text-white" data-testid="text-total-catches">{diaryStats.totalCatches}</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
-          
-          {diaryStats.biggestCatchId ? (
-            <Link href={`/diary/catches/${diaryStats.biggestCatchId}`} data-testid="link-biggest-fish">
-              <Card className="bg-gradient-to-br from-emerald-600/20 to-green-600/20 border-emerald-500/30 cursor-pointer transition-all duration-200 hover:from-emerald-600/30 hover:to-green-600/30 hover:border-emerald-400/50 hover:shadow-lg hover:shadow-emerald-500/20" data-testid="card-biggest-fish">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-emerald-600/30 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <Weight className="w-6 h-6 text-emerald-300" />
+        {/* Season Statistics */}
+        <div className="mb-8">
+          <h2 className="text-sm font-medium text-slate-400 mb-3">Sezóna {currentYear}</h2>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            <Link href="/diary/catches" data-testid="link-all-catches">
+              <Card className="bg-gradient-to-br from-blue-600/20 to-cyan-600/20 border-blue-500/30 cursor-pointer transition-all duration-200 hover:from-blue-600/30 hover:to-cyan-600/30 hover:border-blue-400/50 hover:shadow-lg hover:shadow-blue-500/20 h-full" data-testid="card-season-catches">
+                <CardContent className="p-4 md:p-6">
+                  <div className="flex items-start gap-3 md:gap-4">
+                    <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-600/30 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <Fish className="w-5 h-5 md:w-6 md:h-6 text-blue-300" />
                     </div>
                     <div className="flex-1">
-                      <div className="text-sm text-slate-300 mb-1">Najväčšia Ryba</div>
-                      <div className="text-3xl font-bold text-white" data-testid="text-biggest-fish">
+                      <div className="text-xs md:text-sm text-slate-300 mb-1">Úlovky</div>
+                      <div className="text-2xl md:text-3xl font-bold text-white" data-testid="text-total-catches">{diaryStats.totalCatches}</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+            
+            {diaryStats.biggestCatchId ? (
+              <Link href={`/diary/catches/${diaryStats.biggestCatchId}`} data-testid="link-biggest-fish">
+                <Card className="bg-gradient-to-br from-emerald-600/20 to-green-600/20 border-emerald-500/30 cursor-pointer transition-all duration-200 hover:from-emerald-600/30 hover:to-green-600/30 hover:border-emerald-400/50 hover:shadow-lg hover:shadow-emerald-500/20 h-full" data-testid="card-biggest-fish">
+                  <CardContent className="p-4 md:p-6">
+                    <div className="flex items-start gap-3 md:gap-4">
+                      <div className="w-10 h-10 md:w-12 md:h-12 bg-emerald-600/30 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <Trophy className="w-5 h-5 md:w-6 md:h-6 text-emerald-300" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-xs md:text-sm text-slate-300 mb-1">Najväčšia ryba</div>
+                        <div className="text-2xl md:text-3xl font-bold text-white" data-testid="text-biggest-fish">
+                          {diaryStats.biggestFish > 0 ? `${diaryStats.biggestFish.toFixed(1)} kg` : '0 kg'}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ) : (
+              <Card className="bg-gradient-to-br from-emerald-600/20 to-green-600/20 border-emerald-500/30 h-full" data-testid="card-biggest-fish">
+                <CardContent className="p-4 md:p-6">
+                  <div className="flex items-start gap-3 md:gap-4">
+                    <div className="w-10 h-10 md:w-12 md:h-12 bg-emerald-600/30 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <Trophy className="w-5 h-5 md:w-6 md:h-6 text-emerald-300" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-xs md:text-sm text-slate-300 mb-1">Najväčšia ryba</div>
+                      <div className="text-2xl md:text-3xl font-bold text-white" data-testid="text-biggest-fish">
                         {diaryStats.biggestFish > 0 ? `${diaryStats.biggestFish.toFixed(1)} kg` : '0 kg'}
                       </div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
-            </Link>
-          ) : (
-            <Card className="bg-gradient-to-br from-emerald-600/20 to-green-600/20 border-emerald-500/30" data-testid="card-biggest-fish">
-              <CardContent className="p-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-emerald-600/30 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <Weight className="w-6 h-6 text-emerald-300" />
+            )}
+            
+            <Card className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 border-purple-500/30 h-full" data-testid="card-days-at-water">
+              <CardContent className="p-4 md:p-6">
+                <div className="flex items-start gap-3 md:gap-4">
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-purple-600/30 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <CalendarDays className="w-5 h-5 md:w-6 md:h-6 text-purple-300" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-sm text-slate-300 mb-1">Najväčšia Ryba</div>
-                    <div className="text-3xl font-bold text-white" data-testid="text-biggest-fish">
-                      {diaryStats.biggestFish > 0 ? `${diaryStats.biggestFish.toFixed(1)} kg` : '0 kg'}
-                    </div>
+                    <div className="text-xs md:text-sm text-slate-300 mb-1">Dni pri vode</div>
+                    <div className="text-2xl md:text-3xl font-bold text-white" data-testid="text-days-at-water">{diaryStats.daysAtWater}</div>
                   </div>
                 </div>
               </CardContent>
             </Card>
-          )}
-          
-          <Card className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 border-purple-500/30" data-testid="card-days-at-water">
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-purple-600/30 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <CalendarDays className="w-6 h-6 text-purple-300" />
+            
+            <Card className="bg-gradient-to-br from-amber-600/20 to-orange-600/20 border-amber-500/30 h-full" data-testid="card-season-average">
+              <CardContent className="p-4 md:p-6">
+                <div className="flex items-start gap-3 md:gap-4">
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-amber-600/30 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Target className="w-5 h-5 md:w-6 md:h-6 text-amber-300" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-xs md:text-sm text-slate-300 mb-1">Váhový priemer</div>
+                    <div className="text-2xl md:text-3xl font-bold text-white" data-testid="text-season-average">{diaryStats.averageWeight.toFixed(2)} kg</div>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <div className="text-sm text-slate-300 mb-1">Dni Pri Vode (Sezóna 2025)</div>
-                  <div className="text-3xl font-bold text-white" data-testid="text-days-at-water">{diaryStats.daysAtWater}</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
         {/* Fishing Battle CTA */}
@@ -1001,9 +1029,12 @@ export default function DiaryIndex() {
           </div>
         </div>
 
+        {/* Recent Catches Section */}
+        <h2 className="text-sm font-medium text-slate-400 mb-3">Moje posledné úlovky</h2>
+        
         {/* Filters */}
-        <div className="flex flex-wrap gap-3 mb-6">
-          <Select value={selectedTechnique} onValueChange={setSelectedTechnique}>
+        <div className="flex flex-wrap gap-3 mb-4">
+            <Select value={selectedTechnique} onValueChange={setSelectedTechnique}>
             <SelectTrigger className="w-[200px] bg-slate-700/50 border text-white" data-testid="filter-technique">
               <SelectValue placeholder="Všetky Techniky" />
             </SelectTrigger>
@@ -1204,11 +1235,11 @@ export default function DiaryIndex() {
               <div className="p-8 text-center">
                 <Fish className="w-12 h-12 text-slate-500 mx-auto mb-4" />
                 <p className="text-slate-400 mb-4">
-                  {season2025Catches.length === 0 
+                  {seasonCatches.length === 0 
                     ? "Zatiaľ nemáte žiadne úlovky" 
                     : "Žiadne úlovky nevyhovujú zvoleným filtrom"}
                 </p>
-                {season2025Catches.length === 0 && (
+                {seasonCatches.length === 0 && (
                   <Button 
                     onClick={() => setLocation("/diary/catches")}
                     className="bg-green-600 hover:bg-green-700"
@@ -1222,7 +1253,7 @@ export default function DiaryIndex() {
         </Card>
 
         {/* View All Button - show when there are more than 5 catches total, regardless of filters */}
-        {season2025Catches.length > 5 && (
+        {seasonCatches.length > 5 && (
           <div className="flex justify-center mt-4">
             <Button
               onClick={() => setLocation("/diary/catches")}
@@ -1230,7 +1261,7 @@ export default function DiaryIndex() {
               className="border text-slate-300 hover:bg-slate-700 hover:text-white"
               data-testid="button-view-all-catches"
             >
-              Zobraziť všetky úlovky ({season2025Catches.length})
+              Zobraziť všetky úlovky ({seasonCatches.length})
             </Button>
           </div>
         )}
