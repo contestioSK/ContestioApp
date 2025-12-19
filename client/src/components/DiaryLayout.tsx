@@ -14,6 +14,7 @@ import { NotificationCenter } from "@/components/diary/notification-center";
 import CatchFormDialog from "@/components/diary/CatchFormDialog";
 import { PremiumUpsellModal } from "@/components/PremiumUpsellModal";
 import { queryClient } from "@/lib/queryClient";
+import { useDiaryOffline } from "@/hooks/use-diary-offline";
 import { 
   BookOpen, 
   BarChart3, 
@@ -34,7 +35,9 @@ import {
   Shield,
   CalendarDays,
   Award,
-  Lock
+  Lock,
+  Wifi,
+  WifiOff
 } from "lucide-react";
 import contestioLogo from "@assets/contestio logo_1760283270014.png";
 
@@ -153,6 +156,11 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
   const [premiumTrigger, setPremiumTrigger] = useState<string | undefined>();
 
+  // Sync status indicator
+  const { isOffline, pendingTrips, pendingCatches } = useDiaryOffline();
+  const hasPendingSync = pendingTrips.length > 0 || pendingCatches.length > 0;
+  const pendingCount = pendingTrips.length + pendingCatches.length;
+
   // Check premium status
   const { data: premiumStatus } = useQuery<PremiumStatus>({
     queryKey: ["/api/auth/premium-status"],
@@ -201,13 +209,47 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex items-center justify-between p-4 md:p-6 border-b border-sidebar-border">
-            <Link 
-              href="/" 
-              className="flex items-center hover:opacity-80 transition-opacity cursor-pointer"
-              data-testid="link-home-logo"
-            >
-              <img src={contestioLogo} alt="Contestio" className="h-10 md:h-12" />
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link 
+                href="/" 
+                className="flex items-center hover:opacity-80 transition-opacity cursor-pointer"
+                data-testid="link-home-logo"
+              >
+                <img src={contestioLogo} alt="Contestio" className="h-10 md:h-12" />
+              </Link>
+              
+              {/* Sync Status Indicator */}
+              <TooltipProvider delayDuration={300}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-slate-800/50" data-testid="sync-status-indicator">
+                      {isOffline ? (
+                        <>
+                          <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                          <WifiOff className="w-3 h-3 text-red-400" />
+                        </>
+                      ) : hasPendingSync ? (
+                        <>
+                          <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                          <span className="text-[10px] text-amber-400 font-medium">{pendingCount}</span>
+                        </>
+                      ) : (
+                        <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                      )}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="bg-popover text-popover-foreground border shadow-md">
+                    {isOffline ? (
+                      <p>Offline režim - dáta sa synchronizujú po pripojení</p>
+                    ) : hasPendingSync ? (
+                      <p>Čaká {pendingCount} {pendingCount === 1 ? 'položka' : pendingCount < 5 ? 'položky' : 'položiek'} na synchronizáciu</p>
+                    ) : (
+                      <p>Všetko synchronizované</p>
+                    )}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             <Button
               variant="ghost"
               size="sm"
