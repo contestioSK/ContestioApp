@@ -605,14 +605,15 @@ export default function DiaryIndex() {
                           : "bg-emerald-500/10 border-emerald-500/30 focus-visible:ring-emerald-500"
                     )}
                     role="status"
-                    aria-label={isOffline ? "Offline režim" : hasPendingSync ? `${pendingCount} položiek čaká na synchronizáciu` : "Všetko synchronizované"}
+                    aria-label={isOffline ? "Offline" : hasPendingSync ? `${pendingCount} položiek čaká na synchronizáciu` : "Online"}
                     data-testid="sync-status-indicator"
                   >
                     {isOffline ? (
                       <>
                         <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" aria-hidden="true" />
                         <WifiOff className="w-3.5 h-3.5 text-red-400" aria-hidden="true" />
-                        <span className="sr-only">Offline režim</span>
+                        <span className="text-xs text-red-400 font-medium hidden sm:inline">Offline</span>
+                        <span className="sr-only">Offline</span>
                       </>
                     ) : hasPendingSync ? (
                       <>
@@ -623,19 +624,19 @@ export default function DiaryIndex() {
                     ) : (
                       <>
                         <div className="w-2 h-2 rounded-full bg-emerald-500" aria-hidden="true" />
-                        <span className="text-xs text-emerald-400 font-medium hidden sm:inline">Sync</span>
-                        <span className="sr-only">Všetko synchronizované</span>
+                        <span className="text-xs text-emerald-400 font-medium hidden sm:inline">Online</span>
+                        <span className="sr-only">Online</span>
                       </>
                     )}
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="bg-popover text-popover-foreground border shadow-md">
                   {isOffline ? (
-                    <p>Offline režim - dáta sa synchronizujú po pripojení</p>
+                    <p>Offline - dáta sa synchronizujú po pripojení</p>
                   ) : hasPendingSync ? (
                     <p>Čaká {pendingCount} {pendingCount === 1 ? 'položka' : pendingCount < 5 ? 'položky' : 'položiek'} na synchronizáciu</p>
                   ) : (
-                    <p>Všetko synchronizované</p>
+                    <p>Online</p>
                   )}
                 </TooltipContent>
               </Tooltip>
