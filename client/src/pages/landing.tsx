@@ -1,10 +1,13 @@
 import { Button } from "@/components/ui/button";
-import { Fish, Trophy, BookOpen, Menu, X, Info, DollarSign, HelpCircle, Phone } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Fish, Trophy, BookOpen, Menu, X, Info, DollarSign, HelpCircle, Phone, Mail, Loader2, CheckCircle } from "lucide-react";
 import { SiFacebook, SiInstagram, SiYoutube } from "react-icons/si";
 import { ContestCategories } from "@/components/contest-categories";
 import { Link } from "wouter";
 import { useState, useRef } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import contestioLogo from "@assets/contestio logo_1760283270014.png";
 interface Competition {
   id: string;
@@ -19,7 +22,33 @@ interface Competition {
 export default function Landing() {
   const [activeTab, setActiveTab] = useState<'competitions' | 'diary'>('competitions');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterSuccess, setNewsletterSuccess] = useState(false);
   const heroRef = useRef<HTMLElement>(null);
+  const { toast } = useToast();
+  
+  const newsletterMutation = useMutation({
+    mutationFn: async (email: string) => {
+      return apiRequest('POST', '/api/newsletter/subscribe', { email });
+    },
+    onSuccess: () => {
+      setNewsletterSuccess(true);
+      setNewsletterEmail('');
+      toast({
+        title: "✅ Prihlásenie úspešné",
+        description: "Ďakujeme za prihlásenie na odber noviniek!",
+      });
+      // Reset success state after 5 seconds to allow re-subscription
+      setTimeout(() => setNewsletterSuccess(false), 5000);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "❌ Chyba",
+        description: error.message || "Nastala chyba pri prihlásení.",
+        variant: "destructive",
+      });
+    },
+  });
   
   // Fetch real competitions from API
   const { data: competitions = [], isLoading } = useQuery<Competition[]>({
@@ -549,6 +578,58 @@ export default function Landing() {
                   </Link>
                 </li>
               </ul>
+            </div>
+          </div>
+
+          {/* Newsletter Section */}
+          <div className="py-8 border-t border-gray-800 mb-4">
+            <div className="max-w-md">
+              <h4 className="text-white font-semibold mb-2 flex items-center gap-2">
+                <Mail className="w-5 h-5 text-emerald-400" />
+                Odber noviniek
+              </h4>
+              <p className="text-gray-400 text-sm mb-4">
+                Dostávajte tipy na rybolov a informácie o súťažiach priamo do vašej schránky.
+              </p>
+              {newsletterSuccess ? (
+                <div className="flex items-center gap-2 text-emerald-400">
+                  <CheckCircle className="w-5 h-5" />
+                  <span className="text-sm">Ďakujeme za prihlásenie!</span>
+                </div>
+              ) : (
+                <form 
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (newsletterEmail) {
+                      newsletterMutation.mutate(newsletterEmail);
+                    }
+                  }}
+                  className="flex gap-2"
+                  data-testid="form-newsletter"
+                >
+                  <Input
+                    type="email"
+                    placeholder="Váš email"
+                    value={newsletterEmail}
+                    onChange={(e) => setNewsletterEmail(e.target.value)}
+                    className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 focus:border-emerald-500 min-h-[44px]"
+                    required
+                    data-testid="input-newsletter-email"
+                  />
+                  <Button 
+                    type="submit" 
+                    disabled={newsletterMutation.isPending}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white min-h-[44px] min-w-[44px] px-4"
+                    data-testid="button-newsletter-submit"
+                  >
+                    {newsletterMutation.isPending ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      "Prihlásiť"
+                    )}
+                  </Button>
+                </form>
+              )}
             </div>
           </div>
 
