@@ -1,5 +1,6 @@
 import { useAuth } from "@/hooks/useAuth";
 import { useWebSocket } from "@/hooks/useWebSocket";
+import { useDiaryOffline } from "@/hooks/use-diary-offline";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -11,7 +12,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Fish, Plus, X, MapPin, Target, Ruler, Weight, Swords, Trophy, Crown, Play, Edit2, Trash2, CalendarIcon, CalendarDays, ChevronLeft, ChevronRight, Loader2, AlertCircle, Check, UserPlus } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Fish, Plus, X, MapPin, Target, Ruler, Weight, Swords, Trophy, Crown, Play, Edit2, Trash2, CalendarIcon, CalendarDays, ChevronLeft, ChevronRight, Loader2, AlertCircle, Check, UserPlus, WifiOff } from "lucide-react";
 import { useLocation, Link } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -264,6 +266,11 @@ export default function DiaryIndex() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [catchToDelete, setCatchToDelete] = useState<string | null>(null);
   const { toast } = useToast();
+
+  // Sync status indicator
+  const { isOffline, pendingTrips, pendingCatches } = useDiaryOffline();
+  const hasPendingSync = pendingTrips.length > 0 || pendingCatches.length > 0;
+  const pendingCount = pendingTrips.length + pendingCatches.length;
 
   // WebSocket connection for battle invitations
   useWebSocket((message) => {
@@ -582,7 +589,58 @@ export default function DiaryIndex() {
           <h1 className="text-xl md:text-3xl font-bold text-white">
             Môj rybársky denník
           </h1>
-          <div className="flex gap-2 w-full sm:w-auto">
+          <div className="flex gap-2 w-full sm:w-auto items-center">
+            {/* Sync Status Indicator */}
+            <TooltipProvider delayDuration={300}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button 
+                    type="button"
+                    className={cn(
+                      "flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                      isOffline 
+                        ? "bg-red-500/10 border-red-500/30 focus-visible:ring-red-500" 
+                        : hasPendingSync 
+                          ? "bg-amber-500/10 border-amber-500/30 focus-visible:ring-amber-500" 
+                          : "bg-emerald-500/10 border-emerald-500/30 focus-visible:ring-emerald-500"
+                    )}
+                    role="status"
+                    aria-label={isOffline ? "Offline režim" : hasPendingSync ? `${pendingCount} položiek čaká na synchronizáciu` : "Všetko synchronizované"}
+                    data-testid="sync-status-indicator"
+                  >
+                    {isOffline ? (
+                      <>
+                        <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" aria-hidden="true" />
+                        <WifiOff className="w-3.5 h-3.5 text-red-400" aria-hidden="true" />
+                        <span className="sr-only">Offline režim</span>
+                      </>
+                    ) : hasPendingSync ? (
+                      <>
+                        <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" aria-hidden="true" />
+                        <span className="text-xs text-amber-400 font-medium">{pendingCount}</span>
+                        <span className="sr-only">položiek čaká na synchronizáciu</span>
+                      </>
+                    ) : (
+                      <>
+                        <div className="w-2 h-2 rounded-full bg-emerald-500" aria-hidden="true" />
+                        <span className="text-xs text-emerald-400 font-medium hidden sm:inline">Sync</span>
+                        <span className="sr-only">Všetko synchronizované</span>
+                      </>
+                    )}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="bg-popover text-popover-foreground border shadow-md">
+                  {isOffline ? (
+                    <p>Offline režim - dáta sa synchronizujú po pripojení</p>
+                  ) : hasPendingSync ? (
+                    <p>Čaká {pendingCount} {pendingCount === 1 ? 'položka' : pendingCount < 5 ? 'položky' : 'položiek'} na synchronizáciu</p>
+                  ) : (
+                    <p>Všetko synchronizované</p>
+                  )}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
             <Button 
               variant="outline"
               size="sm"
