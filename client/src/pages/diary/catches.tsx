@@ -887,7 +887,7 @@ export default function DiaryCatches() {
                     data-testid={`catch-row-${catch_.id || index}`}
                   >
                     {/* Desktop Row */}
-                    <div className="hidden md:grid grid-cols-5 gap-4 p-4">
+                    <div className="hidden md:grid grid-cols-5 gap-4 p-4 relative group">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-slate-600/50 rounded-lg flex items-center justify-center overflow-hidden">
                           {catch_.photos && catch_.photos.length > 0 ? (
@@ -905,7 +905,7 @@ export default function DiaryCatches() {
                         </div>
                       </div>
                       
-                      <div className="text-white font-semibold">
+                      <div className="text-white font-bold text-xl">
                         {catch_.weight ? `${catch_.weight} kg` : catch_.lengthCm ? `${catch_.lengthCm} cm` : 'N/A'}
                       </div>
                       
@@ -917,8 +917,19 @@ export default function DiaryCatches() {
                         {catch_.bait || 'Neznáma'}
                       </div>
                       
-                      <div className="text-slate-300">
-                        {catch_.capturedAt ? format(new Date(catch_.capturedAt), "dd. MMM yyyy", { locale: sk }) : 'N/A'}
+                      <div className="text-slate-300 flex items-center justify-between">
+                        <span>{catch_.capturedAt ? format(new Date(catch_.capturedAt), "dd. MMM yyyy", { locale: sk }) : 'N/A'}</span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedCatch(catch_);
+                          }}
+                          className="p-2 rounded-lg bg-slate-600/50 hover:bg-primary/20 text-slate-400 hover:text-primary transition-colors opacity-30 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
+                          title="Upraviť"
+                          data-testid={`button-edit-catch-${catch_.id || index}`}
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </div>
 
@@ -937,10 +948,23 @@ export default function DiaryCatches() {
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="text-white font-medium mb-1">
-                            {catch_.fishType ? getFishTypeLabel(catch_.fishType) : 'Neznámy druh'}
+                          <div className="flex items-center justify-between">
+                            <div className="text-white font-medium mb-1">
+                              {catch_.fishType ? getFishTypeLabel(catch_.fishType) : 'Neznámy druh'}
+                            </div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedCatch(catch_);
+                              }}
+                              className="p-2 rounded-lg bg-slate-600/50 hover:bg-primary/20 text-slate-400 hover:text-primary transition-colors"
+                              title="Upraviť"
+                              data-testid={`button-edit-catch-mobile-${catch_.id || index}`}
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </button>
                           </div>
-                          <div className="text-white/80 text-sm mb-2">
+                          <div className="text-white font-bold text-lg mb-2">
                             {catch_.weight ? `${catch_.weight} kg` : catch_.lengthCm ? `${catch_.lengthCm} cm` : 'N/A'}
                           </div>
                           <div className="grid grid-cols-2 gap-2 text-xs text-slate-400">
