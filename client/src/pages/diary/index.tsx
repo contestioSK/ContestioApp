@@ -793,18 +793,18 @@ export default function DiaryIndex() {
         </div>
 
         {/* Fishing Battle CTA */}
-        <Card className="bg-gradient-to-r from-yellow-600/20 to-orange-600/20 border-yellow-600/30 mb-6 md:mb-8" data-testid="card-battle-cta">
+        <Card className="bg-gradient-to-r from-red-600/20 to-rose-600/20 border-red-600/30 mb-6 md:mb-8" data-testid="card-battle-cta">
           <CardContent className="p-4 md:p-6">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 md:gap-4">
               <div className="flex items-start gap-3 md:gap-4">
-                <div className="w-10 h-10 md:w-12 md:h-12 bg-yellow-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Swords className="w-5 h-5 md:w-6 md:h-6 text-yellow-400" />
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-red-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Swords className="w-5 h-5 md:w-6 md:h-6 text-red-400" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <h3 className="text-base md:text-lg font-bold text-white">Fishing Battle</h3>
                     {!isPremium && (
-                      <Crown className="w-4 h-4 text-yellow-400" />
+                      <Crown className="w-4 h-4 text-red-400" />
                     )}
                   </div>
                   <p className="text-slate-300 text-xs md:text-sm">
@@ -819,7 +819,7 @@ export default function DiaryIndex() {
                       variant="outline"
                       size="sm"
                       onClick={() => setLocation("/diary/battles/archive")}
-                      className="border-yellow-600/50 bg-yellow-600/10 hover:bg-yellow-600/20 text-yellow-100 text-xs md:text-sm"
+                      className="border-red-600/50 bg-red-600/10 hover:bg-red-600/20 text-red-100 text-xs md:text-sm"
                       data-testid="button-battle-archive"
                     >
                       <Trophy className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
@@ -839,10 +839,10 @@ export default function DiaryIndex() {
                         }
                       }}
                       className={cn(
-                        "border-yellow-600/50 hover:bg-yellow-600/20 text-xs md:text-sm",
+                        "border-red-600/50 hover:bg-red-600/20 text-xs md:text-sm",
                         firstActiveBattle 
-                          ? "bg-yellow-600/20 text-yellow-100" 
-                          : "bg-yellow-600/5 text-yellow-100/50"
+                          ? "bg-red-600/20 text-red-100" 
+                          : "bg-red-600/5 text-red-100/50"
                       )}
                       data-testid="button-active-battle"
                     >
@@ -853,7 +853,7 @@ export default function DiaryIndex() {
                     <Button
                       size="sm"
                       onClick={() => setLocation("/diary/battles/create")}
-                      className="bg-yellow-600 hover:bg-yellow-700 text-white text-xs md:text-sm"
+                      className="bg-red-600 hover:bg-red-700 text-white text-xs md:text-sm"
                       data-testid="button-create-battle-cta"
                     >
                       <Plus className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
@@ -865,7 +865,7 @@ export default function DiaryIndex() {
                   <Button
                     size="sm"
                     onClick={() => setLocation("/diary/battle-paywall")}
-                    className="bg-yellow-600 hover:bg-yellow-700 text-white text-xs md:text-sm w-full md:w-auto"
+                    className="bg-red-600 hover:bg-red-700 text-white text-xs md:text-sm w-full md:w-auto"
                     data-testid="button-unlock-battle"
                   >
                     <Crown className="w-4 h-4 mr-2" />
