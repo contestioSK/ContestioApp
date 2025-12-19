@@ -572,6 +572,41 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     });
   });
 
+  // Newsletter subscription endpoint (public - no auth required)
+  app.post('/api/newsletter/subscribe', apiLimiter, async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email || typeof email !== 'string') {
+        return res.status(400).json({ message: 'Email je povinný' });
+      }
+      
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ message: 'Neplatný formát emailu' });
+      }
+      
+      // Check if email already exists in users table
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
+        // Update existing user's newsletter preference
+        await db.update(users)
+          .set({ isNewsletterSubscribed: true })
+          .where(eq(users.id, existingUser.id));
+        return res.json({ message: 'Úspešne ste sa prihlásili na odber noviniek!' });
+      }
+      
+      // For non-registered users, we'll just log the subscription
+      // In production, you'd store this in a separate newsletter_subscribers table
+      console.log('[NEWSLETTER] New subscription:', email);
+      
+      res.json({ message: 'Úspešne ste sa prihlásili na odber noviniek!' });
+    } catch (error) {
+      console.error('[NEWSLETTER] Subscription error:', error);
+      res.status(500).json({ message: 'Nastala chyba pri prihlásení. Skúste to znova.' });
+    }
+  });
+
   // Auth routes - Updated to support both auth systems
   app.get('/api/auth/user', async (req: any, res) => {
     try {
