@@ -978,7 +978,7 @@ export default function DiaryIndex() {
                     <Fish className="w-5 h-5 text-emerald-300" />
                   </div>
                   <div>
-                    <div className="text-xs text-slate-400">Spolu</div>
+                    <div className="text-xs text-slate-400">Úlovky</div>
                     <div className="text-xl font-bold text-white" data-testid="text-today-count">{todayStats.count} ks</div>
                   </div>
                 </div>
@@ -992,7 +992,7 @@ export default function DiaryIndex() {
                     <Weight className="w-5 h-5 text-blue-300" />
                   </div>
                   <div>
-                    <div className="text-xs text-slate-400">Spolu</div>
+                    <div className="text-xs text-slate-400">Celková váha</div>
                     <div className="text-xl font-bold text-white" data-testid="text-today-weight">{todayStats.totalWeight.toFixed(1)} kg</div>
                   </div>
                 </div>
@@ -1006,7 +1006,7 @@ export default function DiaryIndex() {
                     <Trophy className="w-5 h-5 text-amber-300" />
                   </div>
                   <div>
-                    <div className="text-xs text-slate-400">Najväčšia</div>
+                    <div className="text-xs text-slate-400">Najväčšia ryba</div>
                     <div className="text-xl font-bold text-white" data-testid="text-today-biggest">{todayStats.biggestFish.toFixed(1)} kg</div>
                   </div>
                 </div>
@@ -1020,7 +1020,7 @@ export default function DiaryIndex() {
                     <Target className="w-5 h-5 text-purple-300" />
                   </div>
                   <div>
-                    <div className="text-xs text-slate-400">Priemer</div>
+                    <div className="text-xs text-slate-400">Váhový priemer</div>
                     <div className="text-xl font-bold text-white" data-testid="text-today-average">{todayStats.averageWeight.toFixed(2)} kg</div>
                   </div>
                 </div>
