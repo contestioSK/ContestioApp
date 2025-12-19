@@ -44,7 +44,8 @@ import {
   Wind,
   Gauge,
   Search,
-  ArrowUpDown
+  ArrowUpDown,
+  Trophy
 } from "lucide-react";
 
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -635,6 +636,83 @@ export default function DiaryCatches() {
               queryClient.invalidateQueries({ queryKey: ["/api/diary/catch-limits"] });
             }}
           />
+
+          {/* Total Statistics Panel */}
+          {(() => {
+            const allCatches = Array.isArray(catches) ? catches : [];
+            const totalCount = allCatches.length;
+            const totalWeight = allCatches.reduce((sum: number, c: any) => {
+              const weight = parseFloat(c.weight || '0');
+              return sum + (isNaN(weight) ? 0 : weight);
+            }, 0);
+            const biggestFish = allCatches.length > 0
+              ? Math.max(...allCatches.map((c: any) => parseFloat(c.weight || '0') || 0))
+              : 0;
+            const averageWeight = totalCount > 0 ? totalWeight / totalCount : 0;
+
+            return (
+              <div className="mb-6">
+                <h2 className="text-sm font-medium text-slate-400 mb-3">Moja celková štatistika</h2>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                  <Card className="bg-gradient-to-br from-blue-600/20 to-cyan-600/20 border-blue-500/30" data-testid="card-total-count">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-blue-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <Fish className="w-5 h-5 text-blue-300" />
+                        </div>
+                        <div>
+                          <div className="text-xs text-slate-400">Úlovky</div>
+                          <div className="text-xl font-bold text-white" data-testid="text-total-count">{totalCount} ks</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="bg-gradient-to-br from-emerald-600/20 to-green-600/20 border-emerald-500/30" data-testid="card-total-biggest">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-emerald-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <Trophy className="w-5 h-5 text-emerald-300" />
+                        </div>
+                        <div>
+                          <div className="text-xs text-slate-400">Najväčšia ryba</div>
+                          <div className="text-xl font-bold text-white" data-testid="text-total-biggest">{biggestFish.toFixed(1)} kg</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 border-purple-500/30" data-testid="card-total-weight">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-purple-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <Weight className="w-5 h-5 text-purple-300" />
+                        </div>
+                        <div>
+                          <div className="text-xs text-slate-400">Celková váha</div>
+                          <div className="text-xl font-bold text-white" data-testid="text-total-weight">{totalWeight.toFixed(1)} kg</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="bg-gradient-to-br from-amber-600/20 to-orange-600/20 border-amber-500/30" data-testid="card-total-average">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-amber-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <Target className="w-5 h-5 text-amber-300" />
+                        </div>
+                        <div>
+                          <div className="text-xs text-slate-400">Váhový priemer</div>
+                          <div className="text-xl font-bold text-white" data-testid="text-total-average">{averageWeight.toFixed(2)} kg</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Filters */}
           <div className="space-y-4">
