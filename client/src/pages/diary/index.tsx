@@ -719,7 +719,7 @@ export default function DiaryIndex() {
                     </div>
                     <div className="flex-1">
                       <div className="text-xs md:text-sm text-slate-300 mb-1">Úlovky</div>
-                      <div className="text-2xl md:text-3xl font-bold text-white" data-testid="text-total-catches">{diaryStats.totalCatches}</div>
+                      <div className="text-xl md:text-2xl font-bold text-white" data-testid="text-total-catches">{diaryStats.totalCatches}</div>
                     </div>
                   </div>
                 </CardContent>
@@ -736,7 +736,7 @@ export default function DiaryIndex() {
                       </div>
                       <div className="flex-1">
                         <div className="text-xs md:text-sm text-slate-300 mb-1">Najväčšia ryba</div>
-                        <div className="text-2xl md:text-3xl font-bold text-white" data-testid="text-biggest-fish">
+                        <div className="text-xl md:text-2xl font-bold text-white" data-testid="text-biggest-fish">
                           {diaryStats.biggestFish > 0 ? `${diaryStats.biggestFish.toFixed(1)} kg` : '0 kg'}
                         </div>
                       </div>
@@ -753,7 +753,7 @@ export default function DiaryIndex() {
                     </div>
                     <div className="flex-1">
                       <div className="text-xs md:text-sm text-slate-300 mb-1">Najväčšia ryba</div>
-                      <div className="text-2xl md:text-3xl font-bold text-white" data-testid="text-biggest-fish">
+                      <div className="text-xl md:text-2xl font-bold text-white" data-testid="text-biggest-fish">
                         {diaryStats.biggestFish > 0 ? `${diaryStats.biggestFish.toFixed(1)} kg` : '0 kg'}
                       </div>
                     </div>
@@ -770,7 +770,7 @@ export default function DiaryIndex() {
                   </div>
                   <div className="flex-1">
                     <div className="text-xs md:text-sm text-slate-300 mb-1">Dni pri vode</div>
-                    <div className="text-2xl md:text-3xl font-bold text-white" data-testid="text-days-at-water">{diaryStats.daysAtWater}</div>
+                    <div className="text-xl md:text-2xl font-bold text-white" data-testid="text-days-at-water">{diaryStats.daysAtWater}</div>
                   </div>
                 </div>
               </CardContent>
@@ -784,7 +784,7 @@ export default function DiaryIndex() {
                   </div>
                   <div className="flex-1">
                     <div className="text-xs md:text-sm text-slate-300 mb-1">Váhový priemer</div>
-                    <div className="text-2xl md:text-3xl font-bold text-white" data-testid="text-season-average">{diaryStats.averageWeight.toFixed(2)} kg</div>
+                    <div className="text-xl md:text-2xl font-bold text-white" data-testid="text-season-average">{diaryStats.averageWeight.toFixed(2)} kg</div>
                   </div>
                 </div>
               </CardContent>
