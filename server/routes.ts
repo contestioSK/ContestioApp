@@ -327,7 +327,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
   // New auth endpoints for email/password + Google OAuth
   app.post('/api/auth/register', authLimiter, async (req, res) => {
     try {
-      const { email, firstName, lastName, password } = req.body;
+      const { email, firstName, lastName, password, isNewsletterSubscribed } = req.body;
 
       // Validate required fields
       if (!email || !firstName || !lastName || !password) {
@@ -366,6 +366,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         password: hashedPassword,
         verificationToken,
         verificationTokenExpires,
+        isNewsletterSubscribed: isNewsletterSubscribed === true,
       });
 
       // Send verification email
