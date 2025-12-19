@@ -1,0 +1,38 @@
+Role: Senior React & Firebase Developer Task: Implement a new "Communication Hub" feature for the "Contestio" fishing competition app. Context: The app is used by Organizers (Admins), Competitors (Teams), and Public Guests. We use Firebase Firestore for the backend.
+Requirements: Create a new screen/component called CommunicationScreen with a Tabbed Interface containing 3 tabs:
+1. Tab: "Noticeboard" (Oficiálne oznamy)
+•	Purpose: Read-only feed for organizational announcements.
+•	Access:
+o	Admins: Can write/post new messages.
+o	Teams: Read-only access.
+o	Public: No access (Hidden).
+•	Firestore Collection: announcements
+•	Fields: competitionId, author, message, timestamp, priority (boolean).
+•	UI: List of cards sorted by timestamp (newest first).
+2. Tab: "Public Chat" (Verejný chat)
+•	Purpose: Global chat for community interaction.
+•	Access: Open to everyone (Admins, Teams, Public).
+•	Logic:
+o	If the user is logged in as a Team, use their Team Name as senderName and highlight their messages (e.g., different background or badge).
+o	If the user is a Guest (not logged in), prompt them to enter a "Nickname" before they can send a message. Store this nickname in local state/storage.
+•	Firestore Collection: public_chat
+•	Fields: competitionId, senderName, senderId, isTeam (boolean), message, timestamp.
+•	Query Constraints: Limit to last 50 messages ordered by timestamp.
+•	UI: Standard chat interface (bubbles, input field at bottom).
+3. Tab: "Helpdesk" (Podpora)
+•	Purpose: Private 1:1 support channel.
+•	Access: Visible ONLY to Logged-in Teams and Admins.
+•	Logic:
+o	For Teams: They see a chat view between Themselves and Admin.
+o	For Admins: They see a list of Teams that have requested support. Clicking a team opens the chat view.
+•	Firestore Collection: admin_support_chats
+•	Fields: teamId, teamName, lastMessage, lastMessageTime.
+•	Sub-collection: messages (for the actual conversation).
+Technical Constraints:
+•	Use standard Firebase SDK (v9 modular).
+•	Use onSnapshot for real-time updates on all tabs.
+•	Style it using Tailwind CSS (or the existing styling framework of the project).
+•	Handle loading states and empty states gracefully.
+Action: Please generate the code for this CommunicationScreen component and the necessary Firestore service functions.
+Please reuse my existing UI components and authentication context where possible
+
