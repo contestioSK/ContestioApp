@@ -971,11 +971,11 @@ export default function DiaryIndex() {
         <div className="mb-6">
           <h2 className="text-sm font-medium text-slate-400 mb-3">Moja dnešná štatistika</h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <Card className="bg-gradient-to-br from-emerald-600/20 to-green-600/20 border-emerald-500/30" data-testid="card-today-count">
+            <Card className="bg-gradient-to-br from-blue-600/20 to-cyan-600/20 border-blue-500/30" data-testid="card-today-count">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-emerald-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Fish className="w-5 h-5 text-emerald-300" />
+                  <div className="w-10 h-10 bg-blue-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Fish className="w-5 h-5 text-blue-300" />
                   </div>
                   <div>
                     <div className="text-xs text-slate-400">Úlovky</div>
@@ -985,25 +985,11 @@ export default function DiaryIndex() {
               </CardContent>
             </Card>
             
-            <Card className="bg-gradient-to-br from-blue-600/20 to-cyan-600/20 border-blue-500/30" data-testid="card-today-weight">
+            <Card className="bg-gradient-to-br from-emerald-600/20 to-green-600/20 border-emerald-500/30" data-testid="card-today-biggest">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Weight className="w-5 h-5 text-blue-300" />
-                  </div>
-                  <div>
-                    <div className="text-xs text-slate-400">Celková váha</div>
-                    <div className="text-xl font-bold text-white" data-testid="text-today-weight">{todayStats.totalWeight.toFixed(1)} kg</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-gradient-to-br from-amber-600/20 to-orange-600/20 border-amber-500/30" data-testid="card-today-biggest">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-amber-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Trophy className="w-5 h-5 text-amber-300" />
+                  <div className="w-10 h-10 bg-emerald-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Trophy className="w-5 h-5 text-emerald-300" />
                   </div>
                   <div>
                     <div className="text-xs text-slate-400">Najväčšia ryba</div>
@@ -1013,11 +999,25 @@ export default function DiaryIndex() {
               </CardContent>
             </Card>
             
-            <Card className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 border-purple-500/30" data-testid="card-today-average">
+            <Card className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 border-purple-500/30" data-testid="card-today-weight">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-purple-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Target className="w-5 h-5 text-purple-300" />
+                    <Weight className="w-5 h-5 text-purple-300" />
+                  </div>
+                  <div>
+                    <div className="text-xs text-slate-400">Celková váha</div>
+                    <div className="text-xl font-bold text-white" data-testid="text-today-weight">{todayStats.totalWeight.toFixed(1)} kg</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-gradient-to-br from-amber-600/20 to-orange-600/20 border-amber-500/30" data-testid="card-today-average">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-amber-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Target className="w-5 h-5 text-amber-300" />
                   </div>
                   <div>
                     <div className="text-xs text-slate-400">Váhový priemer</div>
