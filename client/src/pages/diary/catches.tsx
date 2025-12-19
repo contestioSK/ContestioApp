@@ -193,7 +193,7 @@ function PhotoCarousel({ photos, onPhotoClick }: { photos: (string | PhotoObject
         <>
           <button
             onClick={scrollPrev}
-            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-2 hover:bg-black/70 transition-colors"
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-3 hover:bg-black/70 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
             aria-label="Predchádzajúca fotka"
             data-testid="button-prev-photo"
           >
@@ -201,7 +201,7 @@ function PhotoCarousel({ photos, onPhotoClick }: { photos: (string | PhotoObject
           </button>
           <button
             onClick={scrollNext}
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-2 hover:bg-black/70 transition-colors"
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-3 hover:bg-black/70 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
             aria-label="Ďalšia fotka"
             data-testid="button-next-photo"
           >
@@ -212,20 +212,24 @@ function PhotoCarousel({ photos, onPhotoClick }: { photos: (string | PhotoObject
       
       {/* Dots Indicator (only show if more than 1 photo) */}
       {photos.length > 1 && (
-        <div className="flex justify-center gap-2 mt-3">
+        <div className="flex justify-center gap-3 mt-3">
           {photos.map((_, index) => (
             <button
               key={index}
               onClick={() => scrollTo(index)}
               className={cn(
-                "w-2 h-2 rounded-full transition-all",
-                index === selectedIndex 
-                  ? "bg-white w-6" 
-                  : "bg-white/50 hover:bg-white/70"
+                "min-w-[44px] min-h-[44px] flex items-center justify-center",
               )}
               aria-label={`Zobraziť fotku ${index + 1}`}
               data-testid={`dot-${index}`}
-            />
+            >
+              <span className={cn(
+                "rounded-full transition-all",
+                index === selectedIndex 
+                  ? "bg-white w-6 h-3" 
+                  : "bg-white/50 hover:bg-white/70 w-3 h-3"
+              )} />
+            </button>
           ))}
         </div>
       )}
@@ -657,7 +661,7 @@ export default function DiaryCatches() {
                   <Card className="bg-gradient-to-br from-blue-600/20 to-cyan-600/20 border-blue-500/30" data-testid="card-total-count">
                     <CardContent className="p-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-blue-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <div className="w-11 h-11 bg-blue-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
                           <Fish className="w-5 h-5 text-blue-300" />
                         </div>
                         <div>
@@ -671,7 +675,7 @@ export default function DiaryCatches() {
                   <Card className="bg-gradient-to-br from-emerald-600/20 to-green-600/20 border-emerald-500/30" data-testid="card-total-biggest">
                     <CardContent className="p-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-emerald-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <div className="w-11 h-11 bg-emerald-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
                           <Trophy className="w-5 h-5 text-emerald-300" />
                         </div>
                         <div>
@@ -685,7 +689,7 @@ export default function DiaryCatches() {
                   <Card className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 border-purple-500/30" data-testid="card-total-weight">
                     <CardContent className="p-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-purple-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <div className="w-11 h-11 bg-purple-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
                           <Weight className="w-5 h-5 text-purple-300" />
                         </div>
                         <div>
@@ -699,7 +703,7 @@ export default function DiaryCatches() {
                   <Card className="bg-gradient-to-br from-amber-600/20 to-orange-600/20 border-amber-500/30" data-testid="card-total-average">
                     <CardContent className="p-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-amber-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <div className="w-11 h-11 bg-amber-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
                           <Target className="w-5 h-5 text-amber-300" />
                         </div>
                         <div>
