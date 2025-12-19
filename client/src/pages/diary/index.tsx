@@ -690,8 +690,8 @@ export default function DiaryIndex() {
               className="border-cyan-500/50 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-100 hover:text-white transition-all flex-1 sm:flex-none"
               data-testid="button-start-fishing"
             >
-              <Play className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Začať rybačku</span>
+              <Play className="w-4 h-4 mr-2" />
+              Začať rybačku
             </Button>
             <Button 
               onClick={() => setIsCreateCatchOpen(true)}
@@ -700,8 +700,8 @@ export default function DiaryIndex() {
               className="bg-emerald-600/90 hover:bg-emerald-600 text-white border border-emerald-500/50 transition-all flex-1 sm:flex-none"
               data-testid="button-add-catch"
             >
-              <Plus className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Pridať Úlovok</span>
+              <Plus className="w-4 h-4 mr-2" />
+              Pridať Úlovok
             </Button>
           </div>
         </div>
