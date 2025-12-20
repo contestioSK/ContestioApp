@@ -9,12 +9,14 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { Trophy, Users, Calendar, Clock, Fish, Weight, Crown, Archive, Search, Filter, Eye, RotateCcw, Medal, BarChart3, Star, Plus, Loader2, SlidersHorizontal } from "lucide-react";
+import { Trophy, Users, Calendar, Clock, Fish, Weight, Crown, Archive, Search, Filter, Eye, RotateCcw, Medal, BarChart3, Star, Plus, Loader2, SlidersHorizontal, Download, TrendingUp } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
 import { useLocation } from "wouter";
 import DiaryLayout from "@/components/DiaryLayout";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { useToast } from "@/hooks/use-toast";
 
 // Archived battle data interface
 interface ArchivedBattle {
@@ -70,10 +72,71 @@ const getPositionBadge = (position: number) => {
 export default function BattleArchive() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterMode, setFilterMode] = useState<string>("all");
   const [filterResult, setFilterResult] = useState<string>("all");
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
+
+  // Export battles to CSV
+  const handleExportCSV = () => {
+    if (battles.length === 0) {
+      toast({
+        title: "Žiadne dáta",
+        description: "Nemáte žiadne súboje na export.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const headers = ["Názov", "Dátum", "Režim", "Účastníci", "Umiestnenie", "Moje skóre", "Víťazné skóre", "Víťaz"];
+    const rows = battles.map(b => [
+      b.name,
+      format(b.startAt, "d.M.yyyy"),
+      getModeLabel(b.mode),
+      b.participantCount,
+      b.userPosition || "N/A",
+      `${b.userScore} ${getScoreUnit(b.mode)}`,
+      `${b.totalScore} ${getScoreUnit(b.mode)}`,
+      b.winner
+    ]);
+    
+    const csvContent = [headers.join(";"), ...rows.map(r => r.join(";"))].join("\n");
+    const blob = new Blob(["\ufeff" + csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `battle-archive-${format(new Date(), "yyyy-MM-dd")}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    
+    toast({
+      title: "Export úspešný",
+      description: `Exportovaných ${battles.length} súbojov do CSV.`,
+      variant: "success",
+    });
+  };
+
+  // Handle rematch - navigate to create with prefilled data
+  const handleRematch = (battle: ArchivedBattle) => {
+    // Extract participant userIds from results if available
+    const participantUserIds = battle.results
+      ?.filter(r => r.participant.userId)
+      .map(r => r.participant.userId!)
+      .filter(id => id !== user?.id) || []; // Exclude current user
+    
+    // Store rematch data in sessionStorage for battle-create to pick up
+    sessionStorage.setItem('rematchData', JSON.stringify({
+      mode: battle.mode,
+      name: `Revanš: ${battle.name}`,
+      participantUserIds: participantUserIds,
+    }));
+    setLocation("/diary/battles/create");
+    toast({
+      title: "Revanš",
+      description: "Nastavenia súboja boli prekopírované. Upravte podľa potreby.",
+    });
+  };
   
   // Count active filters for mobile badge
   const activeFilterCount = [
@@ -139,6 +202,22 @@ export default function BattleArchive() {
     return { totalBattles, wins, podiums, winRate };
   }, [battles]);
 
+  // Prepare data for position trend chart (sorted by date, oldest first)
+  const positionTrendData = useMemo(() => {
+    if (battles.length < 2) return [];
+    
+    return [...battles]
+      .filter(b => b.userPosition !== null)
+      .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime())
+      .slice(-10) // Last 10 battles
+      .map((battle, index) => ({
+        name: `#${index + 1}`,
+        position: battle.userPosition,
+        battleName: battle.name,
+        date: format(battle.startAt, "d.M.", { locale: sk }),
+      }));
+  }, [battles]);
+
   // Debug: Show what we have
   console.log("[BATTLE ARCHIVE DEBUG] isLoading:", isLoading, "rawBattles.length:", rawBattles.length, "user:", user?.id);
   
@@ -193,6 +272,61 @@ export default function BattleArchive() {
             </p>
           </div>
 
+          {/* Position Trend Chart */}
+          {positionTrendData.length >= 2 && (
+            <Card className="mb-8">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5" />
+                  Vývoj umiestnení
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={positionTrendData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                      <XAxis dataKey="date" className="text-xs fill-muted-foreground" />
+                      <YAxis 
+                        reversed 
+                        domain={[1, 'dataMax']} 
+                        ticks={[1, 2, 3, 4, 5]}
+                        className="text-xs fill-muted-foreground"
+                        label={{ value: 'Umiestnenie', angle: -90, position: 'insideLeft', className: 'fill-muted-foreground text-xs' }}
+                      />
+                      <Tooltip 
+                        content={({ active, payload }) => {
+                          if (active && payload && payload.length) {
+                            const data = payload[0].payload;
+                            return (
+                              <div className="bg-popover border rounded-lg p-2 shadow-lg">
+                                <p className="font-medium text-foreground">{data.battleName}</p>
+                                <p className="text-sm text-muted-foreground">{data.date}</p>
+                                <p className="text-sm font-semibold text-primary">{data.position}. miesto</p>
+                              </div>
+                            );
+                          }
+                          return null;
+                        }}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="position" 
+                        stroke="hsl(var(--primary))" 
+                        strokeWidth={2}
+                        dot={{ fill: "hsl(var(--primary))", strokeWidth: 2, r: 4 }}
+                        activeDot={{ r: 6, fill: "hsl(var(--primary))" }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+                <p className="text-xs text-muted-foreground text-center mt-2">
+                  Posledných {positionTrendData.length} súbojov (nižšie = lepšie)
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
           {/* User Statistics Overview */}
           <Card className="mb-8">
             <CardHeader>
@@ -220,6 +354,21 @@ export default function BattleArchive() {
                   <div className="text-sm text-muted-foreground">Úspešnosť víťazstiev</div>
                 </div>
               </div>
+              
+              {/* Export Button */}
+              {battles.length > 0 && (
+                <div className="mt-6 pt-4 border-t border-border">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={handleExportCSV}
+                    data-testid="button-export-csv"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Exportovať do CSV
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -468,7 +617,7 @@ export default function BattleArchive() {
                           <Button 
                             variant="outline" 
                             size="sm"
-                            onClick={() => {/* TODO: Rematch functionality */}}
+                            onClick={() => handleRematch(battle)}
                             data-testid={`button-rematch-battle-${battle.id}`}
                           >
                             <RotateCcw className="w-4 h-4 mr-1" />

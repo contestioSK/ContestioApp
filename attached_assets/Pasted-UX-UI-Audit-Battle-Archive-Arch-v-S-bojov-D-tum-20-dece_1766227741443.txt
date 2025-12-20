@@ -1,0 +1,49 @@
+UX/UI Audit: Battle Archive (Archív Súbojov)
+
+Dátum: 20. december 2025
+Komponent: BattleArchive
+Status: Implementovaný, "Analytical" štýl
+
+1. Zhrnutie
+
+Stránka Archívu slúži na dlhodobé sledovanie výkonnosti. Dizajn je čistý, orientovaný na dáta a štatistiky. Použitie filtrov a vyhľadávania umožňuje používateľom rýchlo nájsť konkrétne momenty z ich rybárskej kariéry.
+
+2. Funkčná analýza
+
+Štatistický Dashboard
+
+Umiestnenie: Hneď na vrchu stránky.
+
+Prvky: Zobrazuje kľúčové metriky (Celkovo súbojov, Víťazstvá, Pódiá, Win Rate).
+
+Význam: Poskytuje okamžitú spätnú väzbu o dlhodobom úspechu používateľa ("Big Picture").
+
+Filtrovanie a Vyhľadávanie
+
+Desktop: Filtre sú zobrazené inline (vedľa seba), čo umožňuje rýchle prepínanie.
+
+Mobil: Filtre sú inteligentne skryté v Sheet (spodný vysúvací panel) komponentu. Tlačidlo "Filtre" na mobile obsahuje indikátor počtu aktívnych filtrov (Badge), čo je výborný UX detail.
+
+Karta Archívneho Súboja
+
+Informačná denzita: Karta obsahuje veľa informácií (názov, dátum, mód, počet účastníkov, výsledok, skóre), ale vďaka dobrému rozloženiu (Flexbox) nepôsobí preplnene.
+
+Vizuálna spätná väzba:
+
+Pozícia: Zreteľné odznaky pre 1. (Zlatá), 2. (Strieborná) a 3. (Bronzová) miesto.
+
+Porovnanie: Používateľ vidí svoje skóre vs. víťazné skóre. To mu dáva kontext, o koľko mu uniklo víťazstvo.
+
+3. Technické detaily
+
+Optimalizácia: Komponent používa useMemo na filtrovanie a výpočet štatistík, čo zabezpečuje plynulosť aj pri veľkom počte záznamov v archíve.
+
+Cache Busting: Pri načítaní (mount) sa explicitne invaliduje cache (invalidateQueries), aby používateľ vždy videl najnovšie dáta po skončení súboja.
+
+4. Odporúčania (Next Steps)
+
+Funkcia "Revanš": Tlačidlo je pripravené v UI, ale zatiaľ nemá logiku. V budúcnosti by malo prekopírovať nastavenia starého súboja (mód, trvanie) a vytvoriť nový s rovnakými účastníkmi.
+
+Export Dát: Pre "hardcore" používateľov by bola užitočná možnosť exportovať históriu do CSV/PDF.
+
+Grafy: Časom by sa mohol pridať líniový graf ukazujúci vývoj umiestnení v čase (napr. či sa používateľ zlepšuje).

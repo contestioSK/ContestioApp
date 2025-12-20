@@ -85,11 +85,37 @@ export default function BattleCreate() {
     }
   }, [isPremium, isLoadingPremium, user, setLocation]);
 
+  // Check for rematch data from sessionStorage (run once on mount)
+  const [rematchDefaults] = useState(() => {
+    try {
+      const rematchData = sessionStorage.getItem('rematchData');
+      if (rematchData) {
+        sessionStorage.removeItem('rematchData'); // Clear after reading
+        const data = JSON.parse(rematchData);
+        return {
+          name: data.name || "",
+          mode: data.mode || "most_fish",
+          participantUserIds: data.participantUserIds || [],
+        };
+      }
+    } catch (e) {
+      console.error("Failed to parse rematch data:", e);
+    }
+    return { name: "", mode: "most_fish" as const, participantUserIds: [] as string[] };
+  });
+  
+  // Initialize invited users from rematch data
+  useEffect(() => {
+    if (rematchDefaults.participantUserIds.length > 0) {
+      setInvitedUserIds(rematchDefaults.participantUserIds);
+    }
+  }, [rematchDefaults.participantUserIds]);
+
   const form = useForm<CreateBattleForm>({
     resolver: zodResolver(createBattleSchema),
     defaultValues: {
-      name: "",
-      mode: "most_fish",
+      name: rematchDefaults.name,
+      mode: rematchDefaults.mode,
       includeOnlyVerified: false,
       startAt: new Date(),
       endAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // Default to 24 hours later
