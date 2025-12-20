@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ArrowLeft, Grid3x3, ChevronLeft, ChevronRight, X, Search, Fish, Calendar } from "lucide-react";
+import { ArrowLeft, Grid3x3, ChevronLeft, ChevronRight, X, Search, Fish, Calendar, SlidersHorizontal } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Badge } from "@/components/ui/badge";
 import DiaryLayout from "@/components/DiaryLayout";
 import type { DiaryCatch, DiaryTrip } from "@shared/schema";
 import { getFishTypeLabel } from "@/utils/fishTypeMapping";
@@ -30,6 +32,10 @@ export default function TripGallery() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterFishType, setFilterFishType] = useState<string>("all");
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null);
+  const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
+  
+  // Count active filters for mobile badge
+  const activeFilterCount = filterFishType !== "all" ? 1 : 0;
 
   // Fetch trip data
   const { data: trip } = useQuery<DiaryTrip>({
@@ -152,9 +158,9 @@ export default function TripGallery() {
           {/* Filters */}
           <Card>
             <CardContent className="p-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="flex flex-col md:grid md:grid-cols-3 gap-4">
                 {/* Search */}
-                <div className="relative">
+                <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
                     placeholder="Hľadať podľa druhu alebo rybára..."
@@ -165,24 +171,42 @@ export default function TripGallery() {
                   />
                 </div>
 
-                {/* Fish Type Filter */}
-                <Select value={filterFishType} onValueChange={setFilterFishType}>
-                  <SelectTrigger data-testid="select-fish-type-filter">
-                    <Fish className="w-4 h-4 mr-2" />
-                    <SelectValue placeholder="Všetky druhy" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Všetky druhy</SelectItem>
-                    {fishTypes.map(type => (
-                      <SelectItem key={type} value={type}>
-                        {getFishTypeLabel(type)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {/* Mobile Filter Button */}
+                <Button 
+                  variant="outline" 
+                  className="md:hidden"
+                  onClick={() => setIsFilterSheetOpen(true)}
+                  data-testid="button-open-filters"
+                >
+                  <SlidersHorizontal className="w-4 h-4 mr-2" />
+                  Filtre
+                  {activeFilterCount > 0 && (
+                    <Badge variant="secondary" className="ml-2 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                      {activeFilterCount}
+                    </Badge>
+                  )}
+                </Button>
+
+                {/* Desktop Fish Type Filter */}
+                <div className="hidden md:block">
+                  <Select value={filterFishType} onValueChange={setFilterFishType}>
+                    <SelectTrigger data-testid="select-fish-type-filter">
+                      <Fish className="w-4 h-4 mr-2" />
+                      <SelectValue placeholder="Všetky druhy" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Všetky druhy</SelectItem>
+                      {fishTypes.map(type => (
+                        <SelectItem key={type} value={type}>
+                          {getFishTypeLabel(type)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
                 {/* Stats */}
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground">
                   <Calendar className="w-4 h-4" />
                   <span>
                     {catches.length} úlovkov • {allPhotos.length} celkovo fotiek
@@ -191,6 +215,63 @@ export default function TripGallery() {
               </div>
             </CardContent>
           </Card>
+          
+          {/* Mobile Filter Sheet */}
+          <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>
+            <SheetContent side="bottom" className="max-h-[80vh] overflow-y-auto">
+              <SheetHeader className="pb-4">
+                <SheetTitle className="flex items-center gap-2">
+                  <SlidersHorizontal className="w-5 h-5" />
+                  Filtrovať fotky
+                </SheetTitle>
+              </SheetHeader>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm text-muted-foreground mb-2 block">Druh ryby</label>
+                  <Select value={filterFishType} onValueChange={setFilterFishType}>
+                    <SelectTrigger className="w-full">
+                      <Fish className="w-4 h-4 mr-2" />
+                      <SelectValue placeholder="Všetky druhy" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Všetky druhy</SelectItem>
+                      {fishTypes.map(type => (
+                        <SelectItem key={type} value={type}>
+                          {getFishTypeLabel(type)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                {/* Mobile Stats */}
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Calendar className="w-4 h-4" />
+                  <span>
+                    {catches.length} úlovkov • {allPhotos.length} celkovo fotiek
+                  </span>
+                </div>
+                
+                <div className="flex gap-3 pt-4">
+                  <Button 
+                    variant="outline" 
+                    className="flex-1"
+                    onClick={() => setFilterFishType("all")}
+                    data-testid="button-clear-filters"
+                  >
+                    Vyčistiť
+                  </Button>
+                  <Button 
+                    className="flex-1"
+                    onClick={() => setIsFilterSheetOpen(false)}
+                    data-testid="button-apply-filters"
+                  >
+                    Použiť filtre
+                  </Button>
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
 
           {/* Photo Grid */}
           {filteredPhotos.length === 0 ? (

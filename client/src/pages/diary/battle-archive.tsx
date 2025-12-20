@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { Trophy, Users, Calendar, Clock, Fish, Weight, Crown, Archive, Search, Filter, Eye, RotateCcw, Medal, BarChart3, Star, Plus, Loader2 } from "lucide-react";
+import { Trophy, Users, Calendar, Clock, Fish, Weight, Crown, Archive, Search, Filter, Eye, RotateCcw, Medal, BarChart3, Star, Plus, Loader2, SlidersHorizontal } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
 import { useLocation } from "wouter";
@@ -72,6 +73,13 @@ export default function BattleArchive() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterMode, setFilterMode] = useState<string>("all");
   const [filterResult, setFilterResult] = useState<string>("all");
+  const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
+  
+  // Count active filters for mobile badge
+  const activeFilterCount = [
+    filterMode !== "all",
+    filterResult !== "all"
+  ].filter(Boolean).length;
   
   console.log("[BATTLE ARCHIVE MOUNT] Component mounted, user:", user?.id);
   
@@ -234,7 +242,25 @@ export default function BattleArchive() {
                     data-testid="input-search-battles"
                   />
                 </div>
-                <div className="flex gap-4">
+                
+                {/* Mobile Filter Button */}
+                <Button 
+                  variant="outline" 
+                  className="md:hidden"
+                  onClick={() => setIsFilterSheetOpen(true)}
+                  data-testid="button-open-filters"
+                >
+                  <SlidersHorizontal className="w-4 h-4 mr-2" />
+                  Filtre
+                  {activeFilterCount > 0 && (
+                    <Badge variant="secondary" className="ml-2 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                      {activeFilterCount}
+                    </Badge>
+                  )}
+                </Button>
+                
+                {/* Desktop Filters */}
+                <div className="hidden md:flex gap-4">
                   <Select value={filterMode} onValueChange={setFilterMode}>
                     <SelectTrigger className="w-48" data-testid="select-filter-mode">
                       <SelectValue placeholder="Herný režim" />
@@ -263,6 +289,72 @@ export default function BattleArchive() {
               </div>
             </CardContent>
           </Card>
+          
+          {/* Mobile Filter Sheet */}
+          <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>
+            <SheetContent side="bottom" className="max-h-[80vh] overflow-y-auto">
+              <SheetHeader className="pb-4">
+                <SheetTitle className="flex items-center gap-2">
+                  <SlidersHorizontal className="w-5 h-5" />
+                  Filtrovať súboje
+                </SheetTitle>
+              </SheetHeader>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm text-muted-foreground mb-2 block">Herný režim</label>
+                  <Select value={filterMode} onValueChange={setFilterMode}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Herný režim" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Všetky režimy</SelectItem>
+                      <SelectItem value="most_fish">Najviac rýb</SelectItem>
+                      <SelectItem value="total_weight">Celková váha</SelectItem>
+                      <SelectItem value="biggest_fish">Najväčšia ryba</SelectItem>
+                      <SelectItem value="best_3_fish">Top 3 ryby</SelectItem>
+                      <SelectItem value="best_5_fish">Top 5 rýb</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <label className="text-sm text-muted-foreground mb-2 block">Výsledok</label>
+                  <Select value={filterResult} onValueChange={setFilterResult}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Výsledok" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Všetky výsledky</SelectItem>
+                      <SelectItem value="win">Víťazstvá</SelectItem>
+                      <SelectItem value="podium">Pódiové umiestnenia</SelectItem>
+                      <SelectItem value="participated">Účasť</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="flex gap-3 pt-4">
+                  <Button 
+                    variant="outline" 
+                    className="flex-1"
+                    onClick={() => {
+                      setFilterMode("all");
+                      setFilterResult("all");
+                    }}
+                    data-testid="button-clear-filters"
+                  >
+                    Vyčistiť
+                  </Button>
+                  <Button 
+                    className="flex-1"
+                    onClick={() => setIsFilterSheetOpen(false)}
+                    data-testid="button-apply-filters"
+                  >
+                    Použiť filtre
+                  </Button>
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
 
           {/* Battles List */}
           <div className="space-y-4">
