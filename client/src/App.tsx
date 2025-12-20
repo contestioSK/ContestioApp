@@ -58,9 +58,30 @@ import AuthLogin from "@/pages/auth/login";
 import VerifyEmail from "@/pages/auth/verify-email";
 import ResetPassword from "@/pages/auth/reset-password";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import Onboarding from "@/pages/onboarding";
+import { useEffect } from "react";
+import { useLocation } from "wouter";
 
 function Router() {
   const { isLoading, user } = useAuth();
+  const [location, setLocation] = useLocation();
+  
+  useEffect(() => {
+    if (isLoading) return;
+    if (!user) return;
+    
+    const onboardingExemptRoutes = ["/onboarding", "/auth/login", "/auth/register", "/auth/verify-email", "/reset-password", "/pricing", "/about-us", "/faq", "/contact", "/terms", "/privacy", "/register"];
+    const onboardingExemptPrefixes = ["/competition/", "/team/", "/categories/"];
+    
+    const isExempt = onboardingExemptRoutes.includes(location) || 
+                     onboardingExemptPrefixes.some(prefix => location.startsWith(prefix));
+    
+    if (isExempt) return;
+    
+    if (!user.preferences?.onboardingCompleted) {
+      setLocation("/onboarding");
+    }
+  }, [user, isLoading, location, setLocation]);
 
   return (
     <Switch>
@@ -72,6 +93,7 @@ function Router() {
       <Route path="/auth/login" component={AuthLogin} />
       <Route path="/auth/verify-email" component={VerifyEmail} />
       <Route path="/reset-password" component={ResetPassword} />
+      <Route path="/onboarding" component={Onboarding} />
       
       <Route path="/register-competition" component={RegisterCompetition} />
       <Route path="/competition/:id/setup" component={CompetitionSetup} />
