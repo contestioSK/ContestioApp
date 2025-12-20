@@ -78,6 +78,35 @@ Preferred communication style: Simple, everyday language.
 - **Passport**: Authentication middleware
 - **Express Session**: Session management
 
+# Onboarding System
+
+## Current Implementation
+- **3-step onboarding flow** for new users after registration
+- **Step 1 - Fishing Style**: Kaprárina, Prívlač, Feeder, Muškárenie, Sumčiarina
+- **Step 2 - Main Goal**: Súťaženie s kamošmi, Súkromný denník, Analýza a štatistiky
+- **Step 3 - Visual Preference**: Minimalistické zoznamy, Grafy a mapy
+- **Data storage**: `users.preferences` JSONB column
+- **Auto-redirect**: Router guard redirects to `/onboarding` if `onboardingCompleted: false`
+- **Skip option**: Users can skip onboarding if they don't want to answer
+
+## Future Personalization Possibilities (Not Yet Implemented)
+Based on collected preferences, the UI could be personalized:
+
+1. **By fishingStyle**:
+   - Show relevant fish species icons in statistics
+   - Pre-select common fish for chosen fishing style
+   - Customize tips and content
+
+2. **By mainGoal**:
+   - Reorder dashboard cards (battles first vs diary first vs statistics first)
+   - Highlight relevant features in navigation
+   - Personalize welcome messages
+
+3. **By visualPreference**:
+   - Toggle between table/list view and chart/graph view
+   - Default visualization mode across the app
+   - Compact vs detailed card layouts
+
 # Planned Features (TODO)
 
 ## Communication Hub (Priority: Medium)
