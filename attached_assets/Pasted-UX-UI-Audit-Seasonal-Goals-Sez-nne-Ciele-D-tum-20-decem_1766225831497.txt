@@ -1,0 +1,47 @@
+UX/UI Audit: Seasonal Goals (Sezónne Ciele)
+
+Dátum: 20. december 2025
+Komponent: SeasonalGoals
+Status: Implementovaný, obsahuje pokročilú gamifikáciu
+
+1. Zhrnutie (Executive Summary)
+
+Tento modul je výborne navrhnutý z hľadiska psychológie používateľa. Využíva princípy gamifikácie (progress bary, oslavy, odznaky) na motiváciu rybárov. Rozdelenie na "Hlavný cieľ", "Aktívne ciele" a "Ďalší na rade" vytvára jasnú hierarchiu pozornosti.
+
+2. UI Analýza (Vizuál a Estetika)
+
+Hlavný Cieľ (Hero Section)
+
+Design: Použitie veľkého CircularProgress (180px) a gradientného pozadia (bg-gradient-to-br) dáva hlavnému cieľu patričnú váhu. Je to vizuálny stredobod stránky.
+
+Detail: Odznak "HLAVNÝ CIEĽ" s ikonou korunky jasne komunikuje prioritu.
+
+Widget "Ďalší na Rade" (Next Up)
+
+Funkcia: Dynamicky vypočíta, ktorý cieľ je najbližšie k splneniu (najvyššie percento).
+
+Motivácia: Text "Chýba ti už len X" je presne ten typ micro-copy, ktorý núti používateľa ísť znova na ryby.
+
+Vizuál: Jemný farebný gradient odlišuje tento widget od ostatných informačných kariet.
+
+3. UX Analýza (Interakcia)
+
+Oslava úspechu (Confetti)
+
+Implementácia: Hook useConfetti sa spustí automaticky, ak sa načíta cieľ splnený v posledných 5 sekundách.
+
+Efekt: Toto je silný "Delight" moment. Okamžitá vizuálna odmena po splnení cieľa zvyšuje dopamín a spokojnosť používateľa.
+
+Prázdne stavy (Empty States)
+
+Stav: Ak používateľ nemá žiadne ciele, zobrazí sa veľká karta s výzvou na vytvorenie prvého cieľa.
+
+Hodnotenie: Správne UX. Nenecháva používateľa v prázdnom zozname, ale navádza ho na akciu (CTA: Vytvoriť prvý cieľ).
+
+4. Odporúčania (Next Steps)
+
+Editácia a Mazanie: Tlačidlá pre editáciu a nastavenia (Settings) sú pripravené, ale zatiaľ neobsahujú logiku pre mazanie (// TODO: Add delete functionality). Odporúčam doplniť ConfirmationDialog pred zmazaním cieľa.
+
+Responsivita kruhového grafu: Na veľmi malých mobiloch (iPhone SE) môže fixná veľkosť 180px kruhového grafu pôsobiť dominantne. Zvážiť zmenšenie na 140px pre obrazovky menšie ako sm.
+
+História sezón: Momentálne sa zobrazuje len aktuálna sezóna. Do budúcna pridať prepínač sezón (dropdown) v hlavičke, aby si rybár mohol pozrieť svoje úspechy z minulých rokov.
