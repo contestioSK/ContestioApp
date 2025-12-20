@@ -26,7 +26,11 @@ import {
   Fish,
   Crown,
   ArrowUp,
-  Moon
+  ArrowDown,
+  Moon,
+  TrendingUp,
+  TrendingDown,
+  Minus
 } from "lucide-react";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
@@ -434,7 +438,36 @@ export default function WeatherForecast() {
     return (kph / 3.6).toFixed(1);
   };
 
+  // Get pressure trend color (green = rising, red = falling, gray = stable)
+  const getPressureTrendColor = (currentPressure: number, index: number, hours: ForecastDay['hour']): { color: string; trend: 'up' | 'down' | 'stable' } => {
+    if (index === 0) return { color: 'text-muted-foreground', trend: 'stable' };
+    const prevPressure = hours[index - 1].pressure_mb;
+    const diff = currentPressure - prevPressure;
+    if (diff > 1) return { color: 'text-green-500', trend: 'up' };
+    if (diff < -1) return { color: 'text-red-500', trend: 'down' };
+    return { color: 'text-muted-foreground', trend: 'stable' };
+  };
+
+  // Filter hours for today - show only current hour and future (Smart Time Filtering)
+  const getFilteredHours = (hours: ForecastDay['hour'], dayDate: string): ForecastDay['hour'] => {
+    const today = new Date();
+    const selectedDate = new Date(dayDate);
+    
+    // Check if selected day is today
+    const isToday = today.toDateString() === selectedDate.toDateString();
+    
+    if (!isToday) return hours;
+    
+    // For today, filter out past hours (show only current hour and future)
+    const currentHour = today.getHours();
+    return hours.filter(hour => {
+      const hourTime = new Date(hour.time);
+      return hourTime.getHours() >= currentHour;
+    });
+  };
+
   const selectedDay = forecast?.forecast.forecastday[selectedDayIndex];
+  const filteredHours = selectedDay ? getFilteredHours(selectedDay.hour, selectedDay.date) : [];
 
   return (
     <DiaryLayout>
@@ -465,17 +498,17 @@ export default function WeatherForecast() {
                 )}
               </div>
 
-              {/* Autocomplete Dropdown */}
+              {/* Autocomplete Dropdown - improved z-index and mobile height */}
               {showResults && searchResults.length > 0 && (
-                <div className="absolute z-50 w-full mt-1 bg-card border border-border rounded-md shadow-lg max-h-60 overflow-auto">
+                <div className="absolute z-[100] w-full mt-1 bg-card border border-border rounded-md shadow-xl max-h-[50vh] md:max-h-60 overflow-auto">
                   {searchResults.map((location) => (
                     <button
                       key={location.id}
                       onClick={() => handleLocationSelect(location)}
-                      className="w-full px-4 py-2 text-left hover:bg-accent transition-colors flex items-start gap-2"
+                      className="w-full px-4 py-3 text-left hover:bg-accent transition-colors flex items-start gap-3 min-h-[56px]"
                       data-testid={`button-location-${location.id}`}
                     >
-                      <MapPin className="w-4 h-4 mt-1 text-muted-foreground flex-shrink-0" />
+                      <MapPin className="w-5 h-5 mt-0.5 text-muted-foreground flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="font-medium truncate">{location.name}</p>
                         <p className="text-sm text-muted-foreground truncate">
@@ -771,72 +804,59 @@ export default function WeatherForecast() {
                     </ComposedChart>
                   </ResponsiveContainer>
 
-                  {/* Horizontal Hourly Scroll */}
+                  {/* Horizontal Hourly Scroll - Smart Time Filtering applied */}
                   <div className="mt-6">
                     <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent">
-                      {selectedDay.hour.map((hour, index) => (
-                        <div
-                          key={index}
-                          className="flex-shrink-0 p-4 rounded-lg border-2 min-w-[120px] space-y-2 text-center bg-card border-border"
-                          data-testid={`hour-card-${index}`}
-                        >
-                          {/* Time */}
-                          <p className="text-sm font-semibold text-foreground">
-                            {format(new Date(hour.time), 'HH:mm')}
-                          </p>
-
-                          {/* Weather Icon */}
-                          <img
-                            src={`https:${hour.condition.icon}`}
-                            alt={hour.condition.text}
-                            className="w-12 h-12 mx-auto"
-                            data-testid={`weather-icon-${index}`}
-                          />
-
-                          {/* Temperature */}
-                          <p className="text-2xl font-bold text-foreground">
-                            {Math.round(hour.temp_c)}°
-                          </p>
-
-                          {/* Wind Speed (m/s) */}
-                          <div className="space-y-1">
-                            <p className="text-xs text-muted-foreground">Vietor</p>
-                            <p className="text-sm font-semibold">
-                              {convertKphToMs(hour.wind_kph)} m/s
+                      {filteredHours.map((hour, index) => {
+                        const pressureInfo = getPressureTrendColor(hour.pressure_mb, index, filteredHours);
+                        return (
+                          <div
+                            key={index}
+                            className="flex-shrink-0 p-3 rounded-lg border-2 min-w-[100px] space-y-1.5 text-center bg-card border-border"
+                            data-testid={`hour-card-${index}`}
+                          >
+                            {/* Time */}
+                            <p className="text-sm font-bold text-foreground">
+                              {format(new Date(hour.time), 'HH:mm')}
                             </p>
-                          </div>
 
-                          {/* Wind Gust (m/s) */}
-                          <div className="space-y-1">
-                            <p className="text-xs text-muted-foreground">Nárazy</p>
-                            <p className="text-sm font-semibold">
-                              {convertKphToMs(hour.gust_kph || hour.wind_kph)} m/s
-                            </p>
-                          </div>
-
-                          {/* Pressure */}
-                          <div className="space-y-1">
-                            <p className="text-xs text-muted-foreground">Tlak</p>
-                            <p className="text-sm font-semibold">
-                              {hour.pressure_mb} mb
-                            </p>
-                          </div>
-
-                          {/* Wind Direction - Arrow + Text */}
-                          <div className="flex flex-col items-center gap-1">
-                            <ArrowUp
-                              className="w-5 h-5 text-blue-400"
-                              style={{
-                                transform: `rotate(${getWindRotation(hour.wind_dir)}deg)`
-                              }}
-                              data-testid={`wind-arrow-${index}`}
+                            {/* Weather Icon */}
+                            <img
+                              src={`https:${hour.condition.icon}`}
+                              alt={hour.condition.text}
+                              className="w-10 h-10 mx-auto"
+                              data-testid={`weather-icon-${index}`}
                             />
-                            <p className="text-xs font-medium text-blue-400">
-                              {getWindDirectionSlovak(hour.wind_dir)}
+
+                            {/* Temperature */}
+                            <p className="text-2xl font-bold text-foreground">
+                              {Math.round(hour.temp_c)}°
                             </p>
+
+                            {/* Wind with direction arrow */}
+                            <div className="flex items-center justify-center gap-1">
+                              <ArrowUp
+                                className="w-4 h-4 text-blue-400"
+                                style={{ transform: `rotate(${getWindRotation(hour.wind_dir)}deg)` }}
+                              />
+                              <span className="text-sm font-semibold">{convertKphToMs(hour.wind_kph)}</span>
+                            </div>
+
+                            {/* Gust - compact */}
+                            <p className="text-xs text-muted-foreground">
+                              ↑{convertKphToMs(hour.gust_kph || hour.wind_kph)} m/s
+                            </p>
+
+                            {/* Pressure with color coding */}
+                            <div className={`flex items-center justify-center gap-1 ${pressureInfo.color}`}>
+                              {pressureInfo.trend === 'up' && <TrendingUp className="w-3 h-3" />}
+                              {pressureInfo.trend === 'down' && <TrendingDown className="w-3 h-3" />}
+                              {pressureInfo.trend === 'stable' && <Minus className="w-3 h-3" />}
+                              <span className="text-xs font-semibold">{hour.pressure_mb}</span>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
@@ -951,34 +971,34 @@ export default function WeatherForecast() {
               ))}
             </div>
 
-            {/* Interactive Chart */}
+            {/* Interactive Chart - Improved font size for mobile */}
             <div className="bg-card border-2 border-border rounded-lg p-4">
               <ResponsiveContainer width="100%" height={200}>
                 <ComposedChart 
-                  data={selectedDay.hour.map(h => ({
+                  data={filteredHours.map(h => ({
                     time: format(new Date(h.time), 'HH:mm'),
                     teplota: Math.round(h.temp_c),
                     zrážky: h.precip_mm
                   }))}
-                  margin={{ top: 5, right: 5, left: -20, bottom: 5 }}
+                  margin={{ top: 5, right: 5, left: -15, bottom: 5 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="#1e3a5f" opacity={0.3} />
                   <XAxis 
                     dataKey="time" 
                     stroke="#94a3b8"
-                    tick={{ fill: '#94a3b8', fontSize: 10 }}
-                    interval={3}
+                    tick={{ fill: '#94a3b8', fontSize: 11 }}
+                    interval={2}
                   />
                   <YAxis 
                     yAxisId="left"
                     stroke="#94a3b8"
-                    tick={{ fill: '#94a3b8', fontSize: 10 }}
+                    tick={{ fill: '#94a3b8', fontSize: 11 }}
                   />
                   <YAxis 
                     yAxisId="right"
                     orientation="right"
                     stroke="#94a3b8"
-                    tick={{ fill: '#94a3b8', fontSize: 10 }}
+                    tick={{ fill: '#94a3b8', fontSize: 11 }}
                   />
                   <Tooltip 
                     contentStyle={{ 
@@ -1007,46 +1027,53 @@ export default function WeatherForecast() {
               </ResponsiveContainer>
             </div>
 
-            {/* Hourly Forecast - Horizontal Scroll */}
+            {/* Hourly Forecast - Horizontal Scroll - Smart Time Filtering applied */}
             <div className="bg-card border-2 border-border rounded-lg p-4">
               <h3 className="text-sm font-semibold mb-3">Hodinová predpoveď</h3>
               <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent">
-                {selectedDay.hour.map((hour, index) => (
-                  <div
-                    key={index}
-                    className="flex-shrink-0 p-2 rounded-lg border border-border min-w-[75px] space-y-1 text-center bg-card/50"
-                    data-testid={`hour-mobile-card-${index}`}
-                  >
-                    <p className="text-xs font-semibold">
-                      {format(new Date(hour.time), 'HH:mm')}
-                    </p>
-                    <img
-                      src={`https:${hour.condition.icon}`}
-                      alt={hour.condition.text}
-                      className="w-10 h-10 mx-auto"
-                    />
-                    <p className="text-xl font-bold">
-                      {Math.round(hour.temp_c)}°
-                    </p>
-                    <div className="flex justify-center">
-                      <ArrowUp
-                        className="w-4 h-4 text-blue-400"
-                        style={{
-                          transform: `rotate(${getWindRotation(hour.wind_dir)}deg)`
-                        }}
+                {filteredHours.map((hour, index) => {
+                  const pressureInfo = getPressureTrendColor(hour.pressure_mb, index, filteredHours);
+                  return (
+                    <div
+                      key={index}
+                      className="flex-shrink-0 p-2 rounded-lg border border-border min-w-[88px] space-y-1 text-center bg-card/50"
+                      data-testid={`hour-mobile-card-${index}`}
+                    >
+                      <p className="text-xs font-bold">
+                        {format(new Date(hour.time), 'HH:mm')}
+                      </p>
+                      <img
+                        src={`https:${hour.condition.icon}`}
+                        alt={hour.condition.text}
+                        className="w-9 h-9 mx-auto"
                       />
+                      <p className="text-xl font-bold">
+                        {Math.round(hour.temp_c)}°
+                      </p>
+                      {/* Wind with arrow */}
+                      <div className="flex items-center justify-center gap-0.5">
+                        <ArrowUp
+                          className="w-3 h-3 text-blue-400"
+                          style={{ transform: `rotate(${getWindRotation(hour.wind_dir)}deg)` }}
+                        />
+                        <span className="text-xs text-blue-400 font-semibold">
+                          {convertKphToMs(hour.wind_kph)}
+                        </span>
+                      </div>
+                      {/* Gust */}
+                      <p className="text-[10px] text-muted-foreground">
+                        ↑{convertKphToMs(hour.gust_kph || hour.wind_kph)}
+                      </p>
+                      {/* Pressure with color */}
+                      <div className={`flex items-center justify-center gap-0.5 ${pressureInfo.color}`}>
+                        {pressureInfo.trend === 'up' && <TrendingUp className="w-2.5 h-2.5" />}
+                        {pressureInfo.trend === 'down' && <TrendingDown className="w-2.5 h-2.5" />}
+                        {pressureInfo.trend === 'stable' && <Minus className="w-2.5 h-2.5" />}
+                        <span className="text-[10px] font-semibold">{hour.pressure_mb}</span>
+                      </div>
                     </div>
-                    <p className="text-xs text-blue-400 font-medium">
-                      {convertKphToMs(hour.wind_kph)} m/s
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {convertKphToMs(hour.gust_kph || hour.wind_kph)} m/s
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {hour.pressure_mb} mb
-                    </p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
