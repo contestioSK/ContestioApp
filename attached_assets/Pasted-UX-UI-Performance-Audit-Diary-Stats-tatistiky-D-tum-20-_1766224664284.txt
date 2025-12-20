@@ -1,0 +1,86 @@
+UX/UI & Performance Audit: Diary Stats (Štatistiky)
+
+Dátum: 20. december 2025
+Komponent: DiaryStats (Štatistický dashboard)
+Status: Kritická analýza výkonu a použiteľnosti
+
+1. Výkonnostná analýza (Performance Bottleneck)
+
+Toto je vami identifikovaný "najväčší kameň úrazu". Komponent trpí vážnym problémom s "Render Performance".
+
+Problém: Všetky výpočty štatistík (priemerná váha, mesačné štatistiky, typy rýb, top nástrahy, analýza kvality...) sa vykonávajú synchrónne priamo v tele funkcie pri každom re-renderovaní.
+
+Dopad:
+
+Ak používateľ klikne na tab (napr. z "Prehľad" na "Trendy"), React musí znova spustiť celú funkciu DiaryStats.
+
+Všetky polia (trips, catches) sa znova prechádzajú cyklami reduce, filter, map.
+
+Pri 100+ úlovkoch to môže spôsobiť viditeľné "sekanie" UI (jank).
+
+Riešenie (Must-Have):
+
+Všetky odvodené dáta (derived state) musia byť zabalené do useMemo.
+
+Napríklad:
+
+const monthlyStats = useMemo(() => {
+  return getMonthsForPeriod(selectedPeriodMonths).map(...)
+}, [catches, trips, selectedPeriodMonths]);
+
+
+Tým sa zabezpečí, že výpočty prebehnú len vtedy, keď sa zmenia vstupné dáta (catches, trips alebo filter obdobia), nie pri každom kliknutí v UI.
+
+2. Architektúra kódu (Code Organization)
+
+Problém: Súbor má ~900 riadkov a mieša v sebe:
+
+Logiku načítania dát (Queries).
+
+Komplexnú biznis logiku (výpočty trendov, skóre kvality).
+
+Prezentačnú logiku (JSX s množstvom UI komponentov).
+
+Riešenie: Vyčleniť logiku do vlastného hooku useDiaryStatsCalculation.
+
+Hook by prebral surové trips a catches a vrátil by už vypočítané objekty (monthlyStats, personalRecords, atď.).
+
+Komponent DiaryStats by ostal čistý a riešil by len zobrazenie (UI).
+
+3. UX Analýza (Použiteľnosť)
+
+Premium Gating (Zamykanie obsahu)
+
+Stav: Aplikácia agresívne zobrazuje zamknuté taby a "Alert" o Premium verzii.
+
+Pozitívum: Jasne komunikuje hodnotu Premium verzie (užívateľ vidí, o čo prichádza).
+
+Riziko: Príliš veľa zámkov môže pôsobiť frustrujúco.
+
+Odporúčanie: Zvážiť "Teaser" prístup – ukázať časť dát z Trendov (napr. len posledný mesiac) a pre históriu vyžadovať Premium. Tým sa používateľ "namotá" na funkčnosť.
+
+Výber obdobia (Period Selector)
+
+Stav: Používa sa natívny <select> element (<select className="px-3 py-1 border rounded-md...">).
+
+Vizuál: Pôsobí to trochu nekonzistentne oproti zvyšku Shadcn UI komponentov (Select, DropdownMenu).
+
+Odporúčanie: Nahradiť natívny select komponentom Select z UI knižnice pre konzistentný vzhľad.
+
+Tab "Prehľad" (Overview)
+
+Stav: Obsahuje veľa kariet (Kľúčové metriky, Grafy, Top lokality, Porovnanie s minulým rokom).
+
+Mobile: Na mobile to bude veľmi dlhý zoznam, ktorý treba veľa scrollovať.
+
+Odporúčanie: Zvážiť zbalenie niektorých sekcií (napr. Top Lokality) do akordeónu alebo ich presunúť nižšie. Kľúčové čísla (Total Catches) by mali byť na mobile v mriežke 2x2, nie 1x1 pod sebou, aby sa ušetrilo vertikálne miesto.
+
+4. Akčný plán (Refactoring Plan)
+
+Fáza 1 (Performance): Okamžite obaliť všetky bloky výpočtov (const monthlyStats = ..., const fishTypeStats = ...) do useMemo. Toto je "Quick Win", ktorý vyrieši sekanie.
+
+Fáza 2 (Refactoring): Presunúť logiku do src/hooks/useDiaryStats.ts.
+
+Fáza 3 (UI Polish): Nahradiť natívny select a optimalizovať mobilný layout pre "Overview" tab.
+
+Tento komponent je inak funkčne veľmi bohatý a pre rybára poskytuje skvelú hodnotu. Len potrebuje technickú optimalizáciu, aby "dýchal" voľne.
