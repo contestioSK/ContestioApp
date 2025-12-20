@@ -12,6 +12,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { DiaryBattle } from "@shared/schema";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Battle Invitation interface
 interface BattleInvitation {
@@ -51,8 +52,12 @@ interface ArchivedBattle {
 }
 
 // Helper function to calculate time remaining
-const getTimeRemaining = (endDate: Date | string): string => {
+const getTimeRemaining = (endDate: Date | string | null | undefined): string => {
+  if (!endDate) return 'Neznámy koniec';
+  
   const end = new Date(endDate);
+  if (isNaN(end.getTime())) return 'Neznámy koniec';
+  
   const now = new Date();
   const diff = end.getTime() - now.getTime();
   
@@ -64,6 +69,81 @@ const getTimeRemaining = (endDate: Date | string): string => {
   if (days > 0) return `${days}d ${hours}h`;
   return `${hours}h`;
 };
+
+// Helper function to calculate battle progress (% of time elapsed)
+const getBattleProgress = (startDate: Date | string | null | undefined, endDate: Date | string | null | undefined): number => {
+  if (!startDate || !endDate) return 0;
+  
+  const start = new Date(startDate).getTime();
+  const end = new Date(endDate).getTime();
+  
+  // Validate dates
+  if (isNaN(start) || isNaN(end) || end <= start) return 0;
+  
+  const now = Date.now();
+  
+  if (now <= start) return 0;
+  if (now >= end) return 100;
+  
+  const total = end - start;
+  const elapsed = now - start;
+  return Math.round((elapsed / total) * 100);
+};
+
+// Countdown Timer Component for battles ending in < 24h
+function CountdownTimer({ endDate }: { endDate: Date | string }) {
+  const [display, setDisplay] = useState<{ type: 'countdown' | 'ended' | 'hidden'; hours?: number; minutes?: number; seconds?: number }>({ type: 'hidden' });
+  
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const end = new Date(endDate).getTime();
+      const now = Date.now();
+      const diff = end - now;
+      
+      // Battle ended
+      if (diff <= 0) {
+        setDisplay({ type: 'ended' });
+        return;
+      }
+      
+      // More than 24 hours - don't show countdown
+      if (diff > 24 * 60 * 60 * 1000) {
+        setDisplay({ type: 'hidden' });
+        return;
+      }
+      
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      
+      setDisplay({ type: 'countdown', hours, minutes, seconds });
+    };
+    
+    calculateTimeLeft();
+    const interval = setInterval(calculateTimeLeft, 1000);
+    
+    return () => clearInterval(interval);
+  }, [endDate]);
+  
+  if (display.type === 'hidden') return null;
+  
+  if (display.type === 'ended') {
+    return (
+      <Badge variant="outline" className="text-xs bg-gray-500/10 border-gray-500/50 text-gray-500">
+        Skončený
+      </Badge>
+    );
+  }
+  
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  
+  return (
+    <Badge variant="outline" className="text-xs bg-red-500/10 border-red-500/50 text-red-500 font-mono animate-pulse">
+      <Clock className="w-3 h-3 mr-1" />
+      {pad(display.hours!)}:{pad(display.minutes!)}:{pad(display.seconds!)}
+    </Badge>
+  );
+}
 
 // Helper function to get user initials
 const getUserInitials = (firstName?: string | null, lastName?: string | null, email?: string): string => {
@@ -95,6 +175,12 @@ export default function BattleIndex() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   
+  // Force re-render every 30 seconds to update time-based UI (countdown, progress)
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const interval = setInterval(() => setTick(t => t + 1), 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const { data: premiumStatus, isLoading: isPremiumLoading } = useQuery<{ isPremium: boolean }>({
     queryKey: ['/api/auth/premium-status'],
@@ -275,9 +361,11 @@ export default function BattleIndex() {
                 </CardHeader>
                 <CardContent className="space-y-3 md:space-y-4 p-4 md:p-6 pt-0">
                   {activeBattles.length > 0 ? (
-                    activeBattles.map((battle, index) => {
-                      const progress = 45 + (index * 15); // Mock progress
-                      const position = index + 2; // Mock position
+                    activeBattles.map((battle) => {
+                      const progress = getBattleProgress(battle.startAt, battle.endAt);
+                      const end = new Date(battle.endAt).getTime();
+                      const now = Date.now();
+                      const isEndingSoon = (end - now) < 24 * 60 * 60 * 1000 && (end - now) > 0;
                       
                       return (
                         <div
@@ -298,17 +386,21 @@ export default function BattleIndex() {
                                   </span>
                                 </div>
                               </div>
-                              <Badge variant="outline" className="text-xs" data-testid={`badge-time-remaining-${battle.id}`}>
-                                <Clock className="w-3 h-3 mr-1" />
-                                {getTimeRemaining(battle.endAt)}
-                              </Badge>
+                              {isEndingSoon ? (
+                                <CountdownTimer endDate={battle.endAt} />
+                              ) : (
+                                <Badge variant="outline" className="text-xs" data-testid={`badge-time-remaining-${battle.id}`}>
+                                  <Clock className="w-3 h-3 mr-1" />
+                                  {getTimeRemaining(battle.endAt)}
+                                </Badge>
+                              )}
                             </div>
                             
-                            {/* Progress Bar */}
+                            {/* Progress Bar - % of time elapsed */}
                             <div className="space-y-1">
                               <div className="flex items-center justify-between text-sm">
                                 <span className="text-muted-foreground" data-testid={`text-battle-progress-${battle.id}`}>
-                                  Tvoj Progres ({position}. miesto)
+                                  Priebeh súboja
                                 </span>
                                 <span className="text-muted-foreground" data-testid={`text-battle-progress-percent-${battle.id}`}>
                                   {progress}%
@@ -381,10 +473,16 @@ export default function BattleIndex() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
+                  <AnimatePresence mode="popLayout">
                   {invitations.length > 0 ? (
                     invitations.map((invitation) => (
-                      <div
+                      <motion.div
                         key={invitation.id}
+                        layout
+                        initial={{ opacity: 0, scale: 0.8, y: -20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.8, x: 100 }}
+                        transition={{ duration: 0.3 }}
                         className="p-4 rounded-lg border border-border/50 bg-muted/30"
                         data-testid={`card-invitation-${invitation.id}`}
                       >
@@ -439,7 +537,7 @@ export default function BattleIndex() {
                             </div>
                           </div>
                         </div>
-                      </div>
+                      </motion.div>
                     ))
                   ) : (
                     <div 
@@ -470,6 +568,7 @@ export default function BattleIndex() {
                       </Button>
                     </div>
                   )}
+                  </AnimatePresence>
                 </CardContent>
               </Card>
             </div>
