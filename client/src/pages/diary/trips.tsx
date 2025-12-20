@@ -13,6 +13,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerTrigger } from "@/components/ui/drawer";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -24,6 +26,7 @@ import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { showErrorToast } from "@/lib/errorUtils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 import { 
   Calendar as CalendarIcon, 
@@ -87,6 +90,7 @@ export default function DiaryTrips() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingTrip, setEditingTrip] = useState<DiaryTrip | null>(null);
@@ -95,6 +99,7 @@ export default function DiaryTrips() {
   const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
   const [coverImagePreview, setCoverImagePreview] = useState<string | null>(null);
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"active" | "history">("active");
   
   // Offline functionality
   const { 
@@ -507,67 +512,329 @@ export default function DiaryTrips() {
     setIsPremiumModalOpen(true);
   }, []);
 
+  // Trip form content - reusable for both Dialog and Drawer
+  const TripFormContent = () => (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+        <div className="space-y-4">
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Názov výpravy</FormLabel>
+                <FormControl>
+                  <Input placeholder="napr. Víkendová výprava na Dunaj" data-testid="input-trip-name" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="location"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Lokalita</FormLabel>
+                <FormControl>
+                  <Input placeholder="napr. Dunaj - Bratislava" data-testid="input-trip-location" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="startDate"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Začiatok výpravy</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
+                          data-testid="button-start-date"
+                        >
+                          {field.value ? (
+                            format(field.value, "PPP", { locale: sk })
+                          ) : (
+                            <span>Vyberte dátum</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        disabled={(date) => date < new Date("1900-01-01")}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="endDate"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Koniec výpravy</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
+                          data-testid="button-end-date"
+                        >
+                          {field.value ? (
+                            format(field.value, "PPP", { locale: sk })
+                          ) : (
+                            <span>Vyberte dátum</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        disabled={(date) => date < new Date("1900-01-01")}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <FormLabel>Titulná fotografia (voliteľné)</FormLabel>
+            <div className="flex flex-col gap-4">
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={handleCoverImageChange}
+                data-testid="input-cover-image"
+              />
+              {(coverImagePreview || editingTrip?.coverImageUrl) && (
+                <div className="relative w-full h-32 md:h-48 rounded-lg overflow-hidden border">
+                  <img
+                    src={coverImagePreview || editingTrip?.coverImageUrl || ''}
+                    alt="Náhľad titulnej fotografie"
+                    className="w-full h-full object-cover"
+                    data-testid="img-cover-preview"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+
+          <FormField
+            control={form.control}
+            name="notes"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Poznámky (voliteľné)</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Dodatočné informácie o výprave..."
+                    data-testid="textarea-trip-notes"
+                    className="min-h-[80px]"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="visibility"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Viditeľnosť</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger data-testid="select-trip-visibility">
+                      <SelectValue placeholder="Vyberte viditeľnosť" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="private">
+                      <div className="flex items-center gap-2">
+                        <Lock className="w-4 h-4" />
+                        <span>Súkromné - len vy</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="shared">
+                      <div className="flex items-center gap-2">
+                        <Globe className="w-4 h-4" />
+                        <span>Zdieľané - viditeľné pre ostatných</span>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <FormLabel>Účastníci (voliteľné)</FormLabel>
+            <Button type="button" variant="outline" size="sm" onClick={addParticipant}>
+              <Plus className="w-4 h-4 mr-1" />
+              Pridať
+            </Button>
+          </div>
+          
+          {form.watch("participants")?.map((_, index) => (
+            <div key={index} className="flex items-center gap-2">
+              <FormField
+                control={form.control}
+                name={`participants.${index}.name`}
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <FormControl>
+                      <Input 
+                        placeholder="Meno účastníka"
+                        data-testid={`input-participant-${index}`}
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => removeParticipant(index)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex justify-end gap-3 pt-4 border-t">
+          <Button type="button" variant="outline" onClick={closeDialog}>
+            Zrušiť
+          </Button>
+          <Button 
+            type="submit" 
+            disabled={createTripMutation.isPending || updateTripMutation.isPending}
+            data-testid="button-submit-trip"
+          >
+            {editingTrip ? "Aktualizovať" : "Vytvoriť"} výpravu
+          </Button>
+        </div>
+      </form>
+    </Form>
+  );
+
   return (
     <DiaryLayout>
-      <div className="p-6">
-        <div className="max-w-4xl mx-auto space-y-8">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl font-bold text-foreground">Rybárske výpravy</h1>
-                {isOffline && (
+      <div className="p-4 md:p-6 pb-24 md:pb-6">
+        <div className="max-w-4xl mx-auto space-y-6">
+          {/* Compact Header */}
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <h1 className="text-2xl md:text-3xl font-bold text-foreground">Výpravy</h1>
+                {/* Compact status indicator */}
+                {(isOffline || isSyncing || (!isOffline && pendingTrips.length > 0)) && (
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Badge variant="destructive" className="flex items-center gap-1" data-testid="badge-offline">
-                          <WifiOff className="w-3 h-3" />
-                          Offline
-                        </Badge>
+                        <div className="flex items-center">
+                          {isOffline ? (
+                            <Badge variant="destructive" className="h-6 w-6 p-0 flex items-center justify-center rounded-full" data-testid="badge-offline">
+                              <WifiOff className="w-3 h-3" />
+                            </Badge>
+                          ) : isSyncing ? (
+                            <Badge variant="secondary" className="h-6 w-6 p-0 flex items-center justify-center rounded-full" data-testid="badge-syncing">
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            </Badge>
+                          ) : pendingTrips.length > 0 ? (
+                            <Badge variant="outline" className="h-6 px-2 flex items-center gap-1" data-testid="badge-pending">
+                              <Upload className="w-3 h-3" />
+                              <span className="text-xs">{pendingTrips.length}</span>
+                            </Badge>
+                          ) : null}
+                        </div>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>Bez pripojenia - zmeny sa uložia lokálne</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
-                {isSyncing && (
-                  <Badge variant="secondary" className="flex items-center gap-1" data-testid="badge-syncing">
-                    <Loader2 className="w-3 h-3 animate-spin" />
-                    Synchronizujem...
-                  </Badge>
-                )}
-                {!isOffline && pendingTrips.length > 0 && !isSyncing && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Badge variant="outline" className="flex items-center gap-1" data-testid="badge-pending">
-                          <Upload className="w-3 h-3" />
-                          {pendingTrips.length} čakajúcich
-                        </Badge>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Kliknite pre synchronizáciu pending výprav</p>
+                        {isOffline ? (
+                          <p>Bez pripojenia - zmeny sa uložia lokálne</p>
+                        ) : isSyncing ? (
+                          <p>Synchronizujem zmeny...</p>
+                        ) : (
+                          <p>{pendingTrips.length} čakajúcich na synchronizáciu</p>
+                        )}
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 )}
               </div>
-              <p className="text-muted-foreground">
-                Spravujte svoje rybárske výpravy a zdieľajte ich s ostatnými
-              </p>
+              
+              {/* Desktop create button */}
+              <Button 
+                onClick={() => setIsCreateDialogOpen(true)}
+                disabled={limits && !limits.canCreate}
+                className="hidden md:flex"
+                data-testid="button-create-trip"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Nová výprava
+              </Button>
             </div>
-            <Dialog open={isCreateDialogOpen || !!editingTrip} onOpenChange={closeDialog}>
-              <DialogTrigger asChild>
-                <Button 
-                  onClick={() => setIsCreateDialogOpen(true)}
-                  disabled={limits && !limits.canCreate}
-                  data-testid="button-create-trip"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Nová výprava
-                </Button>
-              </DialogTrigger>
+            <p className="text-muted-foreground text-sm">
+              Spravujte svoje rybárske výpravy
+            </p>
+          </div>
+
+          {/* Responsive Dialog (Desktop) / Drawer (Mobile) for trip form */}
+          {isMobile ? (
+            <Drawer open={isCreateDialogOpen || !!editingTrip} onOpenChange={(open) => !open && closeDialog()}>
+              <DrawerContent className="max-h-[90vh] overflow-y-auto">
+                <DrawerHeader className="text-left">
+                  <DrawerTitle>
+                    {editingTrip ? "Upraviť výpravu" : "Nová výprava"}
+                  </DrawerTitle>
+                  <DrawerDescription>
+                    {editingTrip 
+                      ? "Aktualizujte detaily výpravy."
+                      : "Vytvorte novú rybársku výpravu."
+                    }
+                  </DrawerDescription>
+                </DrawerHeader>
+                <div className="px-4 pb-6">
+                  <TripFormContent />
+                </div>
+              </DrawerContent>
+            </Drawer>
+          ) : (
+            <Dialog open={isCreateDialogOpen || !!editingTrip} onOpenChange={(open) => !open && closeDialog()}>
               <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>
@@ -580,248 +847,10 @@ export default function DiaryTrips() {
                     }
                   </DialogDescription>
                 </DialogHeader>
-
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-                    {/* Basic Information */}
-                    <div className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Názov výpravy</FormLabel>
-                            <FormControl>
-                              <Input placeholder="napr. Víkendová výprava na Dunaj" data-testid="input-trip-name" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="location"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Lokalita</FormLabel>
-                            <FormControl>
-                              <Input placeholder="napr. Dunaj - Bratislava" data-testid="input-trip-location" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="startDate"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-col">
-                              <FormLabel>Začiatok výpravy</FormLabel>
-                              <Popover>
-                                <PopoverTrigger asChild>
-                                  <FormControl>
-                                    <Button
-                                      variant="outline"
-                                      className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
-                                      data-testid="button-start-date"
-                                    >
-                                      {field.value ? (
-                                        format(field.value, "PPP", { locale: sk })
-                                      ) : (
-                                        <span>Vyberte dátum</span>
-                                      )}
-                                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                    </Button>
-                                  </FormControl>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
-                                  <Calendar
-                                    mode="single"
-                                    selected={field.value}
-                                    onSelect={field.onChange}
-                                    disabled={(date) => date < new Date("1900-01-01")}
-                                    initialFocus
-                                  />
-                                </PopoverContent>
-                              </Popover>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="endDate"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-col">
-                              <FormLabel>Koniec výpravy</FormLabel>
-                              <Popover>
-                                <PopoverTrigger asChild>
-                                  <FormControl>
-                                    <Button
-                                      variant="outline"
-                                      className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
-                                      data-testid="button-end-date"
-                                    >
-                                      {field.value ? (
-                                        format(field.value, "PPP", { locale: sk })
-                                      ) : (
-                                        <span>Vyberte dátum</span>
-                                      )}
-                                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                    </Button>
-                                  </FormControl>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
-                                  <Calendar
-                                    mode="single"
-                                    selected={field.value}
-                                    onSelect={field.onChange}
-                                    disabled={(date) => date < new Date("1900-01-01")}
-                                    initialFocus
-                                  />
-                                </PopoverContent>
-                              </Popover>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      {/* Cover Image Upload */}
-                      <div className="space-y-2">
-                        <FormLabel>Titulná fotografia (voliteľné)</FormLabel>
-                        <div className="flex flex-col gap-4">
-                          <Input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleCoverImageChange}
-                            data-testid="input-cover-image"
-                          />
-                          {(coverImagePreview || editingTrip?.coverImageUrl) && (
-                            <div className="relative w-full h-48 rounded-lg overflow-hidden border">
-                              <img
-                                src={coverImagePreview || editingTrip?.coverImageUrl || ''}
-                                alt="Náhľad titulnej fotografie"
-                                className="w-full h-full object-cover"
-                                data-testid="img-cover-preview"
-                              />
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      <FormField
-                        control={form.control}
-                        name="notes"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Poznámky (voliteľné)</FormLabel>
-                            <FormControl>
-                              <Textarea
-                                placeholder="Dodatočné informácie o výprave..."
-                                data-testid="textarea-trip-notes"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="visibility"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Viditeľnosť</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <FormControl>
-                                <SelectTrigger data-testid="select-trip-visibility">
-                                  <SelectValue placeholder="Vyberte viditeľnosť" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="private">
-                                  <div className="flex items-center gap-2">
-                                    <Lock className="w-4 h-4" />
-                                    <span>Súkromné - len vy</span>
-                                  </div>
-                                </SelectItem>
-                                <SelectItem value="shared">
-                                  <div className="flex items-center gap-2">
-                                    <Globe className="w-4 h-4" />
-                                    <span>Zdieľané - viditeľné pre ostatných</span>
-                                  </div>
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    {/* Participants */}
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <FormLabel>Účastníci (voliteľné)</FormLabel>
-                        <Button type="button" variant="outline" size="sm" onClick={addParticipant}>
-                          <Plus className="w-4 h-4 mr-1" />
-                          Pridať
-                        </Button>
-                      </div>
-                      
-                      {form.watch("participants")?.map((_, index) => (
-                        <div key={index} className="flex items-center gap-2">
-                          <FormField
-                            control={form.control}
-                            name={`participants.${index}.name`}
-                            render={({ field }) => (
-                              <FormItem className="flex-1">
-                                <FormControl>
-                                  <Input 
-                                    placeholder="Meno účastníka"
-                                    data-testid={`input-participant-${index}`}
-                                    {...field} 
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            onClick={() => removeParticipant(index)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="flex justify-end gap-4">
-                      <Button type="button" variant="outline" onClick={closeDialog}>
-                        Zrušiť
-                      </Button>
-                      <Button 
-                        type="submit" 
-                        disabled={createTripMutation.isPending || updateTripMutation.isPending}
-                        data-testid="button-submit-trip"
-                      >
-                        {editingTrip ? "Aktualizovať" : "Vytvoriť"} výpravu
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
+                <TripFormContent />
               </DialogContent>
             </Dialog>
-          </div>
+          )}
 
           {/* Freemium Limits Warning */}
           {limits && !limits.canCreate && (
@@ -838,40 +867,86 @@ export default function DiaryTrips() {
 
           {/* Trips List */}
           {isLoading ? (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="h-72 bg-muted rounded-xl animate-pulse"></div>
+                <div key={i} className="h-64 bg-muted rounded-xl animate-pulse">
+                  <div className="h-32 bg-muted-foreground/10 rounded-t-xl" />
+                  <div className="p-4 space-y-2">
+                    <div className="h-4 bg-muted-foreground/10 rounded w-3/4" />
+                    <div className="h-3 bg-muted-foreground/10 rounded w-1/2" />
+                    <div className="h-3 bg-muted-foreground/10 rounded w-1/3" />
+                  </div>
+                </div>
               ))}
             </div>
           ) : trips.length === 0 ? (
-            <Card>
-              <CardContent className="p-8 text-center">
-                <Fish className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-foreground mb-2">
-                  Zatiaľ nemáte žiadne výpravy
-                </h3>
-                <p className="text-muted-foreground mb-4">
-                  Vytvorte svoju prvú rybársku výpravu a začnite zapisovať úlovky.
-                </p>
-                <Button 
-                  onClick={() => setIsCreateDialogOpen(true)}
-                  disabled={limits && !limits.canCreate}
-                  data-testid="button-create-first-trip"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Vytvoriť prvú výpravu
-                </Button>
-              </CardContent>
-            </Card>
+            <div className="flex flex-col items-center justify-center min-h-[50vh] text-center px-4">
+              <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center mb-6">
+                <Fish className="w-12 h-12 text-primary" />
+              </div>
+              <h3 className="text-xl md:text-2xl font-bold text-foreground mb-3">
+                Začnite svoju prvú výpravu
+              </h3>
+              <p className="text-muted-foreground mb-6 max-w-sm">
+                Vytvorte svoju prvú rybársku výpravu a začnite zapisovať úlovky, fotky a spomienky.
+              </p>
+              <Button 
+                size="lg"
+                onClick={() => setIsCreateDialogOpen(true)}
+                disabled={limits && !limits.canCreate}
+                data-testid="button-create-first-trip"
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                Vytvoriť prvú výpravu
+              </Button>
+            </div>
           ) : (
-            <div className="space-y-10">
-              {/* Active and Planned Trips */}
-              {activeAndPlannedTrips.length > 0 && (
-                <div>
-                  <h2 className="text-2xl font-bold text-foreground mb-6" data-testid="heading-active-planned">
-                    Aktívne a Plánované
-                  </h2>
-                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "active" | "history")} className="space-y-6">
+              <TabsList className="grid w-full max-w-md grid-cols-2">
+                <TabsTrigger value="active" className="flex items-center gap-2" data-testid="tab-active">
+                  <Clock className="w-4 h-4" />
+                  <span>Aktívne</span>
+                  {activeAndPlannedTrips.length > 0 && (
+                    <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                      {activeAndPlannedTrips.length}
+                    </Badge>
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="history" className="flex items-center gap-2" data-testid="tab-history">
+                  <FileText className="w-4 h-4" />
+                  <span>História</span>
+                  {finishedTrips.length > 0 && (
+                    <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                      {finishedTrips.length}
+                    </Badge>
+                  )}
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="active" className="space-y-6">
+                {activeAndPlannedTrips.length === 0 ? (
+                  <Card>
+                    <CardContent className="p-8 text-center">
+                      <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-4">
+                        <Clock className="w-8 h-8 text-muted-foreground" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-foreground mb-2">
+                        Žiadne aktívne výpravy
+                      </h3>
+                      <p className="text-muted-foreground text-sm mb-4">
+                        Naplánujte si ďalší rybársky výlet.
+                      </p>
+                      <Button 
+                        onClick={() => setIsCreateDialogOpen(true)}
+                        disabled={limits && !limits.canCreate}
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Nová výprava
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {activeAndPlannedTrips.map((trip) => (
                       <TripCard
                         key={trip.id}
@@ -884,39 +959,62 @@ export default function DiaryTrips() {
                       />
                     ))}
                   </div>
-                </div>
-              )}
+                )}
+              </TabsContent>
 
-              {/* Finished Trips */}
-              {finishedTrips.length > 0 && (
-                <div>
-                  <div className="flex items-center gap-3 mb-6">
-                    <h2 className="text-2xl font-bold text-foreground" data-testid="heading-finished">
-                      Ukončené Výpravy
-                    </h2>
+              <TabsContent value="history" className="space-y-6">
+                {finishedTrips.length === 0 ? (
+                  <Card>
+                    <CardContent className="p-8 text-center">
+                      <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-4">
+                        <FileText className="w-8 h-8 text-muted-foreground" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-foreground mb-2">
+                        Zatiaľ žiadna história
+                      </h3>
+                      <p className="text-muted-foreground text-sm">
+                        Tu sa objavia ukončené výpravy.
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <>
                     {!isPremium && finishedTrips.some(t => isTripLocked(t.id)) && (
-                      <span className="text-sm text-muted-foreground">
-                        (posledné 3 prístupné, staršie vyžadujú Premium)
-                      </span>
+                      <div className="text-sm text-muted-foreground bg-muted/50 rounded-lg p-3 flex items-center gap-2">
+                        <Lock className="w-4 h-4" />
+                        <span>Posledné 3 výpravy sú prístupné. Staršie vyžadujú Premium.</span>
+                      </div>
                     )}
-                  </div>
-                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {finishedTrips.map((trip) => (
-                      <TripCard
-                        key={trip.id}
-                        trip={trip}
-                        catchCount={tripStats[trip.id]?.catchCount || 0}
-                        biggestCatch={tripStats[trip.id]?.biggestCatch || null}
-                        onClick={() => setLocation(`/diary/trips/${trip.id}`)}
-                        isLocked={isTripLocked(trip.id)}
-                        onLockedClick={handleLockedTripClick}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                      {finishedTrips.map((trip) => (
+                        <TripCard
+                          key={trip.id}
+                          trip={trip}
+                          catchCount={tripStats[trip.id]?.catchCount || 0}
+                          biggestCatch={tripStats[trip.id]?.biggestCatch || null}
+                          onClick={() => setLocation(`/diary/trips/${trip.id}`)}
+                          isLocked={isTripLocked(trip.id)}
+                          onLockedClick={handleLockedTripClick}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
+              </TabsContent>
+            </Tabs>
           )}
+
+          {/* Mobile FAB */}
+          <Button
+            onClick={() => setIsCreateDialogOpen(true)}
+            disabled={limits && !limits.canCreate}
+            className="md:hidden fixed bottom-20 right-4 z-50 h-14 w-14 rounded-full shadow-lg"
+            size="icon"
+            data-testid="fab-create-trip"
+            aria-label="Nová výprava"
+          >
+            <Plus className="w-6 h-6" />
+          </Button>
 
           {/* Delete Confirmation Dialog */}
           <Dialog open={!!deletingTrip} onOpenChange={() => setDeletingTrip(null)}>
