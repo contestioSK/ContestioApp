@@ -165,7 +165,14 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
     enabled: !!user?.id
   });
 
+  // Check friend requests count for notification badge
+  const { data: friendRequests = [] } = useQuery<any[]>({
+    queryKey: ['/api/friend-requests'],
+    enabled: !!user?.id,
+  });
+
   const isPremium = premiumStatus?.isPremium || false;
+  const hasFriendRequests = (friendRequests || []).length > 0;
   
   // Handle FAB click - check limits before opening catch dialog
   const handleFabClick = () => {
@@ -366,7 +373,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                         window.scrollTo(0, 0);
                       }}
                       className={`
-                        w-full flex items-center px-2 md:px-3 py-2 md:py-3 text-sm font-medium rounded-lg transition-all
+                        w-full flex items-center px-2 md:px-3 py-2 md:py-3 text-sm font-medium rounded-lg transition-all relative
                         ${isActive 
                           ? 'bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-white border border-blue-500/50 shadow-lg shadow-blue-500/20' 
                           : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent'
@@ -377,6 +384,9 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                       <Icon className="mr-2 md:mr-3 h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
                       <span className="font-medium text-xs md:text-sm flex items-center gap-2">
                         {item.label}
+                        {item.label === "Priatelia" && hasFriendRequests && (
+                          <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                        )}
                         {item.premium && !isPremium && (
                           <Badge variant="secondary" className="bg-sidebar-primary/20 text-sidebar-primary border-sidebar-primary/30 text-xs px-1 py-0">
                             PREMIUM

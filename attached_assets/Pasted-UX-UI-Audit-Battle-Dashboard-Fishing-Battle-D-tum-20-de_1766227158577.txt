@@ -1,0 +1,47 @@
+UX/UI Audit: Battle Dashboard (Fishing Battle)
+
+Dátum: 20. december 2025
+Komponent: BattleIndex
+Status: Implementovaný, "Competetive" štýl
+
+1. Zhrnutie
+
+Battle Dashboard je navrhnutý ako prehľadný riadiaci panel pre súťaživých rybárov. Rozloženie stránky (Grid 2:1) efektívne delí obsah na prioritný (aktuálne súboje, výzvy) a sekundárny (archív, štatistiky).
+
+2. Vizuálna hierarchia a estetika
+
+Identifikácia Premium: Použitie zlatých/žltých prvkov (Badge, ikona korunky) pre označenie Premium obsahu je konzistentné a jasne komunikuje exkluzivitu.
+
+Prázdne stavy (Empty States):
+
+Prázdne stavy pre "Aktuálne súboje" a "Výzvy" nie sú len textové informácie, ale obsahujú ilustračné ikony v kruhu a výrazné CTA (Call to Action) tlačidlá.
+
+Týmto spôsobom stránka nikdy nepôsobí "rozbito" alebo prázdno, ale vždy navádza používateľa k ďalšiemu kroku.
+
+3. Funkčná analýza
+
+Logika pre Premium vs Free používateľov
+
+Tlačidlo "Vytvoriť Súboj":
+
+Pre Premium používateľa: Zelené tlačidlo, presmeruje na vytvorenie súboja.
+
+Pre Free používateľa: Zlaté tlačidlo s ikonou zámku (Lock), presmeruje na Paywall.
+
+Toto je výborný UX vzor pre konverziu (upsell), kde používateľ vidí funkciu, ale je mu jasne komunikované, že je zamknutá.
+
+Notifikácie a Výzvy
+
+Sekcia "Výzvy pre Teba" je umiestnená prominentne. Tlačidlá "Prijať" (zelené) a "Odmietnuť" (šedé/outline) majú jasnú vizuálnu váhu, čo zabraňuje náhodným kliknutiam.
+
+Sieň Slávy
+
+Použitie gradientu (bg-gradient-to-br from-yellow-500/10) vizuálne odlišuje túto kartu od ostatných a dodáva jej "víťazný" nádych.
+
+4. Odporúčania (Next Steps)
+
+Reálny Progress Bar: V zozname aktívnych súbojov je momentálne mock progress. Bolo by vhodné prepojiť to s reálnymi dátami (napr. % trvania súboja alebo % dosiahnutého skóre voči cieľu).
+
+Countdown Timer: Pre súboje, ktoré končia o menej ako 24 hodín, by bolo efektné zobraziť odpočítavanie v reálnom čase (HH:MM:SS) namiesto statického textu "2h". Zvýšilo by to napätie.
+
+Animácie: Pridať jemné animácie pri prijatí výzvy (napr. karta zmizne a objaví sa v sekcii Aktuálne súboje).

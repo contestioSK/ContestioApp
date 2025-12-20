@@ -5,7 +5,18 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { UserPlus, Check, X, Users, Swords } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { UserPlus, Check, X, Users, Swords, Trash2 } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -98,6 +109,8 @@ export default function Friends() {
     },
   });
 
+  const [friendToRemove, setFriendToRemove] = useState<string | null>(null);
+
   return (
     <DiaryLayout>
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4 md:p-6">
@@ -137,12 +150,15 @@ export default function Friends() {
                     <Card key={friend.id} className="bg-slate-800/50 border-slate-700 hover:border-blue-500 transition">
                       <CardContent className="p-4 space-y-4">
                         <div className="flex flex-col items-center text-center">
-                          <Avatar className="w-16 h-16 mb-3">
-                            <AvatarImage src={friend.profileImageUrl || ""} />
-                            <AvatarFallback className="bg-blue-500">
-                              {(friend.firstName?.[0] || "U").toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
+                          <div className="relative">
+                            <Avatar className="w-16 h-16 mb-3">
+                              <AvatarImage src={friend.profileImageUrl || ""} />
+                              <AvatarFallback className="bg-blue-500">
+                                {(friend.firstName?.[0] || "U").toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="absolute bottom-3 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-800"></div>
+                          </div>
                           <p className="font-bold text-white">
                             {friend.firstName} {friend.lastName}
                           </p>
@@ -156,13 +172,38 @@ export default function Friends() {
                             <Swords className="w-4 h-4 mr-2" />
                             Vyzvať
                           </Button>
-                          <Button
-                            variant="outline"
-                            className="w-full"
-                            onClick={() => removeFriendMutation.mutate(friend.id)}
-                          >
-                            Odstrániť
-                          </Button>
+                          <AlertDialog open={friendToRemove === friend.id} onOpenChange={(open) => !open && setFriendToRemove(null)}>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className="w-full text-red-500 hover:text-red-600 border-red-500/30 hover:border-red-500/50"
+                                onClick={() => setFriendToRemove(friend.id)}
+                              >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                Odstrániť
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Odstrániť priateľa</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Naozaj chceš odstrániť {friend.firstName} {friend.lastName} z tvojich priateľov?
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Zrušiť</AlertDialogCancel>
+                                <AlertDialogAction
+                                  className="bg-red-600 hover:bg-red-700"
+                                  onClick={() => {
+                                    removeFriendMutation.mutate(friend.id);
+                                    setFriendToRemove(null);
+                                  }}
+                                >
+                                  Odstrániť
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       </CardContent>
                     </Card>
