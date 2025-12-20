@@ -51,6 +51,9 @@ export const users = pgTable("users", {
   verificationTokenExpires: timestamp("verification_token_expires"),
   // Newsletter subscription
   isNewsletterSubscribed: boolean("is_newsletter_subscribed").default(false).notNull(),
+  // Social media links
+  facebookUrl: varchar("facebook_url"),
+  instagramUrl: varchar("instagram_url"),
   // Onboarding preferences
   preferences: jsonb("preferences").$type<{
     fishingStyle?: "carp" | "spinning" | "feeder" | "fly" | "catfish";
