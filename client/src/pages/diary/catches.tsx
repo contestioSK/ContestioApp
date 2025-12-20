@@ -45,7 +45,8 @@ import {
   Gauge,
   Search,
   ArrowUpDown,
-  Trophy
+  Trophy,
+  SlidersHorizontal
 } from "lucide-react";
 
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -295,6 +296,8 @@ export default function DiaryCatches() {
   const [minWeight, setMinWeight] = useState<string>("");
   const [maxWeight, setMaxWeight] = useState<string>("");
   const [sortBy, setSortBy] = useState<string>("newest");
+  const [selectedSeason, setSelectedSeason] = useState<string>("2025");
+  const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
   
   // Offline functionality
   const { 
@@ -461,16 +464,20 @@ export default function DiaryCatches() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location, catches, editingCatch]);
 
-  // Filter catches for 2025 season (January 15, 2025 onwards)
-  const season2025Catches = Array.isArray(catches) ? catches.filter((catch_: any) => {
+  // Filter catches by selected season
+  const seasonFilteredCatches = Array.isArray(catches) ? catches.filter((catch_: any) => {
     if (!catch_.capturedAt) return false;
+    if (selectedSeason === "all") return true;
+    
     const catchDate = new Date(catch_.capturedAt);
-    const season2025Start = new Date('2025-01-15');
-    return catchDate >= season2025Start;
+    const seasonYear = parseInt(selectedSeason);
+    const seasonStart = new Date(`${seasonYear}-01-15`);
+    const seasonEnd = new Date(`${seasonYear + 1}-01-14`);
+    return catchDate >= seasonStart && catchDate <= seasonEnd;
   }) : [];
 
   // Apply filters to catches
-  const filteredCatches = season2025Catches
+  const filteredCatches = seasonFilteredCatches
     .filter((catch_: any) => {
       // Filter by technique
       if (selectedTechnique !== "all" && catch_.bait !== selectedTechnique) {
@@ -568,8 +575,29 @@ export default function DiaryCatches() {
     });
 
   // Get unique techniques and spots for filter dropdowns
-  const uniqueTechniques = Array.from(new Set(season2025Catches.map((c: any) => c.bait).filter(Boolean)));
-  const uniqueSpots = Array.from(new Set(season2025Catches.map((c: any) => c.spot).filter(Boolean)));
+  const uniqueTechniques = Array.from(new Set(seasonFilteredCatches.map((c: any) => c.bait).filter(Boolean)));
+  const uniqueSpots = Array.from(new Set(seasonFilteredCatches.map((c: any) => c.spot).filter(Boolean)));
+  
+  // Count active filters for mobile badge
+  const activeFilterCount = [
+    selectedTechnique !== "all",
+    selectedFishType !== "all", 
+    selectedSpot !== "all",
+    dateRange?.from,
+    minWeight || maxWeight
+  ].filter(Boolean).length;
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <DiaryLayout>
+        <div className="p-8 flex flex-col items-center justify-center min-h-[50vh]">
+          <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
+          <p className="text-slate-400">Načítavam úlovky...</p>
+        </div>
+      </DiaryLayout>
+    );
+  }
 
   return (
     <DiaryLayout>
@@ -720,7 +748,7 @@ export default function DiaryCatches() {
 
           {/* Filters */}
           <div className="space-y-4">
-            {/* Search and Sort Row */}
+            {/* Search, Season and Sort Row */}
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -733,8 +761,23 @@ export default function DiaryCatches() {
                   data-testid="input-search"
                 />
               </div>
+              
+              {/* Season Filter */}
+              <Select value={selectedSeason} onValueChange={setSelectedSeason}>
+                <SelectTrigger className="w-full sm:w-[140px] bg-slate-700/50 border text-white" data-testid="filter-season">
+                  <CalendarIcon className="w-4 h-4 mr-2" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Všetky roky</SelectItem>
+                  <SelectItem value="2025">Sezóna 2025</SelectItem>
+                  <SelectItem value="2024">Sezóna 2024</SelectItem>
+                  <SelectItem value="2023">Sezóna 2023</SelectItem>
+                </SelectContent>
+              </Select>
+              
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-full sm:w-[200px] bg-slate-700/50 border text-white" data-testid="filter-sort">
+                <SelectTrigger className="w-full sm:w-[160px] bg-slate-700/50 border text-white" data-testid="filter-sort">
                   <ArrowUpDown className="w-4 h-4 mr-2" />
                   <SelectValue />
                 </SelectTrigger>
@@ -745,10 +788,26 @@ export default function DiaryCatches() {
                   <SelectItem value="lightest">Najmenšie</SelectItem>
                 </SelectContent>
               </Select>
+              
+              {/* Mobile Filter Button */}
+              <Button 
+                variant="outline" 
+                className="md:hidden bg-slate-700/50 border text-white"
+                onClick={() => setIsFilterSheetOpen(true)}
+                data-testid="button-open-filters"
+              >
+                <SlidersHorizontal className="w-4 h-4 mr-2" />
+                Filtre
+                {activeFilterCount > 0 && (
+                  <Badge variant="secondary" className="ml-2 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                    {activeFilterCount}
+                  </Badge>
+                )}
+              </Button>
             </div>
 
-            {/* Filter Controls */}
-            <div className="flex flex-wrap gap-3">
+            {/* Desktop Filter Controls - Hidden on mobile */}
+            <div className="hidden md:flex flex-wrap gap-3">
               <Select value={selectedTechnique} onValueChange={setSelectedTechnique}>
                 <SelectTrigger className="w-full sm:w-[180px] bg-slate-700/50 border text-white" data-testid="filter-technique">
                   <SelectValue placeholder="Všetky Techniky" />
@@ -854,7 +913,7 @@ export default function DiaryCatches() {
             <div className="flex flex-wrap items-center gap-3">
               {/* Results counter */}
               <div className="text-sm text-slate-400" data-testid="text-results-count">
-                Nájdené: <span className="font-semibold text-white">{filteredCatches.length}</span> / {season2025Catches.length}
+                Nájdené: <span className="font-semibold text-white">{filteredCatches.length}</span> / {seasonFilteredCatches.length}
               </div>
 
               {/* Active filter badges */}
@@ -946,6 +1005,116 @@ export default function DiaryCatches() {
               )}
             </div>
           </div>
+
+          {/* Mobile Filter Sheet */}
+          <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>
+            <SheetContent side="bottom" className="bg-slate-800 border-t border-slate-700 text-white max-h-[80vh] overflow-y-auto">
+              <SheetHeader className="pb-4">
+                <SheetTitle className="text-white flex items-center gap-2">
+                  <SlidersHorizontal className="w-5 h-5" />
+                  Filtrovať úlovky
+                </SheetTitle>
+              </SheetHeader>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm text-slate-400 mb-2 block">Technika</label>
+                  <Select value={selectedTechnique} onValueChange={setSelectedTechnique}>
+                    <SelectTrigger className="w-full bg-slate-700/50 border text-white">
+                      <SelectValue placeholder="Všetky Techniky" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Všetky Techniky</SelectItem>
+                      {uniqueTechniques.map((technique: string) => (
+                        <SelectItem key={technique} value={technique}>
+                          {technique}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <label className="text-sm text-slate-400 mb-2 block">Druh ryby</label>
+                  <Select value={selectedFishType} onValueChange={setSelectedFishType}>
+                    <SelectTrigger className="w-full bg-slate-700/50 border text-white">
+                      <SelectValue placeholder="Všetky Druhy" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Všetky Druhy</SelectItem>
+                      {getFishTypeOptions().map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <label className="text-sm text-slate-400 mb-2 block">Revír</label>
+                  <Select value={selectedSpot} onValueChange={setSelectedSpot}>
+                    <SelectTrigger className="w-full bg-slate-700/50 border text-white">
+                      <SelectValue placeholder="Všetky Revíry" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Všetky Revíry</SelectItem>
+                      {uniqueSpots.map((spot: string) => (
+                        <SelectItem key={spot} value={spot}>
+                          {spot}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <label className="text-sm text-slate-400 mb-2 block">Váhový rozsah</label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="number"
+                      placeholder="Min kg"
+                      value={minWeight}
+                      onChange={(e) => setMinWeight(e.target.value)}
+                      className="flex-1 bg-slate-700/50 border text-white placeholder:text-slate-400"
+                      step="0.1"
+                      min="0"
+                    />
+                    <Input
+                      type="number"
+                      placeholder="Max kg"
+                      value={maxWeight}
+                      onChange={(e) => setMaxWeight(e.target.value)}
+                      className="flex-1 bg-slate-700/50 border text-white placeholder:text-slate-400"
+                      step="0.1"
+                      min="0"
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex gap-3 pt-4">
+                  <Button 
+                    variant="outline" 
+                    className="flex-1"
+                    onClick={() => {
+                      setSelectedTechnique("all");
+                      setSelectedFishType("all");
+                      setSelectedSpot("all");
+                      setMinWeight("");
+                      setMaxWeight("");
+                    }}
+                  >
+                    Vyčistiť
+                  </Button>
+                  <Button 
+                    className="flex-1"
+                    onClick={() => setIsFilterSheetOpen(false)}
+                  >
+                    Použiť filtre
+                  </Button>
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
 
           {/* Catches Table */}
           <Card className="bg-slate-800/50 border overflow-hidden">
@@ -1046,8 +1215,18 @@ export default function DiaryCatches() {
                               <Edit2 className="w-4 h-4" />
                             </button>
                           </div>
-                          <div className="text-white font-bold text-lg mb-2">
-                            {catch_.weight ? `${catch_.weight} kg` : catch_.lengthCm ? `${catch_.lengthCm} cm` : 'N/A'}
+                          <div className="text-white font-bold text-lg mb-2 flex items-center gap-2">
+                            {catch_.weight ? (
+                              <>
+                                <Weight className="w-4 h-4 text-purple-400" />
+                                {catch_.weight} kg
+                              </>
+                            ) : catch_.lengthCm ? (
+                              <>
+                                <Ruler className="w-4 h-4 text-blue-400" />
+                                {catch_.lengthCm} cm
+                              </>
+                            ) : 'N/A'}
                           </div>
                           <div className="grid grid-cols-2 gap-2 text-xs text-slate-400">
                             <div>
@@ -1069,11 +1248,11 @@ export default function DiaryCatches() {
                 <div className="p-8 text-center">
                   <Fish className="w-12 h-12 text-slate-500 mx-auto mb-4" />
                   <p className="text-slate-400 mb-4">
-                    {season2025Catches.length === 0 
+                    {seasonFilteredCatches.length === 0 
                       ? "Zatiaľ nemáte žiadne úlovky" 
                       : "Žiadne úlovky nevyhovujú zvoleným filtrom"}
                   </p>
-                  {season2025Catches.length === 0 && (
+                  {seasonFilteredCatches.length === 0 && (
                     <Button 
                       onClick={() => setIsCreateDialogOpen(true)}
                       className="bg-green-600 hover:bg-green-700"
@@ -1248,18 +1427,20 @@ export default function DiaryCatches() {
                       <Edit2 className="w-4 h-4 mr-2" />
                       Upraviť
                     </Button>
-                    <Button 
-                      variant="destructive"
-                      className="w-full"
-                      onClick={() => {
-                        setDeletingCatch(selectedCatch);
-                        setSelectedCatch(null);
-                      }}
-                      data-testid="button-delete-catch"
-                    >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Zmazať
-                    </Button>
+                    <div className="pt-4 border-t border-slate-700">
+                      <Button 
+                        variant="outline"
+                        className="w-full border-red-500/50 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+                        onClick={() => {
+                          setDeletingCatch(selectedCatch);
+                          setSelectedCatch(null);
+                        }}
+                        data-testid="button-delete-catch"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Zmazať úlovok
+                      </Button>
+                    </div>
                   </div>
                 </div>
               )}
