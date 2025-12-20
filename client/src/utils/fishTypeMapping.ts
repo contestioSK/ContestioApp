@@ -14,7 +14,6 @@ export const fishTypeMapping = {
   zubac: "Zubáč",
   bolen: "Boleň",
   ostriez: "Ostriež",
-  candát: "Candát",
   
   // Muškárenie
   pstruh_potocny: "Pstruh potočný",
