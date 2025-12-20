@@ -1,12 +1,25 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useConfetti } from "@/hooks/useConfetti";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { 
   Target, 
   Trophy, 
@@ -22,10 +35,13 @@ import {
   Clock,
   Zap,
   Edit,
-  Settings
+  Trash2,
+  History
 } from "lucide-react";
 import { useLocation } from "wouter";
 import DiaryLayout from "@/components/DiaryLayout";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 // Types from backend
 interface Season {
@@ -189,6 +205,15 @@ export default function SeasonalGoals() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const { celebrateGoalCompletion } = useConfetti();
+  const isMobile = useIsMobile();
+  const { toast } = useToast();
+  const [selectedSeasonId, setSelectedSeasonId] = useState<string | null>(null);
+
+  // Fetch all seasons for the dropdown
+  const { data: allSeasons = [] } = useQuery<Season[]>({
+    queryKey: ["/api/seasons"],
+    enabled: !!user
+  });
 
   // Fetch current season from API
   const { data: currentSeason, isLoading: seasonLoading } = useQuery<Season>({
@@ -202,11 +227,45 @@ export default function SeasonalGoals() {
     enabled: !!user
   });
 
-  // Filter goals by current season
-  const seasonGoals = currentSeason ? allGoals.filter(goal => goal.seasonId === currentSeason.id) : [];
+  // Set selected season to current season by default
+  useEffect(() => {
+    if (currentSeason && !selectedSeasonId) {
+      setSelectedSeasonId(currentSeason.id);
+    }
+  }, [currentSeason, selectedSeasonId]);
+
+  // Get the active season (selected or current)
+  const activeSeason = selectedSeasonId 
+    ? allSeasons.find(s => s.id === selectedSeasonId) || currentSeason
+    : currentSeason;
+
+  // Delete goal mutation
+  const deleteGoalMutation = useMutation({
+    mutationFn: async (goalId: string) => {
+      await apiRequest("DELETE", `/api/seasonal-goals/${goalId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/seasonal-goals"] });
+      toast({
+        title: "🗑️ Cieľ zmazaný",
+        description: "Cieľ bol úspešne odstránený.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "❌ Chyba",
+        description: "Nepodarilo sa zmazať cieľ.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Filter goals by selected season
+  const seasonGoals = activeSeason ? allGoals.filter(goal => goal.seasonId === activeSeason.id) : [];
   const completedGoals = seasonGoals.filter(goal => goal.isCompleted);
   const activeGoals = seasonGoals.filter(goal => !goal.isCompleted);
   const mainGoal = seasonGoals.find(goal => goal.isMainGoal);
+  const isViewingHistoricalSeason = selectedSeasonId && selectedSeasonId !== currentSeason?.id;
 
   // Find goal closest to completion (highest percentage) - "Ďalší na Rade"
   const nextGoal = activeGoals
@@ -235,22 +294,63 @@ export default function SeasonalGoals() {
       <div className="p-6">
         <div className="max-w-6xl mx-auto space-y-8">
           {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground mb-2">Sezónne Ciele</h1>
-              <p className="text-muted-foreground">
-                Nastavte si ciele a sledujte svoj pokrok počas sezóny {currentSeason?.name}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex-1">
+              <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">Sezónne Ciele</h1>
+              <p className="text-muted-foreground text-sm sm:text-base">
+                Nastavte si ciele a sledujte svoj pokrok počas sezóny
               </p>
             </div>
-            <Button 
-              onClick={() => setLocation("/diary/seasonal-goals/create")}
-              data-testid="button-create-goal"
-              className="bg-primary hover:bg-primary/90"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Vytvoriť Nový Cieľ
-            </Button>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+              {/* Season Switcher */}
+              {allSeasons.length > 1 && (
+                <Select
+                  value={selectedSeasonId || currentSeason?.id || ""}
+                  onValueChange={setSelectedSeasonId}
+                >
+                  <SelectTrigger className="w-full sm:w-[180px]" data-testid="select-season">
+                    <History className="w-4 h-4 mr-2 text-muted-foreground" />
+                    <SelectValue placeholder="Vyber sezónu" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {allSeasons.map((season) => (
+                      <SelectItem key={season.id} value={season.id} data-testid={`select-season-${season.id}`}>
+                        <div className="flex items-center gap-2">
+                          {season.name}
+                          {season.isActive && (
+                            <Badge variant="secondary" className="text-xs">Aktuálna</Badge>
+                          )}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              {!isViewingHistoricalSeason && (
+                <Button 
+                  onClick={() => setLocation("/diary/seasonal-goals/create")}
+                  data-testid="button-create-goal"
+                  className="bg-primary hover:bg-primary/90 w-full sm:w-auto"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  <span className="sm:inline">Vytvoriť Cieľ</span>
+                </Button>
+              )}
+            </div>
           </div>
+
+          {/* Historical season notice */}
+          {isViewingHistoricalSeason && (
+            <Card className="bg-muted/50 border-muted-foreground/20">
+              <CardContent className="p-4 flex items-center gap-3">
+                <History className="w-5 h-5 text-muted-foreground" />
+                <div>
+                  <p className="font-medium text-foreground">Zobrazuješ históriu sezóny {activeSeason?.name}</p>
+                  <p className="text-sm text-muted-foreground">Ciele z minulých sezón nie je možné upravovať.</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Súhrnné Widgety */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -302,21 +402,21 @@ export default function SeasonalGoals() {
           {/* Hlavný Cieľ Sezóny */}
           {mainGoal && (
             <Card className="border-primary/30 bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5" data-testid="card-main-goal">
-              <CardContent className="p-8">
-                <div className="flex flex-col md:flex-row items-center gap-8">
-                  {/* Kruhový Progress Bar */}
+              <CardContent className="p-6 sm:p-8">
+                <div className="flex flex-col md:flex-row items-center gap-6 sm:gap-8">
+                  {/* Kruhový Progress Bar - Responsive size */}
                   <div className="flex-shrink-0">
                     <CircularProgress 
                       value={parseFloat(mainGoal.currentValue)} 
                       max={parseFloat(mainGoal.targetValue)}
-                      size={180}
-                      strokeWidth={14}
+                      size={isMobile ? 140 : 180}
+                      strokeWidth={isMobile ? 12 : 14}
                     >
                       <div className="text-center">
-                        <div className="text-3xl font-bold text-primary" data-testid="text-main-goal-percentage">
+                        <div className={`font-bold text-primary ${isMobile ? 'text-2xl' : 'text-3xl'}`} data-testid="text-main-goal-percentage">
                           {Math.round((parseFloat(mainGoal.currentValue) / parseFloat(mainGoal.targetValue)) * 100)}%
                         </div>
-                        <div className="text-sm text-muted-foreground">splnené</div>
+                        <div className="text-xs sm:text-sm text-muted-foreground">splnené</div>
                       </div>
                     </CircularProgress>
                   </div>
@@ -331,7 +431,7 @@ export default function SeasonalGoals() {
                     {mainGoal.description && (
                       <p className="text-muted-foreground mb-4" data-testid="text-main-goal-description">{mainGoal.description}</p>
                     )}
-                    <div className="flex items-center justify-center md:justify-start gap-3 text-xl">
+                    <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 sm:gap-3 text-base sm:text-xl">
                       <span className="font-medium text-muted-foreground">Aktuálne:</span>
                       <span className="font-bold text-primary" data-testid="text-main-goal-current">
                         {formatNumber(mainGoal.currentValue)} {mainGoal.unit}
@@ -356,18 +456,23 @@ export default function SeasonalGoals() {
                 <CardContent className="p-8 text-center">
                   <Target className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-foreground mb-2">
-                    Žiadne aktívne ciele
+                    {isViewingHistoricalSeason ? "Žiadne aktívne ciele v tejto sezóne" : "Žiadne aktívne ciele"}
                   </h3>
                   <p className="text-muted-foreground mb-4">
-                    Vytvorte si nové ciele pre túto sezónu a začnite sledovať svoj pokrok.
+                    {isViewingHistoricalSeason 
+                      ? "Táto sezóna nemala žiadne aktívne ciele."
+                      : "Vytvorte si nové ciele pre túto sezónu a začnite sledovať svoj pokrok."
+                    }
                   </p>
-                  <Button 
-                    onClick={() => setLocation("/diary/seasonal-goals/create")}
-                    data-testid="button-create-first-goal"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Vytvoriť prvý cieľ
-                  </Button>
+                  {!isViewingHistoricalSeason && (
+                    <Button 
+                      onClick={() => setLocation("/diary/seasonal-goals/create")}
+                      data-testid="button-create-first-goal"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Vytvoriť prvý cieľ
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             ) : (
@@ -389,28 +494,49 @@ export default function SeasonalGoals() {
                               <p className="text-sm text-muted-foreground" data-testid={`text-goal-type-${goal.id}`}>{getGoalTypeLabel(goal.goalType)}</p>
                             </div>
                           </div>
-                          <div className="flex gap-2 ml-4">
-                            <Button 
-                              size="icon" 
-                              variant="ghost"
-                              onClick={() => setLocation(`/diary/seasonal-goals/${goal.id}/edit`)}
-                              data-testid={`button-edit-goal-${goal.id}`}
-                              className="hover:bg-primary/10"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button 
-                              size="icon" 
-                              variant="ghost"
-                              onClick={() => {
-                                // TODO: Add delete functionality
-                              }}
-                              data-testid={`button-delete-goal-${goal.id}`}
-                              className="hover:bg-destructive/10 hover:text-destructive"
-                            >
-                              <Settings className="w-4 h-4" />
-                            </Button>
-                          </div>
+                          {!isViewingHistoricalSeason && (
+                            <div className="flex gap-2 ml-4">
+                              <Button 
+                                size="icon" 
+                                variant="ghost"
+                                onClick={() => setLocation(`/diary/seasonal-goals/${goal.id}/edit`)}
+                                data-testid={`button-edit-goal-${goal.id}`}
+                                className="hover:bg-primary/10"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button 
+                                    size="icon" 
+                                    variant="ghost"
+                                    data-testid={`button-delete-goal-${goal.id}`}
+                                    className="hover:bg-destructive/10 hover:text-destructive"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Zmazať cieľ?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Naozaj chcete zmazať cieľ "{goal.title}"? Táto akcia je nevratná a všetok pokrok bude stratený.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Zrušiť</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => deleteGoalMutation.mutate(goal.id)}
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                      data-testid={`button-confirm-delete-${goal.id}`}
+                                    >
+                                      {deleteGoalMutation.isPending ? "Mažem..." : "Zmazať"}
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
+                          )}
                         </div>
 
                         {goal.description && (
