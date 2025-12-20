@@ -1,0 +1,77 @@
+UX/UI Audit: Diary Trips (Zoznam výprav)
+
+Dátum: 20. december 2025
+Typ stránky: Dashboard / Zoznam položiek (CRUD)
+Status: Revízia kódu a návrhu
+
+1. Zhrnutie (Executive Summary)
+
+Stránka DiaryTrips je funkčne robustná – zvláda offline režim, synchronizáciu aj freemium limity. Z pohľadu UX však trpí typickým syndrómom "admin panelu". Na mobilných zariadeniach je ovládanie (najmä vytváranie novej výpravy cez modálne okno) ťažkopádne. Vizuálne chýba jasnejšie oddelenie "živých" (aktuálnych) výprav od historických archívov.
+
+2. UI Analýza (Vizuál a Estetika)
+
+Hlavička a Status indikátory
+
+Problém: V hlavičke (h1) sa hromadia rôzne stavové odznaky (Offline, Syncing, Pending). Pôsobí to technicky a rušivo.
+
+Odporúčanie: Presunúť technické statusy (Offline/Sync) do globálnejšej "Connectivity lišty" (napr. tenký pásik pod navigáciou) alebo ich zjednotiť do jednej ikony so statusom, namiesto viacerých textových Badge prvkov vedľa nadpisu.
+
+Formulár "Nová výprava" (Dialog)
+
+Kritický bod: Použitie Dialog s max-h-[90vh] overflow-y-auto je na mobiloch problematické. Keď sa vysunie klávesnica, modálne okno často skáče, tlačidlo "Vytvoriť" sa môže stratiť pod klávesnicou alebo mimo viewport.
+
+Odporúčanie: Na mobilných zariadeniach použiť namiesto Dialog komponent Drawer (výsuvný panel zdola), ktorý je pre formuláre na dotykových zariadeniach prirodzenejší a lepšie zvláda posúvanie obsahu.
+
+Prázdny stav (Empty State)
+
+Problém: Aktuálny "Empty state" je len karta s textom a tlačidlom. Je to funkčné, ale nemotivujúce.
+
+Odporúčanie: Využiť celú výšku obrazovky pre prázdny stav s peknou ilustráciou (napr. prázdne jazero) a výrazným CTA tlačidlom uprostred.
+
+3. UX Analýza (Použiteľnosť a Interakcia)
+
+Navigácia a Tlačidlo "Nová výprava"
+
+Problém: Tlačidlo "Nová výprava" je umiestnené vpravo hore. Na veľkých telefónoch je to ďaleko pre palec ("thumb zone").
+
+Odporúčanie: Pre mobilné zobrazenie implementovať FAB (Floating Action Button) – plávajúce tlačidlo + v pravom dolnom rohu. Je to štandard pre primárnu akciu v mobilných appkách.
+
+Rozdelenie zoznamov (Aktívne vs. Ukončené)
+
+Problém: Stránka vykresľuje všetko pod seba. Ak má používateľ veľa histórie, musí dlho scrollovať, aby sa dostal na koniec.
+
+Odporúčanie: Zvážiť použitie Tabov (Záložiek): [ Aktívne ] | [ História ].
+
+Tým sa skráti stránka.
+
+Užívateľ sa môže sústrediť buď na to, čo sa deje teraz, alebo na spomínanie.
+
+Dátumové polia (Date Picker)
+
+Problém: Calendar komponent v Popover je na mobile často príliš malý na pohodlné triafanie prstom.
+
+Odporúčanie: Pre mobilné zobrazenie použiť natívny HTML <input type="date" /> (ktorý vyvolá systémový kalendár Android/iOS), alebo zväčšiť touch targets v custom kalendári.
+
+4. Konkrétne návrhy na zlepšenie (Action Items)
+
+Priorita A (Kritické pre použiteľnosť)
+
+Mobilný formulár: Zmeniť Dialog na Drawer pre mobilné rozlíšenia (responzívny komponent: Desktop = Dialog, Mobile = Drawer).
+
+FAB Tlačidlo: Pridať fixné plávajúce tlačidlo + pre rýchle pridanie výpravy na mobile.
+
+Priorita B (Vizuálny upgrade)
+
+Status Bar: Vyčistiť hlavičku od technických odznakov.
+
+Tabs: Implementovať prepínanie medzi "Aktuálne" a "História" pre čistejší layout.
+
+Priorita C (Nice-to-have)
+
+Obrázky: Ak má výprava titulnú fotku, v zozname (Card) by mala byť dominantná.
+
+Skeleton Loading: h-72 bg-muted je fajn, ale skeleton by mal vizuálne viac pripomínať finálnu kartu (mať "obrázok" a "riadky textu").
+
+Záver
+
+Stránka potrebuje transformáciu z "databázového výpisu" na "osobný denník". Kľúčom je zlepšenie zážitku pri pridávaní novej výpravy (Drawer) a lepšia organizácia obsahu (Tabs), aby sa používateľ necítil zavalený históriou hneď po otvorení.
