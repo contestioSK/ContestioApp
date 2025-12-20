@@ -3,7 +3,7 @@ import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { format, isPast, isToday } from "date-fns";
 import { sk } from "date-fns/locale";
-import { ArrowLeft, MapPin, Calendar as CalendarIcon, Fish, Weight, Trophy, FileText, Medal, Ruler, Target, Cloud, Thermometer, Wind, Gauge, XCircle, Download, Grid3x3, MoreHorizontal, Share2, ChevronRight } from "lucide-react";
+import { ArrowLeft, MapPin, Calendar as CalendarIcon, Fish, Weight, Trophy, FileText, Medal, Ruler, Target, Cloud, Thermometer, Wind, Gauge, XCircle, Download, Grid3x3, MoreHorizontal, Share2, ChevronRight, X, ZoomIn } from "lucide-react";
 import html2canvas from "html2canvas";
 import contestioLogo from "@assets/contestio logo_1760283270014.png";
 
@@ -60,6 +60,7 @@ export default function TripDetail() {
   const [showAllCatches, setShowAllCatches] = useState(false);
   const [showEndTripDialog, setShowEndTripDialog] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [lightboxPhoto, setLightboxPhoto] = useState<string | null>(null);
   const exportCardRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -649,14 +650,40 @@ export default function TripDetail() {
 
             {selectedCatch && (
               <div className="space-y-6">
-                {/* Photo Display */}
+                {/* Photo Display - Clickable for fullscreen */}
                 {selectedCatch.photos && selectedCatch.photos.length > 0 && (
-                  <div className="rounded-lg overflow-hidden bg-muted">
+                  <div 
+                    className="rounded-lg overflow-hidden bg-muted relative group cursor-pointer"
+                    onClick={() => {
+                      const photoUrl = typeof selectedCatch.photos![0] === 'string' 
+                        ? selectedCatch.photos![0] 
+                        : selectedCatch.photos![0].url;
+                      setLightboxPhoto(photoUrl);
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    aria-label="Zobraziť fotku na celú obrazovku"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        const photoUrl = typeof selectedCatch.photos![0] === 'string' 
+                          ? selectedCatch.photos![0] 
+                          : selectedCatch.photos![0].url;
+                        setLightboxPhoto(photoUrl);
+                      }
+                    }}
+                    data-testid="button-photo-zoom"
+                  >
                     <img 
                       src={typeof selectedCatch.photos[0] === 'string' ? selectedCatch.photos[0] : selectedCatch.photos[0].url}
                       alt={getFishTypeLabel(selectedCatch.fishType)}
-                      className="w-full h-64 object-cover"
+                      className="w-full h-64 object-cover transition-transform group-hover:scale-105"
                     />
+                    {/* Zoom overlay indicator */}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 rounded-full p-3">
+                        <ZoomIn className="w-6 h-6 text-slate-800" />
+                      </div>
+                    </div>
                   </div>
                 )}
 
@@ -923,6 +950,41 @@ export default function TripDetail() {
           )}
         </div>
       </div>
+
+      {/* Fullscreen Photo Lightbox */}
+      {lightboxPhoto && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-200"
+          onClick={() => setLightboxPhoto(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Zobrazenie fotky na celú obrazovku"
+          data-testid="lightbox-overlay"
+        >
+          {/* Close button */}
+          <button
+            onClick={() => setLightboxPhoto(null)}
+            className="absolute top-4 right-4 z-10 h-14 w-14 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+            aria-label="Zavrieť"
+            data-testid="button-close-lightbox"
+          >
+            <X className="w-7 h-7 text-white" />
+          </button>
+
+          {/* Photo */}
+          <img
+            src={lightboxPhoto}
+            alt="Fotka úlovku v plnej veľkosti"
+            className="max-w-[95vw] max-h-[90vh] object-contain rounded-lg shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+
+          {/* Hint at bottom */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/60 text-sm">
+            Kliknite kdekoľvek pre zatvorenie
+          </div>
+        </div>
+      )}
     </DiaryLayout>
   );
 }
