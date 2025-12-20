@@ -39,7 +39,7 @@ const fishingStyles = [
   { id: "carp" as FishingStyle, label: "Kaprárina", icon: "🎣", description: "Lov kaprov a iných bielych rýb" },
   { id: "spinning" as FishingStyle, label: "Prívlač", icon: "🐟", description: "Lov dravých rýb na umelé nástrahy" },
   { id: "feeder" as FishingStyle, label: "Feeder", icon: "🪣", description: "Moderný spôsob lovu na položenú" },
-  { id: "fly" as FishingStyle, label: "Muchárenie", icon: "🪰", description: "Lov na umelú mušku" },
+  { id: "fly" as FishingStyle, label: "Muškárenie", icon: "🪰", description: "Lov na umelú mušku" },
   { id: "catfish" as FishingStyle, label: "Sumčiarina", icon: "🐋", description: "Lov sumcov a veľkých rýb" }
 ];
 
