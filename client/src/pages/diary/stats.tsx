@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { getFishTypeLabel } from "@/utils/fishTypeMapping";
@@ -24,6 +24,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 import { 
   Fish, 
@@ -105,62 +106,68 @@ export default function DiaryStats() {
 
   const isPremium = premiumStatus?.isPremium || false;
 
-  // Calculate basic stats
-  const totalCatches = catches.length;
-  const totalWeight = catches.reduce((sum, catch_) => sum + parseFloat(catch_.weight), 0);
-  const averageWeight = totalCatches > 0 ? totalWeight / totalCatches : 0;
-  const biggestCatch = totalCatches > 0 ? Math.max(...catches.map(c => parseFloat(c.weight))) : 0;
-  const totalTrips = trips.length;
+  // ===== MEMOIZED CALCULATIONS FOR PERFORMANCE =====
+  
+  // Basic stats (memoized) - note: activeTripCount computed separately due to time dependency
+  const basicStats = useMemo(() => {
+    const totalCatches = catches.length;
+    const totalWeight = catches.reduce((sum, catch_) => sum + parseFloat(catch_.weight), 0);
+    const averageWeight = totalCatches > 0 ? totalWeight / totalCatches : 0;
+    const biggestCatch = totalCatches > 0 ? Math.max(...catches.map(c => parseFloat(c.weight))) : 0;
+    const totalTrips = trips.length;
+    
+    return { totalCatches, totalWeight, averageWeight, biggestCatch, totalTrips };
+  }, [catches, trips]);
+  
+  const { totalCatches, totalWeight, averageWeight, biggestCatch, totalTrips } = basicStats;
+  
+  // Active trip count - computed outside useMemo since it depends on current time
   const activeTripCount = trips.filter(trip => new Date(trip.endDate) >= new Date()).length;
 
-  // Use centralized utility for month period calculation
+  // Monthly stats (memoized)
+  const monthlyStats: MonthlyStats[] = useMemo(() => {
+    return getMonthsForPeriod(selectedPeriodMonths).map(month => {
+      const monthStart = startOfMonth(month);
+      const monthEnd = endOfMonth(month);
+      
+      const monthCatches = filterCatchesByMonths(catches, [month]);
+      const monthTrips = filterTripsByMonths(trips, [month]);
 
-  const monthlyStats: MonthlyStats[] = getMonthsForPeriod(selectedPeriodMonths).map(month => {
-    const monthStart = startOfMonth(month);
-    const monthEnd = endOfMonth(month);
-    
-    const monthCatches = filterCatchesByMonths(catches, [month]);
-    const monthTrips = filterTripsByMonths(trips, [month]);
-
-    return {
-      month: format(month, "MMM yyyy", { locale: sk }),
-      monthDate: month.toISOString(), // Add canonical date for calculations
-      monthStart: monthStart.toISOString(), // Add month boundaries
-      monthEnd: monthEnd.toISOString(),
-      catches: monthCatches.length,
-      totalWeight: monthCatches.reduce((sum, catch_) => sum + parseFloat(catch_.weight), 0),
-      trips: monthTrips.length
-    };
-  });
-
-  // Calculate fish type distribution
-  const fishTypeStats: FishTypeStats[] = [];
-  
-  // Group catches by fish type
-  const fishTypeCounts = catches.reduce((acc, catch_) => {
-    const fishType = catch_.fishType;
-    if (!acc[fishType]) {
-      acc[fishType] = { count: 0, totalWeight: 0 };
-    }
-    acc[fishType].count++;
-    acc[fishType].totalWeight += parseFloat(catch_.weight);
-    return acc;
-  }, {} as Record<string, { count: number; totalWeight: number }>);
-  
-  // Convert to array format with labels
-  Object.entries(fishTypeCounts).forEach(([type, stats]) => {
-    fishTypeStats.push({
-      type,
-      label: getFishTypeLabel(type),
-      count: stats.count,
-      totalWeight: stats.totalWeight
+      return {
+        month: format(month, "MMM yyyy", { locale: sk }),
+        monthDate: month.toISOString(),
+        monthStart: monthStart.toISOString(),
+        monthEnd: monthEnd.toISOString(),
+        catches: monthCatches.length,
+        totalWeight: monthCatches.reduce((sum, catch_) => sum + parseFloat(catch_.weight), 0),
+        trips: monthTrips.length
+      };
     });
-  });
-  
-  // Sort by count descending
-  fishTypeStats.sort((a, b) => b.count - a.count);
+  }, [catches, trips, selectedPeriodMonths]);
 
-  // Calculate top baits statistics
+  // Fish type stats (memoized)
+  const fishTypeStats: FishTypeStats[] = useMemo(() => {
+    const fishTypeCounts = catches.reduce((acc, catch_) => {
+      const fishType = catch_.fishType;
+      if (!acc[fishType]) {
+        acc[fishType] = { count: 0, totalWeight: 0 };
+      }
+      acc[fishType].count++;
+      acc[fishType].totalWeight += parseFloat(catch_.weight);
+      return acc;
+    }, {} as Record<string, { count: number; totalWeight: number }>);
+    
+    return Object.entries(fishTypeCounts)
+      .map(([type, stats]) => ({
+        type,
+        label: getFishTypeLabel(type),
+        count: stats.count,
+        totalWeight: stats.totalWeight
+      }))
+      .sort((a, b) => b.count - a.count);
+  }, [catches]);
+
+  // Top baits (memoized)
   type BaitStats = {
     bait: string;
     count: number;
@@ -168,139 +175,132 @@ export default function DiaryStats() {
     averageWeight: number;
   };
 
-  const baitCounts = catches.reduce((acc, catch_) => {
-    const bait = catch_.bait?.trim();
-    if (!bait) return acc;
-    if (!acc[bait]) {
-      acc[bait] = { count: 0, totalWeight: 0 };
-    }
-    acc[bait].count++;
-    acc[bait].totalWeight += parseFloat(catch_.weight);
-    return acc;
-  }, {} as Record<string, { count: number; totalWeight: number }>);
+  const topBaits: BaitStats[] = useMemo(() => {
+    const baitCounts = catches.reduce((acc, catch_) => {
+      const bait = catch_.bait?.trim();
+      if (!bait) return acc;
+      if (!acc[bait]) {
+        acc[bait] = { count: 0, totalWeight: 0 };
+      }
+      acc[bait].count++;
+      acc[bait].totalWeight += parseFloat(catch_.weight);
+      return acc;
+    }, {} as Record<string, { count: number; totalWeight: number }>);
 
-  const topBaits: BaitStats[] = Object.entries(baitCounts)
-    .map(([bait, stats]) => ({
-      bait,
-      count: stats.count,
-      totalWeight: stats.totalWeight,
-      averageWeight: stats.count > 0 ? stats.totalWeight / stats.count : 0
-    }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 5);
+    return Object.entries(baitCounts)
+      .map(([bait, stats]) => ({
+        bait,
+        count: stats.count,
+        totalWeight: stats.totalWeight,
+        averageWeight: stats.count > 0 ? stats.totalWeight / stats.count : 0
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+  }, [catches]);
 
-  // Calculate success rate (catches per trip)
-  const successRate = totalTrips > 0 ? (totalCatches / totalTrips).toFixed(1) : "0";
+  // Success rate (memoized)
+  const successRate = useMemo(() => 
+    totalTrips > 0 ? (totalCatches / totalTrips).toFixed(1) : "0"
+  , [totalCatches, totalTrips]);
 
-  // Top locations by catch count
-  const locationStats = trips.reduce((acc, trip) => {
-    const tripCatches = catches.filter(c => c.tripId === trip.id);
-    acc[trip.location] = (acc[trip.location] || 0) + tripCatches.length;
-    return acc;
-  }, {} as Record<string, number>);
+  // Top locations (memoized)
+  const topLocations = useMemo(() => {
+    const locationStats = trips.reduce((acc, trip) => {
+      const tripCatches = catches.filter(c => c.tripId === trip.id);
+      acc[trip.location] = (acc[trip.location] || 0) + tripCatches.length;
+      return acc;
+    }, {} as Record<string, number>);
 
-  const topLocations = Object.entries(locationStats)
-    .sort(([,a], [,b]) => b - a)
-    .slice(0, 5)
-    .map(([location, count]) => ({ location, count }));
+    return Object.entries(locationStats)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 5)
+      .map(([location, count]) => ({ location, count }));
+  }, [trips, catches]);
 
-  // Advanced analytics data calculations for trends
-  
-  // Weight progression data (monthly aggregations with weight trends)
-  const weightProgressionData = monthlyStats.map(month => {
+  // Chart data (memoized)
+  const weightProgressionData = useMemo(() => monthlyStats.map(month => {
     const monthCatches = filterCatchesByMonths(catches, [new Date(month.monthDate)]);
-
     return {
-      date: month.monthDate, // Use canonical date
-      dateLabel: month.month, // Keep display label
+      date: month.monthDate,
+      dateLabel: month.month,
       averageWeight: month.catches > 0 ? month.totalWeight / month.catches : 0,
       totalWeight: month.totalWeight,
       catchCount: month.catches,
       biggestCatch: getBiggestCatch(monthCatches)
     };
-  });
+  }), [monthlyStats, catches]);
 
-  // Catch frequency data (monthly with efficiency metrics)
-  const catchFrequencyData = monthlyStats.map(month => ({
-    date: month.monthDate, // Use canonical date
-    dateLabel: month.month, // Keep display label
+  const catchFrequencyData = useMemo(() => monthlyStats.map(month => ({
+    date: month.monthDate,
+    dateLabel: month.month,
     catches: month.catches,
     trips: month.trips,
     efficiency: month.trips > 0 ? month.catches / month.trips : 0
-  }));
+  })), [monthlyStats]);
 
-  // Seasonal trends data
-  const seasonalData = [
-    { season: 'spring', label: 'Jar', catches: 0, averageWeight: 0, trips: 0, efficiency: 0 },
-    { season: 'summer', label: 'Leto', catches: 0, averageWeight: 0, trips: 0, efficiency: 0 },
-    { season: 'autumn', label: 'Jeseň', catches: 0, averageWeight: 0, trips: 0, efficiency: 0 },
-    { season: 'winter', label: 'Zima', catches: 0, averageWeight: 0, trips: 0, efficiency: 0 }
-  ];
+  // Seasonal trends data (memoized)
+  const seasonalData = useMemo(() => {
+    const data = [
+      { season: 'spring', label: 'Jar', catches: 0, averageWeight: 0, trips: 0, efficiency: 0 },
+      { season: 'summer', label: 'Leto', catches: 0, averageWeight: 0, trips: 0, efficiency: 0 },
+      { season: 'autumn', label: 'Jeseň', catches: 0, averageWeight: 0, trips: 0, efficiency: 0 },
+      { season: 'winter', label: 'Zima', catches: 0, averageWeight: 0, trips: 0, efficiency: 0 }
+    ];
 
-  catches.forEach(catch_ => {
-    const month = new Date(catch_.capturedAt).getMonth();
-    let seasonIndex: number;
-    if (month >= 2 && month <= 4) seasonIndex = 0; // spring
-    else if (month >= 5 && month <= 7) seasonIndex = 1; // summer
-    else if (month >= 8 && month <= 10) seasonIndex = 2; // autumn
-    else seasonIndex = 3; // winter
+    catches.forEach(catch_ => {
+      const month = new Date(catch_.capturedAt).getMonth();
+      let seasonIndex: number;
+      if (month >= 2 && month <= 4) seasonIndex = 0;
+      else if (month >= 5 && month <= 7) seasonIndex = 1;
+      else if (month >= 8 && month <= 10) seasonIndex = 2;
+      else seasonIndex = 3;
+      data[seasonIndex].catches++;
+      data[seasonIndex].averageWeight += parseFloat(catch_.weight);
+    });
 
-    seasonalData[seasonIndex].catches++;
-    seasonalData[seasonIndex].averageWeight += parseFloat(catch_.weight);
-  });
+    trips.forEach(trip => {
+      const month = new Date(trip.startDate).getMonth();
+      let seasonIndex: number;
+      if (month >= 2 && month <= 4) seasonIndex = 0;
+      else if (month >= 5 && month <= 7) seasonIndex = 1;
+      else if (month >= 8 && month <= 10) seasonIndex = 2;
+      else seasonIndex = 3;
+      data[seasonIndex].trips++;
+    });
 
-  trips.forEach(trip => {
-    const month = new Date(trip.startDate).getMonth();
-    let seasonIndex: number;
-    if (month >= 2 && month <= 4) seasonIndex = 0; // spring
-    else if (month >= 5 && month <= 7) seasonIndex = 1; // summer
-    else if (month >= 8 && month <= 10) seasonIndex = 2; // autumn
-    else seasonIndex = 3; // winter
+    data.forEach(season => {
+      if (season.catches > 0) season.averageWeight = season.averageWeight / season.catches;
+      if (season.trips > 0) season.efficiency = season.catches / season.trips;
+    });
 
-    seasonalData[seasonIndex].trips++;
-  });
+    return data;
+  }, [catches, trips]);
 
-  // Calculate averages and efficiency for seasons
-  seasonalData.forEach(season => {
-    if (season.catches > 0) {
-      season.averageWeight = season.averageWeight / season.catches;
-    }
-    if (season.trips > 0) {
-      season.efficiency = season.catches / season.trips;
-    }
-  });
-
-  // Month comparison data (enhanced version of monthlyStats)
-  const monthComparisonData = monthlyStats.map(month => ({
-    month: month.month, // Keep display label for X-axis
+  const monthComparisonData = useMemo(() => monthlyStats.map(month => ({
+    month: month.month,
     catches: month.catches,
     totalWeight: month.totalWeight,
     trips: month.trips,
     averageWeight: month.catches > 0 ? month.totalWeight / month.catches : 0,
     efficiency: month.trips > 0 ? month.catches / month.trips : 0
-  }));
+  })), [monthlyStats]);
 
-  // Hourly distribution data for chart
-  const hourlyDistributionData = Array.from({ length: 24 }, (_, hour) => {
+  const hourlyDistributionData = useMemo(() => Array.from({ length: 24 }, (_, hour) => {
     const hourCatches = catches.filter(c => new Date(c.capturedAt).getHours() === hour);
-    const totalWeight = hourCatches.reduce((sum, c) => sum + parseFloat(c.weight), 0);
-    
+    const totalWeightVal = hourCatches.reduce((sum, c) => sum + parseFloat(c.weight), 0);
     return {
       hour,
       hourLabel: String(hour).padStart(2, '0') + ':00',
       count: hourCatches.length,
-      totalWeight: parseFloat(totalWeight.toFixed(2))
+      totalWeight: parseFloat(totalWeightVal.toFixed(2))
     };
-  });
+  }), [catches]);
 
-  // ===== ADVANCED METRICS CALCULATIONS =====
+  // ===== ADVANCED METRICS CALCULATIONS (memoized) =====
 
   // 1. ADVANCED SUCCESS RATE ANALYSIS
-  const advancedSuccessRate = {
-    // Overall rates
+  const advancedSuccessRate = useMemo(() => ({
     overallRate: totalTrips > 0 ? totalCatches / totalTrips : 0,
-    
-    // Time-based success rates
     hourlyRates: Array.from({ length: 24 }, (_, hour) => {
       const hourCatches = catches.filter(c => new Date(c.capturedAt).getHours() === hour);
       const hourTrips = trips.filter(t => {
@@ -315,8 +315,6 @@ export default function DiaryStats() {
         rate: hourTrips.length > 0 ? hourCatches.length / hourTrips.length : 0
       };
     }),
-    
-    // Day of week rates
     weeklyRates: Array.from({ length: 7 }, (_, day) => {
       const dayCatches = catches.filter(c => new Date(c.capturedAt).getDay() === day);
       const dayTrips = trips.filter(t => new Date(t.startDate).getDay() === day);
@@ -328,201 +326,116 @@ export default function DiaryStats() {
         rate: dayTrips.length > 0 ? dayCatches.length / dayTrips.length : 0
       };
     }),
-    
-    // Monthly efficiency trends
     monthlyEfficiency: monthlyStats.map(month => ({
       month: month.month,
       efficiency: month.trips > 0 ? month.catches / month.trips : 0,
       catches: month.catches,
       trips: month.trips
     }))
-  };
+  }), [catches, trips, totalCatches, totalTrips, monthlyStats]);
 
-  // 2. CATCH QUALITY SCORES
-  const catchQualityScores = {
-    // Weight percentile calculations
-    weightPercentiles: (() => {
-      const weights = catches.map(c => parseFloat(c.weight)).sort((a, b) => a - b);
+  // 2. CATCH QUALITY SCORES (memoized)
+  const catchQualityScores = useMemo(() => {
+    const weights = catches.map(c => parseFloat(c.weight)).sort((a, b) => a - b);
+    const maxWeight = Math.max(...catches.map(c => parseFloat(c.weight)), 0);
+    
+    const weightPercentiles = (() => {
       if (weights.length === 0) return { p25: 0, p50: 0, p75: 0, p90: 0, p95: 0 };
-      
       const percentile = (p: number) => {
         const index = Math.ceil(weights.length * p / 100) - 1;
         return weights[Math.max(0, index)] || 0;
       };
-      
-      return {
-        p25: percentile(25),
-        p50: percentile(50),
-        p75: percentile(75),
-        p90: percentile(90),
-        p95: percentile(95)
-      };
-    })(),
+      return { p25: percentile(25), p50: percentile(50), p75: percentile(75), p90: percentile(90), p95: percentile(95) };
+    })();
     
-    // Quality distribution (based on weight)
-    qualityDistribution: (() => {
-      const weights = catches.map(c => parseFloat(c.weight));
-      const maxWeight = Math.max(...weights, 0);
-      const distribution = { poor: 0, average: 0, good: 0, excellent: 0 };
-      
-      weights.forEach(weight => {
-        const score = maxWeight > 0 ? weight / maxWeight : 0;
-        if (score >= 0.8) distribution.excellent++;
-        else if (score >= 0.6) distribution.good++;
-        else if (score >= 0.4) distribution.average++;
-        else distribution.poor++;
-      });
-      
-      return [
-        { quality: 'Slabé', label: 'Slabé (< 40%)', count: distribution.poor, color: 'hsl(var(--destructive))' },
-        { quality: 'Priemerné', label: 'Priemerné (40-60%)', count: distribution.average, color: 'hsl(var(--accent))' },
-        { quality: 'Dobré', label: 'Dobré (60-80%)', count: distribution.good, color: 'hsl(var(--chart-2))' },
-        { quality: 'Výborné', label: 'Výborné (80%+)', count: distribution.excellent, color: 'hsl(var(--primary))' }
-      ];
-    })(),
+    const distribution = { poor: 0, average: 0, good: 0, excellent: 0 };
+    weights.forEach(weight => {
+      const score = maxWeight > 0 ? weight / maxWeight : 0;
+      if (score >= 0.8) distribution.excellent++;
+      else if (score >= 0.6) distribution.good++;
+      else if (score >= 0.4) distribution.average++;
+      else distribution.poor++;
+    });
     
-    // Size scoring for each catch
-    catchesWithScores: catches.map(catch_ => {
+    const qualityDistribution = [
+      { quality: 'Slabé', label: 'Slabé (< 40%)', count: distribution.poor, color: 'hsl(var(--destructive))' },
+      { quality: 'Priemerné', label: 'Priemerné (40-60%)', count: distribution.average, color: 'hsl(var(--accent))' },
+      { quality: 'Dobré', label: 'Dobré (60-80%)', count: distribution.good, color: 'hsl(var(--chart-2))' },
+      { quality: 'Výborné', label: 'Výborné (80%+)', count: distribution.excellent, color: 'hsl(var(--primary))' }
+    ];
+    
+    const catchesWithScores = catches.map(catch_ => {
       const weight = parseFloat(catch_.weight);
-      const maxWeight = Math.max(...catches.map(c => parseFloat(c.weight)), 0);
       const weightScore = maxWeight > 0 ? (weight / maxWeight) * 100 : 0;
-      
-      // Length bonus if available
       const lengthBonus = catch_.lengthCm ? Math.min(20, catch_.lengthCm / 5) : 0;
-      
-      // Type rarity bonus  
-      const typeBonus = catch_.fishType === 'sumec' ? 15 : 
-                       catch_.fishType === 'stuka' ? 12 : 
-                       catch_.fishType === 'amur' ? 10 : 
-                       catch_.fishType === 'kapor_lysec' ? 8 : 5;
-      
+      const typeBonus = catch_.fishType === 'sumec' ? 15 : catch_.fishType === 'stuka' ? 12 : catch_.fishType === 'amur' ? 10 : catch_.fishType === 'kapor_lysec' ? 8 : 5;
       const totalScore = Math.min(100, weightScore + lengthBonus + typeBonus);
-      
-      return {
-        ...catch_,
-        weightScore: Math.round(weightScore),
-        lengthBonus: Math.round(lengthBonus),
-        typeBonus,
-        qualityScore: Math.round(totalScore)
-      };
-    }).sort((a, b) => b.qualityScore - a.qualityScore)
-  };
+      return { ...catch_, weightScore: Math.round(weightScore), lengthBonus: Math.round(lengthBonus), typeBonus, qualityScore: Math.round(totalScore) };
+    }).sort((a, b) => b.qualityScore - a.qualityScore);
+    
+    return { weightPercentiles, qualityDistribution, catchesWithScores };
+  }, [catches]);
 
-  // 3. ENHANCED LOCATION PERFORMANCE ANALYTICS
-  const locationPerformance = {
-    // Detailed location stats
-    locationStats: (() => {
-      const stats: Record<string, {
-        location: string;
-        catches: number;
-        trips: number;
-        totalWeight: number;
-        averageWeight: number;
-        biggestCatch: number;
-        successRate: number;
-        quality: number;
-      }> = {};
-      
-      trips.forEach(trip => {
-        const tripCatches = catches.filter(c => c.tripId === trip.id);
-        const weights = tripCatches.map(c => parseFloat(c.weight));
-        const avgQuality = catchQualityScores.catchesWithScores
-          .filter(c => c.tripId === trip.id)
-          .reduce((sum, c) => sum + c.qualityScore, 0) / Math.max(1, tripCatches.length);
-        
-        if (!stats[trip.location]) {
-          stats[trip.location] = {
-            location: trip.location,
-            catches: 0,
-            trips: 0,
-            totalWeight: 0,
-            averageWeight: 0,
-            biggestCatch: 0,
-            successRate: 0,
-            quality: 0
-          };
-        }
-        
-        const stat = stats[trip.location];
-        stat.trips++;
-        stat.catches += tripCatches.length;
-        stat.totalWeight += weights.reduce((sum, w) => sum + w, 0);
-        stat.biggestCatch = Math.max(stat.biggestCatch, ...weights, 0);
-        stat.quality = (stat.quality * (stat.trips - 1) + avgQuality) / stat.trips;
-      });
-      
-      // Calculate derived metrics
-      Object.values(stats).forEach(stat => {
-        stat.averageWeight = stat.catches > 0 ? stat.totalWeight / stat.catches : 0;
-        stat.successRate = stat.trips > 0 ? stat.catches / stat.trips : 0;
-      });
-      
-      return Object.values(stats).sort((a, b) => b.successRate - a.successRate);
-    })(),
+  // 3. ENHANCED LOCATION PERFORMANCE ANALYTICS (memoized)
+  const locationPerformance = useMemo(() => {
+    const stats: Record<string, { location: string; catches: number; trips: number; totalWeight: number; averageWeight: number; biggestCatch: number; successRate: number; quality: number; }> = {};
     
-    // GPS-based hotspots (if coordinates available)
-    gpsHotspots: catches
-      .filter(c => c.latitude && c.longitude)
-      .map(c => ({
-        ...c,
-        coordinates: [parseFloat(c.longitude!), parseFloat(c.latitude!)]
-      }))
-  };
-
-  // 4. PERSONAL RECORDS TRACKING
-  const personalRecords = {
-    // Weight records
-    heaviestCatch: catches.reduce((max, catch_) => {
-      const weight = parseFloat(catch_.weight);
-      return weight > parseFloat(max?.weight || '0') ? catch_ : max;
-    }, catches[0] || null),
-    
-    // Length records (if available)
-    longestCatch: catches
-      .filter(c => c.lengthCm)
-      .reduce((max, catch_) => {
-        return (catch_.lengthCm || 0) > (max?.lengthCm || 0) ? catch_ : max;
-      }, null as any),
-    
-    // Most productive sessions
-    bestTrip: trips.map(trip => {
+    trips.forEach(trip => {
       const tripCatches = catches.filter(c => c.tripId === trip.id);
-      const totalWeight = tripCatches.reduce((sum, c) => sum + parseFloat(c.weight), 0);
-      return {
-        ...trip,
-        catchCount: tripCatches.length,
-        totalWeight,
-        averageWeight: tripCatches.length > 0 ? totalWeight / tripCatches.length : 0
-      };
-    }).sort((a, b) => b.catchCount - a.catchCount)[0] || null,
-    
-    // Streak tracking
-    streaks: (() => {
-      const sortedTrips = trips.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
-      let currentStreak = 0;
-      let maxStreak = 0;
+      const weights = tripCatches.map(c => parseFloat(c.weight));
+      const avgQuality = catchQualityScores.catchesWithScores.filter(c => c.tripId === trip.id).reduce((sum, c) => sum + c.qualityScore, 0) / Math.max(1, tripCatches.length);
       
+      if (!stats[trip.location]) {
+        stats[trip.location] = { location: trip.location, catches: 0, trips: 0, totalWeight: 0, averageWeight: 0, biggestCatch: 0, successRate: 0, quality: 0 };
+      }
+      
+      const stat = stats[trip.location];
+      stat.trips++;
+      stat.catches += tripCatches.length;
+      stat.totalWeight += weights.reduce((sum, w) => sum + w, 0);
+      stat.biggestCatch = Math.max(stat.biggestCatch, ...weights, 0);
+      stat.quality = (stat.quality * (stat.trips - 1) + avgQuality) / stat.trips;
+    });
+    
+    Object.values(stats).forEach(stat => {
+      stat.averageWeight = stat.catches > 0 ? stat.totalWeight / stat.catches : 0;
+      stat.successRate = stat.trips > 0 ? stat.catches / stat.trips : 0;
+    });
+    
+    const gpsHotspots = catches.filter(c => c.latitude && c.longitude).map(c => ({ ...c, coordinates: [parseFloat(c.longitude!), parseFloat(c.latitude!)] }));
+    
+    return { locationStats: Object.values(stats).sort((a, b) => b.successRate - a.successRate), gpsHotspots };
+  }, [trips, catches, catchQualityScores]);
+
+  // 4. PERSONAL RECORDS TRACKING (memoized)
+  const personalRecords = useMemo(() => {
+    const heaviestCatch = catches.reduce((max, catch_) => parseFloat(catch_.weight) > parseFloat(max?.weight || '0') ? catch_ : max, catches[0] || null);
+    const longestCatch = catches.filter(c => c.lengthCm).reduce((max, catch_) => (catch_.lengthCm || 0) > (max?.lengthCm || 0) ? catch_ : max, null as any);
+    
+    const bestTrip = trips.map(trip => {
+      const tripCatches = catches.filter(c => c.tripId === trip.id);
+      const tripTotalWeight = tripCatches.reduce((sum, c) => sum + parseFloat(c.weight), 0);
+      return { ...trip, catchCount: tripCatches.length, totalWeight: tripTotalWeight, averageWeight: tripCatches.length > 0 ? tripTotalWeight / tripCatches.length : 0 };
+    }).sort((a, b) => b.catchCount - a.catchCount)[0] || null;
+    
+    const streaks = (() => {
+      const sortedTrips = [...trips].sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+      let currentStreak = 0, maxStreak = 0;
       sortedTrips.forEach(trip => {
-        const tripCatches = catches.filter(c => c.tripId === trip.id);
-        if (tripCatches.length > 0) {
-          currentStreak++;
-          maxStreak = Math.max(maxStreak, currentStreak);
-        } else {
-          currentStreak = 0;
-        }
+        if (catches.some(c => c.tripId === trip.id)) { currentStreak++; maxStreak = Math.max(maxStreak, currentStreak); } else { currentStreak = 0; }
       });
-      
       return { current: currentStreak, longest: maxStreak };
-    })(),
+    })();
     
-    // Monthly/yearly records
-    monthlyRecords: monthlyStats.map(month => ({
+    const monthlyRecords = monthlyStats.map(month => ({
       month: month.month,
       bestCatch: getBestCatch(filterCatchesByMonths(catches, [new Date(month.monthDate)])),
       totalCatches: month.catches,
       totalWeight: month.totalWeight
-    })).filter(record => record.bestCatch)
-  };
+    })).filter(record => record.bestCatch);
+    
+    return { heaviestCatch, longestCatch, bestTrip, streaks, monthlyRecords };
+  }, [catches, trips, monthlyStats]);
 
   return (
     <DiaryLayout>
@@ -600,24 +513,27 @@ export default function DiaryStats() {
                   </div>
                   <div className="flex items-center gap-2">
                     <label className="text-sm font-medium">Obdobie:</label>
-                    <select
-                      value={selectedPeriodMonths}
-                      onChange={(e) => setSelectedPeriodMonths(parseInt(e.target.value) as 3 | 6 | 12 | 24)}
-                      className="px-3 py-1 border rounded-md text-sm bg-background"
-                      data-testid="select-period"
+                    <Select
+                      value={String(selectedPeriodMonths)}
+                      onValueChange={(value) => setSelectedPeriodMonths(parseInt(value) as 3 | 6 | 12 | 24)}
                     >
-                      <option value={3}>Posledné 3 mesiace</option>
-                      <option value={6}>Posledných 6 mesiacov</option>
-                      <option value={12}>Posledných 12 mesiacov</option>
-                      <option value={24}>Posledné 2 roky</option>
-                    </select>
+                      <SelectTrigger className="w-[180px]" data-testid="select-period">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="3">Posledné 3 mesiace</SelectItem>
+                        <SelectItem value="6">Posledných 6 mesiacov</SelectItem>
+                        <SelectItem value="12">Posledných 12 mesiacov</SelectItem>
+                        <SelectItem value="24">Posledné 2 roky</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               </CardHeader>
             </Card>
 
-            {/* Key Stats Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 xl:gap-5">
+            {/* Key Stats Cards - 2x2 grid on mobile */}
+            <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 xl:gap-5">
               {/* Primary Metric - Highlighted */}
               <Card className="relative overflow-hidden bg-gradient-to-br from-primary/15 via-primary/5 to-transparent ring-1 ring-primary/30 shadow-lg transition-all duration-200 hover:-translate-y-1 hover:shadow-xl">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
