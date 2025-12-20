@@ -7,6 +7,8 @@ import helmet from "helmet";
 import cors from "cors";
 import { apiLimiter } from "./middleware/rate-limiting";
 import { sanitizeInput } from "./middleware/input-sanitization";
+import fs from "fs";
+import path from "path";
 
 const app = express();
 
@@ -378,10 +380,17 @@ async function startBattleNotificationScheduler() {
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
-  // Use multiple checks: NODE_ENV, REPLIT_DEPLOYMENT, and existence of dist folder
-  const isProduction = process.env.NODE_ENV === "production" || 
-                       process.env.REPLIT_DEPLOYMENT === "1" ||
-                       (process.env.REPLIT_DEPLOYMENT !== undefined);
+  // Detect production by checking if we're running from dist/ (bundled) or source
+  // In production bundle, client/ folder doesn't exist relative to dist/
+  const clientPath = path.resolve(import.meta.dirname, "..", "client");
+  const publicPath = path.resolve(import.meta.dirname, "public");
+  const hasClientFolder = fs.existsSync(clientPath);
+  const hasPublicFolder = fs.existsSync(publicPath);
+  
+  // If public/ exists (production build) and client/ doesn't exist (not source), serve static
+  const isProduction = hasPublicFolder && !hasClientFolder;
+  
+  console.log(`[Server] Environment detection: hasPublicFolder=${hasPublicFolder}, hasClientFolder=${hasClientFolder}, isProduction=${isProduction}`);
   
   if (!isProduction) {
     await setupVite(app, server);
