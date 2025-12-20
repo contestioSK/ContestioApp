@@ -1,0 +1,76 @@
+UX/UI Audit: Trip Detail (Detail výpravy)
+
+Dátum: 20. december 2025
+Typ stránky: Detail zobrazenie / Dashboard
+Status: Revízia kódu a návrhu
+
+1. Zhrnutie (Executive Summary)
+
+Stránka TripDetail je funkčne veľmi bohatá a vizuálne atraktívna (najmä sekcia TOP 3 úlovkov). Funkcia "Exportovať ako obrázok" je výborný prvok pre sociálne zdieľanie ("viral loop").
+Hlavným UX problémom je hustota informácií na mobilných zariadeniach. Hlavička obsahuje príliš veľa akčných tlačidiel a tabuľka s 5 stĺpcami je na telefóne prakticky nečitateľná bez horizontálneho scrollovania.
+
+2. UI Analýza (Vizuál a Estetika)
+
+Hlavička a Akcie (Toolbar)
+
+Problém: V hlavičke sú vedľa seba 4 tlačidlá: Späť, Galéria, Exportovať, Ukončiť.
+
+Dôsledok: Na mobilnom displeji (šírka < 400px) dôjde k zalomeniu tlačidiel do viacerých riadkov, čo posunie samotný obsah (názov výpravy) príliš nízko a pôsobí to chaoticky.
+
+Odporúčanie: Zlúčiť sekundárne akcie (Exportovať, Ukončiť, prípadne Galéria) do jedného rozbaľovacieho menu (Dropdown Menu s ikonou "More" / troch bodiek).
+
+Konzistencia témy (Dark vs. Light)
+
+Postreh: Samotná stránka používa štandardnú (pravdepodobne svetlú) tému DiaryLayout, ale detail úlovku (Sheet) má natvrdo nastavené tmavé pozadie bg-slate-800.
+
+Riziko: Tento vizuálny skok môže pôsobiť nekonzistentne, ak zvyšok aplikácie nie je v tmavom režime. Ak je to zámer (napr. "cinematic" look pre detail), je to v poriadku, ale treba si dať pozor na čitateľnosť textov na prechode.
+
+Tabuľka "Ostatné úlovky"
+
+Problém: Komponent Table s 5 stĺpcami (#, Druh, Váha, Dĺžka, Čas) sa na mobile nezmestí na šírku.
+
+Odporúčanie: Na mobilných zariadeniach skryť Tabuľku a nahradiť ju zoznamom kariet (List View), kde sú informácie usporiadané pod sebou, nie vedľa seba.
+
+3. UX Analýza (Použiteľnosť a Interakcia)
+
+Gamifikácia (TOP 3)
+
+Plus: Zobrazenie medailí a zvýraznenie najväčších úlovkov je výborný motivátor.
+
+Mobil: Na mobile sa 3 karty zobrazia pod sebou, čo zaberie veľa vertikálneho miesta. Používateľ musí veľa scrollovať, aby sa dostal k zvyšku zoznamu.
+
+Návrh: Na mobile zvážiť horizontálny scroll (Carousel) pre sekciu TOP 3, aby boli viditeľné rýchlejšie.
+
+Export (Shareable Image)
+
+Interakcia: Generovanie obrázka prebieha na klientovi. Počas isExporting je tlačidlo zablokované, čo je správne UX.
+
+Vizuál exportu: Skrytý div (bg-[#0c1f28]) vyzerá štýlovo a profesionálne. Toto je silná stránka aplikácie.
+
+Detail Panel (Sheet)
+
+Dostupnosť: Panel sa otvára ako Sheet (z boku/spodu). Tlačidlo zavrieť (X) musí byť dostatočne veľké a viditeľné na tmavom pozadí.
+
+Obsah: Zobrazuje veľa detailov (počasie, GPS). Pre bežného používateľa môžu byť GPS súradnice menej podstatné ako fotka – poradie je však zvolené dobre (fotka prvá).
+
+4. Konkrétne návrhy na zlepšenie (Action Items)
+
+Priorita A (Kritické pre mobil)
+
+Responzívna hlavička: Implementovať DropdownMenu pre akcie na mobile. Ponechať viditeľné len Späť a More Actions.
+
+Mobilný zoznam: Pridať podmienku pre renderovanie: isMobile ? <ListView /> : <TableView /> pre sekciu "Ostatné úlovky". Tabuľku na mobile nepoužívať.
+
+Priorita B (Vizuál a Flow)
+
+Farebný kontrast: Skontrolovať farby ikon rýb (napr. text-yellow-400) na bielom pozadí karty. Žltá na bielej je často nečitateľná. Zmeniť na text-yellow-600 alebo text-amber-500.
+
+Kompaktnejšie TOP 3: Na mobile skúsiť "Snap scroll" (vodorovné posúvanie) pre TOP 3 karty, aby nezabrali 3 plné výšky obrazovky.
+
+Priorita C (Nice-to-have)
+
+Zdieľanie: Pri exporte na mobile (ak to prehliadač podporuje) využiť navigator.share() s vygenerovaným súborom, namiesto len stiahnutia (link.click()), čo je na iOS niekedy mätúce.
+
+Záver
+
+Stránka má potenciál byť "výkladnou skriňou" aplikácie. Aby bola použiteľná v teréne (na mobile), je nutné upratať hlavičku a zbaviť sa tabuľkového zobrazenia na malých displejoch.
