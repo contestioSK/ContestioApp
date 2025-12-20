@@ -428,7 +428,8 @@ export default function BattleArchive() {
                     <Download className="w-4 h-4 mr-2" />
                     CSV
                   </Button>
-                  <Button 
+                  {/* PDF Export hidden for now - functionality available in handleExportPDF */}
+                  {/* <Button 
                     variant="outline" 
                     size="sm"
                     onClick={handleExportPDF}
@@ -436,7 +437,7 @@ export default function BattleArchive() {
                   >
                     <FileText className="w-4 h-4 mr-2" />
                     PDF
-                  </Button>
+                  </Button> */}
                 </div>
               )}
             </CardContent>
