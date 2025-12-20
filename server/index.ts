@@ -378,7 +378,12 @@ async function startBattleNotificationScheduler() {
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
-  if (process.env.NODE_ENV === "development") {
+  // Use multiple checks: NODE_ENV, REPLIT_DEPLOYMENT, and existence of dist folder
+  const isProduction = process.env.NODE_ENV === "production" || 
+                       process.env.REPLIT_DEPLOYMENT === "1" ||
+                       (process.env.REPLIT_DEPLOYMENT !== undefined);
+  
+  if (!isProduction) {
     await setupVite(app, server);
   } else {
     serveStatic(app);
