@@ -1,0 +1,79 @@
+UX/UI Audit: Trip Gallery (Galéria fotiek)
+
+Dátum: 20. december 2025
+Typ stránky: Galéria médií s filtrovaním
+Status: Revízia pôvodného návrhu
+
+1. Zhrnutie (Executive Summary)
+
+Stránka plní svoj základný účel (zobrazenie fotiek z rybárskej výpravy), ale pôsobí "surovo" a utilitárne. Chýba jej emocionálny náboj, ktorý by mal sprevádzať prezeranie spomienok. Z hľadiska UX je funkčná na desktope, ale na mobilných zariadeniach (kde sa tento typ obsahu konzumuje najčastejšie) má rezervy v ergonómii ovládania (touch targets) a čitateľnosti.
+
+2. UI Analýza (Vizuál a Estetika)
+
+Hierarchia a Rozloženie
+
+Problém: Hlavička s nadpisom a tlačidlom "Späť" zaberá veľa vertikálneho priestoru bez pridanej hodnoty.
+
+Problém: Filtre sú umiestnené v Card kontajneri, ktorý vytvára zbytočné orámovanie navyše, čím vizuálne zaťažuje stránku ešte pred samotným obsahom.
+
+Odporúčanie: Zjednotiť hlavičku a filtre do jedného kompaktnejšieho "sticky" panelu, aby bol obsah (fotky) okamžite viditeľný.
+
+Typografia a Kontrast
+
+Problém: Informácie na kartičkách (overlay na fotke) sú ťažko čitateľné, ak je fotka pod textom svetlá alebo príliš detailná.
+
+Odporúčanie: Použiť agresívnejší gradient (tma -> transparentná) pod textom alebo backdrop-blur efekt pre zvýšenie kontrastu textu.
+
+Prázdny stav (Empty State)
+
+Problém: Text "Žiadne fotky..." je príliš strohý a malý.
+
+Odporúčanie: Využiť ilustráciu alebo ikonu a priateľskejší text, ktorý motivuje používateľa pridať obsah alebo upraviť filter.
+
+3. UX Analýza (Použiteľnosť a Interakcia)
+
+Mobilná ergonómia (Touch Targets)
+
+Kritický bod: Tlačidlá v Lightboxe (Zavrieť X, Šípky) sú na mobiloch často umiestnené príliš vysoko alebo po krajoch, kde sa ťažko triafajú palcom jednej ruky.
+
+Odporúčanie: Zväčšiť aktívnu zónu tlačidiel (padding) a na mobiloch zvážiť umiestnenie navigačných prvkov do spodnej časti obrazovky.
+
+Lightbox (Prezeranie fotiek)
+
+Chýba: Podpora gest (swipe left/right) na dotykových zariadeniach. Používateľ musí "klikať" na šípky, čo je na mobile neprirodzené.
+
+Chýba: Indikácia načítavania (loader), kým sa načíta plná veľkosť obrázka.
+
+Navigácia: Klávesová navigácia (šípky) je implementovaná správne.
+
+Filtrovanie
+
+Interakcia: Pri výbere filtra "Druh ryby" sa používateľ musí preklikať cez dropdown.
+
+Odporúčanie: Ak je kategórií málo (do 5), je lepšie použiť horizontálne scrollovateľné "chips" (pilulky), ktoré sú dostupné na jeden klik.
+
+4. Konkrétne návrhy na zlepšenie (Action Items)
+
+Priorita A (Kritické pre použiteľnosť)
+
+Zlepšiť čitateľnosť textu na fotkách: Pridať silnejší gradient od spodku karty (bg-gradient-to-t from-black/80).
+
+Mobilný Lightbox: Zabezpečiť, aby ovládacie prvky neprekrývali dôležité časti fotky a boli ľahko dostupné.
+
+Priorita B (Vizuálny upgrade)
+
+Mriežka (Grid): Na mobiloch zvážiť 2-stĺpcový grid s menšími medzerami pre maximalizáciu priestoru.
+
+Animácie: Pridať jemný fade-in pri načítaní fotiek, aby mriežka nepôsobila trhane pri filtrovaní.
+
+Backdrop Blur: V Lightboxe použiť rozmazané pozadie (backdrop-filter: blur()) pre modernejší, "pohlcujúci" dojem.
+
+Priorita C (Nice-to-have)
+
+Lazy Loading: Implementovať loading="lazy" na <img> tagy pre rýchlejšie počiatočné načítanie stránky.
+
+Meta informácie: V detaile fotky zobraziť viac kontextu (napr. dátum a čas zrozumiteľne: "Piatok, 18:30").
+
+Záver
+
+Aktuálny stav je "funkčný MVP". Pre posun na úroveň moderného produktu je potrebné zamerať sa na emocionálny dizajn (lepšia prezentácia fotiek) a mobilnú ergonómiu.
