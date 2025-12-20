@@ -1,0 +1,86 @@
+UX/UI Audit: Weather Forecast (Predpoveď počasia)
+
+Dátum: 20. december 2025
+Typ stránky: Data Dashboard / Vizualizácia
+Status: Revízia kódu a návrhu
+
+1. Zhrnutie (Executive Summary)
+
+Stránka ponúka komplexný prehľad počasia špecificky zameraný na rybárov (Index aktivity, vietor, tlak). Implementácia horizontálneho scrollovania pre dni a hodiny je na mobiloch správna voľba.
+Hlavným nedostatkom je prehustenie informácií (Data Density) v hodinových kartách na mobilných zariadeniach a potenciálne problémy s ovládaním grafov na dotykových displejoch.
+
+2. UI Analýza (Vizuál a Estetika)
+
+Hodinové karty (Mobile)
+
+Problém: Kód definuje pre mobilnú hodinovú kartu šírku min-w-[75px], do ktorej sa snaží vtesnať: Čas, Ikonu, Teplotu, Šípku vetra, Rýchlosť vetra, Nárazy vetra a Tlak.
+
+Dôsledok: Obsah bude vizuálne preplnený, texty nečitateľne malé (používa sa text-xs) a vertikálne natiahnuté. Pôsobí to ako "Excel tabuľka" vtesnaná do kariet.
+
+Odporúčanie: Namiesto odstránenia údajov je potrebné zväčšiť šírku karty (napr. na min-w-[100px]) a lepšie štruktúrovať dáta. Pre rybára sú tlak a nárazy kľúčové, preto musia ostať viditeľné, napríklad použitím ikon namiesto textových popisov ("Vietor", "Tlak") na ušetrenie miesta.
+
+Vyhľadávanie (Search Input)
+
+Problém: Našepkávač (Dropdown) je implementovaný ako absolute poziciovaný element.
+
+Riziko: Na mobiloch, keď sa vysunie softvérová klávesnica, zostáva pre obsah málo miesta. Dropdown môže byť prekrytý alebo sa "nezmestí" do viewportu, čo znemožní výber lokality.
+
+Odporúčanie: Na mobilných zariadeniach pri fokuse do inputu otvoriť vyhľadávanie v celoobrazovkovom móde (Full-screen modal), čo je štandard v natívnych weather aplikáciách.
+
+Index aktivity rýb (Gradient Bar)
+
+Plus: Vizuálna reprezentácia pomocou gradientu (from-red-500 via-yellow-500 to-green-500) je intuitívna a okamžite čitateľná.
+
+3. UX Analýza (Použiteľnosť a Interakcia)
+
+Kontextové zobrazenie času (Smart Time Filtering)
+
+Problém: Pri zobrazení aktuálneho dňa sa vypisujú všetky hodiny od 00:00. Ak používateľ príde na stránku o 10:00, prvých 10 kariet je pre neho irelevantná história, ktorú musí prácne prescrollovať, aby sa dostal k aktuálnej predpovedi.
+
+Odporúčanie: Pre "Dnešný deň" automaticky skryť minulé hodiny a zoznam začínať aktuálnou hodinou (alebo hodinou -1 pre kontext). Tým sa používateľ okamžite dostane k relevantným dátam pre plánovanie.
+
+Interaktívne grafy (Recharts)
+
+Problém: Grafy (ComposedChart) na mobiloch často "kradnú" scroll. Ak používateľ chce posunúť stránku nižšie a prstom trafí graf, namiesto scrollovania stránky sa začne hýbať kurzor v grafe (Tooltip).
+
+Odporúčanie: Pre mobilné verzie grafov vypnúť interakciu (Tooltip) alebo pridať nadpis "Podržaním zobrazíte detaily", aby sa predišlo náhodným interakciám pri scrollovaní.
+
+Ukladanie polohy
+
+Plus: Automatické ukladanie poslednej polohy do localStorage je výborné UX – používateľ nemusí pri každej návšteve znova hľadať svoj revír.
+
+Výber dňa
+
+Interakcia: Prepínanie dní (horizontálny zoznam tlačidiel) mení obsah pod ním.
+
+Navigácia: Je dôležité, aby pri zmene dňa používateľ nestratil kontext. Aktuálny stav (zmena selectedDayIndex) je vyriešený dobre, obsah sa prekreslí okamžite.
+
+4. Konkrétne návrhy na zlepšenie (Action Items)
+
+Priorita A (Kritické pre mobil)
+
+Smart Hourly Scroll: Implementovať logiku: if (selectedDay === today) { showHours >= currentHour }. Tým sa ušetrí miesto a zrýchli prístup k dátam.
+
+Optimalizácia hodinových kariet: Ponechať všetky kľúčové metriky (vrátane tlaku a nárazov), ale zlepšiť layout:
+
+Odstrániť textové labelky ("Vietor", "Nárazy", "Tlak") a spoliehať sa na kontext alebo ikony.
+
+Zväčšiť minimálnu šírku karty, aby sa údaje "nedusili".
+
+Použiť farebné kódovanie pre tlak (napr. zelená pre stabilný/stúpajúci), aby bol trend jasný na prvý pohľad.
+
+Search UX: Zabezpečiť, aby dropdown s výsledkami vyhľadávania mal z-index vyšší ako ostatné elementy a na mobile mal dostatočnú výšku (napr. fixnú výšku s vlastným scrollom), aby sa dal ovládať aj pri otvorenej klávesnici.
+
+Priorita B (Vizuál a Čitateľnosť)
+
+Typografia v grafoch: Zväčšiť font na osiach X/Y v grafoch pre mobil (fontSize: 10 je na hranici čitateľnosti).
+
+Ikony počasia: Uistiť sa, že ikony z WeatherAPI (PNG) sú dostatočne kvalitné na Retina displejoch. Zvážiť použitie SVG sady (napr. z Lucide alebo inej knižnice), ktorá sa škáluje lepšie.
+
+Priorita C (Nice-to-have)
+
+Astro Widget: Sekcia "Východ/Západ slnka a Mesiac" je len textová. Pridať jednoduchú vizualizáciu (napr. oblúk dráhy slnka) by výrazne zvýšilo estetickú hodnotu stránky.
+
+Záver
+
+Stránka je funkčne nabitá, ale potrebuje "diétu" v oblasti layoutu pre mobilné zobrazenie. Menej textových popisov a viac vizuálnej hierarchie pomôže udržať prehľad. Implementácia "Smart Time Filtering" (skrytie minulých hodín) výrazne zlepší použiteľnosť pre rybárov, ktorí riešia aktuálnu situáciu pri vode.
