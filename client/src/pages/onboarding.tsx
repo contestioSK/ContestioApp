@@ -15,6 +15,7 @@ import {
   List, 
   PieChart,
   ChevronRight,
+  ChevronLeft,
   Check
 } from "lucide-react";
 
@@ -260,14 +261,26 @@ export default function Onboarding() {
 
       <div className="p-6 border-t bg-background">
         <div className="max-w-lg mx-auto flex gap-4">
-          <Button 
-            variant="ghost" 
-            onClick={handleSkip}
-            disabled={savePreferencesMutation.isPending}
-            data-testid="button-skip-onboarding"
-          >
-            Preskočiť
-          </Button>
+          {currentStep > 1 ? (
+            <Button 
+              variant="outline" 
+              onClick={() => setCurrentStep(currentStep - 1)}
+              disabled={savePreferencesMutation.isPending}
+              data-testid="button-back-step"
+            >
+              <ChevronLeft className="w-4 h-4 mr-2" />
+              Späť
+            </Button>
+          ) : (
+            <Button 
+              variant="ghost" 
+              onClick={handleSkip}
+              disabled={savePreferencesMutation.isPending}
+              data-testid="button-skip-onboarding"
+            >
+              Preskočiť
+            </Button>
+          )}
           <Button 
             className="flex-1"
             onClick={handleNext}
