@@ -51,6 +51,13 @@ export const users = pgTable("users", {
   verificationTokenExpires: timestamp("verification_token_expires"),
   // Newsletter subscription
   isNewsletterSubscribed: boolean("is_newsletter_subscribed").default(false).notNull(),
+  // Onboarding preferences
+  preferences: jsonb("preferences").$type<{
+    fishingStyle?: "carp" | "spinning" | "feeder" | "fly" | "catfish";
+    mainGoal?: "battles" | "diary" | "statistics";
+    visualPreference?: "lists" | "charts";
+    onboardingCompleted?: boolean;
+  }>(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

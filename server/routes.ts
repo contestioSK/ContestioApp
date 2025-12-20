@@ -903,6 +903,38 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
+  // User preferences endpoints (onboarding)
+  const userPreferencesSchema = z.object({
+    fishingStyle: z.enum(["carp", "spinning", "feeder", "fly", "catfish"]).optional(),
+    mainGoal: z.enum(["battles", "diary", "statistics"]).optional(),
+    visualPreference: z.enum(["lists", "charts"]).optional(),
+    onboardingCompleted: z.boolean().optional()
+  });
+
+  app.put('/api/user/preferences', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const validatedData = userPreferencesSchema.parse(req.body);
+      
+      const preferences = {
+        fishingStyle: validatedData.fishingStyle,
+        mainGoal: validatedData.mainGoal,
+        visualPreference: validatedData.visualPreference,
+        onboardingCompleted: validatedData.onboardingCompleted
+      };
+      
+      await db.update(users).set({ preferences }).where(eq(users.id, userId));
+      
+      res.json({ success: true, preferences });
+    } catch (error) {
+      console.error("[PREFERENCES] Error updating user preferences:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Neplatné dáta", errors: error.errors });
+      }
+      res.status(500).json({ message: "Chyba pri aktualizácii preferencií" });
+    }
+  });
+
   // Notification preferences endpoints
   app.get('/api/users/notification-preferences', isAuthenticated, async (req: any, res) => {
     try {
