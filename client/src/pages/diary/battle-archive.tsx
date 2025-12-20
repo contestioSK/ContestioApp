@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { Trophy, Users, Calendar, Clock, Fish, Weight, Crown, Archive, Search, Filter, Eye, RotateCcw, Medal, BarChart3, Star, Plus, Loader2, SlidersHorizontal, Download, TrendingUp } from "lucide-react";
+import { Trophy, Users, Calendar, Clock, Fish, Weight, Crown, Archive, Search, Filter, Eye, RotateCcw, Medal, BarChart3, Star, Plus, Loader2, SlidersHorizontal, Download, TrendingUp, FileText } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
@@ -17,6 +17,8 @@ import { useLocation } from "wouter";
 import DiaryLayout from "@/components/DiaryLayout";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useToast } from "@/hooks/use-toast";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 // Archived battle data interface
 interface ArchivedBattle {
@@ -113,6 +115,65 @@ export default function BattleArchive() {
     toast({
       title: "Export úspešný",
       description: `Exportovaných ${battles.length} súbojov do CSV.`,
+      variant: "success",
+    });
+  };
+
+  // Export battles to PDF
+  const handleExportPDF = () => {
+    if (battles.length === 0) {
+      toast({
+        title: "Žiadne dáta",
+        description: "Nemáte žiadne súboje na export.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const doc = new jsPDF();
+    
+    // Title
+    doc.setFontSize(20);
+    doc.text("Archív súbojov", 14, 20);
+    
+    // Subtitle with date
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Vygenerované: ${format(new Date(), "d.M.yyyy HH:mm")}`, 14, 28);
+    
+    // Statistics summary
+    doc.setFontSize(12);
+    doc.setTextColor(0);
+    const wins = battles.filter(b => b.userPosition === 1).length;
+    const podiums = battles.filter(b => b.userPosition && b.userPosition <= 3).length;
+    doc.text(`Celkom súbojov: ${battles.length}  |  Výhry: ${wins}  |  Pódium: ${podiums}`, 14, 38);
+    
+    // Table with battles
+    const tableData = battles.map(b => [
+      b.name.length > 25 ? b.name.substring(0, 22) + "..." : b.name,
+      format(new Date(b.startAt), "d.M.yyyy"),
+      getModeLabel(b.mode),
+      b.participantCount.toString(),
+      b.userPosition ? `${b.userPosition}.` : "N/A",
+      `${b.userScore} ${getScoreUnit(b.mode)}`,
+      b.winner.length > 15 ? b.winner.substring(0, 12) + "..." : b.winner
+    ]);
+    
+    autoTable(doc, {
+      startY: 45,
+      head: [["Názov", "Dátum", "Režim", "Účast.", "Pozícia", "Skóre", "Víťaz"]],
+      body: tableData,
+      styles: { fontSize: 9, cellPadding: 2 },
+      headStyles: { fillColor: [59, 130, 246], textColor: 255 },
+      alternateRowStyles: { fillColor: [245, 245, 245] },
+    });
+    
+    // Save PDF
+    doc.save(`battle-archive-${format(new Date(), "yyyy-MM-dd")}.pdf`);
+    
+    toast({
+      title: "Export úspešný",
+      description: `Exportovaných ${battles.length} súbojov do PDF.`,
       variant: "success",
     });
   };
@@ -355,9 +416,9 @@ export default function BattleArchive() {
                 </div>
               </div>
               
-              {/* Export Button */}
+              {/* Export Buttons */}
               {battles.length > 0 && (
-                <div className="mt-6 pt-4 border-t border-border">
+                <div className="mt-6 pt-4 border-t border-border flex flex-wrap gap-2">
                   <Button 
                     variant="outline" 
                     size="sm"
@@ -365,7 +426,16 @@ export default function BattleArchive() {
                     data-testid="button-export-csv"
                   >
                     <Download className="w-4 h-4 mr-2" />
-                    Exportovať do CSV
+                    CSV
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={handleExportPDF}
+                    data-testid="button-export-pdf"
+                  >
+                    <FileText className="w-4 h-4 mr-2" />
+                    PDF
                   </Button>
                 </div>
               )}
