@@ -39,18 +39,18 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { DiaryTrip, DiaryCatch } from "@shared/schema";
 import { getFishTypeLabel } from "@/utils/fishTypeMapping";
 
-// Function to get fish icon color based on fish type
+// Function to get fish icon color based on fish type (amber-500 for better contrast)
 const getFishIconColor = (fishType?: string) => {
-  if (!fishType) return "text-blue-400";
+  if (!fishType) return "text-blue-500";
   
-  if (fishType.includes("kapor")) return "text-yellow-400";
-  if (fishType.includes("stuka")) return "text-green-400";
-  if (fishType.includes("sumec")) return "text-purple-400";
-  if (fishType.includes("amur")) return "text-emerald-400";
-  if (fishType.includes("pstruh")) return "text-pink-400";
-  if (fishType.includes("zubac")) return "text-orange-400";
+  if (fishType.includes("kapor")) return "text-amber-500";
+  if (fishType.includes("stuka")) return "text-green-500";
+  if (fishType.includes("sumec")) return "text-purple-500";
+  if (fishType.includes("amur")) return "text-emerald-500";
+  if (fishType.includes("pstruh")) return "text-pink-500";
+  if (fishType.includes("zubac")) return "text-orange-500";
   
-  return "text-blue-400";
+  return "text-blue-500";
 };
 
 export default function TripDetail() {
@@ -62,6 +62,7 @@ export default function TripDetail() {
   const [isExporting, setIsExporting] = useState(false);
   const exportCardRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   // Fetch trip detail
   const { data: trip, isLoading: tripLoading } = useQuery<DiaryTrip>({
@@ -98,7 +99,7 @@ export default function TripDetail() {
     }
   });
 
-  // Export trip as image
+  // Export trip as image (with native share on mobile)
   const handleExportTrip = async () => {
     if (!exportCardRef.current || !trip) return;
     
@@ -111,8 +112,37 @@ export default function TripDetail() {
         useCORS: true,
       });
       
+      const fileName = `${trip.name.replace(/\s+/g, '_')}_${format(new Date(), 'dd-MM-yyyy')}.png`;
+      
+      // Try native share on mobile if available
+      if (isMobile && navigator.share && navigator.canShare) {
+        try {
+          const blob = await new Promise<Blob>((resolve, reject) => {
+            canvas.toBlob((b) => b ? resolve(b) : reject(new Error('Failed to create blob')), 'image/png');
+          });
+          const file = new File([blob], fileName, { type: 'image/png' });
+          
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: trip.name,
+              text: `Moja rybárska výprava: ${trip.name}`,
+            });
+            toast({
+              title: "Zdieľané!",
+              description: "Výprava bola úspešne zdieľaná.",
+            });
+            return;
+          }
+        } catch (shareError) {
+          // If share fails or is cancelled, fall back to download
+          console.log('Share cancelled or failed, falling back to download');
+        }
+      }
+      
+      // Fallback: download the image
       const link = document.createElement('a');
-      link.download = `${trip.name.replace(/\s+/g, '_')}_${format(new Date(), 'dd-MM-yyyy')}.png`;
+      link.download = fileName;
       link.href = canvas.toDataURL('image/png');
       link.click();
       
@@ -199,11 +229,12 @@ export default function TripDetail() {
               data-testid="button-back"
             >
               <ArrowLeft className="w-4 h-4" />
-              Späť na výpravy
+              <span className="hidden sm:inline">Späť na výpravy</span>
+              <span className="sm:hidden">Späť</span>
             </Button>
 
-            <div className="flex gap-2">
-              {/* Gallery Button - only show if there are photos */}
+            {/* Desktop: Full buttons */}
+            <div className="hidden md:flex gap-2">
               {tripCatches.some(c => c.photos && c.photos.length > 0) && (
                 <Button
                   variant="default"
@@ -217,7 +248,6 @@ export default function TripDetail() {
                 </Button>
               )}
 
-              {/* Export Trip Button */}
               <Button
                 variant="outline"
                 onClick={handleExportTrip}
@@ -229,7 +259,6 @@ export default function TripDetail() {
                 {isExporting ? "Exportujem..." : "Exportovať ako obrázok"}
               </Button>
 
-              {/* End Trip Button - only show if trip is not ended yet */}
               {trip && !isPast(new Date(trip.endDate)) && !isToday(new Date(trip.endDate)) && (
                 <Button
                   variant="outline"
@@ -243,21 +272,55 @@ export default function TripDetail() {
                 </Button>
               )}
             </div>
+
+            {/* Mobile: Dropdown menu */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild className="md:hidden">
+                <Button variant="outline" size="icon" className="h-10 w-10" aria-label="Možnosti výpravy" data-testid="button-more-actions">
+                  <MoreHorizontal className="w-5 h-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                {tripCatches.some(c => c.photos && c.photos.length > 0) && (
+                  <DropdownMenuItem onClick={() => setLocation(`/diary/trips/${id}/gallery`)} data-testid="menu-gallery">
+                    <Grid3x3 className="w-4 h-4 mr-2" />
+                    Galéria výpravy
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem onClick={handleExportTrip} disabled={isExporting} data-testid="menu-export">
+                  <Share2 className="w-4 h-4 mr-2" />
+                  {isExporting ? "Exportujem..." : "Zdieľať výpravu"}
+                </DropdownMenuItem>
+                {trip && !isPast(new Date(trip.endDate)) && !isToday(new Date(trip.endDate)) && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      onClick={() => setShowEndTripDialog(true)} 
+                      disabled={endTripMutation.isPending}
+                      className="text-orange-600 focus:text-orange-600"
+                      data-testid="menu-end-trip"
+                    >
+                      <XCircle className="w-4 h-4 mr-2" />
+                      {endTripMutation.isPending ? "Ukončujem..." : "Ukončiť výpravu"}
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           <div>
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl font-bold text-foreground" data-testid="text-trip-name">
+            <div className="flex items-center gap-3 mb-2 flex-wrap">
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground" data-testid="text-trip-name">
                 {trip.name}
               </h1>
-              {/* Badge for ended trip */}
               {(isPast(new Date(trip.endDate)) || isToday(new Date(trip.endDate))) && (
                 <Badge variant="secondary" className="text-xs">
                   Ukončená
                 </Badge>
               )}
             </div>
-            <div className="flex flex-wrap gap-4 text-muted-foreground">
+            <div className="flex flex-wrap gap-3 md:gap-4 text-sm md:text-base text-muted-foreground">
               <div className="flex items-center gap-2">
                 <CalendarIcon className="w-4 h-4" />
                 <span data-testid="text-trip-dates">
@@ -351,33 +414,89 @@ export default function TripDetail() {
               </div>
             ) : (
               <>
-                {/* TOP 3 Catches - Cards */}
+                {/* TOP 3 Catches - Horizontal scroll on mobile, grid on desktop */}
                 {top3Catches.length > 0 && (
                   <div>
                     <div className="flex items-center gap-2 mb-4">
-                      <Medal className="w-5 h-5 text-yellow-500" />
+                      <Medal className="w-5 h-5 text-amber-500" />
                       <h3 className="font-semibold text-lg">TOP {top3Catches.length} najväčšie úlovky</h3>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    
+                    {/* Mobile: Horizontal scroll carousel */}
+                    <ScrollArea className="md:hidden w-full whitespace-nowrap">
+                      <div className="flex gap-4 pb-4">
+                        {top3Catches.map((catch_, index) => (
+                          <Card 
+                            key={catch_.id}
+                            className="cursor-pointer hover:shadow-lg transition-shadow relative flex-shrink-0 w-[280px]"
+                            onClick={() => setSelectedCatch(catch_)}
+                            data-testid={`card-top-catch-${catch_.id}`}
+                          >
+                            <div className="absolute top-2 right-2 z-10">
+                              <Badge 
+                                variant={index === 0 ? "default" : "secondary"}
+                                className={index === 0 ? "bg-amber-500 hover:bg-amber-600" : ""}
+                              >
+                                #{index + 1}
+                              </Badge>
+                            </div>
+
+                            <CardContent className="p-4">
+                              {catch_.photos && catch_.photos.length > 0 && (
+                                <div className="mb-3 rounded-lg overflow-hidden bg-muted">
+                                  <img 
+                                    src={typeof catch_.photos[0] === 'string' ? catch_.photos[0] : catch_.photos[0].url}
+                                    alt={getFishTypeLabel(catch_.fishType)}
+                                    className="w-full h-36 object-cover"
+                                  />
+                                </div>
+                              )}
+
+                              <div className="flex items-center gap-2 mb-2">
+                                <Fish className={`w-4 h-4 ${getFishIconColor(catch_.fishType)}`} />
+                                <Badge variant="secondary" className="font-medium text-xs">
+                                  {getFishTypeLabel(catch_.fishType)}
+                                </Badge>
+                              </div>
+
+                              <div className="space-y-1">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm text-muted-foreground">Váha:</span>
+                                  <span className="font-semibold text-lg">{parseFloat(catch_.weight).toFixed(1)} kg</span>
+                                </div>
+                                {catch_.lengthCm && (
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-sm text-muted-foreground">Dĺžka:</span>
+                                    <span className="font-semibold">{catch_.lengthCm} cm</span>
+                                  </div>
+                                )}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                      <ScrollBar orientation="horizontal" />
+                    </ScrollArea>
+
+                    {/* Desktop: Grid layout */}
+                    <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {top3Catches.map((catch_, index) => (
                         <Card 
                           key={catch_.id}
                           className="cursor-pointer hover:shadow-lg transition-shadow relative"
                           onClick={() => setSelectedCatch(catch_)}
-                          data-testid={`card-top-catch-${catch_.id}`}
+                          data-testid={`card-top-catch-desktop-${catch_.id}`}
                         >
-                          {/* Medal Badge */}
                           <div className="absolute top-2 right-2 z-10">
                             <Badge 
                               variant={index === 0 ? "default" : "secondary"}
-                              className={index === 0 ? "bg-yellow-500 hover:bg-yellow-600" : ""}
+                              className={index === 0 ? "bg-amber-500 hover:bg-amber-600" : ""}
                             >
                               #{index + 1}
                             </Badge>
                           </div>
 
                           <CardContent className="p-4">
-                            {/* Photo if available */}
                             {catch_.photos && catch_.photos.length > 0 && (
                               <div className="mb-3 rounded-lg overflow-hidden bg-muted">
                                 <img 
@@ -388,7 +507,6 @@ export default function TripDetail() {
                               </div>
                             )}
 
-                            {/* Fish Type Badge */}
                             <div className="flex items-center gap-2 mb-2">
                               <Fish className={`w-4 h-4 ${getFishIconColor(catch_.fishType)}`} />
                               <Badge variant="secondary" className="font-medium">
@@ -396,7 +514,6 @@ export default function TripDetail() {
                               </Badge>
                             </div>
 
-                            {/* Weight and Length */}
                             <div className="space-y-1">
                               <div className="flex items-center justify-between">
                                 <span className="text-sm text-muted-foreground">Váha:</span>
@@ -422,11 +539,41 @@ export default function TripDetail() {
                   </div>
                 )}
 
-                {/* Remaining Catches - Table */}
+                {/* Remaining Catches - Cards on mobile, Table on desktop */}
                 {remainingCatches.length > 0 && (
                   <div>
                     <h3 className="font-semibold text-lg mb-4">Ostatné úlovky ({remainingCatches.length})</h3>
-                    <div className="border rounded-lg overflow-hidden">
+                    
+                    {/* Mobile: Card list */}
+                    <div className="md:hidden space-y-3">
+                      {displayedCatches.map((catch_, index) => (
+                        <div 
+                          key={catch_.id}
+                          className="flex items-center gap-3 p-3 rounded-lg border bg-card cursor-pointer hover:bg-muted/50 active:bg-muted transition-colors"
+                          onClick={() => setSelectedCatch(catch_)}
+                          data-testid={`card-catch-${catch_.id}`}
+                        >
+                          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-muted flex items-center justify-center text-sm font-medium text-muted-foreground">
+                            {index + 4}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Fish className={`w-4 h-4 flex-shrink-0 ${getFishIconColor(catch_.fishType)}`} />
+                              <span className="font-medium truncate">{getFishTypeLabel(catch_.fishType)}</span>
+                            </div>
+                            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                              <span className="font-semibold text-foreground">{parseFloat(catch_.weight).toFixed(1)} kg</span>
+                              {catch_.lengthCm && <span>{catch_.lengthCm} cm</span>}
+                              <span>{format(new Date(catch_.capturedAt), "HH:mm", { locale: sk })}</span>
+                            </div>
+                          </div>
+                          <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Desktop: Table */}
+                    <div className="hidden md:block border rounded-lg overflow-hidden">
                       <Table>
                         <TableHeader>
                           <TableRow>
