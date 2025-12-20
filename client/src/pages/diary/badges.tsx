@@ -1,20 +1,46 @@
+import { useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
+import { useConfetti } from "@/hooks/useConfetti";
+import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Lock, Unlock } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Lock, Unlock, Share2, Copy, Check } from "lucide-react";
 import DiaryLayout from "@/components/DiaryLayout";
 import { BADGE_DEFINITIONS, getTierColor, getTierBgClass, getTierTextClass } from "@shared/badges";
 import type { UserBadge } from "@shared/schema";
 
 export default function BadgesPage() {
   const { user } = useAuth();
+  const { celebrateGoalCompletion } = useConfetti();
+  const { toast } = useToast();
+  const previousBadgeCount = useRef<number | null>(null);
 
   // Fetch user's badges
   const { data: userBadges = [] } = useQuery<UserBadge[]>({
     queryKey: ["/api/diary/badges"],
     enabled: !!user?.id
   });
+
+  // Fetch badge progress
+  const { data: badgeProgress = {} } = useQuery<Record<string, number>>({
+    queryKey: ["/api/diary/badges/progress"],
+    enabled: !!user?.id
+  });
+
+  // Trigger confetti when new badge is unlocked
+  useEffect(() => {
+    if (previousBadgeCount.current !== null && userBadges.length > previousBadgeCount.current) {
+      celebrateGoalCompletion();
+      toast({
+        title: "🏅 Nový odznak odomknutý!",
+        description: "Gratulujeme! Získali ste nový odznak.",
+      });
+    }
+    previousBadgeCount.current = userBadges.length;
+  }, [userBadges.length, celebrateGoalCompletion, toast]);
 
   // Create a set of unlocked badges for quick lookup
   const unlockedBadges = new Set(
@@ -23,15 +49,49 @@ export default function BadgesPage() {
 
   const badgesList = Object.values(BADGE_DEFINITIONS);
 
+  // Share profile function
+  const handleShare = async () => {
+    const shareData = {
+      title: 'Moje rybárske odznaky',
+      text: `Mám ${userBadges.length} odznakov! 🎣🏅`,
+      url: window.location.href,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        toast({
+          title: "📋 Odkaz skopírovaný",
+          description: "Odkaz na profil bol skopírovaný do schránky.",
+        });
+      }
+    } catch (err) {
+      // User cancelled share
+    }
+  };
+
   return (
     <DiaryLayout>
       <div className="p-4 md:p-8 max-w-6xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">🏅 Moje Odznaky</h1>
-          <p className="text-muted-foreground text-lg">
-            Zbierajte odznaky a staňte sa legendou rybárskeho sveta
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-2xl md:text-4xl font-bold text-foreground mb-2">🏅 Moje Odznaky</h1>
+            <p className="text-muted-foreground text-sm md:text-lg">
+              Zbierajte odznaky a staňte sa legendou rybárskeho sveta
+            </p>
+          </div>
+          <Button
+            onClick={handleShare}
+            variant="outline"
+            className="gap-2 w-full sm:w-auto"
+            data-testid="button-share-badges"
+          >
+            <Share2 className="w-4 h-4" />
+            Zdieľať profil
+          </Button>
         </div>
 
         {/* Stats */}
@@ -100,12 +160,17 @@ export default function BadgesPage() {
                   const tierDef = badgeDef.tiers[tier];
                   const bgClass = getTierBgClass(tier);
                   const textClass = getTierTextClass(tier);
+                  
+                  // Calculate progress for this tier
+                  const currentValue = badgeProgress[badgeDef.id] || 0;
+                  const threshold = tierDef.threshold;
+                  const progressPercent = Math.min((currentValue / threshold) * 100, 100);
 
                   return (
                     <div
                       key={tier}
                       className={`p-3 rounded-lg border-2 transition-all ${bgClass} ${
-                        isUnlocked ? 'opacity-100' : 'opacity-60'
+                        isUnlocked ? 'opacity-100' : 'opacity-60 grayscale-[30%]'
                       }`}
                       data-testid={`badge-${badgeDef.id}-${tier}`}
                     >
@@ -123,6 +188,16 @@ export default function BadgesPage() {
                           <p className={`text-sm font-medium ${textClass}`}>
                             {tierDef.description}
                           </p>
+                          
+                          {/* Progress bar for locked badges */}
+                          {!isUnlocked && (
+                            <div className="mt-2 space-y-1">
+                              <Progress value={progressPercent} className="h-2" />
+                              <p className="text-xs text-muted-foreground">
+                                {currentValue} / {threshold} ({Math.round(progressPercent)}%)
+                              </p>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
