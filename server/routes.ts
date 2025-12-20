@@ -5360,6 +5360,92 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
+  // Get badge progress - current values for each badge type
+  app.get('/api/diary/badges/progress', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id || req.user?.claims?.sub;
+      
+      // Get all user trips (using ownerUserId column)
+      const userTrips = await db.query.diaryTrips.findMany({
+        where: (trips: any) => eq(trips.ownerUserId, userId),
+      });
+      
+      // Get trip IDs to fetch related catches
+      const tripIds = userTrips.map(t => t.id);
+      
+      // Get catches from user's trips OR catches where user is the angler
+      const allCatches = await db.query.diaryCatches.findMany();
+      
+      // Filter catches: either from user's trips or user is the angler
+      const userCatches = allCatches.filter(c => {
+        const isFromUserTrip = c.tripId && tripIds.includes(c.tripId);
+        const isUserAngler = c.angler?.userId === userId;
+        return isFromUserTrip || isUserAngler;
+      });
+      
+      // Calculate progress for each badge type
+      const progress: Record<string, number> = {};
+      
+      // fishing_fanatic: Count unique days with trips
+      const uniqueDays = new Set(userTrips.map(t => {
+        if (!t.startDate) return null;
+        return new Date(t.startDate).toISOString().split('T')[0];
+      }).filter(Boolean));
+      progress.fishing_fanatic = uniqueDays.size;
+      
+      // predator_threat: Count predator fish (Šťuka, Zubáč, Sumec)
+      const predatorTypes = ['šťuka', 'stuka', 'zubáč', 'zubac', 'sumec'];
+      progress.predator_threat = userCatches.filter(c => 
+        predatorTypes.some(p => c.fishType?.toLowerCase().includes(p))
+      ).length;
+      
+      // big_mama_hunter: Max weight of carp in kg
+      const carpCatches = userCatches.filter(c => 
+        c.fishType?.toLowerCase().includes('kapor') || c.fishType?.toLowerCase().includes('carp')
+      );
+      progress.big_mama_hunter = Math.max(0, ...carpCatches.map(c => parseFloat(c.weight || '0')));
+      
+      // carp_master: Count carp catches
+      progress.carp_master = carpCatches.length;
+      
+      // species_collector: Count unique species
+      const uniqueSpecies = new Set(userCatches.map(c => c.fishType?.toLowerCase()).filter(Boolean));
+      progress.species_collector = uniqueSpecies.size;
+      
+      // night_hunter: Count catches between 22:00-04:00
+      progress.night_hunter = userCatches.filter(c => {
+        if (!c.capturedAt) return false;
+        const hour = new Date(c.capturedAt).getHours();
+        return hour >= 22 || hour < 4;
+      }).length;
+      
+      // detail_keeper: Count catches with photo, bait, and weather info
+      progress.detail_keeper = userCatches.filter(c => {
+        const hasPhoto = c.photos && Array.isArray(c.photos) && c.photos.length > 0;
+        const hasBait = !!c.bait;
+        const hasWeather = c.airTemp || c.waterTemp || c.windSpeed || c.airPressure;
+        return hasPhoto && hasBait && hasWeather;
+      }).length;
+      
+      // season_warrior: Count unique seasons with catches
+      const seasons = new Set<string>();
+      userCatches.forEach(c => {
+        if (!c.capturedAt) return;
+        const month = new Date(c.capturedAt).getMonth();
+        if (month >= 2 && month <= 4) seasons.add('spring');
+        else if (month >= 5 && month <= 7) seasons.add('summer');
+        else if (month >= 8 && month <= 10) seasons.add('autumn');
+        else seasons.add('winter');
+      });
+      progress.season_warrior = seasons.size;
+      
+      res.json(progress);
+    } catch (error) {
+      console.error("Error fetching badge progress:", error);
+      res.status(500).json({ message: "Failed to fetch badge progress" });
+    }
+  });
+
   // Fishing areas endpoint - Get all fishing areas with optional search
   app.get('/api/fishing-areas', async (req, res) => {
     try {
