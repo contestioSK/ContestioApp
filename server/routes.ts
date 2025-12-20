@@ -670,6 +670,8 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         nickname: z.string().max(30, "Prezývka môže mať maximálne 30 znakov").optional().or(z.literal("")),
         email: z.string().email("Neplatný email").optional(),
         profileImageUrl: z.string().url("Neplatná URL").optional().or(z.literal("")),
+        facebookUrl: z.string().url("Neplatná Facebook URL").optional().or(z.literal("")).nullable(),
+        instagramUrl: z.string().url("Neplatná Instagram URL").optional().or(z.literal("")).nullable(),
       });
 
       const validatedData = profileUpdateSchema.parse(req.body);

@@ -21,8 +21,10 @@ import {
   Loader2,
   UserCircle,
   Shield,
-  Calendar
+  Calendar,
+  ExternalLink
 } from "lucide-react";
+import { SiFacebook, SiInstagram } from "react-icons/si";
 import DiaryLayout from "@/components/DiaryLayout";
 
 // Profile form schema
@@ -31,6 +33,8 @@ const profileSchema = z.object({
   lastName: z.string().min(1, "Priezvisko je povinné").max(50, "Priezvisko môže mať maximálne 50 znakov"),
   nickname: z.string().max(30, "Prezývka môže mať maximálne 30 znakov").optional().or(z.literal("")),
   email: z.string().email("Neplatný email"),
+  facebookUrl: z.string().url("Neplatná Facebook URL").optional().or(z.literal("")),
+  instagramUrl: z.string().url("Neplatná Instagram URL").optional().or(z.literal("")),
 });
 
 type ProfileForm = z.infer<typeof profileSchema>;
@@ -48,6 +52,8 @@ export default function Profile() {
       lastName: user?.lastName || "",
       nickname: user?.nickname || "",
       email: user?.email || "",
+      facebookUrl: user?.facebookUrl || "",
+      instagramUrl: user?.instagramUrl || "",
     }
   });
 
@@ -121,6 +127,8 @@ export default function Profile() {
       lastName: user?.lastName || "",
       nickname: user?.nickname || "",
       email: user?.email || "",
+      facebookUrl: user?.facebookUrl || "",
+      instagramUrl: user?.instagramUrl || "",
     });
     setIsEditing(false);
   };
@@ -222,6 +230,37 @@ export default function Profile() {
                     </span>
                   </div>
                 </div>
+                
+                {/* Social Media Links */}
+                {(user.facebookUrl || user.instagramUrl) && (
+                  <>
+                    <Separator className="my-4" />
+                    <div className="flex items-center justify-center gap-4">
+                      {user.facebookUrl && (
+                        <a 
+                          href={user.facebookUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+                          data-testid="link-facebook"
+                        >
+                          <SiFacebook className="w-5 h-5 text-[#1877F2]" />
+                        </a>
+                      )}
+                      {user.instagramUrl && (
+                        <a 
+                          href={user.instagramUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+                          data-testid="link-instagram"
+                        >
+                          <SiInstagram className="w-5 h-5 text-[#E4405F]" />
+                        </a>
+                      )}
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
 
@@ -390,6 +429,71 @@ export default function Profile() {
                         </FormItem>
                       )}
                     />
+
+                    <Separator />
+
+                    {/* Social Media Section */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-medium flex items-center gap-2">
+                        <ExternalLink className="w-5 h-5" />
+                        Sociálne siete
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        Prepojte svoj profil so sociálnymi sieťami
+                      </p>
+
+                      {/* Facebook */}
+                      <FormField
+                        control={form.control}
+                        name="facebookUrl"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="flex items-center gap-2">
+                              <SiFacebook className="w-4 h-4 text-[#1877F2]" />
+                              Facebook
+                            </FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="https://facebook.com/vasprofil"
+                                data-testid="input-facebook"
+                                disabled={!isEditing}
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Odkaz na váš Facebook profil
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Instagram */}
+                      <FormField
+                        control={form.control}
+                        name="instagramUrl"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="flex items-center gap-2">
+                              <SiInstagram className="w-4 h-4 text-[#E4405F]" />
+                              Instagram
+                            </FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="https://instagram.com/vasprofil"
+                                data-testid="input-instagram"
+                                disabled={!isEditing}
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Odkaz na váš Instagram profil
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
 
                     {/* Action Buttons */}
                     {isEditing && (
