@@ -1,0 +1,53 @@
+UX/UI Audit: Zoznam Úlovkov (DiaryCatches)
+1. ⚠️ Chýbajúci Loading State (Kritické pre UX)
+Všimol som si, že z useQuery vyťahuješ isLoading, ale nikde ho v return nepoužívaš.
+
+TypeScript
+
+const { data: catches = [], isLoading } = useQuery<DiaryCatch[]>({...});
+Problém: Keď používateľ otvorí stránku, pravdepodobne uvidí na zlomok sekundy "Zatiaľ nemáte žiadne úlovky" (tvoj Empty State), kým sa dáta načítajú. To pôsobí rušivo ("prebliknutie"). Riešenie: Pridaj podmienku hneď na začiatok renderu alebo obaľ obsah do podmienky:
+
+JavaScript
+
+if (isLoading) {
+  return <DiaryLayout><div className="p-8 flex justify-center"><Loader2 className="animate-spin w-8 h-8" /></div></DiaryLayout>;
+}
+2. 📱 Mobile Filters: "Efekt mrakodrapu"
+Máš tam veľa filtrov (Technika, Druh, Revír, Dátum, Váha). V kóde sú zoradené za sebou vo flex-wrap:
+
+JavaScript
+
+<div className="flex flex-wrap gap-3">
+  <Select ... /> {/* Technika */}
+  <Select ... /> {/* Druh */}
+  {/* ... ďalšie 3 filtre */}
+</div>
+Problém: Na mobile sa tieto selecty "zalomia" pod seba a vytvoria obrovský stĺpec, ktorý odsunie obsah (tabuľku) hlboko dole. Používateľ musí scrollovať cez 5 selectov, aby videl prvú rybu. Riešenie: Pre mobilnú verziu (md:hidden) skry tieto filtre do jedného tlačidla "Filtrovať výsledky", ktoré otvorí Sheet (bočný panel) alebo Drawer s filtrami. Ušetríš tým 200px vertikálneho priestoru.
+
+3. 📅 Hardcoded Sezóna 2025 (Logika vs. Očakávanie)
+V kóde máš natvrdo nastavený filter:
+
+TypeScript
+
+const season2025Start = new Date('2025-01-15');
+// ... return catchDate >= season2025Start;
+UX Audit: Stránka sa volá "Moje úlovky" (/diary/catches/all), nie "Sezóna 2025". Riziko: Ak si používateľ pozrie túto stránku v roku 2026 alebo chce vidieť úlovok z decembra 2024, neuvidí ho a bude si myslieť, že sa zmazal. Odporúčanie: Buď premenuj nadpis na "Úlovky 2025", alebo pridaj do filtrov Select pre "Sezóna" (defaultne aktuálna, ale s možnosťou "Všetky").
+
+4. 👆 Bezpečnosť akcií (Detail Panel)
+V SheetContent (bočný panel detailu) máš tlačidlá pre Upraviť a Zmazať hneď pod sebou a obe majú w-full (plnú šírku).
+
+JavaScript
+
+<Button ... className="w-full ...">Upraviť</Button>
+<Button variant="destructive" className="w-full ...">Zmazať</Button>
+UX Riziko: Na dotykových displejoch je ľahké "prekliknúť" sa. Aj keď máš potvrdzovací dialóg (čo je super!), je lepšie vizuálne oddeliť deštruktívnu akciu. Tip: Tlačidlo "Zmazať" daj ako variant="ghost" alebo variant="outline" s červeným textom, aby toľko nekričalo "klikni na mňa", alebo ho odsuň nižšie s väčším odstupom (mt-8).
+
+5. 🎨 Vizuálna hierarchia v zozname (Mobile)
+V mobilnom zobrazení (md:hidden) máš:
+
+JavaScript
+
+<div className="text-white font-bold text-lg mb-2">
+  {catch_.weight ? ... : ...}
+</div>
+Postreh: Váha/Dĺžka je pre rybára často dôležitejšia ako dátum. To máš správne. Vylepšenie: Skús pridať k váhe/dĺžke aj ikonu (Weight alebo Ruler) priamo do tohto nadpisu, aby to bolo okamžite skenovateľné očami pri rýchlom prezeraní zoznamu.
