@@ -126,6 +126,8 @@ export interface IStorage {
     nickname?: string;
     email?: string;
     profileImageUrl?: string;
+    facebookUrl?: string | null;
+    instagramUrl?: string | null;
   }): Promise<User>;
   
   // Competition operations
@@ -755,6 +757,8 @@ export class DatabaseStorage implements IStorage {
     nickname?: string;
     email?: string;
     profileImageUrl?: string;
+    facebookUrl?: string | null;
+    instagramUrl?: string | null;
   }): Promise<User> {
     const updateData: any = {
       updatedAt: new Date(),
@@ -775,6 +779,13 @@ export class DatabaseStorage implements IStorage {
     }
     if (profileData.profileImageUrl !== undefined) {
       updateData.profileImageUrl = profileData.profileImageUrl;
+    }
+    // Social media links - convert empty strings to null
+    if (profileData.facebookUrl !== undefined) {
+      updateData.facebookUrl = profileData.facebookUrl || null;
+    }
+    if (profileData.instagramUrl !== undefined) {
+      updateData.instagramUrl = profileData.instagramUrl || null;
     }
 
     const [updatedUser] = await db

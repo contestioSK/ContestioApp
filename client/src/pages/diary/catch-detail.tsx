@@ -2,10 +2,13 @@ import { useParams, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
-import { Fish, Weight, Ruler, MapPin, Target, Calendar as CalendarIcon, ArrowLeft, Thermometer, Wind, Droplets, Gauge } from "lucide-react";
+import { Fish, Weight, Ruler, MapPin, Target, Calendar as CalendarIcon, ArrowLeft, Thermometer, Wind, Droplets, Gauge, Share2, Copy, Check } from "lucide-react";
+import { SiFacebook } from "react-icons/si";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 import DiaryLayout from "@/components/DiaryLayout";
 import type { DiaryCatch } from "@shared/schema";
 import { getFishTypeLabel } from "@/utils/fishTypeMapping";
@@ -27,6 +30,8 @@ const getFishIconColor = (fishType?: string) => {
 export default function CatchDetail() {
   const { id } = useParams<{ id: string }>();
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const [copied, setCopied] = useState(false);
 
   const { data: catch_, isLoading } = useQuery<DiaryCatch>({
     queryKey: [`/api/diary/catches/${id}`],
@@ -241,6 +246,87 @@ export default function CatchDetail() {
                 </div>
               </div>
             )}
+
+            {/* Share Section */}
+            <div className="pt-4 border-t border-slate-700">
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                {/* Native Share (Mobile) */}
+                {typeof navigator !== 'undefined' && 'share' in navigator && (
+                  <Button
+                    variant="outline"
+                    className="gap-2"
+                    onClick={async () => {
+                      const shareText = `🎣 ${getFishTypeLabel(catch_.fishType)} - ${catch_.weight ? `${catch_.weight} kg` : ''} ${catch_.lengthCm ? `/ ${catch_.lengthCm} cm` : ''}\n\nZdieľané cez Contestio`;
+                      
+                      try {
+                        await navigator.share({
+                          title: `Môj úlovok: ${getFishTypeLabel(catch_.fishType)}`,
+                          text: shareText,
+                          url: window.location.href,
+                        });
+                        toast({
+                          title: "Zdieľané!",
+                          description: "Úlovok bol úspešne zdieľaný.",
+                        });
+                      } catch (err) {
+                        if ((err as Error).name !== 'AbortError') {
+                          console.error('Error sharing:', err);
+                        }
+                      }
+                    }}
+                    data-testid="button-share-native"
+                  >
+                    <Share2 className="w-4 h-4" />
+                    Zdieľať
+                  </Button>
+                )}
+
+                {/* Share to Facebook */}
+                <Button
+                  variant="outline"
+                  className="gap-2"
+                  onClick={() => {
+                    const url = encodeURIComponent(window.location.href);
+                    window.open(
+                      `https://www.facebook.com/sharer/sharer.php?u=${url}`,
+                      '_blank',
+                      'width=600,height=400'
+                    );
+                  }}
+                  data-testid="button-share-facebook"
+                >
+                  <SiFacebook className="w-4 h-4 text-[#1877F2]" />
+                  Facebook
+                </Button>
+
+                {/* Copy Link */}
+                <Button
+                  variant="outline"
+                  className="gap-2"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(window.location.href);
+                      setCopied(true);
+                      toast({
+                        title: "Odkaz skopírovaný!",
+                        description: "Odkaz na úlovok bol skopírovaný do schránky.",
+                      });
+                      setTimeout(() => setCopied(false), 2000);
+                    } catch (err) {
+                      console.error('Error copying:', err);
+                    }
+                  }}
+                  data-testid="button-copy-link"
+                >
+                  {copied ? (
+                    <Check className="w-4 h-4 text-green-500" />
+                  ) : (
+                    <Copy className="w-4 h-4" />
+                  )}
+                  {copied ? "Skopírované!" : "Kopírovať odkaz"}
+                </Button>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
