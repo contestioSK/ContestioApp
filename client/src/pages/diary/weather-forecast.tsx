@@ -987,7 +987,7 @@ export default function WeatherForecast() {
                     dataKey="time" 
                     stroke="#94a3b8"
                     tick={{ fill: '#94a3b8', fontSize: 11 }}
-                    interval={2}
+                    interval={4}
                   />
                   <YAxis 
                     yAxisId="left"
