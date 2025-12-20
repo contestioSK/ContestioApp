@@ -1,16 +1,37 @@
 // Fish type mapping for the fishing diary
+// Organized by fishing technique: kaprárina, prívlač, muškárenie, feeder, sumčiarina
 export const fishTypeMapping = {
+  // Kaprárina
   kapor_supinac: "Kapor šupináč",
   kapor_lysec: "Kapor lysec", 
-  amur: "Amur",
-  sumec: "Sumec",
-  zubac: "Zubáč",
+  amur: "Amur biely",
+  pleskac: "Pleskáč vysoký",
+  karas: "Karas",
+  lieň: "Lieň",
+  
+  // Prívlač
   stuka: "Šťuka",
-  pleskac: "Pleskáč",
+  zubac: "Zubáč",
+  bolen: "Boleň",
+  ostriez: "Ostriež",
+  candát: "Candát",
+  
+  // Muškárenie
+  pstruh_potocny: "Pstruh potočný",
+  pstruh_duhovy: "Pstruh dúhový",
+  lipeni: "Lipeň",
+  hlavatka: "Hlavátka",
   podustva: "Podustva",
+  jalec: "Jalec",
+  
+  // Sumčiarina
+  sumec: "Sumec",
+  
+  // Feeder / Ostatné
   mrena: "Mrena",
-  pstruh: "Pstruh",
-  jalec: "Jalec"
+  plotica: "Plotica",
+  uhor: "Úhor",
+  kapor_rybnicny: "Kapor rybničný"
 } as const;
 
 export type FishType = keyof typeof fishTypeMapping;
