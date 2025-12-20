@@ -1,0 +1,51 @@
+UX/UI Audit: Fishing Rules (Rybársky Poriadok)
+
+Dátum: 20. december 2025
+Komponent: FishingRulesPage
+Status: Stabilný, pripravený na nasadenie
+
+1. Technická a Výkonnostná Analýza
+
+Na rozdiel od modulu DiaryStats, tento komponent je výkonnostne vynikajúci.
+
+Statické dáta: Veľké polia dát (sizeLimitsData, closedSeasonsData) sú definované mimo React komponentu. To znamená, že sa nere-inicializujú pri každom pre-renderovaní, čo je kľúčové pre zachovanie rýchlosti.
+
+Filtrovanie: Vyhľadávacia logika je jednoduchá a vykonáva sa priamo v tele funkcie. Pri tomto objeme dát (desiatky riadkov) je to absolútne v poriadku a nespôsobuje žiadne "sekanie".
+
+State Management: Použitie jednoduchého useState pre prepínanie tabov (activeSection) a vyhľadávanie je adekvátne a efektívne.
+
+2. UX Analýza (Použiteľnosť)
+
+Navigácia a Orientácia
+
+Karty rýchleho prístupu: Rozdelenie obsahu do troch veľkých kariet (Lovné miery, Doby hájenia, Denná doba) je vizuálne atraktívne a intuitívne. Používateľ okamžite vidí, v ktorej sekcii sa nachádza vďaka zmene farby karty.
+
+Vyhľadávanie: Umiestnenie vyhľadávacieho poľa na vrch stránky je štandardný a očakávaný vzor. Filtrovanie v reálnom čase (instant search) poskytuje skvelú odozvu.
+
+Mobilná verzia (Mobile Responsiveness)
+
+Tabuľky: Kód správne používa overflow-x-auto wrapper okolo tabuliek. To znamená, že na mobiloch tabuľka "nevybuchne" layout, ale umožní horizontálne scrollovanie.
+
+Riziko: Horizontálne scrollovanie tabuliek je na mobiloch funkčné, ale nie vždy ideálne UX (používateľ nevidí všetky stĺpce naraz).
+
+3. Návrhy na vylepšenie (Action Items)
+
+Vylepšenie A: Responzívne zobrazenie dát
+
+Namiesto klasickej tabuľky na mobiloch by bolo modernejšie použiť "Card View".
+
+Desktop: Zobrazí tabuľku (tak ako teraz).
+
+Mobil: Zobrazí zoznam kariet, kde každá karta reprezentuje jeden riadok (napr. karta "Kapor" s údajmi o miere a poznámke pod sebou). Je to čitateľnejšie ako scrollovanie do strany.
+
+Vylepšenie B: Zvýraznenie hľadaného výrazu
+
+Keď používateľ napíše do vyhľadávania "pstruh", tabuľka sa vyfiltruje. Pre lepšiu orientáciu by bolo vhodné zvýrazniť (bold) nájdený text priamo v tabuľke, aby používateľ okamžite videl, prečo sa daný riadok zobrazil.
+
+Vylepšenie C: Vizuálne pomôcky v tabuľkách
+
+Doby hájenia: Pridať vizuálny indikátor (napr. červená bodka), ak je ryba práve teraz (v dnešný dátum) hájená. To by pridalo stránke dynamickú hodnotu nad rámec statického zoznamu.
+
+Záver
+
+Komponent je solídne napísaný, čistý a rýchly. Je to výborný príklad "Low-Complexity" stránky, ktorá prináša vysokú informačnú hodnotu bez zbytočnej technickej záťaže. Nasadenie v aktuálnom stave je bezpečné.
