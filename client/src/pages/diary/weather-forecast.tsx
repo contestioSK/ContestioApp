@@ -399,9 +399,9 @@ export default function WeatherForecast() {
   const getMoonPhaseSlovak = (phase: string): string => {
     const phases: Record<string, string> = {
       'New Moon': 'Nov',
-      'Waxing Crescent': 'Dorастajúci polmesiac',
+      'Waxing Crescent': 'Dorastajúci polmesiac',
       'First Quarter': 'Prvá štvrtina',
-      'Waxing Gibbous': 'Dorастajúci mesiac',
+      'Waxing Gibbous': 'Dorastajúci mesiac',
       'Full Moon': 'Spln',
       'Waning Gibbous': 'Ubúdajúci mesiac',
       'Last Quarter': 'Posledná štvrtina',
