@@ -5,9 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { useForm } from "react-hook-form";
@@ -15,7 +12,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
-import { CalendarIcon, Trophy, Users, Clock, Plus, X, User as UserIcon } from "lucide-react";
+import { Trophy, Users, Clock, X, User as UserIcon, Save, FolderOpen, Trash2 } from "lucide-react";
 import { useLocation } from "wouter";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -23,6 +20,49 @@ import { useToast } from "@/hooks/use-toast";
 import DiaryLayout from "@/components/DiaryLayout";
 import { UserSearch } from "@/components/diary/user-search";
 import type { DiaryTrip } from "@shared/schema";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
+// Battle template interface for saving presets
+interface BattleTemplate {
+  id: string;
+  name: string;
+  mode: string;
+  minWeightKg?: number;
+  includeOnlyVerified: boolean;
+  durationMinutes: number; // Store in minutes for precision
+}
+
+// Helper to convert Date to datetime-local string
+const toDateTimeLocal = (date: Date | undefined | null): string => {
+  if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+    return "";
+  }
+  const offset = date.getTimezoneOffset();
+  const local = new Date(date.getTime() - offset * 60 * 1000);
+  return local.toISOString().slice(0, 16);
+};
+
+// Helper to parse datetime-local string to Date
+const fromDateTimeLocal = (value: string): Date | undefined => {
+  if (!value || value.trim() === "") {
+    return undefined;
+  }
+  const parsed = new Date(value);
+  if (isNaN(parsed.getTime())) {
+    return undefined;
+  }
+  return parsed;
+};
 
 // Form validation schema
 const createBattleSchema = z.object({
@@ -57,12 +97,35 @@ const gameModes = [
   { value: "best_5_fish", label: "Top 5 rýb", description: "Víťazí kto má najlepších 5 rýb spolu" }
 ];
 
+// Load templates from localStorage (with migration from old format)
+const loadTemplates = (): BattleTemplate[] => {
+  try {
+    const saved = localStorage.getItem('battleTemplates');
+    if (!saved) return [];
+    const templates = JSON.parse(saved) as any[];
+    // Migrate old templates that used durationHours
+    return templates.map(t => ({
+      ...t,
+      durationMinutes: t.durationMinutes ?? (t.durationHours ? t.durationHours * 60 : 24 * 60)
+    }));
+  } catch {
+    return [];
+  }
+};
+
+// Save templates to localStorage
+const saveTemplates = (templates: BattleTemplate[]) => {
+  localStorage.setItem('battleTemplates', JSON.stringify(templates));
+};
+
 export default function BattleCreate() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [invitedUserIds, setInvitedUserIds] = useState<string[]>([]);
+  const [templates, setTemplates] = useState<BattleTemplate[]>(loadTemplates);
+  const [templateName, setTemplateName] = useState("");
   
   // Fetch user's trips for the trip selector
   const { data: trips = [], isLoading: isLoadingTrips } = useQuery<DiaryTrip[]>({
@@ -191,6 +254,72 @@ export default function BattleCreate() {
     setInvitedUserIds(prev => prev.filter(id => id !== userId));
   };
 
+  // Save current settings as template
+  const handleSaveTemplate = () => {
+    if (!templateName.trim()) {
+      toast({
+        title: "Chyba",
+        description: "Zadajte názov šablóny",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const values = form.getValues();
+    const startAt = values.startAt instanceof Date ? values.startAt : new Date(values.startAt);
+    const endAt = values.endAt instanceof Date ? values.endAt : new Date(values.endAt);
+    const durationMinutes = Math.round((endAt.getTime() - startAt.getTime()) / (1000 * 60));
+    
+    const newTemplate: BattleTemplate = {
+      id: Date.now().toString(),
+      name: templateName,
+      mode: values.mode,
+      minWeightKg: values.minWeightKg,
+      includeOnlyVerified: values.includeOnlyVerified,
+      durationMinutes: durationMinutes > 0 ? durationMinutes : 24 * 60 // Default 24h
+    };
+    
+    const updated = [...templates, newTemplate];
+    setTemplates(updated);
+    saveTemplates(updated);
+    setTemplateName("");
+    
+    toast({
+      title: "Šablóna uložená",
+      description: `"${templateName}" bola uložená pre budúce použitie.`
+    });
+  };
+
+  // Load template into form
+  const handleLoadTemplate = (template: BattleTemplate) => {
+    const now = new Date();
+    const endAt = new Date(now.getTime() + template.durationMinutes * 60 * 1000);
+    
+    // Use shouldValidate and shouldDirty to trigger proper re-render
+    form.setValue("mode", template.mode as any, { shouldValidate: true, shouldDirty: true });
+    form.setValue("minWeightKg", template.minWeightKg, { shouldValidate: true, shouldDirty: true });
+    form.setValue("includeOnlyVerified", template.includeOnlyVerified, { shouldValidate: true, shouldDirty: true });
+    form.setValue("startAt", now, { shouldValidate: true, shouldDirty: true });
+    form.setValue("endAt", endAt, { shouldValidate: true, shouldDirty: true });
+    
+    toast({
+      title: "Šablóna načítaná",
+      description: `Nastavenia "${template.name}" boli aplikované.`
+    });
+  };
+
+  // Delete template
+  const handleDeleteTemplate = (templateId: string) => {
+    const updated = templates.filter(t => t.id !== templateId);
+    setTemplates(updated);
+    saveTemplates(updated);
+    
+    toast({
+      title: "Šablóna vymazaná",
+      description: "Šablóna bola odstránená."
+    });
+  };
+
   const onSubmit = (data: CreateBattleForm) => {
     // Add invited user IDs to mutation data
     const mutationData = {
@@ -219,6 +348,94 @@ export default function BattleCreate() {
               Vytvorte súťaž medzi kamarátmi a zmerajte si sily na vode
             </p>
           </div>
+
+          {/* Templates Section */}
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FolderOpen className="w-5 h-5" />
+                Šablóny súbojov
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Saved Templates */}
+              {templates.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">Uložené šablóny:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {templates.map((template) => (
+                      <div key={template.id} className="flex items-center gap-1">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleLoadTemplate(template)}
+                          className="text-xs"
+                          data-testid={`button-load-template-${template.id}`}
+                        >
+                          <FolderOpen className="w-3 h-3 mr-1" />
+                          {template.name}
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                              data-testid={`button-delete-template-${template.id}`}
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Vymazať šablónu?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Naozaj chcete vymazať šablónu "{template.name}"?
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Zrušiť</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDeleteTemplate(template.id)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Vymazať
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Save New Template */}
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Názov novej šablóny (napr. Víkendová kaprárina)"
+                  value={templateName}
+                  onChange={(e) => setTemplateName(e.target.value)}
+                  className="flex-1"
+                  data-testid="input-template-name"
+                />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={handleSaveTemplate}
+                  data-testid="button-save-template"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  Uložiť
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Uložte aktuálne nastavenia (režim, pravidlá, trvanie) ako šablónu pre rýchle opätovné použitie.
+              </p>
+            </CardContent>
+          </Card>
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -359,33 +576,22 @@ export default function BattleCreate() {
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
                           <FormLabel>Začiatok battle</FormLabel>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant="outline"
-                                  className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
-                                  data-testid="button-start-date"
-                                >
-                                  {field.value ? (
-                                    format(field.value, "PPP", { locale: sk })
-                                  ) : (
-                                    <span>Vyberte dátum</span>
-                                  )}
-                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar
-                                mode="single"
-                                selected={field.value}
-                                onSelect={field.onChange}
-                                disabled={(date) => date < new Date()}
-                                initialFocus
-                              />
-                            </PopoverContent>
-                          </Popover>
+                          <FormControl>
+                            <Input
+                              type="datetime-local"
+                              value={toDateTimeLocal(field.value)}
+                              onChange={(e) => {
+                                const parsed = fromDateTimeLocal(e.target.value);
+                                field.onChange(parsed ?? new Date());
+                              }}
+                              min={toDateTimeLocal(new Date())}
+                              className="w-full"
+                              data-testid="input-start-datetime"
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Dátum a čas začiatku súboja
+                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -397,33 +603,22 @@ export default function BattleCreate() {
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
                           <FormLabel>Koniec battle</FormLabel>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant="outline"
-                                  className={`w-full pl-3 text-left font-normal ${!field.value && "text-muted-foreground"}`}
-                                  data-testid="button-end-date"
-                                >
-                                  {field.value ? (
-                                    format(field.value, "PPP", { locale: sk })
-                                  ) : (
-                                    <span>Vyberte dátum</span>
-                                  )}
-                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar
-                                mode="single"
-                                selected={field.value}
-                                onSelect={field.onChange}
-                                disabled={(date) => date < new Date()}
-                                initialFocus
-                              />
-                            </PopoverContent>
-                          </Popover>
+                          <FormControl>
+                            <Input
+                              type="datetime-local"
+                              value={toDateTimeLocal(field.value)}
+                              onChange={(e) => {
+                                const parsed = fromDateTimeLocal(e.target.value);
+                                field.onChange(parsed ?? new Date(Date.now() + 24 * 60 * 60 * 1000));
+                              }}
+                              min={toDateTimeLocal(form.getValues("startAt"))}
+                              className="w-full"
+                              data-testid="input-end-datetime"
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Dátum a čas ukončenia súboja
+                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}

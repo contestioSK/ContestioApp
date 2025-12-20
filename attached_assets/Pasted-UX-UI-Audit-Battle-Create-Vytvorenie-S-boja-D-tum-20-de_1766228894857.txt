@@ -1,0 +1,49 @@
+UX/UI Audit: Battle Create (Vytvorenie Súboja)
+
+Dátum: 20. december 2025
+Komponent: BattleCreate
+Status: Implementovaný, "Form-Wizard" štýl
+
+1. Zhrnutie
+
+Tento formulár je navrhnutý pre maximálnu flexibilitu. Umožňuje používateľovi vytvoriť súboj dvoma spôsobmi: Rýchly (Auto-trip) a Pokročilý (Existujúci trip). UI je rozdelené do logických blokov (karty), čo zlepšuje čitateľnosť a znižuje kognitívnu záťaž.
+
+2. Funkčná analýza
+
+Flexibilita "Tripov"
+
+Prepínač (Switch): "Použiť existujúcu výpravu" je kľúčový prvok.
+
+Default (Vypnuté): Ideálne pre rýchly štart. Používateľ zadá len dátumy a trip sa vytvorí na pozadí.
+
+Zapnuté: Pre plánovačov. Zobrazí sa Select s už vytvorenými, budúcimi výpravami.
+
+Validácia
+
+Zod Schema: Formulár používa silnú validáciu.
+
+Dátumy: Kontroluje, či endAt > startAt.
+
+Závislosti: Ak je zapnutý "Existujúci trip", pole tripId sa stáva povinným.
+
+Feedback: Chybové hlášky sa zobrazujú priamo pod poľami (FormMessage), čo je štandard pre dobré UX.
+
+Pozývanie Účastníkov
+
+Komponent UserSearch: Implementovaný ako samostatný, znovupoužiteľný prvok.
+
+Interakcia: Vyhľadávanie v reálnom čase (instant search).
+
+Feedback: Vybraní používatelia sa zobrazujú ako "Badges" pod vyhľadávačom s možnosťou rýchleho odstránenia (X ikona).
+
+3. Technické detaily
+
+Premium Guard: Komponent kontroluje isPremium status. Ak používateľ nie je Premium, je okamžite presmerovaný na Paywall. Toto je kritické pre monetizáciu.
+
+Rematch Logic: Formulár dokáže načítať predvolené hodnoty zo sessionStorage (ak používateľ klikol na "Revanš" v archíve), čo výrazne urýchľuje opakované súboje.
+
+4. Odporúčania (Next Steps)
+
+Dátumový výber: Aktuálne použitý Calendar v Popoveri je funkčný, ale pre mobilné zariadenia by bol lepší natívny input type="datetime-local", ktorý rieši aj výber času (hodiny/minúty), čo je pre krátke súboje dôležité.
+
+Šablóny: Pridať možnosť uložiť si nastavenia súboja ako šablónu (napr. "Víkendová kaprárina"), aby sa nemuseli zakaždým vyklikávať pravidlá (váha, režim).
