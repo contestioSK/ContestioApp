@@ -701,7 +701,7 @@ export default function WeatherForecast() {
                                 style={{ left: position }}
                               >
                                 <div className="relative">
-                                  <div className="w-6 h-6 rounded-full bg-white border-2 border-slate-900 shadow-lg" />
+                                  <div className="w-6 h-6 rounded-full bg-white border-2 border-gray-800 dark:border-slate-900 shadow-lg" />
                                   <div className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap text-sm font-semibold">
                                     {activityScore}%
                                   </div>
@@ -735,7 +735,7 @@ export default function WeatherForecast() {
                         <Crown className="w-4 h-4" />
                         <span>Dostupné len v PREMIUM</span>
                       </div>
-                      <Button variant="default" size="sm" className="bg-amber-500 hover:bg-amber-600 text-white">
+                      <Button variant="default" size="sm" className="bg-amber-500 hover:bg-amber-600 text-foreground dark:text-white">
                         Prejsť na Premium
                       </Button>
                     </div>
@@ -1110,7 +1110,7 @@ export default function WeatherForecast() {
                           style={{ left: position }}
                         >
                           <div className="relative">
-                            <div className="w-5 h-5 rounded-full bg-white border-2 border-slate-900 shadow-lg" />
+                            <div className="w-5 h-5 rounded-full bg-white border-2 border-gray-800 dark:border-slate-900 shadow-lg" />
                             <div className="absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-semibold">
                               {activityScore}%
                             </div>

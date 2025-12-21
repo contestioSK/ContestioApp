@@ -266,10 +266,10 @@ export default function ArsenalPage() {
             <div className="flex items-center gap-3">
               <FishSymbol className="h-8 w-8 text-primary" />
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-foreground dark:text-white">
+                <h1 className="text-2xl md:text-3xl font-bold text-foreground">
                   Arzenál Boilies
                 </h1>
-                <p className="text-sm md:text-base text-muted-foreground dark:text-gray-400">
+                <p className="text-sm md:text-base text-muted-foreground">
                   Databáza boilies od najväčších výrobcov
                 </p>
               </div>
@@ -282,10 +282,10 @@ export default function ArsenalPage() {
                   Pridať boilies
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-lg dark:bg-gray-800 dark:border-gray-700">
+              <DialogContent className="max-w-lg bg-background dark:bg-slate-800 border-border dark:border-slate-700">
                 <DialogHeader>
-                  <DialogTitle className="dark:text-white">Pridať boilies do arzenálu</DialogTitle>
-                  <DialogDescription className="dark:text-gray-400">
+                  <DialogTitle className="text-foreground">Pridať boilies do arzenálu</DialogTitle>
+                  <DialogDescription className="text-muted-foreground">
                     Vyberte boilies z databázy a pridajte ich do svojho arzenálu
                   </DialogDescription>
                 </DialogHeader>
@@ -293,11 +293,11 @@ export default function ArsenalPage() {
                 <div className="space-y-4 py-4">
             {/* Manufacturer Selection */}
             <div className="space-y-2">
-              <Label htmlFor="manufacturer" className="dark:text-gray-200">
+              <Label htmlFor="manufacturer" className="text-foreground">
                 1. Výrobca
               </Label>
               {loadingManufacturers ? (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground dark:text-gray-400">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   Načítavam výrobcov...
                 </div>
@@ -308,7 +308,7 @@ export default function ArsenalPage() {
                 >
                   <SelectTrigger
                     id="manufacturer"
-                    className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    className="bg-background dark:bg-slate-700 border-input dark:border-slate-600 text-foreground"
                     data-testid="select-manufacturer"
                   >
                     <SelectValue placeholder="Vyberte výrobcu..." />
@@ -329,15 +329,15 @@ export default function ArsenalPage() {
 
             {/* Product Line Selection */}
             <div className="space-y-2">
-              <Label htmlFor="productLine" className="dark:text-gray-200">
+              <Label htmlFor="productLine" className="text-foreground">
                 2. Produktový rad
               </Label>
               {!selectedManufacturer ? (
-                <p className="text-sm text-muted-foreground dark:text-gray-500 py-2">
+                <p className="text-sm text-muted-foreground py-2">
                   Najprv vyberte výrobcu
                 </p>
               ) : loadingProductLines ? (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground dark:text-gray-400">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   Načítavam produktové rady...
                 </div>
@@ -349,7 +349,7 @@ export default function ArsenalPage() {
                 >
                   <SelectTrigger
                     id="productLine"
-                    className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    className="bg-background dark:bg-slate-700 border-input dark:border-slate-600 text-foreground"
                     data-testid="select-product-line"
                   >
                     <SelectValue placeholder="Vyberte produktový rad..." />
@@ -370,15 +370,15 @@ export default function ArsenalPage() {
 
             {/* Flavor Selection */}
             <div className="space-y-2">
-              <Label htmlFor="flavor" className="dark:text-gray-200">
+              <Label htmlFor="flavor" className="text-foreground">
                 3. Príchuť
               </Label>
               {!selectedProductLine ? (
-                <p className="text-sm text-muted-foreground dark:text-gray-500 py-2">
+                <p className="text-sm text-muted-foreground py-2">
                   Najprv vyberte produktový rad
                 </p>
               ) : loadingFlavors ? (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground dark:text-gray-400">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   Načítavam príchute...
                 </div>
@@ -390,7 +390,7 @@ export default function ArsenalPage() {
                 >
                   <SelectTrigger
                     id="flavor"
-                    className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    className="bg-background dark:bg-slate-700 border-input dark:border-slate-600 text-foreground"
                     data-testid="select-flavor"
                   >
                     <SelectValue placeholder="Vyberte príchuť..." />
@@ -408,7 +408,7 @@ export default function ArsenalPage() {
 
             {/* Diameter Selection */}
             <div className="space-y-2">
-              <Label htmlFor="diameter" className="dark:text-gray-200">
+              <Label htmlFor="diameter" className="text-foreground">
                 4. Priemer (voliteľné)
               </Label>
               <Select
@@ -417,7 +417,7 @@ export default function ArsenalPage() {
               >
                 <SelectTrigger
                   id="diameter"
-                  className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  className="bg-background dark:bg-slate-700 border-input dark:border-slate-600 text-foreground"
                   data-testid="select-diameter"
                 >
                   <SelectValue placeholder="Vyberte priemer..." />
@@ -434,7 +434,7 @@ export default function ArsenalPage() {
 
             {/* Notes */}
             <div className="space-y-2">
-              <Label htmlFor="notes" className="dark:text-gray-200">
+              <Label htmlFor="notes" className="text-foreground">
                 Poznámky (voliteľné)
               </Label>
               <Textarea
@@ -442,7 +442,7 @@ export default function ArsenalPage() {
                 placeholder="Napríklad: farba, efektivita, kde najlepšie funguje..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                className="bg-background dark:bg-slate-700 border-input dark:border-slate-600 text-foreground"
                 rows={3}
               />
             </div>
@@ -462,7 +462,7 @@ export default function ArsenalPage() {
                     onClick={() => setBulkDialogOpen(true)}
                     variant="outline"
                     size="sm"
-                    className="ml-2 border-blue-300 dark:border-blue-700"
+                    className="ml-2 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300"
                     data-testid="button-bulk-add"
                   >
                     <Package className="mr-2 h-4 w-4" />
@@ -475,7 +475,7 @@ export default function ArsenalPage() {
                 <Button
                   variant="outline"
                   onClick={() => setDialogOpen(false)}
-                  className="dark:bg-gray-700 dark:text-gray-200"
+                  className="bg-background dark:bg-slate-700 text-foreground"
                 >
                   Zrušiť
                 </Button>
@@ -495,24 +495,24 @@ export default function ArsenalPage() {
 
       {/* Bulk Add Confirmation Dialog */}
       <Dialog open={bulkDialogOpen} onOpenChange={setBulkDialogOpen}>
-        <DialogContent className="max-w-md dark:bg-gray-800 dark:border-gray-700">
+        <DialogContent className="max-w-md bg-background dark:bg-slate-800 border-border dark:border-slate-700">
           <DialogHeader>
-            <DialogTitle className="dark:text-white">Pridať všetky príchute</DialogTitle>
-            <DialogDescription className="dark:text-gray-400">
+            <DialogTitle className="text-foreground">Pridať všetky príchute</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
               Potvrďte hromadné pridanie všetkých príchutí z vybraného produktového radu
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             {selectedManufacturer && selectedProductLine && (
-              <div className="p-4 bg-muted dark:bg-gray-700 rounded-lg space-y-2">
-                <p className="text-sm font-medium dark:text-white">
+              <div className="p-4 bg-muted dark:bg-slate-700 rounded-lg space-y-2">
+                <p className="text-sm font-medium text-foreground">
                   Výrobca: {manufacturers?.find(m => m.id === parseInt(selectedManufacturer))?.name}
                 </p>
-                <p className="text-sm font-medium dark:text-white">
+                <p className="text-sm font-medium text-foreground">
                   Rad: {productLines?.find(p => p.id === parseInt(selectedProductLine))?.name}
                 </p>
-                <p className="text-sm text-muted-foreground dark:text-gray-400">
+                <p className="text-sm text-muted-foreground">
                   Počet príchutí: <span className="font-bold">{flavors?.length || 0}</span>
                 </p>
               </div>
@@ -520,7 +520,7 @@ export default function ArsenalPage() {
 
             {/* Diameter Selection for Bulk */}
             <div className="space-y-2">
-              <Label htmlFor="bulk-diameter" className="dark:text-gray-200">
+              <Label htmlFor="bulk-diameter" className="text-foreground">
                 Priemer pre všetky (voliteľné)
               </Label>
               <Select
@@ -529,7 +529,7 @@ export default function ArsenalPage() {
               >
                 <SelectTrigger
                   id="bulk-diameter"
-                  className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  className="bg-background dark:bg-slate-700 border-input dark:border-slate-600 text-foreground"
                   data-testid="select-bulk-diameter"
                 >
                   <SelectValue placeholder="Vyberte priemer..." />
@@ -542,7 +542,7 @@ export default function ArsenalPage() {
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground dark:text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 Ak vyberiete priemer, všetky príchute budú mať rovnaký priemer
               </p>
             </div>
@@ -555,7 +555,7 @@ export default function ArsenalPage() {
                 setBulkDialogOpen(false);
                 setBulkDiameter(null);
               }}
-              className="dark:bg-gray-700 dark:text-gray-200"
+              className="bg-background dark:bg-slate-700 text-foreground"
             >
               Zrušiť
             </Button>
@@ -581,21 +581,21 @@ export default function ArsenalPage() {
         ) : arsenalBaits && arsenalBaits.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
             {arsenalBaits.map((bait) => (
-              <Card key={bait.id} className="dark:bg-gray-800 dark:border-gray-700 relative">
+              <Card key={bait.id} className="bg-card dark:bg-slate-800 border-border dark:border-slate-700 relative">
                 <CardContent className="p-3">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => toggleFavoriteMutation.mutate(bait.id)}
                     disabled={toggleFavoriteMutation.isPending}
-                    className="absolute top-1 left-1 h-7 w-7 p-0 hover:bg-yellow-50 dark:hover:bg-yellow-950"
+                    className="absolute top-1 left-1 h-7 w-7 p-0 hover:bg-yellow-100 dark:hover:bg-yellow-950"
                     data-testid={`button-favorite-bait-${bait.id}`}
                   >
                     <Star 
                       className={`h-3.5 w-3.5 ${
                         bait.isFavorite 
                           ? 'fill-yellow-400 text-yellow-400' 
-                          : 'text-gray-400 dark:text-gray-600'
+                          : 'text-muted-foreground dark:text-slate-600'
                       }`} 
                     />
                   </Button>
@@ -605,33 +605,33 @@ export default function ArsenalPage() {
                     size="sm"
                     onClick={() => deleteBaitMutation.mutate(bait.id)}
                     disabled={deleteBaitMutation.isPending}
-                    className="absolute top-1 right-1 h-7 w-7 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950"
+                    className="absolute top-1 right-1 h-7 w-7 p-0 text-red-600 hover:text-red-700 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-950"
                     data-testid={`button-delete-bait-${bait.id}`}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
                   
                   <div className="px-6">
-                    <p className="text-xs text-muted-foreground dark:text-gray-400 mb-1 line-clamp-1">
+                    <p className="text-xs text-muted-foreground mb-1 line-clamp-1">
                       {bait.manufacturer.name}
                     </p>
-                    <p className="text-xs text-muted-foreground dark:text-gray-400 mb-2 line-clamp-1">
+                    <p className="text-xs text-muted-foreground mb-2 line-clamp-1">
                       {bait.productLine.name}
                     </p>
-                    <h3 className="font-semibold text-sm text-foreground dark:text-white mb-2 line-clamp-2">
+                    <h3 className="font-semibold text-sm text-foreground mb-2 line-clamp-2">
                       {bait.flavor.name}
                     </h3>
                     
                     {bait.diameter && (
                       <div className="flex items-center gap-1 mb-1">
-                        <span className="text-xs px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">
+                        <span className="text-xs px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-200 rounded">
                           {bait.diameter}
                         </span>
                       </div>
                     )}
                     
                     {bait.notes && (
-                      <p className="text-xs text-muted-foreground dark:text-gray-400 mt-2 line-clamp-2">
+                      <p className="text-xs text-muted-foreground mt-2 line-clamp-2">
                         {bait.notes}
                       </p>
                     )}
@@ -641,13 +641,13 @@ export default function ArsenalPage() {
             ))}
           </div>
         ) : (
-          <Card className="dark:bg-gray-800 dark:border-gray-700">
+          <Card className="bg-card dark:bg-slate-800 border-border dark:border-slate-700">
             <CardContent className="py-12 text-center">
-              <FishSymbol className="h-12 w-12 mx-auto mb-4 text-muted-foreground dark:text-gray-500" />
-              <h3 className="text-lg font-medium text-foreground dark:text-white mb-2">
+              <FishSymbol className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+              <h3 className="text-lg font-medium text-foreground mb-2">
                 Žiadne boilies v arzenáli
               </h3>
-              <p className="text-sm text-muted-foreground dark:text-gray-400 mb-4">
+              <p className="text-sm text-muted-foreground mb-4">
                 Začnite pridaním svojich prvých boilies
               </p>
               <Button variant="outline" onClick={() => setDialogOpen(true)}>
@@ -659,9 +659,9 @@ export default function ArsenalPage() {
         )}
 
         {/* Info Note */}
-        <Card className="mt-6 border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-800">
+        <Card className="mt-6 border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/20">
           <CardContent className="p-4">
-            <p className="text-sm text-blue-800 dark:text-blue-300">
+            <p className="text-sm text-blue-800 dark:text-blue-200">
               <strong>Databáza obsahuje:</strong> 20 výrobcov boilies s desiatkami produktových radov a stovkami príchutí.
               V budúcich verziách budete môcť priradiť konkrétne boilies k úlovkom a sledovať štatistiky.
             </p>

@@ -544,7 +544,7 @@ export default function BattleIndex() {
                       className="border-2 border-dashed border-border/60 rounded-lg p-8 text-center bg-muted/20"
                       data-testid="empty-invitations"
                     >
-                      <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <div className="w-16 h-16 bg-blue-100 dark:bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
                         <Bell className="w-8 h-8 text-blue-500" />
                       </div>
                       <h3 className="text-lg font-semibold text-foreground mb-2">
@@ -637,10 +637,10 @@ export default function BattleIndex() {
               </Card>
 
               {/* Section: Sieň Slávy */}
-              <Card className="bg-gradient-to-br from-yellow-500/10 to-amber-600/10 border-yellow-500/30">
+              <Card className="bg-yellow-50 dark:bg-transparent dark:bg-gradient-to-br dark:from-yellow-500/10 dark:to-amber-600/10 border-yellow-500/30">
                 <CardContent className="p-6">
                   <div className="text-center">
-                    <div className="w-16 h-16 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <div className="w-16 h-16 bg-yellow-100 dark:bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                       <Trophy className="w-8 h-8 text-yellow-500" />
                     </div>
                     <h3 className="text-xl font-bold text-foreground mb-1" data-testid="heading-hall-of-fame">
