@@ -1020,8 +1020,7 @@ export default function DiaryTrips() {
           <div className="md:hidden fixed bottom-20 right-4 z-50 flex flex-col gap-3">
             <Button
               onClick={() => setIsChecklistOpen(true)}
-              variant="outline"
-              className="h-14 w-14 rounded-full shadow-lg bg-background"
+              className="h-14 w-14 rounded-full shadow-lg bg-primary hover:bg-primary/90 text-primary-foreground"
               size="icon"
               data-testid="fab-checklist"
               aria-label="Mám všetko zbalené?"
