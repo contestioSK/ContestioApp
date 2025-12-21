@@ -1,0 +1,70 @@
+Správa o optimalizácii rýchlosti a odozvy API
+
+Dátum: 21. december 2025
+Stav: Analýza vývojového prostredia (Vite + Neon DB)
+
+1. Analýza nameraných hodnôt
+
+Podľa logov sa väčšina požiadaviek pohybuje v rozmedzí 338ms – 714ms.
+
+Najrýchlejšie: /api/competitions (338ms) – pravdepodobne jednoduchý SELECT.
+
+Najpomalšie: /api/auth/premium-status a /api/diary/trips (>700ms) – tieto odozvy už používateľ vníma ako "trhanie" aplikácie.
+
+2. Identifikácia problémov (Bottlenecks)
+
+A. Cold Starts & Connection Pooling
+
+Neon DB je serverless. Ak na databázu nikto 5 minút nesiahne, "uspí sa". Prvý ďalší request musí databázu prebudiť (cold start), čo pridáva ~500ms.
+Riešenie: Použiť HTTP pooling (napr. @neondatabase/serverless namiesto štandardného pg drivera).
+
+B. Sekvenčné volania (Waterfall efekt)
+
+Ak frontend volá najprv /auth/user a až po úspechu /auth/premium-status, časy sa sčítavajú. Používateľ čaká takmer 1.5 sekundy na inicializáciu.
+Riešenie: Spojiť tieto informácie do jedného endpointu /api/auth/me alebo použiť Promise.all().
+
+3. Akčný plán optimalizácie
+
+Fáza 1: Databázová vrstva (Rýchle výhry)
+
+Indexácia: Pridať indexy na často vyhľadávané polia:
+
+userId vo všetkých tabuľkách (trips, catches, friend-requests).
+
+createdAt pre chronologické zoznamy (diary).
+
+Optimalizácia JOINov: Pri /api/diary/trips skontrolovať, či neťaháme zbytočne veľa dát (napr. celé texty príspevkov, ak potrebujeme len náhľady).
+
+Fáza 2: Backend & Caching
+
+SWR / React Query (Frontend): Implementovať stratégiu "Stale-While-Revalidate". Používateľ uvidí staré dáta okamžite z cache a nové sa načítajú na pozadí.
+
+In-Memory Cache: Pre dáta, ktoré sa menia zriedka (napr. /api/competitions), nastaviť krátky server-side cache (napr. 60 sekúnd).
+
+Fáza 3: Frontend optimalizácia
+
+Skeleton Loaders: Nahradiť točiace sa kolieska (spinners) šedými obdĺžnikmi, ktoré simulujú obsah. Psychologicky to skracuje čakanie o 30%.
+
+Lazy Loading: Komponenty ako "Checklist" alebo "Mapy" načítavať až vtedy, keď ich používateľ skutočne ide otvoriť.
+
+4. Špecifické odporúčania pre Replit
+
+Do Replit chat-u zadaj nasledovné pokyny:
+
+"Implement HTTP connection pooling for Neon DB to reduce latency."
+
+"Combine /api/auth/user and /api/auth/premium-status into a single /api/auth/init endpoint."
+
+"Add non-clustered indexes to the trips and catches tables on the userId column."
+
+"Set up react-query with a 5-minute staleTime for the competitions list."
+
+5. Očakávaný výsledok po nasadení
+
+Po prechode do produkcie a implementácii vyššie uvedených bodov predpokladáme:
+
+Auth init: z 700ms na 150ms
+
+Diary load: z 712ms na 250ms
+
+Interakcia s UI: Okamžitá (vďaka optimistickým updatom)
