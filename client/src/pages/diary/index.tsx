@@ -1134,10 +1134,10 @@ export default function DiaryIndex() {
         </div>
 
         {/* Catches Table */}
-        <Card className="bg-slate-800/50 border overflow-hidden">
+        <Card className="bg-white dark:bg-slate-800/50 border overflow-hidden">
           <CardContent className="p-0">
             {/* Desktop Table Header */}
-            <div className="hidden md:grid grid-cols-5 gap-4 p-4 border-b text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-700/30">
+            <div className="hidden md:grid grid-cols-5 gap-4 p-4 border-b text-xs font-semibold text-muted-foreground dark:text-slate-400 uppercase tracking-wider bg-muted/50 dark:bg-slate-700/30">
               <div>DRUH RYBY</div>
               <div>VÁHA / DĹŽKA</div>
               <div>REVÍR</div>
@@ -1150,41 +1150,41 @@ export default function DiaryIndex() {
               displayedCatches.map((catch_: any, index: number) => (
                 <div 
                   key={catch_.id || index} 
-                  className="border-b hover:bg-slate-700/30 transition-colors cursor-pointer"
+                  className="border-b hover:bg-muted/50 dark:hover:bg-slate-700/30 transition-colors cursor-pointer"
                   onClick={() => setSelectedCatch(catch_)}
                   data-testid={`catch-row-${catch_.id || index}`}
                 >
                   {/* Desktop Row */}
                   <div className="hidden md:grid grid-cols-5 gap-4 p-4 relative group">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-slate-600/50 rounded-lg flex items-center justify-center overflow-hidden">
+                      <div className="w-10 h-10 bg-muted dark:bg-slate-600/50 rounded-lg flex items-center justify-center overflow-hidden">
                         {getCatchThumbnail(catch_)}
                       </div>
-                      <div className="text-white font-medium">
+                      <div className="text-foreground dark:text-white font-medium">
                         {catch_.fishType ? getFishTypeLabel(catch_.fishType) : 'Neznámy druh'}
                       </div>
                     </div>
                     
-                    <div className="text-white font-bold text-xl">
+                    <div className="text-foreground dark:text-white font-bold text-xl">
                       {catch_.weight ? `${catch_.weight} kg` : catch_.lengthCm ? `${catch_.lengthCm} cm` : 'N/A'}
                     </div>
                     
-                    <div className="text-slate-300">
+                    <div className="text-muted-foreground dark:text-slate-300">
                       {catch_.spot || 'Neznáme miesto'}
                     </div>
                     
-                    <div className="text-slate-300">
+                    <div className="text-muted-foreground dark:text-slate-300">
                       {catch_.bait || 'Neznáma'}
                     </div>
                     
-                    <div className="text-slate-300 flex items-center justify-between">
+                    <div className="text-muted-foreground dark:text-slate-300 flex items-center justify-between">
                       <span>{catch_.capturedAt ? format(new Date(catch_.capturedAt), "dd. MMM yyyy", { locale: sk }) : 'N/A'}</span>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelectedCatch(catch_);
                         }}
-                        className="p-2 rounded-lg bg-slate-600/50 hover:bg-primary/20 text-slate-400 hover:text-primary transition-colors opacity-30 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
+                        className="p-2 rounded-lg bg-muted dark:bg-slate-600/50 hover:bg-primary/20 text-muted-foreground dark:text-slate-400 hover:text-primary transition-colors opacity-30 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:focus-visible:ring-offset-slate-800"
                         title="Upraviť"
                         data-testid={`button-edit-catch-${catch_.id || index}`}
                       >
@@ -1196,12 +1196,12 @@ export default function DiaryIndex() {
                   {/* Mobile Card */}
                   <div className="md:hidden p-4">
                     <div className="flex items-start gap-3">
-                      <div className="w-12 h-12 bg-slate-600/50 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                      <div className="w-12 h-12 bg-muted dark:bg-slate-600/50 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
                         {getCatchThumbnail(catch_)}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
-                          <div className="text-white font-medium mb-1">
+                          <div className="text-foreground dark:text-white font-medium mb-1">
                             {catch_.fishType ? getFishTypeLabel(catch_.fishType) : 'Neznámy druh'}
                           </div>
                           <button
@@ -1209,25 +1209,25 @@ export default function DiaryIndex() {
                               e.stopPropagation();
                               setSelectedCatch(catch_);
                             }}
-                            className="p-2 rounded-lg bg-slate-600/50 hover:bg-primary/20 text-slate-400 hover:text-primary transition-colors"
+                            className="p-2 rounded-lg bg-muted dark:bg-slate-600/50 hover:bg-primary/20 text-muted-foreground dark:text-slate-400 hover:text-primary transition-colors"
                             title="Upraviť"
                             data-testid={`button-edit-catch-mobile-${catch_.id || index}`}
                           >
                             <Edit2 className="w-4 h-4" />
                           </button>
                         </div>
-                        <div className="text-white font-bold text-lg mb-2">
+                        <div className="text-foreground dark:text-white font-bold text-lg mb-2">
                           {catch_.weight ? `${catch_.weight} kg` : catch_.lengthCm ? `${catch_.lengthCm} cm` : 'N/A'}
                         </div>
-                        <div className="grid grid-cols-2 gap-2 text-xs text-slate-400">
+                        <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground dark:text-slate-400">
                           <div>
-                            <span className="text-slate-500">Miesto:</span> {catch_.spot || 'N/A'}
+                            <span className="text-muted-foreground/70 dark:text-slate-500">Miesto:</span> {catch_.spot || 'N/A'}
                           </div>
                           <div>
-                            <span className="text-slate-500">Návnada/Nástraha:</span> {catch_.bait || 'N/A'}
+                            <span className="text-muted-foreground/70 dark:text-slate-500">Návnada/Nástraha:</span> {catch_.bait || 'N/A'}
                           </div>
                           <div className="col-span-2">
-                            <span className="text-slate-500">Dátum:</span> {catch_.capturedAt ? format(new Date(catch_.capturedAt), "dd. MMM yyyy", { locale: sk }) : 'N/A'}
+                            <span className="text-muted-foreground/70 dark:text-slate-500">Dátum:</span> {catch_.capturedAt ? format(new Date(catch_.capturedAt), "dd. MMM yyyy", { locale: sk }) : 'N/A'}
                           </div>
                         </div>
                       </div>
@@ -1237,8 +1237,8 @@ export default function DiaryIndex() {
               ))
             ) : (
               <div className="p-8 text-center">
-                <Fish className="w-12 h-12 text-slate-500 mx-auto mb-4" />
-                <p className="text-slate-400 mb-4">
+                <Fish className="w-12 h-12 text-muted-foreground dark:text-slate-500 mx-auto mb-4" />
+                <p className="text-muted-foreground dark:text-slate-400 mb-4">
                   {seasonCatches.length === 0 
                     ? "Zatiaľ nemáte žiadne úlovky" 
                     : "Žiadne úlovky nevyhovujú zvoleným filtrom"}
@@ -1262,7 +1262,7 @@ export default function DiaryIndex() {
             <Button
               onClick={() => setLocation("/diary/catches")}
               variant="outline"
-              className="border text-slate-300 hover:bg-slate-700 hover:text-white"
+              className="border text-muted-foreground dark:text-slate-300 hover:bg-muted dark:hover:bg-slate-700 hover:text-foreground dark:hover:text-white"
               data-testid="button-view-all-catches"
             >
               Zobraziť všetky úlovky ({seasonCatches.length})
