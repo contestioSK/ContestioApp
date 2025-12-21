@@ -232,14 +232,14 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
 
           {/* User Profile */}
           <div className="p-4 md:p-6 border-b border-sidebar-border">
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex flex-col gap-3">
               <button
                 onClick={() => {
                   setLocation("/diary/profile");
                   setSidebarOpen(false);
                   window.scrollTo(0, 0);
                 }}
-                className="flex-1 flex items-center space-x-2 md:space-x-3 hover:bg-sidebar-accent rounded-lg p-2 transition-colors group"
+                className="flex items-center space-x-2 md:space-x-3 hover:bg-sidebar-accent rounded-lg p-2 transition-colors group"
                 data-testid="button-profile"
               >
                 <div className="w-8 h-8 md:w-10 md:h-10 bg-sidebar-accent rounded-full flex items-center justify-center group-hover:bg-sidebar-primary/20">
