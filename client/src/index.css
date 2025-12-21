@@ -3,50 +3,65 @@
 @tailwind utilities;
 
 :root {
-  --background: hsl(210, 40%, 98%);
-  --foreground: hsl(222, 84%, 5%);
-  --card: hsl(180, 7%, 97%);
-  --card-foreground: hsl(222, 84%, 5%);
-  --popover: hsl(210, 40%, 98%);
-  --popover-foreground: hsl(222, 84%, 5%);
-  --primary: hsl(201, 96%, 32%);
-  --primary-foreground: hsl(210, 40%, 98%);
-  --secondary: hsl(142, 76%, 36%);
-  --secondary-foreground: hsl(210, 40%, 98%);
-  --muted: hsl(215, 15%, 59%);
-  --muted-foreground: hsl(215, 25%, 27%);
-  --accent: hsl(20, 90%, 48%);
-  --accent-foreground: hsl(210, 40%, 98%);
-  --destructive: hsl(0, 62%, 55%);
-  --destructive-foreground: hsl(210, 40%, 98%);
-  --border: hsl(214, 13%, 88%);
-  --input: hsl(214, 13%, 88%);
-  --ring: hsl(201, 96%, 32%);
-  --chart-1: hsl(201, 96%, 32%);
-  --chart-2: hsl(142, 76%, 36%);
-  --chart-3: hsl(20, 90%, 48%);
-  --chart-4: hsl(147, 79%, 42%);
-  --chart-5: hsl(341, 75%, 51%);
-  --sidebar: hsl(180, 7%, 97%);
-  --sidebar-foreground: hsl(222, 84%, 5%);
-  --sidebar-primary: hsl(201, 96%, 32%);
-  --sidebar-primary-foreground: hsl(210, 40%, 98%);
-  --sidebar-accent: hsl(211, 51%, 93%);
-  --sidebar-accent-foreground: hsl(201, 96%, 32%);
-  --sidebar-border: hsl(205, 25%, 91%);
-  --sidebar-ring: hsl(201, 96%, 32%);
+  /* Lake-Inspired Premium Light Theme - WCAG AA Compliant */
+  /* Background: Warm off-white */
+  --background: hsl(40, 20%, 97%);
+  /* Foreground: Deep slate for 7:1+ contrast ratio */
+  --foreground: hsl(220, 30%, 18%);
+  /* Cards: Pure white, clearly elevated from background */
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(220, 30%, 18%);
+  /* Popover: Same as card for consistency */
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(220, 30%, 18%);
+  /* Primary: Rich teal - the hero accent color */
+  --primary: hsl(196, 74%, 30%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  /* Secondary: Neutral slate for non-primary actions */
+  --secondary: hsl(215, 20%, 93%);
+  --secondary-foreground: hsl(220, 30%, 20%);
+  /* Muted: Light gray with good contrast text */
+  --muted: hsl(220, 15%, 92%);
+  --muted-foreground: hsl(220, 15%, 35%);
+  /* Accent: Teal variant for interactive elements */
+  --accent: hsl(196, 40%, 94%);
+  --accent-foreground: hsl(196, 74%, 25%);
+  /* Destructive: Clear red for errors */
+  --destructive: hsl(0, 72%, 51%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  /* Borders: Visible but subtle */
+  --border: hsl(220, 15%, 85%);
+  --input: hsl(220, 15%, 88%);
+  --ring: hsl(196, 74%, 30%);
+  /* Charts: Vibrant outdoor palette */
+  --chart-1: hsl(196, 74%, 34%);
+  --chart-2: hsl(142, 64%, 40%);
+  --chart-3: hsl(32, 68%, 50%);
+  --chart-4: hsl(176, 52%, 42%);
+  --chart-5: hsl(341, 65%, 48%);
+  /* Sidebar: Light warm gray */
+  --sidebar: hsl(40, 15%, 98%);
+  --sidebar-foreground: hsl(220, 30%, 18%);
+  --sidebar-primary: hsl(196, 74%, 30%);
+  --sidebar-primary-foreground: hsl(0, 0%, 100%);
+  --sidebar-accent: hsl(196, 40%, 94%);
+  --sidebar-accent-foreground: hsl(196, 74%, 25%);
+  --sidebar-border: hsl(220, 15%, 88%);
+  --sidebar-ring: hsl(196, 74%, 30%);
+  /* Typography */
   --font-sans: Inter, system-ui, sans-serif;
   --font-serif: Georgia, serif;
   --font-mono: Roboto Mono, monospace;
   --radius: 0.75rem;
-  --shadow-2xs: 0px 2px 0px 0px hsl(201, 96%, 32%, 0.00);
-  --shadow-xs: 0px 2px 0px 0px hsl(201, 96%, 32%, 0.00);
-  --shadow-sm: 0px 2px 0px 0px hsl(201, 96%, 32%, 0.00), 0px 1px 2px -1px hsl(201, 96%, 32%, 0.00);
-  --shadow: 0px 2px 0px 0px hsl(201, 96%, 32%, 0.00), 0px 1px 2px -1px hsl(201, 96%, 32%, 0.00);
-  --shadow-md: 0px 2px 0px 0px hsl(201, 96%, 32%, 0.00), 0px 2px 4px -1px hsl(201, 96%, 32%, 0.00);
-  --shadow-lg: 0px 2px 0px 0px hsl(201, 96%, 32%, 0.00), 0px 4px 6px -1px hsl(201, 96%, 32%, 0.00);
-  --shadow-xl: 0px 2px 0px 0px hsl(201, 96%, 32%, 0.00), 0px 8px 10px -1px hsl(201, 96%, 32%, 0.00);
-  --shadow-2xl: 0px 2px 0px 0px hsl(201, 96%, 32%, 0.00);
+  /* Shadows: Natural, visible depth for light mode */
+  --shadow-2xs: 0 1px 2px 0 hsl(220, 20%, 20%, 0.05);
+  --shadow-xs: 0 1px 3px 0 hsl(220, 20%, 20%, 0.08);
+  --shadow-sm: 0 2px 4px -1px hsl(220, 20%, 20%, 0.10), 0 1px 2px -1px hsl(220, 20%, 20%, 0.06);
+  --shadow: 0 4px 6px -1px hsl(220, 20%, 20%, 0.12), 0 2px 4px -2px hsl(220, 20%, 20%, 0.08);
+  --shadow-md: 0 6px 10px -2px hsl(220, 20%, 20%, 0.14), 0 3px 6px -3px hsl(220, 20%, 20%, 0.10);
+  --shadow-lg: 0 10px 20px -3px hsl(220, 20%, 20%, 0.16), 0 4px 8px -4px hsl(220, 20%, 20%, 0.10);
+  --shadow-xl: 0 16px 32px -4px hsl(220, 20%, 20%, 0.18), 0 8px 16px -6px hsl(220, 20%, 20%, 0.12);
+  --shadow-2xl: 0 24px 48px -8px hsl(220, 20%, 20%, 0.22);
   --tracking-normal: 0em;
   --spacing: 0.25rem;
 }
