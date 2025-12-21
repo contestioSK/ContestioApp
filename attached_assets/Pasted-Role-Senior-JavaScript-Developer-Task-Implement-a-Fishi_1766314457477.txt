@@ -1,0 +1,78 @@
+Role: Senior JavaScript Developer
+Task: Implement a "Fishing Time Guard" feature for a Fishing Web App.
+
+CRITICAL TECHNICAL CONSTRAINT:
+
+STRICTLY VANILLA JAVASCRIPT ONLY.
+
+NO REACT, NO VUE, NO FRAMEWORKS.
+
+Do NOT use hooks (use...).
+
+The code must work directly inside a <script> tag in a standard HTML file.
+
+Use document.createElement, document.getElementById, etc.
+
+Context:
+Fishermen need to know when the legal fishing time ends for the current day to avoid fines. Different months have different closing times.
+
+Requirements:
+
+Time Logic (Slovak Rules - Simplified):
+
+Create a function getClosingTime() that returns the fishing end time based on the current month:
+
+January, February, November, December: Closing time is 21:00.
+
+March, April, September, October: Closing time is 00:00 (Midnight).
+
+May, June, July, August: Non-stop fishing (no alert needed or set to 24:00).
+
+Note: Ensure the logic handles the month index correctly (0-11 in JS).
+
+Monitoring System:
+
+Run a check every 1 minute (setInterval).
+
+Compare the current system time with the closingTime.
+
+Notification Logic:
+
+Trigger a notification exactly 30 minutes before the closing time.
+
+Example: If closing is 21:00, trigger alert at 20:30.
+
+UI Component (The Notification):
+
+Create a function showTimeAlert(closingTimeStr) that creates and appends a fixed, prominent "Toast" or "Banner" element to the body.
+
+Styling: Use Tailwind CSS classes (e.g., fixed top-4 left-1/2 -translate-x-1/2 bg-orange-100 border-l-4 border-orange-500 text-orange-700 p-4 rounded shadow-lg z-50).
+
+Text (Slovak):
+
+"Je to škoda, ale o [ClosingTime] končí doba lovu. Nezabudni vytiahnuť udice!"
+
+Include a small "Dismiss" (X) button that removes the element from the DOM when clicked.
+
+Implementation Details:
+
+Write it as a self-contained JavaScript code block.
+
+Wrap initialization in document.addEventListener('DOMContentLoaded', () => { ... }).
+
+Example Output Code Structure:
+
+document.addEventListener('DOMContentLoaded', () => {
+    function getClosingTime() { ... }
+    function showTimeAlert(time) { ... }
+    
+    // Main check function
+    function checkFishingTime() { 
+        // Logic to compare times and call showTimeAlert if needed
+    }
+
+    // Start loop
+    setInterval(checkFishingTime, 60000);
+    // Run once immediately
+    checkFishingTime();
+});

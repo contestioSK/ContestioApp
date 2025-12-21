@@ -1,0 +1,66 @@
+Role: Senior React & TypeScript Developer
+Task: Implement a "Fishing Time Guard" feature as a Custom React Hook.
+
+Technical Stack:
+
+React (Functional Components, Hooks)
+
+TypeScript (Strict typing)
+
+UI Library: Shadcn/UI (specifically using the toast function from sonner or use-toast)
+
+Context:
+Fishermen need to know when the legal fishing time ends for the current day to avoid fines. Different months have different closing times. This logic needs to run in the background of the application.
+
+Requirements:
+
+Time Logic (Slovak Rules - Simplified):
+
+Implement helper logic to determine the closing time based on the current month:
+
+January, February, November, December: Closing time is 21:00.
+
+March, April, September, October: Closing time is 00:00 (Midnight).
+
+May, June, July, August: Non-stop fishing (no alert needed).
+
+The Hook: useFishingTimeGuard
+
+The hook should initialize a check loop (using useEffect and setInterval) that runs every 1 minute.
+
+It should compare the current system time with the calculated closing time.
+
+Notification Logic:
+
+Trigger a notification exactly 30 minutes before the closing time.
+
+Example: If closing is 21:00, the alert must trigger at 20:30.
+
+Ensure the alert only triggers once per session (or once per day) to avoid spamming the user every minute during that 30-minute window. Use a ref or state to track if hasNotified.
+
+UI Feedback (Toast):
+
+Instead of custom DOM elements, use the toast function.
+
+Variant: destructive or warning (orange/red).
+
+Title: "Pozor na čas lovu"
+
+Description: "Je to škoda, ale o [ClosingTime] končí doba lovu. Nezabudni vytiahnuť udice!"
+
+Action: No action needed, just standard dismiss.
+
+Output Structure:
+
+Provide the complete code for the hook file: useFishingTimeGuard.ts.
+
+Provide a short example of how to use it in a generic App.tsx or Layout.tsx.
+
+Example Code Skeleton:
+
+import { useEffect, useRef } from 'react';
+import { toast } from '@/components/ui/use-toast'; // or 'sonner'
+
+export const useFishingTimeGuard = () => {
+    // Logic here...
+};
