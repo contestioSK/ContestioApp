@@ -644,6 +644,50 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
+  // Optimized auth init endpoint - combines user, premium status, and limits
+  app.get('/api/auth/init', async (req: any, res) => {
+    try {
+      let userId: string | undefined;
+
+      // Try new auth system first
+      if (req.isAuthenticated() && req.user?.id) {
+        userId = req.user.id;
+      }
+      // Fallback to old auth system
+      else if (req.user?.claims?.sub) {
+        userId = getUserId(req);
+      }
+
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      // Fetch all data in parallel for better performance
+      const [user, tripLimits, catchLimits] = await Promise.all([
+        storage.getUser(userId),
+        storage.checkDiaryTripLimit(userId),
+        storage.checkDiaryCatchLimit(userId),
+      ]);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found in database" });
+      }
+      
+      // Remove sensitive data
+      const { password: _, verificationToken: __, verificationTokenExpires: ___, ...safeUser } = user;
+      
+      res.json({
+        user: safeUser,
+        isPremium: user.isPremium ?? false,
+        tripLimits,
+        catchLimits,
+      });
+    } catch (error) {
+      console.error("[AUTH] Error in auth init:", error);
+      res.status(500).json({ message: "Failed to initialize auth" });
+    }
+  });
+
   // Profile update endpoint
   app.patch('/api/auth/profile', isAuthenticated, async (req: any, res) => {
     try {

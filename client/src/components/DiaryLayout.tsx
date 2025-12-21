@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuthInit } from "@/hooks/useAuthInit";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useFishingTimeGuard } from "@/hooks/useFishingTimeGuard";
 import { useLocation, Link } from "wouter";
@@ -151,7 +151,7 @@ const competitionNavigationItems = [
 ];
 
 export default function DiaryLayout({ children }: DiaryLayoutProps) {
-  const { user } = useAuth();
+  const { user, isPremium, catchLimits } = useAuthInit();
   const { theme, toggleTheme } = useTheme();
   const [location, setLocation] = useLocation();
   
@@ -162,25 +162,12 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
   const [premiumTrigger, setPremiumTrigger] = useState<string | undefined>();
 
-  // Check premium status
-  const { data: premiumStatus } = useQuery<PremiumStatus>({
-    queryKey: ["/api/auth/premium-status"],
-    enabled: !!user?.id
-  });
-
-  // Check catch limits for free users
-  const { data: catchLimits } = useQuery<CatchLimits>({
-    queryKey: ["/api/diary/catch-limits"],
-    enabled: !!user?.id
-  });
-
   // Check friend requests count for notification badge
   const { data: friendRequests = [] } = useQuery<any[]>({
     queryKey: ['/api/friend-requests'],
     enabled: !!user?.id,
   });
 
-  const isPremium = premiumStatus?.isPremium || false;
   const hasFriendRequests = (friendRequests || []).length > 0;
   
   // Handle FAB click - check limits before opening catch dialog
