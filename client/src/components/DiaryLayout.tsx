@@ -277,7 +277,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                       className={`
                         w-full flex items-center px-2 md:px-3 py-2 md:py-3 text-sm font-medium rounded-lg transition-all
                         ${isActive 
-                          ? 'bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-white border border-blue-500/50 shadow-lg shadow-blue-500/20' 
+                          ? 'bg-primary/15 dark:bg-gradient-to-r dark:from-blue-600/30 dark:to-purple-600/30 text-primary dark:text-white border border-primary/30 dark:border-blue-500/50 shadow-sm dark:shadow-lg dark:shadow-blue-500/20' 
                           : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent'
                         }
                       `}
@@ -297,10 +297,10 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
             {/* Section Divider - MÔJ RYBÁRSKY ŽIVOT */}
             <div className="pt-4 pb-2">
               <div className="px-2 md:px-3 mb-2">
-                <div className="h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent"></div>
+                <div className="h-px bg-gradient-to-r from-transparent via-primary/40 dark:via-blue-500/30 to-transparent"></div>
               </div>
               <div className="px-2 md:px-3">
-                <p className="text-[10px] md:text-xs font-bold text-blue-400/70 uppercase tracking-wider">
+                <p className="text-[10px] md:text-xs font-bold text-primary/70 dark:text-blue-400/70 uppercase tracking-wider">
                   🎣 Môj Rybársky Život
                 </p>
               </div>
@@ -323,7 +323,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                       className={`
                         w-full flex items-center px-2 md:px-3 py-2 md:py-3 text-sm font-medium rounded-lg transition-all
                         ${isActive 
-                          ? 'bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-white border border-blue-500/50 shadow-lg shadow-blue-500/20' 
+                          ? 'bg-primary/15 dark:bg-gradient-to-r dark:from-blue-600/30 dark:to-purple-600/30 text-primary dark:text-white border border-primary/30 dark:border-blue-500/50 shadow-sm dark:shadow-lg dark:shadow-blue-500/20' 
                           : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent'
                         }
                       `}
@@ -343,10 +343,10 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
             {/* Section Divider - SÚŤAŽE & KOMUNITA */}
             <div className="pt-4 pb-2">
               <div className="px-2 md:px-3 mb-2">
-                <div className="h-px bg-gradient-to-r from-transparent via-purple-500/30 to-transparent"></div>
+                <div className="h-px bg-gradient-to-r from-transparent via-violet-500/40 dark:via-purple-500/30 to-transparent"></div>
               </div>
               <div className="px-2 md:px-3">
-                <p className="text-[10px] md:text-xs font-bold text-purple-400/70 uppercase tracking-wider">
+                <p className="text-[10px] md:text-xs font-bold text-violet-600/80 dark:text-purple-400/70 uppercase tracking-wider">
                   ⚔️ Súťaže & Komunita
                 </p>
               </div>
@@ -375,7 +375,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                       className={`
                         w-full flex items-center px-2 md:px-3 py-2 md:py-3 text-sm font-medium rounded-lg transition-all relative
                         ${isActive 
-                          ? 'bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-white border border-blue-500/50 shadow-lg shadow-blue-500/20' 
+                          ? 'bg-primary/15 dark:bg-gradient-to-r dark:from-blue-600/30 dark:to-purple-600/30 text-primary dark:text-white border border-primary/30 dark:border-blue-500/50 shadow-sm dark:shadow-lg dark:shadow-blue-500/20' 
                           : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent'
                         }
                       `}
@@ -405,10 +405,10 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
             {/* Section Divider - NÁSTROJE & PROGRES */}
             <div className="pt-4 pb-2">
               <div className="px-2 md:px-3 mb-2">
-                <div className="h-px bg-gradient-to-r from-transparent via-orange-500/30 to-transparent"></div>
+                <div className="h-px bg-gradient-to-r from-transparent via-amber-500/40 dark:via-orange-500/30 to-transparent"></div>
               </div>
               <div className="px-2 md:px-3">
-                <p className="text-[10px] md:text-xs font-bold text-orange-400/70 uppercase tracking-wider">
+                <p className="text-[10px] md:text-xs font-bold text-amber-600/80 dark:text-orange-400/70 uppercase tracking-wider">
                   🛠️ Nástroje & Progres
                 </p>
               </div>
@@ -431,7 +431,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                       className={`
                         w-full flex items-center px-2 md:px-3 py-2 md:py-3 text-sm font-medium rounded-lg transition-all
                         ${isActive 
-                          ? 'bg-gradient-to-r from-blue-600/30 to-purple-600/30 text-white border border-blue-500/50 shadow-lg shadow-blue-500/20' 
+                          ? 'bg-primary/15 dark:bg-gradient-to-r dark:from-blue-600/30 dark:to-purple-600/30 text-primary dark:text-white border border-primary/30 dark:border-blue-500/50 shadow-sm dark:shadow-lg dark:shadow-blue-500/20' 
                           : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent'
                         }
                       `}
@@ -451,10 +451,10 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
             {/* Section Divider - OFICIÁLNE SÚŤAŽE */}
             <div className="pt-4 pb-2">
               <div className="px-2 md:px-3 mb-2">
-                <div className="h-px bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent"></div>
+                <div className="h-px bg-gradient-to-r from-transparent via-emerald-600/50 dark:via-emerald-500/50 to-transparent"></div>
               </div>
               <div className="px-2 md:px-3">
-                <p className="text-[10px] md:text-xs font-bold text-emerald-500/80 uppercase tracking-wider">
+                <p className="text-[10px] md:text-xs font-bold text-emerald-700/90 dark:text-emerald-500/80 uppercase tracking-wider">
                   🏆 Oficiálne Súťaže
                 </p>
               </div>
@@ -478,8 +478,8 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                         w-full flex items-center px-2 md:px-3 py-2 md:py-3 text-sm font-medium rounded-lg transition-all
                         border-2
                         ${isActive 
-                          ? 'bg-gradient-to-r from-emerald-600/40 to-green-600/40 text-white border-emerald-500 shadow-lg shadow-emerald-500/30' 
-                          : 'text-sidebar-foreground bg-emerald-500/5 border-emerald-500/30 hover:bg-emerald-500/20 hover:border-emerald-500/50'
+                          ? 'bg-emerald-100 dark:bg-gradient-to-r dark:from-emerald-600/40 dark:to-green-600/40 text-emerald-800 dark:text-white border-emerald-500 shadow-sm dark:shadow-lg dark:shadow-emerald-500/30' 
+                          : 'text-sidebar-foreground bg-emerald-50 dark:bg-emerald-500/5 border-emerald-400/50 dark:border-emerald-500/30 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 hover:border-emerald-500/60 dark:hover:border-emerald-500/50'
                         }
                       `}
                       data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
