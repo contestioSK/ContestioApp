@@ -1,0 +1,73 @@
+Expertný UX/UI Posudok: Cenník a Monetizácia
+
+Hodnotený komponent: Pricing.tsx
+Verzia: 1.0 (MVP)
+Dátum: 21. december 2025
+
+1. Celkový dojem (First Impressions)
+
+Stránka pôsobí dôveryhodne a profesionálne. Toto je kritické, pretože v momente, keď pýtame od používateľa peniaze (či už 6 € alebo 600 €), dizajn musí kričať "Bezpečnosť" a "Hodnota". Použitie čistého layoutu, jemných tieňov a gradientov tento pocit úspešne buduje.
+
+2. Čo funguje výborne (UX Wins)
+
+A. Segmentácia publika (The "Tab" Split)
+
+Toto je najsilnejší UX prvok stránky.
+
+Problém: Máte dve diametrálne odlišné cieľové skupiny. Organizátor pretekov (B2B) má iné potreby a budget ako bežný rybár (B2C).
+
+Riešenie: Tabs komponent okamžite filtruje irelevantný obsah. Organizátor nevidí "Free verziu denníka" a rybár nevidí "Enterprise riešenia". Znižuje to kognitívnu záťaž a urýchľuje rozhodovací proces.
+
+B. Psychológia "Chýbajúcich funkcií" (Loss Aversion)
+
+V časti diaryPlans (Free verzia) sme použili techniku Negative Reinforcement.
+
+Namiesto toho, aby sme len povedali, čo Free verzia obsahuje, explicitne zoznamujeme missingFeatures s červeným krížikom (❌).
+
+Psychológia: Ľudia sa viac boja straty ako túžia po zisku. Vidieť "❌ Ukladanie GPS lokalít" bolí viac, ako teší "✅ 50 úlovkov". Toto je silný motivátor k upgradu.
+
+C. Vizuálna hierarchia a Kotvenie (Anchoring)
+
+Preteky: Balík "Pro" (199 €) je vizuálne zvýraznený ako "Najobľúbenejší". Slúži ako kotva. 69 € sa potom zdá ako "lacné" (ale málo funkcií) a 599 € ako "drahé". Väčšina ľudí siahne po strede – presne tam, kde ich chceme mať.
+
+Farebné kódovanie: Každý plán má svoju farbu (Blue -> Purple -> Amber). To pomáha pri zapamätateľnosti ("Chcem ten fialový balík").
+
+3. Oblasti na zlepšenie (UX Opportunities)
+
+Hoci je stránka funkčná, tu sú miesta, kde môžeme zvýšiť konverziu (CRO):
+
+A. Dilema Mesačne vs. Ročne (The Toggle Pattern)
+
+Aktuálny stav: Máte 3 karty pre denník: Free, Premium Monthly, Premium Yearly.
+
+Problém: Používateľ musí mentálne porovnávať dve takmer identické karty (Monthly vs Yearly), líšiace sa len cenou.
+
+Odporúčanie: Zredukovať to na 2 karty: Free a Premium. Nad karty pridať prepínač (Toggle): [Mesačne] / [Ročne (-20%)].
+
+Prečo: Zjednodušuje to výber. Používateľ si najprv vyberie úroveň služby (chcem Premium) a až potom frekvenciu platby.
+
+B. Sociálny dôkaz (Social Proof)
+
+Stránka je momentálne trochu "sterilná". Chýba jej ľudský element.
+
+Odporúčanie: Pridať sekciu "Dôverujú nám".
+
+Pre organizátorov: Logá rybárskych zväzov (SRZ, RZ) alebo fotky z reálnych pretekov.
+
+Pre denník: Citát spokojného rybára ("Vďaka Contestio som si zmapoval revír a chytil životného kapra").
+
+C. Porovnávacia tabuľka (Feature Matrix)
+
+Pri komplexných produktoch (hlavne B2B preteky) niekedy karty nestačia.
+
+Odporúčanie: Pod karty pridať link "Zobraziť detailné porovnanie funkcií", ktorý rozbalí veľkú tabuľku, kde bude presne vidieť rozdiel medzi Basic a Pro (napr. či Pro má export do PDF).
+
+4. Strategický pohľad na "Carp-First"
+
+Tento cenník podporuje našu stratégiu kapráriny:
+
+Funkcie ako "Sektory", "Tímy" a "Rozhodcovia" sú špecifické pre kaprárske preteky (v prívlači sa často chytá na jednotlivcov a meria sa dĺžka, nie váha tímov).
+
+Tým, že tieto slová používame priamo v cenníku, signalizujeme kaprárom: "Rozumieme vašim pravidlám."
+
+Verdikt: Pricing.tsx je pripravený na nasadenie. Je prehľadný, moderný a logicky štruktúrovaný. Odporúčam ho nasadiť v tejto podobe a po zbere prvých dát (napr. cez Hotjar alebo Google Analytics) zvážiť implementáciu Toggle prepínača pre denník.

@@ -3,15 +3,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Check, Star, Crown, Zap, Building, BookOpen, Sparkles, Trophy, BookHeart } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Check, X, Star, Crown, Zap, Building, BookOpen, Sparkles, Trophy, BookHeart, ChevronDown } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
 
 export default function Pricing() {
   const [activeTab, setActiveTab] = useState("diary");
+  const [isYearly, setIsYearly] = useState(false);
+  const [showComparisonTable, setShowComparisonTable] = useState(false);
   const [, navigate] = useLocation();
 
-  // Helper function to render text with bold formatting
   const renderFeatureText = (text: string) => {
     if (!text.includes('**')) {
       return text;
@@ -19,7 +22,6 @@ export default function Pricing() {
     
     const parts = text.split('**');
     return parts.map((part, index) => {
-      // Every odd index should be bold
       if (index % 2 === 1) {
         return <strong key={index} className="font-semibold">{part}</strong>;
       }
@@ -114,88 +116,85 @@ export default function Pricing() {
     }
   ];
 
-  const diaryPlans = [
-    {
-      id: "free",
-      name: "FREE",
-      price: "0",
-      currency: "€",
-      period: "",
-      description: "Vyskúšajte základné funkcie zadarmo",
-      icon: BookOpen,
-      color: "from-gray-500 to-gray-600",
-      popular: false,
-      cta: "Používať zadarmo",
-      features: [
-        "✅ Neobmedzené výpravy (posledné 3 prístupné)",
-        "✅ Kapacita 50 úlovkov",
-        "✅ 1 fotka na úlovok",
-        "✅ Prijímanie výziev v Battle"
-      ],
-      missingFeatures: [
-        "❌ Ukladanie GPS lokalít",
-        "❌ Vytváranie vlastných Súbojov",
-        "❌ Predpoveď počasia a aktivity",
-        "❌ Neobmedzená história výprav",
-        "❌ Neobmedzené fotky k úlovkom"
-      ]
-    },
-    {
-      id: "premium-monthly",
-      name: "PREMIUM",
-      price: "5,90",
-      currency: "€",
-      period: "/ mesiac",
-      description: "Všetky funkcie bez obmedzení",
-      icon: Sparkles,
-      color: "from-teal-500 to-teal-600",
-      popular: true,
-      cta: "Upgradovať na Premium",
-      features: [
-        "✅ **Neobmedzené výpravy**",
-        "✅ **Neobmedzené úlovky**",
-        "📸 **Neobmedzené fotky k úlovkom**",
-        "📊 Pokročilé štatistiky a grafy",
-        "🎯 Sezónne ciele s progress tracking",
-        "⚔️ Fishing Battle (súťaž s priateľmi)",
-        "📴 Offline režim so synchronizáciou",
-        "🌤️ Predpoveď počasia a tlak",
-        "🗺️ Interaktívne mapy lokalít",
-        "📍 Ukladanie lokalít (GPS)"
-      ]
-    },
-    {
-      id: "premium-yearly",
-      name: "PREMIUM",
-      price: "59,90",
-      currency: "€",
-      period: "/ rok",
-      description: "Ušetrite ~11€ pri ročnom predplatnom",
-      icon: Crown,
-      color: "from-amber-500 to-amber-600",
-      popular: false,
-      cta: "Upgradovať na Premium",
-      features: [
-        "✅ **Neobmedzené výpravy**",
-        "✅ **Neobmedzené úlovky**",
-        "📸 **Neobmedzené fotky k úlovkom**",
-        "📊 Pokročilé štatistiky a grafy",
-        "🎯 Sezónne ciele s progress tracking",
-        "⚔️ Fishing Battle (súťaž s priateľmi)",
-        "📴 Offline režim so synchronizáciou",
-        "🌤️ Predpoveď počasia a tlak",
-        "🗺️ Interaktívne mapy lokalít",
-        "📍 Ukladanie lokalít (GPS)",
-        "💰 **Úspora ~11€ ročne**"
-      ]
-    }
+  const comparisonFeatures = [
+    { name: "Registrácia tímov", basic: true, pro: true, premium: true, enterprise: true },
+    { name: "Live tabuľka výsledkov", basic: true, pro: true, premium: true, enterprise: true },
+    { name: "Zápis úlovkov rozhodcami", basic: true, pro: true, premium: true, enterprise: true },
+    { name: "Základné štatistiky", basic: true, pro: true, premium: true, enterprise: true },
+    { name: "Maximálny počet tímov", basic: "15", pro: "∞", premium: "∞", enterprise: "∞" },
+    { name: "Počet rozhodcov", basic: "2", pro: "5", premium: "∞", enterprise: "∞" },
+    { name: "Doplnkové súťaže", basic: false, pro: true, premium: true, enterprise: true },
+    { name: "Sektory a vyhodnotenie", basic: false, pro: true, premium: true, enterprise: true },
+    { name: "Detailné profily tímov", basic: false, pro: true, premium: true, enterprise: true },
+    { name: "Sponzori (logá, ceny)", basic: false, pro: true, premium: true, enterprise: true },
+    { name: "Export PDF/Excel", basic: false, pro: true, premium: true, enterprise: true },
+    { name: "Vlastný branding", basic: false, pro: false, premium: true, enterprise: true },
+    { name: "Subdoména", basic: false, pro: false, premium: true, enterprise: true },
+    { name: "Pokročilé grafy", basic: false, pro: false, premium: true, enterprise: true },
+    { name: "Prístup pre médiá", basic: false, pro: false, premium: true, enterprise: true },
+    { name: "Prioritná podpora", basic: false, pro: false, premium: true, enterprise: true },
+    { name: "Interaktívna mapa sektorov", basic: false, pro: false, premium: false, enterprise: true },
+    { name: "Viacero súťaží", basic: false, pro: false, premium: false, enterprise: true },
+    { name: "White-label riešenie", basic: false, pro: false, premium: false, enterprise: true },
+    { name: "API prístup", basic: false, pro: false, premium: false, enterprise: true },
+    { name: "SLA garancia", basic: false, pro: false, premium: false, enterprise: true },
+    { name: "Osobné zaškolenie", basic: false, pro: false, premium: false, enterprise: true },
   ];
+
+  const diaryFreePlan = {
+    id: "free",
+    name: "FREE",
+    price: "0",
+    currency: "€",
+    period: "",
+    description: "Vyskúšajte základné funkcie zadarmo",
+    icon: BookOpen,
+    color: "from-gray-500 to-gray-600",
+    cta: "Používať zadarmo",
+    features: [
+      "✅ Neobmedzené výpravy (posledné 3 prístupné)",
+      "✅ Kapacita 50 úlovkov",
+      "✅ 1 fotka na úlovok",
+      "✅ Prijímanie výziev v Battle"
+    ],
+    missingFeatures: [
+      "❌ Ukladanie GPS lokalít",
+      "❌ Vytváranie vlastných Súbojov",
+      "❌ Predpoveď počasia a aktivity",
+      "❌ Neobmedzená história výprav",
+      "❌ Neobmedzené fotky k úlovkom"
+    ]
+  };
+
+  const diaryPremiumPlan = {
+    id: "premium",
+    name: "PREMIUM",
+    monthlyPrice: "5,90",
+    yearlyPrice: "59,90",
+    yearlySavings: "~11€",
+    currency: "€",
+    description: "Všetky funkcie bez obmedzení",
+    icon: Sparkles,
+    color: "from-teal-500 to-teal-600",
+    cta: "Upgradovať na Premium",
+    features: [
+      "✅ **Neobmedzené výpravy**",
+      "✅ **Neobmedzené úlovky**",
+      "📸 **Neobmedzené fotky k úlovkom**",
+      "📊 Pokročilé štatistiky a grafy",
+      "🎯 Sezónne ciele s progress tracking",
+      "⚔️ Fishing Battle (súťaž s priateľmi)",
+      "📴 Offline režim so synchronizáciou",
+      "🌤️ Predpoveď počasia a tlak",
+      "🗺️ Interaktívne mapy lokalít",
+      "📍 Ukladanie lokalít (GPS)"
+    ]
+  };
 
   const handlePlanSelect = (planId: string) => {
     if (planId === 'enterprise') {
       window.location.href = 'mailto:info@contestio.sk?subject=Záujem o Enterprise balík&body=Dobrý deň,%0A%0AMám záujem o Enterprise balík pre našu organizáciu.%0A%0AĎakujem';
     } else {
-      // Redirect to competition registration with plan parameter
       window.location.href = `/register-competition?plan=${planId}`;
     }
   };
@@ -204,9 +203,19 @@ export default function Pricing() {
     if (planId === 'free') {
       navigate('/diary');
     } else {
-      // TODO: Redirect to premium subscription page when implemented
       navigate('/diary');
     }
+  };
+
+  const renderCellValue = (value: boolean | string) => {
+    if (typeof value === 'string') {
+      return <span className="font-semibold text-foreground">{value}</span>;
+    }
+    return value ? (
+      <Check className="w-5 h-5 text-green-500 mx-auto" />
+    ) : (
+      <X className="w-5 h-5 text-red-400 mx-auto" />
+    );
   };
 
   return (
@@ -375,112 +384,226 @@ export default function Pricing() {
                 );
               })}
             </div>
+
+            {/* Feature Comparison Table */}
+            <Collapsible open={showComparisonTable} onOpenChange={setShowComparisonTable} className="mt-12">
+              <CollapsibleTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  className="w-full max-w-md mx-auto flex items-center justify-center gap-2 py-6"
+                  data-testid="button-toggle-comparison"
+                >
+                  <span>{showComparisonTable ? 'Skryť' : 'Zobraziť'} detailné porovnanie funkcií</span>
+                  <ChevronDown className={`w-5 h-5 transition-transform duration-300 ${showComparisonTable ? 'rotate-180' : ''}`} />
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="mt-8">
+                <div className="overflow-x-auto rounded-xl border border-border shadow-lg">
+                  <table className="w-full" data-testid="table-comparison">
+                    <thead>
+                      <tr className="bg-muted/50">
+                        <th className="text-left p-4 font-semibold text-foreground min-w-[200px]">Funkcia</th>
+                        <th className="text-center p-4 font-semibold text-blue-600 min-w-[100px]">
+                          <div className="flex flex-col items-center gap-1">
+                            <Zap className="w-5 h-5" />
+                            <span>Basic</span>
+                            <span className="text-xs font-normal text-muted-foreground">69€</span>
+                          </div>
+                        </th>
+                        <th className="text-center p-4 font-semibold text-purple-600 min-w-[100px] bg-purple-50 dark:bg-purple-900/20">
+                          <div className="flex flex-col items-center gap-1">
+                            <Star className="w-5 h-5" />
+                            <span>Pro</span>
+                            <span className="text-xs font-normal text-muted-foreground">199€</span>
+                          </div>
+                        </th>
+                        <th className="text-center p-4 font-semibold text-amber-600 min-w-[100px]">
+                          <div className="flex flex-col items-center gap-1">
+                            <Crown className="w-5 h-5" />
+                            <span>Premium</span>
+                            <span className="text-xs font-normal text-muted-foreground">599€</span>
+                          </div>
+                        </th>
+                        <th className="text-center p-4 font-semibold text-gray-600 min-w-[100px]">
+                          <div className="flex flex-col items-center gap-1">
+                            <Building className="w-5 h-5" />
+                            <span>Enterprise</span>
+                            <span className="text-xs font-normal text-muted-foreground">Na mieru</span>
+                          </div>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {comparisonFeatures.map((feature, index) => (
+                        <tr 
+                          key={feature.name} 
+                          className={`border-t border-border ${index % 2 === 0 ? 'bg-background' : 'bg-muted/20'}`}
+                        >
+                          <td className="p-4 text-sm text-foreground">{feature.name}</td>
+                          <td className="p-4 text-center">{renderCellValue(feature.basic)}</td>
+                          <td className="p-4 text-center bg-purple-50/50 dark:bg-purple-900/10">{renderCellValue(feature.pro)}</td>
+                          <td className="p-4 text-center">{renderCellValue(feature.premium)}</td>
+                          <td className="p-4 text-center">{renderCellValue(feature.enterprise)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
           </TabsContent>
 
           {/* Diary Tab */}
           <TabsContent value="diary">
-            {/* Diary Pricing Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-5xl mx-auto">
-              {diaryPlans.map((plan) => {
-                const IconComponent = plan.icon;
-                const isFree = plan.id === 'free';
-                
-                return (
-                  <div key={plan.id} className="relative">
-                    {/* Popular Badge */}
-                    {plan.popular && (
-                      <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-                        <Badge className="bg-gradient-to-r from-teal-500 to-teal-600 text-white px-4 py-1 text-sm font-medium shadow-lg">
-                          Najobľúbenejší
-                        </Badge>
-                      </div>
-                    )}
+            {/* Billing Toggle */}
+            <div className="flex items-center justify-center gap-4 mb-10">
+              <span className={`text-sm font-medium transition-colors ${!isYearly ? 'text-foreground' : 'text-muted-foreground'}`}>
+                Mesačne
+              </span>
+              <div className="relative">
+                <Switch
+                  checked={isYearly}
+                  onCheckedChange={setIsYearly}
+                  data-testid="switch-billing-period"
+                  className="data-[state=checked]:bg-teal-500"
+                />
+              </div>
+              <span className={`text-sm font-medium transition-colors ${isYearly ? 'text-foreground' : 'text-muted-foreground'}`}>
+                Ročne
+              </span>
+              {isYearly && (
+                <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-0 animate-in fade-in slide-in-from-left-2">
+                  Ušetríte {diaryPremiumPlan.yearlySavings}
+                </Badge>
+              )}
+            </div>
+
+            {/* Diary Pricing Cards - 2 cards only */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 max-w-3xl mx-auto">
+              {/* FREE Plan */}
+              <div className="relative">
+                <Card 
+                  className="relative h-full transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 border-2 border-border hover:border-primary/20"
+                  data-testid="card-diary-plan-free"
+                >
+                  <CardHeader className="text-center pb-8 pt-8">
+                    <div className={`w-16 h-16 bg-gradient-to-br ${diaryFreePlan.color} rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg`}>
+                      <BookOpen className="w-8 h-8 text-white" />
+                    </div>
                     
-                    <Card 
-                      className={`relative h-full transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 border-2 ${
-                        plan.popular 
-                          ? 'border-teal-200 shadow-xl ring-2 ring-teal-100' 
-                          : 'border-border hover:border-primary/20'
-                      }`}
-                      data-testid={`card-diary-plan-${plan.id}`}
+                    <h3 className="text-2xl font-bold text-foreground mb-2">
+                      {diaryFreePlan.name}
+                    </h3>
+                    
+                    <div className="mb-4">
+                      <span className="text-4xl font-bold text-foreground">
+                        {diaryFreePlan.price}
+                      </span>
+                      <span className="text-lg text-muted-foreground ml-1">
+                        {diaryFreePlan.currency}
+                      </span>
+                    </div>
+                    
+                    <p className="text-sm text-muted-foreground">
+                      {diaryFreePlan.description}
+                    </p>
+                  </CardHeader>
+
+                  <CardContent className="flex flex-col flex-grow">
+                    <ul className="space-y-3 mb-4 flex-grow">
+                      {diaryFreePlan.features.map((feature, index) => (
+                        <li key={index} className="flex items-start">
+                          <span className="text-sm text-foreground leading-relaxed">
+                            {renderFeatureText(feature)}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <div className="border-t border-border pt-4 mb-6">
+                      <p className="text-xs text-muted-foreground mb-3 font-medium uppercase tracking-wide">Chýba vo Free</p>
+                      <ul className="space-y-2">
+                        {diaryFreePlan.missingFeatures.map((feature, index) => (
+                          <li key={index} className="flex items-start">
+                            <span className="text-sm text-slate-500 leading-relaxed opacity-70">
+                              {renderFeatureText(feature)}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <Button
+                      onClick={() => handleDiaryPlanSelect('free')}
+                      className="w-full py-6 text-lg font-semibold transition-all duration-200 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white"
+                      data-testid="button-select-diary-free"
                     >
-                      <CardHeader className="text-center pb-8 pt-8">
-                        {/* Icon with gradient background */}
-                        <div className={`w-16 h-16 bg-gradient-to-br ${plan.color} rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg`}>
-                          <IconComponent className="w-8 h-8 text-white" />
-                        </div>
-                        
-                        {/* Plan Name */}
-                        <h3 className="text-2xl font-bold text-foreground mb-2">
-                          {plan.name}
-                        </h3>
-                        
-                        {/* Price */}
-                        <div className="mb-4">
-                          <span className="text-4xl font-bold text-foreground">
-                            {plan.price}
+                      {diaryFreePlan.cta}
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* PREMIUM Plan */}
+              <div className="relative">
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
+                  <Badge className="bg-gradient-to-r from-teal-500 to-teal-600 text-white px-4 py-1 text-sm font-medium shadow-lg">
+                    Najobľúbenejší
+                  </Badge>
+                </div>
+                
+                <Card 
+                  className="relative h-full transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 border-2 border-teal-200 shadow-xl ring-2 ring-teal-100"
+                  data-testid="card-diary-plan-premium"
+                >
+                  <CardHeader className="text-center pb-8 pt-8">
+                    <div className={`w-16 h-16 bg-gradient-to-br ${diaryPremiumPlan.color} rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg`}>
+                      <Sparkles className="w-8 h-8 text-white" />
+                    </div>
+                    
+                    <h3 className="text-2xl font-bold text-foreground mb-2">
+                      {diaryPremiumPlan.name}
+                    </h3>
+                    
+                    <div className="mb-4">
+                      <span className="text-4xl font-bold text-foreground transition-all duration-300">
+                        {isYearly ? diaryPremiumPlan.yearlyPrice : diaryPremiumPlan.monthlyPrice}
+                      </span>
+                      <span className="text-lg text-muted-foreground ml-1">
+                        {diaryPremiumPlan.currency}{isYearly ? ' / rok' : ' / mesiac'}
+                      </span>
+                    </div>
+                    
+                    <p className="text-sm text-muted-foreground">
+                      {isYearly 
+                        ? `Ušetríte ${diaryPremiumPlan.yearlySavings} oproti mesačnej platbe`
+                        : diaryPremiumPlan.description
+                      }
+                    </p>
+                  </CardHeader>
+
+                  <CardContent className="flex flex-col flex-grow">
+                    <ul className="space-y-3 mb-8 flex-grow">
+                      {diaryPremiumPlan.features.map((feature, index) => (
+                        <li key={index} className="flex items-start">
+                          <Check className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm text-foreground leading-relaxed">
+                            {renderFeatureText(feature)}
                           </span>
-                          <span className="text-lg text-muted-foreground ml-1">
-                            {plan.currency}{plan.period}
-                          </span>
-                        </div>
-                        
-                        {/* Description */}
-                        <p className="text-sm text-muted-foreground">
-                          {plan.description}
-                        </p>
-                      </CardHeader>
+                        </li>
+                      ))}
+                    </ul>
 
-                      <CardContent className="flex flex-col flex-grow">
-                        {/* Features List - Included */}
-                        <ul className="space-y-3 mb-4 flex-grow">
-                          {plan.features.map((feature, index) => (
-                            <li key={index} className="flex items-start">
-                              {!isFree && (
-                                <Check className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                              )}
-                              <span className="text-sm text-foreground leading-relaxed">
-                                {renderFeatureText(feature)}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-
-                        {/* Missing Features - Only for FREE plan */}
-                        {isFree && plan.missingFeatures && (
-                          <div className="border-t border-border pt-4 mb-6">
-                            <p className="text-xs text-muted-foreground mb-3 font-medium uppercase tracking-wide">Chýba vo Free</p>
-                            <ul className="space-y-2">
-                              {plan.missingFeatures.map((feature: string, index: number) => (
-                                <li key={index} className="flex items-start">
-                                  <span className="text-sm text-slate-500 leading-relaxed opacity-70">
-                                    {renderFeatureText(feature)}
-                                  </span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-
-                        {/* CTA Button */}
-                        <Button
-                          onClick={() => handleDiaryPlanSelect(plan.id)}
-                          className={`w-full py-6 text-lg font-semibold transition-all duration-200 ${
-                            plan.popular
-                              ? 'bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white shadow-lg hover:shadow-xl'
-                              : isFree
-                              ? 'bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white'
-                              : 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white'
-                          } ${plan.popular ? 'ring-2 ring-teal-200' : ''}`}
-                          data-testid={`button-select-diary-${plan.id}`}
-                        >
-                          {plan.cta}
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  </div>
-                );
-              })}
+                    <Button
+                      onClick={() => handleDiaryPlanSelect(isYearly ? 'premium-yearly' : 'premium-monthly')}
+                      className="w-full py-6 text-lg font-semibold transition-all duration-200 bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white shadow-lg hover:shadow-xl ring-2 ring-teal-200"
+                      data-testid="button-select-diary-premium"
+                    >
+                      {diaryPremiumPlan.cta}
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </TabsContent>
         </Tabs>
@@ -516,7 +639,7 @@ export default function Pricing() {
         {/* FAQ Preview */}
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="text-center">
-            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
               <Check className="w-6 h-6 text-blue-600" />
             </div>
             <h4 className="font-semibold text-foreground mb-2">Bez skrytých poplatkov</h4>
@@ -526,7 +649,7 @@ export default function Pricing() {
           </div>
           
           <div className="text-center">
-            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
               <Star className="w-6 h-6 text-green-600" />
             </div>
             <h4 className="font-semibold text-foreground mb-2">Podpora počas celého obdobia</h4>
@@ -536,12 +659,12 @@ export default function Pricing() {
           </div>
           
           <div className="text-center">
-            <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
               <Crown className="w-6 h-6 text-purple-600" />
             </div>
-            <h4 className="font-semibold text-foreground mb-2">Flexibilné riešenia</h4>
+            <h4 className="font-semibold text-foreground mb-2">Flexibilné možnosti</h4>
             <p className="text-sm text-muted-foreground">
-              Môžeme prispôsobiť balík presne vašim potrebám a požiadavkám.
+              Vyberte si balík podľa veľkosti vašej súťaže alebo osobných potrieb.
             </p>
           </div>
         </div>
