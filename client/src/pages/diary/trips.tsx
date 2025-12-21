@@ -44,7 +44,8 @@ import {
   AlertCircle,
   WifiOff,
   Loader2,
-  Upload
+  Upload,
+  ClipboardCheck
 } from "lucide-react";
 
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -52,6 +53,7 @@ import type { DiaryTrip, InsertDiaryTrip, DiaryCatch } from "@shared/schema";
 import DiaryLayout from "@/components/DiaryLayout";
 import { TripCard } from "@/components/diary/TripCard";
 import { PremiumUpsellModal } from "@/components/PremiumUpsellModal";
+import { ChecklistModal } from "@/components/diary/ChecklistModal";
 
 // Type for premium status
 type PremiumStatus = {
@@ -99,6 +101,7 @@ export default function DiaryTrips() {
   const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
   const [coverImagePreview, setCoverImagePreview] = useState<string | null>(null);
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
+  const [isChecklistOpen, setIsChecklistOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"active" | "history">("active");
   
   // Offline functionality
@@ -797,16 +800,25 @@ export default function DiaryTrips() {
                 )}
               </div>
               
-              {/* Desktop create button */}
-              <Button 
-                onClick={() => setIsCreateDialogOpen(true)}
-                disabled={limits && !limits.canCreate}
-                className="hidden md:flex"
-                data-testid="button-create-trip"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Nová výprava
-              </Button>
+              {/* Desktop action buttons */}
+              <div className="hidden md:flex gap-2">
+                <Button 
+                  variant="outline"
+                  onClick={() => setIsChecklistOpen(true)}
+                  data-testid="button-checklist"
+                >
+                  <ClipboardCheck className="w-4 h-4 mr-2" />
+                  Mám všetko zbalené?
+                </Button>
+                <Button 
+                  onClick={() => setIsCreateDialogOpen(true)}
+                  disabled={limits && !limits.canCreate}
+                  data-testid="button-create-trip"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Nová výprava
+                </Button>
+              </div>
             </div>
             <p className="text-muted-foreground text-sm">
               Spravujte svoje rybárske výpravy
@@ -1004,17 +1016,29 @@ export default function DiaryTrips() {
             </Tabs>
           )}
 
-          {/* Mobile FAB */}
-          <Button
-            onClick={() => setIsCreateDialogOpen(true)}
-            disabled={limits && !limits.canCreate}
-            className="md:hidden fixed bottom-20 right-4 z-50 h-14 w-14 rounded-full shadow-lg"
-            size="icon"
-            data-testid="fab-create-trip"
-            aria-label="Nová výprava"
-          >
-            <Plus className="w-6 h-6" />
-          </Button>
+          {/* Mobile FAB buttons */}
+          <div className="md:hidden fixed bottom-20 right-4 z-50 flex flex-col gap-3">
+            <Button
+              onClick={() => setIsChecklistOpen(true)}
+              variant="outline"
+              className="h-14 w-14 rounded-full shadow-lg bg-background"
+              size="icon"
+              data-testid="fab-checklist"
+              aria-label="Mám všetko zbalené?"
+            >
+              <ClipboardCheck className="w-6 h-6" />
+            </Button>
+            <Button
+              onClick={() => setIsCreateDialogOpen(true)}
+              disabled={limits && !limits.canCreate}
+              className="h-14 w-14 rounded-full shadow-lg"
+              size="icon"
+              data-testid="fab-create-trip"
+              aria-label="Nová výprava"
+            >
+              <Plus className="w-6 h-6" />
+            </Button>
+          </div>
 
           {/* Delete Confirmation Dialog */}
           <Dialog open={!!deletingTrip} onOpenChange={() => setDeletingTrip(null)}>
@@ -1048,6 +1072,11 @@ export default function DiaryTrips() {
         isOpen={isPremiumModalOpen}
         onClose={() => setIsPremiumModalOpen(false)}
         trigger="trip_history"
+      />
+
+      <ChecklistModal
+        isOpen={isChecklistOpen}
+        onClose={() => setIsChecklistOpen(false)}
       />
     </DiaryLayout>
   );
