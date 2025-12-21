@@ -593,7 +593,7 @@ export default function DiaryCatches() {
       <DiaryLayout>
         <div className="p-8 flex flex-col items-center justify-center min-h-[50vh]">
           <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
-          <p className="text-slate-400">Načítavam úlovky...</p>
+          <p className="text-muted-foreground dark:text-slate-400">Načítavam úlovky...</p>
         </div>
       </DiaryLayout>
     );
@@ -684,59 +684,59 @@ export default function DiaryCatches() {
 
             return (
               <div className="mb-6">
-                <h2 className="text-sm font-medium text-slate-400 mb-3">Moja celková štatistika</h2>
+                <h2 className="text-sm font-medium text-muted-foreground dark:text-slate-400 mb-3">Moja celková štatistika</h2>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                  <Card className="bg-gradient-to-br from-blue-600/20 to-cyan-600/20 border-blue-500/30" data-testid="card-total-count">
+                  <Card className="bg-blue-50 dark:bg-transparent dark:bg-gradient-to-br dark:from-blue-600/20 dark:to-cyan-600/20 border-blue-200 dark:border-blue-500/30" data-testid="card-total-count">
                     <CardContent className="p-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 bg-blue-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <Fish className="w-5 h-5 text-blue-300" />
+                        <div className="w-11 h-11 bg-blue-100 dark:bg-blue-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <Fish className="w-5 h-5 text-blue-500 dark:text-blue-300" />
                         </div>
                         <div>
-                          <div className="text-xs text-slate-400">Úlovky</div>
-                          <div className="text-xl font-bold text-white" data-testid="text-total-count">{totalCount} ks</div>
+                          <div className="text-xs text-muted-foreground dark:text-slate-400">Úlovky</div>
+                          <div className="text-xl font-bold text-foreground dark:text-white" data-testid="text-total-count">{totalCount} ks</div>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
                   
-                  <Card className="bg-gradient-to-br from-emerald-600/20 to-green-600/20 border-emerald-500/30" data-testid="card-total-biggest">
+                  <Card className="bg-emerald-50 dark:bg-transparent dark:bg-gradient-to-br dark:from-emerald-600/20 dark:to-green-600/20 border-emerald-200 dark:border-emerald-500/30" data-testid="card-total-biggest">
                     <CardContent className="p-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 bg-emerald-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <Trophy className="w-5 h-5 text-emerald-300" />
+                        <div className="w-11 h-11 bg-emerald-100 dark:bg-emerald-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <Trophy className="w-5 h-5 text-emerald-500 dark:text-emerald-300" />
                         </div>
                         <div>
-                          <div className="text-xs text-slate-400">Najväčšia ryba</div>
-                          <div className="text-xl font-bold text-white" data-testid="text-total-biggest">{biggestFish.toFixed(1)} kg</div>
+                          <div className="text-xs text-muted-foreground dark:text-slate-400">Najväčšia ryba</div>
+                          <div className="text-xl font-bold text-foreground dark:text-white" data-testid="text-total-biggest">{biggestFish.toFixed(1)} kg</div>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
                   
-                  <Card className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 border-purple-500/30" data-testid="card-total-weight">
+                  <Card className="bg-purple-50 dark:bg-transparent dark:bg-gradient-to-br dark:from-purple-600/20 dark:to-pink-600/20 border-purple-200 dark:border-purple-500/30" data-testid="card-total-weight">
                     <CardContent className="p-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 bg-purple-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <Weight className="w-5 h-5 text-purple-300" />
+                        <div className="w-11 h-11 bg-purple-100 dark:bg-purple-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <Weight className="w-5 h-5 text-purple-500 dark:text-purple-300" />
                         </div>
                         <div>
-                          <div className="text-xs text-slate-400">Celková váha</div>
-                          <div className="text-xl font-bold text-white" data-testid="text-total-weight">{totalWeight.toFixed(1)} kg</div>
+                          <div className="text-xs text-muted-foreground dark:text-slate-400">Celková váha</div>
+                          <div className="text-xl font-bold text-foreground dark:text-white" data-testid="text-total-weight">{totalWeight.toFixed(1)} kg</div>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
                   
-                  <Card className="bg-gradient-to-br from-amber-600/20 to-orange-600/20 border-amber-500/30" data-testid="card-total-average">
+                  <Card className="bg-amber-50 dark:bg-transparent dark:bg-gradient-to-br dark:from-amber-600/20 dark:to-orange-600/20 border-amber-200 dark:border-amber-500/30" data-testid="card-total-average">
                     <CardContent className="p-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 bg-amber-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <Target className="w-5 h-5 text-amber-300" />
+                        <div className="w-11 h-11 bg-amber-100 dark:bg-amber-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <Target className="w-5 h-5 text-amber-500 dark:text-amber-300" />
                         </div>
                         <div>
-                          <div className="text-xs text-slate-400">Váhový priemer</div>
-                          <div className="text-xl font-bold text-white" data-testid="text-total-average">{averageWeight.toFixed(2)} kg</div>
+                          <div className="text-xs text-muted-foreground dark:text-slate-400">Váhový priemer</div>
+                          <div className="text-xl font-bold text-foreground dark:text-white" data-testid="text-total-average">{averageWeight.toFixed(2)} kg</div>
                         </div>
                       </div>
                     </CardContent>
@@ -751,20 +751,20 @@ export default function DiaryCatches() {
             {/* Search, Season and Sort Row */}
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground dark:text-slate-400" />
                 <Input
                   type="text"
                   placeholder="Hľadať v úlovkoch..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 bg-slate-700/50 border text-white placeholder:text-slate-400"
+                  className="pl-10 bg-muted dark:bg-slate-700/50 border text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-slate-400"
                   data-testid="input-search"
                 />
               </div>
               
               {/* Season Filter */}
               <Select value={selectedSeason} onValueChange={setSelectedSeason}>
-                <SelectTrigger className="w-full sm:w-[140px] bg-slate-700/50 border text-white" data-testid="filter-season">
+                <SelectTrigger className="w-full sm:w-[140px] bg-muted dark:bg-slate-700/50 border text-foreground dark:text-white" data-testid="filter-season">
                   <CalendarIcon className="w-4 h-4 mr-2" />
                   <SelectValue />
                 </SelectTrigger>
@@ -777,7 +777,7 @@ export default function DiaryCatches() {
               </Select>
               
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-full sm:w-[160px] bg-slate-700/50 border text-white" data-testid="filter-sort">
+                <SelectTrigger className="w-full sm:w-[160px] bg-muted dark:bg-slate-700/50 border text-foreground dark:text-white" data-testid="filter-sort">
                   <ArrowUpDown className="w-4 h-4 mr-2" />
                   <SelectValue />
                 </SelectTrigger>
@@ -792,7 +792,7 @@ export default function DiaryCatches() {
               {/* Mobile Filter Button */}
               <Button 
                 variant="outline" 
-                className="md:hidden bg-slate-700/50 border text-white"
+                className="md:hidden bg-muted dark:bg-slate-700/50 border text-foreground dark:text-white"
                 onClick={() => setIsFilterSheetOpen(true)}
                 data-testid="button-open-filters"
               >
@@ -809,7 +809,7 @@ export default function DiaryCatches() {
             {/* Desktop Filter Controls - Hidden on mobile */}
             <div className="hidden md:flex flex-wrap gap-3">
               <Select value={selectedTechnique} onValueChange={setSelectedTechnique}>
-                <SelectTrigger className="w-full sm:w-[180px] bg-slate-700/50 border text-white" data-testid="filter-technique">
+                <SelectTrigger className="w-full sm:w-[180px] bg-muted dark:bg-slate-700/50 border text-foreground dark:text-white" data-testid="filter-technique">
                   <SelectValue placeholder="Všetky Techniky" />
                 </SelectTrigger>
                 <SelectContent>
@@ -823,7 +823,7 @@ export default function DiaryCatches() {
               </Select>
 
               <Select value={selectedFishType} onValueChange={setSelectedFishType}>
-                <SelectTrigger className="w-full sm:w-[180px] bg-slate-700/50 border text-white" data-testid="filter-fish-type">
+                <SelectTrigger className="w-full sm:w-[180px] bg-muted dark:bg-slate-700/50 border text-foreground dark:text-white" data-testid="filter-fish-type">
                   <SelectValue placeholder="Všetky Druhy" />
                 </SelectTrigger>
                 <SelectContent>
@@ -837,7 +837,7 @@ export default function DiaryCatches() {
               </Select>
 
               <Select value={selectedSpot} onValueChange={setSelectedSpot}>
-                <SelectTrigger className="w-full sm:w-[180px] bg-slate-700/50 border text-white" data-testid="filter-spot">
+                <SelectTrigger className="w-full sm:w-[180px] bg-muted dark:bg-slate-700/50 border text-foreground dark:text-white" data-testid="filter-spot">
                   <SelectValue placeholder="Všetky Revíry" />
                 </SelectTrigger>
                 <SelectContent>
@@ -855,8 +855,8 @@ export default function DiaryCatches() {
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full sm:w-[240px] justify-start text-left font-normal bg-slate-700/50 border text-white hover:bg-slate-700/70",
-                      !dateRange?.from && "text-slate-400"
+                      "w-full sm:w-[240px] justify-start text-left font-normal bg-muted dark:bg-slate-700/50 border text-foreground dark:text-white hover:bg-muted/80 dark:hover:bg-slate-700/70",
+                      !dateRange?.from && "text-muted-foreground dark:text-slate-400"
                     )}
                     data-testid="filter-date"
                   >
@@ -891,7 +891,7 @@ export default function DiaryCatches() {
                   placeholder="Min kg"
                   value={minWeight}
                   onChange={(e) => setMinWeight(e.target.value)}
-                  className="w-24 bg-slate-700/50 border text-white placeholder:text-slate-400"
+                  className="w-24 bg-muted dark:bg-slate-700/50 border text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-slate-400"
                   step="0.1"
                   min="0"
                   data-testid="input-min-weight"
@@ -901,7 +901,7 @@ export default function DiaryCatches() {
                   placeholder="Max kg"
                   value={maxWeight}
                   onChange={(e) => setMaxWeight(e.target.value)}
-                  className="w-24 bg-slate-700/50 border text-white placeholder:text-slate-400"
+                  className="w-24 bg-muted dark:bg-slate-700/50 border text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-slate-400"
                   step="0.1"
                   min="0"
                   data-testid="input-max-weight"
@@ -912,8 +912,8 @@ export default function DiaryCatches() {
             {/* Active Filters & Results Counter */}
             <div className="flex flex-wrap items-center gap-3">
               {/* Results counter */}
-              <div className="text-sm text-slate-400" data-testid="text-results-count">
-                Nájdené: <span className="font-semibold text-white">{filteredCatches.length}</span> / {seasonFilteredCatches.length}
+              <div className="text-sm text-muted-foreground dark:text-slate-400" data-testid="text-results-count">
+                Nájdené: <span className="font-semibold text-foreground dark:text-white">{filteredCatches.length}</span> / {seasonFilteredCatches.length}
               </div>
 
               {/* Active filter badges */}
@@ -996,7 +996,7 @@ export default function DiaryCatches() {
                     setMinWeight("");
                     setMaxWeight("");
                   }}
-                  className="text-slate-400 hover:text-white"
+                  className="text-muted-foreground hover:text-foreground dark:text-slate-400 dark:hover:text-white"
                   data-testid="button-clear-all-filters"
                 >
                   <X className="w-4 h-4 mr-2" />
@@ -1008,18 +1008,18 @@ export default function DiaryCatches() {
 
           {/* Mobile Filter Sheet */}
           <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>
-            <SheetContent side="bottom" className="bg-slate-800 border-t border-slate-700 text-white max-h-[80vh] overflow-y-auto">
+            <SheetContent side="bottom" className="bg-card dark:bg-slate-800 border-t border-border dark:border-slate-700 text-foreground dark:text-white max-h-[80vh] overflow-y-auto">
               <SheetHeader className="pb-4">
-                <SheetTitle className="text-white flex items-center gap-2">
+                <SheetTitle className="text-foreground dark:text-white flex items-center gap-2">
                   <SlidersHorizontal className="w-5 h-5" />
                   Filtrovať úlovky
                 </SheetTitle>
               </SheetHeader>
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm text-slate-400 mb-2 block">Technika</label>
+                  <label className="text-sm text-muted-foreground dark:text-slate-400 mb-2 block">Technika</label>
                   <Select value={selectedTechnique} onValueChange={setSelectedTechnique}>
-                    <SelectTrigger className="w-full bg-slate-700/50 border text-white">
+                    <SelectTrigger className="w-full bg-muted dark:bg-slate-700/50 border text-foreground dark:text-white">
                       <SelectValue placeholder="Všetky Techniky" />
                     </SelectTrigger>
                     <SelectContent>
@@ -1034,9 +1034,9 @@ export default function DiaryCatches() {
                 </div>
                 
                 <div>
-                  <label className="text-sm text-slate-400 mb-2 block">Druh ryby</label>
+                  <label className="text-sm text-muted-foreground dark:text-slate-400 mb-2 block">Druh ryby</label>
                   <Select value={selectedFishType} onValueChange={setSelectedFishType}>
-                    <SelectTrigger className="w-full bg-slate-700/50 border text-white">
+                    <SelectTrigger className="w-full bg-muted dark:bg-slate-700/50 border text-foreground dark:text-white">
                       <SelectValue placeholder="Všetky Druhy" />
                     </SelectTrigger>
                     <SelectContent>
@@ -1051,9 +1051,9 @@ export default function DiaryCatches() {
                 </div>
                 
                 <div>
-                  <label className="text-sm text-slate-400 mb-2 block">Revír</label>
+                  <label className="text-sm text-muted-foreground dark:text-slate-400 mb-2 block">Revír</label>
                   <Select value={selectedSpot} onValueChange={setSelectedSpot}>
-                    <SelectTrigger className="w-full bg-slate-700/50 border text-white">
+                    <SelectTrigger className="w-full bg-muted dark:bg-slate-700/50 border text-foreground dark:text-white">
                       <SelectValue placeholder="Všetky Revíry" />
                     </SelectTrigger>
                     <SelectContent>
@@ -1068,14 +1068,14 @@ export default function DiaryCatches() {
                 </div>
                 
                 <div>
-                  <label className="text-sm text-slate-400 mb-2 block">Váhový rozsah</label>
+                  <label className="text-sm text-muted-foreground dark:text-slate-400 mb-2 block">Váhový rozsah</label>
                   <div className="flex gap-2">
                     <Input
                       type="number"
                       placeholder="Min kg"
                       value={minWeight}
                       onChange={(e) => setMinWeight(e.target.value)}
-                      className="flex-1 bg-slate-700/50 border text-white placeholder:text-slate-400"
+                      className="flex-1 bg-muted dark:bg-slate-700/50 border text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-slate-400"
                       step="0.1"
                       min="0"
                     />
@@ -1084,7 +1084,7 @@ export default function DiaryCatches() {
                       placeholder="Max kg"
                       value={maxWeight}
                       onChange={(e) => setMaxWeight(e.target.value)}
-                      className="flex-1 bg-slate-700/50 border text-white placeholder:text-slate-400"
+                      className="flex-1 bg-muted dark:bg-slate-700/50 border text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-slate-400"
                       step="0.1"
                       min="0"
                     />
@@ -1117,10 +1117,10 @@ export default function DiaryCatches() {
           </Sheet>
 
           {/* Catches Table */}
-          <Card className="bg-slate-800/50 border overflow-hidden">
+          <Card className="bg-card dark:bg-slate-800/50 border overflow-hidden">
             <CardContent className="p-0">
               {/* Desktop Table Header */}
-              <div className="hidden md:grid grid-cols-5 gap-4 p-4 border-b text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-700/30">
+              <div className="hidden md:grid grid-cols-5 gap-4 p-4 border-b text-xs font-semibold text-muted-foreground dark:text-slate-400 uppercase tracking-wider bg-muted dark:bg-slate-700/30">
                 <div>DRUH RYBY</div>
                 <div>VÁHA / DĹŽKA</div>
                 <div>REVÍR</div>
@@ -1133,14 +1133,14 @@ export default function DiaryCatches() {
                 filteredCatches.map((catch_: any, index: number) => (
                   <div 
                     key={catch_.id || index} 
-                    className="border-b hover:bg-slate-700/30 transition-colors cursor-pointer"
+                    className="border-b hover:bg-muted dark:hover:bg-slate-700/30 transition-colors cursor-pointer"
                     onClick={() => setSelectedCatch(catch_)}
                     data-testid={`catch-row-${catch_.id || index}`}
                   >
                     {/* Desktop Row */}
                     <div className="hidden md:grid grid-cols-5 gap-4 p-4 relative group">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-slate-600/50 rounded-lg flex items-center justify-center overflow-hidden">
+                        <div className="w-10 h-10 bg-muted dark:bg-slate-600/50 rounded-lg flex items-center justify-center overflow-hidden">
                           {catch_.photos && catch_.photos.length > 0 ? (
                             <img 
                               src={catch_.photos[0].url || catch_.photos[0]} 
@@ -1151,31 +1151,31 @@ export default function DiaryCatches() {
                             getFishIcon(catch_.fishType)
                           )}
                         </div>
-                        <div className="text-white font-medium">
+                        <div className="text-foreground dark:text-white font-medium">
                           {catch_.fishType ? getFishTypeLabel(catch_.fishType) : 'Neznámy druh'}
                         </div>
                       </div>
                       
-                      <div className="text-white font-bold text-xl">
+                      <div className="text-foreground dark:text-white font-bold text-xl">
                         {catch_.weight ? `${catch_.weight} kg` : catch_.lengthCm ? `${catch_.lengthCm} cm` : 'N/A'}
                       </div>
                       
-                      <div className="text-slate-300">
+                      <div className="text-muted-foreground dark:text-slate-300">
                         {catch_.spot || 'Neznáme miesto'}
                       </div>
                       
-                      <div className="text-slate-300">
+                      <div className="text-muted-foreground dark:text-slate-300">
                         {catch_.bait || 'Neznáma'}
                       </div>
                       
-                      <div className="text-slate-300 flex items-center justify-between">
+                      <div className="text-muted-foreground dark:text-slate-300 flex items-center justify-between">
                         <span>{catch_.capturedAt ? format(new Date(catch_.capturedAt), "dd. MMM yyyy", { locale: sk }) : 'N/A'}</span>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             setSelectedCatch(catch_);
                           }}
-                          className="p-2 rounded-lg bg-slate-600/50 hover:bg-primary/20 text-slate-400 hover:text-primary transition-colors opacity-30 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
+                          className="p-2 rounded-lg bg-muted dark:bg-slate-600/50 hover:bg-primary/20 text-muted-foreground dark:text-slate-400 hover:text-primary transition-colors opacity-30 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:focus-visible:ring-offset-slate-800"
                           title="Upraviť"
                           data-testid={`button-edit-catch-${catch_.id || index}`}
                         >
@@ -1187,7 +1187,7 @@ export default function DiaryCatches() {
                     {/* Mobile Card */}
                     <div className="md:hidden p-4">
                       <div className="flex items-start gap-3">
-                        <div className="w-12 h-12 bg-slate-600/50 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                        <div className="w-12 h-12 bg-muted dark:bg-slate-600/50 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
                           {catch_.photos && catch_.photos.length > 0 ? (
                             <img 
                               src={catch_.photos[0].url || catch_.photos[0]} 
@@ -1200,7 +1200,7 @@ export default function DiaryCatches() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
-                            <div className="text-white font-medium mb-1">
+                            <div className="text-foreground dark:text-white font-medium mb-1">
                               {catch_.fishType ? getFishTypeLabel(catch_.fishType) : 'Neznámy druh'}
                             </div>
                             <button
@@ -1208,14 +1208,14 @@ export default function DiaryCatches() {
                                 e.stopPropagation();
                                 setSelectedCatch(catch_);
                               }}
-                              className="p-2 rounded-lg bg-slate-600/50 hover:bg-primary/20 text-slate-400 hover:text-primary transition-colors"
+                              className="p-2 rounded-lg bg-muted dark:bg-slate-600/50 hover:bg-primary/20 text-muted-foreground dark:text-slate-400 hover:text-primary transition-colors"
                               title="Upraviť"
                               data-testid={`button-edit-catch-mobile-${catch_.id || index}`}
                             >
                               <Edit2 className="w-4 h-4" />
                             </button>
                           </div>
-                          <div className="text-white font-bold text-lg mb-2 flex items-center gap-2">
+                          <div className="text-foreground dark:text-white font-bold text-lg mb-2 flex items-center gap-2">
                             {catch_.weight ? (
                               <>
                                 <Weight className="w-4 h-4 text-purple-400" />
@@ -1228,15 +1228,15 @@ export default function DiaryCatches() {
                               </>
                             ) : 'N/A'}
                           </div>
-                          <div className="grid grid-cols-2 gap-2 text-xs text-slate-400">
+                          <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground dark:text-slate-400">
                             <div>
-                              <span className="text-slate-500">Miesto:</span> {catch_.spot || 'N/A'}
+                              <span className="text-muted-foreground/70 dark:text-slate-500">Miesto:</span> {catch_.spot || 'N/A'}
                             </div>
                             <div>
-                              <span className="text-slate-500">Návnada/Nástraha:</span> {catch_.bait || 'N/A'}
+                              <span className="text-muted-foreground/70 dark:text-slate-500">Návnada/Nástraha:</span> {catch_.bait || 'N/A'}
                             </div>
                             <div className="col-span-2">
-                              <span className="text-slate-500">Dátum:</span> {catch_.capturedAt ? format(new Date(catch_.capturedAt), "dd. MMM yyyy", { locale: sk }) : 'N/A'}
+                              <span className="text-muted-foreground/70 dark:text-slate-500">Dátum:</span> {catch_.capturedAt ? format(new Date(catch_.capturedAt), "dd. MMM yyyy", { locale: sk }) : 'N/A'}
                             </div>
                           </div>
                         </div>
@@ -1246,8 +1246,8 @@ export default function DiaryCatches() {
                 ))
               ) : (
                 <div className="p-8 text-center">
-                  <Fish className="w-12 h-12 text-slate-500 mx-auto mb-4" />
-                  <p className="text-slate-400 mb-4">
+                  <Fish className="w-12 h-12 text-muted-foreground/50 dark:text-slate-500 mx-auto mb-4" />
+                  <p className="text-muted-foreground dark:text-slate-400 mb-4">
                     {seasonFilteredCatches.length === 0 
                       ? "Zatiaľ nemáte žiadne úlovky" 
                       : "Žiadne úlovky nevyhovujú zvoleným filtrom"}
@@ -1267,10 +1267,10 @@ export default function DiaryCatches() {
 
           {/* Detail Panel */}
           <Sheet open={!!selectedCatch} onOpenChange={() => setSelectedCatch(null)}>
-            <SheetContent className="w-full sm:max-w-md bg-slate-800 border text-white overflow-y-auto" data-testid="catch-detail-panel">
+            <SheetContent className="w-full sm:max-w-md bg-card dark:bg-slate-800 border text-foreground dark:text-white overflow-y-auto" data-testid="catch-detail-panel">
               <SheetHeader className="pb-6">
-                <SheetTitle className="text-white flex items-center gap-3">
-                  <div className="w-10 h-10 bg-slate-600/50 rounded-lg flex items-center justify-center">
+                <SheetTitle className="text-foreground dark:text-white flex items-center gap-3">
+                  <div className="w-10 h-10 bg-muted dark:bg-slate-600/50 rounded-lg flex items-center justify-center">
                     {getFishIcon(selectedCatch?.fishType)}
                   </div>
                   {selectedCatch?.fishType ? getFishTypeLabel(selectedCatch.fishType) : 'Detail úlovku'}
@@ -1290,41 +1290,41 @@ export default function DiaryCatches() {
                   {/* Basic Info */}
                   <div className="space-y-4">
                     <div className="flex items-center gap-3">
-                      <Weight className="w-5 h-5 text-slate-400" />
+                      <Weight className="w-5 h-5 text-muted-foreground dark:text-slate-400" />
                       <div>
-                        <div className="text-sm text-slate-400">Váha</div>
+                        <div className="text-sm text-muted-foreground dark:text-slate-400">Váha</div>
                         <div className="font-semibold" data-testid="detail-weight">{selectedCatch.weight ? `${selectedCatch.weight} kg` : 'Neuvedené'}</div>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <Ruler className="w-5 h-5 text-slate-400" />
+                      <Ruler className="w-5 h-5 text-muted-foreground dark:text-slate-400" />
                       <div>
-                        <div className="text-sm text-slate-400">Dĺžka</div>
+                        <div className="text-sm text-muted-foreground dark:text-slate-400">Dĺžka</div>
                         <div className="font-semibold">{selectedCatch.lengthCm ? `${selectedCatch.lengthCm} cm` : 'Neuvedené'}</div>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <MapPin className="w-5 h-5 text-slate-400" />
+                      <MapPin className="w-5 h-5 text-muted-foreground dark:text-slate-400" />
                       <div>
-                        <div className="text-sm text-slate-400">Revír</div>
+                        <div className="text-sm text-muted-foreground dark:text-slate-400">Revír</div>
                         <div className="font-semibold">{selectedCatch.spot || 'Neuvedené'}</div>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <Target className="w-5 h-5 text-slate-400" />
+                      <Target className="w-5 h-5 text-muted-foreground dark:text-slate-400" />
                       <div>
-                        <div className="text-sm text-slate-400">Nástraha</div>
+                        <div className="text-sm text-muted-foreground dark:text-slate-400">Nástraha</div>
                         <div className="font-semibold">{selectedCatch.bait || 'Neuvedené'}</div>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <CalendarIcon className="w-5 h-5 text-slate-400" />
+                      <CalendarIcon className="w-5 h-5 text-muted-foreground dark:text-slate-400" />
                       <div>
-                        <div className="text-sm text-slate-400">Dátum úlovku</div>
+                        <div className="text-sm text-muted-foreground dark:text-slate-400">Dátum úlovku</div>
                         <div className="font-semibold">
                           {selectedCatch.capturedAt ? format(new Date(selectedCatch.capturedAt), "EEEE, d. MMMM yyyy", { locale: sk }) : 'Neuvedené'}
                         </div>
@@ -1335,8 +1335,8 @@ export default function DiaryCatches() {
                   {/* Notes */}
                   {selectedCatch.notes && (
                     <div>
-                      <div className="text-sm text-slate-400 mb-2">Poznámky</div>
-                      <div className="bg-slate-700/50 rounded-lg p-3 text-sm">
+                      <div className="text-sm text-muted-foreground dark:text-slate-400 mb-2">Poznámky</div>
+                      <div className="bg-muted dark:bg-slate-700/50 rounded-lg p-3 text-sm">
                         {selectedCatch.notes}
                       </div>
                     </div>
@@ -1344,18 +1344,18 @@ export default function DiaryCatches() {
 
                   {/* GPS Coordinates */}
                   {(selectedCatch.latitude || selectedCatch.longitude) && (
-                    <div className="bg-slate-700/30 rounded-lg p-4 space-y-2">
-                      <div className="text-sm font-semibold text-slate-300 mb-3">📍 GPS Súradnice</div>
+                    <div className="bg-muted/50 dark:bg-slate-700/30 rounded-lg p-4 space-y-2">
+                      <div className="text-sm font-semibold text-foreground/80 dark:text-slate-300 mb-3">📍 GPS Súradnice</div>
                       <div className="grid grid-cols-2 gap-3 text-sm">
                         {selectedCatch.latitude && (
                           <div>
-                            <div className="text-slate-400">Zem. šírka</div>
+                            <div className="text-muted-foreground dark:text-slate-400">Zem. šírka</div>
                             <div className="font-medium">{Number(selectedCatch.latitude).toFixed(6)}°</div>
                           </div>
                         )}
                         {selectedCatch.longitude && (
                           <div>
-                            <div className="text-slate-400">Zem. dĺžka</div>
+                            <div className="text-muted-foreground dark:text-slate-400">Zem. dĺžka</div>
                             <div className="font-medium">{Number(selectedCatch.longitude).toFixed(6)}°</div>
                           </div>
                         )}
@@ -1368,15 +1368,15 @@ export default function DiaryCatches() {
                    (selectedCatch.airTemp !== null && selectedCatch.airTemp !== undefined) || 
                    (selectedCatch.windSpeed !== null && selectedCatch.windSpeed !== undefined) || 
                    (selectedCatch.airPressure !== null && selectedCatch.airPressure !== undefined) ? (
-                    <div className="border-t border-slate-700 pt-4">
+                    <div className="border-t border-border dark:border-slate-700 pt-4">
                       <div className="flex items-center gap-2 mb-4">
-                        <Cloud className="w-5 h-5 text-slate-400" />
-                        <div className="text-sm text-slate-400">Podmienky počasia</div>
+                        <Cloud className="w-5 h-5 text-muted-foreground dark:text-slate-400" />
+                        <div className="text-sm text-muted-foreground dark:text-slate-400">Podmienky počasia</div>
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         {(selectedCatch.waterTemp !== null && selectedCatch.waterTemp !== undefined) && (
-                          <div className="bg-slate-700/50 rounded-lg p-3">
-                            <div className="flex items-center gap-2 text-slate-400 mb-1">
+                          <div className="bg-muted dark:bg-slate-700/50 rounded-lg p-3">
+                            <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400 mb-1">
                               <Thermometer className="w-4 h-4" />
                               <span className="text-xs">Teplota vody</span>
                             </div>
@@ -1384,8 +1384,8 @@ export default function DiaryCatches() {
                           </div>
                         )}
                         {(selectedCatch.airTemp !== null && selectedCatch.airTemp !== undefined) && (
-                          <div className="bg-slate-700/50 rounded-lg p-3">
-                            <div className="flex items-center gap-2 text-slate-400 mb-1">
+                          <div className="bg-muted dark:bg-slate-700/50 rounded-lg p-3">
+                            <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400 mb-1">
                               <Thermometer className="w-4 h-4" />
                               <span className="text-xs">Teplota vzduchu</span>
                             </div>
@@ -1393,8 +1393,8 @@ export default function DiaryCatches() {
                           </div>
                         )}
                         {(selectedCatch.windSpeed !== null && selectedCatch.windSpeed !== undefined) && (
-                          <div className="bg-slate-700/50 rounded-lg p-3">
-                            <div className="flex items-center gap-2 text-slate-400 mb-1">
+                          <div className="bg-muted dark:bg-slate-700/50 rounded-lg p-3">
+                            <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400 mb-1">
                               <Wind className="w-4 h-4" />
                               <span className="text-xs">Vietor</span>
                             </div>
@@ -1402,8 +1402,8 @@ export default function DiaryCatches() {
                           </div>
                         )}
                         {(selectedCatch.airPressure !== null && selectedCatch.airPressure !== undefined) && (
-                          <div className="bg-slate-700/50 rounded-lg p-3">
-                            <div className="flex items-center gap-2 text-slate-400 mb-1">
+                          <div className="bg-muted dark:bg-slate-700/50 rounded-lg p-3">
+                            <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400 mb-1">
                               <Gauge className="w-4 h-4" />
                               <span className="text-xs">Tlak vzduchu</span>
                             </div>
@@ -1427,7 +1427,7 @@ export default function DiaryCatches() {
                       <Edit2 className="w-4 h-4 mr-2" />
                       Upraviť
                     </Button>
-                    <div className="pt-4 border-t border-slate-700">
+                    <div className="pt-4 border-t border-border dark:border-slate-700">
                       <Button 
                         variant="outline"
                         className="w-full border-red-500/50 text-red-400 hover:bg-red-500/10 hover:text-red-300"

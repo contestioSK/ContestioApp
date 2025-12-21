@@ -1208,7 +1208,7 @@ export default function DiaryStats() {
                                 <div className="flex items-center gap-2">
                                   <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
                                     index === 0 ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400' :
-                                    index === 1 ? 'bg-slate-400/20 text-slate-600 dark:text-slate-400' :
+                                    index === 1 ? 'bg-gray-300/30 dark:bg-slate-400/20 text-gray-600 dark:text-slate-400' :
                                     index === 2 ? 'bg-orange-600/20 text-orange-600 dark:text-orange-400' :
                                     'bg-muted text-muted-foreground'
                                   }`}>
@@ -1262,7 +1262,7 @@ export default function DiaryStats() {
                                 <div className="flex items-center gap-3">
                                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
                                     index === 0 ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400' : 
-                                    index === 1 ? 'bg-slate-400/20 text-slate-600 dark:text-slate-400' : 
+                                    index === 1 ? 'bg-gray-300/30 dark:bg-slate-400/20 text-gray-600 dark:text-slate-400' : 
                                     index === 2 ? 'bg-orange-600/20 text-orange-600 dark:text-orange-400' : 
                                     'bg-muted text-muted-foreground'
                                   }`}>
