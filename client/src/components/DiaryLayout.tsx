@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useTheme } from "@/contexts/ThemeContext";
 import { useLocation, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,7 @@ import {
   Lock
 } from "lucide-react";
 import contestioLogo from "@assets/contestio logo_1760283270014.png";
+import contestioLogoDark from "@assets/contestio_logo_black_1766308180088.png";
 
 // Type for catch limits response
 type CatchLimits = {
@@ -147,6 +149,7 @@ const competitionNavigationItems = [
 
 export default function DiaryLayout({ children }: DiaryLayoutProps) {
   const { user } = useAuth();
+  const { theme } = useTheme();
   const [location, setLocation] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isCreateCatchOpen, setIsCreateCatchOpen] = useState(false);
@@ -213,7 +216,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
               className="flex items-center hover:opacity-80 transition-opacity cursor-pointer"
               data-testid="link-home-logo"
             >
-              <img src={contestioLogo} alt="Contestio" className="h-10 md:h-12" />
+              <img src={theme === 'dark' ? contestioLogo : contestioLogoDark} alt="Contestio" className="h-10 md:h-12" />
             </Link>
             <Button
               variant="ghost"
