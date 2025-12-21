@@ -804,7 +804,7 @@ export default function DiaryTrips() {
               <div className="hidden md:flex gap-2">
                 <Button 
                   onClick={() => setIsChecklistOpen(true)}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                  className="bg-teal-600 hover:bg-teal-700 text-white"
                   data-testid="button-checklist"
                 >
                   <ClipboardCheck className="w-4 h-4 mr-2" />
@@ -1020,7 +1020,7 @@ export default function DiaryTrips() {
           <div className="md:hidden fixed bottom-20 right-4 z-50 flex flex-col gap-3">
             <Button
               onClick={() => setIsChecklistOpen(true)}
-              className="h-14 w-14 rounded-full shadow-lg bg-primary hover:bg-primary/90 text-primary-foreground"
+              className="h-14 w-14 rounded-full shadow-lg bg-teal-600 hover:bg-teal-700 text-white"
               size="icon"
               data-testid="fab-checklist"
               aria-label="Mám všetko zbalené?"
