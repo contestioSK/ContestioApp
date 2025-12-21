@@ -973,59 +973,59 @@ export default function DiaryIndex() {
 
         {/* Today's Statistics Panel */}
         <div className="mb-6">
-          <h2 className="text-sm font-medium text-slate-400 mb-3">Moja dnešná štatistika</h2>
+          <h2 className="text-sm font-medium text-muted-foreground dark:text-slate-400 mb-3">Moja dnešná štatistika</h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <Card className="bg-gradient-to-br from-blue-600/20 to-cyan-600/20 border-blue-500/30" data-testid="card-today-count">
+            <Card className="bg-white/90 backdrop-blur-sm bg-gradient-to-br from-teal-500/10 via-transparent to-transparent dark:bg-transparent dark:bg-gradient-to-br dark:from-blue-600/20 dark:to-cyan-600/20 border-teal-200/60 dark:border-blue-500/30 hover:from-teal-500/20 hover:shadow-lg hover:shadow-teal-500/10 dark:hover:bg-transparent transition-all" data-testid="card-today-count">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 bg-blue-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Fish className="w-5 h-5 text-blue-300" />
+                  <div className="w-11 h-11 bg-teal-100/80 dark:bg-blue-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Fish className="w-5 h-5 text-teal-600 dark:text-blue-300" />
                   </div>
                   <div>
-                    <div className="text-xs text-slate-400">Úlovky</div>
-                    <div className="text-xl font-bold text-white" data-testid="text-today-count">{todayStats.count} ks</div>
+                    <div className="text-xs text-muted-foreground dark:text-slate-400">Úlovky</div>
+                    <div className="text-xl font-bold text-teal-700 dark:text-white" data-testid="text-today-count">{todayStats.count} ks</div>
                   </div>
                 </div>
               </CardContent>
             </Card>
             
-            <Card className="bg-gradient-to-br from-emerald-600/20 to-green-600/20 border-emerald-500/30" data-testid="card-today-biggest">
+            <Card className="bg-white/90 backdrop-blur-sm bg-gradient-to-br from-amber-400/15 via-transparent to-transparent dark:bg-transparent dark:bg-gradient-to-br dark:from-emerald-600/20 dark:to-green-600/20 border-amber-300/60 dark:border-emerald-500/30 hover:from-amber-400/25 hover:shadow-lg hover:shadow-amber-500/10 dark:hover:bg-transparent transition-all" data-testid="card-today-biggest">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 bg-emerald-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Trophy className="w-5 h-5 text-emerald-300" />
+                  <div className="w-11 h-11 bg-amber-100/80 dark:bg-emerald-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Trophy className="w-5 h-5 text-amber-600 dark:text-emerald-300" />
                   </div>
                   <div>
-                    <div className="text-xs text-slate-400">Najväčšia ryba</div>
-                    <div className="text-xl font-bold text-white" data-testid="text-today-biggest">{todayStats.biggestFish.toFixed(1)} kg</div>
+                    <div className="text-xs text-muted-foreground dark:text-slate-400">Najväčšia ryba</div>
+                    <div className="text-xl font-bold text-amber-700 dark:text-white" data-testid="text-today-biggest">{todayStats.biggestFish.toFixed(1)} kg</div>
                   </div>
                 </div>
               </CardContent>
             </Card>
             
-            <Card className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 border-purple-500/30" data-testid="card-today-weight">
+            <Card className="bg-white/90 backdrop-blur-sm bg-gradient-to-br from-slate-400/12 via-transparent to-transparent dark:bg-transparent dark:bg-gradient-to-br dark:from-purple-600/20 dark:to-pink-600/20 border-slate-300/60 dark:border-purple-500/30 hover:from-slate-400/20 hover:shadow-lg hover:shadow-slate-500/10 dark:hover:bg-transparent transition-all" data-testid="card-today-weight">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 bg-purple-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Weight className="w-5 h-5 text-purple-300" />
+                  <div className="w-11 h-11 bg-slate-200/80 dark:bg-purple-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Weight className="w-5 h-5 text-slate-600 dark:text-purple-300" />
                   </div>
                   <div>
-                    <div className="text-xs text-slate-400">Celková váha</div>
-                    <div className="text-xl font-bold text-white" data-testid="text-today-weight">{todayStats.totalWeight.toFixed(1)} kg</div>
+                    <div className="text-xs text-muted-foreground dark:text-slate-400">Celková váha</div>
+                    <div className="text-xl font-bold text-slate-700 dark:text-white" data-testid="text-today-weight">{todayStats.totalWeight.toFixed(1)} kg</div>
                   </div>
                 </div>
               </CardContent>
             </Card>
             
-            <Card className="bg-gradient-to-br from-amber-600/20 to-orange-600/20 border-amber-500/30" data-testid="card-today-average">
+            <Card className="bg-white/90 backdrop-blur-sm bg-gradient-to-br from-violet-400/12 via-transparent to-transparent dark:bg-transparent dark:bg-gradient-to-br dark:from-amber-600/20 dark:to-orange-600/20 border-violet-300/60 dark:border-amber-500/30 hover:from-violet-400/20 hover:shadow-lg hover:shadow-violet-500/10 dark:hover:bg-transparent transition-all" data-testid="card-today-average">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 bg-amber-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Target className="w-5 h-5 text-amber-300" />
+                  <div className="w-11 h-11 bg-violet-100/80 dark:bg-amber-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Target className="w-5 h-5 text-violet-600 dark:text-amber-300" />
                   </div>
                   <div>
-                    <div className="text-xs text-slate-400">Váhový priemer</div>
-                    <div className="text-xl font-bold text-white" data-testid="text-today-average">{todayStats.averageWeight.toFixed(2)} kg</div>
+                    <div className="text-xs text-muted-foreground dark:text-slate-400">Váhový priemer</div>
+                    <div className="text-xl font-bold text-violet-700 dark:text-white" data-testid="text-today-average">{todayStats.averageWeight.toFixed(2)} kg</div>
                   </div>
                 </div>
               </CardContent>
