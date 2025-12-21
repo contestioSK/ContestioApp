@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useFishingTimeGuard } from "@/hooks/useFishingTimeGuard";
 import { useLocation, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -153,6 +154,9 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
   const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [location, setLocation] = useLocation();
+  
+  // Fishing Time Guard - automatic notification 30 min before closing time
+  useFishingTimeGuard();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isCreateCatchOpen, setIsCreateCatchOpen] = useState(false);
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
