@@ -35,7 +35,9 @@ import {
   Shield,
   CalendarDays,
   Award,
-  Lock
+  Lock,
+  Sun,
+  Moon
 } from "lucide-react";
 import contestioLogo from "@assets/contestio logo_1760283270014.png";
 import contestioLogoDark from "@assets/contestio_logo_black_1766308180088.png";
@@ -149,7 +151,7 @@ const competitionNavigationItems = [
 
 export default function DiaryLayout({ children }: DiaryLayoutProps) {
   const { user } = useAuth();
-  const { theme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
   const [location, setLocation] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isCreateCatchOpen, setIsCreateCatchOpen] = useState(false);
@@ -256,7 +258,22 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                   )}
                 </div>
               </button>
-              <NotificationCenter />
+              <div className="flex items-center gap-1">
+                <NotificationCenter />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleTheme}
+                  className="text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
+                  data-testid="button-diary-theme-toggle"
+                >
+                  {theme === 'light' ? (
+                    <Moon className="h-4 w-4" />
+                  ) : (
+                    <Sun className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
 

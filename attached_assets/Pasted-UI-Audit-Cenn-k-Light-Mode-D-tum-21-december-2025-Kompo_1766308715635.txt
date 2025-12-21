@@ -1,0 +1,68 @@
+UI Audit: Cenník (Light Mode)
+
+Dátum: 21. december 2025
+Komponent: Pricing Page
+Téma: Light (Svetlá)
+Status: Audit Dizajnu
+
+1. Celkový Vizuálny Dojem (Visual Impact)
+
+V Light móde dizajn pôsobí čisto, vzdušne a dôveryhodne.
+
+Atmosféra: Biela (bg-background) v kombinácii s jemnými sivými okrajmi (border-border) evokuje "medicínsku čistotu" a poriadok. Pre SaaS produkt, kde sa platí kartou, je tento pocit bezpečia kľúčový.
+
+Dojem priestoru: Vďaka svetlému pozadiu a dostatku "whitespace" (bieleho miesta) pôsobí stránka prehľadne a nezahlcuje používateľa informáciami, čo je pri cenníkoch častá chyba.
+
+2. Analýza Komponentov
+
+A. Karty a Hĺbka (Depth & Elevation)
+
+Tieňovanie: V Light móde je práca s tieňmi (shadow-xl pri hoveri) kritická. Tu funguje výborne – karty sa jemne "odlepujú" od pozadia, čím vzniká príjemný 3D efekt. V Dark móde tento efekt často zaniká, tu však jasne definuje interaktívne prvky.
+
+Hranice: Jemný border okolo kariet pomáha definovať ich okraje, čo je dôležité, keďže pozadie karty aj stránky sú svetlé.
+
+B. Práca s Farbami (Color Theory)
+
+Gradienty: Sýta modrá (Basic), fialová (Pro) a jantárová (Premium) na bielom podklade vytvárajú vysoký kontrast. Ikony vďaka tomu pôsobia ako "cukríky" – lákajú oko a slúžia ako vizuálne kotvy.
+
+Rozlíšenie Tabov: Rozdiel medzi Modrou témou (Súťaže) a Teal témou (Denník) je v svetlom režime oveľa zreteľnejší a živší ako v tmavom.
+
+C. Typografia a Čitateľnosť
+
+Kontrast: Tmavý text (Slate-900) na bielom pozadí je zlatý štandard čitateľnosti (WCAG AAA).
+
+Hierarchia: Ceny sú veľké a tučné, čo je správne. Používateľ okamžite vidí, koľko zaplatí.
+
+Bolding: Funkcia renderFeatureText, ktorá zvýrazňuje kľúčové slová (napr. Neobmedzené tímy), je v Light móde veľmi efektívna. Oko pri skenovaní prirodzene "skáče" po tmavších zhlukoch písmen.
+
+3. Kritické Body a Odporúčania na Zlepšenie
+
+Hoci je dizajn silný, tu sú detaily, ktoré by som ako dizajnér doladil:
+
+⚠️ Problém: Oslnenie (Glare) na priamom slnku
+
+Kontext: Rybári často pozerajú do mobilu vonku. Čisto biele pozadie (#ffffff) môže pri maximálnom jase ťahať oči.
+
+Riešenie: Zvážte zmenu pozadia celej stránky na veľmi jemnú "off-white" (napr. bg-slate-50). Karty ponechajte biele (bg-white). Tým vznikne lepší kontrast medzi kartou a pozadím a zníži sa celkový jas.
+
+⚠️ Problém: Čitateľnosť sekundárneho textu
+
+Prvok: Popisy pod nadpismi (text-muted-foreground).
+
+Riziko: Svetlosivá na bielej môže byť na lacnejších monitoroch ťažko čitateľná.
+
+Riešenie: Uistite sa, že Tailwind farba muted-foreground je v Light móde aspoň slate-600, nie svetlejšia.
+
+⚠️ Problém: Vizuálna váha "Enterprise"
+
+Postreh: Karta Enterprise je sivá/čierna. V Light móde to môže pôsobiť trochu "vypnuto" alebo neaktívne v porovnaní s farebnými kartami vedľa.
+
+Riešenie: Skúste jej dať jemný nádych modrej ocele (slate-800 s blue-900), aby pôsobila viac "prémiovo" a menej "disabled".
+
+4. Verdikt
+
+Tento Light mode dizajn je ideálny pre predaj (Sales).
+Pôsobí optimisticky, energicky a odstraňuje bariéry nedôvery. Zatiaľ čo Dark mode je často preferovaný "geeks" a vývojármi, pre masový trh (B2C rybári) a B2B partnerov je tento čistý svetlý dizajn stávkou na istotu.
+
+Hodnotenie UX: 9/10 🌟
+Hodnotenie UI: 8.5/10 🎨 (odporúčam jemne stmaviť pozadie stránky pre lepší kontrast kariet)
