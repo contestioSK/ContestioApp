@@ -8,6 +8,7 @@ import { Fish, Menu, DollarSign, Bell, Sun, Moon, Info, HelpCircle, Phone, Troph
 import { Badge } from "@/components/ui/badge";
 import { NotificationCenter } from "@/components/diary/notification-center";
 import contestioLogo from "@assets/contestio logo_1760283270014.png";
+import contestioLogoDark from "@assets/contestio_logo_black_1766308180088.png";
 
 export default function NavigationHeader() {
   const { user, isAuthenticated } = useAuth();
@@ -77,7 +78,7 @@ export default function NavigationHeader() {
           {/* Logo and Brand */}
           <div className="flex items-center space-x-4">
             <Link href="/" className="flex items-center" data-testid="link-home">
-              <img src={contestioLogo} alt="Contestio" className="h-8" />
+              <img src={theme === 'dark' ? contestioLogo : contestioLogoDark} alt="Contestio" className="h-8" />
             </Link>
           </div>
           
