@@ -456,23 +456,34 @@ export default function Pricing() {
           {/* Diary Tab */}
           <TabsContent value="diary">
             {/* Billing Toggle */}
-            <div className="flex items-center justify-center gap-4 mb-10">
-              <span className={`text-sm font-medium transition-colors ${!isYearly ? 'text-foreground' : 'text-muted-foreground'}`}>
-                Mesačne
-              </span>
-              <div className="relative">
-                <Switch
-                  checked={isYearly}
-                  onCheckedChange={setIsYearly}
-                  data-testid="switch-billing-period"
-                  className="data-[state=checked]:bg-teal-500"
-                />
+            <div className="flex flex-col items-center justify-center gap-6 mb-10">
+              <div className="flex items-center justify-center gap-6">
+                <button
+                  onClick={() => setIsYearly(false)}
+                  className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${
+                    !isYearly
+                      ? 'bg-teal-500 text-white shadow-lg'
+                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  }`}
+                  data-testid="button-billing-monthly"
+                >
+                  Mesačne
+                </button>
+                <span className="text-muted-foreground font-medium">/</span>
+                <button
+                  onClick={() => setIsYearly(true)}
+                  className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${
+                    isYearly
+                      ? 'bg-teal-500 text-white shadow-lg'
+                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  }`}
+                  data-testid="button-billing-yearly"
+                >
+                  Ročne
+                </button>
               </div>
-              <span className={`text-sm font-medium transition-colors ${isYearly ? 'text-foreground' : 'text-muted-foreground'}`}>
-                Ročne
-              </span>
               {isYearly && (
-                <Badge className="bg-gradient-to-r from-teal-500 to-cyan-500 text-white px-4 py-2 text-base font-bold shadow-lg animate-in fade-in slide-in-from-left-2">
+                <Badge className="bg-gradient-to-r from-green-500 to-teal-500 text-white px-6 py-3 text-lg font-bold shadow-xl">
                   💰 Ušetríte {diaryPremiumPlan.yearlySavings}
                 </Badge>
               )}
