@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
@@ -239,6 +239,7 @@ export function ChecklistModal({ isOpen, onClose }: ChecklistModalProps) {
   const [isSaveTemplateOpen, setIsSaveTemplateOpen] = useState(false);
   const [newTemplateName, setNewTemplateName] = useState("");
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Load data from localStorage on mount
   useEffect(() => {
@@ -296,6 +297,7 @@ export function ChecklistModal({ isOpen, onClose }: ChecklistModalProps) {
   };
 
   const toggleItem = (categoryId: string, itemId: string) => {
+    const scrollPos = scrollContainerRef.current?.scrollTop ?? 0;
     setCategories(prev => prev.map(cat => {
       if (cat.id === categoryId) {
         return {
@@ -307,6 +309,12 @@ export function ChecklistModal({ isOpen, onClose }: ChecklistModalProps) {
       }
       return cat;
     }));
+    // Restore scroll position after state update
+    requestAnimationFrame(() => {
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTop = scrollPos;
+      }
+    });
   };
 
   const addCustomItem = () => {
@@ -514,7 +522,7 @@ export function ChecklistModal({ isOpen, onClose }: ChecklistModalProps) {
       </div>
 
       {/* Accordion Categories */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-4">
         <Accordion type="multiple" defaultValue={categories.map(c => c.id)} className="space-y-2">
           {categories.map(category => {
             const categoryPacked = category.items.filter(i => i.packed).length;
