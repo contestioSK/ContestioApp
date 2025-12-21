@@ -631,7 +631,7 @@ export default function DiaryIndex() {
       <div className="p-3 md:p-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6 md:mb-8">
-          <h1 className="text-xl md:text-3xl font-bold text-white">
+          <h1 className="text-xl md:text-3xl font-bold text-foreground dark:text-white">
             Môj rybársky denník
           </h1>
           <div className="flex gap-2 w-full sm:w-auto items-center">
@@ -691,7 +691,7 @@ export default function DiaryIndex() {
               variant="outline"
               size="sm"
               onClick={() => setIsStartFishingOpen(true)}
-              className="border-cyan-500/50 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-100 hover:text-white transition-all flex-1 sm:flex-none"
+              className="border-cyan-600 dark:border-cyan-500/50 bg-cyan-50 dark:bg-cyan-500/10 hover:bg-cyan-100 dark:hover:bg-cyan-500/20 text-cyan-700 dark:text-cyan-100 hover:text-cyan-800 dark:hover:text-white transition-all flex-1 sm:flex-none"
               data-testid="button-start-fishing"
             >
               <Play className="w-4 h-4 mr-2" />
@@ -712,18 +712,18 @@ export default function DiaryIndex() {
 
         {/* Season Statistics */}
         <div className="mb-8">
-          <h2 className="text-sm font-medium text-slate-400 mb-3">Sezóna {currentYear}</h2>
+          <h2 className="text-sm font-medium text-muted-foreground dark:text-slate-400 mb-3">Sezóna {currentYear}</h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             <Link href="/diary/catches" data-testid="link-all-catches">
-              <Card className="bg-gradient-to-br from-blue-600/20 to-cyan-600/20 border-blue-500/30 cursor-pointer transition-all duration-200 hover:from-blue-600/30 hover:to-cyan-600/30 hover:border-blue-400/50 hover:shadow-lg hover:shadow-blue-500/20 h-full" data-testid="card-season-catches">
+              <Card className="bg-blue-50 dark:bg-transparent dark:bg-gradient-to-br dark:from-blue-600/20 dark:to-cyan-600/20 border-blue-200 dark:border-blue-500/30 cursor-pointer transition-all duration-200 hover:bg-blue-100 dark:hover:bg-transparent dark:hover:from-blue-600/30 dark:hover:to-cyan-600/30 hover:border-blue-300 dark:hover:border-blue-400/50 hover:shadow-lg dark:hover:shadow-blue-500/20 h-full" data-testid="card-season-catches">
                 <CardContent className="p-4 md:p-6">
                   <div className="flex items-start gap-3 md:gap-4">
-                    <div className="w-11 h-11 md:w-12 md:h-12 bg-blue-600/30 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <Fish className="w-5 h-5 md:w-6 md:h-6 text-blue-300" />
+                    <div className="w-11 h-11 md:w-12 md:h-12 bg-blue-100 dark:bg-blue-600/30 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <Fish className="w-5 h-5 md:w-6 md:h-6 text-blue-600 dark:text-blue-300" />
                     </div>
                     <div className="flex-1">
-                      <div className="text-xs md:text-sm text-slate-300 mb-1">Úlovky</div>
-                      <div className="text-xl md:text-2xl font-bold text-white" data-testid="text-total-catches">{diaryStats.totalCatches}</div>
+                      <div className="text-xs md:text-sm text-muted-foreground dark:text-slate-300 mb-1">Úlovky</div>
+                      <div className="text-xl md:text-2xl font-bold text-foreground dark:text-white" data-testid="text-total-catches">{diaryStats.totalCatches}</div>
                     </div>
                   </div>
                 </CardContent>
@@ -732,15 +732,15 @@ export default function DiaryIndex() {
             
             {diaryStats.biggestCatchId ? (
               <Link href={`/diary/catches/${diaryStats.biggestCatchId}`} data-testid="link-biggest-fish">
-                <Card className="bg-gradient-to-br from-emerald-600/20 to-green-600/20 border-emerald-500/30 cursor-pointer transition-all duration-200 hover:from-emerald-600/30 hover:to-green-600/30 hover:border-emerald-400/50 hover:shadow-lg hover:shadow-emerald-500/20 h-full" data-testid="card-biggest-fish">
+                <Card className="bg-emerald-50 dark:bg-transparent dark:bg-gradient-to-br dark:from-emerald-600/20 dark:to-green-600/20 border-emerald-200 dark:border-emerald-500/30 cursor-pointer transition-all duration-200 hover:bg-emerald-100 dark:hover:bg-transparent dark:hover:from-emerald-600/30 dark:hover:to-green-600/30 hover:border-emerald-300 dark:hover:border-emerald-400/50 hover:shadow-lg dark:hover:shadow-emerald-500/20 h-full" data-testid="card-biggest-fish">
                   <CardContent className="p-4 md:p-6">
                     <div className="flex items-start gap-3 md:gap-4">
-                      <div className="w-11 h-11 md:w-12 md:h-12 bg-emerald-600/30 rounded-xl flex items-center justify-center flex-shrink-0">
-                        <Trophy className="w-5 h-5 md:w-6 md:h-6 text-emerald-300" />
+                      <div className="w-11 h-11 md:w-12 md:h-12 bg-emerald-100 dark:bg-emerald-600/30 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <Trophy className="w-5 h-5 md:w-6 md:h-6 text-emerald-600 dark:text-emerald-300" />
                       </div>
                       <div className="flex-1">
-                        <div className="text-xs md:text-sm text-slate-300 mb-1">Najväčšia ryba</div>
-                        <div className="text-xl md:text-2xl font-bold text-white" data-testid="text-biggest-fish">
+                        <div className="text-xs md:text-sm text-muted-foreground dark:text-slate-300 mb-1">Najväčšia ryba</div>
+                        <div className="text-xl md:text-2xl font-bold text-foreground dark:text-white" data-testid="text-biggest-fish">
                           {diaryStats.biggestFish > 0 ? `${diaryStats.biggestFish.toFixed(1)} kg` : '0 kg'}
                         </div>
                       </div>
@@ -749,15 +749,15 @@ export default function DiaryIndex() {
                 </Card>
               </Link>
             ) : (
-              <Card className="bg-gradient-to-br from-emerald-600/20 to-green-600/20 border-emerald-500/30 h-full" data-testid="card-biggest-fish">
+              <Card className="bg-emerald-50 dark:bg-transparent dark:bg-gradient-to-br dark:from-emerald-600/20 dark:to-green-600/20 border-emerald-200 dark:border-emerald-500/30 hover:bg-emerald-100 dark:hover:bg-transparent h-full" data-testid="card-biggest-fish">
                 <CardContent className="p-4 md:p-6">
                   <div className="flex items-start gap-3 md:gap-4">
-                    <div className="w-11 h-11 md:w-12 md:h-12 bg-emerald-600/30 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <Trophy className="w-5 h-5 md:w-6 md:h-6 text-emerald-300" />
+                    <div className="w-11 h-11 md:w-12 md:h-12 bg-emerald-100 dark:bg-emerald-600/30 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <Trophy className="w-5 h-5 md:w-6 md:h-6 text-emerald-600 dark:text-emerald-300" />
                     </div>
                     <div className="flex-1">
-                      <div className="text-xs md:text-sm text-slate-300 mb-1">Najväčšia ryba</div>
-                      <div className="text-xl md:text-2xl font-bold text-white" data-testid="text-biggest-fish">
+                      <div className="text-xs md:text-sm text-muted-foreground dark:text-slate-300 mb-1">Najväčšia ryba</div>
+                      <div className="text-xl md:text-2xl font-bold text-foreground dark:text-white" data-testid="text-biggest-fish">
                         {diaryStats.biggestFish > 0 ? `${diaryStats.biggestFish.toFixed(1)} kg` : '0 kg'}
                       </div>
                     </div>
@@ -766,29 +766,29 @@ export default function DiaryIndex() {
               </Card>
             )}
             
-            <Card className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 border-purple-500/30 h-full" data-testid="card-days-at-water">
+            <Card className="bg-purple-50 dark:bg-transparent dark:bg-gradient-to-br dark:from-purple-600/20 dark:to-pink-600/20 border-purple-200 dark:border-purple-500/30 hover:bg-purple-100 dark:hover:bg-transparent h-full" data-testid="card-days-at-water">
               <CardContent className="p-4 md:p-6">
                 <div className="flex items-start gap-3 md:gap-4">
-                  <div className="w-11 h-11 md:w-12 md:h-12 bg-purple-600/30 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <CalendarDays className="w-5 h-5 md:w-6 md:h-6 text-purple-300" />
+                  <div className="w-11 h-11 md:w-12 md:h-12 bg-purple-100 dark:bg-purple-600/30 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <CalendarDays className="w-5 h-5 md:w-6 md:h-6 text-purple-600 dark:text-purple-300" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-xs md:text-sm text-slate-300 mb-1">Dni pri vode</div>
-                    <div className="text-xl md:text-2xl font-bold text-white" data-testid="text-days-at-water">{diaryStats.daysAtWater}</div>
+                    <div className="text-xs md:text-sm text-muted-foreground dark:text-slate-300 mb-1">Dni pri vode</div>
+                    <div className="text-xl md:text-2xl font-bold text-foreground dark:text-white" data-testid="text-days-at-water">{diaryStats.daysAtWater}</div>
                   </div>
                 </div>
               </CardContent>
             </Card>
             
-            <Card className="bg-gradient-to-br from-amber-600/20 to-orange-600/20 border-amber-500/30 h-full" data-testid="card-season-average">
+            <Card className="bg-amber-50 dark:bg-transparent dark:bg-gradient-to-br dark:from-amber-600/20 dark:to-orange-600/20 border-amber-200 dark:border-amber-500/30 hover:bg-amber-100 dark:hover:bg-transparent h-full" data-testid="card-season-average">
               <CardContent className="p-4 md:p-6">
                 <div className="flex items-start gap-3 md:gap-4">
-                  <div className="w-11 h-11 md:w-12 md:h-12 bg-amber-600/30 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <Target className="w-5 h-5 md:w-6 md:h-6 text-amber-300" />
+                  <div className="w-11 h-11 md:w-12 md:h-12 bg-amber-100 dark:bg-amber-600/30 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Target className="w-5 h-5 md:w-6 md:h-6 text-amber-600 dark:text-amber-300" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-xs md:text-sm text-slate-300 mb-1">Váhový priemer</div>
-                    <div className="text-xl md:text-2xl font-bold text-white" data-testid="text-season-average">{diaryStats.averageWeight.toFixed(2)} kg</div>
+                    <div className="text-xs md:text-sm text-muted-foreground dark:text-slate-300 mb-1">Váhový priemer</div>
+                    <div className="text-xl md:text-2xl font-bold text-foreground dark:text-white" data-testid="text-season-average">{diaryStats.averageWeight.toFixed(2)} kg</div>
                   </div>
                 </div>
               </CardContent>
@@ -797,21 +797,21 @@ export default function DiaryIndex() {
         </div>
 
         {/* Fishing Battle CTA */}
-        <Card className="bg-gradient-to-r from-red-600/20 to-rose-600/20 border-red-600/30 mb-6 md:mb-8" data-testid="card-battle-cta">
+        <Card className="bg-red-50 dark:bg-transparent dark:bg-gradient-to-r dark:from-red-600/20 dark:to-rose-600/20 border-red-200 dark:border-red-600/30 mb-6 md:mb-8" data-testid="card-battle-cta">
           <CardContent className="p-4 md:p-6">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 md:gap-4">
               <div className="flex items-start gap-3 md:gap-4">
-                <div className="w-11 h-11 md:w-12 md:h-12 bg-red-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Swords className="w-5 h-5 md:w-6 md:h-6 text-red-400" />
+                <div className="w-11 h-11 md:w-12 md:h-12 bg-red-100 dark:bg-red-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Swords className="w-5 h-5 md:w-6 md:h-6 text-red-600 dark:text-red-400" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-base md:text-lg font-bold text-white">Fishing Battle</h3>
+                    <h3 className="text-base md:text-lg font-bold text-foreground dark:text-white">Fishing Battle</h3>
                     {!isPremium && (
                       <Crown className="w-4 h-4 text-red-400" />
                     )}
                   </div>
-                  <p className="text-slate-300 text-xs md:text-sm">
+                  <p className="text-muted-foreground dark:text-slate-300 text-xs md:text-sm">
                     Súťažte s karamátmi v priatelských rybárskych dueloch!
                   </p>
                 </div>
