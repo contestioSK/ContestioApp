@@ -803,8 +803,8 @@ export default function DiaryTrips() {
               {/* Desktop action buttons */}
               <div className="hidden md:flex gap-2">
                 <Button 
-                  variant="outline"
                   onClick={() => setIsChecklistOpen(true)}
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
                   data-testid="button-checklist"
                 >
                   <ClipboardCheck className="w-4 h-4 mr-2" />
