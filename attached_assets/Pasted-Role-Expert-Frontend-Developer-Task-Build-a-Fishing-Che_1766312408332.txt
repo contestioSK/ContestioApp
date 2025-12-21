@@ -1,0 +1,199 @@
+Role: Expert Frontend Developer
+Task: Build a "Fishing Checklist App" in a single HTML file.
+Tech Stack: HTML5, Tailwind CSS (via CDN), Vanilla JavaScript, FontAwesome (via CDN).
+
+Core Features:
+
+Mobile-First UI: Clean, modern interface using slate/gray and fishing-green colors.
+
+Checklist Logic: - Group items by categories (Accordion style).
+
+Toggle items as "packed" (visual strikethrough + color change).
+
+Save state to localStorage immediately upon any change.
+
+Visual Progress: A circular progress ring at the top showing the % of packed items.
+
+Template System:
+
+Button to open a "Templates" modal.
+
+Ability to save the current list as a custom template.
+
+Ability to load default templates (defined below).
+
+Add Item: A floating action button (+) to add custom items to specific categories.
+
+MANDATORY DATA (Initialize with this exact Slovak data):
+
+Default Template 1: "Kaprárina" (Carp Fishing)
+
+Category: Doklady & Povolenia
+
+Rybársky lístok
+
+Občiansky preukaz
+
+Category: Bivakovanie & Spanie
+
+Bivak, prehoz, podlaha
+
+Rybárske lehátko (posteľ)
+
+Spací vak
+
+Vankúš
+
+Rybárske kreslo
+
+Bivakový stolík
+
+Osvetlenie a stojany
+
+Čelovka
+
+Powerbanka / Zdroj energie
+
+Nabíjacie káble
+
+Category: Rybárska Technika
+
+Prúty (hlavné/spod)
+
+Navijaky
+
+Vidličky a hrazdy
+
+Stojan na prúty
+
+Signalizátory záberu
+
+Backleady (zadné olová)
+
+Vlasce, šnúry a šokové vlasce
+
+Rybárska bižutéria
+
+Záťaže / Olová
+
+Kobra, Raketa (Spomb) alebo Prak
+
+Category: Návnady & Starostlivosť
+
+Boilies a návnady
+
+Vanička / Kolíska
+
+Podložka pod ryby
+
+Vážiaci sak
+
+Váha
+
+Dezinfekcia na rany
+
+Trojnožka (na váženie)
+
+Category: Kuchyňa & Jedlo
+
+Jedálenská sada / príbor
+
+Kanvica a kempingový riad
+
+Panvica
+
+Poháre
+
+Zásoba vody (kanister)
+
+Káva a čaj
+
+Dochucovadlá / korenie
+
+Hotové jedlá
+
+Category: Oblečenie
+
+Tričko
+
+Mikina
+
+Nohavice + Tepláky
+
+Spodná bielizeň
+
+Ponožky
+
+Náhradné / Teplé oblečenie
+
+Termo tričko
+
+Tričko s dlhým rukávom
+
+Kraťasy
+
+Čiapka a nákrčník
+
+Šiltovky
+
+Pršiplášť / Pončo
+
+Polarizačné okuliare
+
+Obuv (Pevná obuv, šľapky)
+
+Category: Hygiena & Ostatné
+
+Uterák
+
+Hygienické potreby
+
+Repelent
+
+Nôž
+
+Vrecia na odpad
+
+Default Template 2: "Prívlač" (Spin Fishing - Lightweight)
+
+Category: Doklady
+
+Rybársky lístok
+
+Občiansky preukaz
+
+Category: Výbava
+
+Prívlačový prút
+
+Navijak + náhradná cievka
+
+Podberák (pogumovaný)
+
+Peán / Kliešte
+
+Krabička s nástrahami (woblery/gumy)
+
+Lanká a karabínky
+
+Polarizačné okuliare
+
+Category: Oblečenie & Iné
+
+Brodáky / Gumáky
+
+Vesta / Ruksak
+
+Šiltovka
+
+Repelent
+
+Voda a snack
+
+Code Constraints:
+
+Single file (index.html).
+
+No external CSS/JS files (embed everything).
+
+Use localStorage key fishingChecklist_v9 to prevent conflicts.
