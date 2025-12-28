@@ -1,0 +1,60 @@
+Úloha: Vytvor alebo prepíš súbor client/src/pages/GearArsenal.tsx tak, aby plne zlúčil dve existujúce funkcie: „Arzenál boilies“ a „Rybárske vybavenie“ do jednej modernej a prehľadnej stránky.
+
+Technické požiadavky na implementáciu:
+
+Navigácia a štruktúra:
+
+Použi DiaryLayout ako hlavný obal (wrapper) stránky.
+
+V hornej časti implementuj hlavný prepínač (Tabs) medzi dvoma sekciami: „Nástrahy“ a „Vybavenie“.
+
+Pre nástrahy použi ikonu Package a pre vybavenie ikonu Archive alebo Waves.
+
+Sekcia Nástrahy (Boilies):
+
+Logika výberu: Zachovaj trojstupňový výber (Drill-down): Výrobca -> Produktový rad -> Príchuť.
+
+API integrácia: Použi existujúce useQuery volania na /api/baits/manufacturers, /api/baits/product-lines (filtrované podľa výrobcu) a /api/baits/flavors (filtrované podľa radu).
+
+Pridávanie: Dialógové okno „Pridať boilies“ musí obsahovať výber priemeru (DIAMETER_OPTIONS), textové pole pre poznámky a mutáciu addBaitMutation na endpoint /api/diary/arsenal/baits.
+
+Sekcia Vybavenie (Technika):
+
+Pod-navigácia: Vo vnútri sekcie vybavenia vytvor dva pod-taby: „Môj arzenál“ (zoznam pridaných vecí) a „Prehliadať“ (vyhľadávanie v databáze).
+
+Vyhľadávanie: Implementuj vyhľadávací panel, ktorý volá /api/equipment/search?q=... (minimálne od 2 znakov).
+
+Filtre: Umožni filtrovať databázu podľa kategórií (/api/equipment/categories) a výrobcov (/api/equipment/manufacturers).
+
+Zobrazenie: Položky v „Mojom arzenáli“ zoskupuj podľa kategórií (napr. Prúty, Navijaky, Bivaky).
+
+UI a Vizuálny štýl:
+
+Téma: Striktne dodržuj „Premium Dark“ štýl. Pozadie bg-slate-950, karty bg-slate-900/50 s jemným borderom white/5.
+
+Akcenty: Pre nástrahy použi limetkovú farbu (lime-400), pre vybavenie tyrkysovú alebo modrú (teal-400).
+
+Interaktivita: Implementuj hviezdičku pre „Obľúbené“ (Favorite) a ikonu smetného koša pre odstránenie z arzenálu pomocou mutácií PATCH a DELETE.
+
+Floating Bar: Na spodku stránky vytvor fixne umiestnený, sklenený (blur) panel, ktorý bude ukazovať sumár: koľko položiek má používateľ aktuálne v danej kategórii zaevidovaných.
+
+Dôležité detaily pre vývoj:
+
+Použi @tanstack/react-query pre všetky asynchrónne dáta.
+
+Po každej zmene (pridanie/zmazanie) použi queryClient.invalidateQueries na okamžité prekreslenie UI.
+
+Všetky importy komponentov musia smerovať na @/components/ui/ (Card, Button, Input, Select, Dialog, Tabs, Badge).
+
+Použi @/lib/queryClient pre funkciu apiRequest a @/hooks/use-toast pre notifikácie.
+
+Cieľ: Výsledkom musí byť jeden čistý TypeScript súbor, ktorý je plne responzívny pre mobilné zariadenia a vizuálne zapadá do zvyšku rybárskej aplikácie Contestio.
+
+Prečo je tento prompt dobrý pre Replit:
+Špecifikuje API endpointy: Replit AI nebude musieť hádať, ako sa volá tvoj backend.
+
+Definuje aliasy: Použitie @/ zabezpečí, že importy nebudú rozbité.
+
+Opisuje stavy: AI pochopí, že výber boilies je závislý (nemôžeš vybrať príchuť, kým nevyberieš výrobcu).
+
+Zjednocuje dizajn: Limetková a tyrkysová farba pomôžu vizuálne oddeliť krmivo od techniky.
