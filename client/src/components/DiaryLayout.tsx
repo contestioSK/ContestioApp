@@ -38,7 +38,8 @@ import {
   Award,
   Lock,
   Sun,
-  Moon
+  Moon,
+  Package
 } from "lucide-react";
 import contestioLogo from "@assets/contestio logo_1760283270014.png";
 import contestioLogoDark from "@assets/contestio_logo_black_1766308180088.png";
@@ -84,9 +85,15 @@ const fishingLifeSection = [
   },
   {
     icon: Trophy,
-    label: "Arzenál",
+    label: "Arzenál nástrah",
     href: "/diary/arsenal",
-    description: "Vybavenie a návnady"
+    description: "Boilies a návnady"
+  },
+  {
+    icon: Package,
+    label: "Rybárske vybavenie",
+    href: "/diary/equipment",
+    description: "Prúty, navijaky, atď."
   },
   {
     icon: BarChart3,
