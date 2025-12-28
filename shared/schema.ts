@@ -1496,3 +1496,104 @@ export const insertNotificationSubscriptionSchema = createInsertSchema(notificat
 
 export type NotificationSubscription = typeof notificationSubscriptions.$inferSelect;
 export type InsertNotificationSubscription = z.infer<typeof insertNotificationSubscriptionSchema>;
+
+// ==========================================
+// Equipment Database (Rybárske vybavenie)
+// ==========================================
+
+// Equipment manufacturers - výrobcovia vybavenia
+export const equipmentManufacturers = pgTable("equipment_manufacturers", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull().unique(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Equipment categories - kategórie (prút, navijak, oblečenie, atď.)
+export const equipmentCategories = pgTable("equipment_categories", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull().unique(),
+  slug: varchar("slug", { length: 255 }).notNull().unique(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Equipment products - konkrétne produkty
+export const equipmentProducts = pgTable("equipment_products", {
+  id: serial("id").primaryKey(),
+  manufacturerId: integer("manufacturer_id").notNull().references(() => equipmentManufacturers.id, { onDelete: "cascade" }),
+  categoryId: integer("category_id").notNull().references(() => equipmentCategories.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 500 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// User arsenal equipment - osobný arzenál používateľa
+export const userArsenalEquipment = pgTable("user_arsenal_equipment", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  productId: integer("product_id").notNull().references(() => equipmentProducts.id, { onDelete: "cascade" }),
+  quantity: integer("quantity").notNull().default(1),
+  notes: text("notes"),
+  isFavorite: boolean("is_favorite").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Equipment relations
+export const equipmentManufacturersRelations = relations(equipmentManufacturers, ({ many }) => ({
+  products: many(equipmentProducts),
+}));
+
+export const equipmentCategoriesRelations = relations(equipmentCategories, ({ many }) => ({
+  products: many(equipmentProducts),
+}));
+
+export const equipmentProductsRelations = relations(equipmentProducts, ({ one }) => ({
+  manufacturer: one(equipmentManufacturers, {
+    fields: [equipmentProducts.manufacturerId],
+    references: [equipmentManufacturers.id],
+  }),
+  category: one(equipmentCategories, {
+    fields: [equipmentProducts.categoryId],
+    references: [equipmentCategories.id],
+  }),
+}));
+
+export const userArsenalEquipmentRelations = relations(userArsenalEquipment, ({ one }) => ({
+  user: one(users, {
+    fields: [userArsenalEquipment.userId],
+    references: [users.id],
+  }),
+  product: one(equipmentProducts, {
+    fields: [userArsenalEquipment.productId],
+    references: [equipmentProducts.id],
+  }),
+}));
+
+// Equipment insert schemas
+export const insertEquipmentManufacturerSchema = createInsertSchema(equipmentManufacturers).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertEquipmentCategorySchema = createInsertSchema(equipmentCategories).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertEquipmentProductSchema = createInsertSchema(equipmentProducts).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertUserArsenalEquipmentSchema = createInsertSchema(userArsenalEquipment).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Equipment types
+export type EquipmentManufacturer = typeof equipmentManufacturers.$inferSelect;
+export type InsertEquipmentManufacturer = z.infer<typeof insertEquipmentManufacturerSchema>;
+export type EquipmentCategory = typeof equipmentCategories.$inferSelect;
+export type InsertEquipmentCategory = z.infer<typeof insertEquipmentCategorySchema>;
+export type EquipmentProduct = typeof equipmentProducts.$inferSelect;
+export type InsertEquipmentProduct = z.infer<typeof insertEquipmentProductSchema>;
+export type UserArsenalEquipment = typeof userArsenalEquipment.$inferSelect;
+export type InsertUserArsenalEquipment = z.infer<typeof insertUserArsenalEquipmentSchema>;
