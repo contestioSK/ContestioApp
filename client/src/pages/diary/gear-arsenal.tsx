@@ -437,12 +437,12 @@ export default function GearArsenalPage() {
           <TabsList className="grid w-full grid-cols-2 bg-slate-900/50 border border-white/5">
             <TabsTrigger 
               value="baits" 
-              className="data-[state=active]:bg-lime-600/20 data-[state=active]:text-lime-400"
+              className="data-[state=active]:bg-amber-600/20 data-[state=active]:text-amber-400"
               data-testid="tab-baits"
             >
               <Package className="h-4 w-4 mr-2" />
               Nástrahy
-              <Badge variant="secondary" className="ml-2 bg-lime-900/50 text-lime-400">
+              <Badge variant="secondary" className="ml-2 bg-amber-900/50 text-amber-400">
                 {baitsCount}
               </Badge>
             </TabsTrigger>
@@ -463,8 +463,8 @@ export default function GearArsenalPage() {
           <TabsContent value="baits" className="space-y-5 mt-5 animate-in fade-in-50 duration-300">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-lime-500/20 rounded-lg">
-                  <Fish className="h-6 w-6 text-lime-400" />
+                <div className="p-2 bg-amber-500/20 rounded-lg">
+                  <Fish className="h-6 w-6 text-amber-400" />
                 </div>
                 <div>
                   <h2 className="text-xl font-black uppercase tracking-wide">Arzenál Boilies</h2>
@@ -476,7 +476,7 @@ export default function GearArsenalPage() {
               
               <Dialog open={baitDialogOpen} onOpenChange={setBaitDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button className="bg-lime-600 hover:bg-lime-700" data-testid="button-add-bait">
+                  <Button className="bg-amber-600 hover:bg-amber-700" data-testid="button-add-bait">
                     <Plus className="mr-2 h-4 w-4" />
                     Pridať boilies
                   </Button>
@@ -700,7 +700,7 @@ export default function GearArsenalPage() {
                   <Button
                     onClick={handleBulkAdd}
                     disabled={bulkAddMutation.isPending}
-                    className="bg-lime-600 hover:bg-lime-700"
+                    className="bg-amber-600 hover:bg-amber-700"
                     data-testid="button-confirm-bulk-add"
                   >
                     {bulkAddMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -713,25 +713,25 @@ export default function GearArsenalPage() {
             {/* Baits List */}
             {loadingArsenalBaits ? (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-lime-400" />
+                <Loader2 className="h-8 w-8 animate-spin text-amber-400" />
               </div>
             ) : arsenalBaits && arsenalBaits.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {arsenalBaits.map((bait) => (
                   <Card 
                     key={bait.id} 
-                    className={`bg-slate-900/50 border-white/5 hover:border-lime-500/30 transition-all duration-200 group ${
+                    className={`bg-slate-900/50 border-white/5 hover:border-amber-500/30 transition-all duration-200 group ${
                       bait.isFavorite ? 'ring-1 ring-yellow-400/30 shadow-[0_0_15px_rgba(250,204,21,0.15)]' : ''
                     }`}
                     data-testid={`bait-item-${bait.id}`}
                   >
                     <CardContent className="p-4 flex flex-col h-full">
                       <div className="flex-1 mb-3">
-                        <p className="text-xs font-bold text-lime-400 uppercase tracking-wide mb-1">{bait.manufacturer.name}</p>
+                        <p className="text-xs font-bold text-amber-400 uppercase tracking-wide mb-1">{bait.manufacturer.name}</p>
                         <p className="text-sm font-semibold truncate">{bait.productLine.name}</p>
                         <p className="text-xs text-muted-foreground truncate mt-1">{bait.flavor.name}</p>
                         {bait.diameter && (
-                          <Badge variant="secondary" className="mt-2 text-xs bg-lime-900/50 text-lime-400">
+                          <Badge variant="secondary" className="mt-2 text-xs bg-amber-900/50 text-amber-400">
                             {bait.diameter}
                           </Badge>
                         )}
@@ -767,12 +767,12 @@ export default function GearArsenalPage() {
             ) : (
               <div className="text-center py-10 text-muted-foreground">
                 <div className="relative inline-block mb-4">
-                  <Fish className="h-14 w-14 mx-auto text-lime-400/30" />
-                  <Sparkle className="h-5 w-5 absolute -top-1 -right-1 text-lime-400 animate-pulse" />
+                  <Fish className="h-14 w-14 mx-auto text-amber-400/30" />
+                  <Sparkle className="h-5 w-5 absolute -top-1 -right-1 text-amber-400 animate-pulse" />
                 </div>
                 <h3 className="text-lg font-semibold text-foreground mb-2">Začni budovať svoj arzenál!</h3>
                 <p className="mb-4 max-w-xs mx-auto text-sm">Pridaj svoje obľúbené boilies a maj prehľad o tom, čo máš na rybačke.</p>
-                <Button onClick={() => setBaitDialogOpen(true)} className="bg-lime-600 hover:bg-lime-700 h-11 px-5">
+                <Button onClick={() => setBaitDialogOpen(true)} className="bg-amber-600 hover:bg-amber-700 h-11 px-5">
                   <Plus className="h-4 w-4 mr-2" />
                   Pridať prvé boilies
                 </Button>
