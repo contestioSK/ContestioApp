@@ -420,7 +420,7 @@ export default function GearArsenalPage() {
 
   return (
     <DiaryLayout>
-      <div className="space-y-6 pb-24">
+      <div className="px-4 md:px-6 pt-4 pb-28 max-w-5xl mx-auto space-y-6">
         {/* Header */}
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
@@ -460,7 +460,7 @@ export default function GearArsenalPage() {
           </TabsList>
 
           {/* ============ BAITS TAB ============ */}
-          <TabsContent value="baits" className="space-y-4 mt-4 animate-in fade-in-50 duration-300">
+          <TabsContent value="baits" className="space-y-5 mt-5 animate-in fade-in-50 duration-300">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-lime-500/20 rounded-lg">
@@ -716,7 +716,7 @@ export default function GearArsenalPage() {
                 <Loader2 className="h-8 w-8 animate-spin text-lime-400" />
               </div>
             ) : arsenalBaits && arsenalBaits.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {arsenalBaits.map((bait) => (
                   <Card 
                     key={bait.id} 
@@ -765,15 +765,15 @@ export default function GearArsenalPage() {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-16 text-muted-foreground">
-                <div className="relative inline-block mb-6">
-                  <Fish className="h-16 w-16 mx-auto text-lime-400/30" />
-                  <Sparkle className="h-6 w-6 absolute -top-1 -right-1 text-lime-400 animate-pulse" />
+              <div className="text-center py-10 text-muted-foreground">
+                <div className="relative inline-block mb-4">
+                  <Fish className="h-14 w-14 mx-auto text-lime-400/30" />
+                  <Sparkle className="h-5 w-5 absolute -top-1 -right-1 text-lime-400 animate-pulse" />
                 </div>
                 <h3 className="text-lg font-semibold text-foreground mb-2">Začni budovať svoj arzenál!</h3>
-                <p className="mb-6 max-w-xs mx-auto">Pridaj svoje obľúbené boilies a maj prehľad o tom, čo máš na rybačke.</p>
-                <Button onClick={() => setBaitDialogOpen(true)} className="bg-lime-600 hover:bg-lime-700 h-12 px-6">
-                  <Plus className="h-5 w-5 mr-2" />
+                <p className="mb-4 max-w-xs mx-auto text-sm">Pridaj svoje obľúbené boilies a maj prehľad o tom, čo máš na rybačke.</p>
+                <Button onClick={() => setBaitDialogOpen(true)} className="bg-lime-600 hover:bg-lime-700 h-11 px-5">
+                  <Plus className="h-4 w-4 mr-2" />
                   Pridať prvé boilies
                 </Button>
               </div>
@@ -781,7 +781,7 @@ export default function GearArsenalPage() {
           </TabsContent>
 
           {/* ============ EQUIPMENT TAB ============ */}
-          <TabsContent value="equipment" className="space-y-4 mt-4 animate-in fade-in-50 duration-300">
+          <TabsContent value="equipment" className="space-y-5 mt-5 animate-in fade-in-50 duration-300">
             <Tabs value={equipmentSubTab} onValueChange={setEquipmentSubTab}>
               <TabsList className="grid w-full grid-cols-2 max-w-md">
                 <TabsTrigger value="browse" data-testid="subtab-browse">
@@ -955,15 +955,15 @@ export default function GearArsenalPage() {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-16 text-muted-foreground">
-                    <div className="relative inline-block mb-6">
-                      <Archive className="h-16 w-16 mx-auto text-teal-400/30" />
-                      <Target className="h-6 w-6 absolute -top-1 -right-1 text-teal-400 animate-pulse" />
+                  <div className="text-center py-10 text-muted-foreground">
+                    <div className="relative inline-block mb-4">
+                      <Archive className="h-14 w-14 mx-auto text-teal-400/30" />
+                      <Target className="h-5 w-5 absolute -top-1 -right-1 text-teal-400 animate-pulse" />
                     </div>
                     <h3 className="text-lg font-semibold text-foreground mb-2">Tvoj arzenál čaká!</h3>
-                    <p className="mb-6 max-w-xs mx-auto">Prehľadaj databázu 1800+ produktov a pridaj si svoje prúty, navijaky a viac.</p>
-                    <Button onClick={() => setEquipmentSubTab("browse")} className="bg-teal-600 hover:bg-teal-700 h-12 px-6">
-                      <Search className="h-5 w-5 mr-2" />
+                    <p className="mb-4 max-w-xs mx-auto text-sm">Prehľadaj databázu 1800+ produktov a pridaj si svoje prúty, navijaky a viac.</p>
+                    <Button onClick={() => setEquipmentSubTab("browse")} className="bg-teal-600 hover:bg-teal-700 h-11 px-5">
+                      <Search className="h-4 w-4 mr-2" />
                       Prehľadať vybavenie
                     </Button>
                   </div>
@@ -1014,8 +1014,8 @@ export default function GearArsenalPage() {
         </Dialog>
 
         {/* Floating Summary Bar */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-slate-950/90 backdrop-blur-xl border-t border-white/10 z-40">
-          <div className="max-w-4xl mx-auto flex items-center justify-center gap-6 sm:gap-10">
+        <div className="fixed bottom-0 left-0 right-0 px-4 py-3 bg-slate-950/95 backdrop-blur-xl border-t border-white/10 z-40">
+          <div className="max-w-5xl mx-auto flex items-center justify-center gap-6 sm:gap-10">
             <div className="flex items-center gap-3">
               <div className="relative">
                 <Package className="h-5 w-5 text-lime-400" />
