@@ -437,23 +437,23 @@ export default function GearArsenalPage() {
           <TabsList className="grid w-full grid-cols-2 bg-slate-900/50 border border-white/5">
             <TabsTrigger 
               value="baits" 
-              className="data-[state=active]:bg-amber-600/20 data-[state=active]:text-amber-400"
+              className="data-[state=active]:bg-amber-500/10 data-[state=active]:text-amber-500/90"
               data-testid="tab-baits"
             >
               <Package className="h-4 w-4 mr-2" />
               Nástrahy
-              <Badge variant="secondary" className="ml-2 bg-amber-900/50 text-amber-400">
+              <Badge variant="secondary" className="ml-2 bg-amber-500/10 text-amber-500/80 border-amber-500/20">
                 {baitsCount}
               </Badge>
             </TabsTrigger>
             <TabsTrigger 
               value="equipment"
-              className="data-[state=active]:bg-teal-600/20 data-[state=active]:text-teal-400"
+              className="data-[state=active]:bg-teal-500/10 data-[state=active]:text-teal-500/90"
               data-testid="tab-equipment"
             >
               <Archive className="h-4 w-4 mr-2" />
               Vybavenie
-              <Badge variant="secondary" className="ml-2 bg-teal-900/50 text-teal-400">
+              <Badge variant="secondary" className="ml-2 bg-teal-500/10 text-teal-500/80 border-teal-500/20">
                 {equipmentCount}
               </Badge>
             </TabsTrigger>
@@ -463,11 +463,11 @@ export default function GearArsenalPage() {
           <TabsContent value="baits" className="space-y-5 mt-5 animate-in fade-in-50 duration-300">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-amber-500/20 rounded-lg">
-                  <Fish className="h-6 w-6 text-amber-400" />
+                <div className="p-2 bg-amber-500/10 rounded-lg border border-amber-500/20">
+                  <Fish className="h-6 w-6 text-amber-500/80" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-black uppercase tracking-wide">Arzenál Boilies</h2>
+                  <h2 className="text-xl font-black uppercase tracking-wide text-slate-200">Arzenál Boilies</h2>
                   <p className="text-sm text-muted-foreground italic">
                     Databáza boilies od najväčších výrobcov
                   </p>
@@ -476,7 +476,7 @@ export default function GearArsenalPage() {
               
               <Dialog open={baitDialogOpen} onOpenChange={setBaitDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button className="bg-amber-600 hover:bg-amber-700" data-testid="button-add-bait">
+                  <Button className="bg-amber-700/80 hover:bg-amber-700 text-amber-50" data-testid="button-add-bait">
                     <Plus className="mr-2 h-4 w-4" />
                     Pridať boilies
                   </Button>
@@ -720,18 +720,18 @@ export default function GearArsenalPage() {
                 {arsenalBaits.map((bait) => (
                   <Card 
                     key={bait.id} 
-                    className={`bg-slate-900/50 border-white/5 hover:border-amber-500/30 transition-all duration-200 group ${
-                      bait.isFavorite ? 'ring-1 ring-yellow-400/30 shadow-[0_0_15px_rgba(250,204,21,0.15)]' : ''
+                    className={`bg-slate-900/40 border-white/5 hover:border-amber-500/20 transition-all duration-200 group ${
+                      bait.isFavorite ? 'ring-1 ring-yellow-500/20 shadow-[0_0_10px_rgba(234,179,8,0.1)]' : ''
                     }`}
                     data-testid={`bait-item-${bait.id}`}
                   >
                     <CardContent className="p-4 flex flex-col h-full">
                       <div className="flex-1 mb-3">
-                        <p className="text-xs font-bold text-amber-400 uppercase tracking-wide mb-1">{bait.manufacturer.name}</p>
-                        <p className="text-sm font-semibold truncate">{bait.productLine.name}</p>
+                        <p className="text-[10px] font-bold text-amber-600/80 uppercase tracking-widest mb-1">{bait.manufacturer.name}</p>
+                        <p className="text-sm font-semibold truncate text-slate-200">{bait.productLine.name}</p>
                         <p className="text-xs text-muted-foreground truncate mt-1">{bait.flavor.name}</p>
                         {bait.diameter && (
-                          <Badge variant="secondary" className="mt-2 text-xs bg-amber-900/50 text-amber-400">
+                          <Badge variant="secondary" className="mt-2 text-[10px] bg-amber-500/5 text-amber-600/70 border-amber-500/10">
                             {bait.diameter}
                           </Badge>
                         )}
@@ -866,22 +866,22 @@ export default function GearArsenalPage() {
                       {displayProducts.map((product) => (
                         <Card
                           key={product.id}
-                          className="cursor-pointer bg-slate-900/50 border-white/5 hover:border-teal-500/30 transition-colors"
+                          className="cursor-pointer bg-slate-900/40 border-white/5 hover:border-teal-500/20 transition-colors"
                           onClick={() => handleEquipmentAddClick(product)}
                           data-testid={`product-${product.id}`}
                         >
                           <CardContent className="p-3 flex items-center justify-between">
                             <div className="flex-1 min-w-0">
-                              <p className="font-medium truncate">{product.name}</p>
+                              <p className="font-medium truncate text-slate-200">{product.name}</p>
                               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <span className="text-teal-400">{product.manufacturer.name}</span>
+                                <span className="text-teal-600/80">{product.manufacturer.name}</span>
                                 <span>•</span>
-                                <Badge variant="secondary" className="text-xs bg-teal-900/50 text-teal-400">
+                                <Badge variant="secondary" className="text-[10px] bg-teal-500/5 text-teal-600/70 border-teal-500/10">
                                   {product.category.name}
                                 </Badge>
                               </div>
                             </div>
-                            <Button size="sm" variant="ghost" className="shrink-0 text-teal-400">
+                            <Button size="sm" variant="ghost" className="shrink-0 text-teal-600/60">
                               <Plus className="h-4 w-4" />
                             </Button>
                           </CardContent>
@@ -914,17 +914,17 @@ export default function GearArsenalPage() {
                   <div className="space-y-6">
                     {Object.entries(groupedEquipment || {}).map(([categoryName, items]) => (
                       <div key={categoryName}>
-                        <h3 className="font-black text-lg mb-3 text-teal-400 uppercase tracking-wide">{categoryName}</h3>
+                        <h3 className="font-black text-sm mb-3 text-teal-600/80 uppercase tracking-widest">{categoryName}</h3>
                         <div className="grid gap-2">
                           {items.map((item) => (
                             <Card 
                               key={item.id} 
-                              className="bg-slate-900/50 border-white/5"
+                              className="bg-slate-900/40 border-white/5"
                               data-testid={`arsenal-item-${item.id}`}
                             >
                               <CardContent className="p-3 flex items-center justify-between">
                                 <div className="flex-1 min-w-0">
-                                  <p className="font-medium truncate">{item.product?.name}</p>
+                                  <p className="font-medium truncate text-slate-200">{item.product?.name}</p>
                                   <p className="text-sm text-muted-foreground">
                                     {item.manufacturer?.name}
                                   </p>
