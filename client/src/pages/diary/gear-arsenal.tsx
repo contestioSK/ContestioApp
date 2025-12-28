@@ -420,7 +420,7 @@ export default function GearArsenalPage() {
 
   return (
     <DiaryLayout>
-      <div className="px-4 md:px-6 pt-4 pb-28 max-w-5xl mx-auto space-y-6">
+      <div className="px-4 md:px-6 pt-4 pb-20 max-w-5xl mx-auto space-y-6">
         {/* Header */}
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
@@ -1014,27 +1014,27 @@ export default function GearArsenalPage() {
         </Dialog>
 
         {/* Floating Summary Bar */}
-        <div className="fixed bottom-0 left-0 right-0 px-4 py-3 bg-slate-950/95 backdrop-blur-xl border-t border-white/10 z-40">
-          <div className="max-w-5xl mx-auto flex items-center justify-center gap-6 sm:gap-10">
-            <div className="flex items-center gap-3">
+        <div className="fixed bottom-4 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:max-w-md px-5 py-2.5 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-lg z-40">
+          <div className="flex items-center justify-center gap-5">
+            <div className="flex items-center gap-2">
               <div className="relative">
-                <Package className="h-5 w-5 text-lime-400" />
-                <span className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-lime-400 rounded-full animate-pulse" />
+                <Package className="h-4 w-4 text-lime-400" />
+                <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 bg-lime-400 rounded-full animate-pulse" />
               </div>
               <span className="text-sm font-medium">
-                <span className="font-black text-lime-400 text-lg">{baitsCount}</span>
-                <span className="text-muted-foreground ml-1 hidden sm:inline">nástrah</span>
+                <span className="font-bold text-lime-400">{baitsCount}</span>
+                <span className="text-muted-foreground ml-1 text-xs">nástrah</span>
               </span>
             </div>
-            <div className="h-6 w-px bg-gradient-to-b from-transparent via-white/20 to-transparent" />
-            <div className="flex items-center gap-3">
+            <div className="h-4 w-px bg-white/20" />
+            <div className="flex items-center gap-2">
               <div className="relative">
-                <Archive className="h-5 w-5 text-teal-400" />
-                <span className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-teal-400 rounded-full animate-pulse" />
+                <Archive className="h-4 w-4 text-teal-400" />
+                <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 bg-teal-400 rounded-full animate-pulse" />
               </div>
               <span className="text-sm font-medium">
-                <span className="font-black text-teal-400 text-lg">{equipmentCount}</span>
-                <span className="text-muted-foreground ml-1 hidden sm:inline">vybavenia</span>
+                <span className="font-bold text-teal-400">{equipmentCount}</span>
+                <span className="text-muted-foreground ml-1 text-xs">vybavenia</span>
               </span>
             </div>
           </div>
