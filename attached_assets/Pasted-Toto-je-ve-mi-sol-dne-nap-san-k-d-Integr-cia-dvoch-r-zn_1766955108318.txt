@@ -1,0 +1,47 @@
+Toto je veľmi solídne napísaný kód. Integrácia dvoch rôznych logík (postupný výber boilies a databázové vyhľadávanie vybavenia) do jedného dashboardu je logická a prehľadná.
+
+Tu je podrobný UX/UI review, rozdelený na silné stránky a priestor na zlepšenie, po ktorom nasleduje opravený a vylepšený kód.
+
+Čo funguje skvele (Pozitíva)
+Vizuálna hierarchia: Farebné kódovanie (Limetková pre nástrahy, Tyrkysová pre techniku) je výborný UX prvok. Používateľ okamžite vie, v ktorej sekcii sa nachádza.
+
+Floating Summary Bar: Plávajúci panel na spodku je skvelý pre "peace of mind" – rybár vidí celkový stav svojej výbavy bez ohľadu na to, kde scrolluje.
+
+Hromadné pridávanie (Bulk Add): Funkcia "Pridať všetky príchute" je obrovský časový šetrič (Time-to-Value).
+
+Zoskupovanie (Grouping): Rozdelenie techniky podľa kategórií v "Mojom arzenáli" robí zoznam prehľadným aj pri 50+ položkách.
+
+Priestor na zlepšenie (UX/UI nedostatky)
+Chyba v ikone (Kritické): Importuješ FishSymbol, ale Lucide knižnica má len Fish. Toto by spôsobilo pád aplikácie.
+
+Hustota prvkov na kartách: Pri 5-stĺpcovom gride na desktope sú tlačidlá "Obľúbené" a "Vymazať" v rohoch karty veľmi blízko seba. Na mobile hrozí "fat-finger" error (klikneš na kôš namiesto hviezdičky).
+
+Prázdne stavy (Empty States): Sú prítomné, ale vizuálne strohé. Mohli by byť viac povzbudzujúce.
+
+Interakcia v dialógoch: Ak používateľ vyberie výrobcu a následne ho zmení, zvyšné polia (rad, príchuť) by sa mali resetovať (to máš v handleri, čo je super).
+
+Odporúčané vylepšenia a opravený kód
+V tomto kóde som:
+
+Opravil chybu s ikonou Fish.
+
+Vylepšil Bait Cards: Tlačidlá akcií som presunul do spodnej časti alebo ich skryl za hover, aby karta nepôsobila preplnene.
+
+Pridal som Visual Feedback: Jemné žiarenie (glow) pre obľúbené položky.
+
+Optimalizoval som Mobile Layout: Väčšie dotykové plochy pre ovládacie prvky.
+
+Môj Arzenál
+28. 12., 21:49
+Zhrnutie zmien:
+Oprava bugu: Zmenil som FishSymbol na Fish.
+
+Karty (Cards): Zmenšil som veľkosť textu (text-sm, text-xs) a zväčšil padding, aby karty pôsobili "vzdušnejšie".
+
+Akcie: hviezdička a kôš sú teraz na samostatných tlačidlách s farebným pozadím na hover.
+
+Hlavičky: Použil som font-black, uppercase a italic pre športovejší/rybársky feel (podobne ako v profesionálnych rybárskych magazínoch).
+
+Interakcia: Pridal som animate-in animácie pre plynulejšie prechody medzi tabmi.
+
+Floating Bar: Vycentroval som ho a pridal "pulzujúce" body, ktoré indikujú, že arzenál je "živý" a pripravený na rybačku.

@@ -10,8 +10,10 @@ import {
   Trash2, 
   Filter, 
   X,
-  FishSymbol,
-  Archive
+  Fish,
+  Archive,
+  Sparkle,
+  Target
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -458,13 +460,15 @@ export default function GearArsenalPage() {
           </TabsList>
 
           {/* ============ BAITS TAB ============ */}
-          <TabsContent value="baits" className="space-y-4 mt-4">
+          <TabsContent value="baits" className="space-y-4 mt-4 animate-in fade-in-50 duration-300">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <FishSymbol className="h-6 w-6 text-lime-400" />
+                <div className="p-2 bg-lime-500/20 rounded-lg">
+                  <Fish className="h-6 w-6 text-lime-400" />
+                </div>
                 <div>
-                  <h2 className="text-lg font-semibold">Arzenál Boilies</h2>
-                  <p className="text-sm text-muted-foreground">
+                  <h2 className="text-xl font-black uppercase tracking-wide">Arzenál Boilies</h2>
+                  <p className="text-sm text-muted-foreground italic">
                     Databáza boilies od najväčších výrobcov
                   </p>
                 </div>
@@ -712,56 +716,64 @@ export default function GearArsenalPage() {
                 <Loader2 className="h-8 w-8 animate-spin text-lime-400" />
               </div>
             ) : arsenalBaits && arsenalBaits.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {arsenalBaits.map((bait) => (
                   <Card 
                     key={bait.id} 
-                    className="bg-slate-900/50 border-white/5 relative hover:border-lime-500/30 transition-colors"
+                    className={`bg-slate-900/50 border-white/5 hover:border-lime-500/30 transition-all duration-200 group ${
+                      bait.isFavorite ? 'ring-1 ring-yellow-400/30 shadow-[0_0_15px_rgba(250,204,21,0.15)]' : ''
+                    }`}
                     data-testid={`bait-item-${bait.id}`}
                   >
-                    <CardContent className="p-3">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => toggleBaitFavoriteMutation.mutate(bait.id)}
-                        disabled={toggleBaitFavoriteMutation.isPending}
-                        className="absolute top-1 left-1 h-7 w-7 p-0 hover:bg-yellow-900/50"
-                        data-testid={`button-favorite-bait-${bait.id}`}
-                      >
-                        <Star className={`h-3.5 w-3.5 ${bait.isFavorite ? 'fill-yellow-400 text-yellow-400' : 'text-slate-600'}`} />
-                      </Button>
-                      
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => deleteBaitMutation.mutate(bait.id)}
-                        disabled={deleteBaitMutation.isPending}
-                        className="absolute top-1 right-1 h-7 w-7 p-0 text-red-400 hover:bg-red-900/50"
-                        data-testid={`button-delete-bait-${bait.id}`}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-
-                      <div className="pt-6">
-                        <p className="text-xs font-medium text-lime-400 mb-1">{bait.manufacturer.name}</p>
+                    <CardContent className="p-4 flex flex-col h-full">
+                      <div className="flex-1 mb-3">
+                        <p className="text-xs font-bold text-lime-400 uppercase tracking-wide mb-1">{bait.manufacturer.name}</p>
                         <p className="text-sm font-semibold truncate">{bait.productLine.name}</p>
-                        <p className="text-xs text-muted-foreground truncate">{bait.flavor.name}</p>
+                        <p className="text-xs text-muted-foreground truncate mt-1">{bait.flavor.name}</p>
                         {bait.diameter && (
                           <Badge variant="secondary" className="mt-2 text-xs bg-lime-900/50 text-lime-400">
                             {bait.diameter}
                           </Badge>
                         )}
                       </div>
+                      
+                      <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleBaitFavoriteMutation.mutate(bait.id)}
+                          disabled={toggleBaitFavoriteMutation.isPending}
+                          className="h-9 w-9 p-0 hover:bg-yellow-900/50 touch-manipulation"
+                          data-testid={`button-favorite-bait-${bait.id}`}
+                        >
+                          <Star className={`h-4 w-4 ${bait.isFavorite ? 'fill-yellow-400 text-yellow-400' : 'text-slate-500'}`} />
+                        </Button>
+                        
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteBaitMutation.mutate(bait.id)}
+                          disabled={deleteBaitMutation.isPending}
+                          className="h-9 w-9 p-0 text-slate-500 hover:text-red-400 hover:bg-red-900/50 touch-manipulation"
+                          data-testid={`button-delete-bait-${bait.id}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12 text-muted-foreground">
-                <Package className="h-12 w-12 mx-auto mb-4 opacity-50 text-lime-400" />
-                <p className="mb-4">Zatiaľ nemáte žiadne boilies v arzenáli</p>
-                <Button onClick={() => setBaitDialogOpen(true)} className="bg-lime-600 hover:bg-lime-700">
-                  <Plus className="h-4 w-4 mr-2" />
+              <div className="text-center py-16 text-muted-foreground">
+                <div className="relative inline-block mb-6">
+                  <Fish className="h-16 w-16 mx-auto text-lime-400/30" />
+                  <Sparkle className="h-6 w-6 absolute -top-1 -right-1 text-lime-400 animate-pulse" />
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-2">Začni budovať svoj arzenál!</h3>
+                <p className="mb-6 max-w-xs mx-auto">Pridaj svoje obľúbené boilies a maj prehľad o tom, čo máš na rybačke.</p>
+                <Button onClick={() => setBaitDialogOpen(true)} className="bg-lime-600 hover:bg-lime-700 h-12 px-6">
+                  <Plus className="h-5 w-5 mr-2" />
                   Pridať prvé boilies
                 </Button>
               </div>
@@ -769,7 +781,7 @@ export default function GearArsenalPage() {
           </TabsContent>
 
           {/* ============ EQUIPMENT TAB ============ */}
-          <TabsContent value="equipment" className="space-y-4 mt-4">
+          <TabsContent value="equipment" className="space-y-4 mt-4 animate-in fade-in-50 duration-300">
             <Tabs value={equipmentSubTab} onValueChange={setEquipmentSubTab}>
               <TabsList className="grid w-full grid-cols-2 max-w-md">
                 <TabsTrigger value="browse" data-testid="subtab-browse">
@@ -902,7 +914,7 @@ export default function GearArsenalPage() {
                   <div className="space-y-6">
                     {Object.entries(groupedEquipment || {}).map(([categoryName, items]) => (
                       <div key={categoryName}>
-                        <h3 className="font-semibold text-lg mb-3 text-teal-400 capitalize">{categoryName}</h3>
+                        <h3 className="font-black text-lg mb-3 text-teal-400 uppercase tracking-wide">{categoryName}</h3>
                         <div className="grid gap-2">
                           {items.map((item) => (
                             <Card 
@@ -943,11 +955,15 @@ export default function GearArsenalPage() {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-12 text-muted-foreground">
-                    <Archive className="h-12 w-12 mx-auto mb-4 opacity-50 text-teal-400" />
-                    <p className="mb-4">Tvoj arzenál je prázdny</p>
-                    <Button onClick={() => setEquipmentSubTab("browse")} className="bg-teal-600 hover:bg-teal-700">
-                      <Search className="h-4 w-4 mr-2" />
+                  <div className="text-center py-16 text-muted-foreground">
+                    <div className="relative inline-block mb-6">
+                      <Archive className="h-16 w-16 mx-auto text-teal-400/30" />
+                      <Target className="h-6 w-6 absolute -top-1 -right-1 text-teal-400 animate-pulse" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-foreground mb-2">Tvoj arzenál čaká!</h3>
+                    <p className="mb-6 max-w-xs mx-auto">Prehľadaj databázu 1800+ produktov a pridaj si svoje prúty, navijaky a viac.</p>
+                    <Button onClick={() => setEquipmentSubTab("browse")} className="bg-teal-600 hover:bg-teal-700 h-12 px-6">
+                      <Search className="h-5 w-5 mr-2" />
                       Prehľadať vybavenie
                     </Button>
                   </div>
@@ -998,19 +1014,27 @@ export default function GearArsenalPage() {
         </Dialog>
 
         {/* Floating Summary Bar */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-slate-950/80 backdrop-blur-lg border-t border-white/10 z-40">
-          <div className="max-w-4xl mx-auto flex items-center justify-center gap-8">
-            <div className="flex items-center gap-2">
-              <Package className="h-5 w-5 text-lime-400" />
-              <span className="text-sm">
-                <span className="font-bold text-lime-400">{baitsCount}</span> nástrah
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-slate-950/90 backdrop-blur-xl border-t border-white/10 z-40">
+          <div className="max-w-4xl mx-auto flex items-center justify-center gap-6 sm:gap-10">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <Package className="h-5 w-5 text-lime-400" />
+                <span className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-lime-400 rounded-full animate-pulse" />
+              </div>
+              <span className="text-sm font-medium">
+                <span className="font-black text-lime-400 text-lg">{baitsCount}</span>
+                <span className="text-muted-foreground ml-1 hidden sm:inline">nástrah</span>
               </span>
             </div>
-            <div className="h-4 w-px bg-white/20" />
-            <div className="flex items-center gap-2">
-              <Archive className="h-5 w-5 text-teal-400" />
-              <span className="text-sm">
-                <span className="font-bold text-teal-400">{equipmentCount}</span> vybavenia
+            <div className="h-6 w-px bg-gradient-to-b from-transparent via-white/20 to-transparent" />
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <Archive className="h-5 w-5 text-teal-400" />
+                <span className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-teal-400 rounded-full animate-pulse" />
+              </div>
+              <span className="text-sm font-medium">
+                <span className="font-black text-teal-400 text-lg">{equipmentCount}</span>
+                <span className="text-muted-foreground ml-1 hidden sm:inline">vybavenia</span>
               </span>
             </div>
           </div>
