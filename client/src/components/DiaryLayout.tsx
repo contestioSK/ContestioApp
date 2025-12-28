@@ -84,16 +84,10 @@ const fishingLifeSection = [
     description: "Viacdenné výlety"
   },
   {
-    icon: Trophy,
-    label: "Arzenál nástrah",
-    href: "/diary/arsenal",
-    description: "Boilies a návnady"
-  },
-  {
     icon: Package,
-    label: "Rybárske vybavenie",
-    href: "/diary/equipment",
-    description: "Prúty, navijaky, atď."
+    label: "Môj arzenál",
+    href: "/diary/arsenal",
+    description: "Nástrahy a vybavenie"
   },
   {
     icon: BarChart3,
