@@ -4,8 +4,8 @@ import { WebSocketServer, WebSocket } from "ws";
 import { randomUUID } from "crypto";
 import { storage } from "./storage";
 import { db } from "./db";
-import { eq, and, gt, desc, or, inArray } from "drizzle-orm";
-import { diaryBattles, users, baitManufacturers, baitProductLines, baitFlavors, userArsenalBaits, userBadges, fishingAreas, friendships } from "@shared/schema";
+import { eq, and, gt, desc, or, inArray, sql } from "drizzle-orm";
+import { diaryBattles, users, baitManufacturers, baitProductLines, baitFlavors, userArsenalBaits, userBadges, fishingAreas, friendships, equipmentManufacturers, equipmentCategories, equipmentProducts, userArsenalEquipment, insertUserArsenalEquipmentSchema } from "@shared/schema";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { hashPassword, validatePassword, generateVerificationToken, generateTokenExpiration } from "./utils/auth";
 import { emailService } from "./utils/email";
@@ -6201,6 +6201,256 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     } catch (error) {
       console.error("[ARSENAL] Error deleting bait from arsenal:", error);
       res.status(500).json({ message: "Failed to delete bait from arsenal" });
+    }
+  });
+
+  // ==========================================
+  // Equipment (Rybárske vybavenie) API endpoints
+  // ==========================================
+
+  // Get all equipment manufacturers
+  app.get('/api/equipment/manufacturers', async (req, res) => {
+    try {
+      const manufacturers = await db
+        .select()
+        .from(equipmentManufacturers)
+        .orderBy(equipmentManufacturers.name);
+      res.json(manufacturers);
+    } catch (error) {
+      console.error("[EQUIPMENT] Error fetching manufacturers:", error);
+      res.status(500).json({ message: "Failed to fetch manufacturers" });
+    }
+  });
+
+  // Get all equipment categories
+  app.get('/api/equipment/categories', async (req, res) => {
+    try {
+      const categories = await db
+        .select()
+        .from(equipmentCategories)
+        .orderBy(equipmentCategories.name);
+      res.json(categories);
+    } catch (error) {
+      console.error("[EQUIPMENT] Error fetching categories:", error);
+      res.status(500).json({ message: "Failed to fetch categories" });
+    }
+  });
+
+  // Get equipment products with optional filters
+  app.get('/api/equipment/products', async (req, res) => {
+    try {
+      const { manufacturerId, categoryId, search, limit = 50, offset = 0 } = req.query;
+
+      let query = db
+        .select({
+          id: equipmentProducts.id,
+          name: equipmentProducts.name,
+          manufacturer: {
+            id: equipmentManufacturers.id,
+            name: equipmentManufacturers.name,
+          },
+          category: {
+            id: equipmentCategories.id,
+            name: equipmentCategories.name,
+            slug: equipmentCategories.slug,
+          },
+        })
+        .from(equipmentProducts)
+        .leftJoin(equipmentManufacturers, eq(equipmentProducts.manufacturerId, equipmentManufacturers.id))
+        .leftJoin(equipmentCategories, eq(equipmentProducts.categoryId, equipmentCategories.id))
+        .orderBy(equipmentProducts.name)
+        .limit(parseInt(limit as string))
+        .offset(parseInt(offset as string));
+
+      // Apply filters
+      const conditions = [];
+      if (manufacturerId) {
+        conditions.push(eq(equipmentProducts.manufacturerId, parseInt(manufacturerId as string)));
+      }
+      if (categoryId) {
+        conditions.push(eq(equipmentProducts.categoryId, parseInt(categoryId as string)));
+      }
+
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions)) as any;
+      }
+
+      const products = await query;
+      res.json(products);
+    } catch (error) {
+      console.error("[EQUIPMENT] Error fetching products:", error);
+      res.status(500).json({ message: "Failed to fetch products" });
+    }
+  });
+
+  // Search equipment products
+  app.get('/api/equipment/search', async (req, res) => {
+    try {
+      const { q, limit = 20 } = req.query;
+
+      if (!q || (q as string).length < 2) {
+        return res.json([]);
+      }
+
+      const searchTerm = `%${(q as string).toLowerCase()}%`;
+
+      const products = await db
+        .select({
+          id: equipmentProducts.id,
+          name: equipmentProducts.name,
+          manufacturer: {
+            id: equipmentManufacturers.id,
+            name: equipmentManufacturers.name,
+          },
+          category: {
+            id: equipmentCategories.id,
+            name: equipmentCategories.name,
+            slug: equipmentCategories.slug,
+          },
+        })
+        .from(equipmentProducts)
+        .leftJoin(equipmentManufacturers, eq(equipmentProducts.manufacturerId, equipmentManufacturers.id))
+        .leftJoin(equipmentCategories, eq(equipmentProducts.categoryId, equipmentCategories.id))
+        .where(
+          or(
+            sql`LOWER(${equipmentProducts.name}) LIKE ${searchTerm}`,
+            sql`LOWER(${equipmentManufacturers.name}) LIKE ${searchTerm}`
+          )
+        )
+        .orderBy(equipmentProducts.name)
+        .limit(parseInt(limit as string));
+
+      res.json(products);
+    } catch (error) {
+      console.error("[EQUIPMENT] Error searching products:", error);
+      res.status(500).json({ message: "Failed to search products" });
+    }
+  });
+
+  // User Arsenal Equipment endpoints
+  app.get('/api/diary/arsenal/equipment', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+
+      const arsenalEquipment = await db
+        .select({
+          id: userArsenalEquipment.id,
+          quantity: userArsenalEquipment.quantity,
+          notes: userArsenalEquipment.notes,
+          isFavorite: userArsenalEquipment.isFavorite,
+          createdAt: userArsenalEquipment.createdAt,
+          product: {
+            id: equipmentProducts.id,
+            name: equipmentProducts.name,
+          },
+          manufacturer: {
+            id: equipmentManufacturers.id,
+            name: equipmentManufacturers.name,
+          },
+          category: {
+            id: equipmentCategories.id,
+            name: equipmentCategories.name,
+            slug: equipmentCategories.slug,
+          },
+        })
+        .from(userArsenalEquipment)
+        .leftJoin(equipmentProducts, eq(userArsenalEquipment.productId, equipmentProducts.id))
+        .leftJoin(equipmentManufacturers, eq(equipmentProducts.manufacturerId, equipmentManufacturers.id))
+        .leftJoin(equipmentCategories, eq(equipmentProducts.categoryId, equipmentCategories.id))
+        .where(eq(userArsenalEquipment.userId, userId))
+        .orderBy(desc(userArsenalEquipment.createdAt));
+
+      res.json(arsenalEquipment);
+    } catch (error) {
+      console.error("[ARSENAL] Error fetching user arsenal equipment:", error);
+      res.status(500).json({ message: "Failed to fetch arsenal equipment" });
+    }
+  });
+
+  app.post('/api/diary/arsenal/equipment', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const validatedData = insertUserArsenalEquipmentSchema.parse({
+        ...req.body,
+        userId,
+      });
+
+      const [newEquipment] = await db
+        .insert(userArsenalEquipment)
+        .values(validatedData as any)
+        .returning();
+
+      res.status(201).json(newEquipment);
+    } catch (error) {
+      console.error("[ARSENAL] Error adding equipment to arsenal:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to add equipment to arsenal" });
+    }
+  });
+
+  app.patch('/api/diary/arsenal/equipment/:id/favorite', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const equipmentId = parseInt(req.params.id);
+
+      if (isNaN(equipmentId)) {
+        return res.status(400).json({ message: "Invalid equipment ID" });
+      }
+
+      const [item] = await db
+        .select()
+        .from(userArsenalEquipment)
+        .where(
+          and(
+            eq(userArsenalEquipment.id, equipmentId),
+            eq(userArsenalEquipment.userId, userId)
+          )
+        );
+
+      if (!item) {
+        return res.status(404).json({ message: "Equipment not found or does not belong to you" });
+      }
+
+      const [updated] = await db
+        .update(userArsenalEquipment)
+        .set({ isFavorite: !item.isFavorite })
+        .where(eq(userArsenalEquipment.id, equipmentId))
+        .returning();
+
+      res.json(updated);
+    } catch (error) {
+      console.error("[ARSENAL] Error toggling favorite equipment:", error);
+      res.status(500).json({ message: "Failed to toggle favorite" });
+    }
+  });
+
+  app.delete('/api/diary/arsenal/equipment/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const equipmentId = parseInt(req.params.id);
+
+      if (isNaN(equipmentId)) {
+        return res.status(400).json({ message: "Invalid equipment ID" });
+      }
+
+      const [deleted] = await db
+        .delete(userArsenalEquipment)
+        .where(and(
+          eq(userArsenalEquipment.id, equipmentId),
+          eq(userArsenalEquipment.userId, userId)
+        ))
+        .returning();
+
+      if (!deleted) {
+        return res.status(404).json({ message: "Equipment not found in arsenal" });
+      }
+
+      res.json({ message: "Equipment removed from arsenal" });
+    } catch (error) {
+      console.error("[ARSENAL] Error deleting equipment from arsenal:", error);
+      res.status(500).json({ message: "Failed to delete equipment from arsenal" });
     }
   });
 
