@@ -4194,32 +4194,146 @@ export default function AdminPanel() {
                                     <FormField
                                       control={form.control}
                                       name="sectorPlaces"
-                                      render={({ field }) => (
-                                        <FormItem>
-                                          <FormLabel>Nastavenia sektorov (JSON)</FormLabel>
-                                          <FormControl>
-                                            <Textarea 
-                                              placeholder='[{"sectorName": "Sektor A", "places": ["Miesto 1", "Miesto 2"]}]'
-                                              className="min-h-[100px] font-mono text-sm"
-                                              {...field}
-                                              value={typeof field.value === 'string' ? field.value : JSON.stringify(field.value || [], null, 2)}
-                                              onChange={(e) => {
-                                                try {
-                                                  const parsed = JSON.parse(e.target.value);
-                                                  field.onChange(parsed);
-                                                } catch {
-                                                  field.onChange(e.target.value);
-                                                }
-                                              }}
-                                              data-testid="textarea-edit-sector-places"
-                                            />
-                                          </FormControl>
-                                          <FormDescription>
-                                            JSON formát pre definovanie sektorov a miest
-                                          </FormDescription>
-                                          <FormMessage />
-                                        </FormItem>
-                                      )}
+                                      render={({ field }) => {
+                                        const sectors: Array<{ sectorName: string; places: string[] }> = 
+                                          Array.isArray(field.value) ? field.value : [];
+                                        
+                                        const addSector = () => {
+                                          const newSector = { 
+                                            sectorName: `Sektor ${String.fromCharCode(65 + sectors.length)}`, 
+                                            places: ["Miesto 1", "Miesto 2"] 
+                                          };
+                                          field.onChange([...sectors, newSector]);
+                                        };
+                                        
+                                        const removeSector = (index: number) => {
+                                          field.onChange(sectors.filter((_, i) => i !== index));
+                                        };
+                                        
+                                        const updateSectorName = (index: number, name: string) => {
+                                          const updated = [...sectors];
+                                          updated[index] = { ...updated[index], sectorName: name };
+                                          field.onChange(updated);
+                                        };
+                                        
+                                        const addPlace = (sectorIndex: number) => {
+                                          const updated = [...sectors];
+                                          updated[sectorIndex].places.push(`Miesto ${updated[sectorIndex].places.length + 1}`);
+                                          field.onChange(updated);
+                                        };
+                                        
+                                        const removePlace = (sectorIndex: number, placeIndex: number) => {
+                                          const updated = [...sectors];
+                                          updated[sectorIndex].places = updated[sectorIndex].places.filter((_, i) => i !== placeIndex);
+                                          field.onChange(updated);
+                                        };
+                                        
+                                        const updatePlace = (sectorIndex: number, placeIndex: number, name: string) => {
+                                          const updated = [...sectors];
+                                          updated[sectorIndex].places[placeIndex] = name;
+                                          field.onChange(updated);
+                                        };
+                                        
+                                        return (
+                                          <FormItem>
+                                            <div className="flex items-center justify-between mb-3">
+                                              <FormLabel>Konfigurácia sektorov</FormLabel>
+                                              <Button 
+                                                type="button" 
+                                                variant="outline" 
+                                                size="sm" 
+                                                onClick={addSector}
+                                                data-testid="button-add-sector"
+                                              >
+                                                <Plus className="w-4 h-4 mr-1" /> Pridať sektor
+                                              </Button>
+                                            </div>
+                                            
+                                            {sectors.length === 0 ? (
+                                              <div className="text-center py-6 border border-dashed rounded-lg">
+                                                <MapPin className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+                                                <p className="text-sm text-muted-foreground">Zatiaľ žiadne sektory</p>
+                                                <Button 
+                                                  type="button" 
+                                                  variant="link" 
+                                                  size="sm" 
+                                                  onClick={addSector}
+                                                >
+                                                  Pridať prvý sektor
+                                                </Button>
+                                              </div>
+                                            ) : (
+                                              <div className="space-y-4">
+                                                {sectors.map((sector, sectorIndex) => (
+                                                  <Card key={sectorIndex} className="bg-muted/10">
+                                                    <CardContent className="pt-4">
+                                                      <div className="flex items-center justify-between mb-3">
+                                                        <Input
+                                                          value={sector.sectorName}
+                                                          onChange={(e) => updateSectorName(sectorIndex, e.target.value)}
+                                                          className="max-w-[200px] font-medium"
+                                                          data-testid={`input-sector-name-${sectorIndex}`}
+                                                        />
+                                                        <Button 
+                                                          type="button"
+                                                          variant="ghost" 
+                                                          size="sm"
+                                                          onClick={() => removeSector(sectorIndex)}
+                                                          className="text-destructive hover:text-destructive"
+                                                          data-testid={`button-remove-sector-${sectorIndex}`}
+                                                        >
+                                                          <Trash2 className="w-4 h-4" />
+                                                        </Button>
+                                                      </div>
+                                                      
+                                                      <div className="space-y-2">
+                                                        <div className="flex items-center justify-between">
+                                                          <span className="text-sm text-muted-foreground">Miesta ({sector.places.length})</span>
+                                                          <Button 
+                                                            type="button"
+                                                            variant="ghost" 
+                                                            size="sm"
+                                                            onClick={() => addPlace(sectorIndex)}
+                                                            data-testid={`button-add-place-${sectorIndex}`}
+                                                          >
+                                                            <Plus className="w-3 h-3 mr-1" /> Miesto
+                                                          </Button>
+                                                        </div>
+                                                        
+                                                        <div className="grid grid-cols-2 gap-2">
+                                                          {sector.places.map((place, placeIndex) => (
+                                                            <div key={placeIndex} className="flex items-center gap-1">
+                                                              <Input
+                                                                value={place}
+                                                                onChange={(e) => updatePlace(sectorIndex, placeIndex, e.target.value)}
+                                                                className="text-sm h-8"
+                                                                data-testid={`input-place-${sectorIndex}-${placeIndex}`}
+                                                              />
+                                                              {sector.places.length > 1 && (
+                                                                <Button
+                                                                  type="button"
+                                                                  variant="ghost"
+                                                                  size="sm"
+                                                                  className="h-8 px-2 text-muted-foreground hover:text-destructive"
+                                                                  onClick={() => removePlace(sectorIndex, placeIndex)}
+                                                                  data-testid={`button-remove-place-${sectorIndex}-${placeIndex}`}
+                                                                >
+                                                                  <X className="w-3 h-3" />
+                                                                </Button>
+                                                              )}
+                                                            </div>
+                                                          ))}
+                                                        </div>
+                                                      </div>
+                                                    </CardContent>
+                                                  </Card>
+                                                ))}
+                                              </div>
+                                            )}
+                                            <FormMessage />
+                                          </FormItem>
+                                        );
+                                      }}
                                     />
                                   )}
                                 </div>
@@ -4598,7 +4712,20 @@ export default function AdminPanel() {
                           {registrations.map((registration: CompetitionRegistration) => (
                             <div key={registration.id} className="border border-border rounded-lg p-4 hover:bg-accent/50 transition-colors">
                               <div className="flex items-center justify-between">
-                                <div className="flex-1">
+                                <div className="flex items-start gap-4 flex-1">
+                                  {registration.imageUrl ? (
+                                    <img 
+                                      src={registration.imageUrl} 
+                                      alt={`${registration.name} logo`}
+                                      className="w-16 h-16 rounded-lg object-cover border border-border"
+                                      data-testid={`img-registration-logo-${registration.id}`}
+                                    />
+                                  ) : (
+                                    <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center border border-border">
+                                      <Trophy className="w-6 h-6 text-muted-foreground" />
+                                    </div>
+                                  )}
+                                  <div className="flex-1">
                                   <div className="flex items-center space-x-3">
                                     <h4 className="text-base font-medium text-foreground" data-testid={`text-registration-name-${registration.id}`}>
                                       {registration.name}
@@ -4622,6 +4749,7 @@ export default function AdminPanel() {
                                     <span>Kontakt: {registration.contactEmail}</span>
                                     <span>Organizácia: {registration.organizationName || 'N/A'}</span>
                                     <span>Odoslané: {new Date(registration.createdAt || '').toLocaleDateString('sk-SK')}</span>
+                                  </div>
                                   </div>
                                 </div>
                                 <div className="flex items-center space-x-2">
