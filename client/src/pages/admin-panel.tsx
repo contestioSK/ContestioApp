@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -1907,13 +1907,13 @@ export default function AdminPanel() {
                 <button
                   onClick={() => { setActiveTab('dashboard'); setSidebarOpen(false); }}
                   className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors ${
-                    isActivePath('dashboard')
+                    activeTab === 'dashboard'
                       ? 'bg-sidebar-primary text-sidebar-primary-foreground'
                       : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
                   }`}
                   data-testid="nav-dashboard"
                 >
-                  <BarChart3 className="h-5 w-5 flex-shrink-0" />
+                  <LayoutDashboard className="h-5 w-5 flex-shrink-0" />
                   <div className="flex-1 text-left">
                     <p className="text-sm font-medium">Dashboard</p>
                   </div>
@@ -1922,7 +1922,7 @@ export default function AdminPanel() {
                 <button
                   onClick={() => { setActiveTab('users'); setSidebarOpen(false); }}
                   className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors ${
-                    isActivePath('users')
+                    activeTab === 'users'
                       ? 'bg-sidebar-primary text-sidebar-primary-foreground'
                       : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
                   }`}
@@ -1937,7 +1937,7 @@ export default function AdminPanel() {
                 <button
                   onClick={() => { setActiveTab('competitions'); setSidebarOpen(false); }}
                   className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors ${
-                    isActivePath('competitions')
+                    activeTab === 'competitions'
                       ? 'bg-sidebar-primary text-sidebar-primary-foreground'
                       : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
                   }`}
@@ -1952,7 +1952,7 @@ export default function AdminPanel() {
                 <button
                   onClick={() => { setActiveTab('registrations'); setSidebarOpen(false); }}
                   className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors ${
-                    isActivePath('registrations')
+                    activeTab === 'registrations'
                       ? 'bg-sidebar-primary text-sidebar-primary-foreground'
                       : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
                   }`}
@@ -1972,7 +1972,7 @@ export default function AdminPanel() {
                 <button
                   onClick={() => { setActiveTab('promo'); setSidebarOpen(false); }}
                   className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors ${
-                    isActivePath('promo')
+                    activeTab === 'promo'
                       ? 'bg-sidebar-primary text-sidebar-primary-foreground'
                       : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground'
                   }`}
