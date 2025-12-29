@@ -83,20 +83,36 @@ export default function CompetitionSetup() {
   const [sectorPlaces, setSectorPlaces] = useState<Array<{ sectorName: string; places: string[] }>>([]);
   const [sideCompetitions, setSideCompetitions] = useState<string[]>([]);
 
-  // Demo mode detection - ONLY when id is 'demo' (not for real registrations)
+  // Read plan from URL query parameter (passed from registration) or localStorage
   const urlParams = new URLSearchParams(window.location.search);
   const isDemoMode = id === 'demo';
-  const demoPlan = urlParams.get('plan') as PlanTier | null;
+  const urlPlan = urlParams.get('plan') as PlanTier | null;
+  const validUrlPlan = urlPlan && ['basic', 'pro', 'premium', 'enterprise'].includes(urlPlan) ? urlPlan : null;
+  
+  // Persist plan in localStorage so it survives navigation/refresh
+  const [cachedPlan, setCachedPlan] = useState<PlanTier | null>(() => {
+    if (typeof window !== 'undefined' && id) {
+      // Check URL param first, save to localStorage
+      if (validUrlPlan) {
+        localStorage.setItem(`competition_plan_${id}`, validUrlPlan);
+        return validUrlPlan;
+      }
+      // Otherwise load from localStorage
+      const stored = localStorage.getItem(`competition_plan_${id}`);
+      if (stored && ['basic', 'pro', 'premium', 'enterprise'].includes(stored)) {
+        return stored as PlanTier;
+      }
+    }
+    return validUrlPlan;
+  });
 
   const { data: registration, isLoading } = useQuery<{ selectedPlan?: string }>({
     queryKey: ['/api/competition-registrations', id],
-    enabled: !!id && !isDemoMode,
+    enabled: !!id && !isDemoMode && !validUrlPlan && !cachedPlan, // Skip API if we have plan from URL or cache
   });
 
-  // Use demo plan from URL or fallback to registration plan
-  const selectedPlan = isDemoMode 
-    ? (demoPlan && ['basic', 'pro', 'premium', 'enterprise'].includes(demoPlan) ? demoPlan : 'pro')
-    : (registration?.selectedPlan || 'basic') as PlanTier;
+  // Priority: URL param > cached > API response > default basic
+  const selectedPlan = (validUrlPlan || cachedPlan || registration?.selectedPlan || 'basic') as PlanTier;
 
   const basicsForm = useForm<BasicsForm>({
     resolver: zodResolver(basicsSchema),
