@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { Redirect } from "wouter";
 import Landing from "@/pages/landing";
 import NotFound from "@/pages/not-found";
 import { Loader2 } from "lucide-react";
@@ -7,9 +8,10 @@ import { Loader2 } from "lucide-react";
 type ProtectedRouteProps = {
   children: ReactNode;
   roles?: string[];
+  redirectTo?: string;
 };
 
-export default function ProtectedRoute({ children, roles }: ProtectedRouteProps) {
+export default function ProtectedRoute({ children, roles, redirectTo }: ProtectedRouteProps) {
   const { user, isLoading } = useAuth();
 
   // Show loading state while authentication is being determined
@@ -22,8 +24,11 @@ export default function ProtectedRoute({ children, roles }: ProtectedRouteProps)
     );
   }
 
-  // If user is not authenticated, show landing page
+  // If user is not authenticated, redirect or show landing page
   if (!user) {
+    if (redirectTo) {
+      return <Redirect to={redirectTo} />;
+    }
     return <Landing />;
   }
 
