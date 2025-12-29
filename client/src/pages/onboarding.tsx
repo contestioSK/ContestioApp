@@ -5,6 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useLocation } from "wouter";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Fish, 
   Target, 
@@ -57,6 +58,7 @@ const visualPreferences = [
 
 export default function Onboarding() {
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [preferences, setPreferences] = useState<Preferences>({
     onboardingCompleted: false
@@ -83,8 +85,13 @@ export default function Onboarding() {
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
     },
-    onSuccess: () => {
-      const goal = preferences.mainGoal;
+    onSuccess: (_, variables) => {
+      toast({
+        title: "🎉 Profil pripravený",
+        description: "Poďme na to!",
+      });
+      
+      const goal = variables.mainGoal || "diary";
       if (goal === "battles") {
         setLocation("/diary/battles");
       } else if (goal === "diary") {
@@ -108,6 +115,9 @@ export default function Onboarding() {
 
   const handleSkip = () => {
     savePreferencesMutation.mutate({
+      fishingStyle: "carp",
+      mainGoal: "diary",
+      visualPreference: "lists",
       onboardingCompleted: true
     });
   };
@@ -144,9 +154,9 @@ export default function Onboarding() {
           <div className="w-full max-w-lg animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="text-center mb-8">
               <Fish className="w-12 h-12 text-primary mx-auto mb-4" />
-              <h1 className="text-2xl font-bold mb-2">Vitajte na palube! 🎣</h1>
+              <h1 className="text-2xl font-bold mb-2">Aký rybár ste? 🎣</h1>
               <p className="text-muted-foreground">
-                Akým štýlom najčastejšie lovíte?
+                Vďaka tomu vám ukážeme relevantné súťaže, štatistiky a prehľady hneď od začiatku.
               </p>
             </div>
 
@@ -182,9 +192,9 @@ export default function Onboarding() {
           <div className="w-full max-w-lg animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="text-center mb-8">
               <Target className="w-12 h-12 text-primary mx-auto mb-4" />
-              <h1 className="text-2xl font-bold mb-2">Čo je pre vás najdôležitejšie?</h1>
+              <h1 className="text-2xl font-bold mb-2">Čo chcete s Contestiom robiť?</h1>
               <p className="text-muted-foreground">
-                Prispôsobíme rozhranie vašim potrebám
+                Aplikácia sa vám po dokončení automaticky prispôsobí.
               </p>
             </div>
 
@@ -222,9 +232,9 @@ export default function Onboarding() {
           <div className="w-full max-w-lg animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="text-center mb-8">
               <LineChart className="w-12 h-12 text-primary mx-auto mb-4" />
-              <h1 className="text-2xl font-bold mb-2">Už takmer sme tam! 🎉</h1>
+              <h1 className="text-2xl font-bold mb-2">Ako chcete vidieť svoje výsledky?</h1>
               <p className="text-muted-foreground">
-                Ako najradšej sledujete svoj progres?
+                Vyberte si rozhranie, ktoré vám bude najviac vyhovovať pri vode aj doma.
               </p>
             </div>
 
@@ -278,7 +288,7 @@ export default function Onboarding() {
               disabled={savePreferencesMutation.isPending}
               data-testid="button-skip-onboarding"
             >
-              Preskočiť
+              Preskočiť nastavenie
             </Button>
           )}
           <Button 
@@ -288,7 +298,7 @@ export default function Onboarding() {
             data-testid="button-next-step"
           >
             {currentStep === 3 ? (
-              savePreferencesMutation.isPending ? "Ukladám..." : "Dokončiť"
+              savePreferencesMutation.isPending ? "Ukladám..." : "Vstúpiť do Contestia"
             ) : (
               <>
                 Pokračovať
