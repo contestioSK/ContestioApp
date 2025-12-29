@@ -5781,12 +5781,11 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
-  // Premium status endpoint
+  // Premium status endpoint - uses consistent isUserPremium() check
   app.get('/api/auth/premium-status', isAuthenticated, async (req: any, res) => {
     try {
       const userId = getUserId(req);
-      const user = await storage.getUser(userId);
-      const isPremium = user?.isPremium ?? false;
+      const isPremium = await storage.isUserPremium(userId);
       res.json({ isPremium });
     } catch (error) {
       console.error("Error checking premium status:", error);

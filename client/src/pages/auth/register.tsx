@@ -140,6 +140,17 @@ export default function RegisterPage() {
             Registrovať sa cez Google
           </Button>
 
+          {/* Subtle premium link for power users */}
+          <p className="text-center text-xs text-muted-foreground">
+            <Link 
+              href="/pricing" 
+              className="text-primary hover:underline"
+              data-testid="link-want-premium"
+            >
+              Chcem rovno PREMIUM
+            </Link>
+          </p>
+
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <Separator className="w-full" />
