@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogClose } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
@@ -944,6 +944,34 @@ export default function AdminPanel() {
       toast({
         title: "Chyba",
         description: "Nepodarilo sa aktualizovať status používateľa",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete user mutation
+  const deleteUserMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const response = await apiRequest("DELETE", `/api/admin/users/${userId}`);
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to delete user');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      refetchUsers();
+      setIsUserActionDialogOpen(false);
+      setSelectedUserForAction(null);
+      toast({
+        title: "Úspech",
+        description: "Používateľ bol vymazaný",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Chyba",
+        description: "Nepodarilo sa vymazať používateľa",
         variant: "destructive",
       });
     },
@@ -3003,6 +3031,53 @@ export default function AdminPanel() {
                                 data-testid={`button-confirm-ban-${selectedUserForAction.id}`}
                               >
                                 {selectedUserForAction.active ? 'Áno, zabanovať' : 'Áno, odbanovať'}
+                              </Button>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+
+                        {/* Delete User with Confirmation Dialog */}
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button
+                              variant="destructive"
+                              className="w-full justify-start"
+                              data-testid={`button-delete-dialog-${selectedUserForAction.id}`}
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Vymazať používateľa
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-sm">
+                            <DialogHeader>
+                              <DialogTitle className="text-destructive flex items-center">
+                                <Trash2 className="w-5 h-5 mr-2" />
+                                Potvrďte vymazanie
+                              </DialogTitle>
+                              <DialogDescription className="pt-4">
+                                <p className="font-medium mb-2">
+                                  Naozaj chcete vymazať používateľa <span className="text-foreground">{selectedUserForAction.email}</span>?
+                                </p>
+                                <p className="text-sm text-destructive font-medium">
+                                  ⚠️ Táto akcia je nevratná! Všetky dáta používateľa budú trvalo odstránené.
+                                </p>
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="flex space-x-2 justify-end mt-4">
+                              <DialogClose asChild>
+                                <Button variant="outline">
+                                  Zrušiť
+                                </Button>
+                              </DialogClose>
+                              <Button
+                                variant="destructive"
+                                onClick={() => {
+                                  deleteUserMutation.mutate(selectedUserForAction.id);
+                                }}
+                                disabled={deleteUserMutation.isPending}
+                                data-testid={`button-confirm-delete-${selectedUserForAction.id}`}
+                              >
+                                {deleteUserMutation.isPending ? 'Mazanie...' : 'Áno, vymazať'}
                               </Button>
                             </div>
                           </DialogContent>
