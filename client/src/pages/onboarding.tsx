@@ -154,9 +154,9 @@ export default function Onboarding() {
           <div className="w-full max-w-lg animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="text-center mb-8">
               <Fish className="w-12 h-12 text-primary mx-auto mb-4" />
-              <h1 className="text-2xl font-bold mb-2">Aký rybár ste? 🎣</h1>
+              <h1 className="text-2xl font-bold mb-2">Aký štýl lovu najčastejšie používate? 🎣</h1>
               <p className="text-muted-foreground">
-                Vďaka tomu vám ukážeme relevantné súťaže, štatistiky a prehľady hneď od začiatku.
+                Vďaka tomu vám prispôsobíme štatistiky, záznamy a prehľady.
               </p>
             </div>
 
