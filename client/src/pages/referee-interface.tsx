@@ -19,15 +19,15 @@ import { z } from "zod";
 import type { Competition, Team, Referee, Catch } from "@shared/schema";
 import { formatSectorPlace } from "@/lib/utils";
 
-// Dynamic schema based on competition's minimum weight
-const createCatchSubmissionSchema = (minWeight: number = 2) => z.object({
+// Dynamic schema based on competition's minimum weight (in grams for referee input)
+const createCatchSubmissionSchema = (minWeightGrams: number = 2000) => z.object({
   teamId: z.string().min(1, "Prosím vyberte tím"),
-  weight: z.number().min(minWeight, `Váha musí byť najmenej ${minWeight} kg`),
+  weight: z.number().min(minWeightGrams, `Váha musí byť najmenej ${minWeightGrams} g`),
   fishType: z.enum(["scaly", "mirror"], { required_error: "Prosím vyberte typ ryby" }),
   competitionId: z.string().min(1),
 });
 
-const defaultCatchSubmissionSchema = createCatchSubmissionSchema(2);
+const defaultCatchSubmissionSchema = createCatchSubmissionSchema(2000);
 
 type CatchSubmissionForm = z.infer<typeof defaultCatchSubmissionSchema>;
 
@@ -66,8 +66,9 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [recentTeams, setRecentTeams] = useState<string[]>([]);
   const [currentSchema, setCurrentSchema] = useState(() => {
-    const minWeight = selectedCompetitionDetails?.minWeight ? parseFloat(selectedCompetitionDetails.minWeight) : 2;
-    return createCatchSubmissionSchema(minWeight);
+    const minWeightKg = selectedCompetitionDetails?.minWeight ? parseFloat(selectedCompetitionDetails.minWeight) : 2;
+    const minWeightGrams = Math.round(minWeightKg * 1000);
+    return createCatchSubmissionSchema(minWeightGrams);
   });
   
   const form = useForm<CatchSubmissionForm>({
@@ -83,8 +84,9 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
   // Update form validation when competition changes
   useEffect(() => {
     if (selectedCompetitionDetails?.minWeight) {
-      const minWeight = parseFloat(selectedCompetitionDetails.minWeight);
-      const newSchema = createCatchSubmissionSchema(minWeight);
+      const minWeightKg = parseFloat(selectedCompetitionDetails.minWeight);
+      const minWeightGrams = Math.round(minWeightKg * 1000);
+      const newSchema = createCatchSubmissionSchema(minWeightGrams);
       setCurrentSchema(newSchema);
       
       // Reset form with new values
@@ -102,7 +104,7 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
       const formData = new FormData();
       formData.append('teamId', data.teamId);
       formData.append('competitionId', data.competitionId);
-      formData.append('weight', data.weight.toString()); // Weight already in kg from form validation
+      formData.append('weight', (data.weight / 1000).toString()); // Convert grams to kg for backend
       formData.append('fishType', data.fishType);
       
       if (data.photo) {
@@ -324,26 +326,35 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
             }}
           />
           
-          {/* Weight Input with Stepper */}
+          {/* Weight Input with Stepper (in grams) */}
           <FormField
             control={form.control}
             name="weight"
             render={({ field }) => {
               const minWeightKg = selectedCompetitionDetails?.minWeight ? parseFloat(selectedCompetitionDetails.minWeight) : 2;
+              const minWeightGrams = Math.round(minWeightKg * 1000);
               const currentWeight = typeof field.value === 'number' ? field.value : 0;
-              const isUnderWeight = currentWeight > 0 && currentWeight < minWeightKg;
-              const isValidWeight = currentWeight >= minWeightKg;
+              const isUnderWeight = currentWeight > 0 && currentWeight < minWeightGrams;
+              const isValidWeight = currentWeight >= minWeightGrams;
+              
+              // Format weight display: show kg equivalent for larger values
+              const formatWeightDisplay = (grams: number) => {
+                if (grams >= 1000) {
+                  return `${(grams / 1000).toFixed(2)} kg`;
+                }
+                return `${grams} g`;
+              };
               
               const handleIncrement = () => {
-                const newValue = Math.round((currentWeight + 0.1) * 10) / 10;
+                const newValue = currentWeight + 10; // +10 grams
                 field.onChange(newValue);
                 triggerHaptic('selection');
               };
               
               const handleDecrement = () => {
-                const newValue = Math.max(0, Math.round((currentWeight - 0.1) * 10) / 10);
+                const newValue = Math.max(0, currentWeight - 10); // -10 grams
                 field.onChange(newValue);
-                if (newValue < minWeightKg && newValue > 0) {
+                if (newValue < minWeightGrams && newValue > 0) {
                   triggerHaptic('warning');
                 } else {
                   triggerHaptic('selection');
@@ -352,7 +363,9 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
               
               return (
               <FormItem>
-                <FormLabel className="text-lg font-semibold text-foreground">Váha (kg) - min. {minWeightKg} kg</FormLabel>
+                <FormLabel className="text-lg font-semibold text-foreground">
+                  Váha (gramy) - min. {minWeightGrams} g ({minWeightKg} kg)
+                </FormLabel>
                 <FormControl>
                   <div className="flex items-center gap-2">
                     {/* Decrement Button */}
@@ -367,14 +380,15 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
                       −
                     </Button>
                     
-                    {/* Weight Input */}
+                    {/* Weight Input - numeric keyboard only */}
                     <div className="relative flex-1">
                       <Input 
                         type="number" 
-                        step="0.1"
-                        inputMode="decimal"
-                        placeholder={minWeightKg.toString()} 
-                        className={`font-mono pr-12 h-14 text-xl font-bold text-center transition-colors ${
+                        step="10"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        placeholder={minWeightGrams.toString()} 
+                        className={`font-mono pr-8 h-14 text-xl font-bold text-center transition-colors ${
                           isUnderWeight 
                             ? 'border-orange-500 text-orange-600 bg-orange-50 dark:bg-orange-950/20' 
                             : isValidWeight 
@@ -382,13 +396,13 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
                               : ''
                         }`}
                         {...field}
-                        onChange={(e) => field.onChange(e.target.value === '' ? 0 : parseFloat(e.target.value) || 0)}
+                        onChange={(e) => field.onChange(e.target.value === '' ? 0 : parseInt(e.target.value, 10) || 0)}
                         data-testid="input-weight"
                       />
-                      <span className={`absolute right-3 top-1/2 transform -translate-y-1/2 text-base font-medium ${
+                      <span className={`absolute right-3 top-1/2 transform -translate-y-1/2 text-sm font-medium ${
                         isUnderWeight ? 'text-orange-500' : isValidWeight ? 'text-green-500' : 'text-foreground/60'
                       }`}>
-                        kg
+                        g
                       </span>
                     </div>
                     
@@ -404,10 +418,16 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
                     </Button>
                   </div>
                 </FormControl>
+                {/* Show kg equivalent when weight is entered */}
+                {currentWeight > 0 && (
+                  <div className={`text-center text-lg font-semibold ${isValidWeight ? 'text-green-600' : 'text-orange-600'}`}>
+                    = {formatWeightDisplay(currentWeight)}
+                  </div>
+                )}
                 <FormDescription className={`text-sm font-medium ${isUnderWeight ? 'text-orange-600' : 'text-foreground/70'}`}>
                   {isUnderWeight 
-                    ? `⚠️ Váha je pod limitom ${minWeightKg} kg - nebude započítaná`
-                    : `Úlovky pod ${minWeightKg} kg nebudú započítané do výsledkov`
+                    ? `⚠️ Váha je pod limitom ${minWeightGrams} g - nebude započítaná`
+                    : `Úlovky pod ${minWeightGrams} g (${minWeightKg} kg) nebudú započítané`
                   }
                 </FormDescription>
                 <FormMessage />
@@ -701,7 +721,7 @@ export default function RefereeInterface() {
         const formData = new FormData();
         formData.append('teamId', catchData.teamId);
         formData.append('competitionId', catchData.competitionId);
-        formData.append('weight', catchData.weight.toString());
+        formData.append('weight', (catchData.weight / 1000).toString()); // Convert grams to kg for backend
         formData.append('fishType', catchData.fishType);
         
         // Get photo from IndexedDB if it was supposed to have one
