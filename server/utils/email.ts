@@ -305,6 +305,171 @@ class EmailService {
   }
 
   /**
+   * Send competition registration confirmation email
+   * @param email - Organizer's email
+   * @param competitionName - Name of the competition
+   * @param setupUrl - URL to the setup wizard
+   * @returns Promise<boolean>
+   */
+  async sendRegistrationConfirmationEmail(
+    email: string,
+    competitionName: string,
+    setupUrl: string
+  ): Promise<boolean> {
+    const subject = `Registrácia súťaže "${competitionName}" bola prijatá`;
+    const html = this.generateRegistrationConfirmationTemplate(competitionName, setupUrl);
+
+    return this.sendEmail({
+      to: email,
+      subject,
+      html,
+    });
+  }
+
+  /**
+   * Send competition approval email
+   * @param email - Organizer's email
+   * @param competitionName - Name of the competition
+   * @param loginUrl - URL to login/organizer dashboard
+   * @param competitionUrl - Direct URL to the competition
+   * @returns Promise<boolean>
+   */
+  async sendCompetitionApprovalEmail(
+    email: string,
+    competitionName: string,
+    loginUrl: string,
+    competitionUrl: string
+  ): Promise<boolean> {
+    const subject = `Vaša súťaž "${competitionName}" bola schválená!`;
+    const html = this.generateCompetitionApprovalTemplate(competitionName, loginUrl, competitionUrl);
+
+    return this.sendEmail({
+      to: email,
+      subject,
+      html,
+    });
+  }
+
+  /**
+   * Generate HTML template for registration confirmation
+   */
+  private generateRegistrationConfirmationTemplate(competitionName: string, setupUrl: string): string {
+    const escapedName = this.escapeHtml(competitionName);
+    return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <title>Registrácia súťaže prijatá</title>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+            .content { background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; }
+            .button { display: inline-block; background: #16a34a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0; }
+            .footer { background: #f8fafc; padding: 20px; text-align: center; color: #6b7280; border-radius: 0 0 8px 8px; }
+            .info-box { background: #f0fdf4; border-left: 4px solid #22c55e; padding: 12px; margin: 16px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🎣 Contestio</h1>
+              <p>Registrácia súťaže prijatá</p>
+            </div>
+            <div class="content">
+              <h2>Ďakujeme za registráciu!</h2>
+              <p>Vaša žiadosť o vytvorenie súťaže <strong>"${escapedName}"</strong> bola úspešne prijatá.</p>
+              
+              <div class="info-box">
+                <strong>📋 Ďalšie kroky:</strong>
+                <ol>
+                  <li>Dokončite nastavenie súťaže cez odkaz nižšie</li>
+                  <li>Vaša súťaž bude posúdená naším tímom</li>
+                  <li>Po schválení dostanete ďalší email s prístupom</li>
+                </ol>
+              </div>
+              
+              <p>Pokračujte v nastavení súťaže kliknutím na tlačidlo:</p>
+              <a href="${setupUrl}" class="button">Dokončiť nastavenie</a>
+              
+              <p>Ak tlačidlo nefunguje, skopírujte tento odkaz:</p>
+              <p style="word-break: break-all; color: #16a34a;">${setupUrl}</p>
+            </div>
+            <div class="footer">
+              <p>© 2024 Contestio. Všetky práva vyhradené.</p>
+              <p>Toto je automatický email, prosím neodpovedajte naň.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+  }
+
+  /**
+   * Generate HTML template for competition approval
+   */
+  private generateCompetitionApprovalTemplate(competitionName: string, loginUrl: string, competitionUrl: string): string {
+    const escapedName = this.escapeHtml(competitionName);
+    return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <title>Súťaž schválená</title>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+            .content { background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; }
+            .button { display: inline-block; background: #0ea5e9; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0; }
+            .button-secondary { display: inline-block; background: #6b7280; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0 20px 10px; }
+            .footer { background: #f8fafc; padding: 20px; text-align: center; color: #6b7280; border-radius: 0 0 8px 8px; }
+            .success-box { background: #f0fdf4; border-left: 4px solid #22c55e; padding: 12px; margin: 16px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🏆 Gratulujeme!</h1>
+              <p>Vaša súťaž bola schválená</p>
+            </div>
+            <div class="content">
+              <h2>Súťaž "${escapedName}" je aktívna!</h2>
+              
+              <div class="success-box">
+                <strong>✅ Vaša súťaž bola úspešne schválená</strong><br>
+                Teraz môžete spravovať tímy, rozhodcov a sledovať výsledky.
+              </div>
+              
+              <p>Pre správu súťaže sa prihláste do organizátorského panelu:</p>
+              <a href="${loginUrl}" class="button">Prihlásiť sa</a>
+              
+              <p>Alebo si pozrite vašu súťaž:</p>
+              <a href="${competitionUrl}" class="button-secondary">Zobraziť súťaž</a>
+              
+              <h3>Čo môžete robiť ako organizátor:</h3>
+              <ul>
+                <li>📋 Spravovať registrácie tímov</li>
+                <li>👨‍⚖️ Pridávať a priraďovať rozhodcov</li>
+                <li>🐟 Sledovať úlovky v reálnom čase</li>
+                <li>📊 Zobrazovať živý rebríček</li>
+                <li>⚙️ Upravovať nastavenia súťaže</li>
+              </ul>
+            </div>
+            <div class="footer">
+              <p>© 2024 Contestio. Všetky práva vyhradené.</p>
+              <p>Toto je automatický email, prosím neodpovedajte naň.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+  }
+
+  /**
    * Strip HTML tags from text (simple implementation)
    */
   private stripHtml(html: string): string {
