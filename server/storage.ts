@@ -904,6 +904,7 @@ export class DatabaseStorage implements IStorage {
     const competitionData: InsertCompetition = {
       name: registration.name,
       description: registration.description,
+      rules: registration.rules,
       location: registration.location,
       startDate: registration.startDate,
       endDate: registration.endDate,
@@ -917,6 +918,9 @@ export class DatabaseStorage implements IStorage {
       sideCompetitions: registration.sideCompetitions || [],
       hasSectors: registration.hasSectors || false,
       scoringType: registration.scoringType || "total",
+      minWeight: registration.minWeight || "2.00",
+      planTier: registration.selectedPlan || "basic",
+      branding: registration.branding || undefined,
       organizerId: approverUserId,
     };
 
