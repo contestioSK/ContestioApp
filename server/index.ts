@@ -35,6 +35,8 @@ app.use(helmet({
         "ws:",
         "https://api.openweathermap.org", // Weather API
         "https://*.contestio.sk", // Own domains
+        "https://*.replit.app", // Replit production domains
+        "https://*.replit.dev", // Replit dev domains
       ],
       fontSrc: ["'self'", "data:"],
       objectSrc: ["'none'"],
@@ -51,17 +53,21 @@ app.use(helmet({
 }));
 
 // Security: CORS configuration
-const allowedOrigins = process.env.NODE_ENV === 'production'
-  ? ['https://contestio.sk', 'https://www.contestio.sk']
-  : ['http://localhost:5000', 'http://127.0.0.1:5000'];
+const allowedOrigins = [
+  'https://contestio.sk', 
+  'https://www.contestio.sk',
+  'https://contestio.replit.app',
+  'http://localhost:5000', 
+  'http://127.0.0.1:5000'
+];
 
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (mobile apps, Postman, etc.)
     if (!origin) return callback(null, true);
     
-    // In development, allow Replit domains
-    if (process.env.NODE_ENV !== 'production' && origin.includes('.replit.dev')) {
+    // Allow Replit domains (both dev and production)
+    if (origin.includes('.replit.dev') || origin.includes('.replit.app')) {
       return callback(null, true);
     }
     
