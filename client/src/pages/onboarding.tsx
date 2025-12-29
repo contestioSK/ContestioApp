@@ -32,28 +32,28 @@ interface Preferences {
 }
 
 const STEPS = [
-  { id: 1, title: "Rybárska identita" },
-  { id: 2, title: "Váš cieľ" },
-  { id: 3, title: "Vizualizácia" }
+  { id: 1, title: "DNA Rybára" },
+  { id: 2, title: "Tvoja Misia" },
+  { id: 3, title: "Tvoj Štýl" }
 ];
 
 const fishingStyles = [
-  { id: "carp" as FishingStyle, label: "Kaprárina", icon: "🎣", description: "Lov kaprov a iných bielych rýb" },
-  { id: "spinning" as FishingStyle, label: "Prívlač", icon: "🐟", description: "Lov dravých rýb na umelé nástrahy" },
-  { id: "feeder" as FishingStyle, label: "Feeder", icon: "🪣", description: "Moderný spôsob lovu na položenú" },
-  { id: "fly" as FishingStyle, label: "Muškárenie", icon: "🪰", description: "Lov na umelú mušku" },
-  { id: "catfish" as FishingStyle, label: "Sumčiarina", icon: "🐋", description: "Lov sumcov a veľkých rýb" }
+  { id: "carp" as FishingStyle, label: "Kaprárina", icon: "🎣", description: "Vôňa boilies a trpezlivé čakanie na životnú jazdu" },
+  { id: "spinning" as FishingStyle, label: "Prívlač", icon: "🐟", description: "Adrenalínový lov dravcov a nekonečné hádzanie" },
+  { id: "feeder" as FishingStyle, label: "Feeder", icon: "🪣", description: "Maximálna precíznosť a jemná technika na každú rybu" },
+  { id: "fly" as FishingStyle, label: "Muškárenie", icon: "🪰", description: "Umenie fly-fishingu a súboj s prúdom rieky" },
+  { id: "catfish" as FishingStyle, label: "Sumčiarina", icon: "🐋", description: "Súboj s riečnymi gigantmi, kde rozhoduje sila" }
 ];
 
 const mainGoals = [
-  { id: "battles" as MainGoal, label: "Súťaženie s kamošmi", icon: Swords, description: "Fishing Battle a súťaže" },
-  { id: "diary" as MainGoal, label: "Súkromný denník", icon: BookOpen, description: "Záznamy výprav a úlovkov" },
-  { id: "statistics" as MainGoal, label: "Analýza a štatistiky", icon: BarChart3, description: "Grafy, trendy a dáta" }
+  { id: "battles" as MainGoal, label: "Nadvláda v Fishing Battle", icon: Swords, description: "Vyzvi kamošov a ukáž im, kto je skutočný pán vody" },
+  { id: "diary" as MainGoal, label: "Digitálny denník", icon: BookOpen, description: "Uchovaj si spomienky na každú výpravu v profi kvalite" },
+  { id: "statistics" as MainGoal, label: "Dátový mág", icon: BarChart3, description: "Analyzuj tlak, vietor a úspešnosť tvojich revírov" }
 ];
 
 const visualPreferences = [
-  { id: "lists" as VisualPreference, label: "Minimalistické zoznamy", icon: List, description: "Textovo orientované rozhranie" },
-  { id: "charts" as VisualPreference, label: "Grafy a mapy", icon: PieChart, description: "Vizuálne orientované rozhranie" }
+  { id: "lists" as VisualPreference, label: "Čistý zoznam", icon: List, description: "Prehľadné textové rozhranie (old-school klasika)" },
+  { id: "charts" as VisualPreference, label: "Moderná vizualizácia", icon: PieChart, description: "Dáta v grafoch a mapách (všetko vidíš na prvý pohľad)" }
 ];
 
 export default function Onboarding() {
@@ -87,8 +87,8 @@ export default function Onboarding() {
     },
     onSuccess: (_, variables) => {
       toast({
-        title: "🎉 Profil pripravený",
-        description: "Poďme na to!",
+        title: "🎉 Revír pripravený!",
+        description: "Tvoj profil je nastavený. Vidíme sa pri vode!",
       });
       
       const goal = variables.mainGoal || "diary";
@@ -154,9 +154,9 @@ export default function Onboarding() {
           <div className="w-full max-w-lg animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="text-center mb-8">
               <Fish className="w-12 h-12 text-primary mx-auto mb-4" />
-              <h1 className="text-2xl font-bold mb-2">Aký štýl lovu najčastejšie používate? 🎣</h1>
+              <h1 className="text-2xl font-bold mb-2">Aké druhy rybolovu máš najradšej?</h1>
               <p className="text-muted-foreground">
-                Vďaka tomu vám prispôsobíme štatistiky, záznamy a prehľady.
+                Prispôsobíme tvoj denník a štatistiky presne podľa toho, čo a ako lovíš.
               </p>
             </div>
 
@@ -192,9 +192,9 @@ export default function Onboarding() {
           <div className="w-full max-w-lg animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="text-center mb-8">
               <Target className="w-12 h-12 text-primary mx-auto mb-4" />
-              <h1 className="text-2xl font-bold mb-2">Čo chcete s Contestiom robiť?</h1>
+              <h1 className="text-2xl font-bold mb-2">Aká je tvoja hlavná misia?</h1>
               <p className="text-muted-foreground">
-                Aplikácia sa vám po dokončení automaticky prispôsobí.
+                Povedz nám, prečo si tu. Contestio ti podľa toho nastaví úvodnú obrazovku.
               </p>
             </div>
 
@@ -232,9 +232,9 @@ export default function Onboarding() {
           <div className="w-full max-w-lg animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="text-center mb-8">
               <LineChart className="w-12 h-12 text-primary mx-auto mb-4" />
-              <h1 className="text-2xl font-bold mb-2">Ako chcete vidieť svoje výsledky?</h1>
+              <h1 className="text-2xl font-bold mb-2">Zvoľ si svoj štýl</h1>
               <p className="text-muted-foreground">
-                Vyberte si rozhranie, ktoré vám bude najviac vyhovovať pri vode aj doma.
+                Ako chceš sledovať svoje dáta? Vyber si rozhranie, ktoré ti sedí.
               </p>
             </div>
 
