@@ -52,9 +52,22 @@ const SMTP_CONFIG = {
   },
 };
 
-const APP_ORIGIN = process.env.APP_ORIGIN || process.env.REPL_SLUG 
-  ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co` 
-  : 'https://contestio.sk';
+// Determine the correct app origin URL
+function getAppOrigin(): string {
+  if (process.env.APP_ORIGIN) {
+    return process.env.APP_ORIGIN;
+  }
+  if (process.env.REPLIT_DEV_DOMAIN) {
+    return `https://${process.env.REPLIT_DEV_DOMAIN}`;
+  }
+  if (process.env.REPLIT_DOMAINS) {
+    const firstDomain = process.env.REPLIT_DOMAINS.split(',')[0];
+    return `https://${firstDomain}`;
+  }
+  return 'https://contestio.sk';
+}
+
+const APP_ORIGIN = getAppOrigin();
 
 interface EmailOptions {
   to: string;
