@@ -69,7 +69,7 @@ export default function RegisterPage() {
       console.error("Registration error:", error);
       toast({
         title: "Chyba registrácie",
-        description: error.message || "Nastala chyba pri registrácii. Skúste to znovu.",
+        description: error.message,
         variant: "destructive",
       });
     },
