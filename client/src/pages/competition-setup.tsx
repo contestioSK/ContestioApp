@@ -83,11 +83,26 @@ export default function CompetitionSetup() {
   const [sectorPlaces, setSectorPlaces] = useState<Array<{ sectorName: string; places: string[] }>>([]);
   const [sideCompetitions, setSideCompetitions] = useState<string[]>([]);
 
-  // Read plan from URL query parameter (passed from registration) or localStorage
+  // Read plan and setup token from URL query parameter (passed from registration)
   const urlParams = new URLSearchParams(window.location.search);
   const isDemoMode = id === 'demo';
   const urlPlan = urlParams.get('plan') as PlanTier | null;
   const validUrlPlan = urlPlan && ['basic', 'pro', 'premium', 'enterprise'].includes(urlPlan) ? urlPlan : null;
+  
+  // Security token for updates - check URL first, then localStorage
+  const [setupToken] = useState<string | null>(() => {
+    const urlToken = urlParams.get('token');
+    if (urlToken && id) {
+      // Save token to localStorage for page refresh
+      localStorage.setItem(`competition_token_${id}`, urlToken);
+      return urlToken;
+    }
+    // Try to get from localStorage
+    if (id) {
+      return localStorage.getItem(`competition_token_${id}`);
+    }
+    return null;
+  });
   
   // Persist plan in localStorage so it survives navigation/refresh
   const [cachedPlan, setCachedPlan] = useState<PlanTier | null>(() => {
@@ -106,9 +121,9 @@ export default function CompetitionSetup() {
     return validUrlPlan;
   });
 
-  const { data: registration, isLoading } = useQuery<{ selectedPlan?: string }>({
+  const { data: registration, isLoading } = useQuery<{ selectedPlan?: string; contactEmail?: string }>({
     queryKey: ['/api/competition-registrations', id],
-    enabled: !!id && !isDemoMode && !validUrlPlan && !cachedPlan, // Skip API if we have plan from URL or cache
+    enabled: !!id && !isDemoMode, // Always fetch to get contactEmail for verification
   });
 
   // Priority: URL param > cached > API response > default basic
@@ -215,6 +230,8 @@ export default function CompetitionSetup() {
     nextStep();
   };
 
+  const [isSaving, setIsSaving] = useState(false);
+
   const handleFinish = async () => {
     if (isDemoMode) {
       toast({
@@ -222,12 +239,61 @@ export default function CompetitionSetup() {
         description: "Toto bola len ukážka wizardu. Pre registráciu skutočnej súťaže vyberte balík na stránke cenníka.",
       });
       setLocation("/pricing");
-    } else {
+      return;
+    }
+    
+    // Save all data to registration before finishing
+    setIsSaving(true);
+    try {
+      const formData = basicsForm.getValues();
+      
+      const updatePayload = {
+        description: formData.description || null,
+        rules: formData.rules || null,
+        scoringType: formData.scoringType || "total",
+        minWeight: String(formData.minWeight || 2),
+        hasSectors: hasSectors,
+        sectorPlaces: hasSectors ? sectorPlaces : [],
+        sideCompetitions: sideCompetitions,
+        firstPlacePrize: formData.firstPlacePrize || null,
+        secondPlacePrize: formData.secondPlacePrize || null,
+        thirdPlacePrize: formData.thirdPlacePrize || null,
+        // Security token for unauthenticated users (from URL)
+        setupToken: setupToken,
+      };
+
+      const response = await fetch(`/api/competition-registrations/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatePayload),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to save registration');
+      }
+
+      // Clear cached data from localStorage
+      if (id) {
+        localStorage.removeItem(`competition_plan_${id}`);
+        localStorage.removeItem(`competition_token_${id}`);
+      }
+
       toast({
         title: "Nastavenie dokončené!",
         description: "Vaša súťaž bola úspešne nakonfigurovaná. Čaká na schválenie administrátorom.",
       });
       setLocation("/");
+    } catch (error: any) {
+      toast({
+        title: "Chyba pri ukladaní",
+        description: error.message || "Nepodarilo sa uložiť nastavenia súťaže.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -694,10 +760,15 @@ export default function CompetitionSetup() {
             ) : (
               <Button 
                 onClick={handleFinish}
+                disabled={isSaving}
                 data-testid="button-finish-setup"
               >
-                <Check className="w-4 h-4 mr-2" />
-                Dokončiť nastavenie
+                {isSaving ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Check className="w-4 h-4 mr-2" />
+                )}
+                {isSaving ? "Ukladám..." : "Dokončiť nastavenie"}
               </Button>
             )}
           </div>

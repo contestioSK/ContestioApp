@@ -89,7 +89,8 @@ export default function RegisterCompetition() {
         description: "Teraz môžete pokračovať v nastavení súťaže.",
       });
       
-      setLocation(`/competition/${result.id}/setup?plan=${data.selectedPlan}`);
+      // Include setupToken in URL for secure setup wizard access
+      setLocation(`/competition/${result.id}/setup?plan=${data.selectedPlan}&token=${result.setupToken}`);
     } catch (error: any) {
       toast({
         title: "Nepodarilo sa vytvoriť registráciu",

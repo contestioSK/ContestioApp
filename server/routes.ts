@@ -1,7 +1,7 @@
 import express, { type Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
-import { randomUUID } from "crypto";
+import { randomUUID, createHmac } from "crypto";
 import { storage } from "./storage";
 import { db } from "./db";
 import { eq, and, gt, desc, or, inArray, sql } from "drizzle-orm";
@@ -50,6 +50,37 @@ import path from "path";
 import fs, { existsSync } from "fs";
 import { promises as fsPromises } from "fs";
 import { ImageService, type ProcessedImageResult } from "./image-service";
+
+// Setup token generation and verification for competition registration
+// Uses HMAC with a secret derived from SESSION_SECRET
+// SESSION_SECRET is required for security - if not set, tokens won't work properly
+const SETUP_TOKEN_SECRET = process.env.SESSION_SECRET;
+if (!SETUP_TOKEN_SECRET) {
+  console.warn('[SECURITY WARNING] SESSION_SECRET is not set. Setup tokens will not be secure.');
+}
+
+function generateSetupToken(registrationId: string): string {
+  if (!SETUP_TOKEN_SECRET) {
+    throw new Error('SESSION_SECRET environment variable is required for setup tokens');
+  }
+  const hmac = createHmac('sha256', SETUP_TOKEN_SECRET);
+  hmac.update(registrationId);
+  return hmac.digest('hex').substring(0, 32);
+}
+
+function verifySetupToken(registrationId: string, token: string): boolean {
+  if (!SETUP_TOKEN_SECRET) {
+    return false; // Reject all tokens if secret is not configured
+  }
+  const expectedToken = generateSetupToken(registrationId);
+  // Constant-time comparison to prevent timing attacks
+  if (token.length !== expectedToken.length) return false;
+  let result = 0;
+  for (let i = 0; i < token.length; i++) {
+    result |= token.charCodeAt(i) ^ expectedToken.charCodeAt(i);
+  }
+  return result === 0;
+}
 
 // Configure multer for file uploads
 const upload = multer({
@@ -3870,7 +3901,14 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       });
       
       const registration = await storage.createCompetitionRegistration(registrationData);
-      res.status(201).json(registration);
+      
+      // Generate setup token for secure setup wizard access
+      const setupToken = generateSetupToken(registration.id);
+      
+      res.status(201).json({
+        ...registration,
+        setupToken, // Include token for setup wizard authorization
+      });
     } catch (error: any) {
       console.error("Error creating competition registration:", error);
       if (error.name === 'ZodError') {
@@ -3943,6 +3981,94 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     } catch (error: any) {
       console.error("Error approving competition registration:", error);
       res.status(400).json({ message: error.message || "Failed to approve competition registration" });
+    }
+  });
+
+  // Update competition registration data (for setup wizard)
+  // Authorization: registration owner (by email) or admin can update
+  app.patch('/api/competition-registrations/:id', async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const registration = await storage.getCompetitionRegistration(id);
+      
+      if (!registration) {
+        return res.status(404).json({ message: "Registration not found" });
+      }
+
+      // Allow update only for submitted registrations (not yet approved/declined)
+      if (registration.status !== "submitted") {
+        return res.status(400).json({ message: "Cannot update approved or declined registrations" });
+      }
+
+      // Authorization check
+      const userIsAuthenticated = req.isAuthenticated && req.isAuthenticated();
+      let authorized = false;
+      
+      if (userIsAuthenticated) {
+        // For authenticated users: check if admin or owner by email
+        const userId = getUserId(req);
+        const user = await storage.getUser(userId);
+        const isOwner = user?.email === registration.contactEmail;
+        const userIsAdmin = isAdmin(user);
+        authorized = isOwner || userIsAdmin;
+      }
+      
+      // For unauthenticated users OR if authenticated user is not owner/admin:
+      // Require valid setup token (HMAC-based, generated at registration creation)
+      if (!authorized) {
+        const { setupToken } = req.body;
+        if (!setupToken || !verifySetupToken(id, setupToken)) {
+          return res.status(403).json({ message: "Invalid or missing setup token" });
+        }
+        authorized = true;
+      }
+      
+      if (!authorized) {
+        return res.status(403).json({ message: "You are not authorized to update this registration" });
+      }
+
+      // Extract updatable fields from request body
+      const {
+        description,
+        rules,
+        scoringType,
+        minWeight,
+        hasSectors,
+        sectorPlaces,
+        sideCompetitions,
+        firstPlacePrize,
+        secondPlacePrize,
+        thirdPlacePrize,
+        registrationFee,
+        maxTeams,
+        branding
+      } = req.body;
+
+      const updateData: any = { updatedAt: new Date() };
+      
+      if (description !== undefined) updateData.description = description;
+      if (rules !== undefined) updateData.rules = rules;
+      if (scoringType !== undefined) updateData.scoringType = scoringType;
+      if (minWeight !== undefined) updateData.minWeight = minWeight;
+      if (hasSectors !== undefined) updateData.hasSectors = hasSectors;
+      if (sectorPlaces !== undefined) updateData.sectorPlaces = sectorPlaces;
+      if (sideCompetitions !== undefined) updateData.sideCompetitions = sideCompetitions;
+      if (firstPlacePrize !== undefined) updateData.firstPlacePrize = firstPlacePrize;
+      if (secondPlacePrize !== undefined) updateData.secondPlacePrize = secondPlacePrize;
+      if (thirdPlacePrize !== undefined) updateData.thirdPlacePrize = thirdPlacePrize;
+      if (registrationFee !== undefined) updateData.registrationFee = registrationFee;
+      if (maxTeams !== undefined) updateData.maxTeams = maxTeams;
+      if (branding !== undefined) updateData.branding = branding;
+
+      const updatedRegistration = await storage.updateCompetitionRegistration(id, updateData);
+      
+      res.json({
+        message: "Registration updated successfully",
+        registration: updatedRegistration
+      });
+    } catch (error: any) {
+      console.error("Error updating competition registration:", error);
+      res.status(400).json({ message: error.message || "Failed to update registration" });
     }
   });
 
