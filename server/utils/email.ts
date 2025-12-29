@@ -1,20 +1,57 @@
 import nodemailer from 'nodemailer';
 import type { Transporter } from 'nodemailer';
-import sgMail from '@sendgrid/mail';
+import { Resend } from 'resend';
 
-// Email configuration from environment variables
-const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
+// Resend integration via Replit Connector
+let connectionSettings: any;
+
+async function getResendCredentials() {
+  const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
+  const xReplitToken = process.env.REPL_IDENTITY 
+    ? 'repl ' + process.env.REPL_IDENTITY 
+    : process.env.WEB_REPL_RENEWAL 
+    ? 'depl ' + process.env.WEB_REPL_RENEWAL 
+    : null;
+
+  if (!xReplitToken || !hostname) {
+    return null;
+  }
+
+  try {
+    connectionSettings = await fetch(
+      'https://' + hostname + '/api/v2/connection?include_secrets=true&connector_names=resend',
+      {
+        headers: {
+          'Accept': 'application/json',
+          'X_REPLIT_TOKEN': xReplitToken
+        }
+      }
+    ).then(res => res.json()).then(data => data.items?.[0]);
+
+    if (!connectionSettings || !connectionSettings.settings?.api_key) {
+      return null;
+    }
+    return {
+      apiKey: connectionSettings.settings.api_key,
+      fromEmail: connectionSettings.settings.from_email || 'info@contestio.sk'
+    };
+  } catch (error) {
+    console.error('[EmailService] Failed to get Resend credentials:', error);
+    return null;
+  }
+}
+
+// SMTP fallback configuration
 const SMTP_CONFIG = {
   host: process.env.SMTP_HOST,
   port: process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT) : undefined,
-  secure: process.env.SMTP_PORT === '465', // true for 465 (SSL), false for other ports (STARTTLS)
+  secure: process.env.SMTP_PORT === '465',
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASSWORD,
   },
 };
 
-const FROM_EMAIL = process.env.SMTP_FROM || 'info@contestio.sk';
 const APP_ORIGIN = process.env.APP_ORIGIN || process.env.REPL_SLUG 
   ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co` 
   : 'https://contestio.sk';
@@ -29,57 +66,49 @@ interface EmailOptions {
 class EmailService {
   private transporter: Transporter | null = null;
   private isConfigured = false;
-  private useSendGrid = false;
+  private useResend = false;
+  private useSMTP = false;
+  private initializationPromise: Promise<void>;
 
   constructor() {
-    this.initializeTransporter();
+    this.initializationPromise = this.initializeTransporter();
   }
 
-  private initializeTransporter() {
-    // Try SendGrid first
-    if (SENDGRID_API_KEY) {
-      try {
-        sgMail.setApiKey(SENDGRID_API_KEY);
-        this.isConfigured = true;
-        this.useSendGrid = true;
-        console.log('[EmailService] SendGrid configured successfully');
-        return;
-      } catch (error) {
-        console.error('[EmailService] Failed to configure SendGrid:', error);
-      }
-    }
-
-    // Fall back to SMTP if SendGrid is not available
-    if (!SMTP_CONFIG.host || !SMTP_CONFIG.port || !SMTP_CONFIG.auth.user || !SMTP_CONFIG.auth.pass) {
-      console.warn('[EmailService] Email configuration incomplete. Email functionality will be disabled.');
-      console.warn('[EmailService] Required: SENDGRID_API_KEY or (SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD)');
-      console.warn('[EmailService] Optional: SMTP_FROM, APP_ORIGIN');
+  private async initializeTransporter(): Promise<void> {
+    // Try Resend first via Replit Connector
+    const resendCreds = await getResendCredentials();
+    if (resendCreds) {
+      this.isConfigured = true;
+      this.useResend = true;
+      console.log('[EmailService] Resend configured successfully via Replit Connector');
       return;
     }
 
-    try {
-      this.transporter = nodemailer.createTransport(SMTP_CONFIG);
-      this.isConfigured = true;
-      this.useSendGrid = false;
-      console.log('[EmailService] SMTP transporter configured successfully');
-      
-      // Verify connection on startup
-      this.verifyConnection().catch(error => {
-        console.error('[EmailService] SMTP connection verification failed:', error);
-        this.isConfigured = false;
-      });
-    } catch (error) {
-      console.error('[EmailService] Failed to configure SMTP transporter:', error);
+    // Fall back to SMTP if Resend is not available
+    if (SMTP_CONFIG.host && SMTP_CONFIG.port && SMTP_CONFIG.auth.user && SMTP_CONFIG.auth.pass) {
+      try {
+        this.transporter = nodemailer.createTransport(SMTP_CONFIG);
+        this.isConfigured = true;
+        this.useSMTP = true;
+        console.log('[EmailService] SMTP transporter configured successfully');
+        
+        this.verifyConnection().catch(error => {
+          console.error('[EmailService] SMTP connection verification failed:', error);
+          this.isConfigured = false;
+        });
+        return;
+      } catch (error) {
+        console.error('[EmailService] Failed to configure SMTP transporter:', error);
+      }
     }
+
+    console.warn('[EmailService] Email configuration incomplete. Email functionality will be disabled.');
+    console.warn('[EmailService] Required: Resend Connector or (SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD)');
   }
 
-  /**
-   * Verify SMTP connection (only for SMTP, not SendGrid)
-   * @returns Promise<boolean> - True if connection is successful
-   */
   async verifyConnection(): Promise<boolean> {
-    if (this.useSendGrid) {
-      return true; // SendGrid doesn't need verification
+    if (this.useResend) {
+      return true;
     }
 
     if (!this.transporter) {
@@ -96,61 +125,63 @@ class EmailService {
     }
   }
 
-  /**
-   * Send an email
-   * @param options - Email options (to, subject, html, text)
-   * @returns Promise<boolean> - True if email was sent successfully
-   */
   async sendEmail(options: EmailOptions): Promise<boolean> {
-    if (!this.isConfigured) {
-      console.error('[EmailService] Email service not configured. Cannot send email.');
-      return false;
-    }
+    // Ensure initialization is complete before sending
+    await this.initializationPromise;
+    
+    // For Resend, we need fresh credentials each time (tokens can expire)
+    if (this.useResend) {
+      const creds = await getResendCredentials();
+      if (!creds) {
+        console.error('[EmailService] Failed to get Resend credentials');
+        return false;
+      }
 
-    try {
-      if (this.useSendGrid) {
-        // Use SendGrid
-        await sgMail.send({
+      try {
+        const resend = new Resend(creds.apiKey);
+        const { data, error } = await resend.emails.send({
+          from: creds.fromEmail,
           to: options.to,
-          from: FROM_EMAIL,
           subject: options.subject,
           html: options.html,
           text: options.text || this.stripHtml(options.html),
         });
-        console.log('[EmailService] Email sent successfully via SendGrid to:', options.to);
-        return true;
-      } else {
-        // Use SMTP
-        if (!this.transporter) {
-          console.error('[EmailService] SMTP transporter not available.');
+
+        if (error) {
+          console.error('[EmailService] Resend error:', error);
           return false;
         }
 
-        const mailOptions = {
-          from: FROM_EMAIL,
+        console.log('[EmailService] Email sent successfully via Resend to:', options.to, 'id:', data?.id);
+        return true;
+      } catch (error) {
+        console.error('[EmailService] Failed to send email via Resend:', error);
+        return false;
+      }
+    }
+
+    // SMTP fallback
+    if (this.useSMTP && this.transporter) {
+      try {
+        const result = await this.transporter.sendMail({
+          from: process.env.SMTP_FROM || 'info@contestio.sk',
           to: options.to,
           subject: options.subject,
           html: options.html,
           text: options.text || this.stripHtml(options.html),
-        };
-
-        const result = await this.transporter.sendMail(mailOptions);
+        });
         console.log('[EmailService] Email sent successfully via SMTP:', result.messageId);
         return true;
+      } catch (error) {
+        console.error('[EmailService] Failed to send email via SMTP:', error);
+        return false;
       }
-    } catch (error) {
-      console.error('[EmailService] Failed to send email:', error);
-      return false;
     }
+
+    console.error('[EmailService] Email service not configured. Cannot send email.');
+    return false;
   }
 
-  /**
-   * Send email verification email
-   * @param email - Recipient email address
-   * @param firstName - User's first name
-   * @param verificationToken - Verification token
-   * @returns Promise<boolean> - True if email was sent successfully
-   */
   async sendVerificationEmail(
     email: string,
     firstName: string,
@@ -169,13 +200,6 @@ class EmailService {
     });
   }
 
-  /**
-   * Send password reset email
-   * @param email - Recipient email address
-   * @param firstName - User's first name
-   * @param resetToken - Password reset token
-   * @returns Promise<boolean> - True if email was sent successfully
-   */
   async sendPasswordResetEmail(
     email: string,
     firstName: string,
@@ -194,9 +218,6 @@ class EmailService {
     });
   }
 
-  /**
-   * Escape HTML characters to prevent injection
-   */
   private escapeHtml(text: string): string {
     const htmlEscapes: { [key: string]: string } = {
       '&': '&amp;',
@@ -209,9 +230,6 @@ class EmailService {
     return text.replace(/[&<>"'\/]/g, (char) => htmlEscapes[char]);
   }
 
-  /**
-   * Generate HTML template for email verification
-   */
   private generateVerificationEmailTemplate(firstName: string, verificationUrl: string): string {
     const escapedFirstName = this.escapeHtml(firstName);
     return `
@@ -255,9 +273,6 @@ class EmailService {
     `;
   }
 
-  /**
-   * Generate HTML template for password reset
-   */
   private generatePasswordResetEmailTemplate(firstName: string, resetUrl: string): string {
     const escapedFirstName = this.escapeHtml(firstName);
     return `
@@ -304,13 +319,6 @@ class EmailService {
     `;
   }
 
-  /**
-   * Send competition registration confirmation email
-   * @param email - Organizer's email
-   * @param competitionName - Name of the competition
-   * @param setupUrl - URL to the setup wizard
-   * @returns Promise<boolean>
-   */
   async sendRegistrationConfirmationEmail(
     email: string,
     competitionName: string,
@@ -326,14 +334,6 @@ class EmailService {
     });
   }
 
-  /**
-   * Send competition approval email
-   * @param email - Organizer's email
-   * @param competitionName - Name of the competition
-   * @param loginUrl - URL to login/organizer dashboard
-   * @param competitionUrl - Direct URL to the competition
-   * @returns Promise<boolean>
-   */
   async sendCompetitionApprovalEmail(
     email: string,
     competitionName: string,
@@ -350,9 +350,6 @@ class EmailService {
     });
   }
 
-  /**
-   * Generate HTML template for registration confirmation
-   */
   private generateRegistrationConfirmationTemplate(competitionName: string, setupUrl: string): string {
     const escapedName = this.escapeHtml(competitionName);
     return `
@@ -407,9 +404,6 @@ class EmailService {
     `;
   }
 
-  /**
-   * Generate HTML template for competition approval
-   */
   private generateCompetitionApprovalTemplate(competitionName: string, loginUrl: string, competitionUrl: string): string {
     const escapedName = this.escapeHtml(competitionName);
     return `
@@ -469,20 +463,13 @@ class EmailService {
     `;
   }
 
-  /**
-   * Strip HTML tags from text (simple implementation)
-   */
   private stripHtml(html: string): string {
     return html.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
   }
 
-  /**
-   * Check if email service is configured and ready
-   */
   isReady(): boolean {
     return this.isConfigured;
   }
 }
 
-// Export singleton instance
 export const emailService = new EmailService();
