@@ -203,7 +203,7 @@ class EmailService {
     const encodedToken = encodeURIComponent(verificationToken);
     const verificationUrl = `${APP_ORIGIN}/auth/verify-email?token=${encodedToken}`;
     
-    const subject = 'Verify your Contestio account';
+    const subject = 'Potvrď svoju e-mailovú adresu | Contestio';
     const html = this.generateVerificationEmailTemplate(firstName, verificationUrl);
 
     return this.sendEmail({
@@ -251,34 +251,66 @@ class EmailService {
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1">
-          <title>Verify your Contestio account</title>
+          <title>Potvrď svoju e-mailovú adresu | Contestio</title>
           <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f8fafc; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
             .header { background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
             .content { background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; }
-            .button { display: inline-block; background: #0ea5e9; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0; }
-            .footer { background: #f8fafc; padding: 20px; text-align: center; color: #6b7280; border-radius: 0 0 8px 8px; }
+            .button { display: inline-block; background: #0ea5e9; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0; }
+            .button:hover { background: #0284c7; }
+            .footer { background: #f8fafc; padding: 20px; text-align: center; color: #6b7280; border-radius: 0 0 8px 8px; font-size: 14px; }
+            .features { background: #f0f9ff; border-radius: 6px; padding: 16px; margin: 20px 0; }
+            .features ul { margin: 10px 0; padding-left: 20px; }
+            .features li { margin: 8px 0; }
+            .link-fallback { background: #f8fafc; padding: 12px; border-radius: 6px; margin: 16px 0; word-break: break-all; font-size: 13px; }
+            .divider { border-top: 1px solid #e5e7eb; margin: 24px 0; }
           </style>
         </head>
         <body>
           <div class="container">
             <div class="header">
-              <h1>🎣 Welcome to Contestio!</h1>
+              <h1 style="margin: 0; font-size: 28px;">🎣 Contestio</h1>
             </div>
             <div class="content">
-              <h2>Hi ${escapedFirstName}!</h2>
-              <p>Thank you for joining Contestio, the premier platform for live fishing competitions!</p>
-              <p>To complete your registration and start participating in exciting fishing tournaments, please verify your email address by clicking the button below:</p>
-              <a href="${verificationUrl}" class="button">Verify Email Address</a>
-              <p>If the button doesn't work, you can also copy and paste this link into your browser:</p>
-              <p style="word-break: break-all; color: #0ea5e9;">${verificationUrl}</p>
-              <p><strong>This verification link will expire in 24 hours.</strong></p>
-              <p>If you didn't create an account with Contestio, you can safely ignore this email.</p>
+              <p style="font-size: 18px;">Ahoj <strong>${escapedFirstName}</strong>,</p>
+              
+              <p>vitaj v <strong>Contestio</strong> 👋<br>
+              tvoj účet bol úspešne vytvorený. Aby sme ho mohli aktivovať, potrebujeme potvrdiť tvoju e-mailovú adresu.</p>
+              
+              <p>👉 <strong>Stačí kliknúť na tlačidlo nižšie:</strong></p>
+              
+              <div style="text-align: center;">
+                <a href="${verificationUrl}" class="button">Potvrdiť e-mailovú adresu</a>
+              </div>
+              
+              <div class="features">
+                <p style="margin: 0 0 10px 0;"><strong>Týmto krokom získaš plný prístup k:</strong></p>
+                <ul>
+                  <li>rybárskemu denníku a záznamom úlovkov,</li>
+                  <li>sledovaniu obľúbených súťaží a tímov,</li>
+                  <li>štatistikám, cieľom a ďalším funkciám Contestio.</li>
+                </ul>
+              </div>
+              
+              <p>⏱️ Odkaz je platný <strong>24 hodín</strong>.</p>
+              
+              <p style="color: #6b7280; font-size: 14px;">Ak si sa do Contestio neregistroval ty, tento e-mail môžeš pokojne ignorovať.</p>
+              
+              <div class="divider"></div>
+              
+              <p style="font-size: 14px; color: #6b7280;">Ak by tlačidlo nefungovalo, skopíruj tento odkaz do prehliadača:</p>
+              <div class="link-fallback">
+                <a href="${verificationUrl}" style="color: #0ea5e9;">${verificationUrl}</a>
+              </div>
+              
+              <p style="font-size: 14px; color: #6b7280;">V prípade otázok nás kontaktuj na<br>
+              📩 <a href="mailto:support@contestio.sk" style="color: #0ea5e9;"><strong>support@contestio.sk</strong></a></p>
             </div>
             <div class="footer">
-              <p>© 2024 Contestio. All rights reserved.</p>
-              <p>This is an automated email, please do not reply.</p>
+              <p style="margin: 0 0 8px 0;">Vidíme sa na vode 🎣</p>
+              <p style="margin: 0; font-weight: bold;">Tím Contestio</p>
+              <p style="margin: 16px 0 0 0; font-size: 12px; color: #9ca3af;">© 2024 Contestio. Všetky práva vyhradené.</p>
             </div>
           </div>
         </body>
