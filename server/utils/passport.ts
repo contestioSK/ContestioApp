@@ -65,10 +65,25 @@ passport.use(new LocalStrategy({
  * Only configures if Google OAuth credentials are provided
  */
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  // Build absolute callback URL for Google OAuth
+  const getCallbackURL = () => {
+    if (process.env.APP_ORIGIN) {
+      return `${process.env.APP_ORIGIN}/api/auth/google/callback`;
+    }
+    if (process.env.REPLIT_DOMAINS) {
+      const primaryDomain = process.env.REPLIT_DOMAINS.split(',')[0];
+      return `https://${primaryDomain}/api/auth/google/callback`;
+    }
+    return '/api/auth/google/callback';
+  };
+  
+  const callbackURL = getCallbackURL();
+  console.log(`[Auth] Google OAuth callback URL: ${callbackURL}`);
+  
   passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: '/api/auth/google/callback',
+    callbackURL,
   }, async (accessToken: string, refreshToken: string, profile: any, done) => {
     try {
       // Validate that Google profile has a verified email
