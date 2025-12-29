@@ -379,9 +379,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       const normalizedEmail = email.toLowerCase().trim();
       const existingUser = await storage.getUserByEmail(normalizedEmail);
       if (existingUser) {
-        return res.status(400).json({ 
-          message: 'Užívateľ s touto emailovou adresou už existuje.' 
-        });
+        return res.status(400).send('Užívateľ s touto emailovou adresou už existuje.');
       }
 
       // Hash password and generate verification token
