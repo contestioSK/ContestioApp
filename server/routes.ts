@@ -1339,6 +1339,33 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
+  // Get competitions where user is organizer (by organizerId or organizerEmail)
+  app.get('/api/organizer/competitions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+
+      const allCompetitions = await storage.getCompetitions();
+      
+      // Filter competitions where:
+      // 1. User is the organizerId
+      // 2. OR user's email matches competition's organizerEmail (set during approval)
+      const organizerCompetitions = allCompetitions.filter(comp => 
+        comp.organizerId === userId ||
+        (user.email && comp.organizerEmail === user.email)
+      );
+
+      res.json(organizerCompetitions);
+    } catch (error) {
+      console.error("Error fetching organizer competitions:", error);
+      res.status(500).json({ message: "Failed to fetch organizer competitions" });
+    }
+  });
+
   app.get('/api/competitions/:id', async (req, res) => {
     try {
       const competition = await storage.getCompetition(req.params.id);
@@ -3196,6 +3223,21 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       }
 
       const result = await storage.approveCompetitionRegistration(req.params.id, userId);
+      
+      // Send approval email to organizer
+      const appOrigin = process.env.APP_ORIGIN || `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`;
+      const loginUrl = `${appOrigin}/organizer`;
+      const competitionUrl = `${appOrigin}/competition/${result.competition.id}`;
+      
+      emailService.sendCompetitionApprovalEmail(
+        result.registration.contactEmail,
+        result.competition.name,
+        loginUrl,
+        competitionUrl
+      ).catch(err => {
+        console.error('[Email] Failed to send competition approval email:', err);
+      });
+      
       res.json({ 
         message: "Registration approved and competition created successfully",
         registration: result.registration,
@@ -3905,6 +3947,18 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       // Generate setup token for secure setup wizard access
       const setupToken = generateSetupToken(registration.id);
       
+      // Send confirmation email to organizer
+      const appOrigin = process.env.APP_ORIGIN || `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`;
+      const setupUrl = `${appOrigin}/competition/${registration.id}/setup?plan=${registration.selectedPlan}&token=${setupToken}`;
+      
+      emailService.sendRegistrationConfirmationEmail(
+        registration.contactEmail,
+        registration.name,
+        setupUrl
+      ).catch(err => {
+        console.error('[Email] Failed to send registration confirmation email:', err);
+      });
+      
       res.status(201).json({
         ...registration,
         setupToken, // Include token for setup wizard authorization
@@ -3972,6 +4026,20 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       }
 
       const result = await storage.approveCompetitionRegistration(req.params.id, userId);
+      
+      // Send approval email to organizer
+      const appOrigin = process.env.APP_ORIGIN || `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`;
+      const loginUrl = `${appOrigin}/organizer`;
+      const competitionUrl = `${appOrigin}/competition/${result.competition.id}`;
+      
+      emailService.sendCompetitionApprovalEmail(
+        result.registration.contactEmail,
+        result.competition.name,
+        loginUrl,
+        competitionUrl
+      ).catch(err => {
+        console.error('[Email] Failed to send competition approval email:', err);
+      });
       
       res.json({
         message: "Competition registration approved and competition created",
