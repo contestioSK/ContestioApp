@@ -940,6 +940,21 @@ export class DatabaseStorage implements IStorage {
     return { registration: updatedRegistration, competition: newCompetition };
   }
 
+  async updateCompetitionRegistration(id: string, data: Partial<InsertCompetitionRegistration>): Promise<CompetitionRegistration> {
+    const registration = await this.getCompetitionRegistration(id);
+    if (!registration) {
+      throw new Error("Registration not found");
+    }
+
+    const [updatedRegistration] = await db
+      .update(competitionRegistrations)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(competitionRegistrations.id, id))
+      .returning();
+
+    return updatedRegistration;
+  }
+
   async declineCompetitionRegistration(id: string): Promise<CompetitionRegistration> {
     const registration = await this.getCompetitionRegistration(id);
     if (!registration) {
