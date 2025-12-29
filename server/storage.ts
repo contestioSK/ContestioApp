@@ -208,6 +208,7 @@ export interface IStorage {
   // Referee operations
   getRefereesByCompetition(competitionId: string): Promise<Referee[]>;
   getRefereeByUserAndCompetition(userId: string, competitionId: string): Promise<Referee | undefined>;
+  getRefereeAssignmentsForUser(userId: string): Promise<(Referee & { competition: Competition })[]>;
   createReferee(referee: InsertReferee): Promise<Referee>;
   updateReferee(refereeId: string, updates: Partial<InsertReferee>): Promise<Referee>;
   deleteReferee(refereeId: string): Promise<void>;
@@ -1194,6 +1195,37 @@ export class DatabaseStorage implements IStorage {
         )
       );
     return referee;
+  }
+
+  async getRefereeAssignmentsForUser(userId: string): Promise<(Referee & { competition: Competition })[]> {
+    const results = await db
+      .select({
+        id: referees.id,
+        userId: referees.userId,
+        competitionId: referees.competitionId,
+        assignedSector: referees.assignedSector,
+        isActive: referees.isActive,
+        createdAt: referees.createdAt,
+        competition: competitions,
+      })
+      .from(referees)
+      .innerJoin(competitions, eq(referees.competitionId, competitions.id))
+      .where(
+        and(
+          eq(referees.userId, userId),
+          eq(referees.isActive, true)
+        )
+      );
+    
+    return results.map(r => ({
+      id: r.id,
+      userId: r.userId,
+      competitionId: r.competitionId,
+      assignedSector: r.assignedSector,
+      isActive: r.isActive,
+      createdAt: r.createdAt,
+      competition: r.competition,
+    }));
   }
 
   async createReferee(referee: InsertReferee): Promise<Referee> {

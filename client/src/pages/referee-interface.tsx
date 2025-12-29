@@ -791,26 +791,19 @@ export default function RefereeInterface() {
     }
   }, [isOffline, pendingCatches.length, syncPendingCatches]);
 
-  // DEMO MODE - Temporarily disabled for demonstration
-  // Redirect if not authenticated or not referee
-  // useEffect(() => {
-  //   if (!isLoading && (!isAuthenticated || user?.role !== 'referee')) {
-  //     toast({
-  //       title: "Neautorizovaný",
-  //       description: "Ste odhlásený. Prihlasujem znovu...",
-  //       variant: "destructive",
-  //     });
-  //     setTimeout(() => {
-  //       window.location.href = "/api/login";
-  //     }, 500);
-  //     return;
-  //   }
-  // }, [isAuthenticated, isLoading, user, toast]);
-
-  const { data: competitions, isLoading: competitionsLoading } = useQuery<Competition[]>({
-    queryKey: ["/api/competitions"],
-    enabled: true, // DEMO MODE - Always enabled for demonstration
+  // Fetch referee assignments for current user
+  const { data: refereeAssignments, isLoading: assignmentsLoading } = useQuery<(Referee & { competition: Competition })[]>({
+    queryKey: ["/api/users/referee-assignments"],
+    enabled: isAuthenticated,
   });
+
+  // Get active assignments (live or registration status competitions)
+  const activeAssignments = refereeAssignments?.filter(
+    a => a.competition.status === 'live' || a.competition.status === 'registration'
+  ) || [];
+
+  // Current assignment based on selected competition
+  const refereeAssignment = activeAssignments.find(a => a.competitionId === selectedCompetition);
 
   const { data: selectedCompetitionDetails } = useQuery<Competition>({
     queryKey: ["/api/competitions", selectedCompetition],
@@ -819,35 +812,21 @@ export default function RefereeInterface() {
 
   const { data: teams } = useQuery<Team[]>({
     queryKey: ["/api/competitions", selectedCompetition, "teams"],
-    enabled: !!selectedCompetition, // DEMO MODE - Enabled when competition selected
+    enabled: !!selectedCompetition,
   });
 
   const { data: recentCatches } = useQuery<(Catch & { team: Team })[]>({
     queryKey: ["/api/competitions", selectedCompetition, "catches"],
-    enabled: !!selectedCompetition, // DEMO MODE - Enabled when competition selected
+    enabled: !!selectedCompetition,
   });
 
-  // DEMO MODE - Mock referee assignment for demonstration
-  // In production, this would come from API based on logged-in user
-  const refereeAssignment = {
-    assignedSector: 'A',
-    userId: 'demo_referee_001',
-    competitionId: competitions?.[0]?.id || ''
-  };
-  
   // Auto-select assigned competition (referee is assigned by organizer)
   useEffect(() => {
-    if (competitions && competitions.length > 0 && !selectedCompetition) {
-      // In production: find competition where user is assigned as referee
-      // For demo: auto-select first active competition
-      const activeComp = competitions.find((comp: Competition) => 
-        comp.status === 'live' || comp.status === 'registration'
-      );
-      if (activeComp) {
-        setSelectedCompetition(activeComp.id);
-      }
+    if (activeAssignments.length > 0 && !selectedCompetition) {
+      // Auto-select first active assignment
+      setSelectedCompetition(activeAssignments[0].competitionId);
     }
-  }, [competitions, selectedCompetition]);
+  }, [activeAssignments, selectedCompetition]);
   
   // Filter teams by referee's assigned sector
   // Fallback to all teams if no sector filtering is possible or no teams match
@@ -862,26 +841,43 @@ export default function RefereeInterface() {
     }
     
     // Filter by referee's assigned sector
+    const assignedSector = refereeAssignment?.assignedSector;
+    if (!assignedSector) {
+      // No sector assignment - show all approved teams
+      return teams.filter((team: Team) => team.status === 'approved');
+    }
+    
     const filtered = teams.filter((team: Team) => 
-      (team.sector === refereeAssignment.assignedSector || 
-       team.sectorName?.includes(refereeAssignment.assignedSector)) &&
+      (team.sector === assignedSector || 
+       team.sectorName?.includes(assignedSector)) &&
       team.status === 'approved'
     );
     
     // Fallback: if no teams match sector filter, show all approved teams
-    // (may happen with data inconsistency or demo mode)
+    // (may happen with data inconsistency)
     return filtered.length > 0 ? filtered : teams.filter((t: Team) => t.status === 'approved');
   })();
 
 
-  if (isLoading) {
+  if (isLoading || assignmentsLoading) {
     return <div className="min-h-screen bg-background" />;
   }
 
-  // Find active competitions where user is a referee
-  const activeCompetitions = competitions?.filter((comp: Competition) => 
-    comp.status === 'live' || comp.status === 'registration'
-  ) || [];
+  // Redirect if user has no referee role or no assignments
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="max-w-md w-full">
+          <CardContent className="p-6 text-center">
+            <p className="text-lg font-medium mb-4">Pre prístup sa musíte prihlásiť</p>
+            <Button onClick={() => window.location.href = "/api/login"}>
+              Prihlásiť sa
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -958,7 +954,7 @@ export default function RefereeInterface() {
           
           {/* Form Content */}
           <CardContent className="p-4">
-            {!selectedCompetition || activeCompetitions.length === 0 ? (
+            {!selectedCompetition || activeAssignments.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-muted-foreground text-lg">Žiadne aktívne súťaže nie sú pridelené</p>
                 <p className="text-muted-foreground text-sm mt-2">Kontaktujte organizátora súťaže</p>

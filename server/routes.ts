@@ -862,6 +862,18 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
+  // User referee assignments endpoint
+  app.get('/api/users/referee-assignments', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const assignments = await storage.getRefereeAssignmentsForUser(userId);
+      res.json(assignments);
+    } catch (error) {
+      console.error("[REFEREE] Error fetching referee assignments:", error);
+      res.status(500).json({ message: "Chyba pri načítaní priradení rozhodcu" });
+    }
+  });
+
   // User favorites endpoints
   app.get('/api/users/favorites/competitions', isAuthenticated, async (req: any, res) => {
     try {
@@ -2450,23 +2462,17 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         });
       }
 
-      // DEMO MODE - Skip authentication for demo
-      // const userId = getUserId(req);
-      // const user = await storage.getUser(userId);
+      // Check authentication - requires login
+      const userId = getUserId(req);
+      if (!userId) {
+        return res.status(401).json({ message: "Pre odoslanie úlovku sa musíte prihlásiť" });
+      }
       
-      // if (user?.role !== 'referee') {
-      //   return res.status(403).json({ message: "Only referees can submit catches" });
-      // }
-
-      // DEMO MODE - Skip referee assignment check
-      // Get referee assignment
-      // const referee = await storage.getRefereeByUserAndCompetition(userId, req.body.competitionId);
-      // if (!referee) {
-      //   return res.status(403).json({ message: "Referee not assigned to this competition" });
-      // }
-
-      // DEMO MODE - Mock referee with real UUID from database
-      const referee = { id: '10a24904-20a0-4dea-b964-8b91e306ebb3', assignedSector: 'A' };
+      // Get referee assignment for this competition
+      const referee = await storage.getRefereeByUserAndCompetition(userId, req.body.competitionId);
+      if (!referee) {
+        return res.status(403).json({ message: "Nie ste priradený ako rozhodca k tejto súťaži" });
+      }
 
       let photoUrl = null;
       if (req.file) {
