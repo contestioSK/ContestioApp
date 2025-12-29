@@ -63,6 +63,7 @@ interface CatchSubmissionFormProps {
 function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetitionDetails, teams, onSuccess, onSubmitFormRef, isOffline, onSaveDraft }: CatchSubmissionFormProps) {
   const { toast } = useToast();
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [recentTeams, setRecentTeams] = useState<string[]>([]);
   const [currentSchema, setCurrentSchema] = useState(() => {
     const minWeight = selectedCompetitionDetails?.minWeight ? parseFloat(selectedCompetitionDetails.minWeight) : 2;
@@ -128,7 +129,12 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
         description: "Úlovok bol úspešne odoslaný",
       });
       form.reset();
+      // Clear photo and revoke preview URL
       setSelectedPhoto(null);
+      if (photoPreview) {
+        URL.revokeObjectURL(photoPreview);
+        setPhotoPreview(null);
+      }
       queryClient.invalidateQueries({ queryKey: ["/api/competitions", selectedCompetition, "catches"] });
       onSuccess();
     },
@@ -171,7 +177,12 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
           variant: "default",
         });
         form.reset();
+        // Clear photo and revoke preview URL
         setSelectedPhoto(null);
+        if (photoPreview) {
+          URL.revokeObjectURL(photoPreview);
+          setPhotoPreview(null);
+        }
         onSuccess();
       } catch (error) {
         console.error('Failed to save draft:', error);
@@ -202,8 +213,30 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
     const file = event.target.files?.[0];
     if (file) {
       setSelectedPhoto(file);
+      // Create preview URL for thumbnail
+      const previewUrl = URL.createObjectURL(file);
+      setPhotoPreview(previewUrl);
       triggerHaptic('success');
     }
+  };
+
+  // Cleanup preview URL on unmount or when photo changes
+  useEffect(() => {
+    return () => {
+      if (photoPreview) {
+        URL.revokeObjectURL(photoPreview);
+      }
+    };
+  }, [photoPreview]);
+
+  // Clear photo and preview
+  const handleClearPhoto = () => {
+    setSelectedPhoto(null);
+    if (photoPreview) {
+      URL.revokeObjectURL(photoPreview);
+      setPhotoPreview(null);
+    }
+    triggerHaptic('selection');
   };
 
   return (
@@ -291,37 +324,91 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
             }}
           />
           
-          {/* Weight Input */}
+          {/* Weight Input with Stepper */}
           <FormField
             control={form.control}
             name="weight"
             render={({ field }) => {
               const minWeightKg = selectedCompetitionDetails?.minWeight ? parseFloat(selectedCompetitionDetails.minWeight) : 2;
-              const placeholderWeight = minWeightKg + 0.5; // Slight buffer above minimum
+              const currentWeight = typeof field.value === 'number' ? field.value : 0;
+              const isUnderWeight = currentWeight > 0 && currentWeight < minWeightKg;
+              const isValidWeight = currentWeight >= minWeightKg;
+              
+              const handleIncrement = () => {
+                const newValue = Math.round((currentWeight + 0.1) * 10) / 10;
+                field.onChange(newValue);
+                triggerHaptic('selection');
+              };
+              
+              const handleDecrement = () => {
+                const newValue = Math.max(0, Math.round((currentWeight - 0.1) * 10) / 10);
+                field.onChange(newValue);
+                if (newValue < minWeightKg && newValue > 0) {
+                  triggerHaptic('warning');
+                } else {
+                  triggerHaptic('selection');
+                }
+              };
               
               return (
               <FormItem>
                 <FormLabel className="text-lg font-semibold text-foreground">Váha (kg) - min. {minWeightKg} kg</FormLabel>
                 <FormControl>
-                  <div className="relative">
-                    <Input 
-                      type="number" 
-                      step="0.1"
-                      inputMode="decimal"
-                      placeholder={placeholderWeight.toString()} 
-                      className="font-mono pr-12 h-14 text-lg font-semibold"
-                      autoFocus
-                      {...field}
-                      onChange={(e) => field.onChange(e.target.value === '' ? '' : parseFloat(e.target.value) || 0)}
-                      data-testid="input-weight"
-                    />
-                    <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-foreground/60 text-base font-medium">
-                      kg
-                    </span>
+                  <div className="flex items-center gap-2">
+                    {/* Decrement Button */}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-14 w-14 min-w-[56px] text-2xl font-bold touch-manipulation flex-shrink-0"
+                      onClick={handleDecrement}
+                      disabled={currentWeight <= 0}
+                      data-testid="button-weight-minus"
+                    >
+                      −
+                    </Button>
+                    
+                    {/* Weight Input */}
+                    <div className="relative flex-1">
+                      <Input 
+                        type="number" 
+                        step="0.1"
+                        inputMode="decimal"
+                        placeholder={minWeightKg.toString()} 
+                        className={`font-mono pr-12 h-14 text-xl font-bold text-center transition-colors ${
+                          isUnderWeight 
+                            ? 'border-orange-500 text-orange-600 bg-orange-50 dark:bg-orange-950/20' 
+                            : isValidWeight 
+                              ? 'border-green-500 text-green-600 bg-green-50 dark:bg-green-950/20' 
+                              : ''
+                        }`}
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.value === '' ? 0 : parseFloat(e.target.value) || 0)}
+                        data-testid="input-weight"
+                      />
+                      <span className={`absolute right-3 top-1/2 transform -translate-y-1/2 text-base font-medium ${
+                        isUnderWeight ? 'text-orange-500' : isValidWeight ? 'text-green-500' : 'text-foreground/60'
+                      }`}>
+                        kg
+                      </span>
+                    </div>
+                    
+                    {/* Increment Button */}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-14 w-14 min-w-[56px] text-2xl font-bold touch-manipulation flex-shrink-0"
+                      onClick={handleIncrement}
+                      data-testid="button-weight-plus"
+                    >
+                      +
+                    </Button>
                   </div>
                 </FormControl>
-                <FormDescription className="text-sm font-medium text-foreground/70">
-                  Úlovky pod {minWeightKg} kg nebudú započítané do výsledkov
+                <FormDescription className={`text-sm font-medium ${isUnderWeight ? 'text-orange-600' : 'text-foreground/70'}`}>
+                  {isUnderWeight 
+                    ? `⚠️ Váha je pod limitom ${minWeightKg} kg - nebude započítaná`
+                    : `Úlovky pod ${minWeightKg} kg nebudú započítané do výsledkov`
+                  }
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -369,36 +456,73 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
             )}
           />
           
-          {/* Photo Upload */}
+          {/* Photo Upload with Thumbnail Preview */}
           <div>
             <Label className="block text-lg font-semibold text-foreground mb-3">Fotka ryby</Label>
-            <div 
-              className="border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer hover:bg-muted/10 active:bg-muted/20 min-h-[80px] flex items-center justify-center transition-colors"
-              onClick={() => document.getElementById('photo-input')?.click()}
-            >
-              <input
-                id="photo-input"
-                type="file"
-                accept="image/*"
-                capture="environment"
-                className="hidden"
-                onChange={handlePhotoSelect}
-                data-testid="input-photo"
-              />
-              {selectedPhoto ? (
-                <div className="space-y-2">
-                  <Check className="mx-auto h-8 w-8 text-green-600" />
-                  <div className="text-lg font-bold text-green-700">Fotka pripravená</div>
-                  <div className="text-sm text-foreground/70 font-medium">{selectedPhoto.name}</div>
+            <input
+              id="photo-input"
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={handlePhotoSelect}
+              data-testid="input-photo"
+            />
+            {selectedPhoto && photoPreview ? (
+              <div className="space-y-3">
+                {/* Photo Thumbnail Preview */}
+                <div className="relative rounded-lg overflow-hidden border-2 border-green-500 bg-muted">
+                  <img 
+                    src={photoPreview} 
+                    alt="Náhľad fotky" 
+                    className="w-full h-48 object-cover"
+                    data-testid="photo-preview"
+                  />
+                  <div className="absolute top-2 right-2">
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="h-10 w-10 p-0 rounded-full shadow-lg"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleClearPhoto();
+                      }}
+                      data-testid="button-clear-photo"
+                    >
+                      <span className="text-lg font-bold">×</span>
+                    </Button>
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 bg-green-600/90 text-white py-2 px-3 flex items-center justify-center gap-2">
+                    <Check className="h-5 w-5" />
+                    <span className="font-semibold">Fotka pripravená</span>
+                  </div>
                 </div>
-              ) : (
+                {/* Retake button */}
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full h-12 text-base font-medium"
+                  onClick={() => document.getElementById('photo-input')?.click()}
+                  data-testid="button-retake-photo"
+                >
+                  <Camera className="mr-2 h-5 w-5" />
+                  Odfotiť znovu
+                </Button>
+              </div>
+            ) : (
+              <div 
+                className="border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer hover:bg-muted/10 active:bg-muted/20 min-h-[120px] flex items-center justify-center transition-colors touch-manipulation"
+                onClick={() => document.getElementById('photo-input')?.click()}
+                data-testid="photo-upload-area"
+              >
                 <div className="space-y-3">
-                  <Camera className="mx-auto h-8 w-8 text-muted-foreground" />
-                  <div className="text-lg font-bold text-foreground">Otvoriť fotoaparát</div>
-                  <div className="text-sm text-foreground/70 font-medium">Kliknite pre vytvorenie fotky ryby</div>
+                  <Camera className="mx-auto h-10 w-10 text-muted-foreground" />
+                  <div className="text-lg font-bold text-foreground">Odfotiť rybu</div>
+                  <div className="text-sm text-foreground/70 font-medium">Ťuknite pre otvorenie fotoaparátu</div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
           
           
@@ -744,8 +868,12 @@ export default function RefereeInterface() {
         <div className={`${selectedCompetition ? 'pb-24' : ''}`}>
           <Card className="shadow-lg border border-border overflow-hidden">
           
-          {/* Header */}
-          <CardHeader className="bg-primary text-primary-foreground">
+          {/* Header - changes color when offline for high visibility */}
+          <CardHeader className={`transition-colors ${
+            isOffline 
+              ? 'bg-amber-500 dark:bg-amber-600 text-amber-950 dark:text-amber-50' 
+              : 'bg-primary text-primary-foreground'
+          }`}>
             <div className="flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2">
@@ -755,19 +883,24 @@ export default function RefereeInterface() {
                   {/* Offline/Online Status */}
                   <div className="flex items-center gap-1">
                     {isOffline ? (
-                      <WifiOff className="w-4 h-4 text-yellow-300" />
+                      <div className="flex items-center gap-1 bg-amber-700/30 px-2 py-1 rounded text-sm font-semibold">
+                        <WifiOff className="w-4 h-4" />
+                        OFFLINE
+                      </div>
                     ) : (
                       <Wifi className="w-4 h-4 text-green-300" />
                     )}
                     {pendingCatches.length > 0 && (
-                      <div className="flex items-center gap-1 bg-yellow-500/20 px-2 py-1 rounded text-xs">
+                      <div className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold ${
+                        isOffline ? 'bg-amber-700/30' : 'bg-yellow-500/20'
+                      }`}>
                         <Upload className="w-3 h-3" />
                         {pendingCatches.length}
                       </div>
                     )}
                   </div>
                 </div>
-                <p className="text-sm text-primary-foreground/80">
+                <p className={`text-sm ${isOffline ? 'text-amber-900/80 dark:text-amber-100/80' : 'text-primary-foreground/80'}`}>
                   {user?.firstName ? `${user.firstName} ${user.lastName || ""}` : (user?.nickname || "Používateľ")}, Rozhodca — {
                     refereeAssignment?.assignedSector && selectedCompetition ? (
                       <Link href={`/competition/${selectedCompetition}/sector/${refereeAssignment.assignedSector}`} data-testid="link-referee-sector">
