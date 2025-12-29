@@ -89,7 +89,7 @@ export default function RegisterCompetition() {
         description: "Teraz môžete pokračovať v nastavení súťaže.",
       });
       
-      setLocation(`/competition/${result.id}/setup`);
+      setLocation(`/competition/${result.id}/setup?plan=${data.selectedPlan}`);
     } catch (error: any) {
       toast({
         title: "Nepodarilo sa vytvoriť registráciu",
