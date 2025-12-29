@@ -768,7 +768,7 @@ export default function RefereeInterface() {
                   </div>
                 </div>
                 <p className="text-sm text-primary-foreground/80">
-                  {user?.firstName ? `${user.firstName} ${user.lastName || ""}` : (user?.nickname || "Rozhodca")} - {
+                  {user?.firstName ? `${user.firstName} ${user.lastName || ""}` : (user?.nickname || "Rozhodca")}, {
                     refereeAssignment?.assignedSector && selectedCompetition ? (
                       <Link href={`/competition/${selectedCompetition}/sector/${refereeAssignment.assignedSector}`} data-testid="link-referee-sector">
                         <span className="underline hover:text-primary-foreground cursor-pointer transition-colors inline-block py-1 px-2 -mx-2 min-h-[44px] flex items-center">
