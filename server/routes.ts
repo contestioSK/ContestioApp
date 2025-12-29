@@ -380,7 +380,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       const existingUser = await storage.getUserByEmail(normalizedEmail);
       if (existingUser) {
         return res.status(400).json({ 
-          message: 'Registration failed. Please try again.' // Generic message to avoid enumeration
+          message: 'Užívateľ s touto emailovou adresou už existuje.' 
         });
       }
 
