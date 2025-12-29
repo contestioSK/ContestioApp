@@ -749,7 +749,9 @@ export default function RefereeInterface() {
             <div className="flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2">
-                  <CardTitle className="font-semibold">Rozhranie rozhodcu</CardTitle>
+                  <CardTitle className="font-semibold truncate max-w-[200px]">
+                    {selectedCompetitionDetails?.name || "Rozhranie rozhodcu"}
+                  </CardTitle>
                   {/* Offline/Online Status */}
                   <div className="flex items-center gap-1">
                     {isOffline ? (
@@ -766,7 +768,7 @@ export default function RefereeInterface() {
                   </div>
                 </div>
                 <p className="text-sm text-primary-foreground/80">
-                  Peter Rozhodca - {
+                  {user?.firstName ? `${user.firstName} ${user.lastName || ""}` : (user?.nickname || "Rozhodca")} - {
                     refereeAssignment?.assignedSector && selectedCompetition ? (
                       <Link href={`/competition/${selectedCompetition}/sector/${refereeAssignment.assignedSector}`} data-testid="link-referee-sector">
                         <span className="underline hover:text-primary-foreground cursor-pointer transition-colors inline-block py-1 px-2 -mx-2 min-h-[44px] flex items-center">
@@ -799,7 +801,7 @@ export default function RefereeInterface() {
             </div>
           </CardHeader>
           
-          {/* Assigned Competition Info */}
+          {/* Form Content */}
           <CardContent className="p-4">
             {!selectedCompetition || activeCompetitions.length === 0 ? (
               <div className="text-center py-12">
@@ -808,21 +810,6 @@ export default function RefereeInterface() {
               </div>
             ) : (
               <>
-                {/* Show assigned competition info */}
-                {selectedCompetitionDetails && (
-                  <div className="mb-6 p-3 bg-muted/50 rounded-lg border border-border">
-                    <div className="text-sm text-muted-foreground mb-1">Priradená súťaž</div>
-                    <div className="text-lg font-semibold text-foreground">{selectedCompetitionDetails.name}</div>
-                    <div className="text-sm text-muted-foreground mt-1">
-                      {selectedCompetitionDetails.hasSectors ? (
-                        <>Sektor {refereeAssignment.assignedSector} • {sectorFilteredTeams.length} tímov</>
-                      ) : (
-                        <>{sectorFilteredTeams.length} tímov v súťaži</>
-                      )}
-                    </div>
-                  </div>
-                )}
-
                 <CatchSubmissionFormComponent
                   key={`${selectedCompetition}-${selectedCompetitionDetails?.minWeight || 2}`}
                   selectedCompetition={selectedCompetition}
