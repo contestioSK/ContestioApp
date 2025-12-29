@@ -46,7 +46,7 @@ const fishingStyles = [
 
 const mainGoals = [
   { id: "battles" as MainGoal, label: "Súťaženie s kamošmi", icon: Swords, description: "Fishing Battle a súťaže" },
-  { id: "diary" as MainGoal, label: "Súkromný denník", icon: BookOpen, description: "Záznamy výletov a úlovkov" },
+  { id: "diary" as MainGoal, label: "Súkromný denník", icon: BookOpen, description: "Záznamy výprav a úlovkov" },
   { id: "statistics" as MainGoal, label: "Analýza a štatistiky", icon: BarChart3, description: "Grafy, trendy a dáta" }
 ];
 
