@@ -3906,13 +3906,15 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       const userId = getUserId(req);
       const user = await storage.getUser(userId);
       
-      if (!isAdmin(user)) {
-        return res.status(403).json({ message: "Only admins can view competition registrations" });
-      }
-
       const registration = await storage.getCompetitionRegistration(req.params.id);
       if (!registration) {
         return res.status(404).json({ message: "Competition registration not found" });
+      }
+      
+      // Allow access to admins OR the registration owner (by email)
+      const isOwner = registration.contactEmail === user?.email;
+      if (!isAdmin(user) && !isOwner) {
+        return res.status(403).json({ message: "Access denied" });
       }
       
       res.json(registration);
