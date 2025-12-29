@@ -3438,6 +3438,36 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
+  // Delete user (admin)
+  app.delete('/api/admin/users/:userId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const user = await storage.getUser(userId);
+      
+      if (!isAdmin(user)) {
+        return res.status(403).json({ message: "Only admins can delete users" });
+      }
+
+      const targetUserId = req.params.userId;
+      
+      // Prevent admin from deleting themselves
+      if (targetUserId === userId) {
+        return res.status(400).json({ message: "You cannot delete your own account" });
+      }
+
+      const targetUser = await storage.getUser(targetUserId);
+      if (!targetUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      await storage.deleteUser(targetUserId);
+      res.json({ message: "User deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      res.status(500).json({ message: "Failed to delete user" });
+    }
+  });
+
   // Reset user password (admin) - sends password reset email
   app.post('/api/admin/users/:userId/reset-password', isAuthenticated, passwordResetLimiter, async (req: any, res) => {
     try {
