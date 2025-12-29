@@ -129,6 +129,7 @@ export interface IStorage {
     facebookUrl?: string | null;
     instagramUrl?: string | null;
   }): Promise<User>;
+  deleteUser(userId: string): Promise<void>;
   
   // Competition operations
   getCompetitions(): Promise<Competition[]>;
@@ -799,6 +800,17 @@ export class DatabaseStorage implements IStorage {
       throw new Error('User not found');
     }
     return updatedUser;
+  }
+
+  async deleteUser(userId: string): Promise<void> {
+    const [deletedUser] = await db
+      .delete(users)
+      .where(eq(users.id, userId))
+      .returning();
+
+    if (!deletedUser) {
+      throw new Error('User not found');
+    }
   }
 
   // Competition operations
