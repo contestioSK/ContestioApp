@@ -125,7 +125,7 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
       triggerHaptic('success');
       toast({
         title: "Úspech",
-        description: "Záber bol úspešne odoslaný",
+        description: "Úlovok bol úspešne odoslaný",
       });
       form.reset();
       setSelectedPhoto(null);
@@ -147,7 +147,7 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
       triggerHaptic('warning');
       toast({
         title: "Chyba",
-        description: "Nepodarilo sa odoslať záber",
+        description: "Nepodarilo sa odoslať úlovok",
         variant: "destructive",
       });
     },
@@ -167,7 +167,7 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
         triggerHaptic('success');
         toast({
           title: "Uložené offline",
-          description: "Záber sa odošle automaticky po obnovení pripojenia",
+          description: "Úlovok sa odošle automaticky po obnovení pripojenia",
           variant: "default",
         });
         form.reset();
@@ -177,7 +177,7 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
         console.error('Failed to save draft:', error);
         toast({
           title: "Chyba",
-          description: "Nepodarilo sa uložiť záber offline",
+          description: "Nepodarilo sa uložiť úlovok offline",
           variant: "destructive",
         });
       }
@@ -209,8 +209,8 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
   return (
     <>
       <div className="text-center mb-6">
-        <h3 className="text-2xl font-bold text-foreground mb-2">Odoslať nový záber</h3>
-        <p className="text-base text-foreground/80 font-medium">Zadajte detaily záberu a nahrajte fotku</p>
+        <h3 className="text-2xl font-bold text-foreground mb-2">Nový úlovok</h3>
+        <p className="text-base text-foreground/80 font-medium">Zadajte detaily úlovku a nahrajte fotku</p>
       </div>
       
       <Form {...form}>
@@ -602,7 +602,7 @@ export default function RefereeInterface() {
           await removeDraft(catchData.id);
           toast({
             title: "Úspech",
-            description: `Záber z ${new Date(catchData.timestamp).toLocaleTimeString()} bol úspešne synchronizovaný`,
+            description: `Úlovok z ${new Date(catchData.timestamp).toLocaleTimeString()} bol úspešne synchronizovaný`,
           });
         } else if (response.status === 401) {
           // Handle unauthorized - redirect to login like online mutation
@@ -620,7 +620,7 @@ export default function RefereeInterface() {
           const errorText = await response.text();
           toast({
             title: "Chyba synchronizácie",
-            description: `Záber z ${new Date(catchData.timestamp).toLocaleTimeString()}: ${errorText}`,
+            description: `Úlovok z ${new Date(catchData.timestamp).toLocaleTimeString()}: ${errorText}`,
             variant: "destructive",
           });
         }
@@ -682,17 +682,50 @@ export default function RefereeInterface() {
   });
 
   // DEMO MODE - Mock referee assignment for demonstration
+  // In production, this would come from API based on logged-in user
   const refereeAssignment = {
     assignedSector: 'A',
     userId: 'demo_referee_001',
-    competitionId: selectedCompetition
+    competitionId: competitions?.[0]?.id || ''
   };
   
-  // Get referee assignment for the current user and selected competition
-  // const { data: refereeAssignment } = useQuery<Referee>({
-  //   queryKey: ["/api/competitions", selectedCompetition, "referees", user?.id],
-  //   enabled: isAuthenticated && !!selectedCompetition && user?.role === 'referee',
-  // });
+  // Auto-select assigned competition (referee is assigned by organizer)
+  useEffect(() => {
+    if (competitions && competitions.length > 0 && !selectedCompetition) {
+      // In production: find competition where user is assigned as referee
+      // For demo: auto-select first active competition
+      const activeComp = competitions.find((comp: Competition) => 
+        comp.status === 'live' || comp.status === 'registration'
+      );
+      if (activeComp) {
+        setSelectedCompetition(activeComp.id);
+      }
+    }
+  }, [competitions, selectedCompetition]);
+  
+  // Filter teams by referee's assigned sector
+  // Fallback to all teams if no sector filtering is possible or no teams match
+  const sectorFilteredTeams = (() => {
+    if (!teams || teams.length === 0) return [];
+    
+    // Check if competition uses sectors
+    const competitionUsesSectors = selectedCompetitionDetails?.hasSectors;
+    if (!competitionUsesSectors) {
+      // No sector system - show all approved teams
+      return teams.filter((team: Team) => team.status === 'approved');
+    }
+    
+    // Filter by referee's assigned sector
+    const filtered = teams.filter((team: Team) => 
+      (team.sector === refereeAssignment.assignedSector || 
+       team.sectorName?.includes(refereeAssignment.assignedSector)) &&
+      team.status === 'approved'
+    );
+    
+    // Fallback: if no teams match sector filter, show all approved teams
+    // (may happen with data inconsistency or demo mode)
+    return filtered.length > 0 ? filtered : teams.filter((t: Team) => t.status === 'approved');
+  })();
 
 
   if (isLoading) {
@@ -766,49 +799,42 @@ export default function RefereeInterface() {
             </div>
           </CardHeader>
           
-          {/* Competition Selection */}
+          {/* Assigned Competition Info */}
           <CardContent className="p-4">
-            {activeCompetitions.length === 0 ? (
+            {!selectedCompetition || activeCompetitions.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-muted-foreground text-lg">Žiadne aktívne súťaže nie sú pridelené</p>
+                <p className="text-muted-foreground text-sm mt-2">Kontaktujte organizátora súťaže</p>
               </div>
             ) : (
               <>
-                <div className="mb-6">
-                  <Label className="text-lg font-semibold text-foreground mb-3 block">
-                    Vybrať súťaž
-                  </Label>
-                  <Select value={selectedCompetition} onValueChange={(value) => {
-                    setSelectedCompetition(value);
-                    triggerHaptic('selection');
-                  }}>
-                    <SelectTrigger data-testid="select-competition" className="h-14 text-lg font-medium">
-                      <SelectValue placeholder="Vyberte súťaž" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {activeCompetitions.map((competition: Competition) => (
-                        <SelectItem key={competition.id} value={competition.id} className="h-14 text-lg font-medium py-4">
-                          {competition.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {selectedCompetition && (
-                  <CatchSubmissionFormComponent
-                    key={`${selectedCompetition}-${selectedCompetitionDetails?.minWeight || 2}`}
-                    selectedCompetition={selectedCompetition}
-                    selectedCompetitionDetails={selectedCompetitionDetails}
-                    teams={teams}
-                    onSuccess={() => {
-                      queryClient.invalidateQueries({ queryKey: ["/api/competitions", selectedCompetition, "catches"] });
-                    }}
-                    onSubmitFormRef={setSubmitHandle}
-                    isOffline={isOffline}
-                    onSaveDraft={saveDraft}
-                  />
+                {/* Show assigned competition info */}
+                {selectedCompetitionDetails && (
+                  <div className="mb-6 p-3 bg-muted/50 rounded-lg border border-border">
+                    <div className="text-sm text-muted-foreground mb-1">Priradená súťaž</div>
+                    <div className="text-lg font-semibold text-foreground">{selectedCompetitionDetails.name}</div>
+                    <div className="text-sm text-muted-foreground mt-1">
+                      {selectedCompetitionDetails.hasSectors ? (
+                        <>Sektor {refereeAssignment.assignedSector} • {sectorFilteredTeams.length} tímov</>
+                      ) : (
+                        <>{sectorFilteredTeams.length} tímov v súťaži</>
+                      )}
+                    </div>
+                  </div>
                 )}
+
+                <CatchSubmissionFormComponent
+                  key={`${selectedCompetition}-${selectedCompetitionDetails?.minWeight || 2}`}
+                  selectedCompetition={selectedCompetition}
+                  selectedCompetitionDetails={selectedCompetitionDetails}
+                  teams={sectorFilteredTeams}
+                  onSuccess={() => {
+                    queryClient.invalidateQueries({ queryKey: ["/api/competitions", selectedCompetition, "catches"] });
+                  }}
+                  onSubmitFormRef={setSubmitHandle}
+                  isOffline={isOffline}
+                  onSaveDraft={saveDraft}
+                />
               </>
             )}
           </CardContent>
@@ -875,7 +901,7 @@ export default function RefereeInterface() {
                 ))}
                 {recentCatches.length === 0 && (
                   <div className="text-center py-4 text-muted-foreground">
-                    Zatiaľ žiadne zábery neboli odoslané
+                    Zatiaľ žiadne úlovky neboli odoslané
                   </div>
                 )}
               </div>
@@ -901,7 +927,7 @@ export default function RefereeInterface() {
                     Odosíla sa...
                   </>
                 ) : (
-                  "Odoslať záber"
+                  "Odoslať úlovok"
                 )}
               </Button>
             </div>
