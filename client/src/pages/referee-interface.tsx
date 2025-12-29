@@ -252,14 +252,16 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           
           {/* Team Selection with Quick Access */}
+          {/* Note: teams prop is already sector-filtered from parent component */}
           <FormField
             control={form.control}
             name="teamId"
             render={({ field }) => {
-              const approvedTeams = teams?.filter((team: Team) => team.status === 'approved') || [];
+              // Use teams directly - already filtered by sector and approval status from parent
+              const sectorTeams = teams || [];
               const quickSelectTeams = recentTeams.length > 0 
-                ? approvedTeams.filter(team => recentTeams.includes(team.id)).slice(0, 3)
-                : approvedTeams.slice(0, 3);
+                ? sectorTeams.filter(team => recentTeams.includes(team.id)).slice(0, 3)
+                : sectorTeams.slice(0, 3);
                 
               return (
                 <FormItem>
@@ -312,7 +314,7 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
                         <SelectValue placeholder="Vyberte tím" />
                       </SelectTrigger>
                       <SelectContent>
-                        {approvedTeams.map((team: Team) => (
+                        {sectorTeams.map((team: Team) => (
                           <SelectItem key={team.id} value={team.id} className="h-14 text-lg font-medium py-4">
                             {team.name} - {formatSectorPlace(team) || `Sektor ${team.sector}`}
                           </SelectItem>
@@ -990,7 +992,7 @@ export default function RefereeInterface() {
                 {pendingCatches.map((catch_) => (
                   <div key={catch_.id} className="flex items-center justify-between text-sm" data-testid={`pending-catch-${catch_.id}`}>
                     <span className="text-foreground">
-                      {catch_.weight}kg - {catch_.fishType === 'scaly' ? 'Šupináč' : 'Lysec'}
+                      {catch_.weight >= 1000 ? `${(catch_.weight / 1000).toFixed(2)} kg` : `${catch_.weight} g`} - {catch_.fishType === 'scaly' ? 'Šupináč' : 'Lysec'}
                       {catch_.hasPhoto && catch_.photoMissing && (
                         <span className="text-red-500 ml-2 text-xs">(foto chýba)</span>
                       )}
