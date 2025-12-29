@@ -619,6 +619,8 @@ export class DatabaseStorage implements IStorage {
         emailVerified: userData.emailVerified,
         role: 'public',
         active: true,
+        userTier: 'FREE',
+        isPremium: false,
       })
       .returning();
     return newUser;
@@ -663,6 +665,8 @@ export class DatabaseStorage implements IStorage {
         role: 'public',
         active: true,
         isNewsletterSubscribed: userData.isNewsletterSubscribed ?? false,
+        userTier: 'FREE',
+        isPremium: false,
       })
       .returning();
     return newUser;
