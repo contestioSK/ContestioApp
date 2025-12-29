@@ -386,17 +386,12 @@ async function startBattleNotificationScheduler() {
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
-  // Detect production by checking if we're running from dist/ (bundled) or source
-  // In production bundle, client/ folder doesn't exist relative to dist/
-  const clientPath = path.resolve(import.meta.dirname, "..", "client");
+  // Use NODE_ENV for production detection - it's set by npm scripts
+  const isProduction = process.env.NODE_ENV === 'production';
   const publicPath = path.resolve(import.meta.dirname, "public");
-  const hasClientFolder = fs.existsSync(clientPath);
   const hasPublicFolder = fs.existsSync(publicPath);
   
-  // If public/ exists (production build) and client/ doesn't exist (not source), serve static
-  const isProduction = hasPublicFolder && !hasClientFolder;
-  
-  console.log(`[Server] Environment detection: hasPublicFolder=${hasPublicFolder}, hasClientFolder=${hasClientFolder}, isProduction=${isProduction}`);
+  console.log(`[Server] Environment detection: NODE_ENV=${process.env.NODE_ENV}, hasPublicFolder=${hasPublicFolder}, isProduction=${isProduction}`);
   
   if (!isProduction) {
     await setupVite(app, server);
