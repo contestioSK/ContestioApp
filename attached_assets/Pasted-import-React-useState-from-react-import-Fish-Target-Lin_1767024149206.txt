@@ -1,0 +1,366 @@
+import React, { useState } from "react";
+import { 
+  Fish, 
+  Target, 
+  LineChart, 
+  Swords, 
+  BookOpen, 
+  BarChart3, 
+  List, 
+  PieChart,
+  ChevronRight,
+  ChevronLeft,
+  Check,
+  Trophy,
+  LayoutDashboard,
+  Loader2
+} from "lucide-react";
+
+/**
+ * MOCK IMPLEMENTATIONS FOR PREVIEW ENVIRONMENT
+ * In a real project, these would be imported from your UI library and lib folder.
+ */
+
+// Mock useToast
+const useToast = () => ({
+  toast: (options: { title: string; description: string }) => {
+    console.log("Toast:", options.title, options.description);
+  }
+});
+
+// Mock apiRequest and queryClient
+const apiRequest = async (method: string, url: string, data: any) => {
+  console.log(`Mock API Request: ${method} ${url}`, data);
+  return { json: async () => ({ success: true }) };
+};
+
+const queryClient = {
+  cancelQueries: async (options: any) => {},
+  setQueryData: (key: any, updater: any) => {},
+  getQueryData: (key: any) => ({ preferences: {} }),
+  invalidateQueries: (options: any) => {},
+};
+
+// Mock useMutation (simple implementation)
+const useMutation = ({ mutationFn, onSuccess }: any) => {
+  const [isPending, setIsPending] = useState(false);
+  const mutate = async (variables: any) => {
+    setIsPending(true);
+    try {
+      const result = await mutationFn(variables);
+      if (onSuccess) onSuccess(result, variables);
+    } finally {
+      setIsPending(false);
+    }
+  };
+  return { mutate, isPending };
+};
+
+// Mock wouter useLocation
+const useLocation = () => [window.location.pathname, (to: string) => console.log("Navigating to:", to)];
+
+// Mock UI Components
+const Button = ({ children, className = "", variant = "default", disabled, onClick, ...props }: any) => {
+  const baseClass = "inline-flex items-center justify-center rounded-2xl font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50 h-14 px-8";
+  const variants: any = {
+    default: "bg-lime-500 text-slate-950 hover:bg-lime-400 shadow-lg shadow-lime-500/20",
+    outline: "border border-white/10 text-slate-400 hover:text-white hover:bg-white/5",
+    ghost: "text-slate-600 hover:text-slate-400",
+  };
+  return (
+    <button className={`${baseClass} ${variants[variant]} ${className}`} disabled={disabled} onClick={onClick} {...props}>
+      {children}
+    </button>
+  );
+};
+
+const Card = ({ children, className = "", onClick }: any) => (
+  <div onClick={onClick} className={`bg-slate-900/40 border border-white/5 rounded-2xl backdrop-blur-sm transition-all duration-300 ${className}`}>
+    {children}
+  </div>
+);
+
+const CardContent = ({ children, className = "" }: any) => (
+  <div className={`p-5 ${className}`}>{children}</div>
+);
+
+const Progress = ({ value, className = "" }: any) => (
+  <div className={`w-full bg-slate-800 rounded-full h-1.5 overflow-hidden ${className}`}>
+    <div className="bg-lime-500 h-full transition-all duration-500" style={{ width: `${value}%` }} />
+  </div>
+);
+
+/**
+ * TYPES & CONSTANTS
+ */
+
+type FishingStyle = "carp" | "spinning" | "feeder" | "fly" | "catfish";
+type MainGoal = "battles" | "diary" | "statistics";
+type VisualPreference = "lists" | "charts";
+
+interface Preferences {
+  fishingStyle?: FishingStyle;
+  mainGoal?: MainGoal;
+  visualPreference?: VisualPreference;
+  onboardingCompleted: boolean;
+}
+
+const STEPS = [
+  { id: 1, title: "DNA Rybára" },
+  { id: 2, title: "Tvoja Misia" },
+  { id: 3, title: "Tvoj Štýl" }
+];
+
+const fishingStyles = [
+  { id: "carp" as FishingStyle, label: "Kaprárina", icon: "🎣", description: "Vôňa boilies a trpezlivé čakanie na životnú jazdu" },
+  { id: "spinning" as FishingStyle, label: "Prívlač", icon: "🐟", description: "Adrenalínový lov dravcov a nekonečné hádzanie" },
+  { id: "feeder" as FishingStyle, label: "Feeder", icon: "🪣", description: "Maximálna precíznosť a jemná technika na každú rybu" },
+  { id: "fly" as FishingStyle, label: "Muškárenie", icon: "🪰", description: "Umenie fly-fishingu a súboj s prúdom rieky" },
+  { id: "catfish" as FishingStyle, label: "Sumčiarina", icon: "🐋", description: "Súboj s riečnymi gigantmi, kde rozhoduje sila" }
+];
+
+const mainGoals = [
+  { id: "battles" as MainGoal, label: "Nadvláda v Fishing Battle", icon: Swords, description: "Vyzvi kamošov a ukáž im, kto je skutočný pán vody" },
+  { id: "diary" as MainGoal, label: "Digitálny denník", icon: BookOpen, description: "Uchovaj si spomienky na každú výpravu v profi kvalite" },
+  { id: "statistics" as MainGoal, label: "Dátový mág", icon: BarChart3, description: "Analyzuj tlak, vietor a úspešnosť tvojich revírov" }
+];
+
+const visualPreferences = [
+  { id: "lists" as VisualPreference, label: "Čistý zoznam", icon: List, description: "Prehľadné textové rozhranie (old-school klasika)" },
+  { id: "charts" as VisualPreference, label: "Moderná vizualizácia", icon: PieChart, description: "Dáta v grafoch a mapách (všetko vidíš na prvý pohľad)" }
+];
+
+/**
+ * MAIN COMPONENT
+ */
+
+export default function App() {
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const [currentStep, setCurrentStep] = useState(1);
+  const [preferences, setPreferences] = useState<Preferences>({
+    onboardingCompleted: false
+  });
+
+  const savePreferencesMutation = useMutation({
+    mutationFn: async (prefs: Preferences) => {
+      return await apiRequest("PUT", "/api/user/preferences", prefs);
+    },
+    onSuccess: (data: any, variables: Preferences) => {
+      toast({
+        title: "🎉 Revír pripravený!",
+        description: "Tvoj profil je nastavený. Vidíme sa pri vode!",
+      });
+      
+      const goal = variables.mainGoal || "diary";
+      if (goal === "battles") setLocation("/diary/battles");
+      else if (goal === "diary") setLocation("/diary");
+      else setLocation("/diary/statistics");
+    }
+  });
+
+  const handleNext = () => {
+    if (currentStep < 3) setCurrentStep(currentStep + 1);
+    else savePreferencesMutation.mutate({ ...preferences, onboardingCompleted: true });
+  };
+
+  const handleSkip = () => {
+    savePreferencesMutation.mutate({
+      fishingStyle: "carp",
+      mainGoal: "diary",
+      visualPreference: "lists",
+      onboardingCompleted: true
+    });
+  };
+
+  const canProceed = () => {
+    switch (currentStep) {
+      case 1: return !!preferences.fishingStyle;
+      case 2: return !!preferences.mainGoal;
+      case 3: return !!preferences.visualPreference;
+      default: return false;
+    }
+  };
+
+  const progress = (currentStep / 3) * 100;
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+      {/* Sekcia s indikátorom postupu */}
+      <div className="p-6 bg-slate-900/50 border-b border-white/5">
+        <div className="max-w-lg mx-auto">
+          <Progress value={progress} />
+          <div className="flex justify-between mt-4">
+            {STEPS.map((step) => (
+              <div key={step.id} className="flex flex-col items-center gap-1">
+                <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${currentStep >= step.id ? "text-lime-400" : "text-slate-600"}`}>
+                  {step.title}
+                </span>
+                <div className={`w-1 h-1 rounded-full ${currentStep >= step.id ? "bg-lime-400" : "bg-slate-800"}`} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Hlavná sekcia obsahu */}
+      <div className="flex-1 flex flex-col items-center justify-center p-6 relative overflow-hidden">
+        {/* Dekoratívne podsvietenie pozadia */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-lime-500/10 blur-[100px] pointer-events-none" />
+
+        {currentStep === 1 && (
+          <div className="w-full max-w-lg animate-in fade-in slide-in-from-right-8 duration-500">
+            <div className="text-center mb-10">
+              <div className="w-16 h-16 bg-lime-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-inner border border-lime-500/20">
+                <Fish className="w-8 h-8 text-lime-400" />
+              </div>
+              <h1 className="text-3xl font-black italic uppercase tracking-tighter mb-3 leading-none">Aké druhy rybolovu máš najradšej?</h1>
+              <p className="text-slate-500 text-sm font-medium leading-relaxed">
+                Prispôsobíme tvoj denník a štatistiky presne podľa toho, čo a ako lovíš.
+              </p>
+            </div>
+
+            <div className="grid gap-3">
+              {fishingStyles.map((style) => (
+                <Card 
+                  key={style.id}
+                  className={`cursor-pointer hover:border-lime-500/40 ${
+                    preferences.fishingStyle === style.id ? "border-lime-500 bg-lime-500/5 shadow-[0_0_20px_rgba(132,204,22,0.1)]" : ""
+                  }`}
+                  onClick={() => setPreferences({ ...preferences, fishingStyle: style.id })}
+                >
+                  <CardContent className="flex items-center gap-4">
+                    <span className="text-3xl filter grayscale group-hover:grayscale-0 transition-all">{style.icon}</span>
+                    <div className="flex-1">
+                      <div className="font-bold text-white uppercase italic text-sm tracking-tight">{style.label}</div>
+                      <div className="text-[11px] text-slate-500 font-medium leading-tight">{style.description}</div>
+                    </div>
+                    {preferences.fishingStyle === style.id && <Check className="w-5 h-5 text-lime-400" />}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {currentStep === 2 && (
+          <div className="w-full max-w-lg animate-in fade-in slide-in-from-right-8 duration-500">
+            <div className="text-center mb-10">
+              <div className="w-16 h-16 bg-lime-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-lime-500/20">
+                <Trophy className="w-8 h-8 text-lime-400" />
+              </div>
+              <h1 className="text-3xl font-black italic uppercase tracking-tighter mb-3 leading-none">Aká je tvoja hlavná misia?</h1>
+              <p className="text-slate-500 text-sm font-medium leading-relaxed">
+                Povedz nám, prečo si tu. Contestio ti podľa toho nastaví úvodnú obrazovku.
+              </p>
+            </div>
+
+            <div className="grid gap-3">
+              {mainGoals.map((goal) => (
+                <Card 
+                  key={goal.id}
+                  className={`cursor-pointer transition-all ${
+                    preferences.mainGoal === goal.id ? "border-lime-500 bg-lime-500/5 shadow-[0_0_20px_rgba(132,204,22,0.1)]" : ""
+                  }`}
+                  onClick={() => setPreferences({ ...preferences, mainGoal: goal.id })}
+                >
+                  <CardContent className="flex items-center gap-4">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${preferences.mainGoal === goal.id ? 'bg-lime-400 text-slate-950' : 'bg-slate-800 text-slate-400'}`}>
+                      <goal.icon className="w-6 h-6" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-bold text-white uppercase italic text-sm">{goal.label}</div>
+                      <div className="text-[11px] text-slate-500 font-medium">{goal.description}</div>
+                    </div>
+                    {preferences.mainGoal === goal.id && <Check className="w-5 h-5 text-lime-400" />}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {currentStep === 3 && (
+          <div className="w-full max-w-lg animate-in fade-in slide-in-from-right-8 duration-500">
+            <div className="text-center mb-10">
+              <div className="w-16 h-16 bg-lime-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-lime-500/20">
+                <LayoutDashboard className="w-8 h-8 text-lime-400" />
+              </div>
+              <h1 className="text-3xl font-black italic uppercase tracking-tighter mb-3 leading-none">Zvoľ si svoj štýl</h1>
+              <p className="text-slate-500 text-sm font-medium leading-relaxed">
+                Ako chceš sledovať svoje dáta? Vyber si rozhranie, ktoré ti sedí.
+              </p>
+            </div>
+
+            <div className="grid gap-3">
+              {visualPreferences.map((pref) => (
+                <Card 
+                  key={pref.id}
+                  className={`cursor-pointer transition-all ${
+                    preferences.visualPreference === pref.id ? "border-lime-500 bg-lime-500/5 shadow-[0_0_20px_rgba(132,204,22,0.1)]" : ""
+                  }`}
+                  onClick={() => setPreferences({ ...preferences, visualPreference: pref.id })}
+                >
+                  <CardContent className="flex items-center gap-4">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${preferences.visualPreference === pref.id ? 'bg-lime-400 text-slate-950' : 'bg-slate-800 text-slate-400'}`}>
+                      <pref.icon className="w-6 h-6" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-bold text-white uppercase italic text-sm">{pref.label}</div>
+                      <div className="text-[11px] text-slate-500 font-medium">{pref.description}</div>
+                    </div>
+                    {preferences.visualPreference === pref.id && <Check className="w-5 h-5 text-lime-400" />}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Akcie v pätičke */}
+      <div className="p-8 border-t border-white/5 bg-slate-950/80 backdrop-blur-xl">
+        <div className="max-w-lg mx-auto flex gap-4">
+          {currentStep > 1 ? (
+            <Button 
+              variant="outline" 
+              onClick={() => setCurrentStep(currentStep - 1)}
+              disabled={savePreferencesMutation.isPending}
+            >
+              <ChevronLeft className="w-4 h-4 mr-2" />
+              Späť
+            </Button>
+          ) : (
+            <Button 
+              variant="ghost" 
+              className="text-[10px]"
+              onClick={handleSkip}
+              disabled={savePreferencesMutation.isPending}
+            >
+              Preskočiť
+            </Button>
+          )}
+          <Button 
+            className="flex-1 italic shadow-lg shadow-lime-500/20"
+            onClick={handleNext}
+            disabled={!canProceed() || savePreferencesMutation.isPending}
+          >
+            {currentStep === 3 ? (
+              savePreferencesMutation.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Nahadzujem...
+                </>
+              ) : "Nahodiť a začať"
+            ) : (
+              <div className="flex items-center">
+                Pokračovať
+                <ChevronRight className="w-4 h-4 ml-2" />
+              </div>
+            )}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
