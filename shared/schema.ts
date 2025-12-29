@@ -81,6 +81,7 @@ export const competitions = pgTable("competitions", {
   registrationFee: decimal("registration_fee", { precision: 10, scale: 2 }),
   maxTeams: integer("max_teams"),
   organizerId: varchar("organizer_id").notNull().references(() => users.id),
+  organizerEmail: varchar("organizer_email"), // Email of the competition organizer (from registration)
   imageUrl: varchar("image_url"),
   sectorPlaces: jsonb("sector_places").$type<Array<{ sectorName: string; places: string[] }>>(), // Array of {sectorName: string, places: string[]}
   sideCompetitions: jsonb("side_competitions").$type<string[]>().default([]), // Array of side competition names
@@ -698,6 +699,7 @@ export const insertCompetitionSchema = createInsertSchema(competitions).omit({
     subdomain: z.string().optional(),
   }).nullable().optional(),
   minWeight: z.string().or(z.number().transform(val => val.toString())).default("2.00"),
+  organizerEmail: z.string().email().optional().nullable(),
 });
 
 export const insertCompetitionRegistrationSchema = createInsertSchema(competitionRegistrations).omit({

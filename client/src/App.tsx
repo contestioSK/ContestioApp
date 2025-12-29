@@ -53,6 +53,7 @@ import BattleDetail from "@/pages/diary/battle-detail";
 import BattleArchive from "@/pages/diary/battle-archive";
 import TripGallery from "@/pages/diary/trip-gallery";
 import Register from "@/pages/register";
+import OrganizerDashboard from "@/pages/organizer-dashboard";
 import AuthRegister from "@/pages/auth/register";
 import AuthLogin from "@/pages/auth/login";
 import VerifyEmail from "@/pages/auth/verify-email";
@@ -128,6 +129,7 @@ function Router() {
         </ProtectedRoute>
       </Route>
       <Route path="/referee-interface" component={RefereeInterface} />
+      <Route path="/organizer" component={OrganizerDashboard} />
       <Route path="/notification-preferences">
         <ProtectedRoute>
           <NotificationPreferences />

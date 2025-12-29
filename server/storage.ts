@@ -922,6 +922,7 @@ export class DatabaseStorage implements IStorage {
       planTier: registration.selectedPlan || "basic",
       branding: registration.branding || undefined,
       organizerId: approverUserId,
+      organizerEmail: registration.contactEmail, // Store organizer email for dashboard access
     };
 
     const newCompetition = await this.createCompetition(competitionData);
