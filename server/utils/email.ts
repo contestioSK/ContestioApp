@@ -201,7 +201,7 @@ class EmailService {
     verificationToken: string
   ): Promise<boolean> {
     const encodedToken = encodeURIComponent(verificationToken);
-    const verificationUrl = `${APP_ORIGIN}/verify-email?token=${encodedToken}`;
+    const verificationUrl = `${APP_ORIGIN}/auth/verify-email?token=${encodedToken}`;
     
     const subject = 'Verify your Contestio account';
     const html = this.generateVerificationEmailTemplate(firstName, verificationUrl);
@@ -219,7 +219,7 @@ class EmailService {
     resetToken: string
   ): Promise<boolean> {
     const encodedToken = encodeURIComponent(resetToken);
-    const resetUrl = `${APP_ORIGIN}/reset-password?token=${encodedToken}`;
+    const resetUrl = `${APP_ORIGIN}/auth/reset-password?token=${encodedToken}`;
     
     const subject = 'Reset your Contestio password';
     const html = this.generatePasswordResetEmailTemplate(firstName, resetUrl);

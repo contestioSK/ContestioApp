@@ -71,7 +71,7 @@ function Router() {
     if (isLoading) return;
     if (!user) return;
     
-    const onboardingExemptRoutes = ["/onboarding", "/auth/login", "/auth/register", "/auth/verify-email", "/reset-password", "/pricing", "/about-us", "/faq", "/contact", "/terms", "/privacy", "/register"];
+    const onboardingExemptRoutes = ["/onboarding", "/auth/login", "/auth/register", "/auth/verify-email", "/auth/reset-password", "/reset-password", "/pricing", "/about-us", "/faq", "/contact", "/terms", "/privacy", "/register"];
     const onboardingExemptPrefixes = ["/competition/", "/team/", "/categories/"];
     
     const isExempt = onboardingExemptRoutes.includes(location) || 
@@ -93,6 +93,7 @@ function Router() {
       <Route path="/auth/register" component={AuthRegister} />
       <Route path="/auth/login" component={AuthLogin} />
       <Route path="/auth/verify-email" component={VerifyEmail} />
+      <Route path="/auth/reset-password" component={ResetPassword} />
       <Route path="/reset-password" component={ResetPassword} />
       <Route path="/onboarding" component={Onboarding} />
       
