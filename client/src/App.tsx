@@ -142,103 +142,103 @@ function Router() {
         </ProtectedRoute>
       </Route>
       <Route path="/diary">
-        <ProtectedRoute>
+        <ProtectedRoute redirectTo="/auth/register">
           <DiaryIndex />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/trips/:id/gallery">
-        <ProtectedRoute>
+        <ProtectedRoute redirectTo="/auth/register">
           <TripGallery />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/trips/:id">
-        <ProtectedRoute>
+        <ProtectedRoute redirectTo="/auth/register">
           <DiaryTripDetail />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/trips">
-        <ProtectedRoute>
+        <ProtectedRoute redirectTo="/auth/register">
           <DiaryTrips />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/catches/:id">
-        <ProtectedRoute>
+        <ProtectedRoute redirectTo="/auth/register">
           <DiaryCatchDetail />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/catches">
-        <ProtectedRoute>
+        <ProtectedRoute redirectTo="/auth/register">
           <DiaryCatches />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/profile">
-        <ProtectedRoute>
+        <ProtectedRoute redirectTo="/auth/register">
           <DiaryProfile />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/stats">
-        <ProtectedRoute>
+        <ProtectedRoute redirectTo="/auth/register">
           <DiaryStats />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/weather-forecast">
-        <ProtectedRoute>
+        <ProtectedRoute redirectTo="/auth/register">
           <WeatherForecast />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/fishing-rules">
-        <ProtectedRoute>
+        <ProtectedRoute redirectTo="/auth/register">
           <FishingRules />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/arsenal">
-        <ProtectedRoute>
+        <ProtectedRoute redirectTo="/auth/register">
           <GearArsenal />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/badges">
-        <ProtectedRoute>
+        <ProtectedRoute redirectTo="/auth/register">
           <Badges />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/seasonal-goals">
-        <ProtectedRoute>
+        <ProtectedRoute redirectTo="/auth/register">
           <DiarySeasonalGoals />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/seasonal-goals/create">
-        <ProtectedRoute>
+        <ProtectedRoute redirectTo="/auth/register">
           <DiarySeasonalGoalsCreate />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/seasonal-goals/:id/edit">
-        <ProtectedRoute>
+        <ProtectedRoute redirectTo="/auth/register">
           <DiarySeasonalGoalsEdit />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/battles/paywall" component={BattlePaywall} />
       <Route path="/diary/battles/create">
-        <ProtectedRoute>
+        <ProtectedRoute redirectTo="/auth/register">
           <BattleCreate />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/battles/archive">
-        <ProtectedRoute>
+        <ProtectedRoute redirectTo="/auth/register">
           <BattleArchive />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/battles/:id/edit">
-        <ProtectedRoute>
+        <ProtectedRoute redirectTo="/auth/register">
           <BattleEdit />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/battles/:id">
-        <ProtectedRoute>
+        <ProtectedRoute redirectTo="/auth/register">
           <BattleDetail />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/battles">
-        <ProtectedRoute>
+        <ProtectedRoute redirectTo="/auth/register">
           <BattleIndex />
         </ProtectedRoute>
       </Route>
