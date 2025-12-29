@@ -1,0 +1,188 @@
+COPY REWRITE ONBOARDINGU (každý krok má dôvod)
+STEP 1 – Rybárska identita
+❌ Aktuálne:
+
+Akým štýlom najčastejšie lovíte?
+
+Je to OK, ale nič nesľubuje.
+
+✅ Navrhujem:
+
+Nadpis:
+
+Aký rybár ste? 🎣
+
+Podnadpis:
+
+Vďaka tomu vám ukážeme relevantné súťaže, štatistiky a prehľady hneď od začiatku.
+
+➡️ User chápe prečo odpovedá.
+
+STEP 2 – Cieľ používania
+❌ Aktuálne:
+
+Čo je pre vás najdôležitejšie?
+
+✅ Navrhujem:
+
+Nadpis:
+
+Čo chcete s Contestiom robiť?
+
+Podnadpis:
+
+Aplikácia sa vám po dokončení automaticky prispôsobí.
+
+➡️ Prísľub personalizácie = vyšší engagement.
+
+STEP 3 – Vizualizácia
+❌ Aktuálne:
+
+Ako najradšej sledujete svoj progres?
+
+Abstraktné.
+
+✅ Navrhujem:
+
+Nadpis:
+
+Ako chcete vidieť svoje výsledky?
+
+Podnadpis:
+
+Vyberte si rozhranie, ktoré vám bude najviac vyhovovať pri vode aj doma.
+
+➡️ Reálny kontext používania.
+
+🎯 MICRO COPY (tlačidlá)
+Aktuálne	Lepšie
+Pokračovať	Pokračovať →
+Dokončiť	Vstúpiť do Contestia
+Preskočiť	Preskočiť nastavenie
+
+Malé veci → väčší pocit kontroly.
+
+2️⃣ A/B VARIANTY (konkrétne testovateľné)
+Variant A – „Rýchly vstup“
+
+👉 pre netrpezlivých rybárov
+
+menej textu
+
+žiadne vysvetľovanie
+
+dôraz na rýchlosť
+
+Headline Step 1:
+
+Vyberte svoj hlavný rybársky štýl
+
+➡️ Cieľ: max completion rate
+
+Variant B – „Personalizácia“
+
+👉 pre power userov
+
+Headline Step 1:
+
+Prispôsobme Contestio presne pre vás
+
+➡️ Cieľ: dlhodobé používanie
+
+Variant C – „Emočný rybár“
+
+👉 pre komunitu, súťaže
+
+Headline Step 2:
+
+Čo vás na rybárstve baví najviac?
+
+➡️ Cieľ: battle & social usage
+
+🔬 ČO MERAŤ:
+
+completion rate
+
+skip rate
+
+time to first action (úlovok / battle)
+
+Bez týchto metrík A/B test nemá zmysel.
+
+3️⃣ POST-ONBOARDING FIRST-ACTION FLOW (KRITICKÉ)
+
+Toto je miesto, kde 90 % appiek zlyhá.
+
+🎬 Okamžite po „Dokončiť“
+1️⃣ Success moment (nevynechaj)
+
+Toast alebo full-screen micro screen:
+
+🎉 Profil pripravený
+Poďme na tvoj prvý záznam.
+
+(2 sekundy max)
+
+2️⃣ Redirect NIE je cieľ, ale štart
+
+Podľa mainGoal:
+
+battles:
+
+CTA banner:
+
+🔥 Vytvor alebo sa pridaj do prvej Fishing Battle
+
+diary:
+
+CTA:
+
+➕ Zapíš prvý rybársky výjazd
+
+statistics:
+
+CTA:
+
+📊 Pridaj úlovok a začni zbierať dáta
+
+➡️ Nikdy nenechaj prázdnu obrazovku.
+
+3️⃣ In-app guide (len 1 hint!)
+
+Prvý session len 1 tooltip:
+
+„Tu si zapisuješ úlovky. Stačí 1 záznam a Contestio začne fungovať.“
+
+Nie viac. Viac = ignorovanie.
+
+BONUS – SKIP ONBOARDING (oprava)
+MUSÍŠ upraviť:
+handleSkip() => default profile
+
+
+Navrhujem:
+
+{
+ fishingStyle: "carp",
+ mainGoal: "diary",
+ visualPreference: "lists",
+ onboardingCompleted: true
+}
+
+
+➡️ Carp + diary = 70 % SK/CZ trhu.
+
+🧠 FINÁLNY VERDIKT
+
+Po týchto úpravách:
+
+onboarding nevysvetľuje, ale motivuje
+
+user vie čo má urobiť ako prvé
+
+aplikácia nepôsobí prázdne
+
+máš základ pre retention
+
+Toto už nie je MVP onboarding.
+Toto je produktový onboarding.
