@@ -66,7 +66,10 @@ import {
   Ticket,
   Gift,
   Percent,
-  CalendarDays
+  CalendarDays,
+  LogOut,
+  LayoutDashboard,
+  BookOpen
 } from "lucide-react";
 import type { Competition, Team, TeamMember, CompetitionRegistration, InsertSponsor, Sponsor, SponsorLevel, Catch, Referee, InsertReferee, PromoCode } from "@shared/schema";
 import { getSideCompetitionLabel } from "@/lib/utils";
@@ -377,6 +380,20 @@ export default function AdminPanel() {
   const [sponsorToDelete, setSponsorToDelete] = useState<string | null>(null);
 
   const isAdmin = user?.role === 'admin';
+
+  const handleLogout = () => {
+    window.location.href = '/api/logout';
+  };
+
+  if (!isAdmin && !isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-4">
+        <h1 className="text-2xl font-bold mb-4">Prístup zamietnutý</h1>
+        <p className="mb-4">Nemáte oprávnenie na zobrazenie tejto stránky.</p>
+        <Button onClick={() => navigate("/")}>Návrat domov</Button>
+      </div>
+    );
+  }
 
   // Helper functions for competition logo upload
   const handleLogoSelect = (file: File | null) => {
@@ -1853,7 +1870,40 @@ export default function AdminPanel() {
                 <div className="px-3 mb-2">
                   <h3 className="text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider">Správa systému</h3>
                 </div>
-                
+
+                <div className="px-3 mt-6 mb-2">
+                  <h3 className="text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider">Navigácia</h3>
+                </div>
+
+                <Link href="/diary">
+                  <a className="w-full flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground">
+                    <BookOpen className="h-4 w-4" />
+                    <span className="font-medium">Rybársky denník</span>
+                  </a>
+                </Link>
+
+                <Link href="/categories/live">
+                  <a className="w-full flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground">
+                    <Trophy className="h-4 w-4" />
+                    <span className="font-medium">Súťaže</span>
+                  </a>
+                </Link>
+
+                <div className="mt-auto pt-6 border-t border-sidebar-border px-3 pb-4">
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 text-sidebar-foreground/70 hover:bg-destructive/10 hover:text-destructive"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span className="font-medium">Odhlásiť sa</span>
+                  </button>
+                </div>
+              </>
+            )}
+
+            {/* Admin Tabs - ONLY show if NO competition is selected */}
+            {isAdmin && !selectedCompetition && (
+              <>
                 <button
                   onClick={() => { setActiveTab('dashboard'); setSidebarOpen(false); }}
                   className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors ${
