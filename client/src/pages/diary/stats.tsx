@@ -86,6 +86,7 @@ export default function DiaryStats() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const [selectedPeriodMonths, setSelectedPeriodMonths] = useState<3 | 6 | 12 | 24>(6);
+  const [compositionView, setCompositionView] = useState<'count' | 'weight'>('count');
 
   // Fetch user's trips and catches
   const { data: trips = [] } = useQuery<DiaryTrip[]>({
@@ -165,6 +166,32 @@ export default function DiaryStats() {
         totalWeight: stats.totalWeight
       }))
       .sort((a, b) => b.count - a.count);
+  }, [catches]);
+
+  // Weight distribution by ranges (memoized)
+  const weightDistribution = useMemo(() => {
+    const ranges = [
+      { label: 'do 2 kg', min: 0, max: 2 },
+      { label: '2-5 kg', min: 2, max: 5 },
+      { label: '5-7 kg', min: 5, max: 7 },
+      { label: '7-9 kg', min: 7, max: 9 },
+      { label: '9-10 kg', min: 9, max: 10 },
+      { label: '10-12 kg', min: 10, max: 12 },
+      { label: '12-15 kg', min: 12, max: 15 },
+      { label: '15-18 kg', min: 15, max: 18 },
+      { label: '18-20 kg', min: 18, max: 20 },
+      { label: '20-25 kg', min: 20, max: 25 },
+      { label: '25+ kg', min: 25, max: Infinity }
+    ];
+    
+    return ranges.map(range => {
+      const count = catches.filter(c => {
+        const weight = parseFloat(c.weight);
+        return weight >= range.min && weight < range.max;
+      }).length;
+      const percentage = catches.length > 0 ? (count / catches.length) * 100 : 0;
+      return { ...range, count, percentage };
+    }).filter(r => r.count > 0);
   }, [catches]);
 
   // Top baits (memoized)
@@ -576,22 +603,42 @@ export default function DiaryStats() {
                   <CardDescription>Prehľad podľa druhov a váhy</CardDescription>
                 </div>
                 <div className="flex gap-1">
-                  <Button variant="ghost" size="sm" className="text-xs h-8 px-3 text-muted-foreground">Váha</Button>
-                  <Button variant="secondary" size="sm" className="text-xs h-8 px-3">Počet</Button>
+                  <Button 
+                    variant={compositionView === 'weight' ? 'secondary' : 'ghost'} 
+                    size="sm" 
+                    className={`text-xs h-8 px-3 ${compositionView === 'weight' ? '' : 'text-muted-foreground'}`}
+                    onClick={() => setCompositionView('weight')}
+                    data-testid="button-composition-weight"
+                  >
+                    Váha
+                  </Button>
+                  <Button 
+                    variant={compositionView === 'count' ? 'secondary' : 'ghost'} 
+                    size="sm" 
+                    className={`text-xs h-8 px-3 ${compositionView === 'count' ? '' : 'text-muted-foreground'}`}
+                    onClick={() => setCompositionView('count')}
+                    data-testid="button-composition-count"
+                  >
+                    Počet
+                  </Button>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="p-6 space-y-6">
               {fishTypeStats.length > 0 ? (
                 fishTypeStats.slice(0, 5).map((stat, index) => {
-                  const percentage = totalCatches > 0 ? (stat.count / totalCatches) * 100 : 0;
+                  const percentage = compositionView === 'count' 
+                    ? (totalCatches > 0 ? (stat.count / totalCatches) * 100 : 0)
+                    : (totalWeight > 0 ? (stat.totalWeight / totalWeight) * 100 : 0);
                   const colors = ['bg-primary', 'bg-blue-500', 'bg-muted-foreground', 'bg-amber-500', 'bg-purple-500'];
                   return (
                     <div key={stat.type} className="space-y-2">
                       <div className="flex justify-between items-end">
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-semibold text-foreground">{stat.label}</span>
-                          <Badge variant="secondary" className="text-xs">{stat.count} ks</Badge>
+                          <Badge variant="secondary" className="text-xs">
+                            {compositionView === 'count' ? `${stat.count} ks` : `${stat.totalWeight.toFixed(1)} kg`}
+                          </Badge>
                         </div>
                         <span className="text-lg font-bold" style={{ color: index === 0 ? 'hsl(var(--primary))' : index === 1 ? '#3b82f6' : 'hsl(var(--muted-foreground))' }}>
                           {percentage.toFixed(0)}%
@@ -601,6 +648,39 @@ export default function DiaryStats() {
                     </div>
                   );
                 })
+              ) : (
+                <div className="text-center text-muted-foreground py-8">
+                  Žiadne dáta o úlovkoch
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Weight Distribution Table */}
+          <Card className="lg:col-span-2">
+            <CardHeader className="pb-4 border-b border-border">
+              <div>
+                <CardTitle className="text-lg font-bold flex items-center gap-2">
+                  <Weight className="w-5 h-5 text-blue-500" />
+                  Rozdelenie podľa hmotnosti
+                </CardTitle>
+                <CardDescription>Úlovky v jednotlivých hmotnostných kategóriách</CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6">
+              {weightDistribution.length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                  {weightDistribution.map((range) => (
+                    <div 
+                      key={range.label} 
+                      className="p-3 bg-muted/30 rounded-lg border border-border hover:bg-muted/50 transition-colors"
+                    >
+                      <p className="text-xs font-medium text-muted-foreground mb-1">{range.label}</p>
+                      <p className="text-xl font-bold text-foreground">{range.count}</p>
+                      <p className="text-xs text-muted-foreground">{range.percentage.toFixed(0)}%</p>
+                    </div>
+                  ))}
+                </div>
               ) : (
                 <div className="text-center text-muted-foreground py-8">
                   Žiadne dáta o úlovkoch
