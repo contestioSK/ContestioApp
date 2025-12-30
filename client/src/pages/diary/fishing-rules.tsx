@@ -221,9 +221,6 @@ export default function FishingRulesPage() {
                             <HighlightText text={row.minMax} query={searchQuery} />
                           </span>
                         </div>
-                        <p className="mt-1 text-sm text-muted-foreground" data-testid={`text-note-${index}`}>
-                          <HighlightText text={row.note} query={searchQuery} />
-                        </p>
                       </div>
                     </div>
                   </Card>
@@ -243,17 +240,14 @@ export default function FishingRulesPage() {
                     Druh Ryby
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-sidebar-foreground">
-                    Najmenšia / Najväčšia Miera
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-sidebar-foreground">
-                    Poznámka
+                    Minimálna lovná miera
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {filteredSizeLimits.length === 0 ? (
                   <tr>
-                    <td colSpan={3} className="px-6 py-8 text-center text-muted-foreground">
+                    <td colSpan={2} className="px-6 py-8 text-center text-muted-foreground">
                       Nenašli sa žiadne výsledky
                     </td>
                   </tr>
@@ -269,9 +263,6 @@ export default function FishingRulesPage() {
                     </td>
                     <td className="px-6 py-4 text-sm text-foreground" data-testid={`text-size-${index}`}>
                       <HighlightText text={row.minMax} query={searchQuery} />
-                    </td>
-                    <td className="px-6 py-4 text-sm text-muted-foreground" data-testid={`text-note-${index}`}>
-                      <HighlightText text={row.note} query={searchQuery} />
                     </td>
                   </tr>
                   ))
