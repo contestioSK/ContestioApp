@@ -644,7 +644,11 @@ export default function DiaryStats() {
                           {percentage.toFixed(0)}%
                         </span>
                       </div>
-                      <Progress value={percentage} className={`h-2 ${colors[index] || 'bg-muted'}`} />
+                      <Progress 
+                        value={percentage} 
+                        className="h-2 bg-muted overflow-hidden" 
+                        indicatorClassName={`bg-gradient-to-r from-white to-black border-r border-border`}
+                      />
                     </div>
                   );
                 })
@@ -680,7 +684,11 @@ export default function DiaryStats() {
                           {range.percentage.toFixed(0)}%
                         </span>
                       </div>
-                      <Progress value={range.percentage} className={`h-2 ${colors[index % colors.length]}`} />
+                      <Progress 
+                        value={range.percentage} 
+                        className="h-2 bg-muted overflow-hidden" 
+                        indicatorClassName={`bg-gradient-to-r from-white to-black border-r border-border`}
+                      />
                     </div>
                   );
                 })
