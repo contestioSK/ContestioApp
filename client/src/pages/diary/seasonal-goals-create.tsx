@@ -666,14 +666,26 @@ export default function SeasonalGoalsCreate() {
                 <AlertCircle className="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" />
                 <div>
                   <h3 className="font-medium text-blue-900 dark:text-blue-100 mb-2">
-                    Tipy pre nastavenie cieľov
+                    Ako ovládnuť túto sezónu?
                   </h3>
-                  <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-                    <li>• Nastavte si realistické ale výzývné ciele</li>
-                    <li>• Hlavný cieľ sezóny by mal byť váš najdôležitejší a najambicióznejší cieľ</li>
-                    <li>• Môžete mať viacero cieľov rôznych typov pre jednu sezónu</li>
-                    <li>• Pokrok sa automaticky aktualizuje na základe vašich úlovkov a výprav</li>
-                  </ul>
+                  <div className="text-sm text-blue-800 dark:text-blue-200 space-y-4">
+                    <div>
+                      <p className="font-semibold">Mier vysoko, ale zostaň pri zemi.</p>
+                      <p>Nastav si ciele, ktoré ťa prinútia vstať o tretej ráno, ale zároveň ich máš šancu reálne splniť.</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold">Tvoj „Majstrovský úlovok“.</p>
+                      <p>Hlavný cieľ sezóny je tvoja severka. Jeden cieľ, na ktorý sa chceš pozrieť na konci roka s pocitom hrdosti.</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold">Vyskladaj si pestrý arzenál.</p>
+                      <p>Nekombinuj len váhu. Pridaj ciele na počet výprav, nové techniky alebo objavovanie nových revírov.</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold">Ty lovíš, my počítame.</p>
+                      <p>Tvoj progres prepočítavame automaticky po každom zapísanom úlovku alebo výprave.</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </CardContent>
