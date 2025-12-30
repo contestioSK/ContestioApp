@@ -345,7 +345,7 @@ export interface IStorage {
   updateGoalProgress(goalId: string, contributionType: string, value: number, details?: any): Promise<void>;
   
   // Seasonal goals freemium limits
-  checkSeasonGoalLimit(userId: string, seasonId: string): Promise<{ canCreate: boolean; currentCount: number; limit: number }>;
+  checkSeasonGoalLimit(userId: string, seasonId: string): Promise<{ canCreate: boolean; currentCount: number; limit: number; isPremium: boolean }>;
   
   // Season goal auto-update from diary data
   recalculateGoalProgress(goalId: string): Promise<void>;
@@ -3428,9 +3428,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Freemium limits
-  async checkSeasonGoalLimit(userId: string, seasonId: string): Promise<{ canCreate: boolean; currentCount: number; limit: number }> {
+  async checkSeasonGoalLimit(userId: string, seasonId: string): Promise<{ canCreate: boolean; currentCount: number; limit: number; isPremium: boolean }> {
     const isPremium = await this.isUserPremium(userId);
-    const limit = isPremium ? Infinity : 1; // FREE: 1 goal per season, PREMIUM: unlimited
+    const freeLimit = 3; // FREE: 3 goals per season
 
     const currentCount = await db
       .select({ count: count() })
@@ -3442,9 +3442,10 @@ export class DatabaseStorage implements IStorage {
       .then(result => result[0]?.count || 0);
 
     return {
-      canCreate: isPremium || currentCount < limit,
+      canCreate: isPremium || currentCount < freeLimit,
       currentCount,
-      limit: isPremium ? -1 : limit, // -1 indicates unlimited
+      limit: isPremium ? -1 : freeLimit, // -1 indicates unlimited for premium
+      isPremium,
     };
   }
 

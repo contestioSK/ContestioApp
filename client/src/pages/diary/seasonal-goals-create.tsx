@@ -166,16 +166,35 @@ export default function SeasonalGoalsCreate() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/seasonal-goals"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/seasonal-goals/limit"] });
       toast({
-        title: "Cieľ vytvorený!",
+        title: "🎯 Cieľ vytvorený!",
         description: "Váš sezónny cieľ bol úspešne vytvorený.",
       });
       setLocation("/diary/seasonal-goals");
     },
-    onError: (error: Error) => {
+    onError: async (error: any) => {
+      let errorMessage = "Nepodarilo sa vytvoriť cieľ. Skúste to znovu.";
+      let errorTitle = "❌ Chyba";
+      
+      // Try to parse the error response for limit-related errors
+      if (error?.response) {
+        try {
+          const errorData = await error.response.json();
+          if (errorData.limitReached) {
+            errorTitle = "🔒 Limit dosiahnutý";
+            errorMessage = errorData.message;
+          } else if (errorData.message) {
+            errorMessage = errorData.message;
+          }
+        } catch {
+          // Keep default error message
+        }
+      }
+      
       toast({
-        title: "Chyba",
-        description: "Nepodarilo sa vytvoriť cieľ. Skúste to znovu.",
+        title: errorTitle,
+        description: errorMessage,
         variant: "destructive"
       });
       console.error("Create goal error:", error);
