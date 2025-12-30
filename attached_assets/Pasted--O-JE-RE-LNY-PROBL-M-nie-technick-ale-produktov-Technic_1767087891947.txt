@@ -1,0 +1,146 @@
+ČO JE REÁLNY PROBLÉM (nie technický, ale produktový)
+
+Technicky je všetko OK.
+Produktovo a UX-ovo je to momentálne zle navrhnuté.
+
+Používateľ:
+
+vidí formulár
+
+môže zadávať ciele
+
+nič ho neupozorní na limit
+
+po odoslaní dostane generickú technickú chybu
+
+➡️ Toto je UX antipattern č. 1
+Používateľ si myslí, že:
+
+aplikácia je rozbitá
+
+dáta sa neukladajú
+
+nie je spoľahlivá
+
+A to je pri MVP smrteľné.
+
+2️⃣ PREČO JE LIMIT 1 CIEĽ PRE FREE ZLÝ NÁPAD
+
+Poviem to priamo:
+
+1 cieľ = žiadna hodnota
+
+Rybár:
+
+chce mať viac typov cieľov
+
+kvantitatívne (počet rýb, dní)
+
+kvalitatívne (PB, najväčšia ryba)
+
+sezónne (do októbra…)
+
+Ak mu dovolíš:
+
+len 1 cieľ
+
+bez jasnej komunikácie
+
+➡️ tak nepochopí pointu funkcie
+
+A čo je horšie:
+➡️ Premium neuvidí ako upgrade, ale ako opravu chyby
+
+3️⃣ ČO JE SPRÁVNY PRODUKTOVÝ PRÍSTUP (bez kompromisov)
+❌ Zlé riešenie
+
+Zvýšiť limit potichu
+
+Nechať generickú chybu
+
+Skryť monetizáciu
+
+✅ Správne riešenie (odporúčam 100 %)
+A) FREE = 3 ciele na sezónu (minimálne)
+
+Prečo:
+
+používateľ pochopí funkciu
+
+uvidí grafy, progres, motiváciu
+
+narazí na limit až v momente, keď má hodnotu
+
+B) Jasná UX komunikácia LIMITU (pred klikom, nie po chybe)
+UI pattern:
+
+Nad tlačidlom „Pridať cieľ“:
+
+„FREE účet: 3 / 3 cieľov využitých“
+
+Po dosiahnutí limitu:
+🔒 „Dosiahol si limit cieľov pre FREE účet.“
+👉 Pre viac cieľov odomkni PREMIUM
+
+Tlačidlá:
+
+Prejsť na PREMIUM
+
+Zrušiť
+
+C) CHYBOVÁ HLÁŠKA MUSÍ BYŤ PRODUKTOVÁ, NIE TECHNICKÁ
+❌ Zle:
+
+Nepodarilo sa vytvoriť cieľ. Skúste to znovu.
+
+✅ Správne:
+
+Dosiahol si maximálny počet cieľov pre FREE účet (1 / 1).
+Pre neobmedzené ciele prejdite na PREMIUM.
+
+Toto je kriticky dôležité.
+
+4️⃣ MONETIZAČNÝ MOMENT (toto je zlato)
+
+Táto situácia je ideálny upgrade trigger, ale len ak:
+
+✔️ používateľ už:
+
+vytvoril aspoň 2–3 ciele
+
+vidí grafy
+
+má emóciu „chcem viac“
+
+👉 Preto:
+
+limit 1 = zabitie funkcie
+
+limit 3–5 = monetizačný sweet spot
+
+5️⃣ KONKRÉTNE ROZHODNUTIE (moje odporúčanie)
+
+Ak sa ma pýtaš ako produktový človek, nie developer:
+
+✔️ Implementuj OBIDVE veci:
+
+Zvýš FREE limit na 3 ciele
+
+Zmeň chybovú hlášku na jasnú limitnú správu s CTA
+
+A ako bonus:
+3. 🔒 Zamkni tlačidlo „Pridať cieľ“ po limite (disabled + tooltip)
+
+6️⃣ VERDIKT
+
+👉 Toto nie je bug, ale:
+
+zle navrhnutý value gate
+
+nešťastná monetizačná logika
+
+nebezpečný UX fail pre MVP
+
+Dobrá správa?
+➡️ Oprava je rýchla
+➡️ Efekt na vnímanie appky je obrovský
