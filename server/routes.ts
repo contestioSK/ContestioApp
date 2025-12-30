@@ -4685,6 +4685,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       // Validate battle data (without tripId)
       const battleSchema = z.object({
         name: z.string().min(1, "Názov battle je povinný").max(255),
+        location: z.string().optional().default(""),
         rules: z.object({
           mode: z.enum(["most_fish", "total_weight", "biggest_fish", "best_3_fish", "best_5_fish"]),
           minWeightKg: z.number().optional(),
@@ -4732,7 +4733,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       // Create trip automatically with same name and dates as battle
       const tripData = {
         name: battleData.name,
-        location: "", // Optional - could be added to battle form later
+        location: battleData.location || "",
         startDate: battleData.startAt,
         endDate: battleData.endAt,
         ownerUserId: userId,
