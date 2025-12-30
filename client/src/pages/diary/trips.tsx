@@ -47,7 +47,8 @@ import {
   WifiOff,
   Loader2,
   Upload,
-  ClipboardCheck
+  ClipboardCheck,
+  Search
 } from "lucide-react";
 
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -572,13 +573,15 @@ export default function DiaryTrips() {
                   </PopoverTrigger>
                   <PopoverContent className="w-[350px] p-0" align="start">
                     <Command shouldFilter={false}>
-                      <CommandInput 
-                        placeholder="Hľadať revír..." 
-                        value={locationSearch}
-                        onValueChange={(value) => {
-                          setLocationSearch(value);
-                        }}
-                      />
+                      <div className="flex items-center border-b px-3">
+                        <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                        <Input
+                          placeholder="Hľadať revír..."
+                          value={locationSearch}
+                          onChange={(e) => setLocationSearch(e.target.value)}
+                          className="h-11 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                        />
+                      </div>
                       <CommandList>
                         {locationSearch.length < 2 ? (
                           <CommandEmpty>Zadajte aspoň 2 znaky...</CommandEmpty>
