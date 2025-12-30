@@ -218,6 +218,7 @@ export default function Profile() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [profileImage, setProfileImage] = useState<File | null>(null);
 
   // Check premium status with proper loading state
@@ -319,7 +320,7 @@ export default function Profile() {
 
   // Handle file select in form (shows preview first)
   const handleFormFileSelect = (file: File) => {
-    setProfileImage(file);
+    uploadImageMutation.mutate(file);
   };
 
   const onSubmit = (data: ProfileForm) => {
@@ -489,7 +490,8 @@ export default function Profile() {
                               placeholder="Vaše meno"
                               data-testid="input-first-name"
                               disabled={!isEditing}
-                              {...field} 
+                              {...field}
+                              value={field.value || ""}
                             />
                           </FormControl>
                           <FormMessage />
@@ -509,7 +511,8 @@ export default function Profile() {
                               placeholder="Vaše priezvisko"
                               data-testid="input-last-name"
                               disabled={!isEditing}
-                              {...field} 
+                              {...field}
+                              value={field.value || ""}
                             />
                           </FormControl>
                           <FormMessage />
@@ -529,7 +532,8 @@ export default function Profile() {
                               placeholder="Vaša prezývka"
                               data-testid="input-nickname"
                               disabled={!isEditing}
-                              {...field} 
+                              {...field}
+                              value={field.value || ""}
                             />
                           </FormControl>
                           <FormDescription>
@@ -587,7 +591,8 @@ export default function Profile() {
                                 placeholder="https://facebook.com/vasprofil"
                                 data-testid="input-facebook"
                                 disabled={!isEditing}
-                                {...field} 
+                                {...field}
+                                value={field.value || ""}
                               />
                             </FormControl>
                             <FormDescription>
@@ -613,7 +618,8 @@ export default function Profile() {
                                 placeholder="https://instagram.com/vasprofil"
                                 data-testid="input-instagram"
                                 disabled={!isEditing}
-                                {...field} 
+                                {...field}
+                                value={field.value || ""}
                               />
                             </FormControl>
                             <FormDescription>
