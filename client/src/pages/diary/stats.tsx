@@ -480,16 +480,16 @@ export default function DiaryStats() {
         <TabsContent value="overview" className="space-y-6 mt-0">
         {/* 4 Metric Cards with colored left borders */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="border-l-4 border-l-primary transition-colors hover:bg-muted/30">
+          <Card className="border-l-4 border-l-emerald-500 transition-colors hover:bg-muted/30">
             <CardContent className="p-5">
               <div className="flex justify-between items-start mb-3">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Celkové úlovky</p>
-                <Fish className="w-4 h-4 text-primary" />
+                <Fish className="w-4 h-4 text-emerald-500" />
               </div>
               <div className="flex items-baseline gap-2">
                 <span className="text-3xl font-bold text-foreground">{totalCatches}</span>
                 {catches.length > 0 && (
-                  <span className="text-xs font-medium text-primary/70">+{Math.round((catches.length / Math.max(1, totalTrips)) * 10)}%</span>
+                  <span className="text-xs font-medium text-emerald-500/70">+{Math.round((catches.length / Math.max(1, totalTrips)) * 10)}%</span>
                 )}
               </div>
               <p className="text-xs text-muted-foreground mt-1">{totalWeight.toFixed(1)} kg celkom</p>
