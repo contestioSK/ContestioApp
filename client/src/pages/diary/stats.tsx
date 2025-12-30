@@ -678,11 +678,7 @@ export default function DiaryStats() {
           </div>
         </div>
 
-        {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <MonthComparisonChart data={monthComparisonData} />
-          <HourlyDistributionChart data={hourlyDistributionData} />
-        </div>
+        {/* Charts Section - Moved to Trends */}
 
         {/* Footer Note */}
         <div className="flex items-center gap-2 text-xs text-muted-foreground pt-4 border-t border-border">
@@ -693,8 +689,12 @@ export default function DiaryStats() {
 
         {/* Trends Tab - Premium Only */}
         <TabsContent value="trends" className="space-y-6">
-          <WeightProgressionChart data={weightProgressionData} />
-          <CatchFrequencyChart data={catchFrequencyData} />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <WeightProgressionChart data={weightProgressionData} />
+            <CatchFrequencyChart data={catchFrequencyData} />
+            <MonthComparisonChart data={monthComparisonData} />
+            <HourlyDistributionChart data={hourlyDistributionData} />
+          </div>
           
           <Card className="text-center py-12">
             <CardContent>
