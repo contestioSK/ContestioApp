@@ -439,1121 +439,310 @@ export default function DiaryStats() {
 
   return (
     <DiaryLayout>
-      <div className="p-6" data-testid="page-diary-stats">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-              Štatistiky
-              {!isPremium && (
-                <Badge variant="secondary" className="bg-secondary text-secondary-foreground">
-                  <Crown className="w-4 h-4 mr-1" />
-                  PREMIUM
-                </Badge>
-              )}
-            </h1>
-            <p className="text-muted-foreground">Analýzy a štatistiky vašich rybárskych úspechov</p>
-          </div>
-
-          {!isPremium && (
-            <Button className="gap-2 bg-primary hover:bg-primary/90" data-testid="button-upgrade-premium">
-              <Crown className="w-4 h-4" />
-              Prejsť na PREMIUM
-            </Button>
-          )}
-        </div>
-
-        {/* Premium Gate for Advanced Stats */}
-        {!isPremium && (
-          <Alert className="mb-6 border-border bg-muted/50">
-            <Crown className="h-4 w-4 text-primary" />
-            <AlertDescription className="text-foreground">
-              Pokročilé štatistiky a analýzy sú dostupné len v PREMIUM verzii. 
-              <Button variant="link" className="p-0 h-auto font-medium text-primary ml-1" data-testid="link-premium-upgrade">
-                Zistite viac o PREMIUM
-              </Button>
-            </AlertDescription>
-          </Alert>
-        )}
-
+      <div className="p-6 space-y-6" data-testid="page-diary-stats">
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="overview" data-testid="tab-overview">
-              <BarChart3 className="w-4 h-4 mr-2" />
-              Prehľad
+        {/* Header with Title + Tabs inline */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-primary/10 rounded-2xl">
+              <BarChart3 className="w-7 h-7 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground">Analýza Sezóny</h1>
+              <p className="text-sm text-muted-foreground">Tvoje úspechy premenené na dáta</p>
+            </div>
+          </div>
+          
+          <TabsList className="grid grid-cols-4 bg-muted/50 border border-border p-1 rounded-xl">
+            <TabsTrigger value="overview" className="text-xs font-medium gap-1.5 data-[state=active]:bg-background data-[state=active]:text-primary" data-testid="tab-overview">
+              <Activity className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Prehľad</span>
             </TabsTrigger>
-            <TabsTrigger value="trends" disabled={!isPremium} data-testid="tab-trends">
-              <TrendingUp className="w-4 h-4 mr-2" />
-              Trendy
-              {!isPremium && <Lock className="w-3 h-3 ml-1" />}
+            <TabsTrigger value="trends" disabled={!isPremium} className="text-xs font-medium gap-1.5" data-testid="tab-trends">
+              <TrendingUp className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Trendy</span>
+              {!isPremium && <Lock className="w-3 h-3" />}
             </TabsTrigger>
-            <TabsTrigger value="analysis" disabled={!isPremium} data-testid="tab-analysis">
-              <PieChart className="w-4 h-4 mr-2" />
-              Analýzy
-              {!isPremium && <Lock className="w-3 h-3 ml-1" />}
+            <TabsTrigger value="analysis" disabled={!isPremium} className="text-xs font-medium gap-1.5" data-testid="tab-analysis">
+              <PieChart className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Analýzy</span>
+              {!isPremium && <Lock className="w-3 h-3" />}
             </TabsTrigger>
-            <TabsTrigger value="achievements" disabled={!isPremium} data-testid="tab-achievements">
-              <Award className="w-4 h-4 mr-2" />
-              Úspechy
-              {!isPremium && <Lock className="w-3 h-3 ml-1" />}
+            <TabsTrigger value="achievements" disabled={!isPremium} className="text-xs font-medium gap-1.5" data-testid="tab-achievements">
+              <Trophy className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Úspechy</span>
+              {!isPremium && <Lock className="w-3 h-3" />}
             </TabsTrigger>
           </TabsList>
+        </div>
 
-          {/* Overview Tab - Available for all users */}
-          <TabsContent value="overview" className="space-y-6">
-            {/* Period Selector */}
-            <Card>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-lg">Prehľad štatistík</CardTitle>
-                    <CardDescription>
-                      Analýza vašich rybárskych výsledkov za vybrané obdobie
-                    </CardDescription>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <label className="text-sm font-medium">Obdobie:</label>
-                    <Select
-                      value={String(selectedPeriodMonths)}
-                      onValueChange={(value) => setSelectedPeriodMonths(parseInt(value) as 3 | 6 | 12 | 24)}
-                    >
-                      <SelectTrigger className="w-[180px]" data-testid="select-period">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="3">Posledné 3 mesiace</SelectItem>
-                        <SelectItem value="6">Posledných 6 mesiacov</SelectItem>
-                        <SelectItem value="12">Posledných 12 mesiacov</SelectItem>
-                        <SelectItem value="24">Posledné 2 roky</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+        {/* Overview Tab Content */}
+        <TabsContent value="overview" className="space-y-6 mt-0">
+        {/* 4 Metric Cards with colored left borders */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className="border-l-4 border-l-primary transition-colors hover:bg-muted/30">
+            <CardContent className="p-5">
+              <div className="flex justify-between items-start mb-3">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Celkové úlovky</p>
+                <Fish className="w-4 h-4 text-primary" />
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-bold text-foreground">{totalCatches}</span>
+                {catches.length > 0 && (
+                  <span className="text-xs font-medium text-primary/70">+{Math.round((catches.length / Math.max(1, totalTrips)) * 10)}%</span>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">{totalWeight.toFixed(1)} kg celkom</p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-l-4 border-l-blue-500 transition-colors hover:bg-muted/30">
+            <CardContent className="p-5">
+              <div className="flex justify-between items-start mb-3">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Celková váha</p>
+                <Weight className="w-4 h-4 text-blue-500" />
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-bold text-foreground">{totalWeight.toFixed(1)}</span>
+                <span className="text-sm font-medium text-muted-foreground">kg</span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">Priemer {averageWeight.toFixed(1)} kg / úlovok</p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-l-4 border-l-amber-500 transition-colors hover:bg-muted/30">
+            <CardContent className="p-5">
+              <div className="flex justify-between items-start mb-3">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Výpravy</p>
+                <MapPin className="w-4 h-4 text-amber-500" />
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-bold text-foreground">{totalTrips}</span>
+                <span className="text-xs font-medium text-amber-500/70">{activeTripCount} aktívne</span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">Celkom {totalTrips * 6} hodín pri vode</p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-l-4 border-l-purple-500 transition-colors hover:bg-muted/30">
+            <CardContent className="p-5">
+              <div className="flex justify-between items-start mb-3">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Úspešnosť</p>
+                <Target className="w-4 h-4 text-purple-500" />
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-bold text-foreground">{successRate}</span>
+                <span className="text-sm font-medium text-muted-foreground">ryby/deň</span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">Najväčší: {biggestCatch.toFixed(1)} kg</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Premium Upsell Banner - only for FREE users */}
+        {!isPremium && (
+          <Card className="relative overflow-hidden bg-gradient-to-r from-amber-500/10 via-background to-background border-amber-500/10">
+            <div className="absolute top-0 right-0 p-4 opacity-5">
+              <Crown className="w-24 h-24 -rotate-12" />
+            </div>
+            <CardContent className="p-5 md:p-6 flex flex-col md:flex-row items-center gap-4">
+              <div className="flex-1 text-center md:text-left relative z-10">
+                <Badge className="mb-2 bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/20">PREMIUM</Badge>
+                <h3 className="text-lg md:text-xl font-semibold text-foreground mb-1">Odomkni svoj plný potenciál</h3>
+                <p className="text-xs text-muted-foreground max-w-md">
+                  Získaj prístup k hodinovej úspešnosti, analýze tlaku vzduchu a porovnaniu s ostatnými rybármi.
+                </p>
+              </div>
+              <Button 
+                variant="outline"
+                className="relative z-10 border-amber-500/30 text-amber-600 hover:bg-amber-500/10 font-medium px-6"
+                onClick={() => setLocation('/diary/premium')}
+                data-testid="button-get-premium"
+              >
+                Získať PREMIUM
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Two Column Layout: Fish Composition + Right Sidebar */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Column - Fish Composition (wider) */}
+          <Card className="lg:col-span-2">
+            <CardHeader className="pb-4 border-b border-border">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg font-bold">Zloženie úlovkov</CardTitle>
+                  <CardDescription>Prehľad podľa druhov a váhy</CardDescription>
                 </div>
-              </CardHeader>
-            </Card>
-
-            {/* Key Stats Cards - 2x2 grid on mobile */}
-            <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 xl:gap-5">
-              {/* Primary Metric - Highlighted */}
-              <Card className="relative overflow-hidden bg-gradient-to-br from-primary/15 via-primary/5 to-transparent ring-1 ring-primary/30 shadow-lg transition-all duration-200 hover:-translate-y-1 hover:shadow-xl">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                  <CardTitle className="text-sm font-semibold text-primary">Celkové úlovky</CardTitle>
-                  <div className="p-2 rounded-xl bg-primary/15">
-                    <Fish className="h-5 w-5 text-primary" />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-4xl font-bold tracking-tight text-primary">{totalCatches}</div>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {totalWeight.toFixed(1)} kg celkom
-                  </p>
-                </CardContent>
-              </Card>
-
-              {/* Secondary Metrics */}
-              <Card className="transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                  <CardTitle className="text-sm font-semibold">Priemerná váha</CardTitle>
-                  <div className="p-2 rounded-xl bg-amber-500/10">
-                    <Weight className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold tracking-tight">{averageWeight.toFixed(1)} kg</div>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Najväčší: {biggestCatch.toFixed(1)} kg
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                  <CardTitle className="text-sm font-semibold">Výpravy</CardTitle>
-                  <div className="p-2 rounded-xl bg-emerald-500/10">
-                    <MapPin className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold tracking-tight">{totalTrips}</div>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {activeTripCount} aktívnych
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                  <CardTitle className="text-sm font-semibold">Dni pri vode</CardTitle>
-                  <div className="p-2 rounded-xl bg-blue-500/10">
-                    <Calendar className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold tracking-tight">{totalTrips}</div>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    celkovo dní
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Interactive Charts Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Weight Progression Chart */}
-              <WeightProgressionChart data={weightProgressionData} />
-
-              {/* Catch Frequency Chart */}
-              <CatchFrequencyChart data={catchFrequencyData} />
-
-              {/* Carp Type Distribution Enhanced */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Fish className="w-5 h-5" />
-                    Rozdelenie typov kaprov
-                  </CardTitle>
-                  <CardDescription>
-                    Podiel jednotlivých typov vo vašich úlovkoch
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {fishTypeStats.some(stat => stat.count > 0) ? (
-                    <div className="space-y-4">
-                      {fishTypeStats
-                        .filter(stat => stat.count > 0)
-                        .sort((a, b) => b.count - a.count)
-                        .map(stat => (
-                          <div key={stat.type} className="space-y-2">
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="font-medium">{stat.label}</span>
-                              <div className="text-right">
-                                <div className="font-medium">{stat.count} úlovkov</div>
-                                <div className="text-xs text-muted-foreground">
-                                  {stat.totalWeight.toFixed(1)} kg • {totalCatches > 0 ? ((stat.count / totalCatches) * 100).toFixed(1) : 0}%
-                                </div>
-                              </div>
-                            </div>
-                            <Progress 
-                              value={totalCatches > 0 ? (stat.count / totalCatches) * 100 : 0} 
-                              className="h-3"
-                            />
-                          </div>
-                        ))}
-                    </div>
-                  ) : (
-                    <div className="text-center text-muted-foreground py-8">
-                      Žiadne dáta o typoch kaprov
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Top Locations */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MapPin className="w-5 h-5" />
-                    Najlepšie lokality
-                  </CardTitle>
-                  <CardDescription>
-                    Lokality s najväčším počtom úlovkov
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {topLocations.length > 0 ? (
-                    <div className="space-y-4">
-                      {topLocations.map((location, index) => (
-                        <div key={location.location} className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                              index === 0 ? 'bg-primary/10 text-primary' : 
-                              index === 1 ? 'bg-muted text-muted-foreground' : 
-                              index === 2 ? 'bg-secondary text-secondary-foreground' : 
-                              'bg-muted text-muted-foreground'
-                            }`}>
-                              {index + 1}
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium line-clamp-1">{location.location}</p>
-                            </div>
-                          </div>
-                          <Badge variant="secondary">{location.count} úlovkov</Badge>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-muted-foreground text-center py-8">
-                      Žiadne údaje o lokalitách
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Year-over-Year Comparison */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="w-5 h-5" />
-                  Porovnanie voči minulému roku
-                </CardTitle>
-                <CardDescription>
-                  Zmena výkonnosti oproti minulému roku
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {(() => {
-                  // Get comprehensive year-over-year comparison
-                  const comparison = getPeriodComparison(catches, trips, 12);
-                  const catchesTrend = formatTrendIndicator(comparison.changes.catches);
-                  const tripsTrend = formatTrendIndicator(comparison.changes.trips);
-                  const weightTrend = formatWeightTrendIndicator(comparison.changes.weight);
-                  const successRateTrend = formatSuccessRateTrendIndicator(comparison.changes.successRate);
-
-                  // Count multi-day trips (where endDate exists and is different from startDate)
-                  const multiDayTrips = trips.filter(trip => {
-                    if (!trip.endDate || !trip.startDate) return false;
-                    const start = new Date(trip.startDate);
-                    const end = new Date(trip.endDate);
-                    return end.getTime() > start.getTime();
-                  }).length;
-
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="sm" className="text-xs h-8 px-3 text-muted-foreground">Váha</Button>
+                  <Button variant="secondary" size="sm" className="text-xs h-8 px-3">Počet</Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6 space-y-6">
+              {fishTypeStats.length > 0 ? (
+                fishTypeStats.slice(0, 5).map((stat, index) => {
+                  const percentage = totalCatches > 0 ? (stat.count / totalCatches) * 100 : 0;
+                  const colors = ['bg-primary', 'bg-blue-500', 'bg-muted-foreground', 'bg-amber-500', 'bg-purple-500'];
                   return (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {/* Catches */}
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-primary">{comparison.current.catches}</div>
-                        <div className="text-xs text-muted-foreground">Úlovky za rok</div>
-                        <div className="text-xs font-medium flex items-center justify-center gap-1">
-                          <span className={catchesTrend.colorClass}>
-                            {catchesTrend.arrow}
-                          </span>
-                          <span className={catchesTrend.colorClass}>
-                            {catchesTrend.text} ({comparison.changes.catches.percentage.toFixed(0)}%)
-                          </span>
+                    <div key={stat.type} className="space-y-2">
+                      <div className="flex justify-between items-end">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-semibold text-foreground">{stat.label}</span>
+                          <Badge variant="secondary" className="text-xs">{stat.count} ks</Badge>
                         </div>
+                        <span className="text-lg font-bold" style={{ color: index === 0 ? 'hsl(var(--primary))' : index === 1 ? '#3b82f6' : 'hsl(var(--muted-foreground))' }}>
+                          {percentage.toFixed(0)}%
+                        </span>
                       </div>
-                      
-                      {/* Days at Water */}
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-primary">{comparison.current.trips}</div>
-                        <div className="text-xs text-muted-foreground">Dni pri vode</div>
-                        <div className="text-xs font-medium flex items-center justify-center gap-1">
-                          <span className={tripsTrend.colorClass}>
-                            {tripsTrend.arrow}
-                          </span>
-                          <span className={tripsTrend.colorClass}>
-                            {tripsTrend.text} ({comparison.changes.trips.percentage.toFixed(0)}%)
-                          </span>
-                        </div>
-                      </div>
-                      
-                      {/* Multi-day Trips */}
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-primary">{multiDayTrips}</div>
-                        <div className="text-xs text-muted-foreground">Viacdenné výpravy</div>
-                        <div className="text-xs font-medium text-muted-foreground">
-                          celkovo
-                        </div>
-                      </div>
-                      
-                      {/* Weight */}
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-primary">{comparison.current.weight.toFixed(1)} kg</div>
-                        <div className="text-xs text-muted-foreground">Váha za rok</div>
-                        <div className="text-xs font-medium flex items-center justify-center gap-1">
-                          <span className={weightTrend.colorClass}>
-                            {weightTrend.arrow}
-                          </span>
-                          <span className={weightTrend.colorClass}>
-                            {weightTrend.text} ({comparison.changes.weight.percentage.toFixed(0)}%)
-                          </span>
-                        </div>
-                      </div>
+                      <Progress value={percentage} className={`h-2 ${colors[index] || 'bg-muted'}`} />
                     </div>
                   );
-                })()}
-              </CardContent>
-            </Card>
-
-            {/* Basic Monthly Overview */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Activity className="w-5 h-5" />
-                  Posledných {selectedPeriodMonths === 3 ? "3 mesiace" : selectedPeriodMonths === 6 ? "6 mesiacov" : selectedPeriodMonths === 12 ? "12 mesiacov" : "24 mesiacov"}
-                </CardTitle>
-                <CardDescription>
-                  Základný prehľad aktivity
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {monthlyStats.map(month => (
-                    <div key={month.month} className="flex items-center justify-between p-3 rounded-lg border">
-                      <div>
-                        <p className="font-medium">{month.month}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {month.trips} výprav, {month.catches} úlovkov
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-medium">{month.totalWeight.toFixed(1)} kg</p>
-                        <p className="text-sm text-muted-foreground">celková váha</p>
-                      </div>
-                    </div>
-                  ))}
+                })
+              ) : (
+                <div className="text-center text-muted-foreground py-8">
+                  Žiadne dáta o úlovkoch
                 </div>
-              </CardContent>
-            </Card>
+              )}
+            </CardContent>
+          </Card>
 
-            {/* Hourly Distribution Chart */}
-            <HourlyDistributionChart data={hourlyDistributionData} />
-          </TabsContent>
-
-          {/* Premium-only tabs */}
-          <TabsContent value="trends" className="space-y-6">
-            {!isPremium ? (
-              <Card className="text-center py-12">
-                <CardContent>
-                  <Lock className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Pokročilé trendy</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Detailné grafy trendov, sezónne analýzy a porovnania sú dostupné v PREMIUM verzii.
-                  </p>
-                  <Button className="gap-2" data-testid="button-upgrade-trends">
-                    <Crown className="w-4 h-4" />
-                    Prejsť na PREMIUM
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <>
-                {/* Period Selector for Trends */}
-                <div className="flex items-center justify-between">
+          {/* Right Column - Stacked Cards */}
+          <div className="space-y-4">
+            {/* Top Bait Card */}
+            <Card className="bg-primary/5 border-primary/20">
+              <CardContent className="p-5">
+                <h4 className="text-xs font-bold uppercase tracking-widest text-primary mb-4 flex items-center gap-2">
+                  <Star className="w-4 h-4 fill-current" /> Top Nástraha
+                </h4>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-2xl">
+                    🎣
+                  </div>
                   <div>
-                    <h2 className="text-2xl font-bold">Trendy a pokrok</h2>
-                    <p className="text-muted-foreground">Pokročilé analýzy vášho rybárskeho pokroku</p>
+                    <h5 className="font-bold text-foreground text-lg leading-tight">
+                      {topBaits[0]?.bait || 'Žiadne dáta'}
+                    </h5>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {topBaits[0] ? `${topBaits[0].count} úlovkov` : 'Pridaj úlovky s nástrahou'}
+                    </p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">Obdobie:</span>
-                    <div className="flex rounded-lg border p-1">
-                      {([3, 6, 12] as const).map((months) => (
-                        <Button
-                          key={months}
-                          variant={selectedPeriodMonths === months ? "default" : "ghost"}
-                          size="sm"
-                          onClick={() => setSelectedPeriodMonths(months)}
-                          className="text-xs"
-                          data-testid={`button-period-${months}m`}
-                        >
-                          {months === 3 ? "3 mes." : months === 6 ? "6 mes." : "1 rok"}
-                        </Button>
-                      ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Best Location Card */}
+            <Card>
+              <CardContent className="p-5">
+                <h4 className="text-xs font-bold uppercase tracking-widest text-blue-500 mb-4 flex items-center gap-2">
+                  <Trophy className="w-4 h-4" /> Najlepšia lokalita
+                </h4>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center">
+                    <MapPin className="w-6 h-6 text-blue-500" />
+                  </div>
+                  <div>
+                    <h5 className="font-bold text-foreground text-lg leading-tight">
+                      {topLocations[0]?.location || 'Žiadne dáta'}
+                    </h5>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {topLocations[0] ? `${topLocations[0].count} úlovkov` : 'Pridaj výpravy s lokalitou'}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Next Milestone Card - Locked for FREE */}
+            <Card className="border-dashed border-muted-foreground/30">
+              <CardContent className="p-5">
+                <div className="flex items-center gap-2 text-muted-foreground mb-3">
+                  <Lock className="w-4 h-4" />
+                  <p className="text-xs font-bold uppercase tracking-widest">Ďalší míľnik</p>
+                </div>
+                <div className="opacity-40 grayscale">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-muted rounded-xl flex items-center justify-center">
+                      <Award className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h5 className="font-bold text-foreground text-lg leading-tight">50 úlovkov</h5>
+                      <p className="text-xs text-muted-foreground mt-0.5">{totalCatches}/50 splnených</p>
                     </div>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
 
-                {/* Weight Progression and Catch Frequency Charts */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <WeightProgressionChart data={weightProgressionData} />
-                  <CatchFrequencyChart data={catchFrequencyData} />
-                </div>
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <WeightProgressionChart data={weightProgressionData} />
+          <CatchFrequencyChart data={catchFrequencyData} />
+          <MonthComparisonChart data={monthComparisonData} />
+          <HourlyDistributionChart data={hourlyDistributionData} />
+        </div>
 
-                {/* Seasonal Trends */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Calendar className="w-5 h-5" />
-                      Sezónne trendy úlovkov
-                    </CardTitle>
-                    <CardDescription>
-                      Podiel úlovkov v jednotlivých ročných obdobiach
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {(() => {
-                      const bestSeason = seasonalData.reduce((best, season) => 
-                        season.catches > best.catches ? season : best
-                      );
-                      
-                      const getSeasonStyle = (season: string) => {
-                        switch (season) {
-                          case 'spring': return { bg: 'bg-emerald-500/10', text: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-500/30', progress: 'bg-emerald-500' };
-                          case 'summer': return { bg: 'bg-amber-500/10', text: 'text-amber-600 dark:text-amber-400', border: 'border-amber-500/30', progress: 'bg-amber-500' };
-                          case 'autumn': return { bg: 'bg-orange-500/10', text: 'text-orange-600 dark:text-orange-400', border: 'border-orange-500/30', progress: 'bg-orange-500' };
-                          case 'winter': return { bg: 'bg-blue-500/10', text: 'text-blue-600 dark:text-blue-400', border: 'border-blue-500/30', progress: 'bg-blue-500' };
-                          default: return { bg: 'bg-muted', text: 'text-foreground', border: 'border-border', progress: 'bg-primary' };
-                        }
-                      };
+        {/* Footer Note */}
+        <div className="flex items-center gap-2 text-xs text-muted-foreground pt-4 border-t border-border">
+          <Activity className="w-3.5 h-3.5" />
+          <p>Štatistiky sú aktualizované v reálnom čase po každom schválenom úlovku.</p>
+        </div>
+        </TabsContent>
 
-                      return (
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                          <TooltipProvider>
-                            {seasonalData.map(season => {
-                              const percentage = totalCatches > 0 ? (season.catches / totalCatches) * 100 : 0;
-                              const style = getSeasonStyle(season.season);
-                              const isBest = season.season === bestSeason.season && season.catches > 0;
-                              
-                              return (
-                                <Tooltip key={season.season}>
-                                  <TooltipTrigger asChild>
-                                    <div className={`
-                                      relative text-center cursor-help p-4 rounded-xl border-2 transition-all duration-200
-                                      ${style.bg} ${style.border}
-                                      ${isBest ? 'ring-2 ring-primary ring-offset-2 ring-offset-background shadow-lg scale-[1.02]' : 'hover:scale-[1.01]'}
-                                    `}>
-                                      {isBest && (
-                                        <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full font-medium">
-                                          Top
-                                        </div>
-                                      )}
-                                      <div className={`text-sm font-semibold uppercase tracking-wide ${style.text}`}>
-                                        {season.label}
-                                      </div>
-                                      <div className={`text-3xl font-bold mt-1 ${style.text}`}>
-                                        {percentage.toFixed(0)}%
-                                      </div>
-                                      <div className="text-xs text-muted-foreground mt-1">
-                                        {season.catches} {season.catches === 1 ? 'úlovok' : 'úlovkov'}
-                                      </div>
-                                      <div className="mt-3 h-2 bg-muted rounded-full overflow-hidden">
-                                        <div 
-                                          className={`h-full ${style.progress} transition-all duration-500`}
-                                          style={{ width: `${percentage}%` }}
-                                        />
-                                      </div>
-                                    </div>
-                                  </TooltipTrigger>
-                                  <TooltipContent side="top" className="space-y-1 p-3">
-                                    <div className="font-semibold text-base">{season.label}</div>
-                                    <div className="text-sm">Úlovky: {season.catches} ks</div>
-                                    <div className="text-sm">Výpravy: {season.trips} ks</div>
-                                    <div className="text-sm">Priemerná váha: {season.averageWeight.toFixed(1)} kg</div>
-                                    <div className="font-medium text-sm pt-1 border-t">
-                                      Efektívnosť: {season.efficiency.toFixed(1)} úlovkov/výpravu
-                                    </div>
-                                  </TooltipContent>
-                                </Tooltip>
-                              );
-                            })}
-                          </TooltipProvider>
-                        </div>
-                      );
-                    })()}
-                  </CardContent>
-                </Card>
+        {/* Trends Tab - Premium Only */}
+        <TabsContent value="trends" className="space-y-6">
+          <Card className="text-center py-12">
+            <CardContent>
+              <TrendingUp className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Pokročilé trendy</h3>
+              <p className="text-muted-foreground mb-4">
+                Detailné grafy trendov, sezónne analýzy a porovnania sú dostupné v PREMIUM verzii.
+              </p>
+              <Button className="gap-2" onClick={() => setLocation('/diary/premium')} data-testid="button-upgrade-trends">
+                <Crown className="w-4 h-4" />
+                Prejsť na PREMIUM
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-                {/* Monthly Comparison - Enhanced */}
-                <MonthComparisonChart 
-                  data={monthComparisonData} 
-                  title="Detailné mesačné porovnania"
-                  period={selectedPeriodMonths === 3 ? "posledných 3 mesiacov" : selectedPeriodMonths === 6 ? "posledných 6 mesiacov" : selectedPeriodMonths === 12 ? "posledného roka" : "posledných 2 rokov"}
-                />
+        {/* Analysis Tab - Premium Only */}
+        <TabsContent value="analysis" className="space-y-6">
+          <Card className="text-center py-12">
+            <CardContent>
+              <PieChart className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Pokročilé analýzy</h3>
+              <p className="text-muted-foreground mb-4">
+                Detailné analýzy kvality úlovkov, lokácií a nástrah sú dostupné v PREMIUM verzii.
+              </p>
+              <Button className="gap-2" onClick={() => setLocation('/diary/premium')} data-testid="button-upgrade-analysis">
+                <Crown className="w-4 h-4" />
+                Prejsť na PREMIUM
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-                {/* Additional Insights */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold flex items-center gap-2">
-                    <BarChart3 className="w-5 h-5 text-primary" />
-                    Kľúčové ukazovatele
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Card className="transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                        <CardTitle className="text-sm font-semibold">Najlepší mesiac</CardTitle>
-                        <div className="p-2 rounded-xl bg-emerald-500/10">
-                          <TrendingUp className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        {monthComparisonData.length > 0 ? (
-                          (() => {
-                            const bestMonth = monthComparisonData.reduce((best, month) => 
-                              month.catches > best.catches ? month : best
-                            );
-                            return (
-                              <div>
-                                <p className="text-3xl font-bold tracking-tight">{bestMonth.month}</p>
-                                <p className="text-sm text-muted-foreground mt-1">
-                                  {bestMonth.catches} úlovkov • {bestMonth.totalWeight.toFixed(1)} kg
-                                </p>
-                              </div>
-                            );
-                          })()
-                        ) : (
-                          <p className="text-muted-foreground">Žiadne dáta</p>
-                        )}
-                      </CardContent>
-                    </Card>
-
-                    <Card className="transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                        <CardTitle className="text-sm font-semibold">Najefektívnejšie obdobie</CardTitle>
-                        <div className="p-2 rounded-xl bg-amber-500/10">
-                          <Target className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        {seasonalData.some(s => s.efficiency > 0) ? (
-                          (() => {
-                            const bestSeason = seasonalData.reduce((best, season) => 
-                              season.efficiency > best.efficiency ? season : best
-                            );
-                            return (
-                              <div>
-                                <p className="text-3xl font-bold tracking-tight">{bestSeason.label}</p>
-                                <p className="text-sm text-muted-foreground mt-1">
-                                  {bestSeason.efficiency.toFixed(1)} úlovkov/výpravu
-                                </p>
-                              </div>
-                            );
-                          })()
-                        ) : (
-                          <p className="text-muted-foreground">Žiadne dáta</p>
-                        )}
-                      </CardContent>
-                    </Card>
-
-                    <Card className="transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                        <CardTitle className="text-sm font-semibold">Trend váhy</CardTitle>
-                        <div className="p-2 rounded-xl bg-blue-500/10">
-                          <Crown className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        {weightProgressionData.length > 1 ? (
-                          (() => {
-                            const firstMonth = weightProgressionData[0];
-                            const lastMonth = weightProgressionData[weightProgressionData.length - 1];
-                            const trend = lastMonth.averageWeight - firstMonth.averageWeight;
-                            const isPositive = trend > 0;
-                            const isNegative = trend < 0;
-                            return (
-                              <div>
-                                <p className={`text-3xl font-bold tracking-tight ${isPositive ? 'text-emerald-600 dark:text-emerald-400' : isNegative ? 'text-red-600 dark:text-red-400' : ''}`}>
-                                  {trend > 0 ? '+' : ''}{trend.toFixed(1)} kg
-                                </p>
-                                <p className="text-sm text-muted-foreground mt-1">
-                                  {isPositive ? '↑ Zlepšenie' : isNegative ? '↓ Pokles' : '→ Stabilný'} priemernej váhy
-                                </p>
-                              </div>
-                            );
-                          })()
-                        ) : (
-                          <p className="text-muted-foreground">Žiadne dáta</p>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </div>
-                </div>
-              </>
-            )}
-          </TabsContent>
-
-          <TabsContent value="analysis" className="space-y-6">
-            {isPremium ? (
-              <>
-                {/* Advanced Success Rate Analysis */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold flex items-center gap-2">
-                    <Activity className="w-5 h-5 text-primary" />
-                    Časová analýza úspešnosti
-                  </h3>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <Card className="transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                        <div>
-                          <CardTitle className="text-sm font-semibold">Hodinová úspešnosť</CardTitle>
-                          <CardDescription className="text-xs mt-1">
-                            Najlepšie hodiny pre rybačku
-                          </CardDescription>
-                        </div>
-                        <div className="p-2 rounded-xl bg-amber-500/10">
-                          <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-3">
-                          {advancedSuccessRate.hourlyRates
-                            .filter(h => h.trips > 0)
-                            .sort((a, b) => b.rate - a.rate)
-                            .slice(0, 5)
-                            .map((hour, index) => (
-                              <div key={hour.hour} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                                <span className="text-sm font-medium">
-                                  {index === 0 && <span className="text-amber-500 mr-1">★</span>}
-                                  {hour.hour}:00 - {hour.hour + 1}:00
-                                </span>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-sm text-muted-foreground">
-                                    {hour.rate.toFixed(1)} úlovkov/výpravu
-                                  </span>
-                                  <Progress value={hour.rate * 20} className="w-16 h-2" />
-                                </div>
-                              </div>
-                            ))}
-                          {advancedSuccessRate.hourlyRates.filter(h => h.trips > 0).length === 0 && (
-                            <p className="text-muted-foreground text-center py-4">
-                              Žiadne dáta o hodinách
-                            </p>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card className="transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                        <div>
-                          <CardTitle className="text-sm font-semibold">Týždenná úspešnosť</CardTitle>
-                          <CardDescription className="text-xs mt-1">
-                            Najproduktívnejšie dni v týždni
-                          </CardDescription>
-                        </div>
-                        <div className="p-2 rounded-xl bg-emerald-500/10">
-                          <Calendar className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-3">
-                          {advancedSuccessRate.weeklyRates
-                            .filter(d => d.trips > 0)
-                            .sort((a, b) => b.rate - a.rate)
-                            .map((day, index) => (
-                              <div key={day.day} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                                <span className="text-sm font-medium">
-                                  {index === 0 && <span className="text-emerald-500 mr-1">★</span>}
-                                  {day.day}
-                                </span>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-sm text-muted-foreground">
-                                    {day.rate.toFixed(1)} úlovkov/výpravu
-                                  </span>
-                                  <Progress value={day.rate * 20} className="w-16 h-2" />
-                                </div>
-                              </div>
-                            ))}
-                          {advancedSuccessRate.weeklyRates.filter(d => d.trips > 0).length === 0 && (
-                            <p className="text-muted-foreground text-center py-4">
-                              Žiadne dáta o dňoch
-                            </p>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </div>
-
-                {/* Catch Quality Analysis */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold flex items-center gap-2">
-                    <Award className="w-5 h-5 text-primary" />
-                    Analýza kvality úlovkov
-                  </h3>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <Card className="transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                        <div>
-                          <CardTitle className="text-sm font-semibold">Kvalita úlovkov</CardTitle>
-                          <CardDescription className="text-xs mt-1">
-                            Rozdelenie úlovkov podľa kvality
-                          </CardDescription>
-                        </div>
-                        <div className="p-2 rounded-xl bg-purple-500/10">
-                          <Award className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          {catchQualityScores.qualityDistribution.map(quality => (
-                            <div key={quality.quality} className="space-y-2">
-                              <div className="flex items-center justify-between text-sm">
-                                <span className="font-medium" style={{ color: quality.color }}>
-                                  {quality.label}
-                                </span>
-                                <span className="text-muted-foreground">
-                                  {quality.count} úlovkov
-                                </span>
-                              </div>
-                              <Progress 
-                                value={totalCatches > 0 ? (quality.count / totalCatches) * 100 : 0}
-                                className="h-2"
-                                style={{ 
-                                  '--progress-background': quality.color
-                                } as any}
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card className="transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                        <div>
-                          <CardTitle className="text-sm font-semibold">Najlepšie nástrahy</CardTitle>
-                          <CardDescription className="text-xs mt-1">
-                            Top 5 nástrah podľa počtu úlovkov
-                          </CardDescription>
-                        </div>
-                        <div className="p-2 rounded-xl bg-blue-500/10">
-                          <Target className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        {topBaits.length > 0 ? (
-                          <div className="space-y-3">
-                            {topBaits.map((bait, index) => (
-                              <div key={bait.bait} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                                <div className="flex items-center gap-2">
-                                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                                    index === 0 ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400' :
-                                    index === 1 ? 'bg-gray-300/30 dark:bg-slate-400/20 text-gray-600 dark:text-slate-400' :
-                                    index === 2 ? 'bg-orange-600/20 text-orange-600 dark:text-orange-400' :
-                                    'bg-muted text-muted-foreground'
-                                  }`}>
-                                    {index + 1}
-                                  </span>
-                                  <span className="font-medium text-sm">{bait.bait}</span>
-                                </div>
-                                <div className="text-right">
-                                  <span className="font-bold text-sm">{bait.count} úlovkov</span>
-                                  <span className="text-xs text-muted-foreground ml-2">
-                                    Ø {bait.averageWeight.toFixed(1)} kg
-                                  </span>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className="text-muted-foreground text-center py-4">
-                            Žiadne dáta o nástrahách
-                          </p>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </div>
-                </div>
-
-                {/* Enhanced Location Performance */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold flex items-center gap-2">
-                    <MapPin className="w-5 h-5 text-primary" />
-                    Výkonnosť lokalít
-                  </h3>
-                  <Card className="transition-all duration-200 hover:shadow-lg">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                      <div>
-                        <CardTitle className="text-sm font-semibold">Top lokality</CardTitle>
-                        <CardDescription className="text-xs mt-1">
-                          Detailná analýza najlepších rybárskych miest
-                        </CardDescription>
-                      </div>
-                      <div className="p-2 rounded-xl bg-emerald-500/10">
-                        <MapPin className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      {locationPerformance.locationStats.length > 0 ? (
-                        <div className="space-y-3">
-                          {locationPerformance.locationStats.slice(0, 5).map((location, index) => (
-                            <div key={location.location} className="border rounded-xl p-4 hover:bg-muted/30 transition-colors">
-                              <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center gap-3">
-                                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                                    index === 0 ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400' : 
-                                    index === 1 ? 'bg-gray-300/30 dark:bg-slate-400/20 text-gray-600 dark:text-slate-400' : 
-                                    index === 2 ? 'bg-orange-600/20 text-orange-600 dark:text-orange-400' : 
-                                    'bg-muted text-muted-foreground'
-                                  }`}>
-                                    {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : index + 1}
-                                  </div>
-                                  <h4 className="font-semibold">{location.location}</h4>
-                                </div>
-                                <Badge variant={location.successRate >= 2 ? "default" : "secondary"} className="font-medium">
-                                  {location.successRate.toFixed(1)} úlovkov/výpravu
-                                </Badge>
-                              </div>
-                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                                <div className="text-center p-2 rounded-lg bg-muted/50">
-                                  <span className="text-xs text-muted-foreground block">Úlovky</span>
-                                  <p className="font-bold text-lg">{location.catches}</p>
-                                </div>
-                                <div className="text-center p-2 rounded-lg bg-muted/50">
-                                  <span className="text-xs text-muted-foreground block">Výpravy</span>
-                                  <p className="font-bold text-lg">{location.trips}</p>
-                                </div>
-                                <div className="text-center p-2 rounded-lg bg-muted/50">
-                                  <span className="text-xs text-muted-foreground block">Priem. váha</span>
-                                  <p className="font-bold text-lg">{location.averageWeight.toFixed(1)} kg</p>
-                                </div>
-                                <div className="text-center p-2 rounded-lg bg-muted/50">
-                                  <span className="text-xs text-muted-foreground block">Najväčší</span>
-                                  <p className="font-bold text-lg">{location.biggestCatch.toFixed(1)} kg</p>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-muted-foreground text-center py-8">
-                          Žiadne dáta o lokalitách
-                        </p>
-                      )}
-                    </CardContent>
-                  </Card>
-                </div>
-              </>
-            ) : (
-              <Card className="text-center py-12">
-                <CardContent>
-                  <PieChart className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Pokročilé analýzy</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Interaktívne grafy, korelačné analýzy a predikcie sú dostupné v PREMIUM verzii.
-                  </p>
-                  <Button className="gap-2" data-testid="button-upgrade-analysis">
-                    <Crown className="w-4 h-4" />
-                    Prejsť na PREMIUM
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-
-          <TabsContent value="achievements" className="space-y-6">
-            {isPremium ? (
-              <>
-                {/* Personal Records */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Trophy className="w-5 h-5 text-primary" />
-                        Najväčší úlovok
-                      </CardTitle>
-                      <CardDescription>
-                        Váhový rekord
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      {personalRecords.heaviestCatch ? (
-                        <div className="space-y-2">
-                          <div className="text-2xl font-bold text-primary">
-                            {parseFloat(personalRecords.heaviestCatch.weight).toFixed(1)} kg
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            <div>{getFishTypeLabel(personalRecords.heaviestCatch.fishType)}</div>
-                            <div>{format(new Date(personalRecords.heaviestCatch.capturedAt), "d. MMMM yyyy", { locale: sk })}</div>
-                          </div>
-                        </div>
-                      ) : (
-                        <p className="text-muted-foreground">Žiadne úlovky</p>
-                      )}
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Target className="w-5 h-5 text-primary" />
-                        Najdlhší úlovok
-                      </CardTitle>
-                      <CardDescription>
-                        Dĺžkový rekord
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      {personalRecords.longestCatch ? (
-                        <div className="space-y-2">
-                          <div className="text-2xl font-bold text-primary">
-                            {personalRecords.longestCatch.lengthCm} cm
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            <div>Váha: {parseFloat(personalRecords.longestCatch.weight).toFixed(1)} kg</div>
-                            <div>{format(new Date(personalRecords.longestCatch.capturedAt), "d. MMMM yyyy", { locale: sk })}</div>
-                          </div>
-                        </div>
-                      ) : (
-                        <p className="text-muted-foreground">Žiadne dáta o dĺžke</p>
-                      )}
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Star className="w-5 h-5 text-primary" />
-                        Najlepšia výprava
-                      </CardTitle>
-                      <CardDescription>
-                        Najviac úlovkov za výpravu
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      {personalRecords.bestTrip ? (
-                        <div className="space-y-2">
-                          <div className="text-2xl font-bold text-primary">
-                            {personalRecords.bestTrip.catchCount} úlovkov
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            <div className="font-medium line-clamp-1">{personalRecords.bestTrip.name}</div>
-                            <div>Celková váha: {personalRecords.bestTrip.totalWeight.toFixed(1)} kg</div>
-                            <div>{format(new Date(personalRecords.bestTrip.startDate), "d. MMMM yyyy", { locale: sk })}</div>
-                          </div>
-                        </div>
-                      ) : (
-                        <p className="text-muted-foreground">Žiadne výpravy</p>
-                      )}
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Streak Tracking */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Zap className="w-5 h-5 text-primary" />
-                        Séria úspechov
-                      </CardTitle>
-                      <CardDescription>
-                        Počet po sebe idúcich úspešných výprav
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <div className="text-sm text-muted-foreground">Aktuálna séria</div>
-                          <div className="text-2xl font-bold text-primary">
-                            {personalRecords.streaks.current}
-                          </div>
-                        </div>
-                        <div>
-                          <div className="text-sm text-muted-foreground">Najdlhšia séria</div>
-                          <div className="text-2xl font-bold">
-                            {personalRecords.streaks.longest}
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <BarChart3 className="w-5 h-5" />
-                        Celkové štatistiky
-                      </CardTitle>
-                      <CardDescription>
-                        Súhrnné údaje o vašich úspechoch
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        <div className="flex justify-between text-sm">
-                          <span>Celkové úlovky:</span>
-                          <span className="font-medium">{totalCatches}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span>Celkové výpravy:</span>
-                          <span className="font-medium">{totalTrips}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span>Úspešnosť:</span>
-                          <span className="font-medium">{successRate} úlovkov/výpravu</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span>Celková váha:</span>
-                          <span className="font-medium">{totalWeight.toFixed(1)} kg</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Monthly Records */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Calendar className="w-5 h-5" />
-                      Mesačné rekordy
-                    </CardTitle>
-                    <CardDescription>
-                      Najlepšie úlovky v jednotlivých mesiacoch
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {personalRecords.monthlyRecords.length > 0 ? (
-                      <div className="space-y-4">
-                        {personalRecords.monthlyRecords.slice(0, 6).map((record, index) => (
-                          <div key={record.month} className="border rounded-lg p-4">
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="flex items-center gap-3">
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                                  index === 0 ? 'bg-primary/10 text-primary' : 
-                                  'bg-muted text-muted-foreground'
-                                }`}>
-                                  {index + 1}
-                                </div>
-                                <h4 className="font-medium">{record.month}</h4>
-                              </div>
-                              <Badge variant="secondary">
-                                {record.bestCatch ? parseFloat(record.bestCatch.weight).toFixed(1) : '0'} kg
-                              </Badge>
-                            </div>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                              <div>
-                                <span className="text-muted-foreground">Typ:</span>
-                                <p className="font-medium">
-                                  {record.bestCatch ? 
-                                    (record.bestCatch.fishType === 'kapor_lysec' ? 'Kapor lysec' :
-                                     record.bestCatch.fishType === 'kapor_zrkadlovy' ? 'Kapor zrkadlový' :
-                                     record.bestCatch.fishType === 'amur' ? 'Amur' : 'Iný') : 'N/A'}
-                                </p>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Dátum:</span>
-                                <p className="font-medium">
-                                  {record.bestCatch ? format(new Date(record.bestCatch.capturedAt), "d.M.", { locale: sk }) : 'N/A'}
-                                </p>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Úlovky:</span>
-                                <p className="font-medium">{record.totalCatches}</p>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Váha celkom:</span>
-                                <p className="font-medium">{record.totalWeight.toFixed(1)} kg</p>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-muted-foreground text-center py-8">
-                        Žiadne mesačné rekordy
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
-              </>
-            ) : (
-              <Card className="text-center py-12">
-                <CardContent>
-                  <Award className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Rybárske úspechy</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Systém odznakov, míľnikov a gamifikácie je dostupný v PREMIUM verzii.
-                  </p>
-                  <Button className="gap-2" data-testid="button-upgrade-achievements">
-                    <Crown className="w-4 h-4" />
-                    Prejsť na PREMIUM
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
+        {/* Achievements Tab - Premium Only */}
+        <TabsContent value="achievements" className="space-y-6">
+          <Card className="text-center py-12">
+            <CardContent>
+              <Award className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Rybárske úspechy</h3>
+              <p className="text-muted-foreground mb-4">
+                Systém odznakov, míľnikov a gamifikácie je dostupný v PREMIUM verzii.
+              </p>
+              <Button className="gap-2" onClick={() => setLocation('/diary/premium')} data-testid="button-upgrade-achievements">
+                <Crown className="w-4 h-4" />
+                Prejsť na PREMIUM
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
         </Tabs>
       </div>
     </DiaryLayout>
