@@ -1,0 +1,186 @@
+ČO JE FAKT DOBRÉ (a treba pochváliť)
+1️⃣ Profil má jasnú štruktúru
+
+Summary card vľavo
+
+Edit form vpravo
+
+Account info dole
+👉 mentálny model sedí, používateľ sa nestratí.
+
+2️⃣ Avatar UX je výborný
+
+Klikateľný
+
+Hover kamera
+
+Auto-upload
+👉 presne takto má fungovať moderná appka.
+
+3️⃣ Premium status badge je nenápadný
+
+Nie je to billboard
+
+Nezaberá pozornosť
+👉 dobré – neotravuje, ale je viditeľný
+
+🔴 TERAZ KRITIKA – TU SA LÁME ÚSPECH
+❌ 1. PROFIL JE „MŔTVY“ Z HĽADISKA PREMIUM
+
+Momentálne:
+
+Vidím FREE / PREMIUM
+
+A tým to končí
+
+❗ TOTO JE OBROVSKÁ PREMEŠKANÁ PRÍLEŽITOSŤ
+
+Používateľ si povie:
+
+„OK, som FREE. A čo?“
+
+🔥 RIEŠENIE (POVINNÉ)
+👉 V PROFILE MUSÍ BYŤ AKČNÝ PREMIUM DÔVOD
+KONKRÉTNE:
+
+Pod status badge pridaj:
+
+{!isPremium && (
+  <Button variant="outline" size="sm" className="mt-2 w-full">
+    Odomknúť PRO funkcie
+  </Button>
+)}
+
+
+A nie hocijaké CTA.
+
+COPY (bez marketingu):
+
+„Odomkni plný výkon aplikácie“
+
+Nie:
+
+„Upgrade“
+
+„Kúp si“
+
+„Získaj viac“
+
+👉 výkon, kontrola, dominancia
+
+❌ 2. ŽIADNY KONTEXTUÁLNY UPSELL
+
+Profil má:
+
+Sociálne siete
+
+Technické info
+
+Role
+
+ID
+
+ALE:
+👉 nikde nevidím:
+
+čo FREE nemá
+
+čo PRO dá
+
+🔥 RIEŠENIE
+Pridaj „PRO sekciu“ (blur + lock)
+
+Pod Account info alebo do Summary card:
+
+📊 Pokročilé štatistiky – PRO
+🔒 Historické porovnania sezón
+🔒 Export úlovkov
+🔒 Viac cieľov
+
+
+👉 bez funkčnosti
+👉 iba vizuál + lock
+
+❌ 3. PROFIL FORM = DOBRÝ, ALE CHLADNÝ
+
+Form je technicky super, ale:
+
+žiadna emócia
+
+žiadna motivácia
+
+žiadny „aha moment“
+
+🔥 RIEŠENIE
+Nad form pridaj 1 vetu (len FREE):
+
+„Vyplnený profil zvyšuje dôveryhodnosť v súťažiach a leaderboards.“
+
+Hotovo.
+Žiadne kecy.
+Len jasný dôvod.
+
+❌ 4. EMAIL LOCK JE OK, ALE UX MÔŽE BYŤ LEPŠIE
+
+Toto je dobré:
+
+<Lock />
+Email je read-only
+
+
+Ale chýba:
+👉 čo mám robiť, ak ho chcem zmeniť?
+
+🔥 RIEŠENIE
+
+Pod email:
+
+„Zmenu emailu umožňujeme iba PRO používateľom z bezpečnostných dôvodov.“
+
+BAM 💥
+Bez nátlaku. Čistá logika.
+
+❌ 5. PRÍLIŠ VEĽA TECHNICKÝCH INFO PRE BEŽNÉHO USERA
+
+Sekcia:
+
+User ID
+
+verified
+
+active
+
+updatedAt
+
+❗ Väčšina ľudí netuší, čo s tým
+
+RIEŠENIE (MINIMAL)
+
+Skryť pod „Zobraziť technické detaily“
+
+Alebo collapse sekciu
+
+👉 menej šumu = viac hodnoty
+
+⚠️ JEDNA VÁŽNA PRODUKTOVÁ POZNÁMKA
+
+Momentálne:
+
+Profil nepredáva PRO
+
+Iba ho oznamuje
+
+👉 To nestačí.
+
+ZLATÉ PRAVIDLO:
+
+PRO sa nekomunikuje stavom, ale stratou.
+
+User musí cítiť:
+
+„Tu končím. Ďalej už nie.“
+
+ZHRNUTIE BEZ OMÁČKY
+✔ Technicky: 9/10
+✔ UX štruktúra: 8/10
+❌ Monetizácia UX: 4/10
