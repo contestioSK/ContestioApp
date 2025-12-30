@@ -142,15 +142,11 @@ export default function DiaryTrips() {
   
   const isPremium = premiumStatus?.isPremium || false;
 
-  // Fishing areas autocomplete
+  // Fishing areas autocomplete - using project's default fetcher pattern
   const { data: fishingAreaSuggestions = [], isLoading: isLoadingAreas } = useQuery<FishingArea[]>({
-    queryKey: ['/api/fishing-areas', { search: locationSearch }],
-    queryFn: async () => {
-      const response = await fetch(`/api/fishing-areas?search=${encodeURIComponent(locationSearch)}`);
-      if (!response.ok) throw new Error('Failed to fetch fishing areas');
-      return response.json();
-    },
+    queryKey: [`/api/fishing-areas?search=${encodeURIComponent(locationSearch)}`],
     enabled: locationSearch.length >= 2,
+    staleTime: 30000,
   });
 
   const form = useForm<TripFormData>({
@@ -344,6 +340,9 @@ export default function DiaryTrips() {
     setEditingTrip(trip);
     setCoverImageFile(null);
     setCoverImagePreview(null);
+    // Initialize search empty - existing location is shown in the button
+    // User can start typing to search for a different location if needed
+    setLocationSearch("");
     form.reset({
       name: trip.name,
       startDate: new Date(trip.startDate),
@@ -361,6 +360,7 @@ export default function DiaryTrips() {
     form.reset();
     setCoverImageFile(null);
     setCoverImagePreview(null);
+    setLocationSearch("");
   };
 
   const handleDeleteTrip = async () => {
