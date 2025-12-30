@@ -42,17 +42,17 @@ export default function LoginPage() {
       const response = await apiRequest("POST", "/api/auth/login", data);
       return response.json();
     },
-    onSuccess: () => {
-      // Invalidate auth cache to refetch user data
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+    onSuccess: async () => {
+      // Invalidate auth cache and wait for refetch
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       
       toast({
         title: "Prihlásenie úspešné!",
         description: "Vitajte späť v Contestio.",
       });
       
-      // Redirect to diary page
-      setLocation("/diary");
+      // Use window.location for reliable redirect after auth state change
+      window.location.href = "/diary";
     },
     onError: (error: Error) => {
       console.error("Login error:", error);
