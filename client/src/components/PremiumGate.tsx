@@ -56,47 +56,84 @@ export function PremiumGate({ type, children, showPreview = false }: PremiumGate
   const [, setLocation] = useLocation();
   const content = gateContent[type];
 
-  return (
-    <div className="relative min-h-[400px] overflow-hidden">
-      {showPreview && children && (
-        <div className="blur-sm opacity-40 pointer-events-none select-none max-h-[350px] overflow-hidden">
+  if (showPreview && children) {
+    return (
+      <div className="relative">
+        <div className="max-h-[300px] overflow-hidden blur-sm opacity-50 pointer-events-none select-none">
           {children}
         </div>
-      )}
-      
-      <div className={`${showPreview ? 'absolute inset-0 top-0' : ''} flex items-start justify-center pt-8`}>
-        <div className="bg-background/95 backdrop-blur-sm rounded-2xl p-8 max-w-md text-center shadow-lg border border-border">
-          <div className="flex justify-center mb-4">
-            <div className="p-4 bg-muted/50 rounded-2xl">
-              {content.icon}
+        
+        <div className="relative -mt-16 z-10 bg-gradient-to-t from-background via-background to-transparent pt-16">
+          <div className="bg-background/95 backdrop-blur-sm rounded-2xl p-6 md:p-8 max-w-lg mx-auto text-center shadow-lg border border-amber-500/20">
+            <div className="flex justify-center mb-4">
+              <div className="p-3 bg-amber-500/10 rounded-2xl">
+                {content.icon}
+              </div>
             </div>
+            
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <Lock className="w-4 h-4 text-amber-500" />
+              <h3 className="text-xl font-bold text-foreground">{content.title}</h3>
+            </div>
+            
+            <p className="text-muted-foreground mb-5 text-sm">{content.description}</p>
+            
+            <ul className="text-left space-y-2 mb-5 max-w-xs mx-auto">
+              {content.benefits.map((benefit, index) => (
+                <li key={index} className="flex items-start gap-2 text-sm text-foreground">
+                  <span className="text-amber-500 mt-0.5">•</span>
+                  {benefit}
+                </li>
+              ))}
+            </ul>
+            
+            <Button 
+              onClick={() => setLocation('/diary/premium')}
+              className="w-full gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white"
+              data-testid={`button-premium-gate-${type}`}
+            >
+              <Crown className="w-4 h-4" />
+              {content.cta}
+            </Button>
           </div>
-          
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <Lock className="w-4 h-4 text-amber-500" />
-            <h3 className="text-xl font-bold text-foreground">{content.title}</h3>
-          </div>
-          
-          <p className="text-muted-foreground mb-6">{content.description}</p>
-          
-          <ul className="text-left space-y-2 mb-6">
-            {content.benefits.map((benefit, index) => (
-              <li key={index} className="flex items-start gap-2 text-sm text-foreground">
-                <span className="text-amber-500 mt-0.5">•</span>
-                {benefit}
-              </li>
-            ))}
-          </ul>
-          
-          <Button 
-            onClick={() => setLocation('/diary/premium')}
-            className="w-full gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white"
-            data-testid={`button-premium-gate-${type}`}
-          >
-            <Crown className="w-4 h-4" />
-            {content.cta}
-          </Button>
         </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-center py-12">
+      <div className="bg-background/95 backdrop-blur-sm rounded-2xl p-6 md:p-8 max-w-md text-center shadow-lg border border-border">
+        <div className="flex justify-center mb-4">
+          <div className="p-3 bg-muted/50 rounded-2xl">
+            {content.icon}
+          </div>
+        </div>
+        
+        <div className="flex items-center justify-center gap-2 mb-3">
+          <Lock className="w-4 h-4 text-amber-500" />
+          <h3 className="text-xl font-bold text-foreground">{content.title}</h3>
+        </div>
+        
+        <p className="text-muted-foreground mb-5 text-sm">{content.description}</p>
+        
+        <ul className="text-left space-y-2 mb-5">
+          {content.benefits.map((benefit, index) => (
+            <li key={index} className="flex items-start gap-2 text-sm text-foreground">
+              <span className="text-amber-500 mt-0.5">•</span>
+              {benefit}
+            </li>
+          ))}
+        </ul>
+        
+        <Button 
+          onClick={() => setLocation('/diary/premium')}
+          className="w-full gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white"
+          data-testid={`button-premium-gate-${type}`}
+        >
+          <Crown className="w-4 h-4" />
+          {content.cta}
+        </Button>
       </div>
     </div>
   );
