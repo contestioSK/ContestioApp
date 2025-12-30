@@ -19,6 +19,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import DiaryLayout from "@/components/DiaryLayout";
 import { UserSearch } from "@/components/diary/user-search";
+import { LocationSearchField } from "@/components/LocationSearchField";
 import type { DiaryTrip } from "@shared/schema";
 import {
   AlertDialog,
@@ -67,6 +68,7 @@ const fromDateTimeLocal = (value: string): Date | undefined => {
 // Form validation schema
 const createBattleSchema = z.object({
   name: z.string().min(1, "Názov je povinný").max(255, "Názov je príliš dlhý"),
+  location: z.string().optional(),
   mode: z.enum(["most_fish", "total_weight", "biggest_fish", "best_3_fish", "best_5_fish"]),
   minWeightKg: z.number().optional(),
   includeOnlyVerified: z.boolean().default(false),
@@ -85,6 +87,14 @@ const createBattleSchema = z.object({
 }, {
   message: "Výber výpravy je povinný",
   path: ["tripId"]
+}).refine((data) => {
+  if (!data.useExistingTrip && (!data.location || data.location.length === 0)) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Lokalita je povinná pri vytváraní novej výpravy",
+  path: ["location"]
 });
 
 type CreateBattleForm = z.infer<typeof createBattleSchema>;
@@ -178,6 +188,7 @@ export default function BattleCreate() {
     resolver: zodResolver(createBattleSchema),
     defaultValues: {
       name: rematchDefaults.name,
+      location: "",
       mode: rematchDefaults.mode,
       includeOnlyVerified: false,
       startAt: new Date(),
@@ -212,6 +223,7 @@ export default function BattleCreate() {
         // Auto-create trip (default flow)
         const requestData = {
           name: data.name,
+          location: data.location,
           startAt: data.startAt.toISOString(),
           endAt: data.endAt.toISOString(),
           invitedUserIds: data.invitedUserIds || [],
@@ -468,6 +480,29 @@ export default function BattleCreate() {
                       </FormItem>
                     )}
                   />
+
+                  {!useExistingTrip && (
+                    <FormField
+                      control={form.control}
+                      name="location"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Lokalita *</FormLabel>
+                          <FormControl>
+                            <LocationSearchField
+                              value={field.value || ""}
+                              onChange={field.onChange}
+                              testId="input-battle-location"
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Vyberte revír kde sa bude súťaž konať
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
 
                   <FormField
                     control={form.control}
