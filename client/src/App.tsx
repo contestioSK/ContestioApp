@@ -142,103 +142,103 @@ function Router() {
         </ProtectedRoute>
       </Route>
       <Route path="/diary">
-        <ProtectedRoute redirectTo="/auth/register">
+        <ProtectedRoute redirectTo="/auth/login">
           <DiaryIndex />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/trips/:id/gallery">
-        <ProtectedRoute redirectTo="/auth/register">
+        <ProtectedRoute redirectTo="/auth/login">
           <TripGallery />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/trips/:id">
-        <ProtectedRoute redirectTo="/auth/register">
+        <ProtectedRoute redirectTo="/auth/login">
           <DiaryTripDetail />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/trips">
-        <ProtectedRoute redirectTo="/auth/register">
+        <ProtectedRoute redirectTo="/auth/login">
           <DiaryTrips />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/catches/:id">
-        <ProtectedRoute redirectTo="/auth/register">
+        <ProtectedRoute redirectTo="/auth/login">
           <DiaryCatchDetail />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/catches">
-        <ProtectedRoute redirectTo="/auth/register">
+        <ProtectedRoute redirectTo="/auth/login">
           <DiaryCatches />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/profile">
-        <ProtectedRoute redirectTo="/auth/register">
+        <ProtectedRoute redirectTo="/auth/login">
           <DiaryProfile />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/stats">
-        <ProtectedRoute redirectTo="/auth/register">
+        <ProtectedRoute redirectTo="/auth/login">
           <DiaryStats />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/weather-forecast">
-        <ProtectedRoute redirectTo="/auth/register">
+        <ProtectedRoute redirectTo="/auth/login">
           <WeatherForecast />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/fishing-rules">
-        <ProtectedRoute redirectTo="/auth/register">
+        <ProtectedRoute redirectTo="/auth/login">
           <FishingRules />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/arsenal">
-        <ProtectedRoute redirectTo="/auth/register">
+        <ProtectedRoute redirectTo="/auth/login">
           <GearArsenal />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/badges">
-        <ProtectedRoute redirectTo="/auth/register">
+        <ProtectedRoute redirectTo="/auth/login">
           <Badges />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/seasonal-goals">
-        <ProtectedRoute redirectTo="/auth/register">
+        <ProtectedRoute redirectTo="/auth/login">
           <DiarySeasonalGoals />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/seasonal-goals/create">
-        <ProtectedRoute redirectTo="/auth/register">
+        <ProtectedRoute redirectTo="/auth/login">
           <DiarySeasonalGoalsCreate />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/seasonal-goals/:id/edit">
-        <ProtectedRoute redirectTo="/auth/register">
+        <ProtectedRoute redirectTo="/auth/login">
           <DiarySeasonalGoalsEdit />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/battles/paywall" component={BattlePaywall} />
       <Route path="/diary/battles/create">
-        <ProtectedRoute redirectTo="/auth/register">
+        <ProtectedRoute redirectTo="/auth/login">
           <BattleCreate />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/battles/archive">
-        <ProtectedRoute redirectTo="/auth/register">
+        <ProtectedRoute redirectTo="/auth/login">
           <BattleArchive />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/battles/:id/edit">
-        <ProtectedRoute redirectTo="/auth/register">
+        <ProtectedRoute redirectTo="/auth/login">
           <BattleEdit />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/battles/:id">
-        <ProtectedRoute redirectTo="/auth/register">
+        <ProtectedRoute redirectTo="/auth/login">
           <BattleDetail />
         </ProtectedRoute>
       </Route>
       <Route path="/diary/battles">
-        <ProtectedRoute redirectTo="/auth/register">
+        <ProtectedRoute redirectTo="/auth/login">
           <BattleIndex />
         </ProtectedRoute>
       </Route>
