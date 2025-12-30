@@ -185,6 +185,26 @@ export default function Onboarding() {
                 </Card>
               ))}
             </div>
+
+            <div className="mt-8 flex gap-4">
+              <Button 
+                variant="ghost" 
+                onClick={handleSkip}
+                disabled={savePreferencesMutation.isPending}
+                className="text-muted-foreground"
+              >
+                Preskočiť
+              </Button>
+              <Button 
+                className="flex-1"
+                onClick={handleNext}
+                disabled={!canProceed() || savePreferencesMutation.isPending}
+                data-testid="button-next-step"
+              >
+                Pokračovať
+                <ChevronRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
           </div>
         )}
 
@@ -224,6 +244,26 @@ export default function Onboarding() {
                   </CardContent>
                 </Card>
               ))}
+            </div>
+
+            <div className="mt-8 flex gap-4">
+              <Button 
+                variant="outline" 
+                onClick={() => setCurrentStep(currentStep - 1)}
+                disabled={savePreferencesMutation.isPending}
+              >
+                <ChevronLeft className="w-4 h-4 mr-2" />
+                Späť
+              </Button>
+              <Button 
+                className="flex-1"
+                onClick={handleNext}
+                disabled={!canProceed() || savePreferencesMutation.isPending}
+                data-testid="button-next-step"
+              >
+                Pokračovať
+                <ChevronRight className="w-4 h-4 ml-2" />
+              </Button>
             </div>
           </div>
         )}
@@ -265,48 +305,27 @@ export default function Onboarding() {
                 </Card>
               ))}
             </div>
+
+            <div className="mt-8 flex gap-4">
+              <Button 
+                variant="outline" 
+                onClick={() => setCurrentStep(currentStep - 1)}
+                disabled={savePreferencesMutation.isPending}
+              >
+                <ChevronLeft className="w-4 h-4 mr-2" />
+                Späť
+              </Button>
+              <Button 
+                className="flex-1"
+                onClick={handleNext}
+                disabled={!canProceed() || savePreferencesMutation.isPending}
+                data-testid="button-next-step"
+              >
+                {savePreferencesMutation.isPending ? "Ukladám..." : "Vstúpiť do Contestia"}
+              </Button>
+            </div>
           </div>
         )}
-      </div>
-
-      <div className="p-6 border-t bg-background">
-        <div className="max-w-lg mx-auto flex gap-4">
-          {currentStep > 1 ? (
-            <Button 
-              variant="outline" 
-              onClick={() => setCurrentStep(currentStep - 1)}
-              disabled={savePreferencesMutation.isPending}
-              data-testid="button-back-step"
-            >
-              <ChevronLeft className="w-4 h-4 mr-2" />
-              Späť
-            </Button>
-          ) : (
-            <Button 
-              variant="ghost" 
-              onClick={handleSkip}
-              disabled={savePreferencesMutation.isPending}
-              data-testid="button-skip-onboarding"
-            >
-              Preskočiť nastavenie
-            </Button>
-          )}
-          <Button 
-            className="flex-1"
-            onClick={handleNext}
-            disabled={!canProceed() || savePreferencesMutation.isPending}
-            data-testid="button-next-step"
-          >
-            {currentStep === 3 ? (
-              savePreferencesMutation.isPending ? "Ukladám..." : "Vstúpiť do Contestia"
-            ) : (
-              <>
-                Pokračovať
-                <ChevronRight className="w-4 h-4 ml-2" />
-              </>
-            )}
-          </Button>
-        </div>
       </div>
     </div>
   );
