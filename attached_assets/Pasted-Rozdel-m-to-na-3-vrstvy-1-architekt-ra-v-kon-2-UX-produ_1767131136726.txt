@@ -1,0 +1,531 @@
+Rozdelím to na 3 vrstvy:
+1️⃣ architektúra & výkon
+2️⃣ UX / produktová logika (FREE vs PREMIUM)
+3️⃣ UI & copywriting
+
+1️⃣ ARCHITEKTÚRA & VÝKON (najväčší problém)
+❌ Tento komponent je monštrum
+
+DiaryStats robí všetko:
+
+fetch dát
+
+biznis logiku
+
+výpočty
+
+UI
+
+premium gating
+
+chart data
+
+gamifikáciu
+
+➡️ Toto nie je udržateľné.
+
+Ak zajtra zmeníš výpočet úspešnosti, rozbiješ UI.
+Ak zajtra zmeníš UI, riskuješ logiku.
+
+❌ Brutálne veľa useMemo, ale stále neefektívne
+
+Používaš useMemo správne formálne, ale:
+
+opakovane filtruješ catches a trips
+
+robíš filter v filter (napr. hourly, seasonal, locationPerformance)
+
+veľa výpočtov má O(n²)
+
+👉 Reálne: pri 500+ úlovkoch to začne lagovať.
+
+✔️ Čo by som spravil
+
+Bez diskusie:
+
+vytiahnuť data layer do:
+
+/lib/stats/
+  ├─ basicStats.ts
+  ├─ monthlyStats.ts
+  ├─ fishTypeStats.ts
+  ├─ advancedMetrics.ts
+
+
+UI komponent NESMIE vedieť, ako sa počíta percentil.
+
+2️⃣ UX & PRODUKT (FREE vs PREMIUM – tu to bolí)
+❌ Najväčší UX hriech: zakázané taby
+<TabsTrigger value="trends" disabled={!isPremium}>
+
+
+👉 Zlé.
+
+Disabled prvok = „toto sa ťa netýka“
+
+Užívateľ nevidí hodnotu
+
+💣 Chceš upsell, ale skrývaš obsah.
+
+✔️ Lepší pattern (tvrdá pravda)
+
+Tab NESMIE byť disabled
+
+Obsah:
+
+blur
+
+overlay
+
+preview dát
+
+CTA
+
+Presne tak, ako máš:
+
+„Pokročilé trendy sú dostupné v PREMIUM“
+
+➡️ Tabs majú byť klikateľné, nie zakázané.
+
+❌ FREE verzia je až príliš dobrá
+
+Úprimne?
+FREE používateľ tu:
+
+vidí top nástrahu
+
+vidí top lokalitu
+
+vidí rozdelenia
+
+vidí pokročilé percentá
+
+👉 motivácia na upgrade je slabá.
+
+✔️ Čo by som zamkol:
+
+Top Locations
+
+HourlyDistributionChart
+
+Seasonal efficiency
+
+Quality score
+
+FREE = „ochutnávka“, nie plnohodnotný nástroj.
+
+3️⃣ UI & COPY (tu si silný, ale… prehnal si to)
+✔️ Silné stránky
+
+konzistentné farby
+
+dobrá hierarchia
+
+badges, ikony, progress bary – 👍
+
+header + tabs = čisté
+
+❌ Vizualny overload
+
+Na jednej obrazovke:
+
+4 KPI cards
+
+upsell banner
+
+2 veľké grafické sekcie
+
+3 sidebar karty
+
+footer note
+
+👉 Mentálne vyčerpávajúce.
+
+✔️ Odporúčanie
+
+Rozdeľ:
+
+Overview = len KPI + 1 insight
+
+Fish composition → samostatná sekcia / accordion
+
+Sidebar = max 2 karty
+
+COPYWRITING – tu ti poviem pravdu
+❌ Slabé marketingové texty na PREMIUM
+Odomkni svoj plný potenciál
+
+
+To je generický bullshit.
+
+✔️ Čo má fungovať:
+
+konkrétny benefit
+
+strach z premeškania
+
+ego rybára
+
+Príklad:
+
+„Zisti, v ktorú hodinu berú najväčšie ryby.“
+„TOP rybári už tieto dáta používajú.“
+
+DROBNÉ TECHNICKÉ ŠTUCHNUTIA
+
+totalTrips * 6 hodín → hardcode = ❌
+
+successRate ako string → zlá typová konzistencia
+
+emoji 🎣 v serióznej analytike → hraničné
+
+data-testid 👍 (chválim)
+
+VERDIKT (úprimný)
+🟢 Technicky: 7.5 / 10
+🟡 UX: 6 / 10
+🔴 Produkt / monetizácia: 5 / 10
+
+👉 Máš výborný základ, ale:
+
+komponent je prerastený
+
+FREE/PREMIUM hranica je zle nastavená
+
+upsell je mäkký
+
+Ak chceš, ďalší krok môžeme urobiť konkrétny refactor plan:
+
+čo rozdeliť
+
+čo zamknúť
+
+čo zjednodušiť
+
+a ako z toho spraviť fakt predajný PREMIUM dashboard
+
+Povedz.
+
+free verzia bude mať iba úvodný dashboard, záložky trendy, úspechy, analýzy nebude mať k dispozícii
+
+Dobre. Toto je konečne jasné rozhodnutie.
+A áno – dáva to zmysel. Teraz ti poviem, ako to spraviť správne, aby si si nezabil konverzie a nespáchal UX samovraždu.
+
+🎯 ROZHODNUTIE: FREE = iba ÚVODNÝ DASHBOARD
+
+Produktovo je to správny smer.
+Ale realizácia rozhodne o úspechu alebo fiasku.
+
+❌ ČO NESMIEŠ UROBIŤ
+
+A toto ber ako tvrdý zákaz:
+
+❌ Skryť záložky úplne
+
+❌ Disabled Tabs bez vysvetlenia
+
+❌ „Táto funkcia nie je dostupná“ bez kontextu
+
+➡️ To zabíja zvedavosť, hodnotu aj chuť platiť.
+
+✅ SPRÁVNY MODEL (odporúčaný)
+🔓 Tabs SÚ VIDITEĽNÉ, ALE UZAMKNUTÉ
+
+Free používateľ:
+
+vidí:
+
+Trendy
+
+Úspechy
+
+Analýzy
+
+nemôže ich otvoriť
+
+vidí dôvod PREČO
+
+👉 Toto je psychológia upsellu.
+
+🧠 UX FLOW (takto to má fungovať)
+1️⃣ Free klikne na „Trendy“
+
+➡️ Neotvorí sa graf, ale:
+
+🔒 Trendy sú dostupné v PREMIUM
+
+Zisti:
+• kedy berú ryby najčastejšie
+• ktoré techniky fungujú
+• sezónne vzory úlovkov
+
+[ Odomknúť PREMIUM ]
+
+
+💥 HOTOVO.
+Bez frustrovania. Bez klamstva.
+
+2️⃣ Úvodný dashboard (FREE) musí byť:
+
+rýchly
+
+motivačný
+
+nedokonalý
+
+Povolené:
+
+celkový počet výprav
+
+počet úlovkov
+
+najväčšia ryba
+
+posledná výprava
+
+Zakázané:
+
+rozbory
+
+trendy
+
+„najlepší čas“
+
+percentilové porovnania
+
+🔥 PREMIUM = ANALYTIKA, NIE LEN VIAC DÁT
+
+Premium musí pôsobiť ako:
+
+„Toto používajú tí, čo chytajú viac.“
+
+Rozdelenie:
+Sekcia	FREE	PREMIUM
+Dashboard	✔️	✔️
+Trendy	❌	✔️
+Úspechy	❌	✔️
+Analýzy	❌	✔️
+Grafy podľa času	❌	✔️
+Lokality	❌	✔️
+Sezóny	❌	✔️
+🟡 UI DETAILY (dôležité!)
+Tabky:
+
+ikonka 🔒 pri názve
+
+jemne nižší kontrast
+
+hover = „Preview“
+
+Copy na záložkách:
+
+❌ „Premium funkcia“
+✅ „Pokročilá analýza pre lepšie úlovky“
+
+🧨 EXTRA BOOST KONVERZIÍ (odporúčam)
+
+Na FREE dashboard:
+
+teaser card:
+
+📈 Trendy úlovkov
+
+Najúspešnejší čas:
+— — : — —
+
+Odomkni v PREMIUM
+
+
+➡️ konkrétna chýbajúca informácia = bolesť.
+
+VERDIKT
+
+🟢 Produktové rozhodnutie: 9 / 10
+🟢 UX potenciál: veľmi vysoký
+🔴 Riziko: iba ak to spravíš „disabled & hidden“
+
+Ak chceš:
+
+navrhnem presné texty pre každý zamknutý tab
+
+alebo ti dám konkrétny React pattern (Tabs + Gate component)
+
+alebo spolu rozsekáme FREE dashboard na konverzný nástroj
+
+Len povedz, ktorým smerom ideš.
+
+rozpracuj možnosť 1 a 3
+
+Dobre. Toto je presne ten moment, kde sa láme rozdiel medzi „free appkou“ a produktom, ktorý predáva sám seba.
+Ideme tvrdé UX + copy, žiadne omáčky.
+
+🔐 MOŽNOSŤ 1: PRESNÉ TEXTY PRE KAŽDÚ ZAMKNUTÚ ZÁLOŽKU
+
+Cieľ:
+
+nehovoriť čo nemáš
+
+ale čo konkrétne strácaš
+
+a prečo to stojí za peniaze
+
+📈 TAB: TRENDY (LOCKED)
+Nadpis
+
+Trendy úlovkov 🔒
+
+Text (krátky, ostrý)
+
+Zisti, kedy ryby berú najčastejšie
+podľa času, počasia a sezóny.
+
+Bullet benefity
+
+Najlepší čas dňa na lov
+
+Vplyv tlaku, teploty a mesiaca
+
+Skutočné dáta z tvojich výprav
+
+CTA
+
+Odomknúť trendy v PREMIUM
+
+🏆 TAB: ÚSPECHY (LOCKED)
+Nadpis
+
+Úspechy a progres 🔒
+
+Text
+
+Sleduj, ako sa zlepšuješ
+a v čom máš rezervy.
+
+Bullet benefity
+
+Osobné rekordy
+
+Porovnanie sezón
+
+Dlhodobý progres
+
+CTA
+
+Zobraziť úspechy v PREMIUM
+
+🧠 TAB: ANALÝZY (LOCKED)
+Nadpis
+
+Pokročilé analýzy 🔒
+
+Text (tu môžeš ísť tvrdšie)
+
+Toto je nástroj pre rybárov,
+ktorí chcú chytať viac, nie len zapisovať.
+
+Bullet benefity
+
+Ktoré techniky fungujú najlepšie
+
+Úspešnosť lokalít
+
+Dátové vzory, ktoré si inak nevšimneš
+
+CTA
+
+Získať výhodu s PREMIUM
+
+❗ Dôležité UX pravidlo
+
+👉 Nikdy nepíš „Táto funkcia nie je dostupná“
+To je UX odpad.
+
+🎯 MOŽNOSŤ 3: FREE DASHBOARD AKO KONVERZNÝ STROJ
+
+FREE dashboard nie je demo.
+Je to návnada.
+
+🧱 ŠTRUKTÚRA FREE DASHBOARDU
+POVOLENÉ BLOKY (FREE)
+
+1️⃣ Rýchly prehľad
+
+Počet výprav
+
+Počet úlovkov
+
+Najväčšia ryba
+
+Posledná výprava
+
+➡️ OK, to je základ.
+
+🔥 POVINNÉ BLOKY (TEASERY)
+📈 KARTA: TRENDY (PREVIEW)
+📈 Trendy úlovkov
+
+Najúspešnejší čas:
+— — : — —
+
+Najlepšie dni:
+— — —
+
+[ Odomknúť v PREMIUM ]
+
+
+➡️ Používateľ vidí otázku, ale nie odpoveď.
+
+🏆 KARTA: ÚSPECHY (PREVIEW)
+🏆 Osobné úspechy
+
+Najväčší úlovok:
+— — kg
+
+Najlepšia sezóna:
+— — —
+
+[ Zobraziť v PREMIUM ]
+
+
+➡️ Mozog to nevie ignorovať.
+
+🧠 KARTA: ANALÝZY (PREVIEW)
+🧠 Analýza úspešnosti
+
+Najlepšia technika:
+— — —
+
+Najúspešnejšia lokalita:
+— — —
+
+[ Odomknúť analýzy ]
+
+🧠 PSYCHOLÓGIA, KTORÚ TU VYUŽÍVAŠ
+
+Zeigarnik effect – nedokončené info
+
+Loss aversion – „niečo mi chýba“
+
+Competence trigger – „lepší rybári to majú“
+
+➡️ Toto predáva.
+
+🧨 EXTRA KONVERZNÝ DETAIL (odporúčam)
+
+Na spodok FREE dashboardu:
+
+🔓 PREMIUM odhaľuje vzory,
+ktoré bežné oko nevidí.
+
+Používajú ho rybári,
+ktorí chcú viac než šťastie.
+
+[ Odomknúť PREMIUM ]
+
+🏁 VERDIKT (TVRDÝ)
+
+Toto NIE JE freemium „pre pekné oči“
+
+Toto je učebnicový produktový funnel
+
+Ak to nasadíš presne takto → konverzie pôjdu hore

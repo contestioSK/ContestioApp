@@ -1,0 +1,128 @@
+Architektonický refaktor – ✔️ SPRÁVNE, TU NEMÁM ČO VYČÍTAŤ
+
+„UI komponent nebude vedieť, ako sa počíta percentil“
+
+👏 Toto je presne dospelá architektúra.
+
+Len doplním:
+
+basicStats = veci, ktoré môžu byť FREE
+
+advancedMetrics = veci, ktoré existujú vždy, ale UI ich môže skryť / rozmazať
+
+⚠️ Dôležité UX pravidlo:
+
+Nech výpočty prebiehajú aj pre FREE.
+Ak po upgrade user uvidí okamžite výsledky → wow efekt.
+
+2️⃣ FREE dashboard – ✔️ DOBRÝ ZÁKLAD, JEDNA DROBNÁ ÚPRAVA
+
+To, čo opisuje:
+
+Len základné KPI
+3 teaser karty s „— — —“
+
+je správne, ALE…
+
+⚠️ Jedna zásadná vec:
+
+Teaser karty nesmú pôsobiť ako prázdne miesto.
+
+❌ Zlé:
+Najlepší čas lovu
+— — —
+
+✅ Správne:
+Najlepší čas lovu
+Dostupné v PREMIUM
+
+
+alebo ešte lepšie:
+
+Najlepší čas lovu
+Zisti, kedy ryby berú najčastejšie
+
+
+➡️ Otázka > prázdnota
+Mozog chce odpoveď.
+
+3️⃣ ZÁLOŽKY VIDITEĽNÉ A KLIKATEĽNÉ – 🔥 TOTO JE NAJLEPŠIE ROZHODNUTIE
+
+Toto je kľúčová vec, ktorú 80 % appiek pokašle.
+
+✅ Viditeľné
+✅ Klikateľné
+❌ Nie disabled
+
+To je presne správne.
+
+⚠️ Jemná UX korekcia k bodu 3:
+
+„blur overlay s benefitmi a CTA“
+
+Blur je super, ALE:
+
+Odporúčanie:
+
+rozmazaj LEN obsah
+
+nechaj layout, grafy, osi, názvy viditeľné
+
+👉 Používateľ má pocit:
+
+„Vidím, že tu je niečo hodnotné.“
+
+Nie:
+
+„Zase nejaký paywall.“
+
+4️⃣ PremiumGate komponent – ✔️ VEĽMI DOBRÉ, ALE POZOR NA JEDNU PASCU
+
+Reusable <PremiumGate> je výborný nápad.
+
+❗ Ale:
+
+Nerob jeden univerzálny text.
+
+❌ Zlé:
+
+Táto funkcia je dostupná len v PREMIUM
+
+✅ Správne:
+
+<PremiumGate type="trends" />
+<PremiumGate type="achievements" />
+<PremiumGate type="analysis" />
+
+Každý s vlastným benefit copy.
+
+➡️ Inak zabiješ presne tú silu, ktorú si teraz buduješ.
+
+🧠 STRATÉGIA, KTORÚ REPLIT NEPOVEDAL (ALE JE DÔLEŽITÁ)
+FREE ≠ slabá verzia
+
+FREE = návnada na sebapoznanie
+
+Ak si FREE user:
+
+vidím, že niečo mi uniká
+
+ale zároveň vidím, že to má hodnotu
+
+a presne viem prečo zaplatiť
+
+Toto sa mu týmto plánom podarí.
+
+🏁 VERDIKT
+
+Tento plán je:
+
+produktovo správny
+
+UXovo premyslený
+
+biznisovo predajný
+
+Ak to dotiahne podľa bodov vyššie:
+➡️ nebudeš presviedčať ľudí, aby si kúpili PREMIUM
+➡️ oni si ho budú pýtať sami
