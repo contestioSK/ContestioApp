@@ -1084,11 +1084,18 @@ export const seasonGoals = pgTable("season_goals", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id),
   seasonId: varchar("season_id").notNull().references(() => seasons.id),
-  goalType: varchar("goal_type").notNull(), // "total_weight", "fish_count", "trips_count", "biggest_fish", "personal_best"
+  goalType: varchar("goal_type").notNull(), // "total_weight", "fish_count", "trips_count", "biggest_fish", "personal_best", "min_size_catch_count", "min_weight_catch_count", "spot_catch_count", "bait_catch_count", "night_trips_count"
   targetValue: decimal("target_value", { precision: 10, scale: 3 }).notNull(), // Target value (weight in kg, count as number)
   currentValue: decimal("current_value", { precision: 10, scale: 3 }).notNull().default("0"), // Current progress
   title: varchar("title", { length: 255 }).notNull(), // Custom goal title
   description: text("description"), // Optional description
+  parameters: jsonb("parameters").$type<{
+    minSize?: number; // Minimum size in cm for min_size_catch_count
+    minWeight?: number; // Minimum weight in kg for min_weight_catch_count
+    spotName?: string; // Water/spot name for spot_catch_count
+    baitId?: string; // Bait ID for bait_catch_count
+    baitName?: string; // Bait name for display
+  }>(), // Additional parameters for goal types
   isCompleted: boolean("is_completed").notNull().default(false), // Whether goal is completed
   completedAt: timestamp("completed_at"), // When goal was completed
   isMainGoal: boolean("is_main_goal").notNull().default(false), // Main goal shown prominently
@@ -1163,10 +1170,17 @@ export const insertSeasonGoalSchema = createInsertSchema(seasonGoals).omit({
   isCompleted: true,
   completedAt: true,
 }).extend({
-  goalType: z.enum(["total_weight", "fish_count", "trips_count", "biggest_fish", "personal_best"]),
+  goalType: z.enum(["total_weight", "fish_count", "trips_count", "biggest_fish", "personal_best", "species_variety", "min_size_catch_count", "min_weight_catch_count", "spot_catch_count", "bait_catch_count", "night_trips_count"]),
   targetValue: z.union([z.string(), z.number()]).transform(val => String(val)),
   title: z.string().min(1, "Názov cieľa je povinný").max(255, "Názov môže mať maximálne 255 znakov"),
   description: z.string().max(500, "Popis môže mať maximálne 500 znakov").optional(),
+  parameters: z.object({
+    minSize: z.number().optional(),
+    minWeight: z.number().optional(),
+    spotName: z.string().optional(),
+    baitId: z.string().optional(),
+    baitName: z.string().optional(),
+  }).optional(),
 }).refine((data) => {
   const targetValue = parseFloat(data.targetValue);
   return targetValue > 0;
@@ -1186,11 +1200,18 @@ export const updateSeasonGoalSchema = createInsertSchema(seasonGoals).omit({
   isCompleted: true, // Computed field, not user-editable
   completedAt: true, // Computed field, not user-editable
 }).extend({
-  goalType: z.enum(["total_weight", "fish_count", "trips_count", "biggest_fish", "personal_best"]).optional(),
+  goalType: z.enum(["total_weight", "fish_count", "trips_count", "biggest_fish", "personal_best", "species_variety", "min_size_catch_count", "min_weight_catch_count", "spot_catch_count", "bait_catch_count", "night_trips_count"]).optional(),
   targetValue: z.union([z.string(), z.number()]).transform(val => String(val)).optional(),
   title: z.string().min(1, "Názov cieľa je povinný").max(255, "Názov môže mať maximálne 255 znakov").optional(),
   description: z.string().max(500, "Popis môže mať maximálne 500 znakov").optional(),
   isMainGoal: z.boolean().optional(),
+  parameters: z.object({
+    minSize: z.number().optional(),
+    minWeight: z.number().optional(),
+    spotName: z.string().optional(),
+    baitId: z.string().optional(),
+    baitName: z.string().optional(),
+  }).optional(),
 }).refine((data) => {
   if (data.targetValue !== undefined) {
     const targetValue = parseFloat(data.targetValue);

@@ -3322,17 +3322,40 @@ export class DatabaseStorage implements IStorage {
       throw new Error(`Goal limit reached. FREE users can create ${limitCheck.limit} goal per season.`);
     }
 
+    type ParametersType = { minSize?: number; minWeight?: number; spotName?: string; baitId?: string; baitName?: string } | null;
+
     const [newGoal] = await db
       .insert(seasonGoals)
-      .values({ ...goalData, userId })
+      .values({
+        userId,
+        seasonId: goalData.seasonId,
+        goalType: goalData.goalType,
+        targetValue: goalData.targetValue,
+        title: goalData.title,
+        description: goalData.description,
+        isMainGoal: goalData.isMainGoal,
+        parameters: (goalData.parameters || null) as ParametersType,
+      })
       .returning();
     return newGoal;
   }
 
   async updateSeasonGoal(id: string, goalData: Partial<InsertSeasonGoal>, userId: string): Promise<SeasonGoal> {
+    type ParametersType = { minSize?: number; minWeight?: number; spotName?: string; baitId?: string; baitName?: string } | null;
+    
+    const updateData: any = { updatedAt: new Date() };
+    if (goalData.title !== undefined) updateData.title = goalData.title;
+    if (goalData.description !== undefined) updateData.description = goalData.description;
+    if (goalData.isMainGoal !== undefined) updateData.isMainGoal = goalData.isMainGoal;
+    if (goalData.targetValue !== undefined) updateData.targetValue = goalData.targetValue;
+    if (goalData.goalType !== undefined) updateData.goalType = goalData.goalType;
+    if (goalData.parameters !== undefined) {
+      updateData.parameters = (goalData.parameters || null) as ParametersType;
+    }
+
     const [updatedGoal] = await db
       .update(seasonGoals)
-      .set({ ...goalData, updatedAt: new Date() })
+      .set(updateData)
       .where(and(
         eq(seasonGoals.id, id),
         eq(seasonGoals.userId, userId)
@@ -3542,6 +3565,84 @@ export class DatabaseStorage implements IStorage {
             lte(diaryCatches.capturedAt, season.endDate)
           ));
         newValue = speciesResult[0]?.distinctSpecies || 0;
+        break;
+
+      case 'min_size_catch_count':
+        // Count catches where length is above minimum
+        const minSize = (goal.parameters as any)?.minSize || 0;
+        const minSizeResult = await db
+          .select({ count: count() })
+          .from(diaryCatches)
+          .where(and(
+            sql`${diaryCatches.angler}->>'userId' = ${goal.userId}`,
+            gte(diaryCatches.capturedAt, season.startDate),
+            lte(diaryCatches.capturedAt, season.endDate),
+            sql`CAST(${diaryCatches.lengthCm} AS DECIMAL) > ${minSize}`
+          ));
+        newValue = minSizeResult[0]?.count || 0;
+        break;
+
+      case 'min_weight_catch_count':
+        // Count catches where weight is above minimum
+        const minWeight = (goal.parameters as any)?.minWeight || 0;
+        const minWeightResult = await db
+          .select({ count: count() })
+          .from(diaryCatches)
+          .where(and(
+            sql`${diaryCatches.angler}->>'userId' = ${goal.userId}`,
+            gte(diaryCatches.capturedAt, season.startDate),
+            lte(diaryCatches.capturedAt, season.endDate),
+            sql`CAST(${diaryCatches.weight} AS DECIMAL) > ${minWeight}`
+          ));
+        newValue = minWeightResult[0]?.count || 0;
+        break;
+
+      case 'spot_catch_count':
+        // Count catches at a specific spot/location
+        const spotName = (goal.parameters as any)?.spotName || '';
+        const spotResult = await db
+          .select({ count: count() })
+          .from(diaryCatches)
+          .where(and(
+            sql`${diaryCatches.angler}->>'userId' = ${goal.userId}`,
+            gte(diaryCatches.capturedAt, season.startDate),
+            lte(diaryCatches.capturedAt, season.endDate),
+            sql`LOWER(${diaryCatches.spot}) LIKE LOWER(${'%' + spotName + '%'})`
+          ));
+        newValue = spotResult[0]?.count || 0;
+        break;
+
+      case 'bait_catch_count':
+        // Count catches with a specific bait
+        const baitName = (goal.parameters as any)?.baitName || '';
+        const baitResult = await db
+          .select({ count: count() })
+          .from(diaryCatches)
+          .where(and(
+            sql`${diaryCatches.angler}->>'userId' = ${goal.userId}`,
+            gte(diaryCatches.capturedAt, season.startDate),
+            lte(diaryCatches.capturedAt, season.endDate),
+            sql`LOWER(${diaryCatches.bait}) LIKE LOWER(${'%' + baitName + '%'})`
+          ));
+        newValue = baitResult[0]?.count || 0;
+        break;
+
+      case 'night_trips_count':
+        // Count trips that overlap with night hours (22:00 - 05:00)
+        // A trip is "night" if it starts before 05:00 OR ends after 22:00
+        const nightTripsResult = await db
+          .select({ count: count() })
+          .from(diaryTrips)
+          .where(and(
+            eq(diaryTrips.ownerUserId, goal.userId),
+            gte(diaryTrips.startDate, season.startDate),
+            lte(diaryTrips.endDate, season.endDate),
+            or(
+              sql`EXTRACT(HOUR FROM ${diaryTrips.startDate}) < 5`,
+              sql`EXTRACT(HOUR FROM ${diaryTrips.endDate}) >= 22`
+            )
+          ));
+        newValue = nightTripsResult[0]?.count || 0;
         break;
     }
 
