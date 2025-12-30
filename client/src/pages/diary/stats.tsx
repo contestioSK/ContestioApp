@@ -656,97 +656,37 @@ export default function DiaryStats() {
             </CardContent>
           </Card>
 
-          {/* Weight Distribution - Redesigned */}
-          <Card className="lg:col-span-2 border-l-4 border-l-blue-500">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-lg font-bold flex items-center gap-2">
-                    <Weight className="w-5 h-5 text-blue-500" />
-                    Rozdelenie podľa hmotnosti
-                  </CardTitle>
-                  <CardDescription>Distribúcia úlovkov v hmotnostných kategóriách</CardDescription>
-                </div>
-                {weightDistribution.length > 0 && (
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-foreground">{catches.length}</p>
-                    <p className="text-xs text-muted-foreground">celkom úlovkov</p>
-                  </div>
-                )}
+          {/* Weight Distribution - Same style as Fish Composition */}
+          <Card className="lg:col-span-2">
+            <CardHeader className="pb-4 border-b border-border">
+              <div>
+                <CardTitle className="text-lg font-bold">Rozdelenie podľa hmotnosti</CardTitle>
+                <CardDescription>Úlovky v jednotlivých hmotnostných kategóriách</CardDescription>
               </div>
             </CardHeader>
-            <CardContent className="px-6 pb-6 pt-2">
+            <CardContent className="p-6 space-y-6">
               {weightDistribution.length > 0 ? (
-                <div className="space-y-4">
-                  {/* Horizontal Segmented Progress Bar */}
-                  <div className="relative">
-                    <div className="flex h-8 rounded-full overflow-hidden shadow-inner bg-muted/30">
-                      {weightDistribution.map((range, index) => {
-                        const colors = [
-                          'bg-emerald-400', 'bg-emerald-500', 'bg-teal-500', 
-                          'bg-cyan-500', 'bg-blue-400', 'bg-blue-500', 
-                          'bg-indigo-500', 'bg-violet-500', 'bg-purple-500', 
-                          'bg-fuchsia-500', 'bg-pink-500'
-                        ];
-                        const isTop = index === 0 || range.count === Math.max(...weightDistribution.map(r => r.count));
-                        return (
-                          <TooltipProvider key={range.label}>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div 
-                                  className={`${colors[index % colors.length]} hover:brightness-110 transition-all cursor-pointer relative flex items-center justify-center`}
-                                  style={{ width: `${Math.max(range.percentage, 3)}%` }}
-                                >
-                                  {range.percentage >= 10 && (
-                                    <span className="text-xs font-bold text-white drop-shadow-sm">
-                                      {range.percentage.toFixed(0)}%
-                                    </span>
-                                  )}
-                                  {isTop && range.count === Math.max(...weightDistribution.map(r => r.count)) && (
-                                    <Star className="w-3 h-3 text-yellow-300 absolute -top-1 -right-1 fill-current drop-shadow" />
-                                  )}
-                                </div>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p className="font-semibold">{range.label}</p>
-                                <p className="text-sm">{range.count} úlovkov ({range.percentage.toFixed(1)}%)</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        );
-                      })}
+                weightDistribution.map((range, index) => {
+                  const colors = ['bg-emerald-500', 'bg-blue-500', 'bg-amber-500', 'bg-purple-500', 'bg-cyan-500', 'bg-rose-500', 'bg-indigo-500', 'bg-teal-500', 'bg-orange-500', 'bg-pink-500', 'bg-lime-500'];
+                  const textColors = ['text-emerald-500', 'text-blue-500', 'text-amber-500', 'text-purple-500', 'text-cyan-500', 'text-rose-500', 'text-indigo-500', 'text-teal-500', 'text-orange-500', 'text-pink-500', 'text-lime-500'];
+                  return (
+                    <div key={range.label} className="space-y-2">
+                      <div className="flex justify-between items-end">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-semibold text-foreground">{range.label}</span>
+                          <Badge variant="secondary" className="text-xs">{range.count} ks</Badge>
+                        </div>
+                        <span className={`text-lg font-bold ${textColors[index % textColors.length]}`}>
+                          {range.percentage.toFixed(0)}%
+                        </span>
+                      </div>
+                      <Progress value={range.percentage} className={`h-2 ${colors[index % colors.length]}`} />
                     </div>
-                  </div>
-
-                  {/* Legend Badges */}
-                  <div className="flex flex-wrap gap-2 pt-2">
-                    {weightDistribution.map((range, index) => {
-                      const colors = [
-                        'bg-emerald-400', 'bg-emerald-500', 'bg-teal-500', 
-                        'bg-cyan-500', 'bg-blue-400', 'bg-blue-500', 
-                        'bg-indigo-500', 'bg-violet-500', 'bg-purple-500', 
-                        'bg-fuchsia-500', 'bg-pink-500'
-                      ];
-                      const isTop = range.count === Math.max(...weightDistribution.map(r => r.count));
-                      return (
-                        <Badge 
-                          key={range.label}
-                          variant="outline"
-                          className={`text-xs px-2.5 py-1 gap-1.5 ${isTop ? 'border-amber-500 bg-amber-500/10' : 'border-border'}`}
-                        >
-                          <span className={`w-2.5 h-2.5 rounded-full ${colors[index % colors.length]}`} />
-                          <span className="font-medium">{range.label}</span>
-                          <span className="text-muted-foreground">({range.count})</span>
-                          {isTop && <Star className="w-3 h-3 text-amber-500 fill-current" />}
-                        </Badge>
-                      );
-                    })}
-                  </div>
-                </div>
+                  );
+                })
               ) : (
                 <div className="text-center text-muted-foreground py-8">
-                  <Weight className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                  <p>Žiadne dáta o úlovkoch</p>
+                  Žiadne dáta o úlovkoch
                 </div>
               )}
             </CardContent>
