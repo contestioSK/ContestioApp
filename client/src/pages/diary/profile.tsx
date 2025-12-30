@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -44,6 +44,12 @@ export default function Profile() {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [profileImage, setProfileImage] = useState<File | null>(null);
+
+  // Check premium status
+  const { data: premiumStatus } = useQuery<{ isPremium: boolean }>({
+    queryKey: ["/api/auth/premium-status"],
+  });
+  const isPremium = premiumStatus?.isPremium || false;
 
   const form = useForm<ProfileForm>({
     resolver: zodResolver(profileSchema),
@@ -210,8 +216,14 @@ export default function Profile() {
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Status</span>
-                  <Badge variant="secondary" className="bg-primary/20 text-primary border-primary/30">
-                    PREMIUM
+                  <Badge 
+                    variant="secondary" 
+                    className={isPremium 
+                      ? "bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30" 
+                      : "bg-gray-500/20 text-gray-600 dark:text-gray-400 border-gray-500/30"
+                    }
+                  >
+                    {isPremium ? "⭐ PREMIUM" : "FREE"}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
