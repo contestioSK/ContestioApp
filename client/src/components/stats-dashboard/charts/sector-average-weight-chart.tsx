@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Cell } from "recharts";
+import { getChartColorByIndex } from "@/lib/colors";
 import type { SectorData } from "../types";
 
 interface SectorAverageWeightChartProps {
@@ -14,18 +15,9 @@ const chartConfig = {
   },
 };
 
-// Farby pre rôzne sektory
+// Farby pre rôzne sektory - using design system
 const getSectorColor = (sectorIndex: number) => {
-  const colors = [
-    'hsl(220, 70%, 60%)',  // modrá
-    'hsl(160, 70%, 50%)',  // tyrkysová
-    'hsl(120, 70%, 50%)',  // zelená
-    'hsl(40, 70%, 60%)',   // oranžová
-    'hsl(0, 70%, 60%)',    // červená
-    'hsl(280, 70%, 60%)',  // fialová
-    'hsl(200, 70%, 60%)',  // svetlá modrá
-  ];
-  return colors[sectorIndex % colors.length];
+  return getChartColorByIndex(sectorIndex);
 };
 
 export function SectorAverageWeightChart({ data }: SectorAverageWeightChartProps) {

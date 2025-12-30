@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Cell } from "recharts";
+import { getChartColorByIndex } from "@/lib/colors";
 import type { TimelineData } from "../types";
 
 interface TimelineWeightChartProps {
@@ -14,18 +15,9 @@ const chartConfig = {
   },
 };
 
-// Farby pre jednotlivé dni - váha
+// Farby pre jednotlivé dni - using design system
 const getDayColor = (dayIndex: number) => {
-  const colors = [
-    'hsl(220, 70%, 60%)',  // modrá - Deň 1
-    'hsl(160, 70%, 50%)',  // tyrkysová - Deň 2  
-    'hsl(120, 70%, 50%)',  // zelená - Deň 3
-    'hsl(80, 70%, 55%)',   // svetlo zelená - Deň 4
-    'hsl(40, 70%, 60%)',   // oranžová - Deň 5
-    'hsl(0, 70%, 60%)',    // červená - Deň 6
-    'hsl(280, 70%, 60%)',  // fialová - Deň 7
-  ];
-  return colors[dayIndex % 7];
+  return getChartColorByIndex(dayIndex);
 };
 
 export function TimelineWeightChart({ data }: TimelineWeightChartProps) {

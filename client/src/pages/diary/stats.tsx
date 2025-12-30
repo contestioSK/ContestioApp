@@ -48,6 +48,8 @@ import {
 } from "lucide-react";
 
 import DiaryLayout from "@/components/DiaryLayout";
+import { useTheme } from "@/contexts/ThemeContext";
+import { BG_CLASSES_DARK, BG_CLASSES_LIGHT, TEXT_CLASSES_DARK, TEXT_CLASSES_LIGHT } from "@/lib/colors";
 
 import type { DiaryTrip, DiaryCatch } from "@shared/schema";
 
@@ -84,9 +86,14 @@ type FishTypeStats = {
 
 export default function DiaryStats() {
   const { user } = useAuth();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [, setLocation] = useLocation();
   const [selectedPeriodMonths, setSelectedPeriodMonths] = useState<3 | 6 | 12 | 24>(6);
   const [compositionView, setCompositionView] = useState<'count' | 'weight'>('count');
+  
+  const bgColors = isDark ? BG_CLASSES_DARK : BG_CLASSES_LIGHT;
+  const textColors = isDark ? TEXT_CLASSES_DARK : TEXT_CLASSES_LIGHT;
 
   // Fetch user's trips and catches
   const { data: trips = [] } = useQuery<DiaryTrip[]>({
@@ -505,29 +512,29 @@ export default function DiaryStats() {
 
         {/* Overview Tab Content */}
         <TabsContent value="overview" className="space-y-6 mt-0">
-        {/* 4 Metric Cards with colored left borders */}
+        {/* 4 Metric Cards with colored left borders - using design system colors */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="border-l-4 border-l-emerald-500 transition-colors hover:bg-muted/30">
+          <Card className={`border-l-4 ${isDark ? 'border-l-lime-500' : 'border-l-lime-600'} transition-colors hover:bg-muted/30`}>
             <CardContent className="p-5">
               <div className="flex justify-between items-start mb-3">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Celkové úlovky</p>
-                <Fish className="w-4 h-4 text-emerald-500" />
+                <Fish className={`w-4 h-4 ${isDark ? 'text-lime-500' : 'text-lime-600'}`} />
               </div>
               <div className="flex items-baseline gap-2">
                 <span className="text-3xl font-bold text-foreground">{totalCatches}</span>
                 {catches.length > 0 && (
-                  <span className="text-xs font-medium text-emerald-500/70">+{Math.round((catches.length / Math.max(1, totalTrips)) * 10)}%</span>
+                  <span className={`text-xs font-medium ${isDark ? 'text-lime-500/70' : 'text-lime-600/70'}`}>+{Math.round((catches.length / Math.max(1, totalTrips)) * 10)}%</span>
                 )}
               </div>
               <p className="text-xs text-muted-foreground mt-1">{totalWeight.toFixed(1)} kg celkom</p>
             </CardContent>
           </Card>
 
-          <Card className="border-l-4 border-l-blue-500 transition-colors hover:bg-muted/30">
+          <Card className={`border-l-4 ${isDark ? 'border-l-blue-500' : 'border-l-blue-600'} transition-colors hover:bg-muted/30`}>
             <CardContent className="p-5">
               <div className="flex justify-between items-start mb-3">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Celková váha</p>
-                <Weight className="w-4 h-4 text-blue-500" />
+                <Weight className={`w-4 h-4 ${isDark ? 'text-blue-500' : 'text-blue-600'}`} />
               </div>
               <div className="flex items-baseline gap-2">
                 <span className="text-3xl font-bold text-foreground">{totalWeight.toFixed(1)}</span>
@@ -537,25 +544,25 @@ export default function DiaryStats() {
             </CardContent>
           </Card>
 
-          <Card className="border-l-4 border-l-amber-500 transition-colors hover:bg-muted/30">
+          <Card className={`border-l-4 ${isDark ? 'border-l-amber-500' : 'border-l-amber-600'} transition-colors hover:bg-muted/30`}>
             <CardContent className="p-5">
               <div className="flex justify-between items-start mb-3">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Výpravy</p>
-                <MapPin className="w-4 h-4 text-amber-500" />
+                <MapPin className={`w-4 h-4 ${isDark ? 'text-amber-500' : 'text-amber-600'}`} />
               </div>
               <div className="flex items-baseline gap-2">
                 <span className="text-3xl font-bold text-foreground">{totalTrips}</span>
-                <span className="text-xs font-medium text-amber-500/70">{activeTripCount} aktívne</span>
+                <span className={`text-xs font-medium ${isDark ? 'text-amber-500/70' : 'text-amber-600/70'}`}>{activeTripCount} aktívne</span>
               </div>
               <p className="text-xs text-muted-foreground mt-1">Celkom {totalTrips * 6} hodín pri vode</p>
             </CardContent>
           </Card>
 
-          <Card className="border-l-4 border-l-purple-500 transition-colors hover:bg-muted/30">
+          <Card className={`border-l-4 ${isDark ? 'border-l-purple-500' : 'border-l-purple-600'} transition-colors hover:bg-muted/30`}>
             <CardContent className="p-5">
               <div className="flex justify-between items-start mb-3">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Úspešnosť</p>
-                <Target className="w-4 h-4 text-purple-500" />
+                <Target className={`w-4 h-4 ${isDark ? 'text-purple-500' : 'text-purple-600'}`} />
               </div>
               <div className="flex items-baseline gap-2">
                 <span className="text-3xl font-bold text-foreground">{successRate}</span>
@@ -630,7 +637,6 @@ export default function DiaryStats() {
                   const percentage = compositionView === 'count' 
                     ? (totalCatches > 0 ? (stat.count / totalCatches) * 100 : 0)
                     : (totalWeight > 0 ? (stat.totalWeight / totalWeight) * 100 : 0);
-                  const colors = ['bg-primary', 'bg-blue-500', 'bg-muted-foreground', 'bg-amber-500', 'bg-purple-500'];
                   return (
                     <div key={stat.type} className="space-y-2">
                       <div className="flex justify-between items-end">
@@ -640,14 +646,14 @@ export default function DiaryStats() {
                             {compositionView === 'count' ? `${stat.count} ks` : `${stat.totalWeight.toFixed(1)} kg`}
                           </Badge>
                         </div>
-                        <span className="text-lg font-bold" style={{ color: index === 0 ? 'hsl(var(--primary))' : index === 1 ? '#3b82f6' : 'hsl(var(--muted-foreground))' }}>
+                        <span className={`text-lg font-bold ${textColors[index % textColors.length]}`}>
                           {percentage.toFixed(0)}%
                         </span>
                       </div>
                       <Progress 
                         value={percentage} 
                         className="h-2 bg-muted overflow-hidden" 
-                        indicatorClassName={colors[index] || 'bg-primary'}
+                        indicatorClassName={bgColors[index % bgColors.length]}
                       />
                     </div>
                   );
@@ -671,8 +677,6 @@ export default function DiaryStats() {
             <CardContent className="p-6 space-y-6">
               {weightDistribution.length > 0 ? (
                 weightDistribution.map((range, index) => {
-                  const colors = ['bg-emerald-500', 'bg-blue-500', 'bg-amber-500', 'bg-purple-500', 'bg-cyan-500', 'bg-rose-500', 'bg-indigo-500', 'bg-teal-500', 'bg-orange-500', 'bg-pink-500', 'bg-lime-500'];
-                  const textColors = ['text-emerald-500', 'text-blue-500', 'text-amber-500', 'text-purple-500', 'text-cyan-500', 'text-rose-500', 'text-indigo-500', 'text-teal-500', 'text-orange-500', 'text-pink-500', 'text-lime-500'];
                   return (
                     <div key={range.label} className="space-y-2">
                       <div className="flex justify-between items-end">
@@ -687,7 +691,7 @@ export default function DiaryStats() {
                       <Progress 
                         value={range.percentage} 
                         className="h-2 bg-muted overflow-hidden" 
-                        indicatorClassName={colors[index % colors.length]}
+                        indicatorClassName={bgColors[index % bgColors.length]}
                       />
                     </div>
                   );
@@ -700,16 +704,16 @@ export default function DiaryStats() {
             </CardContent>
           </Card>
 
-          {/* Right Column - Stacked Cards */}
+          {/* Right Column - Stacked Cards - using design system colors */}
           <div className="space-y-4">
-            {/* Top Bait Card */}
-            <Card className="bg-primary/5 border-primary/20">
+            {/* Top Bait Card - ID1 Lime */}
+            <Card className={`${isDark ? 'bg-lime-500/5 border-lime-500/20' : 'bg-lime-600/5 border-lime-600/20'}`}>
               <CardContent className="p-5">
-                <h4 className="text-xs font-bold uppercase tracking-widest text-primary mb-4 flex items-center gap-2">
+                <h4 className={`text-xs font-bold uppercase tracking-widest ${isDark ? 'text-lime-500' : 'text-lime-600'} mb-4 flex items-center gap-2`}>
                   <Star className="w-4 h-4 fill-current" /> Top Nástraha
                 </h4>
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-2xl">
+                  <div className={`w-12 h-12 ${isDark ? 'bg-lime-500/10' : 'bg-lime-600/10'} rounded-xl flex items-center justify-center text-2xl`}>
                     🎣
                   </div>
                   <div>
@@ -724,15 +728,15 @@ export default function DiaryStats() {
               </CardContent>
             </Card>
 
-            {/* Best Location Card */}
-            <Card>
+            {/* Best Location Card - ID2 Blue */}
+            <Card className={`${isDark ? 'bg-blue-500/5 border-blue-500/20' : 'bg-blue-600/5 border-blue-600/20'}`}>
               <CardContent className="p-5">
-                <h4 className="text-xs font-bold uppercase tracking-widest text-blue-500 mb-4 flex items-center gap-2">
+                <h4 className={`text-xs font-bold uppercase tracking-widest ${isDark ? 'text-blue-500' : 'text-blue-600'} mb-4 flex items-center gap-2`}>
                   <Trophy className="w-4 h-4" /> Najlepšia lokalita
                 </h4>
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center">
-                    <MapPin className="w-6 h-6 text-blue-500" />
+                  <div className={`w-12 h-12 ${isDark ? 'bg-blue-500/10' : 'bg-blue-600/10'} rounded-xl flex items-center justify-center`}>
+                    <MapPin className={`w-6 h-6 ${isDark ? 'text-blue-500' : 'text-blue-600'}`} />
                   </div>
                   <div>
                     <h5 className="font-bold text-foreground text-lg leading-tight">
@@ -746,17 +750,17 @@ export default function DiaryStats() {
               </CardContent>
             </Card>
 
-            {/* Next Milestone Card - Locked for FREE */}
-            <Card className="border-dashed border-muted-foreground/30">
+            {/* Next Milestone Card - ID4 Purple - Locked for FREE */}
+            <Card className={`border-dashed ${isDark ? 'border-purple-500/30' : 'border-purple-600/30'}`}>
               <CardContent className="p-5">
-                <div className="flex items-center gap-2 text-muted-foreground mb-3">
+                <div className={`flex items-center gap-2 ${isDark ? 'text-purple-500' : 'text-purple-600'} mb-3`}>
                   <Lock className="w-4 h-4" />
                   <p className="text-xs font-bold uppercase tracking-widest">Ďalší míľnik</p>
                 </div>
                 <div className="opacity-40 grayscale">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-muted rounded-xl flex items-center justify-center">
-                      <Award className="w-6 h-6" />
+                    <div className={`w-12 h-12 ${isDark ? 'bg-purple-500/10' : 'bg-purple-600/10'} rounded-xl flex items-center justify-center`}>
+                      <Award className={`w-6 h-6 ${isDark ? 'text-purple-500' : 'text-purple-600'}`} />
                     </div>
                     <div>
                       <h5 className="font-bold text-foreground text-lg leading-tight">50 úlovkov</h5>

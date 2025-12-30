@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Cell } from "recharts";
 import { Link } from "wouter";
 import { ExternalLink, MapPin, Fish, Scale, TrendingUp } from "lucide-react";
+import { getChartColorByIndex } from "@/lib/colors";
 import type { SectorData } from "../types";
 
 interface SectorPerformanceChartProps {
@@ -13,18 +14,9 @@ interface SectorPerformanceChartProps {
   competitionId?: string;
 }
 
-// Farby pre rôzne sektory
+// Farby pre rôzne sektory - using design system
 const getSectorColor = (index: number) => {
-  const colors = [
-    'hsl(220, 70%, 60%)',  // modrá - Sektor A
-    'hsl(160, 70%, 50%)',  // tyrkysová - Sektor B
-    'hsl(120, 70%, 50%)',  // zelená - Sektor C
-    'hsl(40, 70%, 60%)',   // oranžová - Sektor D
-    'hsl(0, 70%, 60%)',    // červená - Sektor E
-    'hsl(280, 70%, 60%)',  // fialová - Sektor F
-    'hsl(200, 70%, 60%)',  // svetlá modrá - Sektor G
-  ];
-  return colors[index % colors.length];
+  return getChartColorByIndex(index);
 };
 
 const chartConfig = {

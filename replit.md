@@ -4,6 +4,14 @@ Contestio is a live fishing competition platform offering multi-role management 
 
 The platform is expanding with a "Fishing Diary" module for personal catch logging, including freemium tiers (FREE: 1 trip/20 catches; PREMIUM: unlimited, battles). Recent key features include instant catch saving with background photo uploads, a dark theme, a weather forecast module with a premium "Fish Activity Index", a favorites system for competitions and teams, clickable statistics cards on the diary dashboard, enhanced toast notifications with emoji icons and color-coded success states, and a global Floating Action Button (FAB) for instant catch entry across all diary pages. The battle system has been enhanced with automatic catch assignment, minimum weight filtering, and optimized login.
 
+## Design System (December 2024)
+
+A unified 10-color palette has been implemented in `client/src/lib/colors.ts` for consistent visualization across the application. Key points:
+- **Dark mode**: Uses shade 500 (brighter, neon effect)
+- **Light mode**: Uses shade 600 (darker for better contrast)
+- Colors: Lime (brand), Blue (water), Amber (attention), Purple (premium), Rose (critical), Cyan (fresh), Emerald (nature), Orange (action), Indigo (night), Fuchsia (tech)
+- Use `getChartColorByIndex(index)` for Recharts and `BG_CLASSES_DARK/LIGHT` arrays for Tailwind
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.

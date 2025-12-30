@@ -1,11 +1,35 @@
-# Contestio Notification Center Design Guidelines
+# Contestio Design System
 
 ## Design Approach
-**System-Based Design** following shadcn/ui patterns with Contestio's established dark theme palette. Drawing inspiration from Discord's notification system and GitHub's activity center for battle invitation interactions.
+**System-Based Design** following shadcn/ui patterns with Contestio's established dark theme palette.
 
 ## Core Design Elements
 
-### A. Color Palette
+### A. Contestio 10-Color Palette (MANDATORY)
+
+All charts, graphs, progress bars, and data visualizations MUST use this palette.
+Colors are defined in `client/src/lib/colors.ts`.
+
+| ID | Name | Dark Mode (500) | Light Mode (600) | Usage |
+|----|------|-----------------|------------------|-------|
+| 1 | Contestio Lime | lime-500 (#84cc16) | lime-600 (#65a30d) | Brand, Primárne dáta |
+| 2 | Deep Blue | blue-500 (#3b82f6) | blue-600 (#2563eb) | Voda, Sekundárne |
+| 3 | Solar Amber | amber-500 (#f59e0b) | amber-600 (#d97706) | Pozornosť, Teplo |
+| 4 | Royal Purple | purple-500 (#a855f7) | purple-600 (#9333ea) | Premium, Hĺbka |
+| 5 | Signal Rose | rose-500 (#f43f5e) | rose-600 (#e11d48) | Kritické, Akcent |
+| 6 | Aqua Cyan | cyan-500 (#06b6d4) | cyan-600 (#0891b2) | Sviežosť, Plytčina |
+| 7 | Forest Emerald | emerald-500 (#10b981) | emerald-600 (#059669) | Príroda, Úspech |
+| 8 | Energy Orange | orange-500 (#f97316) | orange-600 (#ea580c) | Dynamika, Akcia |
+| 9 | Abyss Indigo | indigo-500 (#6366f1) | indigo-600 (#4f46e5) | Noc, Hlboká voda |
+| 10 | Neon Pink | fuchsia-500 (#d946ef) | fuchsia-600 (#c026d3) | Moderný Tech |
+
+**Usage Rules:**
+- Dark mode uses **500** shades (brighter, neon effect on dark backgrounds)
+- Light mode uses **600** shades (darker for better contrast on white)
+- For Recharts: use `getChartColorByIndex(index)` from `@/lib/colors`
+- For Tailwind: use `bgColors[index]` and `textColors[index]` arrays
+
+### B. Background Colors (UNCHANGED)
 **Dark Mode Foundation:**
 - Primary Background: `192 100% 11%` (#012a36 - sidebar/header)
 - Content Background: `192 52% 11%` (#0c1f28 - main content)
@@ -13,12 +37,7 @@
 - Card Background: `192 40% 14%` (invitation cards)
 - Card Hover: `192 40% 16%`
 
-**Cyan Accent System:**
-- Primary Cyan: `186 100% 45%` (CTAs, highlights)
-- Cyan Muted: `186 80% 35%` (secondary elements)
-- Cyan Subtle: `186 60% 25%` (hover states)
-
-**Status & Interaction:**
+### C. Status & Interaction Colors
 - Success Green: `142 76% 36%` (accept actions)
 - Danger Red: `0 84% 60%` (reject actions)
 - Badge Alert: `0 90% 50%` (notification count)

@@ -1,24 +1,16 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
+import { getChartColorByIndex } from "@/lib/colors";
 import type { SectorTimelineData } from "../types";
 
 interface SectorWeightTimelineChartProps {
   data: Record<string, SectorTimelineData[]>;
 }
 
-// Farby pre rôzne sektory
+// Farby pre rôzne sektory - using design system
 const getSectorColor = (sectorIndex: number) => {
-  const colors = [
-    'hsl(220, 70%, 60%)',  // modrá - Sektor A
-    'hsl(160, 70%, 50%)',  // tyrkysová - Sektor B
-    'hsl(120, 70%, 50%)',  // zelená - Sektor C
-    'hsl(40, 70%, 60%)',   // oranžová - Sektor D
-    'hsl(0, 70%, 60%)',    // červená - Sektor E
-    'hsl(280, 70%, 60%)',  // fialová - Sektor F
-    'hsl(200, 70%, 60%)',  // svetlá modrá - Sektor G
-  ];
-  return colors[sectorIndex % colors.length];
+  return getChartColorByIndex(sectorIndex);
 };
 
 export function SectorWeightTimelineChart({ data }: SectorWeightTimelineChartProps) {
