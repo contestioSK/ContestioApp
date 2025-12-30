@@ -1,0 +1,104 @@
+Áno. Toto je reálny layout bug, nie kozmetika – a máš pravdu, že koreň problému je PremiumGate, nie konkrétne tabuľky.
+
+Teraz ti to rozoberiem bez obalu a dám ti jedno odporúčané riešenie, nie tri polovičné.
+
+Kde je skutočný problém (UX + technicky)
+1️⃣ Absolute inset-0 = pasca
+
+absolute inset-0 funguje LEN vtedy, keď:
+
+rodič má definovanú výšku
+
+alebo je obsah menší než viewport
+
+V tvojom prípade:
+
+Analýzy / Úspechy majú dlhý, dynamický obsah
+
+preview obsah je často krátky
+
+overlay sa snaží „zakryť niečo“, čo nemá stabilné rozmery
+
+Výsledok:
+
+overlay presahuje
+
+CTA box „pláva“
+
+z UX pohľadu to vyzerá rozbité a lacné
+
+A to je problém, lebo Premium má pôsobiť prémiovo, nie hacknuto.
+
+Prečo min-h-[500px] NIE JE riešenie (len band-aid)
+
+Áno, technicky to pomôže, ale:
+
+500px je arbitrárne číslo
+
+na mobile je to veľa
+
+na desktopoch s veľkým obsahom je to málo
+
+mení to layout stránky len kvôli paywallu → UX antipattern
+
+Toto riešenie:
+❌ maskuje problém
+❌ nie je škálovateľné
+❌ zhoršuje CLS (layout shift)
+
+Správne riešenie (odporúčam iba toto)
+🔥 ZMENA STRATÉGIE OVERLAYA
+
+PremiumGate nemá zakrývať celý obsah.
+Má zastaviť progres používateľa a jasne mu povedať „ďalej len s Premium“.
+
+Ideálny pattern:
+
+limitovaný preview obsah
+
+sticky CTA overlay (nie absolute)
+
+zvyšok obsahu neexistuje v DOMe
+
+Konkrétny návrh (UX + kód)
+1️⃣ PremiumGate: odstráň absolute inset-0
+<div className="relative">
+  <div className="max-h-[400px] overflow-hidden blur-sm pointer-events-none">
+    {children}
+  </div>
+
+  <div className="sticky bottom-0 z-10 bg-background/95 backdrop-blur border-t p-6 text-center">
+    <PremiumCTA />
+  </div>
+</div>
+
+Čo tým získaš:
+
+✔️ žiadne problémy s výškou
+✔️ žiadne presahy
+✔️ CTA je vždy viditeľné
+✔️ používateľ chápe, že „ďalej to nepustí“
+
+Prečo je toto UX-ovo lepšie
+
+používateľ vidí hodnotu (preview)
+
+ale nemá chaos v layoute
+
+CTA je prirodzene na konci, nie ako modal
+
+mobil / desktop funguje rovnako
+
+Toto je Netflix / Strava / Notion pattern, nie random overlay.
+
+Verdikt (bez cukru)
+
+Tvoje riešenia:
+
+min-h-[500px] → ❌ dočasná záplata
+
+overflow-hidden → ⚠️ len ak je kombinované so sticky CTA
+
+absolute overlay → ❌ zlé pre dlhý obsah
+
+👉 PremiumGate musí byť redizajnovaný, nie len opravený.
