@@ -1,0 +1,227 @@
+ČO JE VÝBORNÉ (a treba pochváliť)
+1. Jasná separácia zodpovedností
+
+Form schema → ✅ Zod
+
+API → react-query
+
+Toasty → centrálne
+
+UI → konzistentné shadcn komponenty
+
+Toto je správna stacková voľba.
+
+2. Edit vs View mód – správne UX rozhodnutie
+
+isEditing ako gatekeeper:
+
+zabraňuje náhodným úpravám
+
+jasný mentálny model
+
+👍 veľké plus.
+
+3. Práca s invalidáciou dát
+queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+
+
+Správne. Konzistentné. Bez reloadov.
+
+4. Profilový obrázok – oddelená mutácia
+
+Veľmi dobré rozhodnutie.
+
+žiadny multipart chaos v profile update
+
+UX je jasné
+
+TERAZ KRITIKA – TU STRÁCAŠ BODY
+❌ 1. ZOD schema ≠ realita backendu
+Problém:
+facebookUrl: z.string().url().optional().or(z.literal(""))
+
+
+➡️ UX OK, ale backend risk
+Ak backend nepočítá s "", narazíš na:
+
+400 errors
+
+inconsistent data
+
+Odporúčanie:
+
+Normalizuj pred submitom:
+
+const normalize = (v?: string) => v?.trim() === "" ? null : v;
+
+
+Alebo rovno:
+
+z.string().url().nullable().optional()
+
+❌ 2. email editable field = strategická chyba
+
+Z UX aj security pohľadu je zlé, že:
+
+user môže meniť email
+
+ale nevidíš flow re-verifikácie
+
+👉 Toto je anti-pattern.
+
+Riešenie:
+
+email read-only
+
+CTA: „Zmeniť email“ → separátny flow + re-verifikácia
+
+❌ 3. Chýba loading skeleton (UX fail)
+
+Keď:
+
+if (!user) return "Načítavam profil..."
+
+
+👉 toto je 2015 UX, nie 2025.
+
+Riešenie:
+
+skeleton card
+
+zachovať layout
+
+bez layout shiftu
+
+❌ 4. Duplicita profilového obrázka (technický dlh)
+
+Obrázok renderuješ:
+
+v summary karte
+
+vo form sekcii
+
+👉 2 zdroje pravdy = budúci bug
+
+Riešenie:
+
+vytiahni ProfileAvatar komponent
+
+jeden source of truth
+
+❌ 5. Premium status query je slabé miesto
+useQuery({ queryKey: ["/api/auth/premium-status"] })
+
+Problémy:
+
+fetchne sa vždy
+
+nemá enabled: !!user
+
+nemá loading fallback
+
+nemá error fallback
+
+UX dôsledok:
+
+Na pomalom spojení user:
+
+chvíľu vidí FREE
+
+potom PREMIUM → vizuálny glitch
+
+❌ 6. Chýba optimistic UI pri profile update
+
+Pri kliknutí na Uložiť:
+
+čakáš na server
+
+UI sa nemení
+
+👉 Toto je zbytočne pomalý pocit
+
+Odporúčanie:
+
+optimistic update user context
+
+rollback pri errori
+
+❌ 7. Form reset via handleCancel = manuálna pasca
+form.reset({
+  firstName: user?.firstName || "",
+  ...
+});
+
+
+👉 Toto sa rozbije:
+
+keď sa user zmení
+
+keď pribudne nové pole
+
+Riešenie:
+form.reset(form.getValues())
+
+
+alebo
+
+useEffect(() => form.reset(user), [user])
+
+UX COPY / MICROCOPY – MALÉ, ALE DÔLEŽITÉ
+❌ „Uložiť zmeny“
+
+👉 nudné, transakčné
+
+Lepšie:
+
+„Uložiť profil“
+
+„Potvrdiť zmeny“
+
+❌ „Profil aktualizovaný!“
+
+👉 OK, ale generic
+
+Lepšie:
+
+„Profil uložený. Zmeny sú aktívne.“
+
+ARCHITEKTÚRNY PROBLÉM DO BUDÚCNA
+
+Tento komponent je už príliš veľký.
+
+👉 keď pridáš:
+
+bezpečnosť
+
+heslo
+
+2FA
+
+notifikácie
+
+…rozpadne sa.
+
+Odporúčaná štruktúra:
+
+ProfileSummaryCard
+
+ProfileForm
+
+AccountInfoCard
+
+ProfileAvatar
+
+ZÁVER – ÚPRIMNE
+
+Toto nie je amatérsky kód.
+Ale nie je to ešte senior-grade produkcia.
+
+Najväčšie riziká:
+
+email edit
+
+duplicity
+
+chýbajúce loading stavy
+
+slabá normalizácia dát

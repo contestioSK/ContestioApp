@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect, type ChangeEvent } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -10,9 +10,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { 
   User, 
   Mail, 
@@ -22,22 +22,197 @@ import {
   UserCircle,
   Shield,
   Calendar,
-  ExternalLink
+  ExternalLink,
+  Lock
 } from "lucide-react";
 import { SiFacebook, SiInstagram } from "react-icons/si";
 import DiaryLayout from "@/components/DiaryLayout";
 
-// Profile form schema
+// Profile form schema - email removed (read-only)
 const profileSchema = z.object({
   firstName: z.string().min(1, "Meno je povinné").max(50, "Meno môže mať maximálne 50 znakov"),
   lastName: z.string().min(1, "Priezvisko je povinné").max(50, "Priezvisko môže mať maximálne 50 znakov"),
   nickname: z.string().max(30, "Prezývka môže mať maximálne 30 znakov").optional().or(z.literal("")),
-  email: z.string().email("Neplatný email"),
   facebookUrl: z.string().url("Neplatná Facebook URL").optional().or(z.literal("")),
   instagramUrl: z.string().url("Neplatná Instagram URL").optional().or(z.literal("")),
 });
 
 type ProfileForm = z.infer<typeof profileSchema>;
+
+// Normalize empty strings to null before submitting
+const normalizeFormData = (data: ProfileForm) => ({
+  firstName: data.firstName.trim(),
+  lastName: data.lastName.trim(),
+  nickname: data.nickname?.trim() || null,
+  facebookUrl: data.facebookUrl?.trim() || null,
+  instagramUrl: data.instagramUrl?.trim() || null,
+});
+
+// ProfileAvatar Component - reusable avatar with optional upload capability
+interface ProfileAvatarProps {
+  imageUrl?: string | null;
+  size?: 'sm' | 'md' | 'lg';
+  editable?: boolean;
+  isUploading?: boolean;
+  onFileSelect?: (file: File) => void;
+}
+
+function ProfileAvatar({ imageUrl, size = 'md', editable = false, isUploading = false, onFileSelect }: ProfileAvatarProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const sizeClasses = {
+    sm: 'w-16 h-16',
+    md: 'w-20 h-20',
+    lg: 'w-24 h-24',
+  };
+  
+  const iconSizes = {
+    sm: 'w-8 h-8',
+    md: 'w-10 h-10',
+    lg: 'w-12 h-12',
+  };
+
+  const handleClick = () => {
+    if (editable && fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && onFileSelect) {
+      onFileSelect(file);
+    }
+    if (e.target) {
+      e.target.value = '';
+    }
+  };
+
+  return (
+    <div className="relative group">
+      <button
+        type="button"
+        onClick={handleClick}
+        disabled={!editable || isUploading}
+        className={`
+          ${sizeClasses[size]} rounded-full overflow-hidden border-4 border-primary/20
+          ${editable ? 'cursor-pointer hover:border-primary/40 transition-all' : 'cursor-default'}
+          ${isUploading ? 'opacity-50' : ''}
+          focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2
+        `}
+        data-testid="button-avatar"
+      >
+        {imageUrl ? (
+          <img 
+            src={imageUrl} 
+            alt="Profilový obrázok"
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full bg-primary/20 flex items-center justify-center">
+            <User className={`${iconSizes[size]} text-primary`} />
+          </div>
+        )}
+        
+        {/* Camera overlay on hover */}
+        {editable && !isUploading && (
+          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-full">
+            <Camera className="w-6 h-6 text-white" />
+          </div>
+        )}
+        
+        {/* Loading spinner */}
+        {isUploading && (
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-full">
+            <Loader2 className="w-6 h-6 text-white animate-spin" />
+          </div>
+        )}
+      </button>
+      
+      {editable && (
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/gif"
+          onChange={handleFileChange}
+          className="hidden"
+          data-testid="input-avatar-file"
+        />
+      )}
+    </div>
+  );
+}
+
+// Loading Skeleton Component
+function ProfileSkeleton() {
+  return (
+    <DiaryLayout>
+      <div className="p-6">
+        <div className="max-w-4xl mx-auto space-y-8">
+          {/* Header Skeleton */}
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <Skeleton className="h-8 w-48" />
+              <Skeleton className="h-4 w-72" />
+            </div>
+            <Skeleton className="h-10 w-32" />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Profile Summary Skeleton */}
+            <Card className="lg:col-span-1">
+              <CardHeader className="text-center">
+                <div className="mx-auto mb-4">
+                  <Skeleton className="w-24 h-24 rounded-full" />
+                </div>
+                <Skeleton className="h-6 w-40 mx-auto" />
+                <Skeleton className="h-4 w-48 mx-auto mt-2" />
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-6 w-20" />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-4 w-12" />
+                  <Skeleton className="h-4 w-16" />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Profile Form Skeleton */}
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <Skeleton className="h-6 w-32" />
+                <Skeleton className="h-4 w-48 mt-2" />
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="flex items-center gap-4">
+                  <Skeleton className="w-20 h-20 rounded-full" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-4 w-48" />
+                  </div>
+                </div>
+                <Skeleton className="h-px w-full" />
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-10 w-full" />
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </DiaryLayout>
+  );
+}
 
 export default function Profile() {
   const { user } = useAuth();
@@ -45,9 +220,10 @@ export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [profileImage, setProfileImage] = useState<File | null>(null);
 
-  // Check premium status
-  const { data: premiumStatus } = useQuery<{ isPremium: boolean }>({
+  // Check premium status with proper loading state
+  const { data: premiumStatus, isLoading: isPremiumLoading } = useQuery<{ isPremium: boolean }>({
     queryKey: ["/api/auth/premium-status"],
+    enabled: !!user,
   });
   const isPremium = premiumStatus?.isPremium || false;
 
@@ -57,23 +233,36 @@ export default function Profile() {
       firstName: user?.firstName || "",
       lastName: user?.lastName || "",
       nickname: user?.nickname || "",
-      email: user?.email || "",
       facebookUrl: user?.facebookUrl || "",
       instagramUrl: user?.instagramUrl || "",
     }
   });
 
-  // Update profile mutation
+  // Sync form with user data when it changes
+  useEffect(() => {
+    if (user) {
+      form.reset({
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        nickname: user.nickname || "",
+        facebookUrl: user.facebookUrl || "",
+        instagramUrl: user.instagramUrl || "",
+      });
+    }
+  }, [user, form]);
+
+  // Update profile mutation with normalized data
   const updateProfileMutation = useMutation({
     mutationFn: async (data: ProfileForm) => {
-      const response = await apiRequest("PATCH", "/api/auth/profile", data);
+      const normalizedData = normalizeFormData(data);
+      const response = await apiRequest("PATCH", "/api/auth/profile", normalizedData);
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
-        title: "Profil aktualizovaný!",
-        description: "Vaše údaje boli úspešne uložené.",
+        title: "Profil uložený",
+        description: "Zmeny sú aktívne.",
       });
       setIsEditing(false);
     },
@@ -87,7 +276,7 @@ export default function Profile() {
     }
   });
 
-  // Profile image upload mutation
+  // Profile image upload mutation with auto-upload
   const uploadImageMutation = useMutation({
     mutationFn: async (file: File) => {
       const formData = new FormData();
@@ -123,6 +312,16 @@ export default function Profile() {
     }
   });
 
+  // Auto-upload when file is selected from summary card
+  const handleAvatarFileSelect = (file: File) => {
+    uploadImageMutation.mutate(file);
+  };
+
+  // Handle file select in form (shows preview first)
+  const handleFormFileSelect = (file: File) => {
+    setProfileImage(file);
+  };
+
   const onSubmit = (data: ProfileForm) => {
     updateProfileMutation.mutate(data);
   };
@@ -132,33 +331,16 @@ export default function Profile() {
       firstName: user?.firstName || "",
       lastName: user?.lastName || "",
       nickname: user?.nickname || "",
-      email: user?.email || "",
       facebookUrl: user?.facebookUrl || "",
       instagramUrl: user?.instagramUrl || "",
     });
+    setProfileImage(null);
     setIsEditing(false);
   };
 
+  // Show skeleton while loading
   if (!user) {
-    return (
-      <DiaryLayout>
-        <div className="p-6">
-          <div className="max-w-2xl mx-auto">
-            <Card>
-              <CardContent className="p-8 text-center">
-                <UserCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-foreground mb-2">
-                  Načítavam profil...
-                </h3>
-                <p className="text-muted-foreground">
-                  Prosím počkajte, kým sa načíta váš profil.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </DiaryLayout>
-    );
+    return <ProfileSkeleton />;
   }
 
   return (
@@ -190,17 +372,16 @@ export default function Profile() {
             <Card className="lg:col-span-1">
               <CardHeader className="text-center">
                 <div className="mx-auto mb-4">
-                  {user.profileImageUrl ? (
-                    <img 
-                      src={user.profileImageUrl} 
-                      alt="Profilový obrázok"
-                      className="w-24 h-24 rounded-full object-cover border-4 border-primary/20"
-                    />
-                  ) : (
-                    <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center border-4 border-primary/20">
-                      <User className="w-12 h-12 text-primary" />
-                    </div>
-                  )}
+                  <ProfileAvatar
+                    imageUrl={user.profileImageUrl}
+                    size="lg"
+                    editable={true}
+                    isUploading={uploadImageMutation.isPending}
+                    onFileSelect={handleAvatarFileSelect}
+                  />
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Klikni pre zmenu
+                  </p>
                 </div>
                 <CardTitle className="text-xl">
                   {user.firstName && user.lastName 
@@ -216,15 +397,19 @@ export default function Profile() {
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Status</span>
-                  <Badge 
-                    variant="secondary" 
-                    className={isPremium 
-                      ? "bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30" 
-                      : "bg-gray-500/20 text-gray-600 dark:text-gray-400 border-gray-500/30"
-                    }
-                  >
-                    {isPremium ? "⭐ PREMIUM" : "FREE"}
-                  </Badge>
+                  {isPremiumLoading ? (
+                    <Skeleton className="h-6 w-20" />
+                  ) : (
+                    <Badge 
+                      variant="secondary" 
+                      className={isPremium 
+                        ? "bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30" 
+                        : "bg-gray-500/20 text-gray-600 dark:text-gray-400 border-gray-500/30"
+                      }
+                    >
+                      {isPremium ? "⭐ PREMIUM" : "FREE"}
+                    </Badge>
+                  )}
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Rola</span>
@@ -290,60 +475,36 @@ export default function Profile() {
               <CardContent>
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    {/* Profile Image Upload */}
+                    {/* Profile Image Upload - in form */}
                     <div className="space-y-4">
                       <div className="flex items-center gap-4">
-                        <div className="w-20 h-20 rounded-full bg-muted overflow-hidden">
-                          {user.profileImageUrl ? (
-                            <img
-                              src={user.profileImageUrl}
-                              alt="Profilový obrázok"
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <UserCircle className="w-12 h-12 text-muted-foreground" />
-                            </div>
-                          )}
-                        </div>
+                        <ProfileAvatar
+                          imageUrl={user.profileImageUrl}
+                          size="md"
+                          editable={isEditing}
+                          isUploading={uploadImageMutation.isPending}
+                          onFileSelect={handleFormFileSelect}
+                        />
                         <div className="flex-1">
                           <h4 className="text-sm font-medium text-foreground">Profilový obrázok</h4>
-                          <p className="text-sm text-muted-foreground">Nahrajte svoj profilový obrázok</p>
+                          <p className="text-sm text-muted-foreground">
+                            {isEditing ? "Klikni na obrázok pre zmenu" : "Nahrajte svoj profilový obrázok"}
+                          </p>
                         </div>
-                        {isEditing && (
-                          <div className="flex gap-2">
-                            <Input
-                              type="file"
-                              accept="image/*"
-                              onChange={(e) => setProfileImage(e.target.files?.[0] || null)}
-                              className="hidden"
-                              id="profile-image-input"
-                              data-testid="input-profile-image"
-                            />
-                            <Button 
-                              type="button" 
-                              variant="outline" 
-                              onClick={() => document.getElementById('profile-image-input')?.click()}
-                            >
-                              <Camera className="w-4 h-4 mr-2" />
-                              Zmeniť
-                            </Button>
-                            {profileImage && (
-                              <Button
-                                type="button"
-                                onClick={() => uploadImageMutation.mutate(profileImage)}
-                                disabled={uploadImageMutation.isPending}
-                                data-testid="button-upload-image"
-                              >
-                                {uploadImageMutation.isPending ? (
-                                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                ) : (
-                                  <Save className="w-4 h-4 mr-2" />
-                                )}
-                                Nahrať
-                              </Button>
+                        {isEditing && profileImage && (
+                          <Button
+                            type="button"
+                            onClick={() => uploadImageMutation.mutate(profileImage)}
+                            disabled={uploadImageMutation.isPending}
+                            data-testid="button-upload-image"
+                          >
+                            {uploadImageMutation.isPending ? (
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            ) : (
+                              <Save className="w-4 h-4 mr-2" />
                             )}
-                          </div>
+                            Nahrať
+                          </Button>
                         )}
                       </div>
                       {profileImage && (
@@ -418,29 +579,25 @@ export default function Profile() {
                       )}
                     />
 
-                    {/* Email */}
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="email"
-                              placeholder="vas.email@example.com"
-                              data-testid="input-email"
-                              disabled={!isEditing}
-                              {...field} 
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Emailová adresa pre prihlásenie a komunikáciu
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    {/* Email - Read Only */}
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <FormLabel className="text-sm font-medium">Email</FormLabel>
+                        <Lock className="w-3 h-3 text-muted-foreground" />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Input 
+                          type="email"
+                          value={user.email}
+                          disabled
+                          className="bg-muted"
+                          data-testid="input-email"
+                        />
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Pre zmenu emailu kontaktujte podporu
+                      </p>
+                    </div>
 
                     <Separator />
 
@@ -527,7 +684,7 @@ export default function Profile() {
                             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                           )}
                           <Save className="w-4 h-4 mr-2" />
-                          Uložiť zmeny
+                          Uložiť profil
                         </Button>
                       </div>
                     )}
