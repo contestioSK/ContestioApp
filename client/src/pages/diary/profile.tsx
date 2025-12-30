@@ -23,8 +23,14 @@ import {
   Shield,
   Calendar,
   ExternalLink,
-  Lock
+  Lock,
+  Sparkles,
+  BarChart3,
+  Download,
+  Target,
+  ChevronDown
 } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { SiFacebook, SiInstagram } from "react-icons/si";
 import DiaryLayout from "@/components/DiaryLayout";
 
@@ -218,6 +224,7 @@ export default function Profile() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
+  const [showTechDetails, setShowTechDetails] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [profileImage, setProfileImage] = useState<File | null>(null);
 
@@ -396,20 +403,34 @@ export default function Profile() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Status</span>
-                  {isPremiumLoading ? (
-                    <Skeleton className="h-6 w-20" />
-                  ) : (
-                    <Badge 
-                      variant="secondary" 
-                      className={isPremium 
-                        ? "bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30" 
-                        : "bg-gray-500/20 text-gray-600 dark:text-gray-400 border-gray-500/30"
-                      }
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Status</span>
+                    {isPremiumLoading ? (
+                      <Skeleton className="h-6 w-20" />
+                    ) : (
+                      <Badge 
+                        variant="secondary" 
+                        className={isPremium 
+                          ? "bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30" 
+                          : "bg-gray-500/20 text-gray-600 dark:text-gray-400 border-gray-500/30"
+                        }
+                      >
+                        {isPremium ? "⭐ PREMIUM" : "FREE"}
+                      </Badge>
+                    )}
+                  </div>
+                  {!isPremium && !isPremiumLoading && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full gap-2 border-amber-500/30 text-amber-600 hover:bg-amber-500/10"
+                      onClick={() => window.location.href = '/diary/premium'}
+                      data-testid="button-unlock-premium"
                     >
-                      {isPremium ? "⭐ PREMIUM" : "FREE"}
-                    </Badge>
+                      <Sparkles className="w-4 h-4" />
+                      Odomknúť plný výkon
+                    </Button>
                   )}
                 </div>
                 <div className="flex items-center justify-between">
@@ -459,6 +480,36 @@ export default function Profile() {
                     </div>
                   </>
                 )}
+
+                {/* PREMIUM Features Teaser - only for FREE users */}
+                {!isPremium && !isPremiumLoading && (
+                  <>
+                    <Separator className="my-4" />
+                    <div className="space-y-3">
+                      <h4 className="text-sm font-medium text-foreground flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-amber-500" />
+                        PREMIUM funkcie
+                      </h4>
+                      <div className="space-y-2 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-2 opacity-60">
+                          <Lock className="w-3 h-3" />
+                          <BarChart3 className="w-4 h-4" />
+                          <span>Pokročilé štatistiky</span>
+                        </div>
+                        <div className="flex items-center gap-2 opacity-60">
+                          <Lock className="w-3 h-3" />
+                          <Download className="w-4 h-4" />
+                          <span>Export úlovkov</span>
+                        </div>
+                        <div className="flex items-center gap-2 opacity-60">
+                          <Lock className="w-3 h-3" />
+                          <Target className="w-4 h-4" />
+                          <span>Neobmedzené ciele</span>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
 
@@ -474,10 +525,15 @@ export default function Profile() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
+                {/* Motivational text for FREE users */}
+                {!isPremium && !isPremiumLoading && (
+                  <p className="text-sm text-muted-foreground mb-4 p-3 bg-muted/50 rounded-lg">
+                    Vyplnený profil zvyšuje dôveryhodnosť v súťažiach a leaderboards.
+                  </p>
+                )}
+                
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    <Separator />
-
                     {/* First Name */}
                     <FormField
                       control={form.control}
@@ -553,14 +609,17 @@ export default function Profile() {
                       <div className="flex items-center gap-2">
                         <Input 
                           type="email"
-                          value={user.email}
+                          value={user.email || ""}
                           disabled
                           className="bg-muted"
                           data-testid="input-email"
                         />
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        Pre zmenu emailu kontaktujte podporu
+                        {isPremium 
+                          ? "Pre zmenu emailu kontaktujte podporu"
+                          : "Zmenu emailu umožňujeme iba PREMIUM používateľom z bezpečnostných dôvodov."
+                        }
                       </p>
                     </div>
 
@@ -661,43 +720,58 @@ export default function Profile() {
             </Card>
           </div>
 
-          {/* Account Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Informácie o účte</CardTitle>
-              <CardDescription>
-                Technické detaily vášho účtu
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h4 className="font-medium text-foreground mb-2">ID používateľa</h4>
-                  <p className="text-sm text-muted-foreground font-mono bg-muted p-2 rounded">
-                    {user.id}
-                  </p>
-                </div>
-                <div>
-                  <h4 className="font-medium text-foreground mb-2">Email overený</h4>
-                  <Badge variant={user.emailVerified ? "default" : "secondary"}>
-                    {user.emailVerified ? "Overený" : "Neoverený"}
-                  </Badge>
-                </div>
-                <div>
-                  <h4 className="font-medium text-foreground mb-2">Posledná aktualizácia</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {user.updatedAt ? new Date(user.updatedAt).toLocaleString('sk-SK') : 'Neznámy'}
-                  </p>
-                </div>
-                <div>
-                  <h4 className="font-medium text-foreground mb-2">Stav účtu</h4>
-                  <Badge variant={user.active ? "default" : "destructive"}>
-                    {user.active ? "Aktívny" : "Neaktívny"}
-                  </Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Account Information - Collapsible */}
+          <Collapsible open={showTechDetails} onOpenChange={setShowTechDetails}>
+            <Card>
+              <CardHeader className="pb-3">
+                <CollapsibleTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full flex items-center justify-between p-0 h-auto hover:bg-transparent"
+                    data-testid="button-toggle-tech-details"
+                  >
+                    <div className="text-left">
+                      <CardTitle className="text-base">Technické detaily</CardTitle>
+                      <CardDescription className="text-sm">
+                        Informácie o vašom účte
+                      </CardDescription>
+                    </div>
+                    <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform ${showTechDetails ? 'rotate-180' : ''}`} />
+                  </Button>
+                </CollapsibleTrigger>
+              </CardHeader>
+              <CollapsibleContent>
+                <CardContent className="pt-0">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <h4 className="font-medium text-foreground mb-2">ID používateľa</h4>
+                      <p className="text-sm text-muted-foreground font-mono bg-muted p-2 rounded">
+                        {user.id}
+                      </p>
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-foreground mb-2">Email overený</h4>
+                      <Badge variant={user.emailVerified ? "default" : "secondary"}>
+                        {user.emailVerified ? "Overený" : "Neoverený"}
+                      </Badge>
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-foreground mb-2">Posledná aktualizácia</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {user.updatedAt ? new Date(user.updatedAt).toLocaleString('sk-SK') : 'Neznámy'}
+                      </p>
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-foreground mb-2">Stav účtu</h4>
+                      <Badge variant={user.active ? "default" : "destructive"}>
+                        {user.active ? "Aktívny" : "Neaktívny"}
+                      </Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </CollapsibleContent>
+            </Card>
+          </Collapsible>
         </div>
       </div>
     </DiaryLayout>
