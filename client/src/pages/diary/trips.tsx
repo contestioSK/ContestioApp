@@ -91,6 +91,102 @@ const tripFormSchema = z.object({
 
 type TripFormData = z.infer<typeof tripFormSchema>;
 
+// Separate component for location search to prevent parent re-renders
+function LocationSearchField({ 
+  value, 
+  onChange 
+}: { 
+  value: string; 
+  onChange: (value: string) => void;
+}) {
+  const [search, setSearch] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+  
+  const { data: suggestions = [], isLoading } = useQuery<FishingArea[]>({
+    queryKey: [`/api/fishing-areas?search=${encodeURIComponent(search)}`],
+    enabled: search.length >= 2,
+    staleTime: 30000,
+  });
+
+  return (
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={isOpen}
+          className={`w-full justify-between font-normal ${!value && "text-muted-foreground"}`}
+          data-testid="input-trip-location"
+        >
+          {value || "Začnite písať názov revíru..."}
+          <MapPin className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[350px] p-0" align="start">
+        <Command shouldFilter={false}>
+          <div className="flex items-center border-b px-3">
+            <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+            <input
+              type="text"
+              placeholder="Hľadať revír..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground"
+            />
+          </div>
+          <CommandList>
+            {search.length < 2 ? (
+              <CommandEmpty>Zadajte aspoň 2 znaky...</CommandEmpty>
+            ) : isLoading ? (
+              <CommandEmpty>Načítavam...</CommandEmpty>
+            ) : suggestions.length === 0 ? (
+              <CommandEmpty>
+                Žiadne výsledky. 
+                <Button 
+                  variant="link" 
+                  className="p-0 h-auto ml-1"
+                  onClick={() => {
+                    onChange(search);
+                    setIsOpen(false);
+                    setSearch("");
+                  }}
+                >
+                  Použiť "{search}"
+                </Button>
+              </CommandEmpty>
+            ) : (
+              <CommandGroup heading="Revíry">
+                {suggestions.slice(0, 10).map((area) => (
+                  <CommandItem
+                    key={area.id}
+                    value={area.number}
+                    onSelect={() => {
+                      onChange(`${area.number} - ${area.name}`);
+                      setSearch("");
+                      setIsOpen(false);
+                    }}
+                    className="flex flex-col items-start gap-1 py-2"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="font-mono text-xs">{area.number}</Badge>
+                      <span className="font-medium text-sm">{area.name}</span>
+                    </div>
+                    {area.notes && (
+                      <span className="text-xs text-muted-foreground line-clamp-1 pl-1">
+                        {area.notes}
+                      </span>
+                    )}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 export default function DiaryTrips() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
@@ -106,8 +202,6 @@ export default function DiaryTrips() {
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
   const [isChecklistOpen, setIsChecklistOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"active" | "history">("active");
-  const [locationSearch, setLocationSearch] = useState("");
-  const [isLocationPopoverOpen, setIsLocationPopoverOpen] = useState(false);
   
   // Offline functionality
   const { 
@@ -142,13 +236,6 @@ export default function DiaryTrips() {
   });
   
   const isPremium = premiumStatus?.isPremium || false;
-
-  // Fishing areas autocomplete - using project's default fetcher pattern
-  const { data: fishingAreaSuggestions = [], isLoading: isLoadingAreas } = useQuery<FishingArea[]>({
-    queryKey: [`/api/fishing-areas?search=${encodeURIComponent(locationSearch)}`],
-    enabled: locationSearch.length >= 2,
-    staleTime: 30000,
-  });
 
   const form = useForm<TripFormData>({
     resolver: zodResolver(tripFormSchema),
@@ -341,9 +428,6 @@ export default function DiaryTrips() {
     setEditingTrip(trip);
     setCoverImageFile(null);
     setCoverImagePreview(null);
-    // Initialize search empty - existing location is shown in the button
-    // User can start typing to search for a different location if needed
-    setLocationSearch("");
     form.reset({
       name: trip.name,
       startDate: new Date(trip.startDate),
@@ -361,7 +445,6 @@ export default function DiaryTrips() {
     form.reset();
     setCoverImageFile(null);
     setCoverImagePreview(null);
-    setLocationSearch("");
   };
 
   const handleDeleteTrip = async () => {
@@ -556,81 +639,12 @@ export default function DiaryTrips() {
             render={({ field }) => (
               <FormItem className="flex flex-col">
                 <FormLabel>Lokalita</FormLabel>
-                <Popover open={isLocationPopoverOpen} onOpenChange={setIsLocationPopoverOpen}>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={isLocationPopoverOpen}
-                        className={`w-full justify-between font-normal ${!field.value && "text-muted-foreground"}`}
-                        data-testid="input-trip-location"
-                      >
-                        {field.value || "Začnite písať názov revíru..."}
-                        <MapPin className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[350px] p-0" align="start">
-                    <Command shouldFilter={false}>
-                      <div className="flex items-center border-b px-3">
-                        <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-                        <Input
-                          placeholder="Hľadať revír..."
-                          value={locationSearch}
-                          onChange={(e) => setLocationSearch(e.target.value)}
-                          className="h-11 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                        />
-                      </div>
-                      <CommandList>
-                        {locationSearch.length < 2 ? (
-                          <CommandEmpty>Zadajte aspoň 2 znaky...</CommandEmpty>
-                        ) : isLoadingAreas ? (
-                          <CommandEmpty>Načítavam...</CommandEmpty>
-                        ) : fishingAreaSuggestions.length === 0 ? (
-                          <CommandEmpty>
-                            Žiadne výsledky. 
-                            <Button 
-                              variant="link" 
-                              className="p-0 h-auto ml-1"
-                              onClick={() => {
-                                field.onChange(locationSearch);
-                                setIsLocationPopoverOpen(false);
-                              }}
-                            >
-                              Použiť "{locationSearch}"
-                            </Button>
-                          </CommandEmpty>
-                        ) : (
-                          <CommandGroup heading="Revíry">
-                            {fishingAreaSuggestions.slice(0, 10).map((area) => (
-                              <CommandItem
-                                key={area.id}
-                                value={area.number}
-                                onSelect={() => {
-                                  field.onChange(`${area.number} - ${area.name}`);
-                                  setLocationSearch("");
-                                  setIsLocationPopoverOpen(false);
-                                }}
-                                className="flex flex-col items-start gap-1 py-2"
-                              >
-                                <div className="flex items-center gap-2">
-                                  <Badge variant="outline" className="font-mono text-xs">{area.number}</Badge>
-                                  <span className="font-medium text-sm">{area.name}</span>
-                                </div>
-                                {area.notes && (
-                                  <span className="text-xs text-muted-foreground line-clamp-1 pl-1">
-                                    {area.notes}
-                                  </span>
-                                )}
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        )}
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
+                <FormControl>
+                  <LocationSearchField 
+                    value={field.value} 
+                    onChange={field.onChange} 
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
