@@ -647,7 +647,7 @@ export default function DiaryStats() {
                       <Progress 
                         value={percentage} 
                         className="h-2 bg-muted overflow-hidden" 
-                        indicatorClassName={`bg-gradient-to-r from-white to-black border-r border-border`}
+                        indicatorClassName={colors[index] || 'bg-primary'}
                       />
                     </div>
                   );
@@ -687,7 +687,7 @@ export default function DiaryStats() {
                       <Progress 
                         value={range.percentage} 
                         className="h-2 bg-muted overflow-hidden" 
-                        indicatorClassName={`bg-gradient-to-r from-white to-black border-r border-border`}
+                        indicatorClassName={colors[index % colors.length]}
                       />
                     </div>
                   );
