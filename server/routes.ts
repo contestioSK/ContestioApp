@@ -5806,6 +5806,32 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     next();
   }, express.static(path.join(process.cwd(), 'attached_assets')));
 
+  // Helper function to derive unit from goal type
+  function getUnitForGoalType(goalType: string): string {
+    const unitMap: Record<string, string> = {
+      'total_weight': 'kg',
+      'fish_count': 'ks',
+      'trips_count': 'výjazdov',
+      'biggest_fish': 'kg',
+      'personal_best': 'kg',
+      'species_variety': 'druhov',
+      'min_size_catch_count': 'ks',
+      'min_weight_catch_count': 'ks',
+      'spot_catch_count': 'ks',
+      'bait_catch_count': 'ks',
+      'night_trips_count': 'nočných',
+    };
+    return unitMap[goalType] || '';
+  }
+
+  // Transform goal to include derived unit field
+  function transformGoalWithUnit(goal: any) {
+    return {
+      ...goal,
+      unit: getUnitForGoalType(goal.goalType),
+    };
+  }
+
   // Seasonal Goals API endpoints
   // Get all seasons
   app.get('/api/seasons', async (req, res) => {
@@ -5834,7 +5860,9 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     try {
       const userId = getUserId(req);
       const goals = await storage.getUserSeasonGoals(userId);
-      res.json(goals);
+      // Transform goals to include derived unit field
+      const goalsWithUnit = goals.map(transformGoalWithUnit);
+      res.json(goalsWithUnit);
     } catch (error) {
       console.error("[SEASONAL_GOALS] Error fetching user goals:", error);
       res.status(500).json({ message: "Failed to fetch seasonal goals" });
@@ -5888,7 +5916,8 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       // Initialize progress tracking
       await storage.updateGoalProgress(goal.id, 'initialization', 0);
       
-      res.status(201).json(goal);
+      // Return goal with derived unit field
+      res.status(201).json(transformGoalWithUnit(goal));
     } catch (error) {
       console.error("[SEASONAL_GOALS] Error creating goal:", error);
       if (error instanceof z.ZodError) {
@@ -5918,7 +5947,8 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         await storage.updateGoalProgress(id, 'recalculation', 0);
       }
       
-      res.json(updatedGoal);
+      // Return goal with derived unit field
+      res.json(transformGoalWithUnit(updatedGoal));
     } catch (error) {
       console.error("[SEASONAL_GOALS] Error updating goal:", error);
       if (error instanceof z.ZodError) {
@@ -5977,7 +6007,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       const progress = await Promise.all(
         goals.map(async (goal) => {
           const goalProgress = await storage.getGoalProgress(goal.id, userId);
-          return { goal, progress: goalProgress };
+          return { goal: transformGoalWithUnit(goal), progress: goalProgress };
         })
       );
       res.json(progress);

@@ -61,7 +61,7 @@ const goalTypeConfig = {
     unit: "kg",
     description: "Hmotnosť alebo dĺžka najväčšej ulovenej ryby",
     placeholder: "napr. 15.2",
-    hasMultipleFields: true // Special flag for weight + length fields
+    hasMultipleFields: true
   },
   personal_best: {
     icon: Crown,
@@ -70,20 +70,69 @@ const goalTypeConfig = {
     unit: "kg",
     description: "Prekona osobný rekord v hmotnosti alebo dĺžke",
     placeholder: "napr. 20.0"
+  },
+  min_size_catch_count: {
+    icon: Ruler,
+    label: "Počet rýb nad X cm",
+    color: "text-cyan-500",
+    unit: "ks",
+    description: "Počet rýb s dĺžkou nad stanovenú hranicu",
+    placeholder: "napr. 10",
+    hasMinSize: true
+  },
+  min_weight_catch_count: {
+    icon: Weight,
+    label: "Počet rýb nad X kg",
+    color: "text-indigo-500",
+    unit: "ks",
+    description: "Počet rýb s hmotnosťou nad stanovenú hranicu",
+    placeholder: "napr. 5",
+    hasMinWeight: true
+  },
+  spot_catch_count: {
+    icon: MapPin,
+    label: "Počet rýb na konkrétny revír",
+    color: "text-teal-500",
+    unit: "ks",
+    description: "Počet rýb chytených na vybranom revíri",
+    placeholder: "napr. 20",
+    hasSpotName: true
+  },
+  bait_catch_count: {
+    icon: Target,
+    label: "Počet rýb na konkrétnu nástrahu",
+    color: "text-rose-500",
+    unit: "ks",
+    description: "Počet rýb chytených na vybranú nástrahu",
+    placeholder: "napr. 15",
+    hasBaitSelect: true
+  },
+  night_trips_count: {
+    icon: Star,
+    label: "Počet nočných výprav",
+    color: "text-slate-500",
+    unit: "výprav",
+    description: "Počet výprav s rybárčením v noci (22:00 - 05:00)",
+    placeholder: "napr. 10"
   }
 };
 
 // Form Schema
 const createGoalSchema = z.object({
   seasonId: z.string().min(1, "Musíte vybrať sezónu"),
-  goalType: z.enum(['total_weight', 'fish_count', 'trips_count', 'biggest_fish', 'personal_best'], {
+  goalType: z.enum(['total_weight', 'fish_count', 'trips_count', 'biggest_fish', 'personal_best', 'min_size_catch_count', 'min_weight_catch_count', 'spot_catch_count', 'bait_catch_count', 'night_trips_count'], {
     required_error: "Musíte vybrať typ cieľa"
   }),
   targetValue: z.string().min(1, "Cieľová hodnota je povinná").refine((val) => {
     const num = parseFloat(val);
     return !isNaN(num) && num > 0;
   }, "Musí byť kladné číslo"),
-  targetLength: z.string().optional(), // For biggest_fish type - optional length field
+  targetLength: z.string().optional(),
+  minSize: z.string().optional(),
+  minWeight: z.string().optional(),
+  spotName: z.string().optional(),
+  baitId: z.string().optional(),
+  baitName: z.string().optional(),
   title: z.string().min(1, "Názov je povinný").max(100, "Názov môže mať maximálne 100 znakov"),
   description: z.string().optional(),
   isMainGoal: z.boolean().default(false)
@@ -119,6 +168,11 @@ export default function SeasonalGoalsCreate() {
       goalType: undefined,
       targetValue: "",
       targetLength: "",
+      minSize: "",
+      minWeight: "",
+      spotName: "",
+      baitId: "",
+      baitName: "",
       title: "",
       description: "",
       isMainGoal: false
@@ -129,6 +183,10 @@ export default function SeasonalGoalsCreate() {
   const watchedGoalType = form.watch("goalType");
   const watchedTargetValue = form.watch("targetValue");
   const watchedTargetLength = form.watch("targetLength");
+  const watchedMinSize = form.watch("minSize");
+  const watchedMinWeight = form.watch("minWeight");
+  const watchedSpotName = form.watch("spotName");
+  const watchedBaitName = form.watch("baitName");
 
   // Auto-generate title when goal type or target value changes
   useEffect(() => {
@@ -136,14 +194,21 @@ export default function SeasonalGoalsCreate() {
       const config = goalTypeConfig[watchedGoalType];
       let titleText = `${config.label} - ${watchedTargetValue} ${config.unit}`;
       
-      // Add length if provided for biggest_fish
       if (watchedGoalType === 'biggest_fish' && watchedTargetLength) {
         titleText = `${config.label} - ${watchedTargetValue} kg / ${watchedTargetLength} cm`;
+      } else if (watchedGoalType === 'min_size_catch_count' && watchedMinSize) {
+        titleText = `${watchedTargetValue} rýb nad ${watchedMinSize} cm`;
+      } else if (watchedGoalType === 'min_weight_catch_count' && watchedMinWeight) {
+        titleText = `${watchedTargetValue} rýb nad ${watchedMinWeight} kg`;
+      } else if (watchedGoalType === 'spot_catch_count' && watchedSpotName) {
+        titleText = `${watchedTargetValue} rýb na revíri: ${watchedSpotName}`;
+      } else if (watchedGoalType === 'bait_catch_count' && watchedBaitName) {
+        titleText = `${watchedTargetValue} rýb na nástrahu: ${watchedBaitName}`;
       }
       
       form.setValue("title", titleText);
     }
-  }, [watchedGoalType, watchedTargetValue, watchedTargetLength, form]);
+  }, [watchedGoalType, watchedTargetValue, watchedTargetLength, watchedMinSize, watchedMinWeight, watchedSpotName, watchedBaitName, form]);
 
   // Handle goal type selection
   const handleGoalTypeSelect = (goalType: string) => {
@@ -156,10 +221,32 @@ export default function SeasonalGoalsCreate() {
   const createGoalMutation = useMutation({
     mutationFn: async (data: CreateGoalForm) => {
       const goalConfig = goalTypeConfig[data.goalType];
+      
+      const parameters: Record<string, any> = {};
+      if (data.goalType === 'min_size_catch_count' && data.minSize) {
+        parameters.minSize = parseFloat(data.minSize);
+      }
+      if (data.goalType === 'min_weight_catch_count' && data.minWeight) {
+        parameters.minWeight = parseFloat(data.minWeight);
+      }
+      if (data.goalType === 'spot_catch_count' && data.spotName) {
+        parameters.spotName = data.spotName;
+      }
+      if (data.goalType === 'bait_catch_count') {
+        if (data.baitId) parameters.baitId = data.baitId;
+        if (data.baitName) parameters.baitName = data.baitName;
+      }
+      
       const goalData = {
-        ...data,
+        seasonId: data.seasonId,
+        goalType: data.goalType,
+        targetValue: data.targetValue,
+        title: data.title,
+        description: data.description,
+        isMainGoal: data.isMainGoal,
         unit: goalConfig.unit,
-        currentValue: "0" // Initialize with 0
+        currentValue: "0",
+        parameters: Object.keys(parameters).length > 0 ? parameters : undefined
       };
       const response = await apiRequest("POST", "/api/seasonal-goals", goalData);
       return response.json();
@@ -362,6 +449,116 @@ export default function SeasonalGoalsCreate() {
                                 />
                               </FormControl>
                             </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+
+                    {/* Min Size - For min_size_catch_count */}
+                    {selectedGoalType === 'min_size_catch_count' && (
+                      <FormField
+                        control={form.control}
+                        name="minSize"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Minimálna dĺžka (cm)</FormLabel>
+                            <div className="flex gap-2">
+                              <FormControl>
+                                <Input 
+                                  type="number" 
+                                  step="1"
+                                  placeholder="napr. 50"
+                                  data-testid="input-min-size"
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <div className="flex items-center px-3 py-2 bg-muted rounded-md text-sm text-muted-foreground">
+                                cm
+                              </div>
+                            </div>
+                            <FormDescription>
+                              Počítajú sa len ryby s dĺžkou nad touto hranicou
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+
+                    {/* Min Weight - For min_weight_catch_count */}
+                    {selectedGoalType === 'min_weight_catch_count' && (
+                      <FormField
+                        control={form.control}
+                        name="minWeight"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Minimálna hmotnosť (kg)</FormLabel>
+                            <div className="flex gap-2">
+                              <FormControl>
+                                <Input 
+                                  type="number" 
+                                  step="0.1"
+                                  placeholder="napr. 5"
+                                  data-testid="input-min-weight"
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <div className="flex items-center px-3 py-2 bg-muted rounded-md text-sm text-muted-foreground">
+                                kg
+                              </div>
+                            </div>
+                            <FormDescription>
+                              Počítajú sa len ryby s hmotnosťou nad touto hranicou
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+
+                    {/* Spot Name - For spot_catch_count */}
+                    {selectedGoalType === 'spot_catch_count' && (
+                      <FormField
+                        control={form.control}
+                        name="spotName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Názov revíru</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="napr. Dunaj - Štúrovo"
+                                data-testid="input-spot-name"
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Zadajte názov revíru presne tak, ako ho zapisujete pri úlovkoch
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+
+                    {/* Bait - For bait_catch_count */}
+                    {selectedGoalType === 'bait_catch_count' && (
+                      <FormField
+                        control={form.control}
+                        name="baitName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Nástraha</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="napr. Boilies - Strawberry"
+                                data-testid="input-bait-name"
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Zadajte názov nástrahy presne tak, ako ho zapisujete pri úlovkoch
+                            </FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
