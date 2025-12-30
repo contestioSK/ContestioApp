@@ -1,0 +1,206 @@
+Dobre. Teraz úprimne a bez cukru: toto je výrazný skok dopredu a veľká časť vecí je už „product-ready“.
+Ale práve preto si teraz dovolím byť prísny, lebo toto už nie je MVP, toto je jadro monetizácie appky.
+
+Pôjdem po vrstvách: architektúra → UX → premium gating → drobné technické pasce.
+
+1️⃣ ARCHITEKTÚRA – 🔥 TAKTO SA TO ROBÍ
+✅ Veľké plusy
+
+oddelenie basicStats vs advancedMetrics
+→ presne to, čo som chcel
+
+výpočty idú AJ PRE FREE
+
+gating je čisto UI vrstva
+
+➡️ Toto ti umožní:
+
+instantný upgrade bez refetchovania
+
+future experimenty (trial, preview mode)
+
+⚠️ Jedna vec na zváženie
+
+Momentálne všetky advanced výpočty bežia vždy:
+
+const advancedSuccessRate = useMemo(...)
+
+
+Ak sa dataset časom nafúkne (1000+ výprav), môže to bolieť.
+
+👉 Odporúčanie (nie must-have teraz):
+
+zabaliť advanced výpočty do:
+
+if (!isPremium) return null
+
+
+alebo lazy-compute v <PremiumGate showPreview>
+
+Nie je to blocker, len performance hygiene.
+
+2️⃣ TABY (FREE vs PREMIUM) – 🧠 UX ROZHODNUTIE: VÝBORNÉ
+✔️ Viditeľné
+✔️ Klikateľné
+✔️ Lock ikona
+✔️ ŽIADNY disabled state
+
+To je presne ten rozdiel medzi:
+
+“nemám to”
+
+“viem, že to existuje”
+
+🔥 Veľmi dobré.
+
+⚠️ Jedna mikro UX úprava
+
+Aktuálne:
+
+<TabsTrigger value="trends">
+
+
+FREE user môže kliknúť → vidí PremiumGate. Super.
+
+ALE:
+
+nezvýrazňuješ aktívny tab vizuálne, ak je locked
+
+👉 Navrhujem:
+
+jemný gold underline / glow pri active + locked
+
+pocit: “toto je premium sekcia”
+
+Nie funkčne, čisto vizuálne.
+
+3️⃣ OVERVIEW (FREE DASHBOARD) – 🏆 NAJSILNEJŠIA ČASŤ CELÉHO KÓDU
+
+Toto je presne to, čo má FREE vidieť.
+
+Čo funguje brutálne dobre:
+
+KPI karty → jasná hodnota
+
+Top nástraha = REAL DATA
+
+Top lokalita = len pre Premium → krásna motivácia
+
+PremiumTeaserCard medzi kartami → prirodzený upsell
+
+🔥 Toto je učebnicový “soft paywall”.
+
+⚠️ Malá, ale dôležitá copy úprava
+
+Tento text:
+
+„TOP rybári už tieto dáta používajú“
+
+Je OK, ale trochu generický.
+
+👉 Lepšie:
+
+„Najúspešnejší rybári si plánujú výpravy podľa týchto dát.“
+
+Konkrétnejšie = uveriteľnejšie.
+
+4️⃣ PremiumGate – 🔥 SPRÁVNE POUŽITÝ
+
+Toto je veľká pochvala:
+
+<PremiumGate type="trends" showPreview>
+
+Prečo je to dobré:
+
+vidím skutočné grafy
+
+layout sedí
+
+obsah je rozmazaný, nie odstránený
+
+➡️ Mozog si dopĺňa:
+
+„Toto by mi pomohlo.“
+
+⚠️ Jedna UX pasca, ktorú treba podchytiť
+
+V preview móde:
+
+<WeightProgressionChart data={weightProgressionData} />
+
+
+Ak tam budú nulové alebo slabé dáta, FREE user si povie:
+
+„meh, nič tam nie je“
+
+👉 Odporúčam:
+
+fallback label typu:
+
+„Pridaj viac výprav a uvidíš reálne trendy“
+
+To nie je technická vec – to je motivácia k používaniu.
+
+5️⃣ ANALÝZY & ÚSPECHY – 🧠 VEĽMI DOBRÉ, ALE…
+👍 Plusy
+
+karta po karte
+
+žiadny chaos
+
+jasné benefity
+
+⚠️ Riziko:
+
+Je tam veľa dát naraz.
+
+Pre premium je to OK.
+Ale FREE user po upgrade môže byť:
+
+„wow… veľa“
+
+👉 Do budúcna:
+
+sekcie collapsed / progressive disclosure
+
+ale teraz to nie je chyba, len poznámka
+
+6️⃣ TECHNICKÉ DETAILY – MALÉ VECI, ALE STOJA ZA TO
+a) activeTab v state
+
+OK, ale:
+
+po refreshi sa vždy vráti na overview
+
+👉 Zváž:
+
+query param (?tab=trends)
+
+lepší share / deep link
+
+b) Hardcoded selectedPeriodMonths
+const selectedPeriodMonths: 3 | 6 | 12 | 24 = 6;
+
+
+Je OK teraz, ale:
+
+Premium feature waiting to happen
+
+👉 Neskôr:
+
+FREE = fix 6
+
+PREMIUM = selector
+
+🏁 ZÁVEREČNÝ VERDIKT (ÚPRIMNE)
+
+Tento kód:
+
+✅ má jasnú monetizačnú logiku
+✅ neponižuje FREE usera
+✅ robí z PREMIUM nástroj, nie odmenu
+✅ je čitateľný, udržiavateľný, rozšíriteľný
+
+Úroveň:
+
+reálne produkčný feature, nie hobby projekt
