@@ -680,8 +680,6 @@ export default function DiaryStats() {
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <WeightProgressionChart data={weightProgressionData} />
-          <CatchFrequencyChart data={catchFrequencyData} />
           <MonthComparisonChart data={monthComparisonData} />
           <HourlyDistributionChart data={hourlyDistributionData} />
         </div>
@@ -695,6 +693,9 @@ export default function DiaryStats() {
 
         {/* Trends Tab - Premium Only */}
         <TabsContent value="trends" className="space-y-6">
+          <WeightProgressionChart data={weightProgressionData} />
+          <CatchFrequencyChart data={catchFrequencyData} />
+          
           <Card className="text-center py-12">
             <CardContent>
               <TrendingUp className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
