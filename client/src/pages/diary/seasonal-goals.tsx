@@ -36,8 +36,10 @@ import {
   Zap,
   Edit,
   Trash2,
-  History
+  History,
+  Lock
 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useLocation } from "wouter";
 import DiaryLayout from "@/components/DiaryLayout";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -67,6 +69,13 @@ interface SeasonGoal {
   completedAt?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+interface GoalLimit {
+  canCreate: boolean;
+  currentCount: number;
+  limit: number; // -1 means unlimited (premium)
+  isPremium: boolean;
 }
 
 // Circular Progress Component
@@ -227,6 +236,12 @@ export default function SeasonalGoals() {
     enabled: !!user
   });
 
+  // Fetch goal limit status
+  const { data: goalLimit } = useQuery<GoalLimit>({
+    queryKey: ["/api/seasonal-goals/limit"],
+    enabled: !!user
+  });
+
   // Set selected season to current season by default
   useEffect(() => {
     if (currentSeason && !selectedSeasonId) {
@@ -246,6 +261,7 @@ export default function SeasonalGoals() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/seasonal-goals"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/seasonal-goals/limit"] });
       toast({
         title: "🗑️ Cieľ zmazaný",
         description: "Cieľ bol úspešne odstránený.",
@@ -327,14 +343,50 @@ export default function SeasonalGoals() {
                 </Select>
               )}
               {!isViewingHistoricalSeason && (
-                <Button 
-                  onClick={() => setLocation("/diary/seasonal-goals/create")}
-                  data-testid="button-create-goal"
-                  className="bg-primary hover:bg-primary/90 w-full sm:w-auto"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  <span className="sm:inline">Vytvoriť Cieľ</span>
-                </Button>
+                <div className="flex flex-col items-end gap-2 w-full sm:w-auto">
+                  {/* Goal limit indicator for FREE users only */}
+                  {goalLimit && !goalLimit.isPremium && (
+                    <div className="text-xs text-muted-foreground text-right">
+                      FREE účet: {goalLimit.currentCount} / {goalLimit.limit} cieľov
+                    </div>
+                  )}
+                  {goalLimit && !goalLimit.canCreate ? (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          disabled
+                          data-testid="button-create-goal-disabled"
+                          className="bg-muted text-muted-foreground cursor-not-allowed w-full sm:w-auto"
+                        >
+                          <Lock className="w-4 h-4 mr-2" />
+                          <span className="sm:inline">Limit dosiahnutý</span>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="max-w-xs">
+                        <p className="text-sm">
+                          Dosiahol si maximálny počet cieľov ({goalLimit.limit}) pre FREE účet.
+                        </p>
+                        <Button 
+                          size="sm" 
+                          className="mt-2 w-full"
+                          onClick={() => setLocation("/pricing")}
+                        >
+                          <Crown className="w-4 h-4 mr-2" />
+                          Prejsť na PREMIUM
+                        </Button>
+                      </TooltipContent>
+                    </Tooltip>
+                  ) : (
+                    <Button 
+                      onClick={() => setLocation("/diary/seasonal-goals/create")}
+                      data-testid="button-create-goal"
+                      className="bg-primary hover:bg-primary/90 w-full sm:w-auto"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      <span className="sm:inline">Vytvoriť Cieľ</span>
+                    </Button>
+                  )}
+                </div>
               )}
             </div>
           </div>

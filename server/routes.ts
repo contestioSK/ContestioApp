@@ -5841,6 +5841,22 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
+  // Get goal limit status for current season
+  app.get('/api/seasonal-goals/limit', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const currentSeason = await storage.getCurrentSeason();
+      if (!currentSeason) {
+        return res.status(400).json({ message: "No active season found" });
+      }
+      const limitCheck = await storage.checkSeasonGoalLimit(userId, currentSeason.id);
+      res.json(limitCheck);
+    } catch (error) {
+      console.error("[SEASONAL_GOALS] Error fetching goal limit:", error);
+      res.status(500).json({ message: "Failed to fetch goal limit" });
+    }
+  });
+
   // Create new seasonal goal
   app.post('/api/seasonal-goals', isAuthenticated, async (req: any, res) => {
     try {
@@ -5855,7 +5871,10 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       const limitCheck = await storage.checkSeasonGoalLimit(userId, currentSeason.id);
       if (!limitCheck.canCreate) {
         return res.status(403).json({ 
-          message: "You have reached the goal limit for your plan. Upgrade to Premium for unlimited goals." 
+          message: `Dosiahol si maximálny počet cieľov pre FREE účet (${limitCheck.currentCount} / ${limitCheck.limit}). Pre neobmedzené ciele prejdi na PREMIUM.`,
+          limitReached: true,
+          currentCount: limitCheck.currentCount,
+          limit: limitCheck.limit
         });
       }
 
