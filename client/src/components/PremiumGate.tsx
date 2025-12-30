@@ -57,14 +57,14 @@ export function PremiumGate({ type, children, showPreview = false }: PremiumGate
   const content = gateContent[type];
 
   return (
-    <div className="relative">
+    <div className="relative min-h-[400px] overflow-hidden">
       {showPreview && children && (
-        <div className="blur-sm opacity-40 pointer-events-none select-none">
+        <div className="blur-sm opacity-40 pointer-events-none select-none max-h-[350px] overflow-hidden">
           {children}
         </div>
       )}
       
-      <div className={`${showPreview ? 'absolute inset-0' : ''} flex items-center justify-center`}>
+      <div className={`${showPreview ? 'absolute inset-0 top-0' : ''} flex items-start justify-center pt-8`}>
         <div className="bg-background/95 backdrop-blur-sm rounded-2xl p-8 max-w-md text-center shadow-lg border border-border">
           <div className="flex justify-center mb-4">
             <div className="p-4 bg-muted/50 rounded-2xl">
