@@ -640,24 +640,6 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
           </div>
         </div>
 
-        {/* Catch Limit Counter for FREE users */}
-        {!isPremium && catchLimits && catchLimits.limit > 0 && (
-          <div 
-            className="fixed bottom-20 right-24 md:bottom-6 md:right-24 z-50 px-3 py-1.5 rounded-full bg-slate-800/90 backdrop-blur-sm border border-slate-700 shadow-lg"
-            data-testid="catch-limit-counter"
-          >
-            <span className={`text-sm font-medium ${
-              catchLimits.currentCount >= catchLimits.limit 
-                ? 'text-red-400' 
-                : catchLimits.currentCount >= catchLimits.limit * 0.8 
-                  ? 'text-yellow-400' 
-                  : 'text-slate-300'
-            }`}>
-              {catchLimits.currentCount}/{catchLimits.limit} úlovkov
-            </span>
-          </div>
-        )}
-
         {/* Floating Action Button for Quick Catch Entry */}
         <TooltipProvider delayDuration={300}>
           <Tooltip>
@@ -679,10 +661,13 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                 )}
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="left" className="bg-popover text-popover-foreground border shadow-md">
-              <p>{!isPremium && catchLimits && !catchLimits.canCreate 
-                ? "Limit úlovkov dosiahnutý - prejdite na Premium" 
-                : "Pridať nový úlovok"}</p>
+            <TooltipContent side="left" className="bg-popover text-popover-foreground border shadow-md px-3 py-2">
+              <p className="font-medium">{!isPremium && catchLimits && !catchLimits.canCreate 
+                ? "Limit dosiahnutý" 
+                : "Pridať úlovok"}</p>
+              {!isPremium && catchLimits && !catchLimits.canCreate && (
+                <p className="text-xs text-muted-foreground mt-0.5">Klikni pre Premium</p>
+              )}
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
