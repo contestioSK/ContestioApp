@@ -1,13 +1,15 @@
 import { useState, useMemo, Fragment } from "react";
 import DiaryLayout from "@/components/DiaryLayout";
-import { Search, Shield, Ruler, Clock, AlertCircle } from "lucide-react";
+import { Search, Shield, Ruler, Clock, AlertCircle, MapPin, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Badge } from "@/components/ui/badge";
+import { useQuery } from "@tanstack/react-query";
+import type { FishingArea } from "@shared/schema";
 
 // Typy pre karty a tabuľky
-type QuickLinkType = "sizes" | "closedSeasons" | "dailyHours";
+type QuickLinkType = "sizes" | "closedSeasons" | "dailyHours" | "fishingAreas";
 
 interface QuickLinkCard {
   id: QuickLinkType;
@@ -31,6 +33,11 @@ const quickLinks: QuickLinkCard[] = [
     id: "dailyHours",
     icon: Clock,
     title: "Denná Doba Lovu"
+  },
+  {
+    id: "fishingAreas",
+    icon: MapPin,
+    title: "Revíry"
   }
 ];
 
@@ -169,7 +176,19 @@ function HighlightText({ text, query }: { text: string; query: string }) {
 export default function FishingRulesPage() {
   const [activeSection, setActiveSection] = useState<QuickLinkType>("sizes");
   const [searchQuery, setSearchQuery] = useState("");
+  const [areasSearchQuery, setAreasSearchQuery] = useState("");
   const isMobile = useIsMobile();
+
+  // Fetch fishing areas when on that tab with search
+  const { data: fishingAreasData, isLoading: isLoadingAreas } = useQuery<FishingArea[]>({
+    queryKey: ['/api/fishing-areas', { search: areasSearchQuery }],
+    queryFn: async () => {
+      const response = await fetch(`/api/fishing-areas?search=${encodeURIComponent(areasSearchQuery)}`);
+      if (!response.ok) throw new Error('Failed to fetch fishing areas');
+      return response.json();
+    },
+    enabled: activeSection === "fishingAreas" && areasSearchQuery.length >= 2,
+  });
 
   // Filter function for search
   const filterData = <T extends Record<string, any>>(data: T[]): T[] => {
@@ -511,6 +530,122 @@ export default function FishingRulesPage() {
         );
       }
 
+      case "fishingAreas": {
+        // Show instructions when no search
+        if (areasSearchQuery.length < 2) {
+          return (
+            <div className="text-center py-12">
+              <MapPin className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
+              <h3 className="text-lg font-medium text-foreground mb-2">Vyhľadajte rybársky revír</h3>
+              <p className="text-muted-foreground mb-4">
+                Zadajte aspoň 2 znaky do vyhľadávacieho poľa vyššie
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Môžete hľadať podľa čísla revíru (napr. 1-0020-1-1), názvu alebo kľúčových slov v poznámkach
+              </p>
+            </div>
+          );
+        }
+        
+        if (isLoadingAreas) {
+          return (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <span className="ml-3 text-muted-foreground">Načítavam revíry...</span>
+            </div>
+          );
+        }
+
+        const areas = fishingAreasData || [];
+        
+        if (areas.length === 0) {
+          return (
+            <div className="text-center py-12">
+              <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+              <h3 className="text-lg font-medium text-foreground mb-2">Žiadne výsledky</h3>
+              <p className="text-muted-foreground">
+                Pre "{areasSearchQuery}" sme nenašli žiadne revíry
+              </p>
+            </div>
+          );
+        }
+
+        // Mobile Card View
+        if (isMobile) {
+          return (
+            <div className="space-y-3">
+              {areas.map((area, index) => (
+                <Card 
+                  key={area.id} 
+                  className="p-4 bg-muted/30"
+                  data-testid={`card-fishing-area-${index}`}
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <Badge variant="outline" className="font-mono text-xs shrink-0" data-testid={`text-area-number-${index}`}>
+                        {area.number}
+                      </Badge>
+                    </div>
+                    <h4 className="font-semibold text-foreground" data-testid={`text-area-name-${index}`}>
+                      <HighlightText text={area.name} query={areasSearchQuery} />
+                    </h4>
+                    {area.notes && (
+                      <p className="text-sm text-muted-foreground leading-relaxed" data-testid={`text-area-notes-${index}`}>
+                        <HighlightText text={area.notes} query={areasSearchQuery} />
+                      </p>
+                    )}
+                  </div>
+                </Card>
+              ))}
+            </div>
+          );
+        }
+        
+        // Desktop Table View
+        return (
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-sidebar border-b border-sidebar-border">
+                  <th className="px-4 py-4 text-left text-sm font-semibold text-sidebar-foreground w-32">
+                    Číslo
+                  </th>
+                  <th className="px-4 py-4 text-left text-sm font-semibold text-sidebar-foreground w-64">
+                    Názov
+                  </th>
+                  <th className="px-4 py-4 text-left text-sm font-semibold text-sidebar-foreground">
+                    Poznámky
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {areas.map((area, index) => (
+                  <tr 
+                    key={area.id} 
+                    className="border-b border-border hover:bg-sidebar-accent transition-colors"
+                    data-testid={`row-fishing-area-${index}`}
+                  >
+                    <td className="px-4 py-4 text-sm font-mono text-foreground" data-testid={`text-area-number-${index}`}>
+                      <HighlightText text={area.number} query={areasSearchQuery} />
+                    </td>
+                    <td className="px-4 py-4 text-sm text-foreground font-medium" data-testid={`text-area-name-${index}`}>
+                      <HighlightText text={area.name} query={areasSearchQuery} />
+                    </td>
+                    <td className="px-4 py-4 text-sm text-muted-foreground" data-testid={`text-area-notes-${index}`}>
+                      {area.notes ? (
+                        <HighlightText text={area.notes} query={areasSearchQuery} />
+                      ) : (
+                        <span className="italic">-</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        );
+      }
+
       default:
         return null;
     }
@@ -535,16 +670,21 @@ export default function FishingRulesPage() {
           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="Vyhľadať pravidlo alebo druh ryby..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={activeSection === "fishingAreas" 
+              ? "Vyhľadať revír podľa čísla, názvu alebo poznámky..." 
+              : "Vyhľadať pravidlo alebo druh ryby..."}
+            value={activeSection === "fishingAreas" ? areasSearchQuery : searchQuery}
+            onChange={(e) => activeSection === "fishingAreas" 
+              ? setAreasSearchQuery(e.target.value)
+              : setSearchQuery(e.target.value)
+            }
             className="pl-12 h-14 text-lg bg-background border-border"
             data-testid="input-search-rules"
           />
         </div>
 
         {/* Karty pre rýchly prístup */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {quickLinks.map((link) => {
             const Icon = link.icon;
             const isActive = activeSection === link.id;

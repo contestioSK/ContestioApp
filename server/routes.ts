@@ -5765,7 +5765,8 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         const searchLower = search.toLowerCase();
         areas = areas.filter(area => 
           area.number.toLowerCase().includes(searchLower) || 
-          area.name.toLowerCase().includes(searchLower)
+          area.name.toLowerCase().includes(searchLower) ||
+          (area.notes && area.notes.toLowerCase().includes(searchLower))
         );
       }
       
