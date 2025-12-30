@@ -475,45 +475,6 @@ export default function Profile() {
               <CardContent>
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    {/* Profile Image Upload - in form */}
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-4">
-                        <ProfileAvatar
-                          imageUrl={user.profileImageUrl}
-                          size="md"
-                          editable={isEditing}
-                          isUploading={uploadImageMutation.isPending}
-                          onFileSelect={handleFormFileSelect}
-                        />
-                        <div className="flex-1">
-                          <h4 className="text-sm font-medium text-foreground">Profilový obrázok</h4>
-                          <p className="text-sm text-muted-foreground">
-                            {isEditing ? "Klikni na obrázok pre zmenu" : "Nahrajte svoj profilový obrázok"}
-                          </p>
-                        </div>
-                        {isEditing && profileImage && (
-                          <Button
-                            type="button"
-                            onClick={() => uploadImageMutation.mutate(profileImage)}
-                            disabled={uploadImageMutation.isPending}
-                            data-testid="button-upload-image"
-                          >
-                            {uploadImageMutation.isPending ? (
-                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            ) : (
-                              <Save className="w-4 h-4 mr-2" />
-                            )}
-                            Nahrať
-                          </Button>
-                        )}
-                      </div>
-                      {profileImage && (
-                        <p className="text-sm text-muted-foreground">
-                          Vybratý súbor: {profileImage.name}
-                        </p>
-                      )}
-                    </div>
-
                     <Separator />
 
                     {/* First Name */}
