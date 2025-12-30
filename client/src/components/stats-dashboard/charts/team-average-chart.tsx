@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Cell } from "recharts";
 import { Link } from "wouter";
 import { ExternalLink, Trophy, Fish, Scale } from "lucide-react";
+import { getChartColorByIndex } from "@/lib/colors";
 import type { TeamTopAverageData } from "../types";
 
 interface TeamAverageChartProps {
@@ -22,19 +23,9 @@ const chartConfig = {
   },
 };
 
-// Farby pre jednotlivé tímy
+// Farby pre jednotlivé tímy - using design system
 const getTeamColor = (index: number) => {
-  const colors = [
-    'hsl(220, 70%, 60%)',     // modrá
-    'hsl(160, 70%, 50%)',     // tyrkysová
-    'hsl(120, 70%, 50%)',     // zelená
-    'hsl(40, 70%, 60%)',      // oranžová
-    'hsl(0, 70%, 60%)',       // červená
-    'hsl(280, 70%, 60%)',     // fialová
-    'hsl(200, 70%, 55%)',     // svetlá modrá
-    'hsl(80, 70%, 55%)',      // svetlo zelená
-  ];
-  return colors[index % colors.length];
+  return getChartColorByIndex(index);
 };
 
 export function TeamAverageChart({ data, title, description, competitionId }: TeamAverageChartProps) {

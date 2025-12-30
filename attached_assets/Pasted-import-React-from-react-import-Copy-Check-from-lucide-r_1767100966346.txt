@@ -1,0 +1,202 @@
+import React from 'react';
+import { Copy, Check } from "lucide-react";
+
+// Definícia palety podľa Design Systemu
+const PALETTE = [
+  { 
+    id: 1, 
+    name: 'Contestio Lime', 
+    dark: { tailwind: 'bg-lime-500', hex: '#84cc16', text: 'text-lime-500' },
+    light: { tailwind: 'bg-lime-600', hex: '#65a30d', text: 'text-lime-600' },
+    usage: 'Brand, Primárne dáta'
+  },
+  { 
+    id: 2, 
+    name: 'Deep Blue', 
+    dark: { tailwind: 'bg-blue-500', hex: '#3b82f6', text: 'text-blue-500' },
+    light: { tailwind: 'bg-blue-600', hex: '#2563eb', text: 'text-blue-600' },
+    usage: 'Voda, Sekundárne'
+  },
+  { 
+    id: 3, 
+    name: 'Solar Amber', 
+    dark: { tailwind: 'bg-amber-500', hex: '#f59e0b', text: 'text-amber-500' },
+    light: { tailwind: 'bg-amber-600', hex: '#d97706', text: 'text-amber-600' },
+    usage: 'Pozornosť, Teplo'
+  },
+  { 
+    id: 4, 
+    name: 'Royal Purple', 
+    dark: { tailwind: 'bg-purple-500', hex: '#a855f7', text: 'text-purple-500' },
+    light: { tailwind: 'bg-purple-600', hex: '#9333ea', text: 'text-purple-600' },
+    usage: 'Premium, Hĺbka'
+  },
+  { 
+    id: 5, 
+    name: 'Signal Rose', 
+    dark: { tailwind: 'bg-rose-500', hex: '#f43f5e', text: 'text-rose-500' },
+    light: { tailwind: 'bg-rose-600', hex: '#e11d48', text: 'text-rose-600' },
+    usage: 'Kritické, Akcent'
+  },
+  { 
+    id: 6, 
+    name: 'Aqua Cyan', 
+    dark: { tailwind: 'bg-cyan-500', hex: '#06b6d4', text: 'text-cyan-500' },
+    light: { tailwind: 'bg-cyan-600', hex: '#0891b2', text: 'text-cyan-600' },
+    usage: 'Sviežosť, Plytčina'
+  },
+  { 
+    id: 7, 
+    name: 'Forest Emerald', 
+    dark: { tailwind: 'bg-emerald-500', hex: '#10b981', text: 'text-emerald-500' },
+    light: { tailwind: 'bg-emerald-600', hex: '#059669', text: 'text-emerald-600' },
+    usage: 'Príroda, Úspech'
+  },
+  { 
+    id: 8, 
+    name: 'Energy Orange', 
+    dark: { tailwind: 'bg-orange-500', hex: '#f97316', text: 'text-orange-500' },
+    light: { tailwind: 'bg-orange-600', hex: '#ea580c', text: 'text-orange-600' },
+    usage: 'Dynamika, Akcia'
+  },
+  { 
+    id: 9, 
+    name: 'Abyss Indigo', 
+    dark: { tailwind: 'bg-indigo-500', hex: '#6366f1', text: 'text-indigo-500' },
+    light: { tailwind: 'bg-indigo-600', hex: '#4f46e5', text: 'text-indigo-600' },
+    usage: 'Noc, Hlboká voda'
+  },
+  { 
+    id: 10, 
+    name: 'Neon Pink', 
+    dark: { tailwind: 'bg-fuchsia-500', hex: '#d946ef', text: 'text-fuchsia-500' },
+    light: { tailwind: 'bg-fuchsia-600', hex: '#c026d3', text: 'text-fuchsia-600' },
+    usage: 'Moderný Tech'
+  },
+];
+
+const ColorCard = ({ color, mode }: { color: any, mode: 'dark' | 'light' }) => {
+  const data = mode === 'dark' ? color.dark : color.light;
+  
+  return (
+    <div className={`
+      relative group overflow-hidden rounded-2xl transition-all duration-300 hover:-translate-y-1
+      ${mode === 'dark' ? 'bg-slate-900 border border-white/5' : 'bg-white border border-slate-200 shadow-sm'}
+    `}>
+      {/* Color Swatch */}
+      <div className={`h-24 w-full ${data.tailwind} flex items-center justify-center`}>
+        <span className={`
+          opacity-0 group-hover:opacity-100 transition-opacity font-bold text-2xl
+          ${mode === 'dark' ? 'text-slate-950' : 'text-white'}
+        `}>
+          {color.id}
+        </span>
+      </div>
+      
+      {/* Info Content */}
+      <div className="p-4">
+        <div className="flex justify-between items-start mb-1">
+          <h3 className={`font-bold text-sm ${mode === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+            {color.name}
+          </h3>
+          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${mode === 'dark' ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
+            {mode === 'dark' ? '500' : '600'}
+          </span>
+        </div>
+        
+        <p className="text-xs text-slate-500 mb-3">{color.usage}</p>
+        
+        <div className={`
+          flex items-center justify-between text-xs font-mono p-2 rounded-lg
+          ${mode === 'dark' ? 'bg-slate-950 text-slate-400' : 'bg-slate-50 text-slate-600 border border-slate-100'}
+        `}>
+          <span>{data.hex}</span>
+          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: data.hex }} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default function ColorPaletteShowcase() {
+  return (
+    <div className="min-h-screen bg-slate-100 font-sans">
+      
+      {/* DARK MODE SECTION (Simulácia aplikácie) */}
+      <div className="bg-slate-950 p-8 md:p-12 min-h-[50vh]">
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-10">
+            <span className="text-lime-500 font-bold tracking-widest uppercase text-xs mb-2 block">Contestio Design System</span>
+            <h1 className="text-4xl font-black text-white italic uppercase tracking-tighter mb-2">
+              Dark Mode Palette
+            </h1>
+            <p className="text-slate-400 max-w-2xl">
+              Primárna paleta pre aplikáciu. Používa sýte odtiene (500), ktoré na tmavom pozadí (Slate 950) 
+              vytvárajú neónový efekt a zabezpečujú výbornú čitateľnosť grafov.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
+            {PALETTE.map((color) => (
+              <ColorCard key={color.id} color={color} mode="dark" />
+            ))}
+          </div>
+          
+          {/* Chart Simulation Dark */}
+          <div className="mt-12 p-6 bg-slate-900/50 border border-white/5 rounded-3xl">
+            <h3 className="text-sm font-bold text-white mb-6 uppercase tracking-widest">Simulácia Grafu</h3>
+            <div className="flex items-end gap-2 h-32 w-full">
+              {PALETTE.map((color, i) => (
+                <div key={i} className="flex-1 flex flex-col justify-end gap-2 group">
+                  <div 
+                    className={`w-full rounded-t-lg ${color.dark.tailwind} opacity-80 group-hover:opacity-100 transition-all`} 
+                    style={{ height: `${Math.max(20, Math.random() * 100)}%` }} 
+                  />
+                  <div className={`h-1 w-full rounded-full ${color.dark.tailwind}`} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* LIGHT MODE SECTION */}
+      <div className="bg-white p-8 md:p-12 min-h-[50vh]">
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-10">
+             <span className="text-slate-400 font-bold tracking-widest uppercase text-xs mb-2 block">Alternatívny Režim</span>
+            <h1 className="text-4xl font-black text-slate-900 italic uppercase tracking-tighter mb-2">
+              Light Mode Palette
+            </h1>
+            <p className="text-slate-500 max-w-2xl">
+              Optimalizovaná pre biele pozadie. Odtiene sú posunuté na tmavšie (600), 
+              aby sa zachoval dostatočný kontrast a prvky na bielom nezanikali.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
+            {PALETTE.map((color) => (
+              <ColorCard key={color.id} color={color} mode="light" />
+            ))}
+          </div>
+
+          {/* Chart Simulation Light */}
+          <div className="mt-12 p-6 bg-slate-50 border border-slate-200 rounded-3xl">
+            <h3 className="text-sm font-bold text-slate-900 mb-6 uppercase tracking-widest">Simulácia Grafu</h3>
+            <div className="flex items-end gap-2 h-32 w-full">
+              {PALETTE.map((color, i) => (
+                <div key={i} className="flex-1 flex flex-col justify-end gap-2 group">
+                  <div 
+                    className={`w-full rounded-t-lg ${color.light.tailwind} opacity-80 group-hover:opacity-100 transition-all`} 
+                    style={{ height: `${Math.max(20, Math.random() * 100)}%` }} 
+                  />
+                  <div className={`h-1 w-full rounded-full ${color.light.tailwind}`} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
