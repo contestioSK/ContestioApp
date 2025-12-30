@@ -23,6 +23,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import DiaryLayout from "@/components/DiaryLayout";
 import CatchFormDialog from "@/components/diary/CatchFormDialog";
+import { LocationSearchField } from "@/components/LocationSearchField";
 import { getFishTypeLabel, getFishTypeOptions } from "@/utils/fishTypeMapping";
 import { useState, useCallback, useEffect } from "react";
 import useEmblaCarousel from "embla-carousel-react";
@@ -1523,15 +1524,11 @@ export default function DiaryIndex() {
                     <FormItem>
                       <FormLabel>Lokalita *</FormLabel>
                       <FormControl>
-                        <div className="relative">
-                          <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                          <Input 
-                            placeholder="napr. Dunaj - Bratislava" 
-                            className="pl-10"
-                            data-testid="input-quick-location"
-                            {...field} 
-                          />
-                        </div>
+                        <LocationSearchField
+                          value={field.value}
+                          onChange={field.onChange}
+                          testId="input-quick-location"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
