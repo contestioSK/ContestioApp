@@ -1,13 +1,14 @@
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useDiaryOffline } from "@/hooks/use-diary-offline";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useLocation } from "wouter";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
+import type { FishingArea } from "@shared/schema";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { useToast } from "@/hooks/use-toast";
 import { showErrorToast } from "@/lib/errorUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -103,6 +105,8 @@ export default function DiaryTrips() {
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
   const [isChecklistOpen, setIsChecklistOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"active" | "history">("active");
+  const [locationSearch, setLocationSearch] = useState("");
+  const [isLocationPopoverOpen, setIsLocationPopoverOpen] = useState(false);
   
   // Offline functionality
   const { 
@@ -137,6 +141,17 @@ export default function DiaryTrips() {
   });
   
   const isPremium = premiumStatus?.isPremium || false;
+
+  // Fishing areas autocomplete
+  const { data: fishingAreaSuggestions = [], isLoading: isLoadingAreas } = useQuery<FishingArea[]>({
+    queryKey: ['/api/fishing-areas', { search: locationSearch }],
+    queryFn: async () => {
+      const response = await fetch(`/api/fishing-areas?search=${encodeURIComponent(locationSearch)}`);
+      if (!response.ok) throw new Error('Failed to fetch fishing areas');
+      return response.json();
+    },
+    enabled: locationSearch.length >= 2,
+  });
 
   const form = useForm<TripFormData>({
     resolver: zodResolver(tripFormSchema),
@@ -538,11 +553,81 @@ export default function DiaryTrips() {
             control={form.control}
             name="location"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="flex flex-col">
                 <FormLabel>Lokalita</FormLabel>
-                <FormControl>
-                  <Input placeholder="napr. Dunaj - Bratislava" data-testid="input-trip-location" {...field} />
-                </FormControl>
+                <Popover open={isLocationPopoverOpen} onOpenChange={setIsLocationPopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={isLocationPopoverOpen}
+                        className={`w-full justify-between font-normal ${!field.value && "text-muted-foreground"}`}
+                        data-testid="input-trip-location"
+                      >
+                        {field.value || "Začnite písať názov revíru..."}
+                        <MapPin className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[350px] p-0" align="start">
+                    <Command shouldFilter={false}>
+                      <CommandInput 
+                        placeholder="Hľadať revír..." 
+                        value={locationSearch}
+                        onValueChange={(value) => {
+                          setLocationSearch(value);
+                        }}
+                      />
+                      <CommandList>
+                        {locationSearch.length < 2 ? (
+                          <CommandEmpty>Zadajte aspoň 2 znaky...</CommandEmpty>
+                        ) : isLoadingAreas ? (
+                          <CommandEmpty>Načítavam...</CommandEmpty>
+                        ) : fishingAreaSuggestions.length === 0 ? (
+                          <CommandEmpty>
+                            Žiadne výsledky. 
+                            <Button 
+                              variant="link" 
+                              className="p-0 h-auto ml-1"
+                              onClick={() => {
+                                field.onChange(locationSearch);
+                                setIsLocationPopoverOpen(false);
+                              }}
+                            >
+                              Použiť "{locationSearch}"
+                            </Button>
+                          </CommandEmpty>
+                        ) : (
+                          <CommandGroup heading="Revíry">
+                            {fishingAreaSuggestions.slice(0, 10).map((area) => (
+                              <CommandItem
+                                key={area.id}
+                                value={area.number}
+                                onSelect={() => {
+                                  field.onChange(`${area.number} - ${area.name}`);
+                                  setLocationSearch("");
+                                  setIsLocationPopoverOpen(false);
+                                }}
+                                className="flex flex-col items-start gap-1 py-2"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <Badge variant="outline" className="font-mono text-xs">{area.number}</Badge>
+                                  <span className="font-medium text-sm">{area.name}</span>
+                                </div>
+                                {area.notes && (
+                                  <span className="text-xs text-muted-foreground line-clamp-1 pl-1">
+                                    {area.notes}
+                                  </span>
+                                )}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        )}
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
                 <FormMessage />
               </FormItem>
             )}
