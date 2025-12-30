@@ -1390,6 +1390,7 @@ export const fishingAreas = pgTable("fishing_areas", {
   id: serial("id").primaryKey(),
   number: varchar("number", { length: 50 }).notNull().unique(), // e.g., "2-4120-1-1"
   name: varchar("name", { length: 500 }).notNull(), // e.g., "Váh Žilina, MsO..."
+  notes: text("notes"), // Detailed notes about the fishing area from official regulations
   createdAt: timestamp("created_at").defaultNow(),
 });
 
