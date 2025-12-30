@@ -37,7 +37,8 @@ import {
   Edit,
   Trash2,
   History,
-  Lock
+  Lock,
+  Moon
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useLocation } from "wouter";
@@ -58,12 +59,19 @@ interface SeasonGoal {
   id: string;
   userId: string;
   seasonId: string;
-  goalType: 'total_weight' | 'fish_count' | 'trips_count' | 'biggest_fish' | 'species_variety';
+  goalType: 'total_weight' | 'fish_count' | 'trips_count' | 'biggest_fish' | 'species_variety' | 'min_size_catch_count' | 'min_weight_catch_count' | 'spot_catch_count' | 'bait_catch_count' | 'night_trips_count';
   targetValue: string;
   currentValue: string;
   unit: string;
   title: string;
   description?: string;
+  parameters?: {
+    minSize?: number;
+    minWeight?: number;
+    spotName?: string;
+    baitId?: string;
+    baitName?: string;
+  };
   isMainGoal: boolean;
   isCompleted: boolean;
   completedAt?: string;
@@ -166,6 +174,11 @@ function getGoalIcon(goalType: string) {
     case 'trips_count': return MapPin;
     case 'biggest_fish': return Ruler;
     case 'species_variety': return Star;
+    case 'min_size_catch_count': return Ruler;
+    case 'min_weight_catch_count': return Weight;
+    case 'spot_catch_count': return MapPin;
+    case 'bait_catch_count': return Target;
+    case 'night_trips_count': return Moon;
     default: return Target;
   }
 }
@@ -178,6 +191,11 @@ function getGoalColor(goalType: string) {
     case 'trips_count': return 'text-purple-600 dark:text-purple-400';
     case 'biggest_fish': return 'text-orange-600 dark:text-orange-400';
     case 'species_variety': return 'text-pink-600 dark:text-pink-400';
+    case 'min_size_catch_count': return 'text-cyan-600 dark:text-cyan-400';
+    case 'min_weight_catch_count': return 'text-indigo-600 dark:text-indigo-400';
+    case 'spot_catch_count': return 'text-teal-600 dark:text-teal-400';
+    case 'bait_catch_count': return 'text-rose-600 dark:text-rose-400';
+    case 'night_trips_count': return 'text-slate-600 dark:text-slate-400';
     default: return 'text-gray-600 dark:text-gray-400';
   }
 }
@@ -191,6 +209,11 @@ function getGoalTypeLabel(goalType: string) {
     case 'biggest_fish': return 'Najväčšia ryba';
     case 'species_variety': return 'Druhy rýb';
     case 'personal_best': return 'Osobný rekord';
+    case 'min_size_catch_count': return 'Ryby nad veľkosť';
+    case 'min_weight_catch_count': return 'Ryby nad hmotnosť';
+    case 'spot_catch_count': return 'Ryby na revíri';
+    case 'bait_catch_count': return 'Ryby na nástrahu';
+    case 'night_trips_count': return 'Nočné výpravy';
     default: return goalType;
   }
 }
