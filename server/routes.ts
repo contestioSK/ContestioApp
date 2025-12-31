@@ -50,6 +50,7 @@ import path from "path";
 import fs, { existsSync } from "fs";
 import { promises as fsPromises } from "fs";
 import { ImageService, type ProcessedImageResult } from "./image-service";
+import QRCode from "qrcode";
 
 // Setup token generation and verification for competition registration
 // Uses HMAC with a secret derived from SESSION_SECRET
@@ -3148,6 +3149,75 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
+  // QR Code for competition - generates QR linking to competition detail page
+  app.get('/api/competitions/:id/qr', async (req, res) => {
+    try {
+      const competition = await storage.getCompetition(req.params.id);
+      if (!competition) {
+        return res.status(404).json({ message: "Competition not found" });
+      }
+
+      // Get the base URL from request headers or use default
+      const protocol = req.headers['x-forwarded-proto'] || 'https';
+      const host = req.headers.host || 'localhost:5000';
+      const baseUrl = `${protocol}://${host}`;
+      const competitionUrl = `${baseUrl}/competition/${req.params.id}`;
+
+      // Generate QR code as PNG buffer
+      const qrBuffer = await QRCode.toBuffer(competitionUrl, {
+        type: 'png',
+        width: 400,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        },
+        errorCorrectionLevel: 'M'
+      });
+
+      res.setHeader('Content-Type', 'image/png');
+      res.setHeader('Content-Disposition', `inline; filename="qr-competition-${req.params.id}.png"`);
+      res.send(qrBuffer);
+    } catch (error) {
+      console.error("Error generating competition QR code:", error);
+      res.status(500).json({ message: "Failed to generate QR code" });
+    }
+  });
+
+  // QR Code data URL for competition (for embedding in UI)
+  app.get('/api/competitions/:id/qr/data', async (req, res) => {
+    try {
+      const competition = await storage.getCompetition(req.params.id);
+      if (!competition) {
+        return res.status(404).json({ message: "Competition not found" });
+      }
+
+      const protocol = req.headers['x-forwarded-proto'] || 'https';
+      const host = req.headers.host || 'localhost:5000';
+      const baseUrl = `${protocol}://${host}`;
+      const competitionUrl = `${baseUrl}/competition/${req.params.id}`;
+
+      const qrDataUrl = await QRCode.toDataURL(competitionUrl, {
+        width: 400,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        },
+        errorCorrectionLevel: 'M'
+      });
+
+      res.json({ 
+        qrDataUrl, 
+        url: competitionUrl,
+        competitionName: competition.name 
+      });
+    } catch (error) {
+      console.error("Error generating competition QR data:", error);
+      res.status(500).json({ message: "Failed to generate QR code" });
+    }
+  });
+
   // Helper function for admin role check
   function isAdmin(user: any): boolean {
     return user && user.role === 'admin';
@@ -4521,6 +4591,78 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     } catch (error) {
       console.error("Error fetching battle catches:", error);
       res.status(500).json({ message: "Failed to fetch battle catches" });
+    }
+  });
+
+  // QR Code for battle - generates QR linking to battle join/detail page
+  app.get('/api/diary/battles/:id/qr', async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Get battle without auth check - we just need to verify it exists
+      const battle = await db.select().from(diaryBattles).where(eq(diaryBattles.id, id)).limit(1);
+      if (!battle || battle.length === 0) {
+        return res.status(404).json({ message: "Battle not found" });
+      }
+
+      const protocol = req.headers['x-forwarded-proto'] || 'https';
+      const host = req.headers.host || 'localhost:5000';
+      const baseUrl = `${protocol}://${host}`;
+      const battleUrl = `${baseUrl}/diary/battles/${id}`;
+
+      const qrBuffer = await QRCode.toBuffer(battleUrl, {
+        type: 'png',
+        width: 400,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        },
+        errorCorrectionLevel: 'M'
+      });
+
+      res.setHeader('Content-Type', 'image/png');
+      res.setHeader('Content-Disposition', `inline; filename="qr-battle-${id}.png"`);
+      res.send(qrBuffer);
+    } catch (error) {
+      console.error("Error generating battle QR code:", error);
+      res.status(500).json({ message: "Failed to generate QR code" });
+    }
+  });
+
+  // QR Code data URL for battle (for embedding in UI)
+  app.get('/api/diary/battles/:id/qr/data', async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      const battle = await db.select().from(diaryBattles).where(eq(diaryBattles.id, id)).limit(1);
+      if (!battle || battle.length === 0) {
+        return res.status(404).json({ message: "Battle not found" });
+      }
+
+      const protocol = req.headers['x-forwarded-proto'] || 'https';
+      const host = req.headers.host || 'localhost:5000';
+      const baseUrl = `${protocol}://${host}`;
+      const battleUrl = `${baseUrl}/diary/battles/${id}`;
+
+      const qrDataUrl = await QRCode.toDataURL(battleUrl, {
+        width: 400,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        },
+        errorCorrectionLevel: 'M'
+      });
+
+      res.json({ 
+        qrDataUrl, 
+        url: battleUrl,
+        battleName: battle[0].name 
+      });
+    } catch (error) {
+      console.error("Error generating battle QR data:", error);
+      res.status(500).json({ message: "Failed to generate QR code" });
     }
   });
 
