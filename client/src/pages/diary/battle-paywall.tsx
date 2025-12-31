@@ -211,7 +211,7 @@ export default function BattlePaywall() {
             ))}
           </div>
 
-          <div className="text-center fixed bottom-4 md:bottom-6 left-0 right-0 z-40 px-3 md:px-6 pb-safe">
+          <div className="text-center fixed bottom-20 md:bottom-6 left-0 right-0 z-40 px-3 md:px-6">
             <div className="inline-block p-1 md:p-1.5 rounded-xl md:rounded-2xl bg-card/95 backdrop-blur-xl border border-border shadow-2xl max-w-md md:max-w-none mx-auto">
               <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 px-3 md:px-6 py-2 md:py-3">
                  <div className="text-left hidden md:block">
