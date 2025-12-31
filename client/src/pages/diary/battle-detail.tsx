@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Trophy, Plus, AlertCircle, Clock, Fish, CheckCircle2, Medal, Flag, BarChart3, TrendingUp, Award } from "lucide-react";
+import { Trophy, Plus, AlertCircle, Clock, Fish, CheckCircle2, Medal, Flag, BarChart3, TrendingUp, Award, QrCode } from "lucide-react";
+import { QRShareDialog } from "@/components/QRShareDialog";
 import { format, formatDistanceToNow } from "date-fns";
 import { sk } from "date-fns/locale";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -244,6 +245,16 @@ export default function BattleDetail() {
               </p>
             </div>
             <div className="flex gap-2 w-full sm:w-auto">
+              <QRShareDialog 
+                type="battle" 
+                id={id || ""} 
+                name={battle.name}
+                trigger={
+                  <Button size="sm" variant="outline" data-testid="button-qr-battle">
+                    <QrCode className="w-4 h-4" />
+                  </Button>
+                }
+              />
               <Button 
                 onClick={() => setIsAddCatchDialogOpen(true)}
                 size="sm"

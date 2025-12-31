@@ -25,10 +25,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Users, UserPlus, Trash2, Fish, Award, BarChart3, Trophy, FileText, Heart } from "lucide-react";
+import { Users, UserPlus, Trash2, Fish, Award, BarChart3, Trophy, FileText, Heart, QrCode } from "lucide-react";
 import { getSideCompetitionLabels } from "@/lib/utils";
 import type { Competition, Team, Catch } from "@shared/schema";
 import { useFavoriteCompetitions, useToggleFavoriteCompetition } from "@/hooks/useFavorites";
+import { QRShareDialog } from "@/components/QRShareDialog";
 
 // Team registration form schema
 const teamRegistrationSchema = z.object({
@@ -249,6 +250,19 @@ export default function CompetitionDetail() {
             
             {/* Action Buttons */}
             <div className="mt-6 flex flex-wrap justify-center gap-4">
+              
+              {/* QR Share Button */}
+              <QRShareDialog 
+                type="competition" 
+                id={id || ""} 
+                name={competition.name}
+                trigger={
+                  <Button size="lg" variant="outline" data-testid="button-qr-competition">
+                    <QrCode className="w-4 h-4 mr-2" />
+                    QR kód
+                  </Button>
+                }
+              />
               
               {/* Favorite Button */}
               {isAuthenticated && !authLoading && (
