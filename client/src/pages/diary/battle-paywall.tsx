@@ -264,19 +264,6 @@ export default function BattlePaywall() {
               </div>
             ))}
             
-            <div className="text-center pt-8">
-              <p className="text-sm text-muted-foreground mb-4">
-                Pripravený založiť vlastný Battle?
-              </p>
-              <Button 
-                className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white"
-                onClick={() => setLocation('/diary/premium')}
-                data-testid="button-faq-cta"
-              >
-                <Crown className="w-4 h-4 mr-2" />
-                Aktivovať Premium
-              </Button>
-            </div>
           </div>
 
           <div className="text-center fixed bottom-20 md:bottom-6 left-0 right-0 z-40 px-3 md:px-6">
