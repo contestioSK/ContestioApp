@@ -1,8 +1,16 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Crown, Trophy, Users, BarChart3, FileText, Share2, HelpCircle, Eye } from "lucide-react";
+import { 
+  Crown, 
+  Trophy, 
+  Users, 
+  BarChart3, 
+  HelpCircle,
+  Swords,
+  Lock,
+  Zap
+} from "lucide-react";
 import { useLocation } from "wouter";
 import DiaryLayout from "@/components/DiaryLayout";
 
@@ -11,276 +19,219 @@ export default function BattlePaywall() {
 
   const premiumFeatures = [
     {
-      icon: Trophy,
-      title: "Vytvorenie súboja",
-      description: "Založte vlastný Fishing Battle s vlastnými pravidlami"
+      icon: Swords,
+      color: "text-rose-400",
+      bg: "bg-rose-500/10",
+      title: "Vlastná Aréna",
+      description: "Založ Battle s vlastnými pravidlami. Ty určuješ, ako sa hrá."
     },
     {
       icon: Users,
-      title: "Pozvanie kamarátov",
-      description: "Pozvite ďalších Premium užívateľov cez username/email"
+      color: "text-blue-400",
+      bg: "bg-blue-500/10",
+      title: "Squad Mode",
+      description: "Pozvi kamošov jednoduchým odkazom. Aj FREE hráči sa môžu pridať."
     },
     {
       icon: BarChart3,
-      title: "Priebežné výsledky",
-      description: "Rebríček v reálnom čase s grafickým znázornením"
+      color: "text-lime-400",
+      bg: "bg-lime-500/10",
+      title: "Live Rebríček",
+      description: "Sleduj zmeny poradia v reálnom čase. Každý gram rozhoduje."
     },
     {
       icon: Crown,
-      title: "Digitálne trofeje",
-      description: "Získajte medaile a trofeje za víťazstvá"
-    },
-    {
-      icon: FileText,
-      title: "Export výsledkov",
-      description: "Exportujte výsledky ako PDF alebo zdieľajte na sociálne siete"
-    },
-    {
-      icon: Share2,
-      title: "Archív battle",
-      description: "História všetkých battle s víťazstvami a štatistikami"
+      color: "text-amber-400",
+      bg: "bg-amber-500/10",
+      title: "Sieň Slávy",
+      description: "Zbieraj digitálne trofeje a buduj si reputáciu šampióna."
     }
   ];
 
   const battleModes = [
-    "Najväčšia ryba",
-    "Top 3 ryby (váhový priemer)",
-    "Celková hmotnosť úlovkov",
-    "Počet chytených rýb"
+    { title: "Big Fish", desc: "Vyhráva najťažší úlovok", icon: "⚖️" },
+    { title: "Limit 3", desc: "Súčet váhy 3 najťažších rýb", icon: "🏆" },
+    { title: "Total Mayhem", desc: "Celková váha všetkých úlovkov", icon: "Σ" },
+    { title: "Speed Run", desc: "Najviac rýb za časový limit", icon: "⏱️" }
+  ];
+
+  const mockLeaderboard = [
+    { position: 1, name: "Peter K.", score: "12.50 kg", isUser: false },
+    { position: 2, name: "Marek S.", score: "8.35 kg", isUser: false },
+    { position: 3, name: "Ty", score: "6.10 kg", isUser: true },
+    { position: 4, name: "Jano M.", score: "4.20 kg", isUser: false }
   ];
 
   const faqItems = [
-    {
-      question: "Musia mať všetci kamaráti Premium?",
-      answer: "Nie, len zakladateľ battlu musí mať Premium. Pozvaní účastníci môžu byť aj FREE užívatelia - dostanú pozvánku a môžu sa plnohodnotne zúčastniť."
+    { 
+      q: "Musia mať Premium všetci v súboji?", 
+      a: "Nie! Premium potrebuje len zakladateľ (Ty). Všetci tvoji kamoši sa môžu pripojiť zadarmo." 
     },
-    {
-      question: "Čo sa stane keď mi vyprší Premium?",
-      answer: "Vaše aktívne battly dobehnú normálne. Nebudete však môcť vytvárať nové súboje, kým si neobnovíte predplatné. História a štatistiky zostanú zachované."
+    { 
+      q: "Koľko súbojov môžem vytvoriť?", 
+      a: "Neobmedzene. Môžeš mať rozbehnutý Big Fish battle na jednej vode a Total Mayhem na druhej." 
     },
-    {
-      question: "Koľko battleov môžem vytvoriť?",
-      answer: "S Premium môžete vytvoriť neobmedzený počet súbojov. Môžete mať aktívnych viacero battleov naraz s rôznymi skupinami priateľov."
-    },
-    {
-      question: "Ako fungujú notifikácie počas battlu?",
-      answer: "Všetci účastníci dostávajú push notifikácie v reálnom čase - keď niekto chytí rybu, keď sa zmení poradie v rebríčku, alebo keď sa blíži koniec súboja."
-    },
-    {
-      question: "Môžem zrušiť Premium kedykoľvek?",
-      answer: "Áno, predplatné môžete zrušiť kedykoľvek. Premium vám zostane aktívne do konca zaplateného obdobia bez automatického obnovenia."
+    { 
+      q: "Ako funguje pozývanie?", 
+      a: "Pošleš im unikátny kód alebo link. Jedno kliknutie a sú v hre." 
     }
-  ];
-
-  // Mock leaderboard data for preview
-  const mockLeaderboard = [
-    { position: 1, name: "Peter K.", score: "12.5 kg", catches: 5, avatar: "🥇" },
-    { position: 2, name: "Marek S.", score: "8.3 kg", catches: 4, avatar: "🥈" },
-    { position: 3, name: "Jano M.", score: "6.1 kg", catches: 3, avatar: "🥉" },
-    { position: 4, name: "Ty", score: "---", catches: 0, avatar: "👤" }
   ];
 
   return (
     <DiaryLayout>
-      <div className="p-6" data-testid="paywall-fishing-battle">
-        <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-12">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <Trophy className="w-8 h-8 text-yellow-500" />
-              <h1 className="text-4xl font-bold text-foreground">
-                Fishing Battle
-              </h1>
-              <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-                <Crown className="w-4 h-4 mr-1" />
-                PREMIUM
-              </Badge>
-            </div>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Súťažte s kamarátmi v priateľských rybárskych dueloch a zistite, kto je najlepší rybár!
+      <div className="relative pb-24" data-testid="paywall-fishing-battle">
+        
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-purple-600/10 blur-[120px] rounded-full pointer-events-none" />
+        <div className="absolute top-40 right-0 w-64 h-64 bg-lime-500/5 blur-[80px] rounded-full pointer-events-none" />
+
+        <div className="max-w-4xl mx-auto p-6 relative z-10">
+          
+          <div className="text-center mb-16 pt-8">
+            <Badge className="mb-6 bg-purple-500/10 text-purple-400 border border-purple-500/20 px-3 py-1">
+              <Crown className="w-3 h-3 mr-1.5 inline-block" />
+              Contestio Battle League
+            </Badge>
+            
+            <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tight text-foreground mb-6 leading-tight">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-foreground via-muted-foreground to-muted-foreground/50">Vyzvi kamošov</span>
+              <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-lime-400 to-emerald-500">Na súboj</span>
+            </h1>
+            
+            <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto leading-relaxed">
+              Adrenalín z pretekov priamo v tvojom mobile. Založ vlastnú ligu, nastav pravidlá a ukáž, kto je skutočný pán vody.
             </p>
           </div>
 
-          {/* Premium Notice */}
-          <Card className="mb-8 border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950/20">
-            <CardContent className="p-6 text-center">
-              <Crown className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
-              <h2 className="text-2xl font-semibold text-foreground mb-2">
-                Fishing Battle je dostupné len pre Premium členov
-              </h2>
-              <p className="text-muted-foreground mb-6">
-                Upgradujte svoje členstvo a vyzvite kamarátov na priateľský rybársky duel.
-              </p>
-              <Button 
-                size="lg" 
-                className="bg-yellow-500 hover:bg-yellow-600 text-white"
-                onClick={() => setLocation('/pricing')}
-                data-testid="button-upgrade-premium"
-              >
-                <Crown className="w-5 h-5 mr-2" />
-                Prejsť na Premium
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Live Preview - Blurred Leaderboard */}
-          <Card className="mb-8 overflow-hidden">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Eye className="w-6 h-6" />
-                Náhľad živého rebríčka
-              </CardTitle>
-              <CardDescription>
-                Takto vyzerá rebríček počas aktívneho battlu
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="relative">
-              {/* Mock Leaderboard */}
-              <div className="space-y-3 blur-[2px] select-none pointer-events-none">
-                {mockLeaderboard.map((player, index) => (
-                  <div 
-                    key={index}
-                    className={`flex items-center justify-between p-4 rounded-lg border ${
-                      player.position === 1 
-                        ? "bg-yellow-50 border-yellow-200 dark:bg-yellow-950/30 dark:border-yellow-800" 
-                        : "bg-muted/50"
-                    }`}
-                  >
-                    <div className="flex items-center gap-4">
-                      <span className="text-2xl">{player.avatar}</span>
-                      <div>
-                        <div className="font-semibold">{player.name}</div>
-                        <div className="text-sm text-muted-foreground">{player.catches} úlovkov</div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-bold text-lg">{player.score}</div>
-                      <div className="text-xs text-muted-foreground">celková váha</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              {/* Overlay with CTA */}
-              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-background/90 via-background/50 to-transparent">
-                <div className="text-center p-6">
-                  <Trophy className="w-12 h-12 text-yellow-500 mx-auto mb-3" />
-                  <p className="text-lg font-semibold mb-2">Odomknite živý rebríček</p>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Sledujte pozície v reálnom čase počas súboja
-                  </p>
-                  <Button 
-                    size="sm"
-                    className="bg-yellow-500 hover:bg-yellow-600 text-white"
-                    onClick={() => setLocation('/pricing')}
-                    data-testid="button-unlock-preview"
-                  >
-                    <Crown className="w-4 h-4 mr-2" />
-                    Získať Premium
-                  </Button>
+          <div className="relative max-w-sm mx-auto mb-20 group cursor-default">
+            <div className="absolute -inset-1 bg-gradient-to-b from-border to-background rounded-[2.5rem] blur opacity-50" />
+            
+            <Card className="relative bg-card border-border shadow-2xl rounded-[2rem] overflow-hidden">
+              <div className="bg-muted/50 p-4 border-b border-border flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                   <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                   <span className="text-[10px] font-bold uppercase tracking-widest text-red-500">Live Battle</span>
                 </div>
+                <span className="text-[10px] font-mono text-muted-foreground">02:14:59</span>
               </div>
-            </CardContent>
-          </Card>
 
-          {/* Battle Modes */}
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="w-6 h-6" />
-                Herné režimy
-              </CardTitle>
-              <CardDescription>
-                Vyberte si zo štyroch rôznych súťažných režimov
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                {battleModes.map((mode, index) => (
-                  <div 
-                    key={index}
-                    className="p-4 border rounded-lg bg-muted/50"
-                  >
-                    <div className="font-medium text-foreground">
-                      {mode}
+              <div className="p-4 space-y-3 relative">
+                 {mockLeaderboard.map((p, i) => (
+                   <div 
+                     key={i} 
+                     className={`flex items-center justify-between p-3 rounded-xl border ${
+                       p.isUser 
+                         ? 'bg-lime-500/10 border-lime-500/30' 
+                         : 'bg-muted/30 border-border'
+                     } blur-[3px] group-hover:blur-[2px] transition-all duration-500`}
+                   >
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs font-bold text-muted-foreground w-4">{p.position}.</span>
+                        <div className="text-sm font-bold text-foreground">{p.name}</div>
+                      </div>
+                      <div className={`text-sm font-bold ${p.position === 1 ? 'text-amber-400' : 'text-muted-foreground'}`}>
+                        {p.score}
+                      </div>
+                   </div>
+                 ))}
+                 
+                 <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-background/60 backdrop-blur-[2px]">
+                    <div className="bg-muted p-4 rounded-full border border-border shadow-2xl mb-4 group-hover:scale-110 transition-transform duration-300">
+                      <Lock className="w-8 h-8 text-lime-500" />
                     </div>
-                  </div>
-                ))}
+                    <p className="text-sm font-bold text-foreground uppercase tracking-widest mb-1">Premium Feature</p>
+                    <p className="text-xs text-muted-foreground">Odomkni živé výsledky</p>
+                 </div>
               </div>
-            </CardContent>
-          </Card>
 
-          {/* Premium Features */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-center">Čo získate s Premium</CardTitle>
-              <CardDescription className="text-center">
-                Kompletný prístup ku všetkým Fishing Battle funkciám
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-2 gap-6">
-                {premiumFeatures.map((feature, index) => (
-                  <div key={index} className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <feature.icon className="w-5 h-5 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground mb-1">
-                        {feature.title}
-                      </h3>
-                      <p className="text-muted-foreground text-sm">
-                        {feature.description}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+              <div className="p-4 bg-muted/50 border-t border-border flex justify-center">
+                 <Button 
+                   size="sm" 
+                   className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white border border-purple-400/20"
+                   onClick={() => setLocation('/diary/premium')}
+                   data-testid="button-unlock-battle"
+                 >
+                   Odomknúť Battle
+                 </Button>
               </div>
-            </CardContent>
-          </Card>
+            </Card>
 
-          {/* FAQ Section */}
-          <Card className="mt-8">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <HelpCircle className="w-6 h-6" />
-                Časté otázky
-              </CardTitle>
-              <CardDescription>
-                Všetko, čo potrebujete vedieť o Fishing Battle
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Accordion type="single" collapsible className="w-full">
-                {faqItems.map((item, index) => (
-                  <AccordionItem key={index} value={`item-${index}`}>
-                    <AccordionTrigger className="text-left" data-testid={`faq-question-${index}`}>
-                      {item.question}
-                    </AccordionTrigger>
-                    <AccordionContent className="text-muted-foreground">
-                      {item.answer}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </CardContent>
-          </Card>
-
-          {/* CTA Footer */}
-          <div className="text-center mt-12">
-            <Button 
-              size="lg" 
-              className="bg-primary hover:bg-primary/90"
-              onClick={() => setLocation('/pricing')}
-              data-testid="button-upgrade-premium-footer"
-            >
-              <Crown className="w-5 h-5 mr-2" />
-              Začať s Premium za 5,90€
-            </Button>
-            <p className="text-sm text-muted-foreground mt-2">
-              Prvý mesiac zdarma • Kedykoľvek zrušiteľné
-            </p>
+            <Swords className="absolute -top-6 -right-12 w-24 h-24 text-muted/30 rotate-12 -z-10" />
+            <Trophy className="absolute -bottom-6 -left-12 w-24 h-24 text-muted/30 -rotate-12 -z-10" />
           </div>
+
+          <div className="grid md:grid-cols-2 gap-4 mb-16">
+            {premiumFeatures.map((feature, i) => (
+              <Card key={i} className="p-6 hover:bg-muted/30 transition-colors group border-border">
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${feature.bg}`}>
+                  <feature.icon className={`w-6 h-6 ${feature.color}`} />
+                </div>
+                <h3 className="text-lg font-bold uppercase text-foreground mb-2">{feature.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
+              </Card>
+            ))}
+          </div>
+
+          <div className="mb-20">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="h-px flex-1 bg-gradient-to-r from-transparent to-border" />
+              <h2 className="text-xl font-bold uppercase tracking-widest text-muted-foreground">Herné Režimy</h2>
+              <div className="h-px flex-1 bg-gradient-to-l from-transparent to-border" />
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {battleModes.map((mode, i) => (
+                <div 
+                  key={i} 
+                  className="p-4 bg-muted/30 border border-border rounded-2xl text-center hover:border-lime-500/30 transition-colors cursor-default"
+                >
+                  <div className="text-lg mb-2">{mode.icon}</div>
+                  <div className="text-sm font-bold text-foreground uppercase mb-1">{mode.title}</div>
+                  <div className="text-[10px] text-muted-foreground leading-tight">{mode.desc}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="max-w-2xl mx-auto space-y-4 mb-20">
+            <h2 className="text-center text-xl font-bold uppercase text-foreground mb-8">Často kladené otázky</h2>
+            {faqItems.map((item, i) => (
+              <div 
+                key={i} 
+                className="bg-muted/20 border border-border rounded-2xl p-5 hover:bg-muted/30 transition-colors"
+              >
+                <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
+                  <HelpCircle className="w-4 h-4 text-muted-foreground" />
+                  {item.q}
+                </h3>
+                <p className="text-xs text-muted-foreground pl-6 leading-relaxed">
+                  {item.a}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center fixed bottom-6 left-0 right-0 z-40 px-6">
+            <div className="inline-block p-1.5 rounded-2xl bg-card/90 backdrop-blur-xl border border-border shadow-2xl">
+              <div className="flex flex-col md:flex-row items-center gap-4 px-6 py-3">
+                 <div className="text-left hidden md:block">
+                   <div className="text-sm font-bold text-foreground uppercase">Contestio Premium</div>
+                   <div className="text-[10px] text-muted-foreground">Zrušiteľné kedykoľvek</div>
+                 </div>
+                 
+                 <Button 
+                   size="lg"
+                   className="w-full md:w-auto min-w-[200px] bg-lime-500 hover:bg-lime-400 text-background font-bold uppercase tracking-wider"
+                   onClick={() => setLocation('/diary/premium')}
+                   data-testid="button-get-premium-footer"
+                 >
+                   <Zap className="w-4 h-4 mr-2" />
+                   Aktivovať Premium
+                 </Button>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </DiaryLayout>

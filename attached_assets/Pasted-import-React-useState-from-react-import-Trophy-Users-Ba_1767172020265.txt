@@ -1,0 +1,260 @@
+import React, { useState } from "react";
+import { 
+  Trophy, 
+  Users, 
+  BarChart3, 
+  Crown, 
+  FileText, 
+  Share2, 
+  HelpCircle, 
+  Eye,
+  Swords,
+  Lock,
+  ChevronRight,
+  Zap,
+  CheckCircle2,
+  ShieldCheck,
+  Timer
+} from "lucide-react";
+
+/**
+ * MOCK COMPONENTS FOR PREVIEW (Contestio Design System)
+ * V reálnom projekte importujte z @/components/ui...
+ */
+const DiaryLayout = ({ children }: any) => (
+  <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-lime-500/30">{children}</div>
+);
+
+const Button = ({ children, className = "", variant = "primary", size = "default", ...props }: any) => {
+  const base = "inline-flex items-center justify-center rounded-xl font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50";
+  const variants: any = {
+    primary: "bg-lime-500 text-slate-950 hover:bg-lime-400 shadow-[0_0_20px_rgba(132,204,22,0.3)] hover:shadow-[0_0_30px_rgba(132,204,22,0.5)]",
+    secondary: "bg-slate-800 text-white hover:bg-slate-700 border border-white/5",
+    ghost: "text-slate-400 hover:text-white hover:bg-white/5",
+    premium: "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/25 border border-purple-400/20",
+  };
+  const sizes: any = {
+    default: "h-12 px-6 text-xs",
+    lg: "h-14 px-8 text-sm",
+    sm: "h-9 px-4 text-[10px]",
+  };
+  return <button className={`${base} ${variants[variant]} ${sizes[size]} ${className}`} {...props}>{children}</button>;
+};
+
+const Card = ({ children, className = "" }: any) => (
+  <div className={`bg-slate-900/40 backdrop-blur-md border border-white/5 rounded-3xl overflow-hidden ${className}`}>{children}</div>
+);
+
+const Badge = ({ children, className = "", variant = "default" }: any) => {
+  const variants: any = {
+    default: "bg-slate-800 text-slate-300",
+    premium: "bg-purple-500/10 text-purple-400 border border-purple-500/20",
+    gold: "bg-amber-500/10 text-amber-400 border border-amber-500/20",
+  };
+  return <span className={`px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider ${variants[variant]} ${className}`}>{children}</span>;
+};
+
+export default function BattlePaywall() {
+  // Mock navigation
+  const navigateToPricing = () => console.log("Navigate to /pricing");
+
+  const premiumFeatures = [
+    {
+      icon: Swords,
+      color: "text-rose-400",
+      bg: "bg-rose-500/10",
+      title: "Vlastná Aréna",
+      description: "Založ Battle s vlastnými pravidlami. Ty určuješ, ako sa hrá."
+    },
+    {
+      icon: Users,
+      color: "text-blue-400",
+      bg: "bg-blue-500/10",
+      title: "Squad Mode",
+      description: "Pozvi kamošov jednoduchým odkazom. Aj FREE hráči sa môžu pridať."
+    },
+    {
+      icon: BarChart3,
+      color: "text-lime-400",
+      bg: "bg-lime-500/10",
+      title: "Live Rebríček",
+      description: "Sleduj zmeny poradia v reálnom čase. Každý gram rozhoduje."
+    },
+    {
+      icon: Crown,
+      color: "text-amber-400",
+      bg: "bg-amber-500/10",
+      title: "Sieň Slávy",
+      description: "Zbieraj digitálne trofeje a buduj si reputáciu šampióna."
+    }
+  ];
+
+  const battleModes = [
+    { title: "Big Fish", desc: "Vyhráva najťažší úlovok", icon: "⚖️" },
+    { title: "Limit 3", desc: "Súčet váhy 3 najťažších rýb", icon: "TOP 3" },
+    { title: "Total Mayhem", desc: "Celková váha všetkých úlovkov", icon: "Σ" },
+    { title: "Speed Run", desc: "Najviac rýb za časový limit", icon: "⏱️" }
+  ];
+
+  const mockLeaderboard = [
+    { position: 1, name: "Peter K.", score: "12.50 kg", avatar: "👑", isUser: false },
+    { position: 2, name: "Marek S.", score: "8.35 kg", avatar: "🥈", isUser: false },
+    { position: 3, name: "Ty", score: "6.10 kg", avatar: "👤", isUser: true },
+    { position: 4, name: "Jano M.", score: "4.20 kg", avatar: "💀", isUser: false }
+  ];
+
+  return (
+    <DiaryLayout>
+      <div className="relative overflow-hidden pb-20">
+        
+        {/* Background Gradients */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-purple-600/10 blur-[120px] rounded-full pointer-events-none" />
+        <div className="absolute top-40 right-0 w-64 h-64 bg-lime-500/5 blur-[80px] rounded-full pointer-events-none" />
+
+        <div className="max-w-4xl mx-auto p-6 relative z-10">
+          
+          {/* Hero Section */}
+          <div className="text-center mb-16 pt-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <Badge variant="premium" className="mb-6 scale-125">
+              <Crown className="w-3 h-3 mr-1.5 inline-block pb-0.5" />
+              Contestio Battle League
+            </Badge>
+            
+            <h1 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter text-white mb-6 leading-[0.9]">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-200 to-slate-400">Vyzvi kamošov</span>
+              <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-lime-400 to-emerald-500">Na súboj</span>
+            </h1>
+            
+            <p className="text-lg md:text-xl text-slate-400 max-w-xl mx-auto font-medium leading-relaxed">
+              Adrenalín z pretekov priamo v tvojom mobile. Založ vlastnú ligu, nastav pravidlá a ukáž, kto je skutočný pán vody.
+            </p>
+          </div>
+
+          {/* The Hook: Live Leaderboard Teaser */}
+          <div className="relative max-w-sm mx-auto mb-20 group cursor-default">
+            {/* Phone Frame Effect */}
+            <div className="absolute -inset-1 bg-gradient-to-b from-slate-700 to-slate-900 rounded-[2.5rem] blur opacity-50" />
+            
+            <Card className="relative bg-slate-950 border-slate-800 shadow-2xl rounded-[2rem] overflow-hidden">
+              {/* Header of the fake phone */}
+              <div className="bg-slate-900 p-4 border-b border-white/5 flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                   <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                   <span className="text-[10px] font-black uppercase tracking-widest text-red-500">Live Battle</span>
+                </div>
+                <span className="text-[10px] font-mono text-slate-500">02:14:59</span>
+              </div>
+
+              {/* Blurred Content */}
+              <div className="p-4 space-y-3 relative">
+                 {mockLeaderboard.map((p, i) => (
+                   <div key={i} className={`flex items-center justify-between p-3 rounded-xl border ${p.isUser ? 'bg-lime-500/10 border-lime-500/30' : 'bg-slate-900 border-white/5'} blur-[3px] group-hover:blur-[2px] transition-all duration-500`}>
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs font-bold text-slate-500 w-4">{p.position}.</span>
+                        <div className="text-sm font-bold text-slate-200">{p.name}</div>
+                      </div>
+                      <div className={`text-sm font-black ${p.position === 1 ? 'text-amber-400' : 'text-slate-400'}`}>{p.score}</div>
+                   </div>
+                 ))}
+                 
+                 {/* The Lock Overlay */}
+                 <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-slate-950/60 backdrop-blur-[2px]">
+                    <div className="bg-slate-900 p-4 rounded-full border border-white/10 shadow-2xl mb-4 group-hover:scale-110 transition-transform duration-300">
+                      <Lock className="w-8 h-8 text-lime-500" />
+                    </div>
+                    <p className="text-sm font-bold text-white uppercase tracking-widest mb-1">Premium Feature</p>
+                    <p className="text-xs text-slate-400">Odomkni živé výsledky</p>
+                 </div>
+              </div>
+
+              {/* Fake Action Bar */}
+              <div className="p-4 bg-slate-900 border-t border-white/5 flex justify-center">
+                 <Button size="sm" variant="premium" onClick={navigateToPricing} className="w-full">
+                   Odomknúť Battle
+                 </Button>
+              </div>
+            </Card>
+
+            {/* Decorative elements behind phone */}
+            <Swords className="absolute -top-6 -right-12 w-24 h-24 text-slate-800 rotate-12 -z-10" />
+            <Trophy className="absolute -bottom-6 -left-12 w-24 h-24 text-slate-800 -rotate-12 -z-10" />
+          </div>
+
+          {/* Value Proposition Grid */}
+          <div className="grid md:grid-cols-2 gap-4 mb-16">
+            {premiumFeatures.map((feature, i) => (
+              <Card key={i} className="p-6 hover:bg-slate-900 transition-colors group">
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${feature.bg}`}>
+                  <feature.icon className={`w-6 h-6 ${feature.color}`} />
+                </div>
+                <h3 className="text-lg font-black uppercase italic text-white mb-2">{feature.title}</h3>
+                <p className="text-sm text-slate-400 leading-relaxed">{feature.description}</p>
+              </Card>
+            ))}
+          </div>
+
+          {/* Battle Modes Showcase */}
+          <div className="mb-20">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="h-px flex-1 bg-gradient-to-r from-transparent to-slate-800" />
+              <h2 className="text-xl font-black uppercase tracking-widest text-slate-500">Herné Režimy</h2>
+              <div className="h-px flex-1 bg-gradient-to-l from-transparent to-slate-800" />
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {battleModes.map((mode, i) => (
+                <div key={i} className="p-4 bg-slate-900/50 border border-white/5 rounded-2xl text-center hover:border-lime-500/30 transition-colors cursor-default">
+                  <div className="text-xs font-black text-slate-600 mb-2 border border-slate-800 rounded px-1 inline-block bg-slate-950">{mode.icon}</div>
+                  <div className="text-sm font-bold text-white uppercase italic mb-1">{mode.title}</div>
+                  <div className="text-[10px] text-slate-500 leading-tight">{mode.desc}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* FAQ Section (Accordion style simulation) */}
+          <div className="max-w-2xl mx-auto space-y-4 mb-20">
+            <h2 className="text-center text-xl font-black uppercase italic text-white mb-8">Často kladené otázky</h2>
+            {[
+              { q: "Musia mať Premium všetci v súboji?", a: "Nie! Premium potrebuje len zakladateľ (Ty). Všetci tvoji kamoši sa môžu pripojiť zadarmo." },
+              { q: "Koľko súbojov môžem vytvoriť?", a: "Neobmedzene. Môžeš mať rozbehnutý Big Fish battle na jednej vode a Total Mayhem na druhej." },
+              { q: "Ako funguje pozývanie?", a: "Pošleš im unikátny kód alebo link. Jedno kliknutie a sú v hre." }
+            ].map((item, i) => (
+              <div key={i} className="bg-slate-900/30 border border-white/5 rounded-2xl p-5 hover:bg-slate-900/50 transition-colors">
+                <h3 className="text-sm font-bold text-white mb-2 flex items-center gap-2">
+                  <HelpCircle className="w-4 h-4 text-slate-500" />
+                  {item.q}
+                </h3>
+                <p className="text-xs text-slate-400 pl-6 leading-relaxed">
+                  {item.a}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {/* Sticky/Fixed CTA Footer */}
+          <div className="text-center sticky bottom-6 z-40">
+            <div className="inline-block p-1.5 rounded-[1.2rem] bg-slate-900/90 backdrop-blur-xl border border-white/10 shadow-2xl">
+              <div className="flex flex-col md:flex-row items-center gap-4 px-6 py-3">
+                 <div className="text-left hidden md:block">
+                   <div className="text-sm font-black text-white uppercase italic">Contestio Premium</div>
+                   <div className="text-[10px] text-slate-400">Zrušiteľné kedykoľvek</div>
+                 </div>
+                 
+                 <Button variant="primary" size="lg" onClick={navigateToPricing} className="w-full md:w-auto min-w-[200px] text-sm animate-pulse-slow">
+                   <Zap className="w-4 h-4 mr-2 fill-current" />
+                   Aktivovať Battle Mode
+                 </Button>
+              </div>
+            </div>
+            <p className="text-[10px] text-slate-600 mt-4 font-medium uppercase tracking-widest">
+              30 dní garancia vrátenia peňazí
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </DiaryLayout>
+  );
+}
