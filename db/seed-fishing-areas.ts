@@ -34,6 +34,7 @@ export async function seedFishingAreas() {
           .values(batch.map((area: any) => ({
             number: area.number,
             name: area.name,
+            notes: area.notes || null,
           })))
           .onConflictDoNothing({ target: fishingAreas.number });
         
