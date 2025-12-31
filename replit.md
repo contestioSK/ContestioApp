@@ -4,6 +4,14 @@ Contestio is a live fishing competition platform offering multi-role management 
 
 The platform is expanding with a "Fishing Diary" module for personal catch logging, including freemium tiers (FREE: 1 trip/20 catches; PREMIUM: unlimited, battles). Recent key features include instant catch saving with background photo uploads, a dark theme, a weather forecast module with a premium "Fish Activity Index", a favorites system for competitions and teams, clickable statistics cards on the diary dashboard, enhanced toast notifications with emoji icons and color-coded success states, and a global Floating Action Button (FAB) for instant catch entry across all diary pages. The battle system has been enhanced with automatic catch assignment, minimum weight filtering, and optimized login.
 
+## QR Code Sharing (December 2024)
+
+"Scan-and-Go" QR code feature for quick onboarding:
+- **Competitions**: Organizers can share QR codes linking to competition registration page
+- **Battles**: Users can share QR codes to invite friends to battles
+- **Components**: `QRShareDialog.tsx` reusable component with copy link, download PNG, and native share
+- **API**: `GET /api/competitions/:id/qr` and `GET /api/diary/battles/:id/qr` endpoints using `qrcode` library
+
 ## Design System (December 2024)
 
 A unified 10-color palette has been implemented in `client/src/lib/colors.ts` for consistent visualization across the application. Key points:
