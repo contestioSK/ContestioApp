@@ -83,13 +83,13 @@ export default function BattlePaywall() {
     <DiaryLayout>
       <div className="relative pb-32" data-testid="paywall-fishing-battle">
         
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-purple-600/10 blur-[120px] rounded-full pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-amber-600/10 blur-[120px] rounded-full pointer-events-none" />
         <div className="absolute top-40 right-0 w-64 h-64 bg-lime-500/5 blur-[80px] rounded-full pointer-events-none" />
 
         <div className="max-w-4xl mx-auto p-6 relative z-10">
           
           <div className="text-center mb-16 pt-8">
-            <Badge className="mb-6 bg-purple-500/10 text-purple-400 border border-purple-500/20 px-3 py-1">
+            <Badge className="mb-6 bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1">
               <Crown className="w-3 h-3 mr-1.5 inline-block" />
               Contestio Battle League
             </Badge>
@@ -149,7 +149,7 @@ export default function BattlePaywall() {
               <div className="p-4 bg-muted/50 border-t border-border flex justify-center">
                  <Button 
                    size="sm" 
-                   className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white border border-purple-400/20"
+                   className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white border border-amber-400/20"
                    onClick={() => setLocation('/diary/premium')}
                    data-testid="button-unlock-battle"
                  >
@@ -185,9 +185,9 @@ export default function BattlePaywall() {
               {battleModes.map((mode, i) => (
                 <div 
                   key={i} 
-                  className="p-4 bg-muted/30 border border-border rounded-2xl text-center hover:border-purple-500/30 transition-colors cursor-default relative"
+                  className="p-4 bg-muted/30 border border-border rounded-2xl text-center hover:border-amber-500/30 transition-colors cursor-default relative"
                 >
-                  <Badge className="absolute -top-2 -right-2 bg-purple-500/20 text-purple-400 border-purple-500/30 text-[9px] px-1.5 py-0.5">
+                  <Badge className="absolute -top-2 -right-2 bg-amber-500/20 text-amber-400 border-amber-500/30 text-[9px] px-1.5 py-0.5">
                     <Lock className="w-2.5 h-2.5 mr-0.5" />
                     Premium
                   </Badge>
@@ -224,7 +224,7 @@ export default function BattlePaywall() {
                 </div>
               </div>
               <div>
-                <div className="text-xs font-bold text-purple-400 uppercase mb-3 text-center">Premium</div>
+                <div className="text-xs font-bold text-amber-400 uppercase mb-3 text-center">Premium</div>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm">
                     <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
@@ -276,7 +276,7 @@ export default function BattlePaywall() {
                  
                  <Button 
                    size="default"
-                   className="w-full md:w-auto md:min-w-[200px] bg-lime-500 hover:bg-lime-400 text-background font-bold uppercase tracking-wider text-sm md:text-base py-2.5"
+                   className="w-full md:w-auto md:min-w-[200px] bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white font-bold uppercase tracking-wider text-sm md:text-base py-2.5"
                    onClick={() => setLocation('/diary/premium')}
                    data-testid="button-get-premium-footer"
                  >

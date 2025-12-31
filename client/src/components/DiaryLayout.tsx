@@ -243,7 +243,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                   </p>
                   {isPremium && (
                     <div className="flex items-center gap-2 mt-1">
-                      <Badge variant="secondary" className="bg-sidebar-primary/20 text-sidebar-primary border-sidebar-primary/30 text-xs">
+                      <Badge variant="secondary" className="bg-amber-500/20 text-amber-500 border-amber-500/30 text-xs">
                         PREMIUM
                       </Badge>
                     </div>
@@ -355,10 +355,10 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
             {/* Section Divider - SÚŤAŽE & KOMUNITA */}
             <div className="pt-4 pb-2">
               <div className="px-2 md:px-3 mb-2">
-                <div className="h-px bg-gradient-to-r from-transparent via-violet-600 dark:via-purple-500/30 to-transparent"></div>
+                <div className="h-px bg-gradient-to-r from-transparent via-amber-600 dark:via-amber-500/30 to-transparent"></div>
               </div>
               <div className="px-2 md:px-3">
-                <p className="text-[10px] md:text-xs font-bold text-violet-700 dark:text-purple-400/70 uppercase tracking-wider">
+                <p className="text-[10px] md:text-xs font-bold text-amber-700 dark:text-amber-400/70 uppercase tracking-wider">
                   ⚔️ Súťaže & Komunita
                 </p>
               </div>
@@ -400,7 +400,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                           <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
                         )}
                         {item.premium && !isPremium && (
-                          <Badge variant="secondary" className="bg-sidebar-primary/20 text-sidebar-primary border-sidebar-primary/30 text-xs px-1 py-0">
+                          <Badge variant="secondary" className="bg-amber-500/20 text-amber-500 border-amber-500/30 text-xs px-1 py-0">
                             PREMIUM
                           </Badge>
                         )}
