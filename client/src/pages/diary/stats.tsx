@@ -381,55 +381,55 @@ export default function DiaryStats() {
 
           <TabsContent value="trends" className="space-y-6">
             {isPremium ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <WeightProgressionChart data={weightProgressionData} />
-                <CatchFrequencyChart data={catchFrequencyData} />
+              <div className="grid grid-cols-1 gap-6">
                 <MonthComparisonChart data={monthComparisonData} />
-                <HourlyDistributionChart data={hourlyDistributionData} />
-                
-                {advancedSuccessRate.bestHour && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">Najlepší čas lovu</CardTitle>
-                      <CardDescription>Na základe tvojich dát</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex items-center gap-4">
-                        <div className="text-4xl font-bold text-primary">
-                          {String(advancedSuccessRate.bestHour.hour).padStart(2, '0')}:00
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {advancedSuccessRate.bestHour.rate.toFixed(1)} ryby/výpravu v tejto hodine
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-                
-                {advancedSuccessRate.bestDay && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">Najlepší deň</CardTitle>
-                      <CardDescription>Kedy máš najväčšiu úspešnosť</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex items-center gap-4">
-                        <div className="text-4xl font-bold text-primary">
-                          {advancedSuccessRate.bestDay.day}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {advancedSuccessRate.bestDay.rate.toFixed(1)} ryby/výpravu
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <HourlyDistributionChart data={hourlyDistributionData} />
+                  <div className="space-y-6">
+                    {advancedSuccessRate.bestHour && (
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-lg">Najlepší čas lovu</CardTitle>
+                          <CardDescription>Na základe tvojich dát</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex items-center gap-4">
+                            <div className="text-4xl font-bold text-primary">
+                              {String(advancedSuccessRate.bestHour.hour).padStart(2, '0')}:00
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {advancedSuccessRate.bestHour.rate.toFixed(1)} ryby/výpravu v tejto hodine
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+                    
+                    {advancedSuccessRate.bestDay && (
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-lg">Najlepší deň</CardTitle>
+                          <CardDescription>Kedy máš najväčšiu úspešnosť</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex items-center gap-4">
+                            <div className="text-4xl font-bold text-primary">
+                              {advancedSuccessRate.bestDay.day}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {advancedSuccessRate.bestDay.rate.toFixed(1)} ryby/výpravu
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
+                </div>
               </div>
             ) : (
               <PremiumGate type="trends" showPreview>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <WeightProgressionChart data={weightProgressionData} />
-                  <CatchFrequencyChart data={catchFrequencyData} />
+                <div className="grid grid-cols-1 gap-6">
+                  <MonthComparisonChart data={monthComparisonData} />
                 </div>
               </PremiumGate>
             )}
