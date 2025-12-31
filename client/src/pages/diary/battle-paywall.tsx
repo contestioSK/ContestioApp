@@ -79,7 +79,7 @@ export default function BattlePaywall() {
 
   return (
     <DiaryLayout>
-      <div className="relative pb-24" data-testid="paywall-fishing-battle">
+      <div className="relative pb-32" data-testid="paywall-fishing-battle">
         
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-purple-600/10 blur-[120px] rounded-full pointer-events-none" />
         <div className="absolute top-40 right-0 w-64 h-64 bg-lime-500/5 blur-[80px] rounded-full pointer-events-none" />
@@ -211,17 +211,17 @@ export default function BattlePaywall() {
             ))}
           </div>
 
-          <div className="text-center fixed bottom-6 left-0 right-0 z-40 px-6">
-            <div className="inline-block p-1.5 rounded-2xl bg-card/90 backdrop-blur-xl border border-border shadow-2xl">
-              <div className="flex flex-col md:flex-row items-center gap-4 px-6 py-3">
+          <div className="text-center fixed bottom-4 md:bottom-6 left-0 right-0 z-40 px-3 md:px-6 pb-safe">
+            <div className="inline-block p-1 md:p-1.5 rounded-xl md:rounded-2xl bg-card/95 backdrop-blur-xl border border-border shadow-2xl max-w-md md:max-w-none mx-auto">
+              <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 px-3 md:px-6 py-2 md:py-3">
                  <div className="text-left hidden md:block">
                    <div className="text-sm font-bold text-foreground uppercase">Contestio Premium</div>
                    <div className="text-[10px] text-muted-foreground">Zrušiteľné kedykoľvek</div>
                  </div>
                  
                  <Button 
-                   size="lg"
-                   className="w-full md:w-auto min-w-[200px] bg-lime-500 hover:bg-lime-400 text-background font-bold uppercase tracking-wider"
+                   size="default"
+                   className="w-full md:w-auto md:min-w-[200px] bg-lime-500 hover:bg-lime-400 text-background font-bold uppercase tracking-wider text-sm md:text-base py-2.5"
                    onClick={() => setLocation('/diary/premium')}
                    data-testid="button-get-premium-footer"
                  >
