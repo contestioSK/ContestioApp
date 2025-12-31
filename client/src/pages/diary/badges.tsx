@@ -1,13 +1,15 @@
-import { useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { useConfetti } from "@/hooks/useConfetti";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Lock, Unlock, Share2, Copy, Check } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Lock, Unlock, ChevronDown, ChevronUp, Target, Plus } from "lucide-react";
+import { useLocation } from "wouter";
 import DiaryLayout from "@/components/DiaryLayout";
 import { BADGE_DEFINITIONS, getTierColor, getTierBgClass, getTierTextClass } from "@shared/badges";
 import type { UserBadge } from "@shared/schema";
@@ -16,21 +18,20 @@ export default function BadgesPage() {
   const { user } = useAuth();
   const { celebrateGoalCompletion } = useConfetti();
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const previousBadgeCount = useRef<number | null>(null);
+  const [showAllBadges, setShowAllBadges] = useState(false);
 
-  // Fetch user's badges
   const { data: userBadges = [] } = useQuery<UserBadge[]>({
     queryKey: ["/api/diary/badges"],
     enabled: !!user?.id
   });
 
-  // Fetch badge progress
   const { data: badgeProgress = {} } = useQuery<Record<string, number>>({
     queryKey: ["/api/diary/badges/progress"],
     enabled: !!user?.id
   });
 
-  // Trigger confetti when new badge is unlocked
   useEffect(() => {
     if (previousBadgeCount.current !== null && userBadges.length > previousBadgeCount.current) {
       celebrateGoalCompletion();
@@ -42,182 +43,232 @@ export default function BadgesPage() {
     previousBadgeCount.current = userBadges.length;
   }, [userBadges.length, celebrateGoalCompletion, toast]);
 
-  // Create a set of unlocked badges for quick lookup
   const unlockedBadges = new Set(
     userBadges.map(b => `${b.badgeType}_${b.tier}`)
   );
 
   const badgesList = Object.values(BADGE_DEFINITIONS);
 
-  // Share profile function
-  const handleShare = async () => {
-    const shareData = {
-      title: 'Moje rybárske odznaky',
-      text: `Mám ${userBadges.length} odznakov! 🎣🏅`,
-      url: window.location.href,
-    };
+  const nextGoal = useMemo(() => {
+    let bestCandidate: {
+      badgeDef: typeof badgesList[0];
+      tier: 'bronze' | 'silver' | 'gold';
+      currentValue: number;
+      threshold: number;
+      progressPercent: number;
+      remaining: number;
+    } | null = null;
 
-    try {
-      if (navigator.share) {
-        await navigator.share(shareData);
-      } else {
-        await navigator.clipboard.writeText(window.location.href);
-        toast({
-          title: "📋 Odkaz skopírovaný",
-          description: "Odkaz na profil bol skopírovaný do schránky.",
-        });
+    for (const badgeDef of badgesList) {
+      for (const tier of ['bronze', 'silver', 'gold'] as const) {
+        const isUnlocked = unlockedBadges.has(`${badgeDef.id}_${tier}`);
+        if (isUnlocked) continue;
+
+        const currentValue = badgeProgress[badgeDef.id] || 0;
+        const threshold = badgeDef.tiers[tier].threshold;
+        const progressPercent = Math.min((currentValue / threshold) * 100, 100);
+        const remaining = Math.max(0, threshold - currentValue);
+
+        if (progressPercent >= 100) continue;
+
+        if (!bestCandidate || progressPercent > bestCandidate.progressPercent) {
+          bestCandidate = { badgeDef, tier, currentValue, threshold, progressPercent, remaining };
+        }
       }
-    } catch (err) {
-      // User cancelled share
     }
-  };
+    return bestCandidate;
+  }, [badgesList, unlockedBadges, badgeProgress]);
+
+  const unlockedBadgesList = useMemo(() => {
+    const result: { badgeDef: typeof badgesList[0]; tier: 'bronze' | 'silver' | 'gold' }[] = [];
+    for (const badgeDef of badgesList) {
+      for (const tier of ['gold', 'silver', 'bronze'] as const) {
+        if (unlockedBadges.has(`${badgeDef.id}_${tier}`)) {
+          result.push({ badgeDef, tier });
+        }
+      }
+    }
+    return result;
+  }, [badgesList, unlockedBadges]);
+
+  const hasNoBadges = userBadges.length === 0;
+
+  if (hasNoBadges) {
+    return (
+      <DiaryLayout>
+        <div className="p-4 md:p-8 max-w-2xl mx-auto">
+          <div className="text-center py-16">
+            <div className="text-7xl mb-6">🎣</div>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
+              Tvoj prvý odznak čaká
+            </h1>
+            <p className="text-muted-foreground mb-8 text-lg">
+              Stačí pridať prvý úlovok a odomkneš <span className="text-amber-500 font-semibold">Bronze</span> odznak.
+            </p>
+            <Button
+              size="lg"
+              className="bg-lime-500 hover:bg-lime-400 text-background font-bold"
+              onClick={() => setLocation('/diary')}
+              data-testid="button-add-first-catch"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Pridať úlovok
+            </Button>
+          </div>
+        </div>
+      </DiaryLayout>
+    );
+  }
 
   return (
     <DiaryLayout>
-      <div className="p-4 md:p-8 max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-2xl md:text-4xl font-bold text-foreground mb-2">🏅 Moje Odznaky</h1>
-            <p className="text-muted-foreground text-sm md:text-lg">
-              Zbierajte odznaky a staňte sa legendou rybárskeho sveta
-            </p>
-          </div>
-          <Button
-            onClick={handleShare}
-            variant="outline"
-            className="gap-2 w-full sm:w-auto"
-            data-testid="button-share-badges"
-          >
-            <Share2 className="w-4 h-4" />
-            Zdieľať profil
-          </Button>
+      <div className="p-4 md:p-8 max-w-4xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-1">🏅 Moje Odznaky</h1>
+          <p className="text-muted-foreground text-sm">
+            {userBadges.length} odomknutých z {badgesList.length * 3} možných
+          </p>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Odomknuté Odznaky
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{userBadges.length}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                z {badgesList.length * 3} možných
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Zlaté Odznaky
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">
-                {userBadges.filter(b => b.tier === 'gold').length}
+        {nextGoal && (
+          <Card className="mb-8 border-lime-500/30 bg-lime-500/5">
+            <CardContent className="p-5">
+              <div className="flex items-start gap-4">
+                <div className="text-4xl">{nextGoal.badgeDef.icon}</div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Target className="w-4 h-4 text-lime-500" />
+                    <span className="text-xs font-bold uppercase tracking-wider text-lime-500">Najbližší odznak</span>
+                  </div>
+                  <h3 className="font-bold text-foreground mb-1">
+                    {nextGoal.badgeDef.name} 
+                    <Badge className={`ml-2 bg-gradient-to-r ${getTierColor(nextGoal.tier)} text-white border-0 text-xs`}>
+                      {nextGoal.tier === 'bronze' ? '🥉' : nextGoal.tier === 'silver' ? '🥈' : '🥇'} {nextGoal.tier}
+                    </Badge>
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Chýba ti ešte <span className="font-bold text-foreground">{nextGoal.remaining}</span> do {nextGoal.threshold}
+                  </p>
+                  <div className="flex items-center gap-4">
+                    <Progress value={nextGoal.progressPercent} className="h-2 flex-1" />
+                    <span className="text-xs font-bold text-muted-foreground">{Math.round(nextGoal.progressPercent)}%</span>
+                  </div>
+                </div>
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Najvyššia úroveň
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Bronzové Odznaky
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">
-                {userBadges.filter(b => b.tier === 'bronze').length}
+              <div className="mt-4 pt-4 border-t border-border">
+                <Button
+                  size="sm"
+                  className="w-full bg-lime-500 hover:bg-lime-400 text-background font-bold"
+                  onClick={() => setLocation('/diary')}
+                  data-testid="button-add-catch-for-badge"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Pridať úlovok
+                </Button>
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Prvé kroky
-              </p>
             </CardContent>
           </Card>
-        </div>
+        )}
 
-        {/* Badges Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {badgesList.map(badgeDef => (
-            <div key={badgeDef.id} className="space-y-3">
-              <h3 className="font-semibold text-lg flex items-center gap-2">
-                <span className="text-2xl">{badgeDef.icon}</span>
-                {badgeDef.name}
-              </h3>
-              <p className="text-sm text-muted-foreground">{badgeDef.description}</p>
+        {unlockedBadgesList.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
+              <Unlock className="w-5 h-5 text-lime-500" />
+              Odomknuté odznaky
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {unlockedBadgesList.map(({ badgeDef, tier }) => {
+                const tierDef = badgeDef.tiers[tier];
+                const bgClass = getTierBgClass(tier);
+                const textClass = getTierTextClass(tier);
 
-              {/* Tier badges */}
-              <div className="space-y-2">
-                {(['bronze', 'silver', 'gold'] as const).map(tier => {
-                  const isUnlocked = unlockedBadges.has(`${badgeDef.id}_${tier}`);
-                  const tierDef = badgeDef.tiers[tier];
-                  const bgClass = getTierBgClass(tier);
-                  const textClass = getTierTextClass(tier);
-                  
-                  // Calculate progress for this tier
-                  const currentValue = badgeProgress[badgeDef.id] || 0;
-                  const threshold = tierDef.threshold;
-                  const progressPercent = Math.min((currentValue / threshold) * 100, 100);
-
-                  return (
-                    <div
-                      key={tier}
-                      className={`p-3 rounded-lg border-2 transition-all ${bgClass} ${
-                        isUnlocked ? 'opacity-100' : 'opacity-60 grayscale-[30%]'
-                      }`}
-                      data-testid={`badge-${badgeDef.id}-${tier}`}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Badge
-                              className={`bg-gradient-to-r ${getTierColor(tier)} text-white border-0`}
-                            >
-                              {tier === 'bronze' ? '🥉' : tier === 'silver' ? '🥈' : '🥇'} {tier}
-                            </Badge>
-                            {isUnlocked && <Unlock className={`w-4 h-4 ${textClass}`} />}
-                            {!isUnlocked && <Lock className="w-4 h-4 text-muted-foreground" />}
-                          </div>
-                          <p className={`text-sm font-medium ${textClass}`}>
-                            {tierDef.description}
-                          </p>
-                          
-                          {/* Progress bar for locked badges */}
-                          {!isUnlocked && (
-                            <div className="mt-2 space-y-1">
-                              <Progress value={progressPercent} className="h-2" />
-                              <p className="text-xs text-muted-foreground">
-                                {currentValue} / {threshold} ({Math.round(progressPercent)}%)
-                              </p>
-                            </div>
-                          )}
+                return (
+                  <div
+                    key={`${badgeDef.id}_${tier}`}
+                    className={`p-4 rounded-xl border-2 ${bgClass}`}
+                    data-testid={`badge-unlocked-${badgeDef.id}-${tier}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-3xl">{badgeDef.icon}</span>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <span className={`font-bold ${textClass}`}>{badgeDef.name}</span>
+                          <Badge className={`bg-gradient-to-r ${getTierColor(tier)} text-white border-0 text-[10px] px-1.5`}>
+                            {tier === 'bronze' ? '🥉' : tier === 'silver' ? '🥈' : '🥇'}
+                          </Badge>
                         </div>
+                        <p className="text-xs text-muted-foreground">{tierDef.description}</p>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+                );
+              })}
             </div>
-          ))}
-        </div>
-
-        {/* Empty state */}
-        {userBadges.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">🎣</div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">Zatiaľ žiadne odznaky</h2>
-            <p className="text-muted-foreground">
-              Začnite s úlovkami a zbierajte odznaky! Čím viac rybárite, tým viac odznakov odomknete.
-            </p>
           </div>
         )}
+
+        <Collapsible open={showAllBadges} onOpenChange={setShowAllBadges}>
+          <CollapsibleTrigger asChild>
+            <Button
+              variant="ghost"
+              className="w-full justify-between text-muted-foreground hover:text-foreground mb-4"
+              data-testid="button-toggle-all-badges"
+            >
+              <span className="flex items-center gap-2">
+                <Lock className="w-4 h-4" />
+                Zobraziť všetky odznaky
+              </span>
+              {showAllBadges ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {badgesList.map(badgeDef => (
+                <Card key={badgeDef.id} className="p-4">
+                  <div className="flex items-start gap-3 mb-3">
+                    <span className="text-2xl">{badgeDef.icon}</span>
+                    <div>
+                      <h3 className="font-bold text-foreground">{badgeDef.name}</h3>
+                      <p className="text-xs text-muted-foreground">{badgeDef.description}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    {(['bronze', 'silver', 'gold'] as const).map(tier => {
+                      const isUnlocked = unlockedBadges.has(`${badgeDef.id}_${tier}`);
+                      const tierDef = badgeDef.tiers[tier];
+                      const currentValue = badgeProgress[badgeDef.id] || 0;
+                      const threshold = tierDef.threshold;
+                      const progressPercent = Math.min((currentValue / threshold) * 100, 100);
+
+                      return (
+                        <div
+                          key={tier}
+                          className={`flex items-center justify-between p-2 rounded-lg ${
+                            isUnlocked ? 'bg-muted/50' : 'bg-muted/20 opacity-60'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm">
+                              {tier === 'bronze' ? '🥉' : tier === 'silver' ? '🥈' : '🥇'}
+                            </span>
+                            <span className="text-xs text-muted-foreground">{tierDef.description}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {isUnlocked ? (
+                              <Unlock className="w-3.5 h-3.5 text-lime-500" />
+                            ) : (
+                              <span className="text-[10px] text-muted-foreground">{currentValue}/{threshold}</span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
       </div>
     </DiaryLayout>
   );
