@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Lock, Unlock, ChevronDown, ChevronUp, Target, Plus } from "lucide-react";
+import { Lock, Unlock, ChevronDown, ChevronUp, Target, Plus, Trophy } from "lucide-react";
 import { useLocation } from "wouter";
 import DiaryLayout from "@/components/DiaryLayout";
 import { BADGE_DEFINITIONS, getTierColor, getTierBgClass, getTierTextClass } from "@shared/badges";
@@ -93,45 +93,40 @@ export default function BadgesPage() {
 
   const hasNoBadges = userBadges.length === 0;
 
-  if (hasNoBadges) {
-    return (
-      <DiaryLayout>
-        <div className="p-4 md:p-8 max-w-2xl mx-auto">
-          <div className="text-center py-16">
-            <div className="text-7xl mb-6">🎣</div>
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
-              Tvoj prvý odznak čaká
-            </h1>
-            <p className="text-muted-foreground mb-8 text-lg">
-              Stačí pridať prvý úlovok a odomkneš <span className="text-amber-500 font-semibold">Bronze</span> odznak.
-            </p>
-            <Button
-              size="lg"
-              className="bg-lime-500 hover:bg-lime-400 text-background font-bold"
-              onClick={() => setLocation('/diary')}
-              data-testid="button-add-first-catch"
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              Pridať úlovok
-            </Button>
-          </div>
-        </div>
-      </DiaryLayout>
-    );
-  }
-
   return (
     <DiaryLayout>
       <div className="p-4 md:p-8 max-w-4xl mx-auto">
-        <div className="mb-8">
+        <div className="mb-6">
           <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-1">🏅 Moje Odznaky</h1>
           <p className="text-muted-foreground text-sm">
             {userBadges.length} odomknutých z {badgesList.length * 3} možných
           </p>
         </div>
 
+        {hasNoBadges && (
+          <Card className="mb-6 border-amber-500/30 bg-amber-500/5">
+            <CardContent className="p-5 text-center">
+              <div className="text-5xl mb-3">🎣</div>
+              <h2 className="text-xl font-bold text-foreground mb-2">
+                Tvoj prvý odznak čaká
+              </h2>
+              <p className="text-muted-foreground text-sm mb-4">
+                Stačí pridať prvý úlovok a odomkneš <span className="text-amber-500 font-semibold">Bronze</span> odznak.
+              </p>
+              <Button
+                className="bg-lime-500 hover:bg-lime-400 text-background font-bold"
+                onClick={() => setLocation('/diary')}
+                data-testid="button-add-first-catch"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Pridať úlovok
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         {nextGoal && (
-          <Card className="mb-8 border-lime-500/30 bg-lime-500/5">
+          <Card className="mb-6 border-lime-500/30 bg-lime-500/5">
             <CardContent className="p-5">
               <div className="flex items-start gap-4">
                 <div className="text-4xl">{nextGoal.badgeDef.icon}</div>
@@ -171,9 +166,9 @@ export default function BadgesPage() {
         )}
 
         {unlockedBadgesList.length > 0 && (
-          <div className="mb-8">
+          <div className="mb-6">
             <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
-              <Unlock className="w-5 h-5 text-lime-500" />
+              <Trophy className="w-5 h-5 text-lime-500" />
               Odomknuté odznaky
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -216,7 +211,7 @@ export default function BadgesPage() {
             >
               <span className="flex items-center gap-2">
                 <Lock className="w-4 h-4" />
-                Zobraziť všetky odznaky
+                Čo môžem získať
               </span>
               {showAllBadges ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </Button>
