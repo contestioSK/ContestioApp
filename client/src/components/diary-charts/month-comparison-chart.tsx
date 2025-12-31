@@ -1,8 +1,6 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
 import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid } from "recharts";
-import { format } from "date-fns";
-import { sk } from "date-fns/locale";
 
 interface MonthComparisonData {
   month: string;
@@ -16,7 +14,6 @@ interface MonthComparisonData {
 interface MonthComparisonChartProps {
   data: MonthComparisonData[];
   title?: string;
-  period?: string;
 }
 
 const chartConfig = {
@@ -36,15 +33,13 @@ const chartConfig = {
 
 export function MonthComparisonChart({ 
   data, 
-  title = "Mesačné porovnania", 
-  period = "posledných mesiacov" 
+  title = "Mesačné porovnania"
 }: MonthComparisonChartProps) {
   if (!data || data.length === 0) {
     return (
       <Card>
-        <CardHeader>
-          <CardTitle>{title}</CardTitle>
-          <CardDescription>Žiadne dáta o úlovkoch</CardDescription>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg">{title}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center text-muted-foreground py-8">
@@ -57,11 +52,8 @@ export function MonthComparisonChart({
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>
-          Detailné porovnanie aktivity a úspešnosti za {period}
-        </CardDescription>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg">{title}</CardTitle>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[350px] w-full">
@@ -87,26 +79,24 @@ export function MonthComparisonChart({
               label={{ value: 'Váha (kg)', angle: 90, position: 'insideRight', style: { textAnchor: 'middle' } }}
             />
             <ChartTooltip 
-              content={
-                <ChartTooltipContent 
-                  formatter={(value, name, props) => {
-                    const payload = props.payload;
-                    return [
-                      <div key="content" className="space-y-1">
-                        <div className="font-medium">{payload.month}</div>
-                        <div>Úlovky: {payload.catches} ks</div>
-                        <div>Výpravy: {payload.trips} ks</div>
-                        <div>Celková váha: {payload.totalWeight.toFixed(1)} kg</div>
-                        <div>Priemerná váha: {payload.averageWeight.toFixed(1)} kg</div>
-                        <div className="font-medium">
-                          Efektívnosť: {payload.efficiency.toFixed(1)} úlovkov/výpravu
-                        </div>
+              content={({ active, payload }) => {
+                if (!active || !payload || !payload.length) return null;
+                const data = payload[0].payload;
+                return (
+                  <div className="bg-popover border border-border rounded-lg p-3 shadow-lg">
+                    <div className="font-medium text-foreground mb-2">{data.month}</div>
+                    <div className="space-y-1 text-sm text-muted-foreground">
+                      <div>Úlovky: <span className="text-foreground font-medium">{data.catches} ks</span></div>
+                      <div>Výpravy: <span className="text-foreground font-medium">{data.trips} ks</span></div>
+                      <div>Celková váha: <span className="text-foreground font-medium">{data.totalWeight.toFixed(1)} kg</span></div>
+                      <div>Priemerná váha: <span className="text-foreground font-medium">{data.averageWeight.toFixed(1)} kg</span></div>
+                      <div className="pt-1 border-t border-border mt-1">
+                        Efektívnosť: <span className="text-foreground font-medium">{data.efficiency.toFixed(1)} úlovkov/výpravu</span>
                       </div>
-                    ];
-                  }}
-                  hideLabel
-                />
-              }
+                    </div>
+                  </div>
+                );
+              }}
             />
             <Bar
               yAxisId="count"
