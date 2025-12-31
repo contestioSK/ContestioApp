@@ -196,10 +196,27 @@ export default function BattleIndex() {
   });
 
   // Fetch battle invitations (FREE users can receive invitations)
-  const { data: invitations = [] } = useQuery<BattleInvitation[]>({
+  const { data: invitations = [], isLoading: isInvitationsLoading } = useQuery<BattleInvitation[]>({
     queryKey: ['/api/diary/battles/invitations'],
     enabled: !!user,
   });
+
+  // Redirect FREE users to paywall if they have no battles and no invitations
+  useEffect(() => {
+    // Wait for all data to load
+    if (isPremiumLoading || isBattlesLoading || isInvitationsLoading) return;
+    
+    // Premium users can always access
+    if (isPremium) return;
+    
+    // FREE users can access if they have battles (were invited) or have pending invitations
+    const hasBattles = battles.length > 0;
+    const hasInvitations = invitations.length > 0;
+    
+    if (!hasBattles && !hasInvitations) {
+      setLocation('/diary/battles/paywall');
+    }
+  }, [isPremium, isPremiumLoading, battles, isBattlesLoading, invitations, isInvitationsLoading, setLocation]);
 
   // Fetch archived battles (FREE users can view their battle history)
   const { data: archivedBattles = [] } = useQuery<ArchivedBattle[]>({
