@@ -9,6 +9,7 @@ import { apiLimiter } from "./middleware/rate-limiting";
 import { sanitizeInput } from "./middleware/input-sanitization";
 import fs from "fs";
 import path from "path";
+import { seedFishingAreas } from "../db/seed-fishing-areas";
 
 const app = express();
 
@@ -404,6 +405,13 @@ async function startBattleNotificationScheduler() {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || '5000', 10);
+  
+  // Seed fishing areas if needed (idempotent - safe to run every startup)
+  try {
+    await seedFishingAreas();
+  } catch (error) {
+    console.error('[Server] Error seeding fishing areas:', error);
+  }
   
   // Start background schedulers
   startAnnouncementScheduler();

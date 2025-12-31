@@ -5897,6 +5897,11 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
+  // Helper to normalize diacritics for search (ľščťžýáíéúäôň -> lsctzyaieuaon)
+  const removeDiacritics = (str: string): string => {
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  };
+  
   // Fishing areas endpoint - Get all fishing areas with optional search
   app.get('/api/fishing-areas', async (req, res) => {
     try {
@@ -5905,12 +5910,15 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       let areas = await db.select().from(fishingAreas);
       
       if (search && typeof search === 'string') {
-        const searchLower = search.toLowerCase();
-        areas = areas.filter(area => 
-          area.number.toLowerCase().includes(searchLower) || 
-          area.name.toLowerCase().includes(searchLower) ||
-          (area.notes && area.notes.toLowerCase().includes(searchLower))
-        );
+        const searchNormalized = removeDiacritics(search.toLowerCase());
+        areas = areas.filter(area => {
+          const numberNorm = removeDiacritics(area.number.toLowerCase());
+          const nameNorm = removeDiacritics(area.name.toLowerCase());
+          const notesNorm = area.notes ? removeDiacritics(area.notes.toLowerCase()) : '';
+          return numberNorm.includes(searchNormalized) || 
+                 nameNorm.includes(searchNormalized) ||
+                 notesNorm.includes(searchNormalized);
+        });
       }
       
       // Sort by number, limit to 100 results
