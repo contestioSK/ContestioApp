@@ -1,0 +1,228 @@
+import React, { useState, useEffect } from "react";
+import { 
+  QrCode, 
+  Copy, 
+  Download, 
+  Share2, 
+  Check, 
+  Calendar,
+  MapPin,
+  Trophy,
+  X,
+  Swords,
+  Users,
+  Timer,
+  Zap
+} from "lucide-react";
+
+// --- MOCK COMPONENTS ---
+const Button = ({ children, className = "", variant = "primary", onClick, disabled }: any) => {
+  // Styles based on variant
+  const styles: any = {
+    primary: "bg-lime-500 text-slate-950 hover:bg-lime-400 shadow-[0_0_20px_rgba(132,204,22,0.3)]",
+    battle: "bg-purple-600 text-white hover:bg-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.4)] border border-purple-400/20",
+    secondary: "bg-slate-800 text-slate-300 hover:bg-slate-700 border border-white/5",
+  };
+  
+  return (
+    <button 
+      onClick={onClick} 
+      disabled={disabled}
+      className={`h-12 px-6 rounded-xl font-black uppercase tracking-widest text-xs transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 ${styles[variant] || styles.primary} ${className}`}
+    >
+      {children}
+    </button>
+  );
+};
+
+interface ShareDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  mode: 'tournament' | 'battle'; // Prepínač režimu
+  data: {
+    id: string;
+    name: string;
+    code: string;
+    date?: string;     // Len pre turnaj
+    location?: string; // Len pre turnaj
+    players?: number;  // Len pre battle
+    status?: string;   // Len pre battle
+  };
+}
+
+export default function ShareQrDialog({ 
+  isOpen = true, 
+  onClose = () => {}, 
+  mode = 'tournament', // 'tournament' | 'battle'
+  data = {
+    id: "BATTLE-123",
+    name: "Víkendová Vyzývačka",
+    code: "FIGHT99",
+    players: 3,
+    status: "Lobby"
+  }
+}: ShareDialogProps) {
+  const [copied, setCopied] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) setIsVisible(true);
+  }, [isOpen]);
+
+  // Rôzne URL pre Battle a Tournament (podľa tvojej debaty s Replitom)
+  const baseUrl = "https://contestio.app";
+  const shareUrl = mode === 'tournament' 
+    ? `${baseUrl}/competition/${data.code}/register` 
+    : `${baseUrl}/battle/${data.code}/join`;
+
+  // Farby QR kódu podľa režimu
+  const qrColor = mode === 'tournament' ? '84cc16' : 'a855f7'; // Lime vs Purple
+  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(shareUrl)}&bgcolor=1e293b&color=${qrColor}&margin=10`;
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(shareUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  if (!isOpen) return null;
+
+  // --- THEME CONFIGURATION ---
+  const theme = mode === 'tournament' ? {
+    bgGradient: "from-lime-500 via-lime-400 to-lime-600",
+    glowColor: "bg-lime-500/10",
+    iconColor: "text-lime-500",
+    borderColor: "border-lime-500",
+    badgeBg: "bg-lime-500/10",
+    badgeText: "text-lime-500",
+    titleIcon: <QrCode className="w-5 h-5 text-lime-500" />,
+    btnVariant: "primary"
+  } : {
+    bgGradient: "from-purple-600 via-fuchsia-500 to-indigo-600",
+    glowColor: "bg-purple-500/10",
+    iconColor: "text-purple-400",
+    borderColor: "border-purple-500",
+    badgeBg: "bg-purple-500/10",
+    badgeText: "text-purple-300",
+    titleIcon: <Swords className="w-5 h-5 text-purple-400" />,
+    btnVariant: "battle"
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md animate-in fade-in duration-200">
+      
+      {/* Main Container */}
+      <div className={`relative w-full max-w-md bg-slate-900 border border-white/10 rounded-3xl shadow-2xl overflow-hidden transition-all duration-300 ${isVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}>
+        
+        {/* Ambient Glow */}
+        <div className={`absolute top-0 right-0 w-64 h-64 blur-[80px] rounded-full pointer-events-none ${theme.glowColor}`} />
+        
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-white/5 relative z-10">
+          <h2 className="text-xl font-black italic uppercase text-white tracking-wider flex items-center gap-2">
+            {theme.titleIcon}
+            {mode === 'tournament' ? 'Scan & Register' : 'Scan & Fight'}
+          </h2>
+          <button onClick={onClose} className="p-2 text-slate-500 hover:text-white transition-colors rounded-full hover:bg-white/5">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* The Card Content */}
+        <div className="p-8 flex flex-col items-center relative z-10">
+          
+          {/* Ticket/Card Design */}
+          <div className="relative w-full bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl group">
+            
+            {/* Top Stripe (Dynamic Color) */}
+            <div className={`h-2 w-full bg-gradient-to-r ${theme.bgGradient}`} />
+            
+            <div className="p-6 text-center">
+              {/* QR Code Wrapper */}
+              <div className={`relative w-48 h-48 mx-auto mb-6 bg-slate-900 rounded-xl border-2 border-dashed border-slate-700 p-2 flex items-center justify-center cursor-pointer transition-colors hover:${theme.borderColor}/50`}>
+                 <img 
+                   src={qrImageUrl} 
+                   alt="QR Code" 
+                   className="w-full h-full object-contain rounded-lg"
+                 />
+                 
+                 {/* Floating Badge */}
+                 <div className={`absolute -bottom-3 left-1/2 -translate-x-1/2 bg-slate-900 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border shadow-lg whitespace-nowrap ${theme.borderColor} ${theme.iconColor}`}>
+                   {mode === 'tournament' ? 'Registrácia' : 'Pripojiť sa'}
+                 </div>
+              </div>
+
+              {/* Title & Info */}
+              <h3 className="text-xl font-bold text-white mb-3 leading-tight px-2">
+                {data.name}
+              </h3>
+              
+              <div className="space-y-2 mb-6 flex flex-col items-center">
+                {mode === 'tournament' ? (
+                  <>
+                    <div className="flex items-center gap-2 text-slate-400 text-xs font-medium">
+                       <Calendar className="w-3.5 h-3.5 text-slate-500" /> {data.date || 'Dátum neurčený'}
+                    </div>
+                    <div className="flex items-center gap-2 text-slate-400 text-xs font-medium">
+                       <MapPin className="w-3.5 h-3.5 text-slate-500" /> {data.location || 'Lokalita neurčená'}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                     <div className="flex items-center gap-2 text-slate-400 text-xs font-medium">
+                       <Users className="w-3.5 h-3.5 text-purple-500" /> {data.players} Rybárov v lobby
+                    </div>
+                     <div className="flex items-center gap-2 text-slate-400 text-xs font-medium">
+                       <Zap className="w-3.5 h-3.5 text-yellow-500" /> Instant Start
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Code Box */}
+              <div className="bg-slate-900 rounded-xl p-3 border border-white/5 flex items-center justify-between gap-3">
+                 <div className="text-left overflow-hidden">
+                   <div className="text-[10px] text-slate-500 uppercase tracking-wider font-bold">
+                     {mode === 'tournament' ? 'ID Turnaja' : 'Battle Kód'}
+                   </div>
+                   <div className={`text-lg font-mono font-bold tracking-widest truncate ${theme.iconColor}`}>
+                     {data.code}
+                   </div>
+                 </div>
+                 <button 
+                   onClick={handleCopy}
+                   className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 transition-colors shrink-0"
+                 >
+                   {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                 </button>
+              </div>
+            </div>
+            
+            {/* Cutout Effect (Ticket notches) */}
+            <div className="absolute top-1/2 -left-3 w-6 h-6 bg-slate-900 rounded-full" />
+            <div className="absolute top-1/2 -right-3 w-6 h-6 bg-slate-900 rounded-full" />
+          </div>
+
+          <p className="mt-6 text-xs text-slate-500 text-center max-w-xs leading-relaxed">
+            {mode === 'tournament' 
+              ? "Naskenovaním kódu sa otvorí registračný formulár pre tento turnaj."
+              : "Kamoši sa naskenovaním kódu okamžite pripoja do tvojho Battle Lobby."
+            }
+          </p>
+        </div>
+
+        {/* Footer Actions */}
+        <div className="p-6 border-t border-white/5 bg-slate-900/50 flex gap-3">
+          <Button variant="secondary" className="flex-1" onClick={() => alert("Generujem PDF...")}>
+            <Download className="w-4 h-4" />
+            {mode === 'tournament' ? 'Plagát' : 'Uložiť'}
+          </Button>
+          <Button variant={theme.btnVariant} className="flex-1" onClick={() => navigator.share({ url: shareUrl })}>
+            <Share2 className="w-4 h-4" />
+            Zdieľať
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
