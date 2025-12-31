@@ -9,7 +9,9 @@ import {
   HelpCircle,
   Swords,
   Lock,
-  Zap
+  Zap,
+  Check,
+  X
 } from "lucide-react";
 import { useLocation } from "wouter";
 import DiaryLayout from "@/components/DiaryLayout";
@@ -139,8 +141,8 @@ export default function BattlePaywall() {
                     <div className="bg-muted p-4 rounded-full border border-border shadow-2xl mb-4 group-hover:scale-110 transition-transform duration-300">
                       <Lock className="w-8 h-8 text-lime-500" />
                     </div>
-                    <p className="text-sm font-bold text-foreground uppercase tracking-widest mb-1">Premium Feature</p>
-                    <p className="text-xs text-muted-foreground">Odomkni živé výsledky</p>
+                    <p className="text-sm font-bold text-foreground uppercase tracking-widest mb-1">Live Rebríček</p>
+                    <p className="text-xs text-muted-foreground">Vidíš poradie, keď sa mení</p>
                  </div>
               </div>
 
@@ -172,7 +174,7 @@ export default function BattlePaywall() {
             ))}
           </div>
 
-          <div className="mb-20">
+          <div className="mb-16">
             <div className="flex items-center gap-4 mb-8">
               <div className="h-px flex-1 bg-gradient-to-r from-transparent to-border" />
               <h2 className="text-xl font-bold uppercase tracking-widest text-muted-foreground">Herné Režimy</h2>
@@ -183,8 +185,12 @@ export default function BattlePaywall() {
               {battleModes.map((mode, i) => (
                 <div 
                   key={i} 
-                  className="p-4 bg-muted/30 border border-border rounded-2xl text-center hover:border-lime-500/30 transition-colors cursor-default"
+                  className="p-4 bg-muted/30 border border-border rounded-2xl text-center hover:border-purple-500/30 transition-colors cursor-default relative"
                 >
+                  <Badge className="absolute -top-2 -right-2 bg-purple-500/20 text-purple-400 border-purple-500/30 text-[9px] px-1.5 py-0.5">
+                    <Lock className="w-2.5 h-2.5 mr-0.5" />
+                    Premium
+                  </Badge>
                   <div className="text-lg mb-2">{mode.icon}</div>
                   <div className="text-sm font-bold text-foreground uppercase mb-1">{mode.title}</div>
                   <div className="text-[10px] text-muted-foreground leading-tight">{mode.desc}</div>
@@ -193,7 +199,55 @@ export default function BattlePaywall() {
             </div>
           </div>
 
-          <div className="max-w-2xl mx-auto space-y-4 mb-20">
+          <div className="max-w-lg mx-auto mb-16 p-6 bg-muted/20 border border-border rounded-2xl">
+            <h3 className="text-center text-lg font-bold uppercase text-foreground mb-6">FREE vs Premium</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="text-xs font-bold text-muted-foreground uppercase mb-3 text-center">FREE účet</div>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                    <span className="text-foreground">Pripojiť sa do Battle</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                    <span className="text-foreground">Súťažiť s kamošmi</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <X className="w-4 h-4 text-rose-500 flex-shrink-0" />
+                    <span className="text-muted-foreground">Založiť vlastný Battle</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <X className="w-4 h-4 text-rose-500 flex-shrink-0" />
+                    <span className="text-muted-foreground">Live rebríček</span>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div className="text-xs font-bold text-purple-400 uppercase mb-3 text-center">Premium</div>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                    <span className="text-foreground">Všetko z FREE</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                    <span className="text-foreground">Založiť vlastný Battle</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                    <span className="text-foreground">Live rebríček</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                    <span className="text-foreground">Sieň slávy + štatistiky</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="max-w-2xl mx-auto space-y-4 mb-12">
             <h2 className="text-center text-xl font-bold uppercase text-foreground mb-8">Často kladené otázky</h2>
             {faqItems.map((item, i) => (
               <div 
@@ -209,6 +263,20 @@ export default function BattlePaywall() {
                 </p>
               </div>
             ))}
+            
+            <div className="text-center pt-8">
+              <p className="text-sm text-muted-foreground mb-4">
+                Pripravený založiť vlastný Battle?
+              </p>
+              <Button 
+                className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white"
+                onClick={() => setLocation('/diary/premium')}
+                data-testid="button-faq-cta"
+              >
+                <Crown className="w-4 h-4 mr-2" />
+                Aktivovať Premium
+              </Button>
+            </div>
           </div>
 
           <div className="text-center fixed bottom-20 md:bottom-6 left-0 right-0 z-40 px-3 md:px-6">
