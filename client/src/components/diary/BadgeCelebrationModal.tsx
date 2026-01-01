@@ -216,7 +216,7 @@ export function BadgeCelebrationModal({ badge, onClose }: BadgeCelebrationModalP
           className="relative mx-auto mb-8 p-6 rounded-2xl"
           style={{ backgroundColor: '#0f172a' }}
         >
-          <div className="relative mx-auto w-32 h-32 mb-4 flex items-center justify-center">
+          <div className="relative mx-auto w-32 h-32 mb-6">
             <div 
               className="absolute inset-0 rounded-full border-2 border-dashed opacity-30"
               style={{ borderColor: theme.hex }}
@@ -226,12 +226,15 @@ export function BadgeCelebrationModal({ badge, onClose }: BadgeCelebrationModalP
               style={{ borderColor: theme.hex, backgroundColor: theme.hex }}
             />
             
-            <div className="relative z-10 text-6xl filter drop-shadow-[0_0_20px_rgba(255,255,255,0.3)] leading-none flex items-center justify-center h-full w-full">
+            <span 
+              className="absolute inset-0 flex items-center justify-center text-5xl z-10"
+              style={{ filter: 'drop-shadow(0 0 20px rgba(255,255,255,0.3))' }}
+            >
               {badgeIcon}
-            </div>
+            </span>
 
             <div 
-              className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 px-3 py-0.5 rounded-full border shadow-xl font-black uppercase text-[10px] tracking-widest z-20"
+              className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full border shadow-xl font-black uppercase text-[10px] tracking-widest z-20 whitespace-nowrap"
               style={{ backgroundColor: theme.hex, color: '#0f172a' }}
             >
               {tierLabel}
@@ -253,7 +256,7 @@ export function BadgeCelebrationModal({ badge, onClose }: BadgeCelebrationModalP
             <img 
               src={contestioLogo} 
               alt="Contestio" 
-              className="h-10 opacity-90 brightness-0 invert"
+              className="h-5 opacity-70 brightness-0 invert"
               crossOrigin="anonymous"
             />
           </div>
