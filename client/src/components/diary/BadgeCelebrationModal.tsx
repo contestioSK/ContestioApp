@@ -1,8 +1,35 @@
 import { useState, useRef, memo } from "react";
-import { Share2, Download, Loader2, Medal } from "lucide-react";
+import { 
+  Share2, 
+  Download, 
+  Loader2, 
+  Medal,
+  Calendar,
+  Crosshair,
+  Target,
+  Crown,
+  Dna,
+  Moon,
+  FileText,
+  Snowflake,
+  Trophy,
+  type LucideIcon
+} from "lucide-react";
 import html2canvas from "html2canvas";
 import { BADGE_DEFINITIONS, BadgeTier } from "@shared/badges";
 import contestioLogo from "@assets/contestio logo_1760283270014.png";
+
+const BADGE_ICONS: Record<string, LucideIcon> = {
+  Calendar,
+  Crosshair,
+  Target,
+  Crown,
+  Dna,
+  Moon,
+  FileText,
+  Snowflake,
+  Trophy
+};
 
 interface BadgeInfo {
   badgeType: string;
@@ -96,7 +123,12 @@ export function BadgeCelebrationModal({ badge, onClose }: BadgeCelebrationModalP
   const theme = tierColors[badge.tier] || tierColors.bronze;
   const tierLabel = badge.tier === 'gold' ? 'Zlatý' : badge.tier === 'silver' ? 'Strieborný' : 'Bronzový';
   const badgeName = badge.badgeName || badgeDef?.name || "Nový Odznak";
-  const badgeIcon = badge.icon || badgeDef?.icon || "🏆";
+  const resolveIconName = (): string => {
+    if (badge.icon && badge.icon in BADGE_ICONS) return badge.icon;
+    if (badgeDef?.icon && badgeDef.icon in BADGE_ICONS) return badgeDef.icon;
+    return "Trophy";
+  };
+  const BadgeIconComponent = BADGE_ICONS[resolveIconName()] || Trophy;
 
   const generateShareImage = async (): Promise<Blob | null> => {
     if (!shareCardRef.current) return null;
@@ -225,12 +257,10 @@ export function BadgeCelebrationModal({ badge, onClose }: BadgeCelebrationModalP
             />
 
             <div className={`relative z-10 w-36 h-36 rounded-full bg-gradient-to-b ${theme.gradient} flex items-center justify-center border border-white/5`}>
-              <span
-                className="relative z-10 text-7xl filter drop-shadow-xl"
+              <BadgeIconComponent
+                className={`relative z-10 w-16 h-16 ${theme.text} stroke-[1.5]`}
                 style={{ filter: 'drop-shadow(0 0 20px rgba(255,255,255,0.3))' }}
-              >
-                {badgeIcon}
-              </span>
+              />
 
               <div
                 className={`absolute -bottom-3 px-3 py-1 rounded-full bg-slate-900 border ${theme.border} z-20 shadow-lg`}
