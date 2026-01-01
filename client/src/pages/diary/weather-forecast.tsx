@@ -296,6 +296,11 @@ export default function WeatherForecast() {
           setError(`Nepodarilo sa získať polohu: ${error.message}`);
           setLoading(false);
         }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 30000,
+        maximumAge: 300000
       }
     );
   };

@@ -589,8 +589,8 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
       },
       {
         enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0
+        timeout: 30000,
+        maximumAge: 300000
       }
     );
   };
