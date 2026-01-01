@@ -19,7 +19,7 @@ export const BADGE_DEFINITIONS: Record<string, BadgeDefinition> = {
     id: 'fishing_fanatic',
     name: 'Rybársky Fanatik',
     description: 'Počet dní strávených pri vode',
-    icon: '🎣',
+    icon: 'Calendar',
     tiers: {
       bronze: { threshold: 10, description: '10 dní pri vode' },
       silver: { threshold: 50, description: '50 dní pri vode' },
@@ -31,7 +31,7 @@ export const BADGE_DEFINITIONS: Record<string, BadgeDefinition> = {
     id: 'predator_threat',
     name: 'Dravčia Hrozba',
     description: 'Počet ulovených dravcov (Šťuka, Zubáč, Sumec)',
-    icon: '🐺',
+    icon: 'Crosshair',
     tiers: {
       bronze: { threshold: 5, description: '5 dravcov' },
       silver: { threshold: 20, description: '20 dravcov' },
@@ -43,7 +43,7 @@ export const BADGE_DEFINITIONS: Record<string, BadgeDefinition> = {
     id: 'big_mama_hunter',
     name: 'Big Mama Hunter - Lovec Trofejí',
     description: 'Ulovenie ryby nad určitú váhu (kapor)',
-    icon: '🏆',
+    icon: 'Target',
     tiers: {
       bronze: { threshold: 10, description: 'Kapor nad 10 kg' },
       silver: { threshold: 15, description: 'Kapor nad 15 kg' },
@@ -55,7 +55,7 @@ export const BADGE_DEFINITIONS: Record<string, BadgeDefinition> = {
     id: 'carp_master',
     name: 'Kaprársky Majster',
     description: 'Počet ulovených kaprov',
-    icon: '👑',
+    icon: 'Crown',
     tiers: {
       bronze: { threshold: 10, description: '10 kaprov' },
       silver: { threshold: 50, description: '50 kaprov' },
@@ -67,7 +67,7 @@ export const BADGE_DEFINITIONS: Record<string, BadgeDefinition> = {
     id: 'species_collector',
     name: 'Druhová Rozmanitosť',
     description: 'Počet rôznych druhov rýb v sezóne',
-    icon: '🌈',
+    icon: 'Dna',
     tiers: {
       bronze: { threshold: 3, description: '3 rôzne druhy' },
       silver: { threshold: 5, description: '5 rôznych druhov' },
@@ -79,7 +79,7 @@ export const BADGE_DEFINITIONS: Record<string, BadgeDefinition> = {
     id: 'night_hunter',
     name: 'Nočný Lovec',
     description: 'Úlovky zaznamenané medzi 22:00 a 04:00',
-    icon: '🌙',
+    icon: 'Moon',
     tiers: {
       bronze: { threshold: 1, description: '1 nočný úlovok' },
       silver: { threshold: 10, description: '10 nočných úlovkov' },
@@ -91,7 +91,7 @@ export const BADGE_DEFINITIONS: Record<string, BadgeDefinition> = {
     id: 'detail_keeper',
     name: 'Kronikár',
     description: 'Detailné vyplnenie záznamov (fotka, nástraha, počasie)',
-    icon: '📋',
+    icon: 'FileText',
     tiers: {
       bronze: { threshold: 5, description: '5 detailných záznamov' },
       silver: { threshold: 20, description: '20 detailných záznamov' },
@@ -103,7 +103,7 @@ export const BADGE_DEFINITIONS: Record<string, BadgeDefinition> = {
     id: 'season_warrior',
     name: 'Celoročný Lovec',
     description: 'Úlovok zaznamenaný vo všetkých ročných obdobiach',
-    icon: '⛄',
+    icon: 'Snowflake',
     tiers: {
       bronze: { threshold: 2, description: '2 obdobia' },
       silver: { threshold: 3, description: '3 obdobia' },
