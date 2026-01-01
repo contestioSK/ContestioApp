@@ -659,7 +659,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                 {!isPremium && catchLimits && !catchLimits.canCreate ? (
                   <TacticalIcon icon={Lock} variant="slate" size="lg" showLabel={false} />
                 ) : (
-                  <TacticalIcon icon={Plus} variant="lime" size="lg" showLabel={false} />
+                  <TacticalIcon icon={Plus} variant="cyan" size="lg" showLabel={false} />
                 )}
               </button>
             </TooltipTrigger>
