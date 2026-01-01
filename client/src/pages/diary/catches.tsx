@@ -1134,17 +1134,17 @@ export default function DiaryCatches() {
                     {/* Desktop Row */}
                     <div className="hidden md:grid grid-cols-5 gap-4 p-4 relative group">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-muted dark:bg-slate-600/50 rounded-lg flex items-center justify-center overflow-hidden">
-                          {catch_.photos && catch_.photos.length > 0 ? (
+                        {catch_.photos && catch_.photos.length > 0 ? (
+                          <div className="w-10 h-10 bg-muted dark:bg-slate-600/50 rounded-lg flex items-center justify-center overflow-hidden">
                             <img 
                               src={catch_.photos[0].url || catch_.photos[0]} 
                               alt={catch_.fishType ? getFishTypeLabel(catch_.fishType) : 'Úlovok'}
                               className="w-full h-full object-cover"
                             />
-                          ) : (
-                            getFishIcon(catch_.fishType)
-                          )}
-                        </div>
+                          </div>
+                        ) : (
+                          getFishIcon(catch_.fishType)
+                        )}
                         <div className="text-foreground dark:text-white font-medium">
                           {catch_.fishType ? getFishTypeLabel(catch_.fishType) : 'Neznámy druh'}
                         </div>
@@ -1181,17 +1181,19 @@ export default function DiaryCatches() {
                     {/* Mobile Card */}
                     <div className="md:hidden p-4">
                       <div className="flex items-start gap-3">
-                        <div className="w-12 h-12 bg-muted dark:bg-slate-600/50 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
-                          {catch_.photos && catch_.photos.length > 0 ? (
+                        {catch_.photos && catch_.photos.length > 0 ? (
+                          <div className="w-12 h-12 bg-muted dark:bg-slate-600/50 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
                             <img 
                               src={catch_.photos[0].url || catch_.photos[0]} 
                               alt={catch_.fishType ? getFishTypeLabel(catch_.fishType) : 'Úlovok'}
                               className="w-full h-full object-cover"
                             />
-                          ) : (
-                            getFishIcon(catch_.fishType)
-                          )}
-                        </div>
+                          </div>
+                        ) : (
+                          <div className="flex-shrink-0">
+                            {getFishIcon(catch_.fishType)}
+                          </div>
+                        )}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
                             <div className="text-foreground dark:text-white font-medium mb-1">
@@ -1266,9 +1268,7 @@ export default function DiaryCatches() {
             <SheetContent className="w-full sm:max-w-md bg-card dark:bg-slate-800 border text-foreground dark:text-white overflow-y-auto" data-testid="catch-detail-panel">
               <SheetHeader className="pb-6">
                 <SheetTitle className="text-foreground dark:text-white flex items-center gap-3">
-                  <div className="w-10 h-10 bg-muted dark:bg-slate-600/50 rounded-lg flex items-center justify-center">
-                    {getFishIcon(selectedCatch?.fishType)}
-                  </div>
+                  {getFishIcon(selectedCatch?.fishType)}
                   {selectedCatch?.fishType ? getFishTypeLabel(selectedCatch.fishType) : 'Detail úlovku'}
                 </SheetTitle>
               </SheetHeader>
