@@ -1,6 +1,4 @@
-import { useEffect } from "react";
 import { Share2 } from "lucide-react";
-import confetti from "canvas-confetti";
 import { BADGE_DEFINITIONS, BadgeTier } from "@shared/badges";
 
 interface BadgeInfo {
@@ -15,42 +13,50 @@ interface BadgeCelebrationModalProps {
   onClose: () => void;
 }
 
-export function BadgeCelebrationModal({ badge, onClose }: BadgeCelebrationModalProps) {
-  // Fire confetti bursts when badge changes - using simple global confetti
-  useEffect(() => {
-    if (!badge) return;
+const ConfettiEffect = () => {
+  const particles = Array.from({ length: 60 }).map((_, i) => {
+    const left = Math.random() * 100;
+    const animDelay = Math.random() * 1.5;
+    const animDuration = 2 + Math.random() * 2;
+    const colors = ['#84cc16', '#f59e0b', '#a855f7', '#ec4899', '#3b82f6'];
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const size = 6 + Math.random() * 8;
     
-    // Simple confetti call that works throughout the app
-    const fire = () => {
-      // Left side burst
-      confetti({
-        particleCount: 80,
-        angle: 60,
-        spread: 55,
-        origin: { x: 0 },
-        colors: ['#fbbf24', '#f59e0b', '#84cc16', '#22c55e']
-      });
-      // Right side burst  
-      confetti({
-        particleCount: 80,
-        angle: 120,
-        spread: 55,
-        origin: { x: 1 },
-        colors: ['#fbbf24', '#f59e0b', '#84cc16', '#22c55e']
-      });
-    };
-    
-    // Fire multiple times
-    fire();
-    const t1 = setTimeout(fire, 300);
-    const t2 = setTimeout(fire, 600);
-    
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-    };
-  }, [badge]);
+    return (
+      <div 
+        key={i}
+        className="absolute top-[-20px] rounded-sm pointer-events-none"
+        style={{
+          left: `${left}%`,
+          width: `${size}px`,
+          height: `${size * 0.6}px`,
+          backgroundColor: color,
+          opacity: 0.8,
+          animation: `confetti-fall ${animDuration}s linear forwards`,
+          animationDelay: `${animDelay}s`,
+          transform: `rotate(${Math.random() * 360}deg)`
+        }}
+      />
+    );
+  });
 
+  return (
+    <div className="fixed inset-0 pointer-events-none z-[150] overflow-hidden">
+      <style>{`
+        @keyframes confetti-fall {
+          0% { transform: translateY(-50px) rotate(0deg) translateX(0px); opacity: 1; }
+          25% { transform: translateY(25vh) rotate(90deg) translateX(20px); }
+          50% { transform: translateY(50vh) rotate(180deg) translateX(-20px); }
+          75% { transform: translateY(75vh) rotate(270deg) translateX(20px); }
+          100% { transform: translateY(110vh) rotate(360deg) translateX(0px); opacity: 0; }
+        }
+      `}</style>
+      {particles}
+    </div>
+  );
+};
+
+export function BadgeCelebrationModal({ badge, onClose }: BadgeCelebrationModalProps) {
   if (!badge) return null;
 
   const badgeDef = BADGE_DEFINITIONS[badge.badgeType];
@@ -88,9 +94,11 @@ export function BadgeCelebrationModal({ badge, onClose }: BadgeCelebrationModalP
       className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-xl animate-in fade-in duration-300"
       data-testid="badge-celebration-modal"
     >
+      <ConfettiEffect />
+
       <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full blur-[120px] opacity-20 ${theme.bg}`} />
 
-      <div className="relative w-full max-w-sm text-center animate-in zoom-in-50 slide-in-from-bottom-10 duration-500">
+      <div className="relative w-full max-w-sm text-center animate-in zoom-in-50 slide-in-from-bottom-10 duration-500 z-[101]">
         
         <div className="mb-8">
           <h2 className="text-4xl font-black italic uppercase text-white tracking-tighter drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
