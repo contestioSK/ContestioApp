@@ -121,15 +121,15 @@ export default function UserSearch({ userId }: { userId: string }) {
         placeholder="Hľadaj používateľov..."
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
-        className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500"
+        className="bg-muted dark:bg-slate-700/50 border-slate-200 dark:border-slate-600 text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-slate-500"
         data-testid="input-search-users"
       />
 
       {searchQuery.length < 2 ? (
-        <Card className="bg-slate-800/50 border-slate-700">
+        <Card className="bg-card border border-slate-200 shadow-sm dark:bg-slate-800/50 dark:border-slate-700">
           <CardContent className="p-8 text-center flex flex-col items-center">
             <TacticalIcon icon={Search} variant="blue" size="lg" showLabel={false} />
-            <p className="text-slate-400 mt-4">Zadaj aspoň 2 znaky pre vyhľadávanie</p>
+            <p className="text-muted-foreground dark:text-slate-400 mt-4">Zadaj aspoň 2 znaky pre vyhľadávanie</p>
           </CardContent>
         </Card>
       ) : isSearching ? (
@@ -137,16 +137,16 @@ export default function UserSearch({ userId }: { userId: string }) {
           <div className="animate-spin w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full" />
         </div>
       ) : searchResults.length === 0 ? (
-        <Card className="bg-slate-800/50 border-slate-700">
+        <Card className="bg-card border border-slate-200 shadow-sm dark:bg-slate-800/50 dark:border-slate-700">
           <CardContent className="p-8 text-center flex flex-col items-center">
             <TacticalIcon icon={Users} variant="purple" size="lg" showLabel={false} />
-            <p className="text-slate-400 mt-4">Žiadni používatelia nenájdení</p>
+            <p className="text-muted-foreground dark:text-slate-400 mt-4">Žiadni používatelia nenájdení</p>
           </CardContent>
         </Card>
       ) : (
         <div className="space-y-3">
           {searchResults.map((result) => (
-            <Card key={result.id} className="bg-slate-800/50 border-slate-700">
+            <Card key={result.id} className="bg-card border border-slate-200 shadow-sm dark:bg-slate-800/50 dark:border-slate-700">
               <CardContent className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Avatar>
@@ -155,7 +155,7 @@ export default function UserSearch({ userId }: { userId: string }) {
                       {(result.firstName?.[0] || "U").toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <p className="font-bold text-white">
+                  <p className="font-bold text-foreground dark:text-white">
                     {result.firstName} {result.lastName}
                   </p>
                 </div>

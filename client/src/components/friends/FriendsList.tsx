@@ -68,14 +68,14 @@ export default function FriendsList({ userId, onFindFriends }: FriendsListProps)
 
   if (myFriends.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center text-center p-10 bg-slate-800/40 border border-slate-700 rounded-2xl">
+      <div className="flex flex-col items-center justify-center text-center p-10 bg-card border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
         <TacticalIcon icon={Users} variant="orange" size="lg" showLabel={false} />
         
-        <h3 className="text-xl font-bold text-white mb-2 mt-6">
+        <h3 className="text-xl font-bold text-foreground dark:text-white mb-2 mt-6">
           Tvoja rybárska partia ešte len vzniká
         </h3>
 
-        <p className="text-slate-400 max-w-sm mb-6">
+        <p className="text-muted-foreground dark:text-slate-400 max-w-sm mb-6">
           Pridaj si kamarátov, vyzvi ich na súboj a porovnávaj úlovky ako profík.
         </p>
 
@@ -96,7 +96,7 @@ export default function FriendsList({ userId, onFindFriends }: FriendsListProps)
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       {myFriends.map((friend) => (
-        <Card key={friend.id} className="bg-slate-800/50 border-slate-700 hover:border-blue-500 transition">
+        <Card key={friend.id} className="bg-card border border-slate-200 shadow-sm dark:bg-slate-800/50 dark:border-slate-700 hover:border-blue-500 transition">
           <CardContent className="p-4 space-y-4">
             <div className="flex flex-col items-center text-center">
               <Avatar className="w-16 h-16 mb-3">
@@ -105,7 +105,7 @@ export default function FriendsList({ userId, onFindFriends }: FriendsListProps)
                   {(friend.firstName?.[0] || "U").toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <p className="font-bold text-white">
+              <p className="font-bold text-foreground dark:text-white">
                 {friend.firstName} {friend.lastName}
               </p>
             </div>
