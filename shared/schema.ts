@@ -60,6 +60,7 @@ export const users = pgTable("users", {
     mainGoal?: "battles" | "diary" | "statistics";
     visualPreference?: "lists" | "charts";
     onboardingCompleted?: boolean;
+    allowHistoricalCatches?: boolean;
   }>(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

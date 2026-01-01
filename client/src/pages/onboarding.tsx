@@ -17,7 +17,8 @@ import {
   PieChart,
   ChevronRight,
   ChevronLeft,
-  Check
+  Check,
+  History
 } from "lucide-react";
 import { TacticalIcon } from "@/components/ui/tactical-icon";
 
@@ -29,13 +30,15 @@ interface Preferences {
   fishingStyle?: FishingStyle;
   mainGoal?: MainGoal;
   visualPreference?: VisualPreference;
+  allowHistoricalCatches?: boolean;
   onboardingCompleted: boolean;
 }
 
 const STEPS = [
   { id: 1, title: "DNA Rybára" },
   { id: 2, title: "Tvoja Misia" },
-  { id: 3, title: "Tvoj Štýl" }
+  { id: 3, title: "Tvoj Štýl" },
+  { id: 4, title: "Spomienky" }
 ];
 
 const fishingStyles = [
@@ -104,7 +107,7 @@ export default function Onboarding() {
   });
 
   const handleNext = () => {
-    if (currentStep < 3) {
+    if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
     } else {
       savePreferencesMutation.mutate({
@@ -119,6 +122,7 @@ export default function Onboarding() {
       fishingStyle: "carp",
       mainGoal: "diary",
       visualPreference: "lists",
+      allowHistoricalCatches: false,
       onboardingCompleted: true
     });
   };
@@ -128,11 +132,12 @@ export default function Onboarding() {
       case 1: return !!preferences.fishingStyle;
       case 2: return !!preferences.mainGoal;
       case 3: return !!preferences.visualPreference;
+      case 4: return preferences.allowHistoricalCatches !== undefined;
       default: return false;
     }
   };
 
-  const progress = (currentStep / 3) * 100;
+  const progress = (currentStep / 4) * 100;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 flex flex-col">
@@ -311,6 +316,88 @@ export default function Onboarding() {
                   </CardContent>
                 </Card>
               ))}
+            </div>
+
+            <div className="mt-8 flex gap-4">
+              <Button 
+                variant="outline" 
+                onClick={() => setCurrentStep(currentStep - 1)}
+                disabled={savePreferencesMutation.isPending}
+              >
+                <ChevronLeft className="w-4 h-4 mr-2" />
+                Späť
+              </Button>
+              <Button 
+                className="flex-1"
+                onClick={handleNext}
+                disabled={!canProceed() || savePreferencesMutation.isPending}
+                data-testid="button-next-step"
+              >
+                Pokračovať
+                <ChevronRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {currentStep === 4 && (
+          <div className="w-full max-w-lg animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="text-center mb-8">
+              <div className="flex justify-center mb-4">
+                <TacticalIcon icon={History} variant="amber" size="lg" showLabel={false} />
+              </div>
+              <h1 className="text-2xl font-bold mb-2">Chceš si nahrať aj staršie úlovky?</h1>
+              <p className="text-muted-foreground">
+                Historické úlovky slúžia ako archív spomienok. Nezapočítavajú sa do štatistík ani súťaží.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <Card 
+                className={`cursor-pointer transition-all hover:border-amber-500 ${
+                  preferences.allowHistoricalCatches === true 
+                    ? "border-amber-500 bg-amber-500/5 ring-2 ring-amber-500" 
+                    : ""
+                }`}
+                onClick={() => setPreferences({ ...preferences, allowHistoricalCatches: true })}
+                data-testid="card-historical-yes"
+              >
+                <CardContent className="p-4 flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                    <History className="w-6 h-6 text-amber-500" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-semibold">Áno, chcem</div>
+                    <div className="text-sm text-muted-foreground">Budem si nahrávať aj staršie úlovky ako spomienky</div>
+                  </div>
+                  {preferences.allowHistoricalCatches === true && (
+                    <Check className="w-5 h-5 text-amber-500" />
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card 
+                className={`cursor-pointer transition-all hover:border-primary ${
+                  preferences.allowHistoricalCatches === false 
+                    ? "border-primary bg-primary/5 ring-2 ring-primary" 
+                    : ""
+                }`}
+                onClick={() => setPreferences({ ...preferences, allowHistoricalCatches: false })}
+                data-testid="card-historical-no"
+              >
+                <CardContent className="p-4 flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center">
+                    <Fish className="w-6 h-6 text-muted-foreground" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-semibold">Nie, začínam odteraz</div>
+                    <div className="text-sm text-muted-foreground">Budem si zapisovať len aktuálne úlovky</div>
+                  </div>
+                  {preferences.allowHistoricalCatches === false && (
+                    <Check className="w-5 h-5 text-primary" />
+                  )}
+                </CardContent>
+              </Card>
             </div>
 
             <div className="mt-8 flex gap-4">
