@@ -1159,7 +1159,7 @@ export default function DiaryIndex() {
                   {/* Desktop Row */}
                   <div className="hidden md:grid grid-cols-5 gap-4 p-4 relative group">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-muted dark:bg-slate-600/50 rounded-lg flex items-center justify-center overflow-hidden">
+                      <div className="w-10 h-10 flex items-center justify-center overflow-hidden">
                         {getCatchThumbnail(catch_)}
                       </div>
                       <div className="text-foreground dark:text-white font-medium">
@@ -1198,7 +1198,7 @@ export default function DiaryIndex() {
                   {/* Mobile Card */}
                   <div className="md:hidden p-4">
                     <div className="flex items-start gap-3">
-                      <div className="w-12 h-12 bg-muted dark:bg-slate-600/50 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                      <div className="w-12 h-12 flex items-center justify-center flex-shrink-0 overflow-hidden">
                         {getCatchThumbnail(catch_)}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -1279,7 +1279,7 @@ export default function DiaryIndex() {
           <SheetContent className="w-full sm:max-w-md bg-slate-800 border text-white overflow-y-auto" data-testid="catch-detail-panel">
             <SheetHeader className="pb-6">
               <SheetTitle className="text-white flex items-center gap-3">
-                <div className="w-10 h-10 bg-slate-600/50 rounded-lg flex items-center justify-center">
+                <div className="w-10 h-10 flex items-center justify-center">
                   {getFishIcon(selectedCatch?.fishType)}
                 </div>
                 {selectedCatch?.fishType ? getFishTypeLabel(selectedCatch.fishType) : 'Detail úlovku'}
