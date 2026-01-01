@@ -279,7 +279,7 @@ export function BadgeCelebrationModal({ badge, onClose }: BadgeCelebrationModalP
             ) : (
               <Download className="w-4 h-4" />
             )}
-            <span>{isSharing ? 'Pripravujem...' : 'Pochváľ sa'}</span>
+            <span>{isSharing ? 'Pripravujem...' : 'Pochváľ sa a zdieľaj'}</span>
           </button>
 
           <button
