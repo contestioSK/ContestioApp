@@ -60,6 +60,7 @@ type PremiumStatus = {
 
 interface DiaryLayoutProps {
   children: React.ReactNode;
+  fullBleed?: boolean;
 }
 
 // Navigation organized into logical sections
@@ -153,7 +154,7 @@ const competitionNavigationItems = [
   }
 ];
 
-export default function DiaryLayout({ children }: DiaryLayoutProps) {
+export default function DiaryLayout({ children, fullBleed = false }: DiaryLayoutProps) {
   const { user, isPremium, catchLimits } = useAuthInit();
   const { theme, toggleTheme } = useTheme();
   const [location, setLocation] = useLocation();
@@ -582,7 +583,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
 
         {/* Content area */}
         <main className="min-h-screen bg-background pb-16 md:pb-0 w-full">
-          <div className="w-full">
+          <div className={fullBleed ? "w-full" : "w-full max-w-screen-xl mx-auto px-4 md:px-6 py-4 md:py-6"}>
             {children}
           </div>
         </main>

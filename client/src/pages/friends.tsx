@@ -73,8 +73,7 @@ export default function Friends() {
 
   return (
     <DiaryLayout>
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4 md:p-6">
-        <div className="max-w-4xl mx-auto space-y-6">
+      <div className="space-y-6">
           <div className="space-y-2">
             <h1 className="text-3xl font-bold text-white flex items-center gap-3">
               <TacticalIconInline icon={Users} variant="orange" />
@@ -148,7 +147,6 @@ export default function Friends() {
               <UserSearch userId={user.id} />
             </TabsContent>
           </Tabs>
-        </div>
       </div>
     </DiaryLayout>
   );
