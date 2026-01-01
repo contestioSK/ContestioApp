@@ -16,60 +16,38 @@ interface BadgeCelebrationModalProps {
 }
 
 export function BadgeCelebrationModal({ badge, onClose }: BadgeCelebrationModalProps) {
-  // Fire confetti bursts when badge changes
+  // Fire confetti bursts when badge changes - using simple global confetti
   useEffect(() => {
     if (!badge) return;
     
-    // Create custom canvas with very high z-index
-    const canvas = document.createElement('canvas');
-    canvas.style.position = 'fixed';
-    canvas.style.top = '0';
-    canvas.style.left = '0';
-    canvas.style.width = '100vw';
-    canvas.style.height = '100vh';
-    canvas.style.pointerEvents = 'none';
-    canvas.style.zIndex = '9999';
-    document.body.appendChild(canvas);
-    
-    const myConfetti = confetti.create(canvas, { resize: true, useWorker: true });
-    
-    // Fire multiple bursts
-    const fireBurst = () => {
-      const positions = [
-        { x: 0.2, y: 0.4 },
-        { x: 0.8, y: 0.4 },
-        { x: 0.5, y: 0.3 },
-        { x: 0.3, y: 0.6 },
-        { x: 0.7, y: 0.6 }
-      ];
-
-      positions.forEach((position, index) => {
-        setTimeout(() => {
-          myConfetti({
-            particleCount: 60,
-            spread: 80,
-            origin: position,
-            colors: ['#fbbf24', '#f59e0b', '#d97706', '#84cc16', '#22c55e', '#ffffff'],
-          });
-        }, index * 120);
+    // Simple confetti call that works throughout the app
+    const fire = () => {
+      // Left side burst
+      confetti({
+        particleCount: 80,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0 },
+        colors: ['#fbbf24', '#f59e0b', '#84cc16', '#22c55e']
+      });
+      // Right side burst  
+      confetti({
+        particleCount: 80,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1 },
+        colors: ['#fbbf24', '#f59e0b', '#84cc16', '#22c55e']
       });
     };
     
-    // Fire immediately and after delay
-    fireBurst();
-    const timer = setTimeout(fireBurst, 700);
-    
-    // Cleanup after 5 seconds
-    const cleanupTimer = setTimeout(() => {
-      document.body.removeChild(canvas);
-    }, 5000);
+    // Fire multiple times
+    fire();
+    const t1 = setTimeout(fire, 300);
+    const t2 = setTimeout(fire, 600);
     
     return () => {
-      clearTimeout(timer);
-      clearTimeout(cleanupTimer);
-      if (document.body.contains(canvas)) {
-        document.body.removeChild(canvas);
-      }
+      clearTimeout(t1);
+      clearTimeout(t2);
     };
   }, [badge]);
 
