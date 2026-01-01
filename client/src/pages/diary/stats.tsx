@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 
 import DiaryLayout from "@/components/DiaryLayout";
+import { TacticalIcon } from "@/components/ui/tactical-icon";
 import { useTheme } from "@/contexts/ThemeContext";
 import { BG_CLASSES_DARK, BG_CLASSES_LIGHT, TEXT_CLASSES_DARK, TEXT_CLASSES_LIGHT } from "@/lib/colors";
 import { PremiumGate, PremiumTeaserCard } from "@/components/PremiumGate";
@@ -116,10 +117,8 @@ export default function DiaryStats() {
       <div className="p-6 space-y-6" data-testid="page-diary-stats">
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-primary/10 rounded-2xl">
-                <BarChart3 className="w-7 h-7 text-primary" />
-              </div>
+            <div className="flex items-center gap-4">
+              <TacticalIcon icon={BarChart3} variant="active" size="lg" showLabel={false} />
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold text-foreground">Analýza Sezóny</h1>
                 <p className="text-sm text-muted-foreground">Tvoje úspechy premenené na dáta</p>

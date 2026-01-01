@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Lock, Unlock, ChevronDown, ChevronUp, Target, Plus, Trophy, Sparkles } from "lucide-react";
+import { Lock, Unlock, ChevronDown, ChevronUp, Target, Plus, Trophy, Sparkles, Award } from "lucide-react";
 import { useLocation } from "wouter";
 import DiaryLayout from "@/components/DiaryLayout";
+import { TacticalIcon } from "@/components/ui/tactical-icon";
 import { BADGE_DEFINITIONS, getTierColor, getTierBgClass, getTierTextClass, BadgeTier } from "@shared/badges";
 import type { UserBadge } from "@shared/schema";
 import { BadgeCelebrationModal } from "@/components/diary/BadgeCelebrationModal";
@@ -104,11 +105,14 @@ export default function BadgesPage() {
     <DiaryLayout>
       <div className="p-4 md:p-8 max-w-4xl mx-auto">
         <div className="mb-6 flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-1">🏅 Moje Odznaky</h1>
-            <p className="text-muted-foreground text-sm">
-              {userBadges.length} odomknutých z {badgesList.length * 3} možných
-            </p>
+          <div className="flex items-center gap-4">
+            <TacticalIcon icon={Award} variant="active" size="lg" showLabel={false} />
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-1">Moje Odznaky</h1>
+              <p className="text-muted-foreground text-sm">
+                {userBadges.length} odomknutých z {badgesList.length * 3} možných
+              </p>
+            </div>
           </div>
           <Button
             variant="outline"

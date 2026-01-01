@@ -1,0 +1,212 @@
+import React from "react";
+import * as Lucide from "lucide-react";
+
+// --- TACTICAL ICON COMPONENT (LIGHT MODE) ---
+// Optimalizované pre svetlé rozhranie so zachovaním industriálneho charakteru
+const TacticalIcon = ({ icon: Icon, label, variant = "neutral" }: { 
+  icon: any, 
+  label?: string, 
+  variant?: "neutral" | "active" | "action" | "danger" 
+}) => {
+  const themes = {
+    // Svetlá neutrálna: jemné šedé tóny, ktoré nebijú do očí
+    neutral: "text-slate-400 border-slate-200 bg-white shadow-sm",
+    // Aktívna: sýtejšia azúrová pre jasný kontrast na bielom
+    active: "text-cyan-600 border-cyan-200 bg-cyan-50 shadow-[0_0_15px_rgba(8,145,178,0.1)]",
+    // Akčná: čierna/tmavá bridlica na bielom pôsobí najviac prémiovo
+    action: "text-slate-900 border-slate-900 bg-white shadow-[0_4px_10px_rgba(0,0,0,0.05)]",
+    // Nebezpečenstvo: upravená červená pre biely podklad
+    danger: "text-red-600 border-red-200 bg-red-50"
+  };
+
+  return (
+    <div className="flex flex-col items-center gap-3 group">
+      <div className="relative w-14 h-14 flex items-center justify-center transition-all duration-300">
+        {/* Octagon Frame - Svetlá verzia s výraznejším obrysom */}
+        <div 
+          className={`absolute inset-0 border-2 transition-transform duration-500 group-hover:rotate-45 ${themes[variant]}`}
+          style={{ clipPath: "polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)" }} 
+        />
+        
+        {/* Technical Markers (Corners) - Jemnejšie pre svetlý mód */}
+        <div className={`absolute inset-0 opacity-40 ${themes[variant].split(' ')[0]} pointer-events-none`}>
+           <div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-px h-1 bg-current" />
+           <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-px h-1 bg-current" />
+        </div>
+
+        {/* Icon - Mierne hrubší stroke pre lepšiu viditeľnosť */}
+        <Icon className={`relative z-10 w-5 h-5 stroke-[2] transition-transform duration-300 group-hover:scale-110`} />
+      </div>
+      {label && (
+        <span className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-slate-900 transition-colors text-center max-w-[80px] leading-tight">
+          {label}
+        </span>
+      )}
+    </div>
+  );
+};
+
+// --- ICON GROUPS DATA ---
+const ICON_GROUPS = [
+  {
+    title: "Navigácia & UI",
+    icons: [
+      { id: "ArrowLeft", icon: Lucide.ArrowLeft }, { id: "ArrowRight", icon: Lucide.ArrowRight },
+      { id: "ChevronDown", icon: Lucide.ChevronDown }, { id: "ChevronUp", icon: Lucide.ChevronUp },
+      { id: "ChevronLeft", icon: Lucide.ChevronLeft }, { id: "ChevronRight", icon: Lucide.ChevronRight },
+      { id: "Menu", icon: Lucide.Menu }, { id: "X", icon: Lucide.X },
+      { id: "MoreHorizontal", icon: Lucide.MoreHorizontal }, { id: "PanelLeft", icon: Lucide.PanelLeft },
+      { id: "GripVertical", icon: Lucide.GripVertical }, { id: "ExternalLink", icon: Lucide.ExternalLink },
+      { id: "ZoomIn", icon: Lucide.ZoomIn }, { id: "Grid3x3", icon: Lucide.Grid3X3 }
+    ]
+  },
+  {
+    title: "Používatelia & Tímy",
+    icons: [
+      { id: "User", icon: Lucide.User }, { id: "Users", icon: Lucide.Users },
+      { id: "UserPlus", icon: Lucide.UserPlus }, { id: "UserCircle", icon: Lucide.UserCircle },
+      { id: "LogIn", icon: Lucide.LogIn }, { id: "LogOut", icon: Lucide.LogOut, variant: "danger" as const },
+      { id: "Eye", icon: Lucide.Eye }, { id: "EyeOff", icon: Lucide.EyeOff },
+      { id: "Lock", icon: Lucide.Lock }
+    ]
+  },
+  {
+    title: "Ryby & Lov",
+    icons: [
+      { id: "Fish", icon: Lucide.Fish }, { id: "Target", icon: Lucide.Target },
+      { id: "Crosshair", icon: Lucide.Crosshair }, { id: "Scale", icon: Lucide.Scale },
+      { id: "Weight", icon: Lucide.Weight }, { id: "Ruler", icon: Lucide.Ruler }
+    ]
+  },
+  {
+    title: "Súťaže & Odmeny",
+    icons: [
+      { id: "Trophy", icon: Lucide.Trophy, variant: "active" as const }, 
+      { id: "Award", icon: Lucide.Award }, { id: "Medal", icon: Lucide.Medal },
+      { id: "Crown", icon: Lucide.Crown }, { id: "Star", icon: Lucide.Star },
+      { id: "Sparkles", icon: Lucide.Sparkles }, { id: "Flag", icon: Lucide.Flag },
+      { id: "Swords", icon: Lucide.Swords }
+    ]
+  },
+  {
+    title: "Čas & Kalendár",
+    icons: [
+      { id: "Calendar", icon: Lucide.Calendar }, { id: "Clock", icon: Lucide.Clock },
+      { id: "Sunrise", icon: Lucide.Sunrise }, { id: "Sun", icon: Lucide.Sun },
+      { id: "Sunset", icon: Lucide.Sunset }, { id: "Moon", icon: Lucide.Moon }
+    ]
+  },
+  {
+    title: "Počasie",
+    icons: [
+      { id: "Cloud", icon: Lucide.Cloud }, { id: "Thermometer", icon: Lucide.Thermometer },
+      { id: "Wind", icon: Lucide.Wind }, { id: "Gauge", icon: Lucide.Gauge },
+      { id: "Snowflake", icon: Lucide.Snowflake }
+    ]
+  },
+  {
+    title: "Dokumenty & Dáta",
+    icons: [
+      { id: "FileText", icon: Lucide.FileText }, { id: "BookOpen", icon: Lucide.BookOpen },
+      { id: "Book", icon: Lucide.Book }, { id: "BarChart3", icon: Lucide.BarChart3 },
+      { id: "TrendingUp", icon: Lucide.TrendingUp }
+    ]
+  },
+  {
+    title: "Akcie",
+    icons: [
+      { id: "Plus", icon: Lucide.Plus, variant: "action" as const }, 
+      { id: "PlusCircle", icon: Lucide.PlusCircle }, { id: "Trash2", icon: Lucide.Trash2, variant: "danger" as const },
+      { id: "Save", icon: Lucide.Save }, { id: "Send", icon: Lucide.Send },
+      { id: "Download", icon: Lucide.Download }, { id: "Upload", icon: Lucide.Upload },
+      { id: "Share2", icon: Lucide.Share2 }, { id: "Check", icon: Lucide.Check, variant: "active" as const },
+      { id: "CheckCircle", icon: Lucide.CheckCircle }, { id: "CheckCircle2", icon: Lucide.CheckCircle2 },
+      { id: "XCircle", icon: Lucide.XCircle, variant: "danger" as const },
+      { id: "Camera", icon: Lucide.Camera }, { id: "QrCode", icon: Lucide.QrCode },
+      { id: "RefreshCw", icon: Lucide.RefreshCw }, { id: "Loader2", icon: Lucide.Loader2 }
+    ]
+  },
+  {
+    title: "Špeciálne",
+    icons: [
+      { id: "Heart", icon: Lucide.Heart }, { id: "Bell", icon: Lucide.Bell },
+      { id: "Wifi", icon: Lucide.Wifi }, { id: "WifiOff", icon: Lucide.WifiOff },
+      { id: "MapPin", icon: Lucide.MapPin }, { id: "Building", icon: Lucide.Building },
+      { id: "Building2", icon: Lucide.Building2 }, { id: "Mail", icon: Lucide.Mail },
+      { id: "Phone", icon: Lucide.Phone }, { id: "Info", icon: Lucide.Info },
+      { id: "AlertCircle", icon: Lucide.AlertCircle }, { id: "HelpCircle", icon: Lucide.HelpCircle },
+      { id: "Zap", icon: Lucide.Zap, variant: "active" as const }, { id: "Dna", icon: Lucide.Dna },
+      { id: "Chrome", icon: Lucide.Chrome }, { id: "DollarSign", icon: Lucide.DollarSign },
+      { id: "Dot", icon: Lucide.Dot }, { id: "Circle", icon: Lucide.Circle },
+      { id: "Search", icon: Lucide.Search }
+    ]
+  }
+];
+
+export default function App() {
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans p-6 md:p-12 overflow-x-hidden selection:bg-cyan-100">
+      
+      {/* Background Ambience - Jemný svetlý gradient */}
+      <div className="fixed inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(8,145,178,0.05),transparent_70%)] pointer-events-none" />
+
+      <div className="max-w-6xl mx-auto relative z-10">
+        
+        {/* Header - Kontrastný tmavý text na svetlom pozadí */}
+        <header className="mb-20 border-b border-slate-200 pb-16">
+          <div className="flex items-center gap-3 mb-6">
+             <div className="px-3 py-1 bg-white border border-slate-200 text-slate-400 text-[9px] font-black uppercase tracking-[0.4em] shadow-sm">
+               Global Iconography v3.0 (Light)
+             </div>
+          </div>
+          <h1 className="text-6xl md:text-8xl font-black italic uppercase tracking-tighter text-slate-900 mb-6 leading-[0.85]">
+            Svetlý <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-500">Arzenál</span>
+          </h1>
+          <p className="text-slate-500 text-xs max-w-xl leading-relaxed font-bold uppercase tracking-widest">
+            Profesionálna knižnica ikon optimalizovaná pre denné svetlo. Octagon systém s vysokým kontrastom a čistou estetikou.
+          </p>
+        </header>
+
+        {/* ICON SECTIONS */}
+        <div className="space-y-24">
+          {ICON_GROUPS.map((group, groupIdx) => (
+            <section key={groupIdx} className="animate-in fade-in slide-in-from-bottom-4 duration-700" style={{ animationDelay: `${groupIdx * 100}ms` }}>
+              <div className="flex items-center gap-4 mb-12">
+                <h3 className="text-sm font-black uppercase italic text-slate-900 tracking-[0.3em]">{group.title}</h3>
+                <div className="h-px flex-1 bg-slate-200" />
+                <span className="text-[10px] font-black text-slate-300 uppercase">{group.icons.length} Units</span>
+              </div>
+
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-y-12 gap-x-4">
+                {group.icons.map((item, iconIdx) => (
+                  <TacticalIcon 
+                    key={iconIdx} 
+                    icon={item.icon} 
+                    label={item.id} 
+                    variant={item.variant || "neutral"} 
+                  />
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+
+        {/* Final Branding Footer */}
+        <footer className="mt-48 pt-20 border-t border-slate-200 flex flex-col items-center text-center pb-20">
+           <div className="w-12 h-12 bg-white border border-slate-200 flex items-center justify-center mb-10 rotate-45 shadow-sm">
+             <Lucide.Crosshair className="w-5 h-5 text-slate-300 -rotate-45" />
+           </div>
+           <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.5em] mb-4">
+             Contestio Design Core
+           </p>
+           <div className="flex gap-4 opacity-40">
+              <div className="w-2 h-2 bg-slate-900 rounded-full" />
+              <div className="w-2 h-2 bg-cyan-500 rounded-full" />
+              <div className="w-2 h-2 bg-slate-200 rounded-full" />
+           </div>
+        </footer>
+
+      </div>
+    </div>
+  );
+}

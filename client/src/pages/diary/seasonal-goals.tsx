@@ -43,6 +43,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useLocation } from "wouter";
 import DiaryLayout from "@/components/DiaryLayout";
+import { TacticalIcon } from "@/components/ui/tactical-icon";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
@@ -334,11 +335,14 @@ export default function SeasonalGoals() {
         <div className="max-w-6xl mx-auto space-y-8">
           {/* Header */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex-1">
-              <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">Sezónne Ciele</h1>
-              <p className="text-muted-foreground text-sm sm:text-base">
-                Nastavte si ciele a sledujte svoj pokrok počas sezóny
-              </p>
+            <div className="flex items-center gap-4 flex-1">
+              <TacticalIcon icon={Target} variant="active" size="lg" showLabel={false} />
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">Sezónne Ciele</h1>
+                <p className="text-muted-foreground text-sm sm:text-base">
+                  Nastavte si ciele a sledujte svoj pokrok počas sezóny
+                </p>
+              </div>
             </div>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
               {/* Season Switcher */}

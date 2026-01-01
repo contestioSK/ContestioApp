@@ -4,6 +4,7 @@ import { Fish, Trophy, BookOpen, Menu, X, Info, DollarSign, HelpCircle, Phone, M
 import { SiFacebook, SiInstagram, SiYoutube } from "react-icons/si";
 import { ContestCategories } from "@/components/contest-categories";
 import { Link } from "wouter";
+import { TacticalIcon } from "@/components/ui/tactical-icon";
 import { useState, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
