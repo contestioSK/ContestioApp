@@ -997,7 +997,8 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     fishingStyle: z.enum(["carp", "spinning", "feeder", "fly", "catfish"]).optional(),
     mainGoal: z.enum(["battles", "diary", "statistics"]).optional(),
     visualPreference: z.enum(["lists", "charts"]).optional(),
-    onboardingCompleted: z.boolean().optional()
+    onboardingCompleted: z.boolean().optional(),
+    allowHistoricalCatches: z.boolean().optional()
   });
 
   app.put('/api/user/preferences', isAuthenticated, async (req: any, res) => {
@@ -1009,7 +1010,8 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         fishingStyle: validatedData.fishingStyle,
         mainGoal: validatedData.mainGoal,
         visualPreference: validatedData.visualPreference,
-        onboardingCompleted: validatedData.onboardingCompleted
+        onboardingCompleted: validatedData.onboardingCompleted,
+        allowHistoricalCatches: validatedData.allowHistoricalCatches
       };
       
       await db.update(users).set({ preferences }).where(eq(users.id, userId));
