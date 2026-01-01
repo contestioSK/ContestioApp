@@ -116,7 +116,7 @@ export default function Friends() {
 
             <TabsContent value="search" className="space-y-4 mt-4">
               {isNewUser && (
-                <div className="p-6 rounded-2xl bg-orange-50 dark:bg-gradient-to-br dark:from-orange-500/10 dark:to-indigo-500/10 border border-orange-200 dark:border-orange-500/20 mb-4">
+                <div className="p-6 rounded-2xl bg-orange-50 dark:bg-transparent dark:bg-gradient-to-br dark:from-orange-500/10 dark:to-indigo-500/10 border border-orange-200 dark:border-orange-500/20 mb-4">
                   <div className="flex items-start gap-4">
                     <div className="p-3 rounded-xl bg-orange-100 dark:bg-orange-500/20">
                       <Users className="w-6 h-6 text-orange-600 dark:text-orange-400" />
