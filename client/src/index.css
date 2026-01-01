@@ -8,6 +8,14 @@
   --background: hsl(40, 20%, 97%);
   /* Foreground: Deep slate for 7:1+ contrast ratio */
   --foreground: hsl(220, 30%, 18%);
+  
+  /* Ember & Ash Brand Palette - Light Mode */
+  --brand-primary: #c2410c;
+  --brand-secondary: #4f46e5;
+  --brand-success: #16a34a;
+  --brand-prestige: #92400e;
+  --brand-danger: #b91c1c;
+  --brand-neutral: #475569;
   /* Cards: Pure white, clearly elevated from background */
   --card: hsl(0, 0%, 100%);
   --card-foreground: hsl(220, 30%, 18%);
@@ -69,6 +77,14 @@
 .dark {
   --background: #0c1f28;
   --foreground: hsl(210, 17%, 82%);
+  
+  /* Ember & Ash Brand Palette - Dark Mode */
+  --brand-primary: #f97316;
+  --brand-secondary: #818cf8;
+  --brand-success: #4ade80;
+  --brand-prestige: #d97706;
+  --brand-danger: #ef4444;
+  --brand-neutral: #94a3b8;
   --card: hsl(210, 24%, 16%);
   --card-foreground: hsl(210, 17%, 82%);
   --popover: hsl(210, 24%, 16%);
