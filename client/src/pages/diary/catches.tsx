@@ -714,7 +714,7 @@ export default function DiaryCatches() {
               <TabsList className="bg-slate-200 dark:bg-slate-800 h-auto p-1">
                 <TabsTrigger 
                   value="current" 
-                  className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 px-4 py-2"
+                  className="data-[state=active]:bg-card data-[state=active]:shadow-sm dark:data-[state=active]:bg-slate-700 px-4 py-2"
                   data-testid="tab-current-catches"
                 >
                   <Clock className="w-4 h-4 mr-2" />
@@ -781,9 +781,9 @@ export default function DiaryCatches() {
               <div className="mb-6">
                 <h2 className="text-sm font-medium text-muted-foreground dark:text-slate-400 mb-3">Moja celková štatistika</h2>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                  <Card className="bg-white/90 backdrop-blur-sm bg-gradient-to-br from-teal-500/10 via-transparent to-transparent dark:bg-transparent dark:bg-gradient-to-br dark:from-blue-600/20 dark:to-cyan-600/20 border-teal-200/60 dark:border-blue-500/30 transition-all duration-200 hover:from-teal-500/20 hover:shadow-lg hover:shadow-teal-500/10 hover:border-teal-300/80 dark:hover:from-blue-600/30 dark:hover:to-cyan-600/30 dark:hover:border-blue-400/50 dark:hover:shadow-blue-500/20" data-testid="card-total-count">
+                  <Card className="bg-card border border-slate-200 shadow-sm dark:bg-transparent dark:bg-gradient-to-br dark:from-blue-600/20 dark:to-cyan-600/20 dark:border-blue-500/30 transition-all duration-200 hover:shadow-md dark:hover:from-blue-600/30 dark:hover:to-cyan-600/30 dark:hover:border-blue-400/50 dark:hover:shadow-blue-500/20" data-testid="card-total-count">
                     <CardContent className="p-4 md:p-6">
-                      <div className="flex items-start gap-3 md:gap-4">
+                      <div className="flex items-center gap-3 md:gap-4">
                         <TacticalIcon icon={Fish} variant="cyan" size="sm" showLabel={false} />
                         <div className="flex-1">
                           <div className="text-xs md:text-sm text-muted-foreground dark:text-slate-300 mb-1">Úlovky</div>
@@ -793,9 +793,9 @@ export default function DiaryCatches() {
                     </CardContent>
                   </Card>
                   
-                  <Card className="bg-white/90 backdrop-blur-sm bg-gradient-to-br from-amber-400/15 via-transparent to-transparent dark:bg-transparent dark:bg-gradient-to-br dark:from-emerald-600/20 dark:to-green-600/20 border-amber-300/60 dark:border-emerald-500/30 transition-all duration-200 hover:from-amber-400/25 hover:shadow-lg hover:shadow-amber-500/10 hover:border-amber-400/80 dark:hover:from-emerald-600/30 dark:hover:to-green-600/30 dark:hover:border-emerald-400/50 dark:hover:shadow-emerald-500/20" data-testid="card-total-biggest">
+                  <Card className="bg-card border border-slate-200 shadow-sm dark:bg-transparent dark:bg-gradient-to-br dark:from-emerald-600/20 dark:to-green-600/20 dark:border-emerald-500/30 transition-all duration-200 hover:shadow-md dark:hover:from-emerald-600/30 dark:hover:to-green-600/30 dark:hover:border-emerald-400/50 dark:hover:shadow-emerald-500/20" data-testid="card-total-biggest">
                     <CardContent className="p-4 md:p-6">
-                      <div className="flex items-start gap-3 md:gap-4">
+                      <div className="flex items-center gap-3 md:gap-4">
                         <TacticalIcon icon={Trophy} variant="amber" size="sm" showLabel={false} />
                         <div className="flex-1">
                           <div className="text-xs md:text-sm text-muted-foreground dark:text-slate-300 mb-1">Najväčšia ryba</div>
@@ -805,9 +805,9 @@ export default function DiaryCatches() {
                     </CardContent>
                   </Card>
                   
-                  <Card className="bg-white/90 backdrop-blur-sm bg-gradient-to-br from-slate-400/12 via-transparent to-transparent dark:bg-transparent dark:bg-gradient-to-br dark:from-purple-600/20 dark:to-pink-600/20 border-slate-300/60 dark:border-purple-500/30 transition-all duration-200 hover:from-slate-400/20 hover:shadow-lg hover:shadow-slate-500/10 dark:hover:from-purple-600/30 dark:hover:to-pink-600/30 dark:hover:border-purple-400/50 dark:hover:shadow-purple-500/20" data-testid="card-total-weight">
+                  <Card className="bg-card border border-slate-200 shadow-sm dark:bg-transparent dark:bg-gradient-to-br dark:from-purple-600/20 dark:to-pink-600/20 dark:border-purple-500/30 transition-all duration-200 hover:shadow-md dark:hover:from-purple-600/30 dark:hover:to-pink-600/30 dark:hover:border-purple-400/50 dark:hover:shadow-purple-500/20" data-testid="card-total-weight">
                     <CardContent className="p-4 md:p-6">
-                      <div className="flex items-start gap-3 md:gap-4">
+                      <div className="flex items-center gap-3 md:gap-4">
                         <TacticalIcon icon={Weight} variant="indigo" size="sm" showLabel={false} />
                         <div className="flex-1">
                           <div className="text-xs md:text-sm text-muted-foreground dark:text-slate-300 mb-1">Celková váha</div>
@@ -817,7 +817,7 @@ export default function DiaryCatches() {
                     </CardContent>
                   </Card>
                   
-                  <Card className="bg-white/90 backdrop-blur-sm bg-gradient-to-br from-violet-400/12 via-transparent to-transparent dark:bg-transparent dark:bg-gradient-to-br dark:from-amber-600/20 dark:to-orange-600/20 border-violet-300/60 dark:border-amber-500/30 transition-all duration-200 hover:from-violet-400/20 hover:shadow-lg hover:shadow-violet-500/10 dark:hover:from-amber-600/30 dark:hover:to-orange-600/30 dark:hover:border-amber-400/50 dark:hover:shadow-amber-500/20" data-testid="card-total-average">
+                  <Card className="bg-card border border-slate-200 shadow-sm dark:bg-transparent dark:bg-gradient-to-br dark:from-amber-600/20 dark:to-orange-600/20 dark:border-amber-500/30 transition-all duration-200 hover:shadow-md dark:hover:from-amber-600/30 dark:hover:to-orange-600/30 dark:hover:border-amber-400/50 dark:hover:shadow-amber-500/20" data-testid="card-total-average">
                     <CardContent className="p-4 md:p-6">
                       <div className="flex items-start gap-3 md:gap-4">
                         <TacticalIcon icon={Target} variant="purple" size="sm" showLabel={false} />

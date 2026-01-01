@@ -742,7 +742,7 @@ export default function DiaryIndex() {
           <h2 className="text-sm font-medium text-muted-foreground dark:text-slate-400 mb-3">Sezóna {currentYear}</h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             <Link href="/diary/catches" data-testid="link-all-catches">
-              <Card className="bg-white/90 backdrop-blur-sm bg-gradient-to-br from-teal-500/10 via-transparent to-transparent dark:bg-transparent dark:bg-gradient-to-br dark:from-blue-600/20 dark:to-cyan-600/20 border-teal-200/60 dark:border-blue-500/30 cursor-pointer transition-all duration-200 hover:from-teal-500/20 hover:shadow-lg hover:shadow-teal-500/10 hover:border-teal-300/80 dark:hover:bg-transparent dark:hover:from-blue-600/30 dark:hover:to-cyan-600/30 dark:hover:border-blue-400/50 dark:hover:shadow-blue-500/20 h-full" data-testid="card-season-catches">
+              <Card className="bg-card border border-slate-200 shadow-sm dark:bg-transparent dark:bg-gradient-to-br dark:from-blue-600/20 dark:to-cyan-600/20 dark:border-blue-500/30 cursor-pointer transition-all duration-200 hover:shadow-lg dark:hover:from-blue-600/30 dark:hover:to-cyan-600/30 dark:hover:border-blue-400/50 dark:hover:shadow-blue-500/20 h-full" data-testid="card-season-catches">
                 <CardContent className="p-4 md:p-6">
                   <div className="flex items-center gap-3 md:gap-4">
                     <TacticalIcon icon={Fish} variant="cyan" size="sm" showLabel={false} />
@@ -757,7 +757,7 @@ export default function DiaryIndex() {
             
             {diaryStats.biggestCatchId ? (
               <Link href={`/diary/catches/${diaryStats.biggestCatchId}`} data-testid="link-biggest-fish">
-                <Card className="bg-white/90 backdrop-blur-sm bg-gradient-to-br from-amber-400/15 via-transparent to-transparent dark:bg-transparent dark:bg-gradient-to-br dark:from-emerald-600/20 dark:to-green-600/20 border-amber-300/60 dark:border-emerald-500/30 cursor-pointer transition-all duration-200 hover:from-amber-400/25 hover:shadow-lg hover:shadow-amber-500/10 hover:border-amber-400/80 dark:hover:bg-transparent dark:hover:from-emerald-600/30 dark:hover:to-green-600/30 dark:hover:border-emerald-400/50 dark:hover:shadow-emerald-500/20 h-full" data-testid="card-biggest-fish">
+                <Card className="bg-card border border-slate-200 shadow-sm dark:bg-transparent dark:bg-gradient-to-br dark:from-emerald-600/20 dark:to-green-600/20 dark:border-emerald-500/30 cursor-pointer transition-all duration-200 hover:shadow-lg dark:hover:from-emerald-600/30 dark:hover:to-green-600/30 dark:hover:border-emerald-400/50 dark:hover:shadow-emerald-500/20 h-full" data-testid="card-biggest-fish">
                   <CardContent className="p-4 md:p-6">
                     <div className="flex items-center gap-3 md:gap-4">
                       <TacticalIcon icon={Trophy} variant="amber" size="sm" showLabel={false} />
@@ -772,7 +772,7 @@ export default function DiaryIndex() {
                 </Card>
               </Link>
             ) : (
-              <Card className="bg-white/90 backdrop-blur-sm bg-gradient-to-br from-amber-400/15 via-transparent to-transparent dark:bg-transparent dark:bg-gradient-to-br dark:from-emerald-600/20 dark:to-green-600/20 border-amber-300/60 dark:border-emerald-500/30 hover:from-amber-400/25 hover:shadow-lg hover:shadow-amber-500/10 dark:hover:bg-transparent h-full" data-testid="card-biggest-fish">
+              <Card className="bg-card border border-slate-200 shadow-sm dark:bg-transparent dark:bg-gradient-to-br dark:from-emerald-600/20 dark:to-green-600/20 dark:border-emerald-500/30 hover:shadow-lg h-full" data-testid="card-biggest-fish">
                 <CardContent className="p-4 md:p-6">
                   <div className="flex items-center gap-3 md:gap-4">
                     <TacticalIcon icon={Trophy} variant="amber" size="sm" showLabel={false} />
@@ -787,7 +787,7 @@ export default function DiaryIndex() {
               </Card>
             )}
             
-            <Card className="bg-white/90 backdrop-blur-sm bg-gradient-to-br from-slate-400/12 via-transparent to-transparent dark:bg-transparent dark:bg-gradient-to-br dark:from-purple-600/20 dark:to-pink-600/20 border-slate-300/60 dark:border-purple-500/30 hover:from-slate-400/20 hover:shadow-lg hover:shadow-slate-500/10 hover:border-slate-400/80 dark:hover:bg-transparent h-full" data-testid="card-days-at-water">
+            <Card className="bg-card border border-slate-200 shadow-sm dark:bg-transparent dark:bg-gradient-to-br dark:from-purple-600/20 dark:to-pink-600/20 dark:border-purple-500/30 hover:shadow-lg h-full" data-testid="card-days-at-water">
               <CardContent className="p-4 md:p-6">
                 <div className="flex items-center gap-3 md:gap-4">
                   <TacticalIcon icon={CalendarDays} variant="indigo" size="sm" showLabel={false} />
@@ -799,7 +799,7 @@ export default function DiaryIndex() {
               </CardContent>
             </Card>
             
-            <Card className="bg-white/90 backdrop-blur-sm bg-gradient-to-br from-violet-400/12 via-transparent to-transparent dark:bg-transparent dark:bg-gradient-to-br dark:from-amber-600/20 dark:to-orange-600/20 border-violet-300/60 dark:border-amber-500/30 hover:from-violet-400/20 hover:shadow-lg hover:shadow-violet-500/10 hover:border-violet-400/80 dark:hover:bg-transparent h-full" data-testid="card-season-average">
+            <Card className="bg-card border border-slate-200 shadow-sm dark:bg-transparent dark:bg-gradient-to-br dark:from-amber-600/20 dark:to-orange-600/20 dark:border-amber-500/30 hover:shadow-lg h-full" data-testid="card-season-average">
               <CardContent className="p-4 md:p-6">
                 <div className="flex items-center gap-3 md:gap-4">
                   <TacticalIcon icon={Target} variant="purple" size="sm" showLabel={false} />
@@ -814,7 +814,7 @@ export default function DiaryIndex() {
         </div>
 
         {/* Fishing Battle CTA */}
-        <Card className="bg-red-50 dark:bg-transparent dark:bg-gradient-to-r dark:from-red-600/20 dark:to-rose-600/20 border-red-200 dark:border-red-600/30 mb-6 md:mb-8" data-testid="card-battle-cta">
+        <Card className="bg-card border border-slate-200 shadow-sm dark:bg-transparent dark:bg-gradient-to-r dark:from-red-600/20 dark:to-rose-600/20 dark:border-red-600/30 mb-6 md:mb-8" data-testid="card-battle-cta">
           <CardContent className="p-4 md:p-6">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 md:gap-4">
               <div className="flex items-center gap-3 md:gap-4">
@@ -990,7 +990,7 @@ export default function DiaryIndex() {
         <div className="mb-6">
           <h2 className="text-sm font-medium text-muted-foreground dark:text-slate-400 mb-3">Moja dnešná štatistika</h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <Card className="bg-white/90 backdrop-blur-sm bg-gradient-to-br from-teal-500/10 via-transparent to-transparent dark:bg-transparent dark:bg-gradient-to-br dark:from-blue-600/20 dark:to-cyan-600/20 border-teal-200/60 dark:border-blue-500/30 hover:from-teal-500/20 hover:shadow-lg hover:shadow-teal-500/10 dark:hover:bg-transparent transition-all" data-testid="card-today-count">
+            <Card className="bg-card border border-slate-200 shadow-sm dark:bg-transparent dark:bg-gradient-to-br dark:from-blue-600/20 dark:to-cyan-600/20 dark:border-blue-500/30 hover:shadow-lg transition-all" data-testid="card-today-count">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
                   <TacticalIcon icon={Fish} variant="cyan" size="sm" showLabel={false} />
@@ -1002,7 +1002,7 @@ export default function DiaryIndex() {
               </CardContent>
             </Card>
             
-            <Card className="bg-white/90 backdrop-blur-sm bg-gradient-to-br from-amber-400/15 via-transparent to-transparent dark:bg-transparent dark:bg-gradient-to-br dark:from-emerald-600/20 dark:to-green-600/20 border-amber-300/60 dark:border-emerald-500/30 hover:from-amber-400/25 hover:shadow-lg hover:shadow-amber-500/10 dark:hover:bg-transparent transition-all" data-testid="card-today-biggest">
+            <Card className="bg-card border border-slate-200 shadow-sm dark:bg-transparent dark:bg-gradient-to-br dark:from-emerald-600/20 dark:to-green-600/20 dark:border-emerald-500/30 hover:shadow-lg transition-all" data-testid="card-today-biggest">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
                   <TacticalIcon icon={Trophy} variant="amber" size="sm" showLabel={false} />
@@ -1014,7 +1014,7 @@ export default function DiaryIndex() {
               </CardContent>
             </Card>
             
-            <Card className="bg-white/90 backdrop-blur-sm bg-gradient-to-br from-slate-400/12 via-transparent to-transparent dark:bg-transparent dark:bg-gradient-to-br dark:from-purple-600/20 dark:to-pink-600/20 border-slate-300/60 dark:border-purple-500/30 hover:from-slate-400/20 hover:shadow-lg hover:shadow-slate-500/10 dark:hover:bg-transparent transition-all" data-testid="card-today-weight">
+            <Card className="bg-card border border-slate-200 shadow-sm dark:bg-transparent dark:bg-gradient-to-br dark:from-purple-600/20 dark:to-pink-600/20 dark:border-purple-500/30 hover:shadow-lg transition-all" data-testid="card-today-weight">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
                   <TacticalIcon icon={Weight} variant="indigo" size="sm" showLabel={false} />
@@ -1026,7 +1026,7 @@ export default function DiaryIndex() {
               </CardContent>
             </Card>
             
-            <Card className="bg-white/90 backdrop-blur-sm bg-gradient-to-br from-violet-400/12 via-transparent to-transparent dark:bg-transparent dark:bg-gradient-to-br dark:from-amber-600/20 dark:to-orange-600/20 border-violet-300/60 dark:border-amber-500/30 hover:from-violet-400/20 hover:shadow-lg hover:shadow-violet-500/10 dark:hover:bg-transparent transition-all" data-testid="card-today-average">
+            <Card className="bg-card border border-slate-200 shadow-sm dark:bg-transparent dark:bg-gradient-to-br dark:from-amber-600/20 dark:to-orange-600/20 dark:border-amber-500/30 hover:shadow-lg transition-all" data-testid="card-today-average">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
                   <TacticalIcon icon={Target} variant="purple" size="sm" showLabel={false} />

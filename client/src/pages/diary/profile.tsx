@@ -441,8 +441,8 @@ export default function Profile() {
                       <Badge 
                         variant="secondary" 
                         className={isPremium 
-                          ? "bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30" 
-                          : "bg-gray-500/20 text-gray-600 dark:text-gray-400 border-gray-500/30"
+                          ? "bg-amber-50 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/30" 
+                          : "bg-slate-100 dark:bg-gray-500/20 text-slate-600 dark:text-gray-400 border border-slate-200 dark:border-gray-500/30"
                         }
                       >
                         {isPremium ? "⭐ PREMIUM" : "FREE"}
@@ -453,7 +453,7 @@ export default function Profile() {
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      className="w-full gap-2 border-amber-500/30 text-amber-600 hover:bg-amber-500/10"
+                      className="w-full gap-2 border-amber-300 dark:border-amber-500/30 text-amber-700 dark:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10"
                       onClick={() => window.location.href = '/diary/premium'}
                       data-testid="button-unlock-premium"
                     >
@@ -556,7 +556,7 @@ export default function Profile() {
               <CardContent>
                 {/* Motivational text for FREE users */}
                 {!isPremium && !isPremiumLoading && (
-                  <p className="text-sm text-muted-foreground mb-4 p-3 bg-muted/50 rounded-lg">
+                  <p className="text-sm text-muted-foreground mb-4 p-3 bg-slate-100 dark:bg-muted/50 rounded-lg border border-slate-200 dark:border-transparent">
                     Vyplnený profil zvyšuje dôveryhodnosť v súťažiach a leaderboards.
                   </p>
                 )}

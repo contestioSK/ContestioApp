@@ -549,7 +549,7 @@ export default function TripDetail() {
                       {displayedCatches.map((catch_, index) => (
                         <div 
                           key={catch_.id}
-                          className="flex items-center gap-3 p-3 rounded-lg border bg-card cursor-pointer hover:bg-muted/50 active:bg-muted transition-colors"
+                          className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700/30 bg-card shadow-sm cursor-pointer hover:bg-muted/50 active:bg-muted transition-colors"
                           onClick={() => setSelectedCatch(catch_)}
                           data-testid={`card-catch-${catch_.id}`}
                         >
@@ -573,7 +573,7 @@ export default function TripDetail() {
                     </div>
 
                     {/* Desktop: Table */}
-                    <div className="hidden md:block border rounded-lg overflow-hidden">
+                    <div className="hidden md:block border border-slate-200 dark:border-slate-700/30 rounded-lg overflow-hidden">
                       <Table>
                         <TableHeader>
                           <TableRow>
@@ -637,10 +637,10 @@ export default function TripDetail() {
 
         {/* Detail Panel */}
         <Sheet open={!!selectedCatch} onOpenChange={(open) => !open && setSelectedCatch(null)}>
-          <SheetContent className="w-full sm:max-w-md bg-slate-800 border text-white overflow-y-auto" data-testid="catch-detail-panel">
+          <SheetContent className="w-full sm:max-w-md bg-background dark:bg-slate-800 border-l border-slate-200 dark:border-slate-700/30 text-foreground dark:text-white overflow-y-auto" data-testid="catch-detail-panel">
             <SheetHeader className="pb-6">
-              <SheetTitle className="text-white flex items-center gap-3">
-                <div className="w-10 h-10 bg-slate-600/50 rounded-lg flex items-center justify-center">
+              <SheetTitle className="text-foreground dark:text-white flex items-center gap-3">
+                <div className="w-10 h-10 bg-muted dark:bg-slate-600/50 border border-slate-200 dark:border-slate-700/30 rounded-lg flex items-center justify-center">
                   <Fish className={`w-5 h-5 ${getFishIconColor(selectedCatch?.fishType)}`} />
                 </div>
                 {selectedCatch?.fishType ? getFishTypeLabel(selectedCatch.fishType) : 'Detail úlovku'}
@@ -679,7 +679,7 @@ export default function TripDetail() {
                     />
                     {/* Zoom overlay indicator */}
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 rounded-full p-3">
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-card shadow-sm rounded-full p-3">
                         <ZoomIn className="w-6 h-6 text-slate-800" />
                       </div>
                     </div>
@@ -735,7 +735,7 @@ export default function TripDetail() {
                 {selectedCatch.notes && (
                   <div>
                     <div className="text-sm text-slate-400 mb-2">Poznámky</div>
-                    <div className="bg-slate-700/50 rounded-lg p-3 text-sm">
+                    <div className="bg-muted dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700/30 rounded-lg p-3 text-sm">
                       {selectedCatch.notes}
                     </div>
                   </div>
@@ -743,8 +743,8 @@ export default function TripDetail() {
 
                 {/* GPS Coordinates */}
                 {(selectedCatch.latitude || selectedCatch.longitude) && (
-                  <div className="bg-slate-700/30 rounded-lg p-4 space-y-2">
-                    <div className="text-sm font-semibold text-slate-300 mb-3">📍 GPS Súradnice</div>
+                  <div className="bg-muted dark:bg-slate-700/30 border border-slate-200 dark:border-slate-700/30 rounded-lg p-4 space-y-2">
+                    <div className="text-sm font-semibold text-muted-foreground dark:text-slate-300 mb-3">📍 GPS Súradnice</div>
                     <div className="grid grid-cols-2 gap-3 text-sm">
                       {selectedCatch.latitude && (
                         <div>
@@ -767,14 +767,14 @@ export default function TripDetail() {
                  (selectedCatch.airTemp !== null && selectedCatch.airTemp !== undefined) || 
                  (selectedCatch.windSpeed !== null && selectedCatch.windSpeed !== undefined) || 
                  (selectedCatch.airPressure !== null && selectedCatch.airPressure !== undefined) ? (
-                  <div className="border-t border-slate-700 pt-4">
+                  <div className="border-t border-slate-200 dark:border-slate-700/30 pt-4">
                     <div className="flex items-center gap-2 mb-4">
                       <Cloud className="w-5 h-5 text-slate-400" />
                       <div className="text-sm text-slate-400">Podmienky počasia</div>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       {(selectedCatch.waterTemp !== null && selectedCatch.waterTemp !== undefined) && (
-                        <div className="bg-slate-700/50 rounded-lg p-3">
+                        <div className="bg-muted dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700/30 rounded-lg p-3">
                           <div className="flex items-center gap-2 text-slate-400 mb-1">
                             <Thermometer className="w-4 h-4" />
                             <span className="text-xs">Teplota vody</span>
@@ -783,7 +783,7 @@ export default function TripDetail() {
                         </div>
                       )}
                       {(selectedCatch.airTemp !== null && selectedCatch.airTemp !== undefined) && (
-                        <div className="bg-slate-700/50 rounded-lg p-3">
+                        <div className="bg-muted dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700/30 rounded-lg p-3">
                           <div className="flex items-center gap-2 text-slate-400 mb-1">
                             <Thermometer className="w-4 h-4" />
                             <span className="text-xs">Teplota vzduchu</span>
@@ -792,7 +792,7 @@ export default function TripDetail() {
                         </div>
                       )}
                       {(selectedCatch.windSpeed !== null && selectedCatch.windSpeed !== undefined) && (
-                        <div className="bg-slate-700/50 rounded-lg p-3">
+                        <div className="bg-muted dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700/30 rounded-lg p-3">
                           <div className="flex items-center gap-2 text-slate-400 mb-1">
                             <Wind className="w-4 h-4" />
                             <span className="text-xs">Vietor</span>
@@ -801,7 +801,7 @@ export default function TripDetail() {
                         </div>
                       )}
                       {(selectedCatch.airPressure !== null && selectedCatch.airPressure !== undefined) && (
-                        <div className="bg-slate-700/50 rounded-lg p-3">
+                        <div className="bg-muted dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700/30 rounded-lg p-3">
                           <div className="flex items-center gap-2 text-slate-400 mb-1">
                             <Gauge className="w-4 h-4" />
                             <span className="text-xs">Tlak vzduchu</span>
@@ -849,7 +849,7 @@ export default function TripDetail() {
           {trip && (
             <div className="space-y-8">
               {/* Header */}
-              <div className="text-center space-y-4 border-b border-slate-700 pb-8">
+              <div className="text-center space-y-4 border-b border-slate-200 dark:border-slate-700/30 pb-8">
                 <h1 className="text-5xl font-bold text-white">
                   {trip.name}
                 </h1>
@@ -937,7 +937,7 @@ export default function TripDetail() {
               )}
 
               {/* Footer */}
-              <div className="flex justify-center pt-8 border-t border-slate-700">
+              <div className="flex justify-center pt-8 border-t border-slate-200 dark:border-slate-700/30">
                 <img 
                   src={contestioLogo} 
                   alt="Contestio" 

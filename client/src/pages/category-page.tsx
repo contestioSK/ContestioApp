@@ -204,7 +204,7 @@ export default function CategoryPage({ category, title, description }: CategoryP
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                         {category !== 'live' && (
                           <div className="absolute top-3 left-3 pointer-events-none">
-                            <Badge variant={statusBadge.variant} className="bg-white/90 text-black backdrop-blur-sm">
+                            <Badge variant={statusBadge.variant} className="bg-card/95 backdrop-blur-sm text-foreground shadow-sm border border-slate-200/50">
                               {statusBadge.text}
                             </Badge>
                           </div>

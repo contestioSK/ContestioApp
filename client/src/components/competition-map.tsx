@@ -159,7 +159,7 @@ export default function CompetitionMap({ competitionId, teams }: CompetitionMapP
           </div>
           
           {/* Legend */}
-          <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm rounded-lg p-2 space-y-1">
+          <div className="absolute bottom-3 left-3 bg-card shadow-sm rounded-lg p-2 space-y-1 border border-slate-200 dark:border-slate-700">
             <div className="text-xs font-medium text-foreground">Sektory:</div>
             <div className="flex space-x-2">
               <div className="flex items-center space-x-1">
