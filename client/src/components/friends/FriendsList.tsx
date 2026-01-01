@@ -69,7 +69,7 @@ export default function FriendsList({ userId, onFindFriends }: FriendsListProps)
   if (myFriends.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center text-center p-10 bg-slate-800/40 border border-slate-700 rounded-2xl">
-        <TacticalIcon icon={Users} variant="lime" size="lg" showLabel={false} />
+        <TacticalIcon icon={Users} variant="orange" size="lg" showLabel={false} />
         
         <h3 className="text-xl font-bold text-white mb-2 mt-6">
           Tvoja rybárska partia ešte len vzniká
@@ -82,7 +82,7 @@ export default function FriendsList({ userId, onFindFriends }: FriendsListProps)
         {onFindFriends && (
           <Button
             onClick={onFindFriends}
-            className="bg-lime-500 hover:bg-lime-400 text-slate-950 font-bold px-6"
+            className="bg-orange-500 hover:bg-orange-400 text-white font-bold px-6"
             data-testid="button-find-friends"
           >
             <Users className="w-4 h-4 mr-2" />

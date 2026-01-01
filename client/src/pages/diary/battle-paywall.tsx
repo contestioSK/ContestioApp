@@ -37,8 +37,8 @@ export default function BattlePaywall() {
     },
     {
       icon: BarChart3,
-      color: "text-lime-400",
-      bg: "bg-lime-500/10",
+      color: "text-orange-400",
+      bg: "bg-orange-500/10",
       title: "Live Rebríček",
       description: "Sleduj zmeny poradia v reálnom čase. Každý gram rozhoduje."
     },
@@ -85,7 +85,7 @@ export default function BattlePaywall() {
       <div className="relative pb-32" data-testid="paywall-fishing-battle">
         
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-amber-600/10 blur-[120px] rounded-full pointer-events-none" />
-        <div className="absolute top-40 right-0 w-64 h-64 bg-lime-500/5 blur-[80px] rounded-full pointer-events-none" />
+        <div className="absolute top-40 right-0 w-64 h-64 bg-orange-500/5 blur-[80px] rounded-full pointer-events-none" />
 
         <div className="max-w-4xl mx-auto p-6 relative z-10">
           
@@ -98,7 +98,7 @@ export default function BattlePaywall() {
             <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tight text-foreground mb-6 leading-tight">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-foreground via-muted-foreground to-muted-foreground/50">Vyzvi kamošov</span>
               <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-lime-400 to-emerald-500">Na súboj</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-500">Na súboj</span>
             </h1>
             
             <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto leading-relaxed">
@@ -124,7 +124,7 @@ export default function BattlePaywall() {
                      key={i} 
                      className={`flex items-center justify-between p-3 rounded-xl border ${
                        p.isUser 
-                         ? 'bg-lime-500/10 border-lime-500/30' 
+                         ? 'bg-orange-500/10 border-orange-500/30' 
                          : 'bg-muted/30 border-border'
                      } blur-[3px] group-hover:blur-[2px] transition-all duration-500`}
                    >

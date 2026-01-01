@@ -140,7 +140,7 @@ export default function BadgesPage() {
                 icon: firstBadge.icon,
               });
             }}
-            className="border-lime-500/50 text-lime-500 hover:bg-lime-500/10"
+            className="border-orange-500/50 text-orange-500 hover:bg-orange-500/10"
             data-testid="button-demo-celebration"
           >
             <Sparkles className="w-4 h-4 mr-2" />
@@ -159,7 +159,7 @@ export default function BadgesPage() {
                 Stačí pridať prvý úlovok a odomkneš <span className="text-amber-500 font-semibold">Bronze</span> odznak.
               </p>
               <Button
-                className="bg-lime-500 hover:bg-lime-400 text-background font-bold"
+                className="bg-orange-500 hover:bg-orange-400 text-white font-bold"
                 onClick={() => setLocation('/diary')}
                 data-testid="button-add-first-catch"
               >
@@ -171,14 +171,14 @@ export default function BadgesPage() {
         )}
 
         {nextGoal && (
-          <Card className="mb-6 border-lime-500/30 bg-lime-500/5">
+          <Card className="mb-6 border-orange-500/30 bg-orange-500/5">
             <CardContent className="p-5">
               <div className="flex items-start gap-4">
                 <TacticalIcon icon={BADGE_ICON_MAP[nextGoal.badgeDef.icon] || Award} variant="amber" size="md" showLabel={false} />
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <TacticalIconInline icon={Target} variant="purple" size="sm" />
-                    <span className="text-xs font-bold uppercase tracking-wider text-lime-500">Najbližší odznak</span>
+                    <span className="text-xs font-bold uppercase tracking-wider text-orange-500">Najbližší odznak</span>
                   </div>
                   <h3 className="font-bold text-foreground mb-1">
                     {nextGoal.badgeDef.name} 
@@ -198,7 +198,7 @@ export default function BadgesPage() {
               <div className="mt-4 pt-4 border-t border-border">
                 <Button
                   size="sm"
-                  className="w-full bg-lime-500 hover:bg-lime-400 text-background font-bold"
+                  className="w-full bg-orange-500 hover:bg-orange-400 text-white font-bold"
                   onClick={() => setLocation('/diary')}
                   data-testid="button-add-catch-for-badge"
                 >
@@ -293,7 +293,7 @@ export default function BadgesPage() {
                           </div>
                           <div className="flex items-center gap-2">
                             {isUnlocked ? (
-                              <Unlock className="w-3.5 h-3.5 text-lime-500" />
+                              <Unlock className="w-3.5 h-3.5 text-emerald-500" />
                             ) : (
                               <span className="text-[10px] text-muted-foreground">{currentValue}/{threshold}</span>
                             )}

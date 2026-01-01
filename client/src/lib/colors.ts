@@ -29,10 +29,10 @@ export interface PaletteColor {
 export const CONTESTIO_PALETTE: PaletteColor[] = [
   { 
     id: 1, 
-    name: 'Contestio Lime', 
-    dark: { tailwind: 'bg-lime-500', hex: '#84cc16', text: 'text-lime-500', bg: 'bg-lime-500', border: 'border-lime-500' },
-    light: { tailwind: 'bg-lime-600', hex: '#65a30d', text: 'text-lime-600', bg: 'bg-lime-600', border: 'border-lime-600' },
-    usage: 'Brand, Primárne dáta'
+    name: 'Apex Orange', 
+    dark: { tailwind: 'bg-orange-500', hex: '#f97316', text: 'text-orange-500', bg: 'bg-orange-500', border: 'border-orange-500' },
+    light: { tailwind: 'bg-orange-700', hex: '#c2410c', text: 'text-orange-700', bg: 'bg-orange-700', border: 'border-orange-700' },
+    usage: 'Brand, Primárne CTA'
   },
   { 
     id: 2, 

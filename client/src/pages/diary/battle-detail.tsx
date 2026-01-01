@@ -380,7 +380,7 @@ export default function BattleDetail() {
                 <Card>
                   <CardHeader className="p-4 md:p-6">
                     <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-                      <TacticalIconInline icon={BarChart3} variant="lime" size="md" />
+                      <TacticalIconInline icon={BarChart3} variant="orange" size="md" />
                       Porovnanie Výsledkov
                     </CardTitle>
                   </CardHeader>

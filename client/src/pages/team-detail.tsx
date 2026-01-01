@@ -220,7 +220,7 @@ export default function TeamDetail() {
             <Card data-testid="card-team-info">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
-                  <TacticalIconInline icon={Users} variant="lime" size="md" />
+                  <TacticalIconInline icon={Users} variant="orange" size="md" />
                   <span>Informácie o tíme</span>
                 </CardTitle>
               </CardHeader>

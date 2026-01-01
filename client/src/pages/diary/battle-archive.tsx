@@ -393,7 +393,7 @@ export default function BattleArchive() {
           <Card className="mb-8">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <TacticalIconInline icon={BarChart3} variant="lime" size="md" />
+                <TacticalIconInline icon={BarChart3} variant="orange" size="md" />
                 Vaše štatistiky
               </CardTitle>
             </CardHeader>
@@ -651,7 +651,7 @@ export default function BattleArchive() {
                               <span>{getModeLabel(battle.mode)}</span>
                             </div>
                             <div className="flex items-center gap-1">
-                              <TacticalIconInline icon={Users} variant="lime" size="sm" />
+                              <TacticalIconInline icon={Users} variant="orange" size="sm" />
                               <span>{battle.participantCount} účastníkov</span>
                             </div>
                             <div className="flex items-center gap-1">
