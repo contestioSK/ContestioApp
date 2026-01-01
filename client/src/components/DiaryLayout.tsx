@@ -199,7 +199,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
       {/* Sidebar */}
       <div className={`
         fixed inset-y-0 left-0 z-50 bg-sidebar border-r border-sidebar-border transform transition-transform duration-300 ease-in-out
-        w-[280px] md:w-[240px] lg:w-[280px]
+        w-[280px] md:w-[240px] lg:w-[280px] flex-shrink-0
         lg:translate-x-0 lg:static lg:inset-0
         md:translate-x-0 md:static md:inset-0
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
@@ -563,7 +563,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
       )}
 
       {/* Main content */}
-      <div className="flex-1 w-full max-w-full overflow-x-hidden">
+      <div className="flex-1 min-w-0 w-full overflow-x-hidden">
         {/* Mobile header */}
         <div className="md:hidden bg-sidebar border-b border-sidebar-border p-3">
           <div className="flex items-center justify-between">
@@ -581,8 +581,8 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
         </div>
 
         {/* Content area */}
-        <main className="min-h-screen bg-background pb-16 md:pb-0 w-full max-w-full">
-          <div className="w-full max-w-full overflow-x-hidden">
+        <main className="min-h-screen bg-background pb-16 md:pb-0 w-full">
+          <div className="w-full">
             {children}
           </div>
         </main>
