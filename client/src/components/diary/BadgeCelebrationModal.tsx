@@ -14,7 +14,7 @@ interface BadgeCelebrationModalProps {
 }
 
 const ConfettiEffect = () => {
-  const particles = Array.from({ length: 60 }).map((_, i) => {
+  const particles = Array.from({ length: 120 }).map((_, i) => {
     const left = Math.random() * 100;
     const animDelay = Math.random() * 1.5;
     const animDuration = 2 + Math.random() * 2;
