@@ -21,7 +21,12 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import type { User } from "@shared/schema";
 
-export default function FriendsList({ userId }: { userId: string }) {
+interface FriendsListProps {
+  userId: string;
+  onFindFriends?: () => void;
+}
+
+export default function FriendsList({ userId, onFindFriends }: FriendsListProps) {
   const { toast } = useToast();
   const [, navigate] = useLocation();
   const [friendToRemove, setFriendToRemove] = useState<string | null>(null);
@@ -63,12 +68,28 @@ export default function FriendsList({ userId }: { userId: string }) {
 
   if (myFriends.length === 0) {
     return (
-      <Card className="bg-slate-800/50 border-slate-700">
-        <CardContent className="p-8 text-center flex flex-col items-center">
-          <TacticalIcon icon={Users} variant="lime" size="lg" showLabel={false} />
-          <p className="text-slate-400 mt-4">Zatiaľ nemáš žiadnych priateľov</p>
-        </CardContent>
-      </Card>
+      <div className="flex flex-col items-center justify-center text-center p-10 bg-slate-800/40 border border-slate-700 rounded-2xl">
+        <TacticalIcon icon={Users} variant="lime" size="lg" showLabel={false} />
+        
+        <h3 className="text-xl font-bold text-white mb-2 mt-6">
+          Tvoja rybárska partia ešte len vzniká
+        </h3>
+
+        <p className="text-slate-400 max-w-sm mb-6">
+          Pridaj si kamarátov, vyzvi ich na súboj a porovnávaj úlovky ako profík.
+        </p>
+
+        {onFindFriends && (
+          <Button
+            onClick={onFindFriends}
+            className="bg-lime-500 hover:bg-lime-400 text-slate-950 font-bold px-6"
+            data-testid="button-find-friends"
+          >
+            <Users className="w-4 h-4 mr-2" />
+            Nájsť priateľov
+          </Button>
+        )}
+      </div>
     );
   }
 
