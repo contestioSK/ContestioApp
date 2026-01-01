@@ -1,6 +1,7 @@
 import { useState, useMemo, Fragment } from "react";
 import DiaryLayout from "@/components/DiaryLayout";
-import { Search, Shield, Ruler, Clock, AlertCircle, MapPin, Loader2 } from "lucide-react";
+import { Search, Shield, Ruler, Clock, AlertCircle, MapPin, Loader2, Scale } from "lucide-react";
+import { TacticalIcon } from "@/components/ui/tactical-icon";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -656,16 +657,19 @@ export default function FishingRulesPage() {
       <div className="p-4 md:p-6">
         <div className="max-w-6xl mx-auto space-y-8">
           {/* Hlavička */}
-          <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-              Rybársky Poriadok
-            </h1>
-            <p className="text-muted-foreground text-lg">
-              Interaktívna databáza rybárskych pravidiel a predpisov
-            </p>
+          <div className="flex items-center gap-4">
+            <TacticalIcon icon={Scale} variant="active" size="lg" showLabel={false} />
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
+                Rybársky Poriadok
+              </h1>
+              <p className="text-muted-foreground text-lg">
+                Interaktívna databáza rybárskych pravidiel a predpisov
+              </p>
+            </div>
           </div>
 
-        {/* Vyhľadávacie pole */}
+          {/* Vyhľadávacie pole */}
         <div className="relative">
           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input

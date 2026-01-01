@@ -52,6 +52,8 @@ import {
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { DiaryTrip, InsertDiaryTrip, DiaryCatch } from "@shared/schema";
 import DiaryLayout from "@/components/DiaryLayout";
+import { TacticalIcon } from "@/components/ui/tactical-icon";
+import { Compass } from "lucide-react";
 import { TripCard } from "@/components/diary/TripCard";
 import { PremiumUpsellModal } from "@/components/PremiumUpsellModal";
 import { ChecklistModal } from "@/components/diary/ChecklistModal";
@@ -768,7 +770,8 @@ export default function DiaryTrips() {
           {/* Compact Header */}
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
+                <TacticalIcon icon={Compass} variant="active" size="lg" showLabel={false} />
                 <h1 className="text-2xl md:text-3xl font-bold text-foreground">Výpravy</h1>
                 {/* Compact status indicator */}
                 {(isOffline || isSyncing || (!isOffline && pendingTrips.length > 0)) && (

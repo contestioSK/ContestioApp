@@ -33,6 +33,7 @@ import {
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { SiFacebook, SiInstagram } from "react-icons/si";
 import DiaryLayout from "@/components/DiaryLayout";
+import { TacticalIcon } from "@/components/ui/tactical-icon";
 
 // Profile form schema - email removed (read-only)
 const profileSchema = z.object({
@@ -357,11 +358,14 @@ export default function Profile() {
         <div className="max-w-4xl mx-auto space-y-8">
           {/* Header */}
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground mb-2">Môj profil</h1>
-              <p className="text-muted-foreground">
-                Spravujte svoje osobné údaje a nastavenia účtu
-              </p>
+            <div className="flex items-center gap-4">
+              <TacticalIcon icon={User} variant="active" size="lg" showLabel={false} />
+              <div>
+                <h1 className="text-3xl font-bold text-foreground mb-2">Môj profil</h1>
+                <p className="text-muted-foreground">
+                  Spravujte svoje osobné údaje a nastavenia účtu
+                </p>
+              </div>
             </div>
             {!isEditing && (
               <Button 
