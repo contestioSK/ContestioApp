@@ -97,7 +97,7 @@ export default function Friends() {
             </TabsList>
 
             <TabsContent value="friends" className="space-y-4 mt-4">
-              <FriendsList userId={user.id} />
+              <FriendsList userId={user.id} onFindFriends={() => setActiveTab('search')} />
             </TabsContent>
 
             <TabsContent value="requests" className="space-y-4 mt-4">
