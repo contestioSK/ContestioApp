@@ -477,7 +477,7 @@ export default function WeatherForecast() {
 
   return (
     <DiaryLayout>
-      <div className="container mx-auto p-4 md:p-6 space-y-6">
+      <div className="space-y-6">
         <div className="flex flex-col space-y-4">
           <div className="flex items-center gap-4">
             <TacticalIcon icon={Cloud} variant="active" size="lg" showLabel={false} />

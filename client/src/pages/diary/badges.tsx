@@ -115,7 +115,7 @@ export default function BadgesPage() {
 
   return (
     <DiaryLayout>
-      <div className="p-4 md:p-8 max-w-4xl mx-auto">
+      <div className="space-y-6">
         <div className="mb-6 flex items-start justify-between">
           <div className="flex items-center gap-4">
             <TacticalIcon icon={Award} variant="amber" size="lg" showLabel={false} />

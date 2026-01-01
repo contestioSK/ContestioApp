@@ -128,7 +128,7 @@ export default function TripGallery() {
   };
 
   return (
-    <DiaryLayout>
+    <DiaryLayout fullBleed={true}>
       <div className="p-3 md:p-6">
         <div className="max-w-7xl mx-auto space-y-4">
           {/* Compact Sticky Header with Filters */}

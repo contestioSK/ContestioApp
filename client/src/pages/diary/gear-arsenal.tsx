@@ -421,7 +421,7 @@ export default function GearArsenalPage() {
 
   return (
     <DiaryLayout>
-      <div className="px-4 md:px-6 pt-4 pb-6 max-w-5xl mx-auto space-y-6">
+      <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
           <TacticalIcon icon={Archive} variant="active" size="lg" showLabel={false} />

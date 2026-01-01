@@ -42,8 +42,8 @@ export default function CatchDetail() {
   if (isLoading) {
     return (
       <DiaryLayout>
-        <div className="p-6 max-w-3xl mx-auto">
-          <Skeleton className="h-8 w-32 mb-6" />
+        <div className="space-y-6">
+          <Skeleton className="h-8 w-32" />
           <Card>
             <CardContent className="p-6 space-y-4">
               <Skeleton className="h-64 w-full" />
@@ -59,23 +59,21 @@ export default function CatchDetail() {
   if (!catch_) {
     return (
       <DiaryLayout>
-        <div className="p-6 max-w-3xl mx-auto">
-          <Card>
-            <CardContent className="p-6 text-center">
-              <p className="text-muted-foreground">Úlovok sa nenašiel</p>
-              <Button onClick={() => setLocation("/diary")} className="mt-4">
-                Späť na denník
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+        <Card>
+          <CardContent className="p-6 text-center">
+            <p className="text-muted-foreground">Úlovok sa nenašiel</p>
+            <Button onClick={() => setLocation("/diary")} className="mt-4">
+              Späť na denník
+            </Button>
+          </CardContent>
+        </Card>
       </DiaryLayout>
     );
   }
 
   return (
     <DiaryLayout>
-      <div className="p-6 max-w-3xl mx-auto">
+      <div className="space-y-6">
         {/* Back Button */}
         <Button
           variant="ghost"

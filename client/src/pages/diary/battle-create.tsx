@@ -344,9 +344,8 @@ export default function BattleCreate() {
 
   return (
     <DiaryLayout>
-      <div className="p-6">
-        <div className="max-w-4xl mx-auto">
-          {/* Header */}
+      <div className="space-y-6">
+        {/* Header */}
           <div className="mb-8">
             <div className="flex items-center gap-4 mb-4">
               <TacticalIcon icon={Swords} variant="rose" size="lg" showLabel={false} />
@@ -793,7 +792,6 @@ export default function BattleCreate() {
             </form>
           </Form>
         </div>
-      </div>
     </DiaryLayout>
   );
 }

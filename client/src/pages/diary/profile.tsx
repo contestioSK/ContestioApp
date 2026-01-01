@@ -154,8 +154,7 @@ function ProfileAvatar({ imageUrl, size = 'md', editable = false, isUploading = 
 function ProfileSkeleton() {
   return (
     <DiaryLayout>
-      <div className="p-6">
-        <div className="max-w-4xl mx-auto space-y-8">
+      <div className="space-y-8">
           {/* Header Skeleton */}
           <div className="flex items-center justify-between">
             <div className="space-y-2">
@@ -215,7 +214,6 @@ function ProfileSkeleton() {
               </CardContent>
             </Card>
           </div>
-        </div>
       </div>
     </DiaryLayout>
   );
@@ -354,8 +352,7 @@ export default function Profile() {
 
   return (
     <DiaryLayout>
-      <div className="p-6">
-        <div className="max-w-4xl mx-auto space-y-8">
+      <div className="space-y-8">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -776,7 +773,6 @@ export default function Profile() {
               </CollapsibleContent>
             </Card>
           </Collapsible>
-        </div>
       </div>
     </DiaryLayout>
   );

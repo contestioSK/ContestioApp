@@ -297,8 +297,7 @@ export default function SeasonalGoalsCreate() {
 
   return (
     <DiaryLayout>
-      <div className="p-6">
-        <div className="max-w-4xl mx-auto space-y-8">
+      <div className="space-y-8">
           {/* Header */}
           <div className="text-center space-y-2">
             <div className="flex justify-center">
@@ -694,7 +693,6 @@ export default function SeasonalGoalsCreate() {
             </CardContent>
           </Card>
         </div>
-      </div>
     </DiaryLayout>
   );
 }
