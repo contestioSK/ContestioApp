@@ -1258,7 +1258,9 @@ export default function DiaryIndex() {
               ))
             ) : (
               <div className="p-8 text-center">
-                <Fish className="w-12 h-12 text-muted-foreground dark:text-slate-500 mx-auto mb-4" />
+                <div className="flex justify-center mb-4">
+                  <TacticalIcon icon={Fish} variant="neutral" size="lg" showLabel={false} />
+                </div>
                 <p className="text-muted-foreground dark:text-slate-400 mb-4">
                   {seasonCatches.length === 0 
                     ? "Zatiaľ nemáte žiadne úlovky" 
