@@ -50,7 +50,14 @@ export default function Friends() {
     enabled: !!user?.id,
   });
 
-  if (!user?.id) {
+  // Auto-redirect to search tab when user has no friends and no requests
+  useEffect(() => {
+    if (myFriends.length === 0 && friendRequests.length === 0) {
+      setActiveTab("search");
+    }
+  }, [myFriends.length, friendRequests.length]);
+
+  if (!user) {
     return (
       <DiaryLayout>
         <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4 md:p-6 flex items-center justify-center">
@@ -69,7 +76,7 @@ export default function Friends() {
               <TacticalIconInline icon={Users} variant="lime" />
               Priatelia
             </h1>
-            <p className="text-slate-400">Spravuj svoje kontakty a vyzývaj ich na súboje</p>
+            <p className="text-slate-400">Pridaj si kamarátov a vyzvi ich na rybársky súboj.</p>
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
