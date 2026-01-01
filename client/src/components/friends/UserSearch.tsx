@@ -20,6 +20,8 @@ export default function UserSearch({ userId }: { userId: string }) {
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [sentRequests, setSentRequests] = useState<Set<string>>(new Set());
 
+  if (!userId) return null;
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedQuery(searchQuery);

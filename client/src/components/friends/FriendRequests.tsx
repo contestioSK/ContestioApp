@@ -15,6 +15,8 @@ interface FriendshipWithUser extends User {
 export default function FriendRequests({ userId }: { userId: string }) {
   const { toast } = useToast();
 
+  if (!userId) return null;
+
   const { data: friendRequests = [], isLoading } = useQuery<FriendshipWithUser[]>({
     queryKey: ['/api/friend-requests'],
     enabled: !!userId,

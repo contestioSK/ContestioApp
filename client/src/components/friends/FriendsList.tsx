@@ -26,6 +26,8 @@ export default function FriendsList({ userId }: { userId: string }) {
   const [, navigate] = useLocation();
   const [friendToRemove, setFriendToRemove] = useState<string | null>(null);
 
+  if (!userId) return null;
+
   const { data: myFriends = [], isLoading } = useQuery<User[]>({
     queryKey: ['/api/friends'],
     enabled: !!userId,
