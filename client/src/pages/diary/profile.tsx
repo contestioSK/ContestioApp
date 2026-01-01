@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
 import { 
   User, 
   Mail, 
@@ -28,7 +29,9 @@ import {
   BarChart3,
   Download,
   Target,
-  ChevronDown
+  ChevronDown,
+  History,
+  Settings
 } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { SiFacebook, SiInstagram } from "react-icons/si";
@@ -344,6 +347,31 @@ export default function Profile() {
     setProfileImage(null);
     setIsEditing(false);
   };
+
+  // Toggle historical catches preference
+  const toggleHistoricalCatchesMutation = useMutation({
+    mutationFn: async (allowHistoricalCatches: boolean) => {
+      return await apiRequest("PUT", "/api/user/preferences", {
+        ...user?.preferences,
+        allowHistoricalCatches,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      toast({
+        title: "Nastavenie uložené",
+        description: "Vaše preferencie boli aktualizované.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Chyba",
+        description: "Nepodarilo sa uložiť nastavenie.",
+        variant: "destructive",
+      });
+      console.error("Toggle historical catches error:", error);
+    },
+  });
 
   // Show skeleton while loading
   if (!user) {
@@ -720,6 +748,39 @@ export default function Profile() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Diary Settings Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="w-5 h-5" />
+                Nastavenia denníka
+              </CardTitle>
+              <CardDescription>
+                Prispôsobte si funkcie rybárskeho denníka
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Historical Catches Toggle */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <History className="w-4 h-4 text-amber-500" />
+                    <span className="font-medium">Historické úlovky</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Umožní nahrávať staršie úlovky. Tieto úlovky sa nezapočítavajú do štatistík ani súťaží.
+                  </p>
+                </div>
+                <Switch
+                  checked={user?.preferences?.allowHistoricalCatches ?? false}
+                  onCheckedChange={(checked) => toggleHistoricalCatchesMutation.mutate(checked)}
+                  disabled={toggleHistoricalCatchesMutation.isPending}
+                  data-testid="switch-historical-catches"
+                />
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Account Information - Collapsible */}
           <Collapsible open={showTechDetails} onOpenChange={setShowTechDetails}>
