@@ -40,6 +40,8 @@ import {
 } from "lucide-react";
 
 import { PremiumUpsellModal } from "@/components/PremiumUpsellModal";
+import { BadgeCelebrationModal } from "@/components/diary/BadgeCelebrationModal";
+import { BadgeTier } from "@shared/badges";
 
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { DiaryCatch, DiaryTrip } from "@shared/schema";
@@ -162,6 +164,10 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
 
   // State for tripId (will be auto-set if active battle exists)
   const [selectedTripId, setSelectedTripId] = useState<string | undefined>(undefined);
+  
+  // State for badge celebration modal
+  const [badgeQueue, setBadgeQueue] = useState<Array<{ badgeType: string; badgeName: string; tier: BadgeTier; icon: string }>>([]);
+  const [currentBadge, setCurrentBadge] = useState<{ badgeType: string; badgeName: string; tier: BadgeTier; icon: string } | null>(null);
 
   // Get personalized fish options based on user's fishing style preference
   const userFishingStyle = (user as any)?.preferences?.fishingStyle || null;
@@ -252,32 +258,35 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
       queryClient.invalidateQueries({ queryKey: ["/api/diary/catch-limits"] });
       queryClient.invalidateQueries({ queryKey: ["/api/diary/badges"] });
       
-      // Check for new badges and show confetti BEFORE closing dialog
+      // Check for new badges and show celebration modal
       const newBadges = data?.newBadges || [];
       if (newBadges.length > 0) {
-        // Show confetti for new badges!
-        fireworks();
+        // Queue all badges for celebration
+        const badgesToShow = newBadges.map((badge: { badgeType: string; badgeName: string; tier: string; icon: string }) => ({
+          badgeType: badge.badgeType,
+          badgeName: badge.badgeName,
+          tier: badge.tier as BadgeTier,
+          icon: badge.icon
+        }));
         
-        // Show toast for each badge
-        newBadges.forEach((badge: { badgeName: string; tier: string; icon: string }) => {
-          const tierEmoji = badge.tier === 'gold' ? '🥇' : badge.tier === 'silver' ? '🥈' : '🥉';
-          toast({
-            title: `${badge.icon} Nový odznak odomknutý!`,
-            description: `${badge.badgeName} ${tierEmoji} ${badge.tier.toUpperCase()}`,
-            variant: "success" as any,
-          });
-        });
+        // Show first badge immediately, queue the rest
+        setCurrentBadge(badgesToShow[0]);
+        if (badgesToShow.length > 1) {
+          setBadgeQueue(badgesToShow.slice(1));
+        }
+        
+        // Close form dialog but keep badge modal open
+        handleClose();
+        onSuccess?.();
       } else {
         toast({
           title: "✅ Úlovok pridaný!",
           description: "Váš úlovok bol úspešne pridaný do denníka.",
           variant: "success" as any,
         });
+        handleClose();
+        onSuccess?.();
       }
-      
-      // Close dialog AFTER confetti is triggered
-      handleClose();
-      onSuccess?.();
     },
     onError: (error: Error) => {
       showErrorToast(toast, error, 'catch');
@@ -593,7 +602,20 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
     onClose();
   };
 
+  // Handle badge modal close - show next badge in queue or close
+  const handleBadgeModalClose = () => {
+    if (badgeQueue.length > 0) {
+      // Show next badge
+      setCurrentBadge(badgeQueue[0]);
+      setBadgeQueue(badgeQueue.slice(1));
+    } else {
+      // No more badges, close modal
+      setCurrentBadge(null);
+    }
+  };
+
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
@@ -1062,5 +1084,12 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
         trigger="gps"
       />
     </Dialog>
+
+    {/* Badge Celebration Modal - Outside Dialog so it persists after form closes */}
+    <BadgeCelebrationModal
+      badge={currentBadge}
+      onClose={handleBadgeModalClose}
+    />
+    </>
   );
 }
