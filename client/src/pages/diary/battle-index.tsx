@@ -8,7 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { Trophy, Plus, Archive, Swords, Users, Clock, Crown, ArrowRight, Check, X, Bell, UserPlus, Lock } from "lucide-react";
 import { useLocation } from "wouter";
 import DiaryLayout from "@/components/DiaryLayout";
-import { TacticalIcon } from "@/components/ui/tactical-icon";
+import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -323,7 +323,7 @@ export default function BattleIndex() {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
               <div>
                 <div className="flex items-center gap-3 md:gap-4 mb-2">
-                  <TacticalIcon icon={Swords} variant="active" size="lg" showLabel={false} />
+                  <TacticalIcon icon={Swords} variant="rose" size="lg" showLabel={false} />
                   <h1 className="text-xl md:text-3xl font-bold text-foreground" data-testid="heading-fishing-battle">
                     Fishing Battle
                   </h1>
@@ -373,7 +373,7 @@ export default function BattleIndex() {
               <Card className="bg-card border-border">
                 <CardHeader className="p-4 md:p-6">
                   <CardTitle className="flex items-center gap-2 text-foreground text-base md:text-lg">
-                    <Clock className="w-4 h-4 md:w-5 md:h-5 text-orange-500" />
+                    <TacticalIconInline icon={Clock} variant="indigo" size="md" />
                     Moje Aktuálne Súboje
                   </CardTitle>
                 </CardHeader>
@@ -486,7 +486,7 @@ export default function BattleIndex() {
               <Card className="bg-card border-border">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-foreground">
-                    <Users className="w-5 h-5 text-blue-500" />
+                    <TacticalIconInline icon={Users} variant="lime" size="md" />
                     Výzvy pre Teba
                   </CardTitle>
                 </CardHeader>

@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Link } from "wouter";
 import { ArrowLeft, Fish, Calendar, Weight, Clock, User, Camera, X } from "lucide-react";
-import { TacticalIcon } from "@/components/ui/tactical-icon";
+import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 import type { Catch, Team, Referee, Competition } from "@shared/schema";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
@@ -129,7 +129,7 @@ export default function CompetitionCatches() {
                 </p>
               )}
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Fish className="w-4 h-4" />
+                <TacticalIconInline icon={Fish} variant="cyan" size="sm" />
                 <span data-testid="text-total-catches">
                   Celkom úlovkov: {catches?.length || 0}
                 </span>
@@ -142,7 +142,7 @@ export default function CompetitionCatches() {
             <Card className="mb-6">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5" />
+                  <TacticalIconInline icon={Calendar} variant="indigo" size="md" />
                   Filtrovať podľa dňa
                 </CardTitle>
               </CardHeader>

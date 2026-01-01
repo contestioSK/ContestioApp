@@ -52,7 +52,7 @@ import {
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { DiaryTrip, InsertDiaryTrip, DiaryCatch } from "@shared/schema";
 import DiaryLayout from "@/components/DiaryLayout";
-import { TacticalIcon } from "@/components/ui/tactical-icon";
+import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 import { Compass } from "lucide-react";
 import { TripCard } from "@/components/diary/TripCard";
 import { PremiumUpsellModal } from "@/components/PremiumUpsellModal";
@@ -771,7 +771,7 @@ export default function DiaryTrips() {
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <TacticalIcon icon={Compass} variant="active" size="lg" showLabel={false} />
+                <TacticalIcon icon={Compass} variant="emerald" size="lg" showLabel={false} />
                 <h1 className="text-2xl md:text-3xl font-bold text-foreground">Výpravy</h1>
                 {/* Compact status indicator */}
                 {(isOffline || isSyncing || (!isOffline && pendingTrips.length > 0)) && (
@@ -903,7 +903,7 @@ export default function DiaryTrips() {
           ) : trips.length === 0 ? (
             <div className="flex flex-col items-center justify-center min-h-[50vh] text-center px-4">
               <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center mb-6">
-                <Fish className="w-12 h-12 text-primary" />
+                <TacticalIconInline icon={Fish} variant="cyan" size="xl" />
               </div>
               <h3 className="text-xl md:text-2xl font-bold text-foreground mb-3">
                 Začnite svoju prvú výpravu

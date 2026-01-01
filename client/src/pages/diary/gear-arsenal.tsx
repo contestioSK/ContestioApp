@@ -39,7 +39,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TacticalIcon } from "@/components/ui/tactical-icon";
+import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 
 // ============ TYPES ============
 

@@ -11,7 +11,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Lock, Unlock, ChevronDown, ChevronUp, Target, Plus, Trophy, Sparkles, Award } from "lucide-react";
 import { useLocation } from "wouter";
 import DiaryLayout from "@/components/DiaryLayout";
-import { TacticalIcon } from "@/components/ui/tactical-icon";
+import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 import { BADGE_DEFINITIONS, getTierColor, getTierBgClass, getTierTextClass, BadgeTier } from "@shared/badges";
 import type { UserBadge } from "@shared/schema";
 import { BadgeCelebrationModal } from "@/components/diary/BadgeCelebrationModal";
@@ -106,7 +106,7 @@ export default function BadgesPage() {
       <div className="p-4 md:p-8 max-w-4xl mx-auto">
         <div className="mb-6 flex items-start justify-between">
           <div className="flex items-center gap-4">
-            <TacticalIcon icon={Award} variant="active" size="lg" showLabel={false} />
+            <TacticalIcon icon={Award} variant="amber" size="lg" showLabel={false} />
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-1">Moje Odznaky</h1>
               <p className="text-muted-foreground text-sm">
@@ -165,7 +165,7 @@ export default function BadgesPage() {
                 <div className="text-4xl">{nextGoal.badgeDef.icon}</div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <Target className="w-4 h-4 text-lime-500" />
+                    <TacticalIconInline icon={Target} variant="purple" size="sm" />
                     <span className="text-xs font-bold uppercase tracking-wider text-lime-500">Najbližší odznak</span>
                   </div>
                   <h3 className="font-bold text-foreground mb-1">
@@ -201,7 +201,7 @@ export default function BadgesPage() {
         {unlockedBadgesList.length > 0 && (
           <div className="mb-6">
             <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-lime-500" />
+              <TacticalIconInline icon={Trophy} variant="amber" size="md" />
               Odomknuté odznaky
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

@@ -17,6 +17,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { UserPlus, Check, X, Users, Swords, Trash2 } from "lucide-react";
+import { TacticalIcon } from "@/components/ui/tactical-icon";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -139,9 +140,9 @@ export default function Friends() {
             <TabsContent value="friends" className="space-y-4">
               {myFriends.length === 0 ? (
                 <Card className="bg-slate-800/50 border-slate-700">
-                  <CardContent className="p-8 text-center">
-                    <Users className="mx-auto mb-4 w-12 h-12 text-slate-500" />
-                    <p className="text-slate-400">Zatiaľ nemáš žiadnych priateľov</p>
+                  <CardContent className="p-8 text-center flex flex-col items-center">
+                    <TacticalIcon icon={Users} variant="lime" size="lg" showLabel={false} />
+                    <p className="text-slate-400 mt-4">Zatiaľ nemáš žiadnych priateľov</p>
                   </CardContent>
                 </Card>
               ) : (

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useLocation } from "wouter";
 import DiaryLayout from "@/components/DiaryLayout";
+import { TacticalIconInline } from "@/components/ui/tactical-icon";
 
 export default function BattlePaywall() {
   const [, setLocation] = useLocation();
@@ -90,8 +91,8 @@ export default function BattlePaywall() {
           
           <div className="text-center mb-16 pt-8">
             <Badge className="mb-6 bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1">
-              <Crown className="w-3 h-3 mr-1.5 inline-block" />
-              Contestio Battle League
+              <TacticalIconInline icon={Crown} variant="amber" size="sm" />
+              <span className="ml-1.5">Contestio Battle League</span>
             </Badge>
             
             <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tight text-foreground mb-6 leading-tight">
@@ -139,7 +140,7 @@ export default function BattlePaywall() {
                  
                  <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-background/60 backdrop-blur-[2px]">
                     <div className="bg-muted p-4 rounded-full border border-border shadow-2xl mb-4 group-hover:scale-110 transition-transform duration-300">
-                      <Lock className="w-8 h-8 text-lime-500" />
+                      <TacticalIconInline icon={Lock} variant="rose" size="lg" />
                     </div>
                     <p className="text-sm font-bold text-foreground uppercase tracking-widest mb-1">Live Rebríček</p>
                     <p className="text-xs text-muted-foreground">Vidíš poradie, keď sa mení</p>
@@ -158,8 +159,12 @@ export default function BattlePaywall() {
               </div>
             </Card>
 
-            <Swords className="absolute -top-6 -right-12 w-24 h-24 text-muted/30 rotate-12 -z-10" />
-            <Trophy className="absolute -bottom-6 -left-12 w-24 h-24 text-muted/30 -rotate-12 -z-10" />
+            <div className="absolute -top-6 -right-12 rotate-12 -z-10 opacity-30">
+              <Swords className="w-24 h-24 text-muted" />
+            </div>
+            <div className="absolute -bottom-6 -left-12 -rotate-12 -z-10 opacity-30">
+              <Trophy className="w-24 h-24 text-muted" />
+            </div>
           </div>
 
           <div className="grid md:grid-cols-2 gap-4 mb-16">

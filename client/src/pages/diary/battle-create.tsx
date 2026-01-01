@@ -13,7 +13,7 @@ import { z } from "zod";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
 import { Trophy, Users, Clock, X, User as UserIcon, Save, FolderOpen, Trash2, Swords } from "lucide-react";
-import { TacticalIcon } from "@/components/ui/tactical-icon";
+import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 import { useLocation } from "wouter";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -349,7 +349,7 @@ export default function BattleCreate() {
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center gap-4 mb-4">
-              <TacticalIcon icon={Swords} variant="active" size="lg" showLabel={false} />
+              <TacticalIcon icon={Swords} variant="rose" size="lg" showLabel={false} />
               <h1 className="text-3xl font-bold text-foreground">
                 Vytvoriť Fishing Battle
               </h1>
@@ -456,7 +456,7 @@ export default function BattleCreate() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Trophy className="w-5 h-5" />
+                    <TacticalIconInline icon={Trophy} variant="amber" size="md" />
                     Základné informácie
                   </CardTitle>
                 </CardHeader>

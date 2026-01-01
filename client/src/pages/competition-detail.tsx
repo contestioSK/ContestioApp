@@ -27,7 +27,7 @@ import { useWebSocket } from "@/hooks/useWebSocket";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Users, UserPlus, Trash2, Fish, Award, BarChart3, Trophy, FileText, Heart, QrCode } from "lucide-react";
 import { getSideCompetitionLabels } from "@/lib/utils";
-import { TacticalIcon } from "@/components/ui/tactical-icon";
+import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 import type { Competition, Team, Catch } from "@shared/schema";
 import { useFavoriteCompetitions, useToggleFavoriteCompetition } from "@/hooks/useFavorites";
 import { QRShareDialog } from "@/components/QRShareDialog";
@@ -483,7 +483,7 @@ export default function CompetitionDetail() {
               onClick={() => setActiveTab("overview")}
               data-testid="button-overview"
             >
-              <Trophy className="w-5 h-5" />
+              <TacticalIconInline icon={Trophy} variant="amber" size="md" />
               <span className="text-sm font-medium">Priebežné výsledky</span>
             </Button>
             
@@ -505,7 +505,7 @@ export default function CompetitionDetail() {
               onClick={() => window.location.href = `/competition/${id}/catches`}
               data-testid="button-catches"
             >
-              <Fish className="w-5 h-5" />
+              <TacticalIconInline icon={Fish} variant="cyan" size="md" />
               <span className="text-sm font-medium">Zobraziť všetky úlovky</span>
             </Button>
             

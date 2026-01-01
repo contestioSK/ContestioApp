@@ -15,6 +15,7 @@ import {
   Crown,
   X
 } from "lucide-react";
+import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 import { apiRequest } from "@/lib/queryClient";
 
 interface PremiumUpsellModalProps {
@@ -80,31 +81,31 @@ export function PremiumUpsellModal({ isOpen, onClose, trigger }: PremiumUpsellMo
       icon: Fish, 
       text: "Neobmedzená kapacita úlovkov", 
       freeLimit: "Free: 50",
-      color: "text-blue-400"
+      variant: "cyan" as const
     },
     { 
       icon: Camera, 
       text: "Neobmedzená história výprav", 
       freeLimit: "Free: posledné 3",
-      color: "text-emerald-400"
+      variant: "emerald" as const
     },
     { 
       icon: Camera, 
       text: "Neobmedzené fotky k úlovkom", 
       freeLimit: "Free: 1 fotka",
-      color: "text-purple-400"
+      variant: "purple" as const
     },
     { 
       icon: Swords, 
       text: "Vytváranie vlastných Súbojov", 
       freeLimit: null,
-      color: "text-orange-400"
+      variant: "orange" as const
     },
     { 
       icon: Cloud, 
       text: "Predpoveď počasia a aktivity rýb", 
       freeLimit: null,
-      color: "text-cyan-400"
+      variant: "cyan" as const
     },
   ];
 
@@ -117,9 +118,7 @@ export function PremiumUpsellModal({ isOpen, onClose, trigger }: PremiumUpsellMo
           <div className="relative p-6">
             <DialogHeader className="mb-6">
               <div className="flex items-center justify-center mb-4">
-                <div className="h-16 w-16 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/30">
-                  <Crown className="h-8 w-8 text-slate-900" />
-                </div>
+                <TacticalIcon icon={Crown} variant="amber" size="lg" showLabel={false} />
               </div>
               <DialogTitle className="text-2xl font-bold text-center bg-gradient-to-r from-amber-200 via-amber-400 to-amber-200 bg-clip-text text-transparent">
                 Lovte bez obmedzení s Contestio Premium
@@ -137,9 +136,7 @@ export function PremiumUpsellModal({ isOpen, onClose, trigger }: PremiumUpsellMo
                   key={index}
                   className="flex items-center gap-3 p-3 rounded-lg bg-slate-800/50 border border-slate-700/50"
                 >
-                  <div className={`${benefit.color}`}>
-                    <benefit.icon className="h-5 w-5" />
-                  </div>
+                  <TacticalIconInline icon={benefit.icon} variant={benefit.variant} size="md" />
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <Check className="h-4 w-4 text-green-400" />

@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Trophy, Users, Calendar, Clock, Fish, Weight, Crown, Archive, Search, Filter, Eye, RotateCcw, Medal, BarChart3, Star, Plus, Loader2, SlidersHorizontal, Download, TrendingUp, FileText } from "lucide-react";
-import { TacticalIcon } from "@/components/ui/tactical-icon";
+import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
@@ -310,7 +310,7 @@ export default function BattleArchive() {
           <div className="mb-8">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
               <div className="flex items-center gap-4">
-                <TacticalIcon icon={Archive} variant="active" size="lg" showLabel={false} />
+                <TacticalIcon icon={Archive} variant="amber" size="lg" showLabel={false} />
                 <h1 className="text-3xl font-bold text-foreground">
                   Battle Archív
                 </h1>
@@ -393,7 +393,7 @@ export default function BattleArchive() {
           <Card className="mb-8">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="w-5 h-5" />
+                <TacticalIconInline icon={BarChart3} variant="lime" size="md" />
                 Vaše štatistiky
               </CardTitle>
             </CardHeader>
@@ -643,19 +643,19 @@ export default function BattleArchive() {
                           
                           <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                             <div className="flex items-center gap-1">
-                              <Calendar className="w-4 h-4" />
+                              <TacticalIconInline icon={Calendar} variant="indigo" size="sm" />
                               <span>{format(battle.startAt, "d. MMM yyyy", { locale: sk })}</span>
                             </div>
                             <div className="flex items-center gap-1">
-                              <Trophy className="w-4 h-4" />
+                              <TacticalIconInline icon={Trophy} variant="amber" size="sm" />
                               <span>{getModeLabel(battle.mode)}</span>
                             </div>
                             <div className="flex items-center gap-1">
-                              <Users className="w-4 h-4" />
+                              <TacticalIconInline icon={Users} variant="lime" size="sm" />
                               <span>{battle.participantCount} účastníkov</span>
                             </div>
                             <div className="flex items-center gap-1">
-                              <Crown className="w-4 h-4" />
+                              <TacticalIconInline icon={Crown} variant="amber" size="sm" />
                               <span>Víťaz: {battle.winner}</span>
                             </div>
                           </div>
@@ -711,7 +711,7 @@ export default function BattleArchive() {
             <Card className="mt-8">
               <CardContent className="p-6 text-center">
                 <div className="flex justify-center mb-4">
-                  <TacticalIcon icon={Trophy} variant="active" size="lg" showLabel={false} />
+                  <TacticalIcon icon={Trophy} variant="amber" size="lg" showLabel={false} />
                 </div>
                 <h3 className="text-lg font-medium text-foreground mb-2">
                   Pripravený na ďalší súboj?

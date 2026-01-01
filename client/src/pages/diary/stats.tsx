@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 
 import DiaryLayout from "@/components/DiaryLayout";
-import { TacticalIcon } from "@/components/ui/tactical-icon";
+import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 import { useTheme } from "@/contexts/ThemeContext";
 import { BG_CLASSES_DARK, BG_CLASSES_LIGHT, TEXT_CLASSES_DARK, TEXT_CLASSES_LIGHT } from "@/lib/colors";
 import { PremiumGate, PremiumTeaserCard } from "@/components/PremiumGate";
@@ -118,7 +118,7 @@ export default function DiaryStats() {
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div className="flex items-center gap-4">
-              <TacticalIcon icon={BarChart3} variant="active" size="lg" showLabel={false} />
+              <TacticalIcon icon={BarChart3} variant="purple" size="lg" showLabel={false} />
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold text-foreground">Analýza Sezóny</h1>
                 <p className="text-sm text-muted-foreground">Tvoje úspechy premenené na dáta</p>
@@ -161,7 +161,7 @@ export default function DiaryStats() {
                 className={`flex flex-col items-center gap-1 py-2 px-1 sm:flex-row sm:gap-1.5 sm:py-1.5 sm:px-3 text-xs font-medium ${!isPremium ? 'opacity-70' : ''}`}
                 data-testid="tab-achievements"
               >
-                <Trophy className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+                <TacticalIconInline icon={Trophy} variant="amber" size="sm" />
                 <span className="flex items-center gap-0.5 text-[10px] sm:text-xs leading-tight">
                   Úspechy
                   {!isPremium && <Lock className="w-2.5 h-2.5 text-amber-500" />}
@@ -176,7 +176,7 @@ export default function DiaryStats() {
                 <CardContent className="p-5">
                   <div className="flex justify-between items-start mb-3">
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Celkové úlovky</p>
-                    <Fish className={`w-4 h-4 ${isDark ? 'text-lime-500' : 'text-lime-600'}`} />
+                    <TacticalIconInline icon={Fish} variant="cyan" size="sm" />
                   </div>
                   <div className="flex items-baseline gap-2">
                     <span className="text-3xl font-bold text-foreground">{basicStats.totalCatches}</span>
@@ -189,7 +189,7 @@ export default function DiaryStats() {
                 <CardContent className="p-5">
                   <div className="flex justify-between items-start mb-3">
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Najväčšia ryba</p>
-                    <Weight className={`w-4 h-4 ${isDark ? 'text-blue-500' : 'text-blue-600'}`} />
+                    <TacticalIconInline icon={Weight} variant="orange" size="sm" />
                   </div>
                   <div className="flex items-baseline gap-2">
                     <span className="text-3xl font-bold text-foreground">{basicStats.biggestCatch.toFixed(1)}</span>
@@ -203,7 +203,7 @@ export default function DiaryStats() {
                 <CardContent className="p-5">
                   <div className="flex justify-between items-start mb-3">
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Výpravy</p>
-                    <MapPin className={`w-4 h-4 ${isDark ? 'text-amber-500' : 'text-amber-600'}`} />
+                    <TacticalIconInline icon={MapPin} variant="emerald" size="sm" />
                   </div>
                   <div className="flex items-baseline gap-2">
                     <span className="text-3xl font-bold text-foreground">{basicStats.totalTrips}</span>
@@ -217,7 +217,7 @@ export default function DiaryStats() {
                 <CardContent className="p-5">
                   <div className="flex justify-between items-start mb-3">
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Úspešnosť</p>
-                    <Target className={`w-4 h-4 ${isDark ? 'text-purple-500' : 'text-purple-600'}`} />
+                    <TacticalIconInline icon={Target} variant="purple" size="sm" />
                   </div>
                   <div className="flex items-baseline gap-2">
                     <span className="text-3xl font-bold text-foreground">{basicStats.successRate.toFixed(1)}</span>
@@ -296,11 +296,11 @@ export default function DiaryStats() {
                 <Card className={`${isDark ? 'bg-lime-500/5 border-lime-500/20' : 'bg-lime-600/5 border-lime-600/20'}`}>
                   <CardContent className="p-5">
                     <h4 className={`text-xs font-bold uppercase tracking-widest ${isDark ? 'text-lime-500' : 'text-lime-600'} mb-4 flex items-center gap-2`}>
-                      <Star className="w-4 h-4 fill-current" /> Top Nástraha
+                      <TacticalIconInline icon={Star} variant="amber" size="sm" /> Top Nástraha
                     </h4>
                     <div className="flex items-center gap-4">
                       <div className={`w-12 h-12 ${isDark ? 'bg-lime-500/10' : 'bg-lime-600/10'} rounded-xl flex items-center justify-center`}>
-                        <Fish className={`w-6 h-6 ${isDark ? 'text-lime-500' : 'text-lime-600'}`} />
+                        <TacticalIconInline icon={Fish} variant="cyan" size="lg" />
                       </div>
                       <div>
                         <h5 className="font-bold text-foreground text-lg leading-tight">
@@ -325,11 +325,11 @@ export default function DiaryStats() {
                   <Card className={`${isDark ? 'bg-blue-500/5 border-blue-500/20' : 'bg-blue-600/5 border-blue-600/20'}`}>
                     <CardContent className="p-5">
                       <h4 className={`text-xs font-bold uppercase tracking-widest ${isDark ? 'text-blue-500' : 'text-blue-600'} mb-4 flex items-center gap-2`}>
-                        <Trophy className="w-4 h-4" /> Najlepšia lokalita
+                        <TacticalIconInline icon={Trophy} variant="amber" size="sm" /> Najlepšia lokalita
                       </h4>
                       <div className="flex items-center gap-4">
                         <div className={`w-12 h-12 ${isDark ? 'bg-blue-500/10' : 'bg-blue-600/10'} rounded-xl flex items-center justify-center`}>
-                          <MapPin className={`w-6 h-6 ${isDark ? 'text-blue-500' : 'text-blue-600'}`} />
+                          <TacticalIconInline icon={MapPin} variant="emerald" size="lg" />
                         </div>
                         <div>
                           <h5 className="font-bold text-foreground text-lg leading-tight">

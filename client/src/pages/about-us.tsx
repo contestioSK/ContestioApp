@@ -1,6 +1,7 @@
 import NavigationHeader from "@/components/navigation-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, Target, Eye, Award, Trophy, BookOpen, User } from "lucide-react";
+import { TacticalIcon } from "@/components/ui/tactical-icon";
 
 export default function AboutUs() {
   return (
@@ -28,9 +29,7 @@ export default function AboutUs() {
         <Card className="mb-6">
           <CardContent className="p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                <Trophy className="w-5 h-5 text-primary" />
-              </div>
+              <TacticalIcon icon={Trophy} variant="amber" size="sm" showLabel={false} />
               <h2 className="text-xl md:text-2xl font-bold text-foreground">Súťaže</h2>
             </div>
             <p className="text-base leading-relaxed text-muted-foreground">
@@ -43,9 +42,7 @@ export default function AboutUs() {
         <Card className="mb-6">
           <CardContent className="p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                <BookOpen className="w-5 h-5 text-primary" />
-              </div>
+              <TacticalIcon icon={BookOpen} variant="slate" size="sm" showLabel={false} />
               <h2 className="text-xl md:text-2xl font-bold text-foreground">Rybársky denník</h2>
             </div>
             <p className="text-base leading-relaxed mb-3 text-muted-foreground">
@@ -99,9 +96,7 @@ export default function AboutUs() {
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
             <Card className="text-center" data-testid="card-organizers">
               <CardContent className="p-5">
-                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Users className="w-6 h-6 text-primary" />
-                </div>
+                <TacticalIcon icon={Users} variant="lime" size="sm" showLabel={false} className="mx-auto mb-3" />
                 <h3 className="font-semibold text-foreground mb-2 text-sm">Organizátori</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   Získajú profesionálny systém bez zbytočnej administratívy.
@@ -111,9 +106,7 @@ export default function AboutUs() {
 
             <Card className="text-center" data-testid="card-teams">
               <CardContent className="p-5">
-                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Target className="w-6 h-6 text-primary" />
-                </div>
+                <TacticalIcon icon={Target} variant="purple" size="sm" showLabel={false} className="mx-auto mb-3" />
                 <h3 className="font-semibold text-foreground mb-2 text-sm">Tímy</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   Majú férovú a prehľadnú súťaž s okamžitým zobrazením výsledkov.
@@ -123,9 +116,7 @@ export default function AboutUs() {
 
             <Card className="text-center" data-testid="card-fans">
               <CardContent className="p-5">
-                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Eye className="w-6 h-6 text-primary" />
-                </div>
+                <TacticalIcon icon={Eye} variant="blue" size="sm" showLabel={false} className="mx-auto mb-3" />
                 <h3 className="font-semibold text-foreground mb-2 text-sm">Fanúšikovia</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   Sledujú úlovky a rebríčky v reálnom čase.
@@ -135,9 +126,7 @@ export default function AboutUs() {
 
             <Card className="text-center" data-testid="card-individuals">
               <CardContent className="p-5">
-                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <User className="w-6 h-6 text-primary" />
-                </div>
+                <TacticalIcon icon={User} variant="slate" size="sm" showLabel={false} className="mx-auto mb-3" />
                 <h3 className="font-semibold text-foreground mb-2 text-sm">Jednotlivci</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   Uchovávajú si rybárske spomienky, plnia si ciele a plánujú ďalšie úspechy.
@@ -150,9 +139,7 @@ export default function AboutUs() {
         {/* Mission Statement */}
         <Card className="text-center bg-muted/40">
           <CardContent className="p-6">
-            <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Award className="w-6 h-6 text-primary" />
-            </div>
+            <TacticalIcon icon={Award} variant="amber" size="sm" showLabel={false} className="mx-auto mb-4" />
             <p className="text-base md:text-lg font-semibold text-foreground max-w-3xl mx-auto leading-relaxed" data-testid="text-tagline">
               Contestio stavia na vášni pre rybárstvo, inováciách a komunite. Sme tu preto, aby sme slovenským rybárom – súťažiacim aj rekreačným – dali nový rozmer zážitku pri vode.
             </p>

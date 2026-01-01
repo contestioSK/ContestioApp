@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { useLocation } from "wouter";
 import DiaryLayout from "@/components/DiaryLayout";
+import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 
 // Goal Types Configuration
 const goalTypeConfig = {
@@ -300,7 +301,9 @@ export default function SeasonalGoalsCreate() {
         <div className="max-w-4xl mx-auto space-y-8">
           {/* Header */}
           <div className="text-center space-y-2">
-            <Target className="w-12 h-12 text-primary mx-auto" />
+            <div className="flex justify-center">
+              <TacticalIcon icon={Target} variant="active" size="lg" showLabel={false} />
+            </div>
             <h1 className="text-3xl font-bold text-foreground">Vytvoriť nový cieľ</h1>
             <p className="text-muted-foreground">
               Nastavte si nový sezónny cieľ a sledujte svoj pokrok

@@ -53,7 +53,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { DiaryCatch, DiaryTrip } from "@shared/schema";
 import { getFishTypeLabel, getFishTypeOptions } from "@/utils/fishTypeMapping";
 import DiaryLayout from "@/components/DiaryLayout";
-import { TacticalIcon } from "@/components/ui/tactical-icon";
+import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 import CatchFormDialog from "@/components/diary/CatchFormDialog";
 import { Input } from "@/components/ui/input";
 
@@ -64,24 +64,24 @@ type FreemiumLimits = {
   limit: number;
 };
 
-// Function to get fish icon based on fish type
-const getFishIcon = (fishType?: string) => {
-  const iconColor = getFishIconColor(fishType);
-  return <Fish className={`w-5 h-5 ${iconColor}`} />;
+// Function to get fish variant based on fish type - mapped to Contestio palette
+const getFishVariant = (fishType?: string): "amber" | "emerald" | "purple" | "cyan" | "rose" | "orange" | "blue" => {
+  if (!fishType) return "blue";
+  
+  if (fishType.includes("kapor")) return "amber";
+  if (fishType.includes("stuka")) return "emerald";
+  if (fishType.includes("sumec")) return "purple";
+  if (fishType.includes("amur")) return "cyan";
+  if (fishType.includes("pstruh")) return "rose";
+  if (fishType.includes("zubac")) return "orange";
+  
+  return "blue"; // default
 };
 
-// Function to get fish icon color based on fish type
-const getFishIconColor = (fishType?: string) => {
-  if (!fishType) return "text-blue-400";
-  
-  if (fishType.includes("kapor")) return "text-yellow-400";
-  if (fishType.includes("stuka")) return "text-green-400";
-  if (fishType.includes("sumec")) return "text-purple-400";
-  if (fishType.includes("amur")) return "text-emerald-400";
-  if (fishType.includes("pstruh")) return "text-pink-400";
-  if (fishType.includes("zubac")) return "text-orange-400";
-  
-  return "text-blue-400"; // default
+// Function to get fish icon based on fish type with color variant
+const getFishIcon = (fishType?: string) => {
+  const variant = getFishVariant(fishType);
+  return <TacticalIconInline icon={Fish} variant={variant} size="md" />;
 };
 
 type PhotoObject = {
@@ -608,7 +608,7 @@ export default function DiaryCatches() {
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-4 mb-2">
-                <TacticalIcon icon={Fish} variant="active" size="lg" showLabel={false} />
+                <TacticalIcon icon={Fish} variant="cyan" size="lg" showLabel={false} />
                 <h1 className="text-3xl font-bold text-foreground">Moje úlovky</h1>
                 {isOffline && (
                   <TooltipProvider>
@@ -692,7 +692,7 @@ export default function DiaryCatches() {
                     <CardContent className="p-4">
                       <div className="flex items-center gap-3">
                         <div className="w-11 h-11 bg-blue-100 dark:bg-blue-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <Fish className="w-5 h-5 text-blue-500 dark:text-blue-300" />
+                          <TacticalIconInline icon={Fish} variant="cyan" size="md" />
                         </div>
                         <div>
                           <div className="text-xs text-muted-foreground dark:text-slate-400">Úlovky</div>
@@ -706,7 +706,7 @@ export default function DiaryCatches() {
                     <CardContent className="p-4">
                       <div className="flex items-center gap-3">
                         <div className="w-11 h-11 bg-emerald-100 dark:bg-emerald-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <Trophy className="w-5 h-5 text-emerald-500 dark:text-emerald-300" />
+                          <TacticalIconInline icon={Trophy} variant="amber" size="md" />
                         </div>
                         <div>
                           <div className="text-xs text-muted-foreground dark:text-slate-400">Najväčšia ryba</div>
@@ -720,7 +720,7 @@ export default function DiaryCatches() {
                     <CardContent className="p-4">
                       <div className="flex items-center gap-3">
                         <div className="w-11 h-11 bg-purple-100 dark:bg-purple-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <Weight className="w-5 h-5 text-purple-500 dark:text-purple-300" />
+                          <TacticalIconInline icon={Weight} variant="orange" size="md" />
                         </div>
                         <div>
                           <div className="text-xs text-muted-foreground dark:text-slate-400">Celková váha</div>
@@ -734,7 +734,7 @@ export default function DiaryCatches() {
                     <CardContent className="p-4">
                       <div className="flex items-center gap-3">
                         <div className="w-11 h-11 bg-amber-100 dark:bg-amber-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <Target className="w-5 h-5 text-amber-500 dark:text-amber-300" />
+                          <TacticalIconInline icon={Target} variant="purple" size="md" />
                         </div>
                         <div>
                           <div className="text-xs text-muted-foreground dark:text-slate-400">Váhový priemer</div>

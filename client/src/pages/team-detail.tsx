@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ArrowLeft, Users, Trophy, Fish, MapPin, Camera, X, Heart } from "lucide-react";
-import { TacticalIcon } from "@/components/ui/tactical-icon";
+import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Team, TeamMember, Catch } from "@shared/schema";
 import { formatSectorPlace, getSectorLetter } from "@/lib/utils";
@@ -220,7 +220,7 @@ export default function TeamDetail() {
             <Card data-testid="card-team-info">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
-                  <Users className="w-5 h-5" />
+                  <TacticalIconInline icon={Users} variant="lime" size="md" />
                   <span>Informácie o tíme</span>
                 </CardTitle>
               </CardHeader>
@@ -293,7 +293,7 @@ export default function TeamDetail() {
             <Card data-testid="card-team-stats">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
-                  <Trophy className="w-5 h-5" />
+                  <TacticalIconInline icon={Trophy} variant="amber" size="md" />
                   <span>Štatistiky</span>
                 </CardTitle>
               </CardHeader>
@@ -341,7 +341,7 @@ export default function TeamDetail() {
             <Card data-testid="card-catches-table">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
-                  <Fish className="w-5 h-5" />
+                  <TacticalIconInline icon={Fish} variant="cyan" size="md" />
                   <span>Všetky úlovky ({catchCount})</span>
                 </CardTitle>
               </CardHeader>
