@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { Share2, Download, Loader2 } from "lucide-react";
 import html2canvas from "html2canvas";
 import { BADGE_DEFINITIONS, BadgeTier } from "@shared/badges";
+import contestioLogo from "@assets/contestio_logo_black_1766308180088.png";
 
 interface BadgeInfo {
   badgeType: string;
@@ -248,9 +249,13 @@ export function BadgeCelebrationModal({ badge, onClose }: BadgeCelebrationModalP
           </p>
           
           {/* Contestio Branding */}
-          <div className="flex items-center justify-center gap-1.5 pt-3 border-t border-slate-800">
-            <span className="text-lime-500 text-lg">🎣</span>
-            <span className="text-slate-500 text-xs font-bold tracking-wider">CONTESTIO</span>
+          <div className="flex items-center justify-center pt-3 border-t border-slate-800">
+            <img 
+              src={contestioLogo} 
+              alt="Contestio" 
+              className="h-6 opacity-80"
+              crossOrigin="anonymous"
+            />
           </div>
         </div>
 
