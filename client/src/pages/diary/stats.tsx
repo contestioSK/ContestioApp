@@ -443,7 +443,7 @@ export default function DiaryStats() {
                       <CardContent className="p-4">
                         <div className="flex items-start justify-between mb-2">
                           <div className="flex items-center gap-2">
-                            <MapPin className={`w-4 h-4 ${textColors[index % textColors.length]}`} />
+                            <TacticalIconInline icon={MapPin} variant="emerald" size="sm" />
                             <span className="font-medium text-sm truncate max-w-[150px]">{loc.location}</span>
                           </div>
                           <Badge variant="secondary" className="text-xs">
@@ -529,7 +529,7 @@ export default function DiaryStats() {
                     <Card className="bg-gradient-to-br from-amber-500/10 to-transparent border-amber-500/20">
                       <CardContent className="p-5">
                         <div className="flex items-center gap-2 text-amber-500 mb-3">
-                          <Trophy className="w-5 h-5" />
+                          <TacticalIconInline icon={Trophy} variant="amber" size="md" />
                           <span className="text-xs font-bold uppercase tracking-widest">Najťažší úlovok</span>
                         </div>
                         <div className="text-3xl font-bold text-foreground">
@@ -546,7 +546,7 @@ export default function DiaryStats() {
                     <Card className="bg-gradient-to-br from-blue-500/10 to-transparent border-blue-500/20">
                       <CardContent className="p-5">
                         <div className="flex items-center gap-2 text-blue-500 mb-3">
-                          <Trophy className="w-5 h-5" />
+                          <TacticalIconInline icon={Trophy} variant="blue" size="md" />
                           <span className="text-xs font-bold uppercase tracking-widest">Najdlhší úlovok</span>
                         </div>
                         <div className="text-3xl font-bold text-foreground">
@@ -563,7 +563,7 @@ export default function DiaryStats() {
                     <Card className="bg-gradient-to-br from-lime-500/10 to-transparent border-lime-500/20">
                       <CardContent className="p-5">
                         <div className="flex items-center gap-2 text-lime-500 mb-3">
-                          <Star className="w-5 h-5" />
+                          <TacticalIconInline icon={Star} variant="lime" size="md" />
                           <span className="text-xs font-bold uppercase tracking-widest">Najlepšia výprava</span>
                         </div>
                         <div className="text-3xl font-bold text-foreground">

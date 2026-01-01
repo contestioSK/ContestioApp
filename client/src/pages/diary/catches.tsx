@@ -972,7 +972,7 @@ export default function DiaryCatches() {
               )}
               {(minWeight || maxWeight) && (
                 <Badge variant="secondary" className="gap-1" data-testid="badge-weight-active">
-                  <Weight className="w-3 h-3" />
+                  <TacticalIconInline icon={Weight} variant="orange" size="sm" />
                   {minWeight && maxWeight ? `${minWeight}-${maxWeight}kg` : minWeight ? `>${minWeight}kg` : `<${maxWeight}kg`}
                   <X 
                     className="w-3 h-3 cursor-pointer hover:text-destructive" 
@@ -1220,12 +1220,12 @@ export default function DiaryCatches() {
                           <div className="text-foreground dark:text-white font-bold text-lg mb-2 flex items-center gap-2">
                             {catch_.weight ? (
                               <>
-                                <Weight className="w-4 h-4 text-purple-400" />
+                                <TacticalIconInline icon={Weight} variant="orange" size="sm" />
                                 {catch_.weight} kg
                               </>
                             ) : catch_.lengthCm ? (
                               <>
-                                <Ruler className="w-4 h-4 text-blue-400" />
+                                <TacticalIconInline icon={Ruler} variant="blue" size="sm" />
                                 {catch_.lengthCm} cm
                               </>
                             ) : 'N/A'}
@@ -1294,7 +1294,7 @@ export default function DiaryCatches() {
                   {/* Basic Info */}
                   <div className="space-y-4">
                     <div className="flex items-center gap-3">
-                      <Weight className="w-5 h-5 text-muted-foreground dark:text-slate-400" />
+                      <TacticalIconInline icon={Weight} variant="orange" size="md" />
                       <div>
                         <div className="text-sm text-muted-foreground dark:text-slate-400">Váha</div>
                         <div className="font-semibold" data-testid="detail-weight">{selectedCatch.weight ? `${selectedCatch.weight} kg` : 'Neuvedené'}</div>
@@ -1302,7 +1302,7 @@ export default function DiaryCatches() {
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <Ruler className="w-5 h-5 text-muted-foreground dark:text-slate-400" />
+                      <TacticalIconInline icon={Ruler} variant="orange" size="md" />
                       <div>
                         <div className="text-sm text-muted-foreground dark:text-slate-400">Dĺžka</div>
                         <div className="font-semibold">{selectedCatch.lengthCm ? `${selectedCatch.lengthCm} cm` : 'Neuvedené'}</div>
@@ -1310,7 +1310,7 @@ export default function DiaryCatches() {
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <MapPin className="w-5 h-5 text-muted-foreground dark:text-slate-400" />
+                      <TacticalIconInline icon={MapPin} variant="emerald" size="md" />
                       <div>
                         <div className="text-sm text-muted-foreground dark:text-slate-400">Revír</div>
                         <div className="font-semibold">{selectedCatch.spot || 'Neuvedené'}</div>
@@ -1318,7 +1318,7 @@ export default function DiaryCatches() {
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <Target className="w-5 h-5 text-muted-foreground dark:text-slate-400" />
+                      <TacticalIconInline icon={Target} variant="purple" size="md" />
                       <div>
                         <div className="text-sm text-muted-foreground dark:text-slate-400">Nástraha</div>
                         <div className="font-semibold">{selectedCatch.bait || 'Neuvedené'}</div>
@@ -1326,7 +1326,7 @@ export default function DiaryCatches() {
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <CalendarIcon className="w-5 h-5 text-muted-foreground dark:text-slate-400" />
+                      <TacticalIconInline icon={CalendarIcon} variant="indigo" size="md" />
                       <div>
                         <div className="text-sm text-muted-foreground dark:text-slate-400">Dátum úlovku</div>
                         <div className="font-semibold">

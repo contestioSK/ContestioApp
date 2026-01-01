@@ -441,7 +441,7 @@ export default function GearArsenalPage() {
               className="data-[state=active]:bg-amber-500/10 data-[state=active]:text-amber-500/90"
               data-testid="tab-baits"
             >
-              <Package className="h-4 w-4 mr-2" />
+              <TacticalIconInline icon={Package} variant="amber" size="sm" className="mr-2" />
               Nástrahy
               <Badge variant="secondary" className="ml-2 bg-amber-500/10 text-amber-500/80 border-amber-500/20">
                 {baitsCount}
@@ -452,7 +452,7 @@ export default function GearArsenalPage() {
               className="data-[state=active]:bg-teal-500/10 data-[state=active]:text-teal-500/90"
               data-testid="tab-equipment"
             >
-              <Archive className="h-4 w-4 mr-2" />
+              <TacticalIconInline icon={Archive} variant="cyan" size="sm" className="mr-2" />
               Vybavenie
               <Badge variant="secondary" className="ml-2 bg-teal-500/10 text-teal-500/80 border-teal-500/20">
                 {equipmentCount}
@@ -465,7 +465,7 @@ export default function GearArsenalPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-amber-500/10 rounded-lg border border-amber-500/20">
-                  <Fish className="h-6 w-6 text-amber-500/80" />
+                  <TacticalIconInline icon={Fish} variant="amber" size="md" />
                 </div>
                 <div>
                   <h2 className="text-xl font-black uppercase tracking-wide text-slate-200">Arzenál Boilies</h2>
@@ -627,7 +627,7 @@ export default function GearArsenalPage() {
                           className="ml-2 border-lime-700 text-lime-300"
                           data-testid="button-bulk-add"
                         >
-                          <Package className="mr-2 h-4 w-4" />
+                          <TacticalIconInline icon={Package} variant="amber" size="sm" className="mr-2" />
                           Pridať všetky
                         </Button>
                       </div>
@@ -768,7 +768,7 @@ export default function GearArsenalPage() {
             ) : (
               <div className="text-center py-10 text-muted-foreground">
                 <div className="relative inline-block mb-4">
-                  <Fish className="h-14 w-14 mx-auto text-amber-400/30" />
+                  <TacticalIcon icon={Fish} variant="amber" size="lg" showLabel={false} />
                   <Sparkle className="h-5 w-5 absolute -top-1 -right-1 text-amber-400 animate-pulse" />
                 </div>
                 <h3 className="text-lg font-semibold text-foreground mb-2">Začni budovať svoj arzenál!</h3>
@@ -790,7 +790,7 @@ export default function GearArsenalPage() {
                   Prehliadať
                 </TabsTrigger>
                 <TabsTrigger value="my-equipment" data-testid="subtab-my-equipment">
-                  <Package className="h-4 w-4 mr-2" />
+                  <TacticalIconInline icon={Package} variant="orange" size="sm" className="mr-2" />
                   Môj arzenál ({equipmentCount})
                 </TabsTrigger>
               </TabsList>
@@ -894,7 +894,9 @@ export default function GearArsenalPage() {
 
                 {!hasFilters && (
                   <div className="text-center py-12 text-muted-foreground">
-                    <Archive className="h-12 w-12 mx-auto mb-4 opacity-50 text-teal-400" />
+                    <div className="flex justify-center mb-4">
+                      <TacticalIcon icon={Archive} variant="cyan" size="lg" showLabel={false} />
+                    </div>
                     <p>Použi vyhľadávanie alebo filtre na nájdenie vybavenia</p>
                   </div>
                 )}
@@ -958,7 +960,7 @@ export default function GearArsenalPage() {
                 ) : (
                   <div className="text-center py-10 text-muted-foreground">
                     <div className="relative inline-block mb-4">
-                      <Archive className="h-14 w-14 mx-auto text-teal-400/30" />
+                      <TacticalIcon icon={Archive} variant="cyan" size="lg" showLabel={false} />
                       <Target className="h-5 w-5 absolute -top-1 -right-1 text-teal-400 animate-pulse" />
                     </div>
                     <h3 className="text-lg font-semibold text-foreground mb-2">Tvoj arzenál čaká!</h3>
