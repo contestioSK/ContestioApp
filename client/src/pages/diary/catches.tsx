@@ -287,6 +287,14 @@ export default function DiaryCatches() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isHistoricalDialogOpen, setIsHistoricalDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"current" | "historical">("current");
+  
+  // Reset to current tab when historical catches is disabled
+  useEffect(() => {
+    if (!user?.preferences?.allowHistoricalCatches && activeTab === "historical") {
+      setActiveTab("current");
+    }
+  }, [user?.preferences?.allowHistoricalCatches, activeTab]);
+
   const [editingCatch, setEditingCatch] = useState<DiaryCatch | null>(null);
   const [deletingCatch, setDeletingCatch] = useState<DiaryCatch | null>(null);
   const [selectedCatch, setSelectedCatch] = useState<DiaryCatch | null>(null);
@@ -699,8 +707,9 @@ export default function DiaryCatches() {
             }}
           />
 
-          {/* Tabs: Aktuálne / Historické */}
+          {/* Tabs: Aktuálne / Historické - historical tab only visible if preference enabled */}
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "current" | "historical")} className="w-full">
+            {user?.preferences?.allowHistoricalCatches && (
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
               <TabsList className="bg-slate-200 dark:bg-slate-800 h-auto p-1">
                 <TabsTrigger 
@@ -738,6 +747,7 @@ export default function DiaryCatches() {
                 </Button>
               )}
             </div>
+            )}
 
             {/* Historical catches info banner */}
             {activeTab === "historical" && (
