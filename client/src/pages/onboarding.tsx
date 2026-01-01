@@ -19,6 +19,7 @@ import {
   ChevronLeft,
   Check
 } from "lucide-react";
+import { TacticalIcon } from "@/components/ui/tactical-icon";
 
 type FishingStyle = "carp" | "spinning" | "feeder" | "fly" | "catfish";
 type MainGoal = "battles" | "diary" | "statistics";
@@ -153,7 +154,9 @@ export default function Onboarding() {
         {currentStep === 1 && (
           <div className="w-full max-w-lg animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="text-center mb-8">
-              <Fish className="w-12 h-12 text-primary mx-auto mb-4" />
+              <div className="flex justify-center mb-4">
+                <TacticalIcon icon={Fish} variant="active" size="lg" showLabel={false} />
+              </div>
               <h1 className="text-2xl font-bold mb-2">Aké druhy rybolovu máš najradšej?</h1>
               <p className="text-muted-foreground">
                 Prispôsobíme tvoj denník a štatistiky presne podľa toho, čo a ako lovíš.
@@ -211,7 +214,9 @@ export default function Onboarding() {
         {currentStep === 2 && (
           <div className="w-full max-w-lg animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="text-center mb-8">
-              <Target className="w-12 h-12 text-primary mx-auto mb-4" />
+              <div className="flex justify-center mb-4">
+                <TacticalIcon icon={Target} variant="active" size="lg" showLabel={false} />
+              </div>
               <h1 className="text-2xl font-bold mb-2">Aká je tvoja hlavná misia?</h1>
               <p className="text-muted-foreground">
                 Povedz nám, prečo si tu. Contestio ti podľa toho nastaví úvodnú obrazovku.
@@ -271,7 +276,9 @@ export default function Onboarding() {
         {currentStep === 3 && (
           <div className="w-full max-w-lg animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="text-center mb-8">
-              <LineChart className="w-12 h-12 text-primary mx-auto mb-4" />
+              <div className="flex justify-center mb-4">
+                <TacticalIcon icon={LineChart} variant="active" size="lg" showLabel={false} />
+              </div>
               <h1 className="text-2xl font-bold mb-2">Zvoľ si svoj štýl</h1>
               <p className="text-muted-foreground">
                 Ako chceš sledovať svoje dáta? Vyber si rozhranie, ktoré ti sedí.

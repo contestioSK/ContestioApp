@@ -436,7 +436,9 @@ export default function SeasonalGoals() {
             {/* Widget 1: Celkom Cieľov */}
             <Card>
               <CardContent className="p-6 text-center">
-                <Target className="w-10 h-10 text-primary mx-auto mb-3" />
+                <div className="flex justify-center mb-3">
+                  <TacticalIcon icon={Target} variant="active" size="md" showLabel={false} />
+                </div>
                 <div className="text-3xl font-bold text-foreground" data-testid="text-total-goals-count">{seasonGoals.length}</div>
                 <div className="text-sm text-muted-foreground mt-1">Celkom Cieľov</div>
               </CardContent>
@@ -447,7 +449,9 @@ export default function SeasonalGoals() {
               <CardContent className="p-6">
                 {nextGoal ? (
                   <div className="text-center">
-                    <Zap className="w-10 h-10 text-primary mx-auto mb-3" />
+                    <div className="flex justify-center mb-3">
+                      <TacticalIcon icon={Zap} variant="active" size="md" showLabel={false} />
+                    </div>
                     <div className="text-lg font-semibold text-foreground mb-2" data-testid="text-next-goal-label">Ďalší na Rade</div>
                     <div className="text-sm font-medium text-foreground truncate" data-testid="text-next-goal-title">{nextGoal.title}</div>
                     <div className="text-xs text-muted-foreground mt-2" data-testid="text-next-goal-remaining">
@@ -461,7 +465,9 @@ export default function SeasonalGoals() {
                   </div>
                 ) : (
                   <div className="text-center">
-                    <Zap className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+                    <div className="flex justify-center mb-3">
+                      <TacticalIcon icon={Zap} variant="neutral" size="md" showLabel={false} />
+                    </div>
                     <div className="text-sm text-muted-foreground" data-testid="text-no-next-goal">Pridaj si prvý cieľ!</div>
                   </div>
                 )}
@@ -471,7 +477,9 @@ export default function SeasonalGoals() {
             {/* Widget 3: Splnených Cieľov */}
             <Card>
               <CardContent className="p-6 text-center">
-                <Trophy className="w-10 h-10 text-yellow-500 mx-auto mb-3" />
+                <div className="flex justify-center mb-3">
+                  <TacticalIcon icon={Trophy} variant="action" size="md" showLabel={false} />
+                </div>
                 <div className="text-3xl font-bold text-foreground" data-testid="text-completed-goals-count">{completedGoals.length}</div>
                 <div className="text-sm text-muted-foreground mt-1">Splnených Cieľov</div>
               </CardContent>
@@ -533,7 +541,9 @@ export default function SeasonalGoals() {
             {activeGoals.length === 0 ? (
               <Card>
                 <CardContent className="p-8 text-center">
-                  <Target className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <div className="flex justify-center mb-4">
+                    <TacticalIcon icon={Target} variant="neutral" size="lg" showLabel={false} />
+                  </div>
                   <h3 className="text-lg font-medium text-foreground mb-2">
                     {isViewingHistoricalSeason ? "Žiadne aktívne ciele v tejto sezóne" : "Žiadne aktívne ciele"}
                   </h3>

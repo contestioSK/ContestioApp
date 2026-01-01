@@ -1,6 +1,7 @@
 import { Lock, TrendingUp, Trophy, PieChart, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
+import { TacticalIcon } from "@/components/ui/tactical-icon";
 
 type PremiumGateType = 'trends' | 'achievements' | 'analysis';
 
@@ -18,7 +19,7 @@ const gateContent: Record<PremiumGateType, {
   cta: string;
 }> = {
   trends: {
-    icon: <TrendingUp className="w-12 h-12 text-muted-foreground/50" />,
+    icon: <TacticalIcon icon={TrendingUp} variant="neutral" size="lg" showLabel={false} />,
     title: "Trendy úlovkov",
     description: "Zisti, kedy ryby berú najčastejšie podľa času, počasia a sezóny.",
     benefits: [
@@ -29,7 +30,7 @@ const gateContent: Record<PremiumGateType, {
     cta: "Odomknúť trendy v PREMIUM"
   },
   achievements: {
-    icon: <Trophy className="w-12 h-12 text-muted-foreground/50" />,
+    icon: <TacticalIcon icon={Trophy} variant="neutral" size="lg" showLabel={false} />,
     title: "Úspechy a progres",
     description: "Sleduj, ako sa zlepšuješ a v čom máš rezervy.",
     benefits: [
@@ -40,7 +41,7 @@ const gateContent: Record<PremiumGateType, {
     cta: "Zobraziť úspechy v PREMIUM"
   },
   analysis: {
-    icon: <PieChart className="w-12 h-12 text-muted-foreground/50" />,
+    icon: <TacticalIcon icon={PieChart} variant="neutral" size="lg" showLabel={false} />,
     title: "Pokročilé analýzy",
     description: "Toto je nástroj pre rybárov, ktorí chcú chytať viac, nie len zapisovať.",
     benefits: [

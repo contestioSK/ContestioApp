@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Link } from "wouter";
 import { ArrowLeft, Fish, Calendar, Weight, Clock, User, Camera, X } from "lucide-react";
+import { TacticalIcon } from "@/components/ui/tactical-icon";
 import type { Catch, Team, Referee, Competition } from "@shared/schema";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
@@ -301,7 +302,9 @@ export default function CompetitionCatches() {
           ) : (
             <Card>
               <CardContent className="py-12 text-center">
-                <Fish className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                <div className="flex justify-center mb-4">
+                  <TacticalIcon icon={Fish} variant="neutral" size="lg" showLabel={false} />
+                </div>
                 <h3 className="text-lg font-medium text-foreground mb-2">
                   {selectedDate ? "Žiadne úlovky v tento deň" : "Zatiaľ žiadne úlovky"}
                 </h3>

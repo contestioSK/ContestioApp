@@ -948,8 +948,8 @@ export default function DiaryTrips() {
                 {activeAndPlannedTrips.length === 0 ? (
                   <Card>
                     <CardContent className="p-8 text-center">
-                      <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-4">
-                        <Clock className="w-8 h-8 text-muted-foreground" />
+                      <div className="flex justify-center mb-4">
+                        <TacticalIcon icon={Clock} variant="neutral" size="lg" showLabel={false} />
                       </div>
                       <h3 className="text-lg font-semibold text-foreground mb-2">
                         Žiadne aktívne výpravy
@@ -987,8 +987,8 @@ export default function DiaryTrips() {
                 {finishedTrips.length === 0 ? (
                   <Card>
                     <CardContent className="p-8 text-center">
-                      <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-4">
-                        <FileText className="w-8 h-8 text-muted-foreground" />
+                      <div className="flex justify-center mb-4">
+                        <TacticalIcon icon={FileText} variant="neutral" size="lg" showLabel={false} />
                       </div>
                       <h3 className="text-lg font-semibold text-foreground mb-2">
                         Zatiaľ žiadna história

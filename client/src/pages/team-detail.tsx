@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ArrowLeft, Users, Trophy, Fish, MapPin, Camera, X, Heart } from "lucide-react";
+import { TacticalIcon } from "@/components/ui/tactical-icon";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Team, TeamMember, Catch } from "@shared/schema";
 import { formatSectorPlace, getSectorLetter } from "@/lib/utils";
@@ -347,7 +348,9 @@ export default function TeamDetail() {
               <CardContent>
                 {catchCount === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
-                    <Fish className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                    <div className="flex justify-center mb-3">
+                      <TacticalIcon icon={Fish} variant="neutral" size="lg" showLabel={false} />
+                    </div>
                     <p>Tento tím zatiaľ nemá žiadne úlovky.</p>
                   </div>
                 ) : (
