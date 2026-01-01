@@ -417,8 +417,9 @@ export default function DiaryIndex() {
     return catchDate >= seasonStart;
   }) : [];
 
-  // Apply filters to catches
-  const filteredCatches = seasonCatches.filter((catch_: any) => {
+  // Apply filters to ALL catches (table shows all, not just season)
+  const allCatchesList = Array.isArray(allCatches) ? allCatches : [];
+  const filteredCatches = allCatchesList.filter((catch_: any) => {
     // Filter by technique
     if (selectedTechnique !== "all" && catch_.bait !== selectedTechnique) {
       return false;
@@ -465,9 +466,9 @@ export default function DiaryIndex() {
   // Display catches: show top 5 when no filters are active, otherwise show all filtered results
   const displayedCatches = hasActiveFilters ? filteredCatches : filteredCatches.slice(0, 5);
 
-  // Get unique techniques and spots for filter dropdowns
-  const uniqueTechniques = Array.from(new Set(seasonCatches.map((c: any) => c.bait).filter(Boolean)));
-  const uniqueSpots = Array.from(new Set(seasonCatches.map((c: any) => c.spot).filter(Boolean)));
+  // Get unique techniques and spots for filter dropdowns (from all catches)
+  const uniqueTechniques = Array.from(new Set(allCatchesList.map((c: any) => c.bait).filter(Boolean)));
+  const uniqueSpots = Array.from(new Set(allCatchesList.map((c: any) => c.spot).filter(Boolean)));
 
   // Calculate statistics from current season catches
   const biggestCatchObject = seasonCatches.length > 0
@@ -1242,11 +1243,11 @@ export default function DiaryIndex() {
                   <TacticalIcon icon={Fish} variant="neutral" size="lg" showLabel={false} />
                 </div>
                 <p className="text-muted-foreground dark:text-slate-400 mb-4">
-                  {seasonCatches.length === 0 
+                  {allCatchesList.length === 0 
                     ? "Zatiaľ nemáte žiadne úlovky" 
                     : "Žiadne úlovky nevyhovujú zvoleným filtrom"}
                 </p>
-                {seasonCatches.length === 0 && (
+                {allCatchesList.length === 0 && (
                   <Button 
                     onClick={() => setLocation("/diary/catches")}
                     className="bg-green-600 hover:bg-green-700"
@@ -1260,7 +1261,7 @@ export default function DiaryIndex() {
         </Card>
 
         {/* View All Button - show when there are more than 5 catches total, regardless of filters */}
-        {seasonCatches.length > 5 && (
+        {allCatchesList.length > 5 && (
           <div className="flex justify-center mt-4">
             <Button
               onClick={() => setLocation("/diary/catches")}
@@ -1268,7 +1269,7 @@ export default function DiaryIndex() {
               className="border text-muted-foreground dark:text-slate-300 hover:bg-muted dark:hover:bg-slate-700 hover:text-foreground dark:hover:text-white"
               data-testid="button-view-all-catches"
             >
-              Zobraziť všetky úlovky ({seasonCatches.length})
+              Zobraziť všetky úlovky ({allCatchesList.length})
             </Button>
           </div>
         )}
