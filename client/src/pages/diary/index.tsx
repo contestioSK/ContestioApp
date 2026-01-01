@@ -739,9 +739,7 @@ export default function DiaryIndex() {
               <Card className="bg-white/90 backdrop-blur-sm bg-gradient-to-br from-teal-500/10 via-transparent to-transparent dark:bg-transparent dark:bg-gradient-to-br dark:from-blue-600/20 dark:to-cyan-600/20 border-teal-200/60 dark:border-blue-500/30 cursor-pointer transition-all duration-200 hover:from-teal-500/20 hover:shadow-lg hover:shadow-teal-500/10 hover:border-teal-300/80 dark:hover:bg-transparent dark:hover:from-blue-600/30 dark:hover:to-cyan-600/30 dark:hover:border-blue-400/50 dark:hover:shadow-blue-500/20 h-full" data-testid="card-season-catches">
                 <CardContent className="p-4 md:p-6">
                   <div className="flex items-start gap-3 md:gap-4">
-                    <div className="w-11 h-11 md:w-12 md:h-12 bg-teal-100/80 dark:bg-blue-600/30 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <Fish className="w-5 h-5 md:w-6 md:h-6 text-teal-600 dark:text-blue-300" />
-                    </div>
+                    <TacticalIcon icon={Fish} variant="cyan" size="sm" showLabel={false} />
                     <div className="flex-1">
                       <div className="text-xs md:text-sm text-muted-foreground dark:text-slate-300 mb-1">Úlovky</div>
                       <div className="text-xl md:text-2xl font-bold text-teal-700 dark:text-white" data-testid="text-total-catches">{diaryStats.totalCatches}</div>
@@ -756,9 +754,7 @@ export default function DiaryIndex() {
                 <Card className="bg-white/90 backdrop-blur-sm bg-gradient-to-br from-amber-400/15 via-transparent to-transparent dark:bg-transparent dark:bg-gradient-to-br dark:from-emerald-600/20 dark:to-green-600/20 border-amber-300/60 dark:border-emerald-500/30 cursor-pointer transition-all duration-200 hover:from-amber-400/25 hover:shadow-lg hover:shadow-amber-500/10 hover:border-amber-400/80 dark:hover:bg-transparent dark:hover:from-emerald-600/30 dark:hover:to-green-600/30 dark:hover:border-emerald-400/50 dark:hover:shadow-emerald-500/20 h-full" data-testid="card-biggest-fish">
                   <CardContent className="p-4 md:p-6">
                     <div className="flex items-start gap-3 md:gap-4">
-                      <div className="w-11 h-11 md:w-12 md:h-12 bg-amber-100/80 dark:bg-emerald-600/30 rounded-xl flex items-center justify-center flex-shrink-0">
-                        <Trophy className="w-5 h-5 md:w-6 md:h-6 text-amber-600 dark:text-emerald-300" />
-                      </div>
+                      <TacticalIcon icon={Trophy} variant="amber" size="sm" showLabel={false} />
                       <div className="flex-1">
                         <div className="text-xs md:text-sm text-muted-foreground dark:text-slate-300 mb-1">Najväčšia ryba</div>
                         <div className="text-xl md:text-2xl font-bold text-amber-700 dark:text-white" data-testid="text-biggest-fish">
@@ -773,9 +769,7 @@ export default function DiaryIndex() {
               <Card className="bg-white/90 backdrop-blur-sm bg-gradient-to-br from-amber-400/15 via-transparent to-transparent dark:bg-transparent dark:bg-gradient-to-br dark:from-emerald-600/20 dark:to-green-600/20 border-amber-300/60 dark:border-emerald-500/30 hover:from-amber-400/25 hover:shadow-lg hover:shadow-amber-500/10 dark:hover:bg-transparent h-full" data-testid="card-biggest-fish">
                 <CardContent className="p-4 md:p-6">
                   <div className="flex items-start gap-3 md:gap-4">
-                    <div className="w-11 h-11 md:w-12 md:h-12 bg-amber-100/80 dark:bg-emerald-600/30 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <Trophy className="w-5 h-5 md:w-6 md:h-6 text-amber-600 dark:text-emerald-300" />
-                    </div>
+                    <TacticalIcon icon={Trophy} variant="amber" size="sm" showLabel={false} />
                     <div className="flex-1">
                       <div className="text-xs md:text-sm text-muted-foreground dark:text-slate-300 mb-1">Najväčšia ryba</div>
                       <div className="text-xl md:text-2xl font-bold text-amber-700 dark:text-white" data-testid="text-biggest-fish">
@@ -790,9 +784,7 @@ export default function DiaryIndex() {
             <Card className="bg-white/90 backdrop-blur-sm bg-gradient-to-br from-slate-400/12 via-transparent to-transparent dark:bg-transparent dark:bg-gradient-to-br dark:from-purple-600/20 dark:to-pink-600/20 border-slate-300/60 dark:border-purple-500/30 hover:from-slate-400/20 hover:shadow-lg hover:shadow-slate-500/10 hover:border-slate-400/80 dark:hover:bg-transparent h-full" data-testid="card-days-at-water">
               <CardContent className="p-4 md:p-6">
                 <div className="flex items-start gap-3 md:gap-4">
-                  <div className="w-11 h-11 md:w-12 md:h-12 bg-slate-200/80 dark:bg-purple-600/30 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <CalendarDays className="w-5 h-5 md:w-6 md:h-6 text-slate-600 dark:text-purple-300" />
-                  </div>
+                  <TacticalIcon icon={CalendarDays} variant="indigo" size="sm" showLabel={false} />
                   <div className="flex-1">
                     <div className="text-xs md:text-sm text-muted-foreground dark:text-slate-300 mb-1">Dni pri vode</div>
                     <div className="text-xl md:text-2xl font-bold text-slate-700 dark:text-white" data-testid="text-days-at-water">{diaryStats.daysAtWater}</div>
@@ -804,9 +796,7 @@ export default function DiaryIndex() {
             <Card className="bg-white/90 backdrop-blur-sm bg-gradient-to-br from-violet-400/12 via-transparent to-transparent dark:bg-transparent dark:bg-gradient-to-br dark:from-amber-600/20 dark:to-orange-600/20 border-violet-300/60 dark:border-amber-500/30 hover:from-violet-400/20 hover:shadow-lg hover:shadow-violet-500/10 hover:border-violet-400/80 dark:hover:bg-transparent h-full" data-testid="card-season-average">
               <CardContent className="p-4 md:p-6">
                 <div className="flex items-start gap-3 md:gap-4">
-                  <div className="w-11 h-11 md:w-12 md:h-12 bg-violet-100/80 dark:bg-amber-600/30 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <Target className="w-5 h-5 md:w-6 md:h-6 text-violet-600 dark:text-amber-300" />
-                  </div>
+                  <TacticalIcon icon={Target} variant="purple" size="sm" showLabel={false} />
                   <div className="flex-1">
                     <div className="text-xs md:text-sm text-muted-foreground dark:text-slate-300 mb-1">Váhový priemer</div>
                     <div className="text-xl md:text-2xl font-bold text-violet-700 dark:text-white" data-testid="text-season-average">{diaryStats.averageWeight.toFixed(2)} kg</div>
@@ -822,9 +812,7 @@ export default function DiaryIndex() {
           <CardContent className="p-4 md:p-6">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 md:gap-4">
               <div className="flex items-start gap-3 md:gap-4">
-                <div className="w-11 h-11 md:w-12 md:h-12 bg-red-100 dark:bg-red-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Swords className="w-5 h-5 md:w-6 md:h-6 text-red-600 dark:text-red-400" />
-                </div>
+                <TacticalIcon icon={Swords} variant="rose" size="sm" showLabel={false} />
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <h3 className="text-base md:text-lg font-bold text-foreground dark:text-white">Fishing Battle</h3>
@@ -999,9 +987,7 @@ export default function DiaryIndex() {
             <Card className="bg-white/90 backdrop-blur-sm bg-gradient-to-br from-teal-500/10 via-transparent to-transparent dark:bg-transparent dark:bg-gradient-to-br dark:from-blue-600/20 dark:to-cyan-600/20 border-teal-200/60 dark:border-blue-500/30 hover:from-teal-500/20 hover:shadow-lg hover:shadow-teal-500/10 dark:hover:bg-transparent transition-all" data-testid="card-today-count">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 bg-teal-100/80 dark:bg-blue-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Fish className="w-5 h-5 text-teal-600 dark:text-blue-300" />
-                  </div>
+                  <TacticalIcon icon={Fish} variant="cyan" size="sm" showLabel={false} />
                   <div>
                     <div className="text-xs text-muted-foreground dark:text-slate-400">Úlovky</div>
                     <div className="text-xl font-bold text-teal-700 dark:text-white" data-testid="text-today-count">{todayStats.count} ks</div>
@@ -1013,9 +999,7 @@ export default function DiaryIndex() {
             <Card className="bg-white/90 backdrop-blur-sm bg-gradient-to-br from-amber-400/15 via-transparent to-transparent dark:bg-transparent dark:bg-gradient-to-br dark:from-emerald-600/20 dark:to-green-600/20 border-amber-300/60 dark:border-emerald-500/30 hover:from-amber-400/25 hover:shadow-lg hover:shadow-amber-500/10 dark:hover:bg-transparent transition-all" data-testid="card-today-biggest">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 bg-amber-100/80 dark:bg-emerald-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Trophy className="w-5 h-5 text-amber-600 dark:text-emerald-300" />
-                  </div>
+                  <TacticalIcon icon={Trophy} variant="amber" size="sm" showLabel={false} />
                   <div>
                     <div className="text-xs text-muted-foreground dark:text-slate-400">Najväčšia ryba</div>
                     <div className="text-xl font-bold text-amber-700 dark:text-white" data-testid="text-today-biggest">{todayStats.biggestFish.toFixed(1)} kg</div>
@@ -1027,9 +1011,7 @@ export default function DiaryIndex() {
             <Card className="bg-white/90 backdrop-blur-sm bg-gradient-to-br from-slate-400/12 via-transparent to-transparent dark:bg-transparent dark:bg-gradient-to-br dark:from-purple-600/20 dark:to-pink-600/20 border-slate-300/60 dark:border-purple-500/30 hover:from-slate-400/20 hover:shadow-lg hover:shadow-slate-500/10 dark:hover:bg-transparent transition-all" data-testid="card-today-weight">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 bg-slate-200/80 dark:bg-purple-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Weight className="w-5 h-5 text-slate-600 dark:text-purple-300" />
-                  </div>
+                  <TacticalIcon icon={Weight} variant="indigo" size="sm" showLabel={false} />
                   <div>
                     <div className="text-xs text-muted-foreground dark:text-slate-400">Celková váha</div>
                     <div className="text-xl font-bold text-slate-700 dark:text-white" data-testid="text-today-weight">{todayStats.totalWeight.toFixed(1)} kg</div>
@@ -1041,9 +1023,7 @@ export default function DiaryIndex() {
             <Card className="bg-white/90 backdrop-blur-sm bg-gradient-to-br from-violet-400/12 via-transparent to-transparent dark:bg-transparent dark:bg-gradient-to-br dark:from-amber-600/20 dark:to-orange-600/20 border-violet-300/60 dark:border-amber-500/30 hover:from-violet-400/20 hover:shadow-lg hover:shadow-violet-500/10 dark:hover:bg-transparent transition-all" data-testid="card-today-average">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 bg-violet-100/80 dark:bg-amber-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Target className="w-5 h-5 text-violet-600 dark:text-amber-300" />
-                  </div>
+                  <TacticalIcon icon={Target} variant="purple" size="sm" showLabel={false} />
                   <div>
                     <div className="text-xs text-muted-foreground dark:text-slate-400">Váhový priemer</div>
                     <div className="text-xl font-bold text-violet-700 dark:text-white" data-testid="text-today-average">{todayStats.averageWeight.toFixed(2)} kg</div>
