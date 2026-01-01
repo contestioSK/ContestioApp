@@ -1,0 +1,111 @@
+Dobre, toto je presne ten moment, kde sa rozhoduje, či appka pôsobí ako hobby projekt alebo ako produkt, ktorý ľudia chcú používať.
+
+Nižšie máš konkrétny návrh EMPTY STATE, UX logiku + copy + odporúčanie, ako to spraviť bez toho, aby to pôsobilo prázdno alebo mŕtvo.
+
+🎯 CIEĽ EMPTY STATE (veľmi dôležité)
+
+Keď je používateľ prvýkrát na stránke Priatelia, musí do 3 sekúnd pochopiť:
+
+Načo to slúži
+
+Čo má spraviť teraz
+
+Prečo sa mu to oplatí
+
+Nie:
+❌ „Zatiaľ nemáš žiadnych priateľov“
+✅ „Tu začne tvoja rybárska komunita“
+
+✅ ODPORÚČANÝ EMPTY STATE – UX KONCEPT
+🧠 Mentálny model:
+
+👉 „Nemám kamarátov“ ≠ chyba
+👉 „Ešte som nezačal budovať sieť“ = výzva
+
+🧩 1. Vizuál (dôležité)
+
+Použi:
+
+veľkú ikonku (Users / Swords)
+
+jemný glow
+
+žiadny smútok, žiadna sivá prázdnota
+
+Vizuál:
+
+👥 ikonka
+
+malý badge: „0 priateľov“
+
+jemný highlight na CTA
+
+✍️ TEXTY (odporúčané znenie)
+Nadpis:
+
+Zatiaľ tu nikoho nemáš
+
+alebo (lepšie):
+Tvoja rybárska partia ešte len vzniká 🎣
+
+Popis:
+
+Pridaj si kamarátov, vyzývaj ich na súboje a porovnávaj svoje úlovky v reálnom čase.
+
+Krátke. Motivačné. Bez technických slov.
+
+CTA (HLAVNÉ)
+
+🟢 Nájsť priateľov
+
+➡️ presmeruje na tab Hľadať
+
+Sekundárny CTA (voliteľné)
+
+⚔️ Vytvoriť Battle
+(ak už má aspoň jedného kamoša – inak skryť)
+
+🧱 ODPORÚČANÁ KOMPONENTA (hotový návrh)
+
+Toto môžeš rovno použiť 👇
+
+const EmptyFriendsState = ({ onFindFriends }: { onFindFriends: () => void }) => (
+  <div className="flex flex-col items-center justify-center text-center p-10 bg-slate-800/40 border border-slate-700 rounded-2xl">
+    
+    <div className="w-20 h-20 rounded-full bg-lime-500/10 flex items-center justify-center mb-6">
+      <Users className="w-10 h-10 text-lime-500" />
+    </div>
+
+    <h3 className="text-xl font-bold text-white mb-2">
+      Tvoja rybárska partia ešte len vzniká
+    </h3>
+
+    <p className="text-slate-400 max-w-sm mb-6">
+      Pridaj si kamarátov, vyzvi ich na súboj a porovnávaj úlovky ako profík.
+    </p>
+
+    <Button
+      onClick={onFindFriends}
+      className="bg-lime-500 hover:bg-lime-400 text-slate-950 font-bold px-6"
+    >
+      Nájsť priateľov
+    </Button>
+  </div>
+);
+
+🔥 BONUS: Mikro-UX trik (odporúčam)
+
+Keď je 0 priateľov, automaticky:
+
+otvor tab „Hľadať“
+
+alebo zobraz šípku → „Začni tu“
+
+To dramaticky zvyšuje engagement.
+
+✅ VERDIKT
+
+✔️ Tvoj aktuálny kód je technicky veľmi dobrý
+✔️ Architektúra je správna
+✔️ Chýbal len silný empty state
+✔️ Tento návrh to rieši presne tam, kde treba
