@@ -75,23 +75,23 @@ export default function Friends() {
     <DiaryLayout>
       <div className="space-y-6">
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+            <h1 className="text-3xl font-bold text-foreground dark:text-white flex items-center gap-3">
               <TacticalIconInline icon={Users} variant="orange" />
               Priatelia
             </h1>
-            <p className="text-slate-400">Pridaj si kamarátov a vyzvi ich na rybársky súboj.</p>
+            <p className="text-muted-foreground dark:text-slate-400">Pridaj si kamarátov a vyzvi ich na rybársky súboj.</p>
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 bg-slate-700/50">
-              <TabsTrigger value="friends" className="text-white data-[state=active]:bg-slate-600" data-testid="tab-friends">
+            <TabsList className="grid w-full grid-cols-3 bg-muted dark:bg-slate-700/50">
+              <TabsTrigger value="friends" className="text-foreground dark:text-white data-[state=active]:bg-card data-[state=active]:shadow-sm dark:data-[state=active]:bg-slate-600" data-testid="tab-friends">
                 <TacticalIconInline icon={Users} variant="orange" size="sm" />
                 <span className="ml-2">Priatelia</span>
-                <span className="ml-2 text-xs font-bold bg-slate-600 px-2 py-0.5 rounded-full">
+                <span className="ml-2 text-xs font-bold bg-slate-200 dark:bg-slate-600 px-2 py-0.5 rounded-full">
                   {formatBadgeCount(myFriends.length)}
                 </span>
               </TabsTrigger>
-              <TabsTrigger value="requests" className="text-white data-[state=active]:bg-slate-600" data-testid="tab-requests">
+              <TabsTrigger value="requests" className="text-foreground dark:text-white data-[state=active]:bg-card data-[state=active]:shadow-sm dark:data-[state=active]:bg-slate-600" data-testid="tab-requests">
                 <TacticalIconInline icon={UserCheck} variant="indigo" size="sm" />
                 <span className="ml-2">Žiadosti</span>
                 {friendRequests.length > 0 && (
@@ -100,7 +100,7 @@ export default function Friends() {
                   </span>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="search" className="text-white data-[state=active]:bg-slate-600" data-testid="tab-search">
+              <TabsTrigger value="search" className="text-foreground dark:text-white data-[state=active]:bg-card data-[state=active]:shadow-sm dark:data-[state=active]:bg-slate-600" data-testid="tab-search">
                 <TacticalIconInline icon={Search} variant="blue" size="sm" />
                 <span className="ml-2">Hľadať</span>
               </TabsTrigger>
@@ -116,19 +116,19 @@ export default function Friends() {
 
             <TabsContent value="search" className="space-y-4 mt-4">
               {isNewUser && (
-                <div className="p-6 rounded-2xl bg-gradient-to-br from-orange-500/10 to-indigo-500/10 border border-orange-500/20 mb-4">
+                <div className="p-6 rounded-2xl bg-orange-50 dark:bg-gradient-to-br dark:from-orange-500/10 dark:to-indigo-500/10 border border-orange-200 dark:border-orange-500/20 mb-4">
                   <div className="flex items-start gap-4">
-                    <div className="p-3 rounded-xl bg-orange-500/20">
-                      <Users className="w-6 h-6 text-orange-400" />
+                    <div className="p-3 rounded-xl bg-orange-100 dark:bg-orange-500/20">
+                      <Users className="w-6 h-6 text-orange-600 dark:text-orange-400" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold text-white mb-2">
+                      <h3 className="text-lg font-bold text-foreground dark:text-white mb-2">
                         Zatiaľ tu nikoho nemáš
                       </h3>
-                      <p className="text-slate-300 text-sm mb-3">
+                      <p className="text-muted-foreground dark:text-slate-300 text-sm mb-3">
                         Pridaj si kamarátov a môžeš:
                       </p>
-                      <ul className="text-slate-400 text-sm space-y-1">
+                      <ul className="text-muted-foreground dark:text-slate-400 text-sm space-y-1">
                         <li>• vyzývať ich na súboje</li>
                         <li>• porovnávať úlovky</li>
                         <li>• sledovať rebríčky</li>
@@ -138,8 +138,8 @@ export default function Friends() {
                 </div>
               )}
               
-              <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700 mb-4">
-                <p className="text-sm text-slate-300">
+              <div className="p-4 rounded-xl bg-card border border-slate-200 dark:border-slate-700 mb-4 shadow-sm">
+                <p className="text-sm text-muted-foreground dark:text-slate-300">
                   Vyhľadaj kamarátov podľa mena a začni súťažiť.
                 </p>
               </div>

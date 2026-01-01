@@ -73,10 +73,10 @@ export default function FriendRequests({ userId }: { userId: string }) {
 
   if (friendRequests.length === 0) {
     return (
-      <Card className="bg-slate-800/50 border-slate-700">
+      <Card className="bg-card border border-slate-200 shadow-sm dark:bg-slate-800/50 dark:border-slate-700">
         <CardContent className="p-8 text-center flex flex-col items-center">
           <TacticalIcon icon={UserCheck} variant="cyan" size="lg" showLabel={false} />
-          <p className="text-slate-400 mt-4">Žiadne čakajúce žiadosti</p>
+          <p className="text-muted-foreground dark:text-slate-400 mt-4">Žiadne čakajúce žiadosti</p>
         </CardContent>
       </Card>
     );
@@ -85,7 +85,7 @@ export default function FriendRequests({ userId }: { userId: string }) {
   return (
     <div className="space-y-3">
       {friendRequests.map((request) => (
-        <Card key={request.friendship?.id} className="bg-slate-800/50 border-slate-700">
+        <Card key={request.friendship?.id} className="bg-card border border-slate-200 shadow-sm dark:bg-slate-800/50 dark:border-slate-700">
           <CardContent className="p-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Avatar>
@@ -94,7 +94,7 @@ export default function FriendRequests({ userId }: { userId: string }) {
                   {(request.firstName?.[0] || "U").toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <p className="font-bold text-white">
+              <p className="font-bold text-foreground dark:text-white">
                 {request.firstName} {request.lastName}
               </p>
             </div>
