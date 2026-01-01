@@ -1,0 +1,130 @@
+Manuál: Používanie palety Ember & Ash v Contestio
+
+Tento manuál slúži na správnu integráciu a používanie víťaznej farebnej palety V2 Ember v tvojom projekte na Replite.
+
+1. Nastavenie Tailwind Konfigurácie (tailwind.config.js)
+
+Aby si mohol farby používať konzistentne naprieč celou aplikáciou pomocou tried ako text-brand-primary alebo bg-brand-success, pridaj si tieto definície do tvojho konfiguráku.
+
+Odporúčaný prístup (CSS premenné):
+V súbore index.css definuj premenné pre oba módy:
+
+:root {
+  /* Light Mode - hsl(40, 20%, 97%) background */
+  --bg-app: 40 20% 97%;
+  --brand-primary: #c2410c;
+  --brand-secondary: #4f46e5;
+  --brand-success: #16a34a;
+  --brand-prestige: #92400e;
+  --brand-danger: #b91c1c;
+  --brand-neutral: #475569;
+}
+
+.dark {
+  /* Dark Mode - #0c1f28 background */
+  --bg-app: 199 53% 10%;
+  --brand-primary: #f97316;
+  --brand-secondary: #818cf8;
+  --brand-success: #4ade80;
+  --brand-prestige: #d97706;
+  --brand-danger: #ef4444;
+  --brand-neutral: #94a3b8;
+}
+
+
+2. Prehľad HEX kódov (Referencia)
+
+Účel
+
+Farba
+
+Dark Mode (on #0c1f28)
+
+Light Mode (on Beige)
+
+Primárna Akcia
+
+Apex Orange
+
+#f97316
+
+#c2410c
+
+Voda/Sekundárna
+
+Deep Indigo
+
+#818cf8
+
+#4f46e5
+
+Úspech/Záznam
+
+Nature Green
+
+#4ade80
+
+#16a34a
+
+Trofeje/Master
+
+Bronze Gold
+
+#d97706
+
+#92400e
+
+Chyba/Dravec
+
+Signal Red
+
+#ef4444
+
+#b91c1c
+
+Systém/Metadata
+
+Cool Gray
+
+#94a3b8
+
+#475569
+
+3. Praktické použitie v React komponentoch
+
+Pri kódovaní v Replite používaj Tailwind triedy podľa tohto kľúča, aby si zachoval taktický vzhľad:
+
+Hlavné akčné tlačidlo (CTA)
+
+Vždy používaj Apex Orange pre prvky, ktoré vyžadujú pozornosť používateľa.
+
+<button className="bg-orange-500 text-white dark:bg-orange-600 font-black uppercase tracking-widest px-6 py-3 rounded-xl shadow-lg active:scale-95 transition-all">
+  Zaznamenať úlovok
+</button>
+
+
+Signalizácia úspechu
+
+Pre potvrdené úlovky v denníku alebo úspešné akcie.
+
+<div className="border-l-4 border-green-500 dark:border-green-400 bg-green-500/10 p-4 rounded-r-xl">
+  <span className="text-green-600 dark:text-green-400 font-bold">Úlovok bol schválený!</span>
+</div>
+
+
+Taktické karty (Glassmorphism)
+
+Na tvojom tmavom modro-zelenom pozadí vynikne efekt skla.
+
+<div className="bg-white/5 border border-white/10 backdrop-blur-md rounded-[2rem] p-6 shadow-2xl">
+  {/* Obsah karty */}
+</div>
+
+
+4. Tip pre Replit AI
+
+Ak používaš Replit AI na generovanie kódu, skopíruj mu tento riadok ako inštrukciu:
+
+"Vždy používaj farbu #f97316 (Dark) / #c2410c (Light) pre primárne akcie a pozadie aplikácie nastav na #0c1f28 (Dark) alebo hsl(40, 20%, 97%) (Light)."
+
+Tento manuál ti pomôže udržať vizuálnu integritu značky Contestio pri rozširovaní aplikácie. Vidíme sa na vode! 🎣
