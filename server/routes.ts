@@ -5630,6 +5630,9 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         }
       }
       
+      // Filter out historical catches - they don't count towards badges
+      userCatches = userCatches.filter((c: any) => !c.isHistorical);
+      
       // Calculate progress for each badge type
       const progress: Record<string, number> = {};
       
