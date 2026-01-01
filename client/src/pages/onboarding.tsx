@@ -18,7 +18,12 @@ import {
   ChevronRight,
   ChevronLeft,
   Check,
-  History
+  History,
+  Anchor,
+  Zap,
+  Crosshair,
+  Wind,
+  Waves
 } from "lucide-react";
 import { TacticalIcon } from "@/components/ui/tactical-icon";
 
@@ -42,22 +47,22 @@ const STEPS = [
 ];
 
 const fishingStyles = [
-  { id: "carp" as FishingStyle, label: "Kaprárina", icon: "🎣", description: "Vôňa boilies a trpezlivé čakanie na životnú jazdu" },
-  { id: "spinning" as FishingStyle, label: "Prívlač", icon: "🐟", description: "Adrenalínový lov dravcov a nekonečné hádzanie" },
-  { id: "feeder" as FishingStyle, label: "Feeder", icon: "🪣", description: "Maximálna precíznosť a jemná technika na každú rybu" },
-  { id: "fly" as FishingStyle, label: "Muškárenie", icon: "🪰", description: "Umenie fly-fishingu a súboj s prúdom rieky" },
-  { id: "catfish" as FishingStyle, label: "Sumčiarina", icon: "🐋", description: "Súboj s riečnymi gigantmi, kde rozhoduje sila" }
+  { id: "carp" as FishingStyle, label: "Kaprárina", icon: Anchor, variant: "emerald" as const, description: "Vôňa boilies a trpezlivé čakanie na životnú jazdu" },
+  { id: "spinning" as FishingStyle, label: "Prívlač", icon: Zap, variant: "amber" as const, description: "Adrenalínový lov dravcov a nekonečné hádzanie" },
+  { id: "feeder" as FishingStyle, label: "Feeder", icon: Crosshair, variant: "cyan" as const, description: "Maximálna precíznosť a jemná technika na každú rybu" },
+  { id: "fly" as FishingStyle, label: "Muškárenie", icon: Wind, variant: "blue" as const, description: "Umenie fly-fishingu a súboj s prúdom rieky" },
+  { id: "catfish" as FishingStyle, label: "Sumčiarina", icon: Waves, variant: "indigo" as const, description: "Súboj s riečnymi gigantmi, kde rozhoduje sila" }
 ];
 
 const mainGoals = [
-  { id: "battles" as MainGoal, label: "Nadvláda v Fishing Battle", icon: Swords, description: "Vyzvi kamošov a ukáž im, kto je skutočný pán vody" },
-  { id: "diary" as MainGoal, label: "Digitálny denník", icon: BookOpen, description: "Uchovaj si spomienky na každú výpravu v profi kvalite" },
-  { id: "statistics" as MainGoal, label: "Dátový mág", icon: BarChart3, description: "Analyzuj tlak, vietor a úspešnosť tvojich revírov" }
+  { id: "battles" as MainGoal, label: "Nadvláda v Fishing Battle", icon: Swords, variant: "amber" as const, description: "Vyzvi kamošov a ukáž im, kto je skutočný pán vody" },
+  { id: "diary" as MainGoal, label: "Digitálny denník", icon: BookOpen, variant: "emerald" as const, description: "Uchovaj si spomienky na každú výpravu v profi kvalite" },
+  { id: "statistics" as MainGoal, label: "Dátový mág", icon: BarChart3, variant: "indigo" as const, description: "Analyzuj tlak, vietor a úspešnosť tvojich revírov" }
 ];
 
 const visualPreferences = [
-  { id: "lists" as VisualPreference, label: "Čistý zoznam", icon: List, description: "Prehľadné textové rozhranie (old-school klasika)" },
-  { id: "charts" as VisualPreference, label: "Moderná vizualizácia", icon: PieChart, description: "Dáta v grafoch a mapách (všetko vidíš na prvý pohľad)" }
+  { id: "lists" as VisualPreference, label: "Čistý zoznam", icon: List, variant: "cyan" as const, description: "Prehľadné textové rozhranie (old-school klasika)" },
+  { id: "charts" as VisualPreference, label: "Moderná vizualizácia", icon: PieChart, variant: "purple" as const, description: "Dáta v grafoch a mapách (všetko vidíš na prvý pohľad)" }
 ];
 
 export default function Onboarding() {
@@ -181,7 +186,7 @@ export default function Onboarding() {
                   data-testid={`card-style-${style.id}`}
                 >
                   <CardContent className="p-4 flex items-center gap-4">
-                    <span className="text-3xl">{style.icon}</span>
+                    <TacticalIcon icon={style.icon} variant={style.variant} size="sm" showLabel={false} />
                     <div className="flex-1">
                       <div className="font-semibold">{style.label}</div>
                       <div className="text-sm text-muted-foreground">{style.description}</div>
@@ -241,9 +246,7 @@ export default function Onboarding() {
                   data-testid={`card-goal-${goal.id}`}
                 >
                   <CardContent className="p-4 flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <goal.icon className="w-6 h-6 text-primary" />
-                    </div>
+                    <TacticalIcon icon={goal.icon} variant={goal.variant} size="sm" showLabel={false} />
                     <div className="flex-1">
                       <div className="font-semibold">{goal.label}</div>
                       <div className="text-sm text-muted-foreground">{goal.description}</div>
@@ -303,9 +306,7 @@ export default function Onboarding() {
                   data-testid={`card-visual-${pref.id}`}
                 >
                   <CardContent className="p-4 flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <pref.icon className="w-6 h-6 text-primary" />
-                    </div>
+                    <TacticalIcon icon={pref.icon} variant={pref.variant} size="sm" showLabel={false} />
                     <div className="flex-1">
                       <div className="font-semibold">{pref.label}</div>
                       <div className="text-sm text-muted-foreground">{pref.description}</div>
