@@ -42,7 +42,7 @@ import {
   Package,
   Wrench
 } from "lucide-react";
-import { TacticalIconInline } from "@/components/ui/tactical-icon";
+import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 import contestioLogo from "@assets/contestio logo_1760283270014.png";
 import contestioLogoDark from "@assets/contestio_logo_black_1766308180088.png";
 
