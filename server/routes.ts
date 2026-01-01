@@ -4595,6 +4595,88 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
+  // Get victory stats for a finished battle (for victory modal)
+  app.get('/api/diary/battles/:id/victory-stats', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const { id } = req.params;
+      
+      // Get battle (bypassing ownership checks for participants)
+      const [battle] = await db
+        .select()
+        .from(diaryBattles)
+        .where(eq(diaryBattles.id, id));
+      
+      if (!battle) {
+        return res.status(404).json({ message: "Battle sa nenašiel" });
+      }
+      
+      // Battle must be finished
+      if (battle.status !== 'finished') {
+        return res.status(400).json({ message: "Battle ešte neskončil" });
+      }
+      
+      // Get winner from results
+      const results = battle.results || [];
+      const winner = results.length > 0 ? results[0] : null;
+      
+      if (!winner) {
+        return res.status(400).json({ message: "Víťaz nebol určený" });
+      }
+      
+      // Get all catches for this battle
+      const battleCatches = await storage.getBattleCatches(id);
+      
+      // Filter catches by winner
+      const winnerCatches = battleCatches.filter(c => 
+        c.angler.userId === winner.participant.userId || 
+        c.angler.name === winner.participant.name
+      );
+      
+      // Calculate stats
+      const totalWeight = winnerCatches.reduce((sum, c) => sum + parseFloat(c.weight), 0);
+      const fishCount = winnerCatches.length;
+      
+      // Find biggest catch
+      const biggestCatch = winnerCatches.length > 0 
+        ? winnerCatches.reduce((max, c) => parseFloat(c.weight) > parseFloat(max.weight) ? c : max)
+        : null;
+      
+      // Get winner user info for avatar
+      let winnerAvatar = "";
+      if (winner.participant.userId) {
+        const winnerUser = await storage.getUser(winner.participant.userId);
+        winnerAvatar = winnerUser?.profileImageUrl || "";
+      }
+      
+      // Check if current user is the winner
+      const isWinner = winner.participant.userId === userId;
+      
+      // Check if user is premium
+      const user = await storage.getUser(userId);
+      const isPremium = user?.isPremium === true;
+      
+      // Check if user has already seen this victory (stored in localStorage on client)
+      
+      res.json({
+        isWinner,
+        rank: 1,
+        totalWeight: Math.round(totalWeight * 10) / 10,
+        fishCount,
+        bigFishWeight: biggestCatch ? parseFloat(biggestCatch.weight) : null,
+        bigFishSpecies: biggestCatch?.fishType || null,
+        battleName: battle.name,
+        participantCount: battle.participants.length,
+        winnerName: winner.participant.name,
+        winnerAvatar,
+        isPremium
+      });
+    } catch (error) {
+      console.error("Error fetching victory stats:", error);
+      res.status(500).json({ message: "Failed to fetch victory stats" });
+    }
+  });
+
   // QR Code for battle - generates QR linking to battle join/detail page
   app.get('/api/diary/battles/:id/qr', async (req, res) => {
     try {

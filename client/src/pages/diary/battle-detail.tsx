@@ -16,6 +16,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import DiaryLayout from "@/components/DiaryLayout";
 import CatchFormDialog from "@/components/diary/CatchFormDialog";
+import { BattleVictoryModal, type BattleVictoryStats } from "@/components/diary/BattleVictoryModal";
 import type { DiaryBattle, DiaryCatch, DiaryTrip } from "@shared/schema";
 import { getFishTypeLabel } from "@/utils/fishTypeMapping";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend } from "recharts";
@@ -48,6 +49,7 @@ export default function BattleDetail() {
   const [timeRemaining, setTimeRemaining] = useState<string>("");
   const [isAddCatchDialogOpen, setIsAddCatchDialogOpen] = useState(false);
   const [showEndBattleDialog, setShowEndBattleDialog] = useState(false);
+  const [showVictoryModal, setShowVictoryModal] = useState(false);
 
   // WebSocket connection for live updates
   useWebSocket((message: WebSocketMessage) => {
@@ -77,6 +79,25 @@ export default function BattleDetail() {
     queryKey: ['/api/diary/battles', id, 'catches'],
     enabled: !!id && !!user && !!battle,
   });
+
+  // Load victory stats for finished battles
+  const { data: victoryStats } = useQuery<BattleVictoryStats & { isWinner: boolean }>({
+    queryKey: ['/api/diary/battles', id, 'victory-stats'],
+    enabled: !!id && !!user && battle?.status === 'finished',
+  });
+
+  // Show victory modal automatically for winner on first visit
+  useEffect(() => {
+    if (victoryStats?.isWinner && id) {
+      const seenKey = `battle-victory-seen-${id}`;
+      const hasSeen = localStorage.getItem(seenKey);
+      
+      if (!hasSeen) {
+        setShowVictoryModal(true);
+        localStorage.setItem(seenKey, 'true');
+      }
+    }
+  }, [victoryStats, id]);
 
   // End battle mutation
   const endBattleMutation = useMutation({
@@ -232,6 +253,14 @@ export default function BattleDetail() {
 
   return (
     <DiaryLayout>
+      {/* Victory Modal for winner */}
+      {showVictoryModal && victoryStats && (
+        <BattleVictoryModal 
+          stats={victoryStats}
+          onClose={() => setShowVictoryModal(false)}
+        />
+      )}
+
       <div className="p-3 md:p-6">
         <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
           {/* Header */}
