@@ -1,0 +1,197 @@
+ČO JE VEĽMI DOBRÉ (a nechaj to tak)
+1️⃣ Automatický presun na Search, keď nemá nikoho
+
+Toto je výborné rozhodnutie 👌
+
+if (myFriends.length === 0 && friendRequests.length === 0) {
+  setActiveTab("search");
+}
+
+
+➡️ UX logika je správna:
+
+user nič nemá
+
+systém ho nepokarhá
+
+ale nasmeruje ho tam, kde má spraviť prvý krok
+
+Presne takto má fungovať onboarding po onboardingu.
+
+2️⃣ Tab systém je čitateľný a intuitívny
+
+Friends
+
+Requests
+
+Search
+
+👍 Plus:
+
+badge s počtom
+
+farebné odlíšenie
+
+aktívny tab je jasný
+
+Toto je produkčne OK.
+
+3️⃣ URL sync (?tab=) je profesionálny detail
+
+Toto robí rozdiel medzi MVP a „serióznou appkou“.
+
+💡 Výhoda:
+
+user sa vie vrátiť
+
+refresh neničí kontext
+
+dobrý základ pre deeplinking neskôr
+
+4️⃣ Architektúra je čistá
+
+Rozdelenie:
+
+FriendsList
+
+FriendRequests
+
+UserSearch
+
+→ správne
+→ testovateľné
+→ rozšíriteľné
+
+Toto je presne smer, ktorým máš ísť.
+
+⚠️ ČO JE PROBLÉM (a treba to opraviť)
+❌ 1. Empty state je stále slabý psychologicky
+
+Áno, redirectneš usera na Search.
+ALE…
+
+👉 User nevie PREČO je tu.
+
+Teraz sa mu stane:
+
+otvorí „Priatelia“
+
+zrazu je v „Hľadať“
+
+nevidí vysvetlenie
+
+len input
+
+To je UX chyba.
+
+✅ Riešenie (odporúčam veľmi):
+
+Keď:
+
+myFriends.length === 0 && friendRequests.length === 0
+
+
+👉 zobraz špeciálny empty state nad Searchom
+
+Príklad (UX text):
+👋 Zatiaľ tu nikoho nemáš
+
+Pridaj si kamarátov a môžeš:
+• vyzývať ich na súboje
+• porovnávať úlovky
+• sledovať rebríčky
+
+👇 Začni vyhľadávaním nižšie
+
+
+Ale nie ako alert, skôr ako hero card.
+
+🧠 UX pravidlo:
+
+Keď je systém prázdny → vysvetli prečo + čo má user urobiť
+
+Teraz vysvetlenie chýba.
+
+❌ 2. Automatický redirect môže byť agresívny
+
+Toto:
+
+useEffect(() => {
+  if (myFriends.length === 0 && friendRequests.length === 0) {
+    setActiveTab("search");
+  }
+}, [myFriends.length, friendRequests.length]);
+
+
+👉 Problém:
+Ak sa user manuálne prepne späť na „Priatelia“, kód ho môže zase prehodiť.
+
+Lepšie riešenie:
+
+Použiť flag:
+
+const [autoRedirected, setAutoRedirected] = useState(false);
+
+useEffect(() => {
+  if (!autoRedirected && myFriends.length === 0 && friendRequests.length === 0) {
+    setActiveTab("search");
+    setAutoRedirected(true);
+  }
+}, [myFriends.length, friendRequests.length]);
+
+
+✔️ Redirect len raz
+✔️ User má potom kontrolu
+
+⚠️ 3. Chýba „call to action“ priamo v Search tabu
+
+Teraz je tam len komponent.
+
+Navrhujem:
+
+nad UserSearch pridať krátky text
+
+ideálne s ikonou
+
+Príklad:
+<div className="mb-4 p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+  <p className="text-sm text-slate-300">
+    🔍 Vyhľadaj kamarátov podľa mena alebo e-mailu a začni súťažiť.
+  </p>
+</div>
+
+
+Malá vec, ale brutálne zvyšuje pochopenie.
+
+🔥 ČO JE NA TOM CELKOVO NAJLEPŠIE
+
+Úprimne?
+Toto už nie je MVP úroveň.
+
+✔ máš:
+
+dobrú architektúru
+
+logický flow
+
+UX myslenie
+
+konzistentný vizuál
+
+rozumne oddelené komponenty
+
+Chýba už len:
+
+mikrocopy (čo sa deje / prečo)
+
+jemné vedenie používateľa
+
+možno 1–2 animácie pre „wow“
+
+🧠 ZHRNUTIE (ako by to videl product lead)
+Oblasť	Hodnotenie
+Architektúra	🟢 veľmi dobrá
+UX flow	🟡 dobrý, chce jemné doladenie
+Onboarding logika	🟢 správna
+Empty state	🔴 treba vylepšiť
+Pripravenosť na produkciu	🟢 85 %

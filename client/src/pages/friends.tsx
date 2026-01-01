@@ -33,6 +33,7 @@ export default function Friends() {
   };
 
   const [activeTab, setActiveTab] = useState(getInitialTab);
+  const [autoRedirected, setAutoRedirected] = useState(false);
 
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -50,12 +51,15 @@ export default function Friends() {
     enabled: !!user?.id,
   });
 
-  // Auto-redirect to search tab when user has no friends and no requests
+  const isNewUser = myFriends.length === 0 && friendRequests.length === 0;
+
+  // Auto-redirect to search tab when user has no friends and no requests (only once)
   useEffect(() => {
-    if (myFriends.length === 0 && friendRequests.length === 0) {
+    if (!autoRedirected && isNewUser) {
       setActiveTab("search");
+      setAutoRedirected(true);
     }
-  }, [myFriends.length, friendRequests.length]);
+  }, [autoRedirected, isNewUser]);
 
   if (!user) {
     return (
@@ -112,6 +116,35 @@ export default function Friends() {
             </TabsContent>
 
             <TabsContent value="search" className="space-y-4 mt-4">
+              {isNewUser && (
+                <div className="p-6 rounded-2xl bg-gradient-to-br from-lime-500/10 to-cyan-500/10 border border-lime-500/20 mb-4">
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 rounded-xl bg-lime-500/20">
+                      <Users className="w-6 h-6 text-lime-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-white mb-2">
+                        Zatiaľ tu nikoho nemáš
+                      </h3>
+                      <p className="text-slate-300 text-sm mb-3">
+                        Pridaj si kamarátov a môžeš:
+                      </p>
+                      <ul className="text-slate-400 text-sm space-y-1">
+                        <li>• vyzývať ich na súboje</li>
+                        <li>• porovnávať úlovky</li>
+                        <li>• sledovať rebríčky</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700 mb-4">
+                <p className="text-sm text-slate-300">
+                  Vyhľadaj kamarátov podľa mena a začni súťažiť.
+                </p>
+              </div>
+
               <UserSearch userId={user.id} />
             </TabsContent>
           </Tabs>
