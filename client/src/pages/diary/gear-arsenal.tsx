@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TacticalIcon } from "@/components/ui/tactical-icon";
 
 // ============ TYPES ============
 
@@ -422,9 +423,9 @@ export default function GearArsenalPage() {
     <DiaryLayout>
       <div className="px-4 md:px-6 pt-4 pb-6 max-w-5xl mx-auto space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Archive className="h-6 w-6 text-teal-500" />
+        <div className="flex items-center gap-4">
+          <TacticalIcon icon={Archive} variant="active" size="lg" showLabel={false} />
+          <h1 className="text-2xl font-bold">
             Môj Arzenál
           </h1>
           <p className="text-muted-foreground">

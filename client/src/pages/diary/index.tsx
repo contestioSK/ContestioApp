@@ -24,6 +24,8 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import DiaryLayout from "@/components/DiaryLayout";
 import CatchFormDialog from "@/components/diary/CatchFormDialog";
 import { LocationSearchField } from "@/components/LocationSearchField";
+import { TacticalIcon } from "@/components/ui/tactical-icon";
+import { BookOpen } from "lucide-react";
 import { getFishTypeLabel, getFishTypeOptions } from "@/utils/fishTypeMapping";
 import { useState, useCallback, useEffect } from "react";
 import useEmblaCarousel from "embla-carousel-react";
@@ -632,9 +634,12 @@ export default function DiaryIndex() {
       <div className="p-3 md:p-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6 md:mb-8">
-          <h1 className="text-xl md:text-3xl font-bold text-foreground dark:text-white">
-            Môj rybársky denník
-          </h1>
+          <div className="flex items-center gap-4">
+            <TacticalIcon icon={BookOpen} variant="active" size="lg" showLabel={false} />
+            <h1 className="text-xl md:text-3xl font-bold text-foreground dark:text-white">
+              Môj rybársky denník
+            </h1>
+          </div>
           <div className="flex gap-2 w-full sm:w-auto items-center">
             {/* Sync Status Indicator */}
             <TooltipProvider delayDuration={300}>

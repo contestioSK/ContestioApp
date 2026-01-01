@@ -53,6 +53,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { DiaryCatch, DiaryTrip } from "@shared/schema";
 import { getFishTypeLabel, getFishTypeOptions } from "@/utils/fishTypeMapping";
 import DiaryLayout from "@/components/DiaryLayout";
+import { TacticalIcon } from "@/components/ui/tactical-icon";
 import CatchFormDialog from "@/components/diary/CatchFormDialog";
 import { Input } from "@/components/ui/input";
 
@@ -606,7 +607,8 @@ export default function DiaryCatches() {
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <div className="flex items-center gap-3 mb-2">
+              <div className="flex items-center gap-4 mb-2">
+                <TacticalIcon icon={Fish} variant="active" size="lg" showLabel={false} />
                 <h1 className="text-3xl font-bold text-foreground">Moje úlovky</h1>
                 {isOffline && (
                   <TooltipProvider>
