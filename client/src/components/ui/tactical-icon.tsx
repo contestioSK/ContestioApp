@@ -1,7 +1,22 @@
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type TacticalIconVariant = "neutral" | "active" | "action" | "danger";
+export type TacticalIconVariant = 
+  | "neutral" 
+  | "active" 
+  | "action" 
+  | "danger"
+  | "lime"
+  | "blue"
+  | "amber"
+  | "purple"
+  | "rose"
+  | "cyan"
+  | "emerald"
+  | "orange"
+  | "indigo"
+  | "fuchsia"
+  | "slate";
 
 export interface TacticalIconProps {
   icon: LucideIcon;
@@ -30,14 +45,14 @@ const sizeClasses = {
   }
 };
 
-const variantClasses = {
+const variantClasses: Record<TacticalIconVariant, string> = {
   neutral: cn(
     "text-slate-400 border-slate-200 bg-white shadow-sm",
     "dark:text-slate-600 dark:border-white/5 dark:bg-slate-900/40 dark:shadow-none"
   ),
   active: cn(
     "text-cyan-600 border-cyan-200 bg-cyan-50 shadow-[0_0_15px_rgba(8,145,178,0.1)]",
-    "dark:text-cyan-400 dark:border-cyan-500/30 dark:bg-cyan-500/5 dark:shadow-[0_0_15px_rgba(34,211,238,0.1)]"
+    "dark:text-cyan-500 dark:border-cyan-500/30 dark:bg-cyan-500/5 dark:shadow-[0_0_15px_rgba(6,182,212,0.15)]"
   ),
   action: cn(
     "text-slate-900 border-slate-900 bg-white shadow-[0_4px_10px_rgba(0,0,0,0.05)]",
@@ -46,14 +61,69 @@ const variantClasses = {
   danger: cn(
     "text-red-600 border-red-200 bg-red-50",
     "dark:text-red-500 dark:border-red-900/30 dark:bg-red-950/20"
+  ),
+  lime: cn(
+    "text-lime-600 border-lime-200 bg-lime-50 shadow-[0_0_15px_rgba(101,163,13,0.1)]",
+    "dark:text-lime-500 dark:border-lime-500/30 dark:bg-lime-500/10 dark:shadow-[0_0_15px_rgba(132,204,22,0.15)]"
+  ),
+  blue: cn(
+    "text-blue-600 border-blue-200 bg-blue-50 shadow-[0_0_15px_rgba(37,99,235,0.1)]",
+    "dark:text-blue-500 dark:border-blue-500/30 dark:bg-blue-500/10 dark:shadow-[0_0_15px_rgba(59,130,246,0.15)]"
+  ),
+  amber: cn(
+    "text-amber-600 border-amber-200 bg-amber-50 shadow-[0_0_15px_rgba(217,119,6,0.1)]",
+    "dark:text-amber-500 dark:border-amber-500/30 dark:bg-amber-500/10 dark:shadow-[0_0_15px_rgba(245,158,11,0.15)]"
+  ),
+  purple: cn(
+    "text-purple-600 border-purple-200 bg-purple-50 shadow-[0_0_15px_rgba(147,51,234,0.1)]",
+    "dark:text-purple-500 dark:border-purple-500/30 dark:bg-purple-500/10 dark:shadow-[0_0_15px_rgba(168,85,247,0.15)]"
+  ),
+  rose: cn(
+    "text-rose-600 border-rose-200 bg-rose-50 shadow-[0_0_15px_rgba(225,29,72,0.1)]",
+    "dark:text-rose-500 dark:border-rose-500/30 dark:bg-rose-500/10 dark:shadow-[0_0_15px_rgba(244,63,94,0.15)]"
+  ),
+  cyan: cn(
+    "text-cyan-600 border-cyan-200 bg-cyan-50 shadow-[0_0_15px_rgba(8,145,178,0.1)]",
+    "dark:text-cyan-500 dark:border-cyan-500/30 dark:bg-cyan-500/10 dark:shadow-[0_0_15px_rgba(6,182,212,0.15)]"
+  ),
+  emerald: cn(
+    "text-emerald-600 border-emerald-200 bg-emerald-50 shadow-[0_0_15px_rgba(5,150,105,0.1)]",
+    "dark:text-emerald-500 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:shadow-[0_0_15px_rgba(16,185,129,0.15)]"
+  ),
+  orange: cn(
+    "text-orange-600 border-orange-200 bg-orange-50 shadow-[0_0_15px_rgba(234,88,12,0.1)]",
+    "dark:text-orange-500 dark:border-orange-500/30 dark:bg-orange-500/10 dark:shadow-[0_0_15px_rgba(249,115,22,0.15)]"
+  ),
+  indigo: cn(
+    "text-indigo-600 border-indigo-200 bg-indigo-50 shadow-[0_0_15px_rgba(79,70,229,0.1)]",
+    "dark:text-indigo-500 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:shadow-[0_0_15px_rgba(99,102,241,0.15)]"
+  ),
+  fuchsia: cn(
+    "text-fuchsia-600 border-fuchsia-200 bg-fuchsia-50 shadow-[0_0_15px_rgba(192,38,211,0.1)]",
+    "dark:text-fuchsia-500 dark:border-fuchsia-500/30 dark:bg-fuchsia-500/10 dark:shadow-[0_0_15px_rgba(217,70,239,0.15)]"
+  ),
+  slate: cn(
+    "text-slate-500 border-slate-200 bg-slate-50 shadow-sm",
+    "dark:text-slate-400 dark:border-slate-600/30 dark:bg-slate-700/10 dark:shadow-none"
   )
 };
 
-const variantIconColors = {
+const variantIconColors: Record<TacticalIconVariant, string> = {
   neutral: "text-slate-400 dark:text-slate-500",
-  active: "text-cyan-600 dark:text-cyan-400",
+  active: "text-cyan-600 dark:text-cyan-500",
   action: "text-slate-900 dark:text-white",
-  danger: "text-red-600 dark:text-red-500"
+  danger: "text-red-600 dark:text-red-500",
+  lime: "text-lime-600 dark:text-lime-500",
+  blue: "text-blue-600 dark:text-blue-500",
+  amber: "text-amber-600 dark:text-amber-500",
+  purple: "text-purple-600 dark:text-purple-500",
+  rose: "text-rose-600 dark:text-rose-500",
+  cyan: "text-cyan-600 dark:text-cyan-500",
+  emerald: "text-emerald-600 dark:text-emerald-500",
+  orange: "text-orange-600 dark:text-orange-500",
+  indigo: "text-indigo-600 dark:text-indigo-500",
+  fuchsia: "text-fuchsia-600 dark:text-fuchsia-500",
+  slate: "text-slate-500 dark:text-slate-400"
 };
 
 export function TacticalIcon({ 

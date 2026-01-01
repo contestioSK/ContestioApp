@@ -41,6 +41,7 @@ import {
   Moon,
   Package
 } from "lucide-react";
+import { TacticalIconInline } from "@/components/ui/tactical-icon";
 import contestioLogo from "@assets/contestio logo_1760283270014.png";
 import contestioLogoDark from "@assets/contestio_logo_black_1766308180088.png";
 
@@ -295,7 +296,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                       `}
                       data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
                     >
-                      <Icon className="mr-2 md:mr-3 h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
+                      <TacticalIconInline icon={Icon} variant={isActive ? "lime" : "slate"} size="md" className="mr-2 md:mr-3 flex-shrink-0" />
                       <span className="font-medium text-xs md:text-sm">{item.label}</span>
                     </button>
                   </TooltipTrigger>
@@ -341,7 +342,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                       `}
                       data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
                     >
-                      <Icon className="mr-2 md:mr-3 h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
+                      <TacticalIconInline icon={Icon} variant={isActive ? "cyan" : "slate"} size="md" className="mr-2 md:mr-3 flex-shrink-0" />
                       <span className="font-medium text-xs md:text-sm">{item.label}</span>
                     </button>
                   </TooltipTrigger>
@@ -393,7 +394,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                       `}
                       data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
                     >
-                      <Icon className="mr-2 md:mr-3 h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
+                      <TacticalIconInline icon={Icon} variant={isActive ? "amber" : "slate"} size="md" className="mr-2 md:mr-3 flex-shrink-0" />
                       <span className="font-medium text-xs md:text-sm flex items-center gap-2">
                         {item.label}
                         {item.label === "Priatelia" && hasFriendRequests && (
@@ -449,7 +450,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                       `}
                       data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
                     >
-                      <Icon className="mr-2 md:mr-3 h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
+                      <TacticalIconInline icon={Icon} variant={isActive ? "orange" : "slate"} size="md" className="mr-2 md:mr-3 flex-shrink-0" />
                       <span className="font-medium text-xs md:text-sm">{item.label}</span>
                     </button>
                   </TooltipTrigger>
@@ -496,7 +497,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                       `}
                       data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
                     >
-                      <Icon className="mr-2 md:mr-3 h-4 w-4 md:h-5 md:w-5 flex-shrink-0 text-emerald-400" />
+                      <TacticalIconInline icon={Icon} variant="emerald" size="md" className="mr-2 md:mr-3 flex-shrink-0" />
                       <span className="font-medium text-xs md:text-sm flex items-center gap-2">
                         {item.label}
                         <Badge className="bg-emerald-600 text-white hover:bg-emerald-700 text-[10px] px-1.5 py-0">
