@@ -1,0 +1,224 @@
+Idem priamo na vec. Kód je funkčný a čitateľný, ale má viacero UX, DX aj architektonických slabín, ktoré ti pri raste appky začnú prekážať. Rozdelím to na čo je dobré, čo je zlé a čo by som spravil inak.
+
+🟢 ČO JE DOBRÉ (to treba povedať férovo)
+1. Stavovo a dátovo je to čisté
+
+React Query používaš správne
+
+enabled: !!user?.id → správne, žiadne zbytočné requesty
+
+Mutations + invalidateQueries → OK
+
+Oddelené endpointy → čitateľné
+
+👉 Backend + FE kontrakt pôsobí zdravo
+
+2. UX základ je pochopený
+
+Tabs dávajú zmysel
+
+Empty states existujú
+
+Confirm dialog pri delete → veľké plus
+
+Neodstraňuješ priateľa „na klik“ → správne
+
+3. Vizualita a konzistentnosť
+
+Dark UI držíš konzistentne
+
+Ikony dávajú význam
+
+CTA sú zreteľné
+
+Toto nie je juniorsky kód, to hovorím otvorene.
+
+🔴 ČO JE ZLÉ / RIZIKOVÉ
+
+Teraz prichádza tá časť, kde ti to rozbijem.
+
+1️⃣ Jeden komponent = príliš veľa zodpovednosti
+
+Tento komponent robí:
+
+list priateľov
+
+friend requests
+
+search
+
+mutations
+
+dialog state
+
+routing
+
+layout
+
+👉 To je antipattern.
+
+Prejaví sa to:
+
+zlá testovateľnosť
+
+horšie refaktory
+
+zbytočné rerendery
+
+ťažké pridávanie logiky (online status, blokovanie, badge, atď.)
+
+Verdikt:
+
+Tento komponent už je na hranici únosnosti.
+
+2️⃣ UX problém: „Priatelia“ nemajú jasnú hodnotu
+
+Úprimne:
+
+karta priateľa = avatar + meno + email
+
+jediná akcia = Vyzvať
+
+👉 To je slabé.
+
+Používateľ si položí otázku:
+
+„Načo mi je mať priateľov, keď s nimi nič nevidím?“
+
+Chýba:
+
+posledná aktivita
+
+počet battle
+
+spoločné battles
+
+status (offline/online máš len fake green dot)
+
+➡️ Toto je pasívny zoznam, nie sociálna funkcia.
+
+3️⃣ Search – technicky OK, UX meh
+Problémy:
+
+žiadny debounce → budeš spamovať backend
+
+nevidím stav:
+
+„už máš odoslanú žiadosť“
+
+„už ste priatelia“
+
+tlačidlo + je vždy rovnaké
+
+👉 Používateľ nemá feedback, čo sa stane po kliknutí.
+
+4️⃣ Error handling je nekonzistentný
+
+sendRequestMutation má onError
+
+ostatné mutácie nie
+
+➡️ UX chaos:
+
+raz sa dozviem, že sa niečo nepodarilo
+
+inokedy ticho nič
+
+To je presne ten typ chyby, ktorú user cíti, ale nevie pomenovať.
+
+5️⃣ Query keys sú nepresné
+invalidateQueries({ queryKey: ['/api/users/search'] });
+
+
+Ale search má:
+
+['/api/users/search', searchQuery]
+
+
+➡️ invalidate nemusí fungovať správne
+
+To je skrytý bug, ktorý ťa dobehne.
+
+6️⃣ Zbytočný vizuálny šum
+
+Email zobrazený všade
+
+Pre rybársku appku je email nulová hodnota
+
+👉 Toto nie je LinkedIn.
+Zaberá miesto a nič neprináša.
+
+🟡 ČO BY SOM SPRAVIL INAK (konkrétne)
+1️⃣ Rozbiť komponent
+
+Minimálne:
+
+<FriendsList />
+
+<FriendRequests />
+
+<UserSearch />
+
+Každý:
+
+vlastné query
+
+vlastné mutations
+
+vlastný UI
+
+➡️ Friends page bude orchestrátor, nie monolit.
+
+2️⃣ Pridať „value hints“ k priateľom
+
+Aspoň:
+
+„3 spoločné battles“
+
+„Aktívny dnes“
+
+„Naposledy pridaný úlovok“
+
+Inak je to len adresár ľudí.
+
+3️⃣ Search: stavové CTA
+
+Namiesto vždy UserPlus:
+
+✔️ „Žiadosť odoslaná“
+
+⛔ „Už ste priatelia“
+
+⏳ „Čaká sa na odpoveď“
+
+To dramaticky zlepší UX bez veľkej práce.
+
+4️⃣ Centralizovať toast / error handling
+
+Buď:
+
+globálny error handler
+
+alebo konzistentný onError všade
+
+Teraz je to pol na pol, čo je najhoršia kombinácia.
+
+5️⃣ Online status: buď pravda, alebo preč
+
+Ten zelený bod:
+
+buď reálny
+
+alebo ho vyhoď
+
+Fake signály znižujú dôveru.
+
+⚖️ Finálny verdikt
+
+Technicky: 7,5 / 10
+UX: 6 / 10
+Architektúra: 6 / 10
+Potenciál: 9 / 10
+
+Toto nie je zlá práca.
+Ale ak chceš, aby Contestio pôsobilo ako dospelý produkt, toto je presne tá obrazovka, kde sa to láme.

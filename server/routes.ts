@@ -7134,6 +7134,17 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
+  app.get('/api/friend-requests/sent', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const requests = await storage.getSentFriendRequests(userId);
+      res.json(requests);
+    } catch (error) {
+      console.error('[FRIENDS] Error fetching sent friend requests:', error);
+      res.status(500).json({ message: 'Chyba pri načítaní odoslaných žiadostí' });
+    }
+  });
+
   app.get('/api/users/search', isAuthenticated, async (req: any, res) => {
     try {
       const userId = getUserId(req);
