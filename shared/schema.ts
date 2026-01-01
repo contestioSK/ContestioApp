@@ -413,6 +413,7 @@ export const diaryCatches = pgTable("diary_catches", {
   airTemp: decimal("air_temp", { precision: 5, scale: 2 }), // Air temperature in °C (from API)
   windSpeed: decimal("wind_speed", { precision: 6, scale: 2 }), // Wind speed in km/h (from API)
   airPressure: decimal("air_pressure", { precision: 7, scale: 2 }), // Air pressure in mb/hPa (from API)
+  isHistorical: boolean("is_historical").default(false).notNull(), // Historical catches don't count in stats
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
