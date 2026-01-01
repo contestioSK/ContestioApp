@@ -287,7 +287,7 @@ export default function BattleArchive() {
   if (isLoading) {
     return (
       <DiaryLayout>
-        <div className="p-6 flex items-center justify-center min-h-[400px]">
+        <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <Loader2 className="animate-spin h-12 w-12 text-primary mx-auto mb-4" />
             <p className="text-muted-foreground">Načítavam archív battles...</p>
@@ -304,9 +304,8 @@ export default function BattleArchive() {
 
   return (
     <DiaryLayout>
-      <div className="p-6">
-        <div className="max-w-6xl mx-auto">
-          {/* Header */}
+      <div className="space-y-6">
+        {/* Header */}
           <div className="mb-8">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
               <div className="flex items-center gap-4">
@@ -730,7 +729,6 @@ export default function BattleArchive() {
             </Card>
           )}
         </div>
-      </div>
     </DiaryLayout>
   );
 }

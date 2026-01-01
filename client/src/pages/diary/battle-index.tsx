@@ -301,7 +301,7 @@ export default function BattleIndex() {
   if (!user || isPremiumLoading || isPremium === undefined || isBattlesLoading) {
     return (
       <DiaryLayout>
-        <div className="p-6 flex items-center justify-center min-h-[400px]">
+        <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
             <p className="text-muted-foreground">Načítavam...</p>
@@ -316,9 +316,8 @@ export default function BattleIndex() {
 
   return (
     <DiaryLayout>
-      <div className="p-3 md:p-6">
-        <div className="max-w-7xl mx-auto">
-          {/* Header */}
+      <div className="space-y-6">
+        {/* Header */}
           <div className="mb-6 md:mb-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
               <div>
@@ -681,7 +680,6 @@ export default function BattleIndex() {
             </div>
           </div>
         </div>
-      </div>
     </DiaryLayout>
   );
 }

@@ -226,7 +226,7 @@ export default function BattleDetail() {
   if (battleLoading || catchesLoading) {
     return (
       <DiaryLayout>
-        <div className="p-6 flex items-center justify-center min-h-[400px]">
+        <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
             <p className="text-muted-foreground">Načítavam battle...</p>
@@ -239,14 +239,12 @@ export default function BattleDetail() {
   if (!battle) {
     return (
       <DiaryLayout>
-        <div className="p-6">
-          <div className="max-w-4xl mx-auto text-center">
-            <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-foreground mb-2">Battle sa nenašiel</h2>
-            <Button onClick={() => setLocation("/diary/battles")} data-testid="button-back-to-battles">
-              Späť na battles
-            </Button>
-          </div>
+        <div className="text-center">
+          <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-foreground mb-2">Battle sa nenašiel</h2>
+          <Button onClick={() => setLocation("/diary/battles")} data-testid="button-back-to-battles">
+            Späť na battles
+          </Button>
         </div>
       </DiaryLayout>
     );
@@ -262,9 +260,8 @@ export default function BattleDetail() {
         />
       )}
 
-      <div className="p-3 md:p-6">
-        <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
-          {/* Header */}
+      <div className="space-y-4 md:space-y-6">
+        {/* Header */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div>
               <h1 className="text-xl md:text-3xl font-bold text-foreground mb-1 md:mb-2">
@@ -889,7 +886,6 @@ export default function BattleDetail() {
             </div>
           </div>
         </div>
-      </div>
 
       {/* Catch Form Dialog */}
       <CatchFormDialog

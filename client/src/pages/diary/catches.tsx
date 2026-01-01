@@ -592,7 +592,7 @@ export default function DiaryCatches() {
   if (isLoading) {
     return (
       <DiaryLayout>
-        <div className="p-8 flex flex-col items-center justify-center min-h-[50vh]">
+        <div className="flex flex-col items-center justify-center min-h-[50vh]">
           <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
           <p className="text-muted-foreground dark:text-slate-400">Načítavam úlovky...</p>
         </div>
@@ -602,8 +602,7 @@ export default function DiaryCatches() {
 
   return (
     <DiaryLayout>
-      <div className="p-6">
-        <div className="max-w-6xl mx-auto space-y-8">
+      <div className="space-y-8">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
@@ -1487,8 +1486,7 @@ export default function DiaryCatches() {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-        </div>
       </div>
-      </DiaryLayout>
-    );
-  }
+    </DiaryLayout>
+  );
+}

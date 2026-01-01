@@ -632,7 +632,7 @@ export default function DiaryIndex() {
 
   return (
     <DiaryLayout>
-      <div className="p-3 md:p-6">
+      <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6 md:mb-8">
           <div className="flex items-center gap-4">

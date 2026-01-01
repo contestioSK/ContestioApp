@@ -114,7 +114,7 @@ export default function DiaryStats() {
 
   return (
     <DiaryLayout>
-      <div className="p-6 space-y-6" data-testid="page-diary-stats">
+      <div className="space-y-6" data-testid="page-diary-stats">
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div className="flex items-center gap-4">

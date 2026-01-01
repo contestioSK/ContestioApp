@@ -81,7 +81,7 @@ export default function BattlePaywall() {
   ];
 
   return (
-    <DiaryLayout>
+    <DiaryLayout fullBleed={true}>
       <div className="relative pb-32" data-testid="paywall-fishing-battle">
         
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-amber-600/10 blur-[120px] rounded-full pointer-events-none" />

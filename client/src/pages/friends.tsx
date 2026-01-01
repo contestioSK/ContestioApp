@@ -64,7 +64,7 @@ export default function Friends() {
   if (!user) {
     return (
       <DiaryLayout>
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4 md:p-6 flex items-center justify-center">
+        <div className="flex items-center justify-center min-h-[400px]">
           <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full" />
         </div>
       </DiaryLayout>

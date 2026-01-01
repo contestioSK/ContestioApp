@@ -765,8 +765,7 @@ export default function DiaryTrips() {
 
   return (
     <DiaryLayout>
-      <div className="p-4 md:p-6 pb-24 md:pb-6">
-        <div className="max-w-4xl mx-auto space-y-6">
+      <div className="space-y-6 pb-24 md:pb-0">
           {/* Compact Header */}
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
@@ -1072,7 +1071,6 @@ export default function DiaryTrips() {
               </div>
             </DialogContent>
           </Dialog>
-        </div>
       </div>
 
       {/* Premium Upsell Modal */}

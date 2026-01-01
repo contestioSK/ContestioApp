@@ -214,21 +214,17 @@ export default function SeasonalGoalsEdit() {
   if (goalsLoading || seasonsLoading) {
     return (
       <DiaryLayout>
-        <div className="p-6">
-          <div className="max-w-2xl mx-auto">
-            <Card>
-              <CardContent className="p-8 text-center">
-                <Loader2 className="w-12 h-12 text-muted-foreground mx-auto mb-4 animate-spin" />
-                <h3 className="text-lg font-medium text-foreground mb-2">
-                  Načítavanie...
-                </h3>
-                <p className="text-muted-foreground">
-                  Načítavam detaily cieľa
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+        <Card>
+          <CardContent className="p-8 text-center">
+            <Loader2 className="w-12 h-12 text-muted-foreground mx-auto mb-4 animate-spin" />
+            <h3 className="text-lg font-medium text-foreground mb-2">
+              Načítavanie...
+            </h3>
+            <p className="text-muted-foreground">
+              Načítavam detaily cieľa
+            </p>
+          </CardContent>
+        </Card>
       </DiaryLayout>
     );
   }
@@ -237,35 +233,30 @@ export default function SeasonalGoalsEdit() {
   if (!goal) {
     return (
       <DiaryLayout>
-        <div className="p-6">
-          <div className="max-w-2xl mx-auto">
-            <Card>
-              <CardContent className="p-8 text-center">
-                <div className="flex justify-center mb-4">
-                  <TacticalIcon icon={Target} variant="neutral" size="lg" showLabel={false} />
-                </div>
-                <h3 className="text-lg font-medium text-foreground mb-2">
-                  Cieľ nenájdený
-                </h3>
-                <p className="text-muted-foreground mb-4">
-                  Požadovaný cieľ neexistuje alebo k nemu nemáte prístup.
-                </p>
-                <Button onClick={() => setLocation("/diary/seasonal-goals")}>
-                  Späť na ciele
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+        <Card>
+          <CardContent className="p-8 text-center">
+            <div className="flex justify-center mb-4">
+              <TacticalIcon icon={Target} variant="neutral" size="lg" showLabel={false} />
+            </div>
+            <h3 className="text-lg font-medium text-foreground mb-2">
+              Cieľ nenájdený
+            </h3>
+            <p className="text-muted-foreground mb-4">
+              Požadovaný cieľ neexistuje alebo k nemu nemáte prístup.
+            </p>
+            <Button onClick={() => setLocation("/diary/seasonal-goals")}>
+              Späť na ciele
+            </Button>
+          </CardContent>
+        </Card>
       </DiaryLayout>
     );
   }
 
   return (
     <DiaryLayout>
-      <div className="p-6">
-        <div className="max-w-2xl mx-auto space-y-8">
-          {/* Header */}
+      <div className="space-y-8">
+        {/* Header */}
           <div className="text-center space-y-2">
             <div className="flex justify-center">
               <TacticalIcon icon={Target} variant="active" size="lg" showLabel={false} />
@@ -518,7 +509,6 @@ export default function SeasonalGoalsEdit() {
             </CardContent>
           </Card>
         </div>
-      </div>
     </DiaryLayout>
   );
 }

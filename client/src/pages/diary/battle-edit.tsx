@@ -161,7 +161,7 @@ export default function BattleEdit() {
   if (isLoadingBattle) {
     return (
       <DiaryLayout>
-        <div className="p-6 flex items-center justify-center min-h-[400px]">
+        <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
             <p className="text-muted-foreground">Načítavam battle...</p>
@@ -174,13 +174,11 @@ export default function BattleEdit() {
   if (!battle) {
     return (
       <DiaryLayout>
-        <div className="p-6">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-2xl font-bold text-foreground mb-2">Battle sa nenašiel</h2>
-            <Button onClick={() => setLocation("/diary/battles")} className="mt-4">
-              Späť na battles
-            </Button>
-          </div>
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-foreground mb-2">Battle sa nenašiel</h2>
+          <Button onClick={() => setLocation("/diary/battles")} className="mt-4">
+            Späť na battles
+          </Button>
         </div>
       </DiaryLayout>
     );
@@ -188,9 +186,8 @@ export default function BattleEdit() {
 
   return (
     <DiaryLayout>
-      <div className="p-6">
-        <div className="max-w-4xl mx-auto">
-          {/* Header */}
+      <div className="space-y-6">
+        {/* Header */}
           <div className="mb-8">
             <Button
               variant="ghost"
@@ -520,7 +517,6 @@ export default function BattleEdit() {
             </form>
           </Form>
         </div>
-      </div>
     </DiaryLayout>
   );
 }

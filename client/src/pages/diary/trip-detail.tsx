@@ -186,7 +186,7 @@ export default function TripDetail() {
   if (tripLoading) {
     return (
       <DiaryLayout>
-        <div className="max-w-6xl mx-auto p-4 md:p-6 space-y-6">
+        <div className="space-y-6">
           <Skeleton className="h-12 w-64" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Skeleton className="h-24" />
@@ -202,17 +202,15 @@ export default function TripDetail() {
   if (!trip) {
     return (
       <DiaryLayout>
-        <div className="max-w-6xl mx-auto p-4 md:p-6">
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">Výprava sa nenašla</p>
-            <Button 
-              onClick={() => setLocation("/diary/trips")} 
-              className="mt-4"
-              data-testid="button-back-to-trips"
-            >
-              Späť na výpravy
-            </Button>
-          </div>
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">Výprava sa nenašla</p>
+          <Button 
+            onClick={() => setLocation("/diary/trips")} 
+            className="mt-4"
+            data-testid="button-back-to-trips"
+          >
+            Späť na výpravy
+          </Button>
         </div>
       </DiaryLayout>
     );
@@ -220,7 +218,7 @@ export default function TripDetail() {
 
   return (
     <DiaryLayout>
-      <div className="max-w-6xl mx-auto p-4 md:p-6 space-y-6" data-testid="page-trip-detail">
+      <div className="space-y-6" data-testid="page-trip-detail">
         {/* Hero Section - Back button and Trip Info */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
