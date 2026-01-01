@@ -263,9 +263,8 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
       queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
       queryClient.invalidateQueries({ queryKey: ["/api/diary/catch-limits"] });
       queryClient.invalidateQueries({ queryKey: ["/api/diary/badges"] });
-      handleClose();
       
-      // Check for new badges and show confetti
+      // Check for new badges and show confetti BEFORE closing dialog
       const newBadges = data?.newBadges || [];
       if (newBadges.length > 0) {
         // Show confetti for new badges!
@@ -287,6 +286,9 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
           variant: "success" as any,
         });
       }
+      
+      // Close dialog AFTER confetti is triggered
+      handleClose();
       onSuccess?.();
     },
     onError: (error: Error) => {
