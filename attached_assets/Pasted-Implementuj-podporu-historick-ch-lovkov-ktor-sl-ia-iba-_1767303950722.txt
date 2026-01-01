@@ -1,0 +1,170 @@
+Implementuj podporu historických úlovkov, ktoré:
+
+slúžia iba ako archív / spomienky
+
+nezapočítavajú sa do štatistík
+
+nezúčastňujú sa súťaží
+
+majú vlastný vstupný formulár
+
+sú voliteľné (užívateľ ich môže mať vypnuté)
+
+🧠 PRODUKTOVÁ LOGIKA
+Používateľ má 2 typy úlovkov:
+
+Live úlovok
+
+aktuálny dátum
+
+započítava sa do štatistík
+
+používa sa v súťažiach
+
+Historický úlovok
+
+ľubovoľný dátum v minulosti
+
+slúži len ako archív
+
+nikdy sa nezapočítava do štatistík
+
+nikdy sa nepoužíva v rebríčkoch
+
+🧩 DÁTOVÝ MODEL (povinné)
+
+Rozšír model úlovku o:
+
+isHistorical: boolean
+excludedFromStats: boolean
+
+
+Pravidlo:
+
+if (isHistorical === true) {
+  excludedFromStats = true
+}
+
+🧭 ONBOARDING LOGIKA
+
+Do onboarding flow pridaj otázku:
+
+„Chceš si nahrať aj svoje staršie úlovky?“
+
+Možnosti:
+
+✅ Áno, chcem
+
+❌ Nie, začínam odteraz
+
+Ulož do:
+
+user.preferences.allowHistoricalCatches = boolean
+
+⚙️ NASTAVENIA PROFILU
+
+V profile používateľa musí byť možnosť:
+
+🕰️ Historické úlovky
+
+Toggle:
+
+[ ON / OFF ]
+
+
+Text:
+
+Umožní nahrávať staršie úlovky.
+Tieto úlovky sa nezapočítavajú do štatistík ani súťaží.
+
+➕ UI – PRIDÁVANIE ÚLOVKOV
+A) Klasické FAB tlačidlo
+
+➡️ pridáva live úlovok
+➡️ dátum = dnes
+➡️ bez možnosti zmeny dátumu
+
+B) Nové tlačidlo (len ak allowHistoricalCatches = true)
+
+Text:
+„Pridať starší úlovok“
+
+Farba:
+
+jemná (amber / outline)
+
+nie primárna CTA
+
+📝 FORMULÁR – HISTORICKÝ ÚLOVOK
+
+Formulár musí obsahovať:
+
+Povinné polia:
+
+📅 Dátum úlovku (datepicker – minulosť)
+
+📍 Revír (text)
+
+🐟 Druh ryby
+
+⚖️ Váha (kg)
+
+📏 Dĺžka (cm)
+
+Voliteľné:
+
+📝 Poznámka
+
+📸 Fotka
+
+UI upozornenie (povinné):
+
+🕰️ Tento úlovok sa uloží ako historický
+Nezapočíta sa do štatistík ani súťaží.
+
+🧮 ŠTATISTIKY – PRAVIDLÁ
+
+Všetky štatistiky musia filtrovať:
+
+WHERE excludedFromStats = false
+
+
+Týka sa:
+
+celkového počtu úlovkov
+
+rebríčkov
+
+súťaží
+
+osobných rekordov
+
+🧠 UX DETAIL (dôležité)
+
+Pri historickom úlovku zobraz:
+
+🕰️ Historický úlovok
+(nezapočítava sa do štatistík)
+
+napr. malý badge alebo tooltip.
+
+✅ AKCEPTAČNÉ PODMIENKY
+
+✔️ používateľ môže nahrať starý úlovok
+✔️ štatistiky sa nemenia
+✔️ onboarding rozhoduje o dostupnosti
+✔️ možnosť zapnúť/vypnúť v profile
+✔️ UI jasne rozlišuje typ úlovku
+✔️ žiadne miešanie dát
+
+🧠 DÔVOD (PRE DEVA)
+
+Tento systém:
+
+zabraňuje podvádzaniu v súťažiach
+
+umožňuje budovať históriu rybára
+
+zvyšuje dôveru v aplikáciu
+
+umožní budúci PRO feature (import, štatistiky, export)
