@@ -22,6 +22,7 @@ import { useToast } from "@/hooks/use-toast";
 import { showErrorToast } from "@/lib/errorUtils";
 import { useConfetti } from "@/hooks/useConfetti";
 import { FishingAreaSelect } from "@/components/FishingAreaSelect";
+import { getPersonalizedFishTypeOptions, getAllFishTypeKeys, fishPrioritiesByStyle } from "@/utils/fishTypeMapping";
 
 import { 
   Calendar as CalendarIcon, 
@@ -43,6 +44,9 @@ import { PremiumUpsellModal } from "@/components/PremiumUpsellModal";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { DiaryCatch, DiaryTrip } from "@shared/schema";
 
+// Get all fish type keys for the schema
+const allFishTypes = getAllFishTypeKeys();
+
 // Catch form validation schema
 const catchFormSchema = z.object({
   capturedAt: z.date({ required_error: "Čas chytenia je povinný" }),
@@ -54,20 +58,7 @@ const catchFormSchema = z.object({
     return weight.toString();
   }),
   lengthCm: z.coerce.number().positive("Dĺžka musí byť kladné číslo").optional(),
-  fishType: z.enum([
-    "kapor_supinac", 
-    "kapor_lysec", 
-    "amur", 
-    "sumec", 
-    "zubac", 
-    "stuka", 
-    "pleskac", 
-    "zubac_zubatovity",
-    "ostretus",
-    "tolstolobik",
-    "bream",
-    "other"
-  ]),
+  fishType: z.string().min(1, "Typ ryby je povinný"),
   bait: z.string().optional(),
   notes: z.string().optional(),
   spot: z.string().optional(),
@@ -82,22 +73,6 @@ const catchFormSchema = z.object({
 });
 
 type CatchFormData = z.infer<typeof catchFormSchema>;
-
-// Fish type options
-const fishTypeOptions = [
-  { value: "kapor_supinac", label: "Kapor šupináč" },
-  { value: "kapor_lysec", label: "Kapor lysec" },
-  { value: "amur", label: "Amur" },
-  { value: "sumec", label: "Sumec" },
-  { value: "zubac", label: "Zubáč" },
-  { value: "stuka", label: "Šťuka" },
-  { value: "pleskac", label: "Pleskáč" },
-  { value: "zubac_zubatovity", label: "Zubáč zubatovitý" },
-  { value: "ostretus", label: "Ostretuš" },
-  { value: "tolstolobik", label: "Tolstolobik" },
-  { value: "bream", label: "Pleskáč obecný" },
-  { value: "other", label: "Iné" }
-];
 
 // Fishing methods
 const fishingMethods = [
@@ -188,12 +163,25 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
   // State for tripId (will be auto-set if active battle exists)
   const [selectedTripId, setSelectedTripId] = useState<string | undefined>(undefined);
 
+  // Get personalized fish options based on user's fishing style preference
+  const userFishingStyle = (user as any)?.preferences?.fishingStyle || null;
+  const fishOptions = getPersonalizedFishTypeOptions(userFishingStyle);
+  const hasPriorityFish = 'priorityOptions' in fishOptions;
+
+  // Get default fish type based on user's fishing style
+  const getDefaultFishType = () => {
+    if (userFishingStyle && fishPrioritiesByStyle[userFishingStyle]) {
+      return fishPrioritiesByStyle[userFishingStyle][0] || "kapor_rybnicny";
+    }
+    return "kapor_rybnicny";
+  };
+
   const form = useForm<CatchFormData>({
     resolver: zodResolver(catchFormSchema),
     defaultValues: {
       capturedAt: new Date(),
       weight: "",
-      fishType: "kapor_supinac",
+      fishType: getDefaultFishType(),
       bait: "",
       notes: "",
       spot: "",
@@ -836,11 +824,27 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {fishTypeOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
+                        {hasPriorityFish ? (
+                          <>
+                            {(fishOptions as { priorityOptions: { value: string; label: string }[]; otherOptions: { value: string; label: string }[] }).priorityOptions.map((option) => (
+                              <SelectItem key={option.value} value={option.value}>
+                                ⭐ {option.label}
+                              </SelectItem>
+                            ))}
+                            <SelectSeparator />
+                            {(fishOptions as { priorityOptions: { value: string; label: string }[]; otherOptions: { value: string; label: string }[] }).otherOptions.map((option) => (
+                              <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </>
+                        ) : (
+                          (fishOptions as { value: string; label: string }[]).map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />

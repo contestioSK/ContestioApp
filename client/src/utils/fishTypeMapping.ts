@@ -1,49 +1,145 @@
 // Fish type mapping for the fishing diary
-// Organized by fishing technique: kaprárina, prívlač, muškárenie, feeder, sumčiarina
+// All fish species from "Rybársky poriadok - Lovné miery" with official names
+
 export const fishTypeMapping = {
-  // Kaprárina
-  kapor_supinac: "Kapor šupináč",
-  kapor_lysec: "Kapor lysec", 
-  amur: "Amur biely",
-  pleskac: "Pleskáč vysoký",
-  karas: "Karas",
-  lieň: "Lieň",
-  
-  // Prívlač
-  stuka: "Šťuka",
-  zubac: "Zubáč",
-  bolen: "Boleň",
-  ostriez: "Ostriež",
-  
-  // Muškárenie
-  pstruh_potocny: "Pstruh potočný",
+  // Official names from Lovné miery 2025
+  amur_biely: "Amur biely",
+  amur_cierny: "Amur čierny",
+  bolen_dravy: "Boleň dravý",
+  hlavatka_podunajska: "Hlavátka podunajská",
+  jalec_hlavaty: "Jalec hlavatý",
+  jalec_malousty: "Jalec maloústy",
+  jalec_tmavy: "Jalec tmavý",
+  jeseter_maly: "Jeseter malý",
+  jeseter_sibirsky: "Jeseter sibírsky",
+  kapor_rybnicny: "Kapor rybničný",
+  lien_sliznaty: "Lieň sliznatý",
+  lipen_tymianovy: "Lipeň tymianový",
+  mien_sladkovodny: "Mieň sladkovodný",
+  mrena_severna: "Mrena severná",
+  nosal_stahovavy: "Nosáľ sťahovavý",
+  pleskac_siny: "Pleskáč siný",
+  pleskac_tuponosy: "Pleskáč tuponosý",
+  pleskac_vysoky: "Pleskáč vysoký",
+  podustva_severna: "Podustva severná",
   pstruh_duhovy: "Pstruh dúhový",
-  lipeni: "Lipeň",
-  hlavatka: "Hlavátka",
-  podustva: "Podustva",
-  jalec: "Jalec",
-  
-  // Sumčiarina
-  sumec: "Sumec",
-  
-  // Feeder / Ostatné
-  mrena: "Mrena",
+  pstruh_jazerny: "Pstruh jazerný",
+  pstruh_potocny: "Pstruh potočný",
+  sih_peled: "Sih peleď",
+  sivon_potocny: "Sivoň potočný",
+  sumec_velky: "Sumec veľký",
+  stuka_severna: "Šťuka severná",
+  tolstolobik: "Tolstolobik",
+  uhor_europsky: "Úhor európsky",
+  zubac_velkousty: "Zubáč veľkoústy",
+  zubac_volzsky: "Zubáč volžský",
+  // Additional common species
+  karas: "Karas",
   plotica: "Plotica",
-  uhor: "Úhor",
-  kapor_rybnicny: "Kapor rybničný"
+  ostriez: "Ostriež",
+  iny: "Iný druh",
+  // Legacy values for backward compatibility (map to similar new types)
+  kapor_supinac: "Kapor rybničný (šupináč)",
+  kapor_lysec: "Kapor rybničný (lysec)",
+  amur: "Amur biely",
+  sumec: "Sumec veľký",
+  zubac: "Zubáč veľkoústy",
+  stuka: "Šťuka severná",
+  pleskac: "Pleskáč vysoký",
+  podustva: "Podustva severná",
+  mrena: "Mrena severná",
+  pstruh: "Pstruh potočný",
+  jalec: "Jalec hlavatý",
+  zubac_zubatovity: "Zubáč volžský",
+  ostretus: "Jeseter malý",
+  bream: "Pleskáč vysoký",
+  other: "Iný druh"
 } as const;
 
 export type FishType = keyof typeof fishTypeMapping;
+
+// Priority fish lists for each fishing style (from onboarding preferences)
+// Keys match the preferences.fishingStyle values from user schema: "carp", "spinning", "feeder", "fly", "catfish"
+export const fishPrioritiesByStyle: Record<string, FishType[]> = {
+  carp: [
+    "kapor_rybnicny",
+    "amur_biely",
+    "pleskac_vysoky",
+    "jalec_hlavaty",
+    "mrena_severna",
+    "nosal_stahovavy",
+    "podustva_severna"
+  ],
+  spinning: [
+    "stuka_severna",
+    "zubac_velkousty",
+    "bolen_dravy",
+    "zubac_volzsky",
+    "sumec_velky",
+    "hlavatka_podunajska"
+  ],
+  fly: [
+    "pstruh_potocny",
+    "pstruh_duhovy",
+    "lipen_tymianovy",
+    "pstruh_jazerny",
+    "sivon_potocny",
+    "hlavatka_podunajska"
+  ],
+  feeder: [
+    "pleskac_vysoky",
+    "mrena_severna",
+    "podustva_severna",
+    "kapor_rybnicny",
+    "lien_sliznaty",
+    "jalec_hlavaty"
+  ],
+  catfish: [
+    "sumec_velky",
+    "zubac_velkousty",
+    "stuka_severna"
+  ]
+};
 
 // Helper function to get display label for fish type
 export function getFishTypeLabel(fishType: string): string {
   return fishTypeMapping[fishType as FishType] || fishType;
 }
 
-// Get all fish type options for forms
+// Get all fish type options for forms (alphabetically sorted)
 export function getFishTypeOptions() {
-  return Object.entries(fishTypeMapping).map(([value, label]) => ({
-    value,
-    label
-  }));
+  return Object.entries(fishTypeMapping)
+    .map(([value, label]) => ({ value, label }))
+    .sort((a, b) => a.label.localeCompare(b.label, 'sk'));
+}
+
+// Get personalized fish type options based on user's fishing style
+export function getPersonalizedFishTypeOptions(fishingStyle?: string | null) {
+  const allOptions = getFishTypeOptions();
+  
+  if (!fishingStyle || !fishPrioritiesByStyle[fishingStyle]) {
+    return allOptions;
+  }
+  
+  const priorityFish = fishPrioritiesByStyle[fishingStyle];
+  const prioritySet = new Set(priorityFish);
+  
+  // Separate priority fish and others
+  const priorityOptions = priorityFish
+    .filter(fish => fishTypeMapping[fish])
+    .map(fish => ({
+      value: fish,
+      label: fishTypeMapping[fish]
+    }));
+  
+  const otherOptions = allOptions
+    .filter(opt => !prioritySet.has(opt.value as FishType))
+    .sort((a, b) => a.label.localeCompare(b.label, 'sk'));
+  
+  return { priorityOptions, otherOptions };
+}
+
+// Get all fish type keys for schema validation
+export function getAllFishTypeKeys(): FishType[] {
+  return Object.keys(fishTypeMapping) as FishType[];
 }
