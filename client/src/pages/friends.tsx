@@ -77,7 +77,7 @@ export default function Friends() {
         <div className="max-w-4xl mx-auto space-y-6">
           <div className="space-y-2">
             <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-              <TacticalIconInline icon={Users} variant="lime" />
+              <TacticalIconInline icon={Users} variant="orange" />
               Priatelia
             </h1>
             <p className="text-slate-400">Pridaj si kamarátov a vyzvi ich na rybársky súboj.</p>
@@ -86,14 +86,14 @@ export default function Friends() {
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-3 bg-slate-700/50">
               <TabsTrigger value="friends" className="text-white data-[state=active]:bg-slate-600" data-testid="tab-friends">
-                <TacticalIconInline icon={Users} variant="lime" size="sm" />
+                <TacticalIconInline icon={Users} variant="orange" size="sm" />
                 <span className="ml-2">Priatelia</span>
                 <span className="ml-2 text-xs font-bold bg-slate-600 px-2 py-0.5 rounded-full">
                   {formatBadgeCount(myFriends.length)}
                 </span>
               </TabsTrigger>
               <TabsTrigger value="requests" className="text-white data-[state=active]:bg-slate-600" data-testid="tab-requests">
-                <TacticalIconInline icon={UserCheck} variant="cyan" size="sm" />
+                <TacticalIconInline icon={UserCheck} variant="indigo" size="sm" />
                 <span className="ml-2">Žiadosti</span>
                 {friendRequests.length > 0 && (
                   <span className="ml-2 text-xs font-bold bg-amber-500 text-black px-2 py-0.5 rounded-full">
@@ -117,10 +117,10 @@ export default function Friends() {
 
             <TabsContent value="search" className="space-y-4 mt-4">
               {isNewUser && (
-                <div className="p-6 rounded-2xl bg-gradient-to-br from-lime-500/10 to-cyan-500/10 border border-lime-500/20 mb-4">
+                <div className="p-6 rounded-2xl bg-gradient-to-br from-orange-500/10 to-indigo-500/10 border border-orange-500/20 mb-4">
                   <div className="flex items-start gap-4">
-                    <div className="p-3 rounded-xl bg-lime-500/20">
-                      <Users className="w-6 h-6 text-lime-400" />
+                    <div className="p-3 rounded-xl bg-orange-500/20">
+                      <Users className="w-6 h-6 text-orange-400" />
                     </div>
                     <div>
                       <h3 className="text-lg font-bold text-white mb-2">

@@ -96,7 +96,7 @@ export default function AboutUs() {
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
             <Card className="text-center" data-testid="card-organizers">
               <CardContent className="p-5">
-                <TacticalIcon icon={Users} variant="lime" size="sm" showLabel={false} className="mx-auto mb-3" />
+                <TacticalIcon icon={Users} variant="orange" size="sm" showLabel={false} className="mx-auto mb-3" />
                 <h3 className="font-semibold text-foreground mb-2 text-sm">Organizátori</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   Získajú profesionálny systém bez zbytočnej administratívy.

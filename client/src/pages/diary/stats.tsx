@@ -131,7 +131,7 @@ export default function DiaryStats() {
                 className="flex flex-col items-center gap-1 py-2 px-1 sm:flex-row sm:gap-1.5 sm:py-1.5 sm:px-3 text-xs font-medium data-[state=active]:bg-background data-[state=active]:text-primary" 
                 data-testid="tab-overview"
               >
-                <TacticalIconInline icon={Activity} variant="lime" size="sm" />
+                <TacticalIconInline icon={Activity} variant="orange" size="sm" />
                 <span className="text-[10px] sm:text-xs leading-tight">Prehľad</span>
               </TabsTrigger>
               <TabsTrigger 
@@ -172,7 +172,7 @@ export default function DiaryStats() {
 
           <TabsContent value="overview" className="space-y-6 mt-0">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card className={`border-l-4 ${isDark ? 'border-l-lime-500' : 'border-l-lime-600'} transition-colors hover:bg-muted/30`}>
+              <Card className={`border-l-4 ${isDark ? 'border-l-orange-500' : 'border-l-orange-600'} transition-colors hover:bg-muted/30`}>
                 <CardContent className="p-5">
                   <div className="flex justify-between items-start mb-3">
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Celkové úlovky</p>
@@ -293,9 +293,9 @@ export default function DiaryStats() {
               </Card>
 
               <div className="space-y-4">
-                <Card className={`${isDark ? 'bg-lime-500/5 border-lime-500/20' : 'bg-lime-600/5 border-lime-600/20'}`}>
+                <Card className={`${isDark ? 'bg-orange-500/5 border-orange-500/20' : 'bg-orange-600/5 border-orange-600/20'}`}>
                   <CardContent className="p-5">
-                    <h4 className={`text-xs font-bold uppercase tracking-widest ${isDark ? 'text-lime-500' : 'text-lime-600'} mb-4 flex items-center gap-2`}>
+                    <h4 className={`text-xs font-bold uppercase tracking-widest ${isDark ? 'text-orange-500' : 'text-orange-600'} mb-4 flex items-center gap-2`}>
                       <TacticalIcon icon={Star} variant="amber" size="sm" showLabel={false} /> Top Nástraha
                     </h4>
                     <div className="flex items-center gap-4">
@@ -369,7 +369,7 @@ export default function DiaryStats() {
             )}
 
             <div className="flex items-center gap-2 text-xs text-muted-foreground pt-4 border-t border-border">
-              <TacticalIconInline icon={Activity} variant="lime" size="sm" />
+              <TacticalIconInline icon={Activity} variant="orange" size="sm" />
               <p>Štatistiky sú aktualizované v reálnom čase po každom schválenom úlovku.</p>
             </div>
           </TabsContent>
@@ -556,10 +556,10 @@ export default function DiaryStats() {
                   )}
 
                   {personalRecords.bestTrip && (
-                    <Card className="bg-gradient-to-br from-lime-500/10 to-transparent border-lime-500/20">
+                    <Card className="bg-gradient-to-br from-orange-500/10 to-transparent border-orange-500/20">
                       <CardContent className="p-5">
-                        <div className="flex items-center gap-2 text-lime-500 mb-3">
-                          <TacticalIconInline icon={Star} variant="lime" size="md" />
+                        <div className="flex items-center gap-2 text-orange-500 mb-3">
+                          <TacticalIconInline icon={Star} variant="orange" size="md" />
                           <span className="text-xs font-bold uppercase tracking-widest">Najlepšia výprava</span>
                         </div>
                         <div className="text-3xl font-bold text-foreground">

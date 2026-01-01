@@ -156,7 +156,7 @@ export default function OrganizerDashboard() {
                   </div>
                   {competition.maxTeams && (
                     <div className="flex items-center text-sm text-muted-foreground">
-                      <TacticalIconInline icon={Users} variant="lime" size="sm" className="mr-2" />
+                      <TacticalIconInline icon={Users} variant="orange" size="sm" className="mr-2" />
                       Max. {competition.maxTeams} tímov
                     </div>
                   )}

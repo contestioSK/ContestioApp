@@ -611,10 +611,10 @@ export default function GearArsenalPage() {
 
                     {/* Bulk add option */}
                     {selectedProductLine && flavors && flavors.length > 0 && (
-                      <div className="flex items-center justify-between p-3 bg-lime-900/20 rounded-lg border border-lime-800">
+                      <div className="flex items-center justify-between p-3 bg-orange-900/20 rounded-lg border border-orange-800">
                         <div className="flex-1">
-                          <p className="text-sm font-medium text-lime-100">Rýchle pridanie</p>
-                          <p className="text-xs text-lime-300">
+                          <p className="text-sm font-medium text-orange-100">Rýchle pridanie</p>
+                          <p className="text-xs text-orange-300">
                             Pridať všetky príchute ({flavors.length}) z tohto radu naraz
                           </p>
                         </div>
@@ -622,7 +622,7 @@ export default function GearArsenalPage() {
                           onClick={() => setBulkDialogOpen(true)}
                           variant="outline"
                           size="sm"
-                          className="ml-2 border-lime-700 text-lime-300"
+                          className="ml-2 border-orange-700 text-orange-300"
                           data-testid="button-bulk-add"
                         >
                           <TacticalIconInline icon={Package} variant="amber" size="sm" className="mr-2" />
@@ -638,7 +638,7 @@ export default function GearArsenalPage() {
                       <Button
                         onClick={handleAddBait}
                         disabled={!selectedBaitManufacturer || !selectedProductLine || !selectedFlavor || addBaitMutation.isPending}
-                        className="bg-lime-600 hover:bg-lime-700"
+                        className="bg-orange-500 hover:bg-orange-400"
                         data-testid="button-save-bait"
                       >
                         {addBaitMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

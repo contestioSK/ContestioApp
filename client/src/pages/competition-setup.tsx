@@ -715,7 +715,7 @@ export default function CompetitionSetup() {
               <div className="space-y-6">
                 <div className="p-8 bg-muted/30 rounded-lg text-center">
                   <div className="flex justify-center mb-4">
-                    <TacticalIconInline icon={Users} variant="lime" size="lg" />
+                    <TacticalIconInline icon={Users} variant="orange" size="lg" />
                   </div>
                   <h4 className="font-medium mb-2">Pridávanie rozhodcov</h4>
                   <p className="text-sm text-muted-foreground mb-4">

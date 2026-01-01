@@ -299,7 +299,7 @@ export function BadgeCelebrationModal({ badge, onClose }: BadgeCelebrationModalP
           <button
             onClick={handleShare}
             disabled={isSharing}
-            className="relative w-full h-12 rounded-xl font-bold uppercase tracking-widest text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 text-slate-950 bg-lime-500 hover:bg-lime-400 disabled:opacity-50"
+            className="relative w-full h-12 rounded-xl font-bold uppercase tracking-widest text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 text-white bg-orange-500 hover:bg-orange-400 disabled:opacity-50"
             data-testid="badge-share-button"
           >
             {isSharing ? (
