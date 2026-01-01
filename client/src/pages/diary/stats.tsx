@@ -131,7 +131,7 @@ export default function DiaryStats() {
                 className="flex flex-col items-center gap-1 py-2 px-1 sm:flex-row sm:gap-1.5 sm:py-1.5 sm:px-3 text-xs font-medium data-[state=active]:bg-background data-[state=active]:text-primary" 
                 data-testid="tab-overview"
               >
-                <Activity className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+                <TacticalIconInline icon={Activity} variant="lime" size="sm" />
                 <span className="text-[10px] sm:text-xs leading-tight">Prehľad</span>
               </TabsTrigger>
               <TabsTrigger 
@@ -139,7 +139,7 @@ export default function DiaryStats() {
                 className={`flex flex-col items-center gap-1 py-2 px-1 sm:flex-row sm:gap-1.5 sm:py-1.5 sm:px-3 text-xs font-medium ${!isPremium ? 'opacity-70' : ''}`}
                 data-testid="tab-trends"
               >
-                <TrendingUp className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+                <TacticalIconInline icon={TrendingUp} variant="blue" size="sm" />
                 <span className="flex items-center gap-0.5 text-[10px] sm:text-xs leading-tight">
                   Trendy
                   {!isPremium && <Lock className="w-2.5 h-2.5 text-amber-500" />}
@@ -150,7 +150,7 @@ export default function DiaryStats() {
                 className={`flex flex-col items-center gap-1 py-2 px-1 sm:flex-row sm:gap-1.5 sm:py-1.5 sm:px-3 text-xs font-medium ${!isPremium ? 'opacity-70' : ''}`}
                 data-testid="tab-analysis"
               >
-                <PieChart className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+                <TacticalIconInline icon={PieChart} variant="purple" size="sm" />
                 <span className="flex items-center gap-0.5 text-[10px] sm:text-xs leading-tight">
                   Analýzy
                   {!isPremium && <Lock className="w-2.5 h-2.5 text-amber-500" />}
@@ -296,12 +296,10 @@ export default function DiaryStats() {
                 <Card className={`${isDark ? 'bg-lime-500/5 border-lime-500/20' : 'bg-lime-600/5 border-lime-600/20'}`}>
                   <CardContent className="p-5">
                     <h4 className={`text-xs font-bold uppercase tracking-widest ${isDark ? 'text-lime-500' : 'text-lime-600'} mb-4 flex items-center gap-2`}>
-                      <TacticalIconInline icon={Star} variant="amber" size="sm" /> Top Nástraha
+                      <TacticalIcon icon={Star} variant="amber" size="sm" showLabel={false} /> Top Nástraha
                     </h4>
                     <div className="flex items-center gap-4">
-                      <div className={`w-12 h-12 ${isDark ? 'bg-lime-500/10' : 'bg-lime-600/10'} rounded-xl flex items-center justify-center`}>
-                        <TacticalIconInline icon={Fish} variant="cyan" size="lg" />
-                      </div>
+                      <TacticalIcon icon={Fish} variant="cyan" size="sm" showLabel={false} />
                       <div>
                         <h5 className="font-bold text-foreground text-lg leading-tight">
                           {topBaits[0]?.bait || 'Žiadne dáta'}
@@ -325,12 +323,10 @@ export default function DiaryStats() {
                   <Card className={`${isDark ? 'bg-blue-500/5 border-blue-500/20' : 'bg-blue-600/5 border-blue-600/20'}`}>
                     <CardContent className="p-5">
                       <h4 className={`text-xs font-bold uppercase tracking-widest ${isDark ? 'text-blue-500' : 'text-blue-600'} mb-4 flex items-center gap-2`}>
-                        <TacticalIconInline icon={Trophy} variant="amber" size="sm" /> Najlepšia lokalita
+                        <TacticalIcon icon={Trophy} variant="amber" size="sm" showLabel={false} /> Najlepšia lokalita
                       </h4>
                       <div className="flex items-center gap-4">
-                        <div className={`w-12 h-12 ${isDark ? 'bg-blue-500/10' : 'bg-blue-600/10'} rounded-xl flex items-center justify-center`}>
-                          <TacticalIconInline icon={MapPin} variant="emerald" size="lg" />
-                        </div>
+                        <TacticalIcon icon={MapPin} variant="emerald" size="sm" showLabel={false} />
                         <div>
                           <h5 className="font-bold text-foreground text-lg leading-tight">
                             {topLocations[0].location}
@@ -373,7 +369,7 @@ export default function DiaryStats() {
             )}
 
             <div className="flex items-center gap-2 text-xs text-muted-foreground pt-4 border-t border-border">
-              <Activity className="w-3.5 h-3.5" />
+              <TacticalIconInline icon={Activity} variant="lime" size="sm" />
               <p>Štatistiky sú aktualizované v reálnom čase po každom schválenom úlovku.</p>
             </div>
           </TabsContent>
