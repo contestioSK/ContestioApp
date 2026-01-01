@@ -219,20 +219,18 @@ export default function BadgesPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {unlockedBadgesList.map(({ badgeDef, tier }) => {
                 const tierDef = badgeDef.tiers[tier];
-                const bgClass = getTierBgClass(tier);
-                const textClass = getTierTextClass(tier);
 
                 return (
                   <div
                     key={`${badgeDef.id}_${tier}`}
-                    className={`p-4 rounded-xl border-2 ${bgClass}`}
+                    className="p-4 rounded-xl border border-border bg-muted/30 hover:bg-muted/50 transition-colors"
                     data-testid={`badge-unlocked-${badgeDef.id}-${tier}`}
                   >
                     <div className="flex items-center gap-3">
                       <TacticalIcon icon={BADGE_ICON_MAP[badgeDef.icon] || Award} variant="amber" size="sm" showLabel={false} />
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-0.5">
-                          <span className={`font-bold ${textClass}`}>{badgeDef.name}</span>
+                          <span className="font-bold text-foreground">{badgeDef.name}</span>
                           <Badge className={`bg-gradient-to-r ${getTierColor(tier)} text-white border-0 text-[10px] px-1.5`}>
                             {tier === 'bronze' ? '🥉' : tier === 'silver' ? '🥈' : '🥇'}
                           </Badge>
