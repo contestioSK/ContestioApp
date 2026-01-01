@@ -35,6 +35,7 @@ import {
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, ComposedChart } from 'recharts';
+import { TacticalIcon } from "@/components/ui/tactical-icon";
 
 interface ForecastDay {
   date: string;
@@ -478,11 +479,14 @@ export default function WeatherForecast() {
     <DiaryLayout>
       <div className="container mx-auto p-4 md:p-6 space-y-6">
         <div className="flex flex-col space-y-4">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Predpoveď počasia</h1>
-            <p className="text-muted-foreground mt-2">
-              Plánuj svoje výpravy ako profesionál
-            </p>
+          <div className="flex items-center gap-4">
+            <TacticalIcon icon={Cloud} variant="active" size="lg" showLabel={false} />
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">Predpoveď počasia</h1>
+              <p className="text-muted-foreground mt-2">
+                Plánuj svoje výpravy ako profesionál
+              </p>
+            </div>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3">

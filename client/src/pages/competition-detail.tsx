@@ -27,6 +27,7 @@ import { useWebSocket } from "@/hooks/useWebSocket";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Users, UserPlus, Trash2, Fish, Award, BarChart3, Trophy, FileText, Heart, QrCode } from "lucide-react";
 import { getSideCompetitionLabels } from "@/lib/utils";
+import { TacticalIcon } from "@/components/ui/tactical-icon";
 import type { Competition, Team, Catch } from "@shared/schema";
 import { useFavoriteCompetitions, useToggleFavoriteCompetition } from "@/hooks/useFavorites";
 import { QRShareDialog } from "@/components/QRShareDialog";

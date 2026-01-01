@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { Trophy, Plus, Archive, Swords, Users, Clock, Crown, ArrowRight, Check, X, Bell, UserPlus, Lock } from "lucide-react";
 import { useLocation } from "wouter";
 import DiaryLayout from "@/components/DiaryLayout";
+import { TacticalIcon } from "@/components/ui/tactical-icon";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -321,8 +322,8 @@ export default function BattleIndex() {
           <div className="mb-6 md:mb-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
               <div>
-                <div className="flex items-center gap-2 md:gap-3 mb-2">
-                  <Swords className="w-6 h-6 md:w-8 md:h-8 text-primary" />
+                <div className="flex items-center gap-3 md:gap-4 mb-2">
+                  <TacticalIcon icon={Swords} variant="active" size="lg" showLabel={false} />
                   <h1 className="text-xl md:text-3xl font-bold text-foreground" data-testid="heading-fishing-battle">
                     Fishing Battle
                   </h1>
