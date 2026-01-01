@@ -650,22 +650,18 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
         <TooltipProvider delayDuration={300}>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
+              <button
                 onClick={handleFabClick}
-                className={`fixed bottom-20 right-6 md:bottom-6 h-14 w-14 rounded-full shadow-lg z-50 transition-all hover:scale-110 ${
-                  !isPremium && catchLimits && !catchLimits.canCreate
-                    ? 'bg-slate-600 hover:bg-slate-500'
-                    : 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600'
-                }`}
+                className="fixed bottom-20 right-6 md:bottom-6 z-50 transition-all hover:scale-110"
                 data-testid="fab-add-catch"
                 aria-label="Pridať úlovok"
               >
                 {!isPremium && catchLimits && !catchLimits.canCreate ? (
-                  <Lock className="h-6 w-6 text-white" />
+                  <TacticalIcon icon={Lock} variant="slate" size="lg" showLabel={false} />
                 ) : (
-                  <Plus className="h-6 w-6 text-white" />
+                  <TacticalIcon icon={Plus} variant="lime" size="lg" showLabel={false} />
                 )}
-              </Button>
+              </button>
             </TooltipTrigger>
             <TooltipContent side="left" className="bg-popover text-popover-foreground border shadow-md px-3 py-2">
               <p className="font-medium">{!isPremium && catchLimits && !catchLimits.canCreate 
