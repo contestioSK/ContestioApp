@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { Share2, Download, Loader2 } from "lucide-react";
 import html2canvas from "html2canvas";
 import { BADGE_DEFINITIONS, BadgeTier } from "@shared/badges";
-import contestioLogo from "@assets/contestio_logo_black_1766308180088.png";
+import contestioLogo from "@assets/contestio logo_1760283270014.png";
 
 interface BadgeInfo {
   badgeType: string;
@@ -253,7 +253,7 @@ export function BadgeCelebrationModal({ badge, onClose }: BadgeCelebrationModalP
             <img 
               src={contestioLogo} 
               alt="Contestio" 
-              className="h-6 opacity-80"
+              className="h-10 opacity-90 brightness-0 invert"
               crossOrigin="anonymous"
             />
           </div>
