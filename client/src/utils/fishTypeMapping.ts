@@ -1,7 +1,8 @@
 // Fish type mapping for the fishing diary
 // All fish species from "Rybársky poriadok - Lovné miery" with official names
 
-export const fishTypeMapping = {
+// Official fish types to show in dropdown (no duplicates)
+export const officialFishTypes = {
   // Official names from Lovné miery 2025
   amur_biely: "Amur biely",
   amur_cierny: "Amur čierny",
@@ -13,6 +14,8 @@ export const fishTypeMapping = {
   jeseter_maly: "Jeseter malý",
   jeseter_sibirsky: "Jeseter sibírsky",
   kapor_rybnicny: "Kapor rybničný",
+  kapor_supinac: "Kapor rybničný (šupináč)",
+  kapor_lysec: "Kapor rybničný (lysec)",
   lien_sliznaty: "Lieň sliznatý",
   lipen_tymianovy: "Lipeň tymianový",
   mien_sladkovodny: "Mieň sladkovodný",
@@ -37,10 +40,31 @@ export const fishTypeMapping = {
   karas: "Karas",
   plotica: "Plotica",
   ostriez: "Ostriež",
-  iny: "Iný druh",
-  // Legacy values for backward compatibility (map to similar new types)
-  kapor_supinac: "Kapor rybničný (šupináč)",
-  kapor_lysec: "Kapor rybničný (lysec)",
+  iny: "Iný druh"
+} as const;
+
+// Legacy alias map - maps old codes to official codes (for backward compatibility)
+// These are NOT shown in dropdown, but used to resolve existing data
+export const legacyAliasMap: Record<string, keyof typeof officialFishTypes> = {
+  amur: "amur_biely",
+  sumec: "sumec_velky",
+  zubac: "zubac_velkousty",
+  stuka: "stuka_severna",
+  pleskac: "pleskac_vysoky",
+  podustva: "podustva_severna",
+  mrena: "mrena_severna",
+  pstruh: "pstruh_potocny",
+  jalec: "jalec_hlavaty",
+  zubac_zubatovity: "zubac_volzsky",
+  ostretus: "jeseter_maly",
+  bream: "pleskac_vysoky",
+  other: "iny"
+};
+
+// Combined mapping for label lookup (includes both official and legacy)
+export const fishTypeMapping = {
+  ...officialFishTypes,
+  // Legacy entries with their own labels for display of existing data
   amur: "Amur biely",
   sumec: "Sumec veľký",
   zubac: "Zubáč veľkoústy",
@@ -52,14 +76,16 @@ export const fishTypeMapping = {
   jalec: "Jalec hlavatý",
   zubac_zubatovity: "Zubáč volžský",
   ostretus: "Jeseter malý",
-  bream: "Pleskáč vysoký"
+  bream: "Pleskáč vysoký",
+  other: "Iný druh"
 } as const;
 
 export type FishType = keyof typeof fishTypeMapping;
+export type OfficialFishType = keyof typeof officialFishTypes;
 
 // Priority fish lists for each fishing style (from onboarding preferences)
 // Keys match the preferences.fishingStyle values from user schema: "carp", "spinning", "feeder", "fly", "catfish"
-export const fishPrioritiesByStyle: Record<string, FishType[]> = {
+export const fishPrioritiesByStyle: Record<string, OfficialFishType[]> = {
   carp: [
     "kapor_rybnicny",
     "kapor_supinac",
@@ -102,14 +128,14 @@ export const fishPrioritiesByStyle: Record<string, FishType[]> = {
   ]
 };
 
-// Helper function to get display label for fish type
+// Helper function to get display label for fish type (works for both official and legacy codes)
 export function getFishTypeLabel(fishType: string): string {
   return fishTypeMapping[fishType as FishType] || fishType;
 }
 
-// Get all fish type options for forms (alphabetically sorted)
+// Get all OFFICIAL fish type options for forms (alphabetically sorted, no legacy duplicates)
 export function getFishTypeOptions() {
-  return Object.entries(fishTypeMapping)
+  return Object.entries(officialFishTypes)
     .map(([value, label]) => ({ value, label }))
     .sort((a, b) => a.label.localeCompare(b.label, 'sk'));
 }
@@ -123,24 +149,29 @@ export function getPersonalizedFishTypeOptions(fishingStyle?: string | null) {
   }
   
   const priorityFish = fishPrioritiesByStyle[fishingStyle];
-  const prioritySet = new Set(priorityFish);
+  const prioritySet = new Set(priorityFish as string[]);
   
   // Separate priority fish and others
   const priorityOptions = priorityFish
-    .filter(fish => fishTypeMapping[fish])
+    .filter(fish => officialFishTypes[fish])
     .map(fish => ({
       value: fish,
-      label: fishTypeMapping[fish]
+      label: officialFishTypes[fish]
     }));
   
   const otherOptions = allOptions
-    .filter(opt => !prioritySet.has(opt.value as FishType))
+    .filter(opt => !prioritySet.has(opt.value))
     .sort((a, b) => a.label.localeCompare(b.label, 'sk'));
   
   return { priorityOptions, otherOptions };
 }
 
-// Get all fish type keys for schema validation
+// Get all fish type keys for schema validation (includes legacy for backward compatibility)
 export function getAllFishTypeKeys(): FishType[] {
   return Object.keys(fishTypeMapping) as FishType[];
+}
+
+// Resolve legacy fish type to official type (for migrations or normalization)
+export function resolveLegacyFishType(fishType: string): string {
+  return legacyAliasMap[fishType] || fishType;
 }
