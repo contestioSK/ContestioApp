@@ -78,10 +78,10 @@ const getFishVariant = (fishType?: string): "amber" | "emerald" | "purple" | "cy
   return "blue"; // default
 };
 
-// Function to get fish icon based on fish type with color variant
+// Function to get fish icon based on fish type with color variant (hexagonal)
 const getFishIcon = (fishType?: string) => {
   const variant = getFishVariant(fishType);
-  return <TacticalIconInline icon={Fish} variant={variant} size="md" />;
+  return <TacticalIcon icon={Fish} variant={variant} size="sm" showLabel={false} />;
 };
 
 type PhotoObject = {
