@@ -364,9 +364,7 @@ export default function Onboarding() {
                 data-testid="card-historical-yes"
               >
                 <CardContent className="p-4 flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-amber-500/10 flex items-center justify-center">
-                    <History className="w-6 h-6 text-amber-500" />
-                  </div>
+                  <TacticalIcon icon={History} variant="amber" size="sm" showLabel={false} />
                   <div className="flex-1">
                     <div className="font-semibold">Áno, chcem</div>
                     <div className="text-sm text-muted-foreground">Budem si nahrávať aj staršie úlovky ako spomienky</div>
@@ -387,9 +385,7 @@ export default function Onboarding() {
                 data-testid="card-historical-no"
               >
                 <CardContent className="p-4 flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center">
-                    <Fish className="w-6 h-6 text-muted-foreground" />
-                  </div>
+                  <TacticalIcon icon={Fish} variant="cyan" size="sm" showLabel={false} />
                   <div className="flex-1">
                     <div className="font-semibold">Nie, začínam odteraz</div>
                     <div className="text-sm text-muted-foreground">Budem si zapisovať len aktuálne úlovky</div>
