@@ -8,11 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Lock, Unlock, ChevronDown, ChevronUp, Target, Plus, Trophy } from "lucide-react";
+import { Lock, Unlock, ChevronDown, ChevronUp, Target, Plus, Trophy, Sparkles } from "lucide-react";
 import { useLocation } from "wouter";
 import DiaryLayout from "@/components/DiaryLayout";
-import { BADGE_DEFINITIONS, getTierColor, getTierBgClass, getTierTextClass } from "@shared/badges";
+import { BADGE_DEFINITIONS, getTierColor, getTierBgClass, getTierTextClass, BadgeTier } from "@shared/badges";
 import type { UserBadge } from "@shared/schema";
+import { BadgeCelebrationModal } from "@/components/diary/BadgeCelebrationModal";
 
 export default function BadgesPage() {
   const { user } = useAuth();
@@ -21,6 +22,12 @@ export default function BadgesPage() {
   const [, setLocation] = useLocation();
   const previousBadgeCount = useRef<number | null>(null);
   const [showAllBadges, setShowAllBadges] = useState(false);
+  const [demoBadge, setDemoBadge] = useState<{
+    badgeType: string;
+    badgeName: string;
+    tier: BadgeTier;
+    icon: string;
+  } | null>(null);
 
   const { data: userBadges = [] } = useQuery<UserBadge[]>({
     queryKey: ["/api/diary/badges"],
@@ -96,11 +103,33 @@ export default function BadgesPage() {
   return (
     <DiaryLayout>
       <div className="p-4 md:p-8 max-w-4xl mx-auto">
-        <div className="mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-1">🏅 Moje Odznaky</h1>
-          <p className="text-muted-foreground text-sm">
-            {userBadges.length} odomknutých z {badgesList.length * 3} možných
-          </p>
+        <div className="mb-6 flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-1">🏅 Moje Odznaky</h1>
+            <p className="text-muted-foreground text-sm">
+              {userBadges.length} odomknutých z {badgesList.length * 3} možných
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              const demoTiers: BadgeTier[] = ['gold', 'silver', 'bronze'];
+              const randomTier = demoTiers[Math.floor(Math.random() * demoTiers.length)];
+              const firstBadge = badgesList[0];
+              setDemoBadge({
+                badgeType: firstBadge.id,
+                badgeName: firstBadge.name,
+                tier: randomTier,
+                icon: firstBadge.icon,
+              });
+            }}
+            className="border-lime-500/50 text-lime-500 hover:bg-lime-500/10"
+            data-testid="button-demo-celebration"
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            Demo oslavy
+          </Button>
         </div>
 
         {hasNoBadges && (
@@ -265,6 +294,12 @@ export default function BadgesPage() {
           </CollapsibleContent>
         </Collapsible>
       </div>
+
+      {/* Demo Badge Celebration Modal */}
+      <BadgeCelebrationModal
+        badge={demoBadge}
+        onClose={() => setDemoBadge(null)}
+      />
     </DiaryLayout>
   );
 }
