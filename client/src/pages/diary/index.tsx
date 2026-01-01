@@ -409,13 +409,18 @@ export default function DiaryIndex() {
   // Get current year for dynamic season
   const currentYear = new Date().getFullYear();
 
+  // Filter catches for stats - exclude historical catches (they are just for archive/gallery)
+  const nonHistoricalCatches = Array.isArray(allCatches) 
+    ? allCatches.filter((catch_: any) => !catch_.isHistorical) 
+    : [];
+
   // Filter catches for current season (January 15 of current year onwards)
-  const seasonCatches = Array.isArray(allCatches) ? allCatches.filter((catch_: any) => {
+  const seasonCatches = nonHistoricalCatches.filter((catch_: any) => {
     if (!catch_.capturedAt) return false;
     const catchDate = new Date(catch_.capturedAt);
     const seasonStart = new Date(`${currentYear}-01-15`);
     return catchDate >= seasonStart;
-  }) : [];
+  });
 
   // Apply filters to ALL catches (table shows all, not just season)
   const allCatchesList = Array.isArray(allCatches) ? allCatches : [];

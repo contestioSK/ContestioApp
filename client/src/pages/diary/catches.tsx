@@ -55,7 +55,10 @@ import { getFishTypeLabel, getFishTypeOptions } from "@/utils/fishTypeMapping";
 import DiaryLayout from "@/components/DiaryLayout";
 import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 import CatchFormDialog from "@/components/diary/CatchFormDialog";
+import HistoricalCatchFormDialog from "@/components/diary/HistoricalCatchFormDialog";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { History, Clock } from "lucide-react";
 
 // Type for freemium limits response
 type FreemiumLimits = {
@@ -282,6 +285,8 @@ export default function DiaryCatches() {
   });
   
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isHistoricalDialogOpen, setIsHistoricalDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"current" | "historical">("current");
   const [editingCatch, setEditingCatch] = useState<DiaryCatch | null>(null);
   const [deletingCatch, setDeletingCatch] = useState<DiaryCatch | null>(null);
   const [selectedCatch, setSelectedCatch] = useState<DiaryCatch | null>(null);
@@ -465,17 +470,33 @@ export default function DiaryCatches() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location, catches, editingCatch]);
 
-  // Filter catches by selected season
-  const seasonFilteredCatches = Array.isArray(catches) ? catches.filter((catch_: any) => {
-    if (!catch_.capturedAt) return false;
-    if (selectedSeason === "all") return true;
-    
-    const catchDate = new Date(catch_.capturedAt);
-    const seasonYear = parseInt(selectedSeason);
-    const seasonStart = new Date(`${seasonYear}-01-15`);
-    const seasonEnd = new Date(`${seasonYear + 1}-01-14`);
-    return catchDate >= seasonStart && catchDate <= seasonEnd;
+  // First filter by tab (current vs historical)
+  const tabFilteredCatches = Array.isArray(catches) ? catches.filter((catch_: any) => {
+    if (activeTab === "historical") {
+      return catch_.isHistorical === true;
+    } else {
+      return catch_.isHistorical !== true; // current catches (including undefined/null)
+    }
   }) : [];
+
+  // Count historical catches for badge
+  const historicalCatchCount = Array.isArray(catches) 
+    ? catches.filter((c: any) => c.isHistorical === true).length 
+    : 0;
+
+  // Filter catches by selected season (only for current catches)
+  const seasonFilteredCatches = activeTab === "historical" 
+    ? tabFilteredCatches // Don't apply season filter to historical
+    : tabFilteredCatches.filter((catch_: any) => {
+        if (!catch_.capturedAt) return false;
+        if (selectedSeason === "all") return true;
+        
+        const catchDate = new Date(catch_.capturedAt);
+        const seasonYear = parseInt(selectedSeason);
+        const seasonStart = new Date(`${seasonYear}-01-15`);
+        const seasonEnd = new Date(`${seasonYear + 1}-01-14`);
+        return catchDate >= seasonStart && catchDate <= seasonEnd;
+      });
 
   // Apply filters to catches
   const filteredCatches = seasonFilteredCatches
@@ -670,16 +691,79 @@ export default function DiaryCatches() {
             }}
           />
 
-          {/* Total Statistics Panel */}
-          {(() => {
-            const allCatches = Array.isArray(catches) ? catches : [];
-            const totalCount = allCatches.length;
-            const totalWeight = allCatches.reduce((sum: number, c: any) => {
+          <HistoricalCatchFormDialog
+            isOpen={isHistoricalDialogOpen}
+            onClose={() => setIsHistoricalDialogOpen(false)}
+            onSuccess={() => {
+              queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
+            }}
+          />
+
+          {/* Tabs: Aktuálne / Historické */}
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "current" | "historical")} className="w-full">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+              <TabsList className="bg-slate-200 dark:bg-slate-800 h-auto p-1">
+                <TabsTrigger 
+                  value="current" 
+                  className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 px-4 py-2"
+                  data-testid="tab-current-catches"
+                >
+                  <Clock className="w-4 h-4 mr-2" />
+                  Aktuálne
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="historical" 
+                  className="data-[state=active]:bg-amber-100 dark:data-[state=active]:bg-amber-900/30 data-[state=active]:text-amber-700 dark:data-[state=active]:text-amber-400 px-4 py-2"
+                  data-testid="tab-historical-catches"
+                >
+                  <History className="w-4 h-4 mr-2" />
+                  Historické
+                  {historicalCatchCount > 0 && (
+                    <Badge variant="secondary" className="ml-2 bg-amber-500/20 text-amber-600 dark:text-amber-400">
+                      {historicalCatchCount}
+                    </Badge>
+                  )}
+                </TabsTrigger>
+              </TabsList>
+
+              {activeTab === "historical" && (
+                <Button 
+                  onClick={() => setIsHistoricalDialogOpen(true)}
+                  variant="outline"
+                  className="border-amber-500/50 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10"
+                  data-testid="button-add-historical-catch"
+                >
+                  <History className="w-4 h-4 mr-2" />
+                  Pridať starší úlovok
+                </Button>
+              )}
+            </div>
+
+            {/* Historical catches info banner */}
+            {activeTab === "historical" && (
+              <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">🕰️</span>
+                  <div>
+                    <h3 className="font-medium text-amber-700 dark:text-amber-400">Archív starších úlovkov</h3>
+                    <p className="text-sm text-amber-600/80 dark:text-amber-300/80">
+                      Tu sú úlovky z minulosti. Tieto záznamy sa <strong>nepočítajú</strong> do štatistík, súťaží ani odznakov.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+          {/* Total Statistics Panel - only for current catches */}
+          {activeTab === "current" && (() => {
+            const nonHistoricalCatches = Array.isArray(catches) ? catches.filter((c: any) => !c.isHistorical) : [];
+            const totalCount = nonHistoricalCatches.length;
+            const totalWeight = nonHistoricalCatches.reduce((sum: number, c: any) => {
               const weight = parseFloat(c.weight || '0');
               return sum + (isNaN(weight) ? 0 : weight);
             }, 0);
-            const biggestFish = allCatches.length > 0
-              ? Math.max(...allCatches.map((c: any) => parseFloat(c.weight || '0') || 0))
+            const biggestFish = nonHistoricalCatches.length > 0
+              ? Math.max(...nonHistoricalCatches.map((c: any) => parseFloat(c.weight || '0') || 0))
               : 0;
             const averageWeight = totalCount > 0 ? totalWeight / totalCount : 0;
 
@@ -1486,6 +1570,7 @@ export default function DiaryCatches() {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+          </Tabs>
       </div>
     </DiaryLayout>
   );

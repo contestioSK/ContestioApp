@@ -79,10 +79,13 @@ export default function DiaryStats() {
     enabled: !!user
   });
 
-  const { data: catches = [] } = useQuery<DiaryCatch[]>({
+  const { data: allCatches = [] } = useQuery<DiaryCatch[]>({
     queryKey: ["/api/diary/catches", "all"],
     enabled: !!user
   });
+  
+  // Filter out historical catches for stats - they are only for archive/gallery
+  const catches = useMemo(() => allCatches.filter(c => !c.isHistorical), [allCatches]);
 
   const { data: premiumStatus } = useQuery<PremiumStatus>({
     queryKey: ["/api/auth/premium-status"],
