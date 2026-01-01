@@ -2,6 +2,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BarChart3, TrendingUp, Award, Fish, Target, Trophy, Activity } from "lucide-react";
+import { TacticalIcon } from "@/components/ui/tactical-icon";
 import { useQuery } from "@tanstack/react-query";
 
 // Chart components
@@ -68,7 +69,9 @@ export default function StatsDashboard({ competitionId }: StatsDashboardProps) {
       <Card>
         <CardContent className="py-8">
           <div className="text-center text-muted-foreground">
-            <BarChart3 className="w-12 h-12 mx-auto mb-4 opacity-50" />
+            <div className="flex justify-center mb-4">
+              <TacticalIcon icon={BarChart3} variant="neutral" size="lg" showLabel={false} />
+            </div>
             <p>Nie je možné načítať štatistiky súťaže</p>
           </div>
         </CardContent>

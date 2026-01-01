@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Trophy, Users, Calendar, Clock, Fish, Weight, Crown, Archive, Search, Filter, Eye, RotateCcw, Medal, BarChart3, Star, Plus, Loader2, SlidersHorizontal, Download, TrendingUp, FileText } from "lucide-react";
+import { TacticalIcon } from "@/components/ui/tactical-icon";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
@@ -308,8 +309,8 @@ export default function BattleArchive() {
           {/* Header */}
           <div className="mb-8">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
-              <div className="flex items-center gap-3">
-                <Archive className="w-8 h-8 text-primary" />
+              <div className="flex items-center gap-4">
+                <TacticalIcon icon={Archive} variant="active" size="lg" showLabel={false} />
                 <h1 className="text-3xl font-bold text-foreground">
                   Battle Archív
                 </h1>
@@ -581,7 +582,9 @@ export default function BattleArchive() {
             {filteredBattles.length === 0 ? (
               <Card>
                 <CardContent className="p-8 text-center">
-                  <Archive className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <div className="flex justify-center mb-4">
+                    <TacticalIcon icon={Archive} variant="neutral" size="lg" showLabel={false} />
+                  </div>
                   <h3 className="text-lg font-medium text-foreground mb-2">
                     {searchTerm || filterMode !== "all" || filterResult !== "all" 
                       ? "Žiadne súboje nevyhovujú filtrom"
@@ -707,7 +710,9 @@ export default function BattleArchive() {
           {filteredBattles.length > 0 && (
             <Card className="mt-8">
               <CardContent className="p-6 text-center">
-                <Trophy className="w-12 h-12 text-primary mx-auto mb-4" />
+                <div className="flex justify-center mb-4">
+                  <TacticalIcon icon={Trophy} variant="active" size="lg" showLabel={false} />
+                </div>
                 <h3 className="text-lg font-medium text-foreground mb-2">
                   Pripravený na ďalší súboj?
                 </h3>

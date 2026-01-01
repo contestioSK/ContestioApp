@@ -15,9 +15,10 @@ import { Switch } from "@/components/ui/switch";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Users, Plus, X, CalendarIcon, ArrowLeft, Loader2, User as UserIcon } from "lucide-react";
+import { Trophy, Users, Plus, X, CalendarIcon, ArrowLeft, Loader2, User as UserIcon, Swords } from "lucide-react";
 import { useLocation, useParams } from "wouter";
 import DiaryLayout from "@/components/DiaryLayout";
+import { TacticalIcon } from "@/components/ui/tactical-icon";
 import { UserSearch } from "@/components/diary/user-search";
 import type { DiaryBattle } from "@shared/schema";
 import { format } from "date-fns";
@@ -200,10 +201,12 @@ export default function BattleEdit() {
               <ArrowLeft className="w-4 h-4 mr-2" />
               Späť na battle
             </Button>
-            <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
-              <Trophy className="w-8 h-8 text-primary" />
-              Upraviť Battle
-            </h1>
+            <div className="flex items-center gap-4">
+              <TacticalIcon icon={Swords} variant="active" size="lg" showLabel={false} />
+              <h1 className="text-3xl font-bold text-foreground">
+                Upraviť Battle
+              </h1>
+            </div>
             <p className="text-muted-foreground mt-2">
               Upravte detaily vášho fishing battle
             </p>

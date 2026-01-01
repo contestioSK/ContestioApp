@@ -12,7 +12,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
-import { Trophy, Users, Clock, X, User as UserIcon, Save, FolderOpen, Trash2 } from "lucide-react";
+import { Trophy, Users, Clock, X, User as UserIcon, Save, FolderOpen, Trash2, Swords } from "lucide-react";
+import { TacticalIcon } from "@/components/ui/tactical-icon";
 import { useLocation } from "wouter";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -347,8 +348,8 @@ export default function BattleCreate() {
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <div className="flex items-center gap-3 mb-4">
-              <Trophy className="w-8 h-8 text-primary" />
+            <div className="flex items-center gap-4 mb-4">
+              <TacticalIcon icon={Swords} variant="active" size="lg" showLabel={false} />
               <h1 className="text-3xl font-bold text-foreground">
                 Vytvoriť Fishing Battle
               </h1>

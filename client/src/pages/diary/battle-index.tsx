@@ -447,8 +447,8 @@ export default function BattleIndex() {
                       className="border-2 border-dashed border-border/60 rounded-lg p-8 text-center bg-muted/20"
                       data-testid="empty-active-battles"
                     >
-                      <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <UserPlus className="w-8 h-8 text-primary" />
+                      <div className="flex justify-center mb-4">
+                        <TacticalIcon icon={UserPlus} variant="neutral" size="lg" showLabel={false} />
                       </div>
                       <h3 className="text-lg font-semibold text-foreground mb-2">
                         Žiadne aktívne súboje.
@@ -562,8 +562,8 @@ export default function BattleIndex() {
                       className="border-2 border-dashed border-border/60 rounded-lg p-8 text-center bg-muted/20"
                       data-testid="empty-invitations"
                     >
-                      <div className="w-16 h-16 bg-blue-100 dark:bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Bell className="w-8 h-8 text-blue-500" />
+                      <div className="flex justify-center mb-4">
+                        <TacticalIcon icon={Bell} variant="neutral" size="lg" showLabel={false} />
                       </div>
                       <h3 className="text-lg font-semibold text-foreground mb-2">
                         Žiadne nové výzvy.
@@ -658,8 +658,8 @@ export default function BattleIndex() {
               <Card className="bg-yellow-50 dark:bg-transparent dark:bg-gradient-to-br dark:from-yellow-500/10 dark:to-amber-600/10 border-yellow-500/30">
                 <CardContent className="p-6">
                   <div className="text-center">
-                    <div className="w-16 h-16 bg-yellow-100 dark:bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Trophy className="w-8 h-8 text-yellow-500" />
+                    <div className="flex justify-center mb-4">
+                      <TacticalIcon icon={Trophy} variant="action" size="lg" showLabel={false} />
                     </div>
                     <h3 className="text-xl font-bold text-foreground mb-1" data-testid="heading-hall-of-fame">
                       Sieň Slávy

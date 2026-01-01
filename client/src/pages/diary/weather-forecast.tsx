@@ -735,7 +735,9 @@ export default function WeatherForecast() {
                     </div>
                   ) : (
                     <div className="p-4 md:p-6 rounded-lg border-2 text-center bg-card border-border">
-                      <Fish className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                      <div className="flex justify-center mb-4">
+                        <TacticalIcon icon={Fish} variant="neutral" size="lg" showLabel={false} />
+                      </div>
                       <h3 className="text-lg font-semibold mb-2">Index aktivity rýb</h3>
                       <p className="text-sm text-muted-foreground mb-4">
                         Zisti optimálny čas na rybolov na základe počasia
@@ -1202,8 +1204,8 @@ export default function WeatherForecast() {
         {!loading && !forecast && !isInitialLoad && (
           <Card className="border-dashed" data-testid="card-empty-state">
             <CardHeader className="text-center pb-4">
-              <div className="mx-auto w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
-                <MapPin className="w-8 h-8 text-muted-foreground" />
+              <div className="flex justify-center mb-4">
+                <TacticalIcon icon={MapPin} variant="neutral" size="lg" showLabel={false} />
               </div>
               <CardTitle className="text-xl">Začnite plánovať svoju rybačku</CardTitle>
               <CardDescription className="text-base mt-2">
