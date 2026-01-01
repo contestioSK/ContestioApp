@@ -1,4 +1,6 @@
-import { Share2 } from "lucide-react";
+import { useState, useRef } from "react";
+import { Share2, Download, Loader2 } from "lucide-react";
+import html2canvas from "html2canvas";
 import { BADGE_DEFINITIONS, BadgeTier } from "@shared/badges";
 
 interface BadgeInfo {
@@ -57,6 +59,9 @@ const ConfettiEffect = () => {
 };
 
 export function BadgeCelebrationModal({ badge, onClose }: BadgeCelebrationModalProps) {
+  const [isSharing, setIsSharing] = useState(false);
+  const shareCardRef = useRef<HTMLDivElement>(null);
+
   if (!badge) return null;
 
   const badgeDef = BADGE_DEFINITIONS[badge.badgeType];
@@ -68,26 +73,121 @@ export function BadgeCelebrationModal({ badge, onClose }: BadgeCelebrationModalP
       bg: "bg-amber-500", 
       border: "border-amber-500/30",
       gradient: "from-amber-400 via-yellow-200 to-amber-600",
-      glow: "shadow-amber-500/30"
+      glow: "shadow-amber-500/30",
+      hex: "#f59e0b"
     },
     silver: { 
       text: "text-slate-300", 
       bg: "bg-slate-400", 
       border: "border-slate-400/30",
       gradient: "from-slate-300 via-white to-slate-500",
-      glow: "shadow-slate-400/30"
+      glow: "shadow-slate-400/30",
+      hex: "#94a3b8"
     },
     bronze: { 
       text: "text-orange-400", 
       bg: "bg-orange-500", 
       border: "border-orange-500/30",
       gradient: "from-orange-400 via-red-200 to-orange-600",
-      glow: "shadow-orange-500/30"
+      glow: "shadow-orange-500/30",
+      hex: "#f97316"
     }
   };
 
   const theme = tierColors[badge.tier] || tierColors.bronze;
   const tierLabel = badge.tier === 'gold' ? 'Zlatý' : badge.tier === 'silver' ? 'Strieborný' : 'Bronzový';
+  const badgeName = badge.badgeName || badgeDef?.name || "Nový Odznak";
+  const badgeIcon = badge.icon || badgeDef?.icon || "🏆";
+
+  const generateShareImage = async (): Promise<Blob | null> => {
+    if (!shareCardRef.current) return null;
+    
+    try {
+      const canvas = await html2canvas(shareCardRef.current, {
+        backgroundColor: '#0f172a',
+        scale: 2,
+        logging: false,
+        useCORS: true,
+      });
+      
+      return new Promise((resolve) => {
+        canvas.toBlob((blob) => resolve(blob), 'image/png', 1.0);
+      });
+    } catch (error) {
+      console.error('Error generating share image:', error);
+      return null;
+    }
+  };
+
+  // Detect if device is truly mobile (not just has share API)
+  const isTouchDevice = typeof window !== 'undefined' && (
+    'ontouchstart' in window || 
+    navigator.maxTouchPoints > 0
+  );
+
+  const downloadImage = (blob: Blob) => {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `contestio-${badge.badgeType}-${badge.tier}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleShare = async () => {
+    setIsSharing(true);
+    
+    try {
+      const imageBlob = await generateShareImage();
+      const shareText = `🏆 Práve som získal odznak "${badgeName}" (${tierLabel}) na Contestio!`;
+      
+      // Desktop: Always download image
+      if (!isTouchDevice) {
+        if (imageBlob) {
+          downloadImage(imageBlob);
+        }
+        return;
+      }
+      
+      // Mobile: Try Web Share API with file support
+      if (navigator.share && imageBlob) {
+        // Check if file sharing is supported (wrapped in try/catch)
+        let canShareFiles = false;
+        try {
+          const testFile = new File([imageBlob], 'test.png', { type: 'image/png' });
+          canShareFiles = navigator.canShare?.({ files: [testFile] }) ?? false;
+        } catch {
+          canShareFiles = false;
+        }
+        
+        if (canShareFiles) {
+          // Share with image
+          const file = new File([imageBlob], 'contestio-badge.png', { type: 'image/png' });
+          await navigator.share({
+            title: 'Môj nový odznak na Contestio',
+            text: shareText,
+            files: [file],
+          });
+        } else {
+          // Share text only
+          await navigator.share({
+            title: 'Môj nový odznak na Contestio',
+            text: shareText,
+          });
+        }
+      } else if (imageBlob) {
+        // Fallback: Download image
+        downloadImage(imageBlob);
+      }
+    } catch (error) {
+      // User cancelled share or error occurred
+      console.log('Share cancelled or failed:', error);
+    } finally {
+      setIsSharing(false);
+    }
+  };
 
   return (
     <div 
@@ -109,26 +209,49 @@ export function BadgeCelebrationModal({ badge, onClose }: BadgeCelebrationModalP
           </p>
         </div>
 
-        <div className="relative mx-auto w-48 h-48 mb-8 flex items-center justify-center">
-          <div className={`absolute inset-0 rounded-full border-2 border-dashed ${theme.text} opacity-30 animate-[spin_10s_linear_infinite]`} />
-          <div className={`absolute inset-4 rounded-full border border-white/10 ${theme.bg} opacity-10 animate-pulse`} />
-          
-          <div className="relative z-10 text-8xl filter drop-shadow-[0_0_30px_rgba(255,255,255,0.3)] transform hover:scale-110 transition-transform duration-300">
-            {badge.icon || badgeDef?.icon || "🏆"}
+        {/* Shareable Card - This will be captured for sharing */}
+        <div 
+          ref={shareCardRef}
+          className="relative mx-auto mb-8 p-6 rounded-2xl"
+          style={{ backgroundColor: '#0f172a' }}
+        >
+          <div className="relative mx-auto w-32 h-32 mb-4 flex items-center justify-center">
+            <div 
+              className="absolute inset-0 rounded-full border-2 border-dashed opacity-30"
+              style={{ borderColor: theme.hex }}
+            />
+            <div 
+              className="absolute inset-3 rounded-full border opacity-10"
+              style={{ borderColor: theme.hex, backgroundColor: theme.hex }}
+            />
+            
+            <div className="relative z-10 text-6xl filter drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]">
+              {badgeIcon}
+            </div>
+
+            <div 
+              className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full border shadow-xl font-black uppercase text-[10px] tracking-widest"
+              style={{ backgroundColor: theme.hex, color: '#0f172a' }}
+            >
+              {tierLabel}
+            </div>
           </div>
 
-          <div className={`absolute -bottom-2 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full border shadow-xl ${theme.bg} text-slate-950 font-black uppercase text-xs tracking-widest`}>
-            {tierLabel}
-          </div>
-        </div>
-
-        <div className={`bg-slate-900/50 border ${theme.border} rounded-2xl p-6 backdrop-blur-md shadow-2xl ${theme.glow} mb-8`}>
-          <h3 className={`text-2xl font-black uppercase italic mb-2 bg-clip-text text-transparent bg-gradient-to-r ${theme.gradient}`}>
-            {badge.badgeName || badgeDef?.name || "Nový Odznak"}
+          <h3 
+            className="text-xl font-black uppercase italic mb-1"
+            style={{ color: theme.hex }}
+          >
+            {badgeName}
           </h3>
-          <p className="text-slate-300 text-sm leading-relaxed">
+          <p className="text-slate-400 text-xs mb-3">
             {tierInfo?.description || badgeDef?.description || "Gratulujeme k dosiahnutiu tohto míľnika!"}
           </p>
+          
+          {/* Contestio Branding */}
+          <div className="flex items-center justify-center gap-1.5 pt-3 border-t border-slate-800">
+            <span className="text-lime-500 text-lg">🎣</span>
+            <span className="text-slate-500 text-xs font-bold tracking-wider">CONTESTIO</span>
+          </div>
         </div>
 
         <div className="flex flex-col gap-3">
@@ -141,11 +264,19 @@ export function BadgeCelebrationModal({ badge, onClose }: BadgeCelebrationModalP
           </button>
           
           <button 
-            className="w-full h-12 flex items-center justify-center gap-2 text-slate-400 hover:text-white font-bold uppercase text-xs tracking-wider transition-colors"
+            onClick={handleShare}
+            disabled={isSharing}
+            className="w-full h-12 flex items-center justify-center gap-2 text-slate-400 hover:text-white font-bold uppercase text-xs tracking-wider transition-colors disabled:opacity-50"
             data-testid="badge-share-button"
           >
-            <Share2 className="w-4 h-4" />
-            Zdieľať úspech
+            {isSharing ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : isTouchDevice ? (
+              <Share2 className="w-4 h-4" />
+            ) : (
+              <Download className="w-4 h-4" />
+            )}
+            {isSharing ? 'Pripravujem...' : isTouchDevice ? 'Zdieľať úspech' : 'Stiahnuť obrázok'}
           </button>
         </div>
 
