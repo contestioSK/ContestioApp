@@ -1,6 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import { Share2 } from "lucide-react";
-import { useConfetti } from "@/hooks/useConfetti";
+import confetti from "canvas-confetti";
 import { BADGE_DEFINITIONS, BadgeTier } from "@shared/badges";
 
 interface BadgeInfo {
@@ -16,17 +16,40 @@ interface BadgeCelebrationModalProps {
 }
 
 export function BadgeCelebrationModal({ badge, onClose }: BadgeCelebrationModalProps) {
-  const { fireworks } = useConfetti();
+  // Fire confetti with high z-index to appear above modal
+  const fireConfetti = useCallback(() => {
+    const positions = [
+      { x: 0.2, y: 0.4 },
+      { x: 0.8, y: 0.4 },
+      { x: 0.5, y: 0.3 },
+      { x: 0.3, y: 0.6 },
+      { x: 0.7, y: 0.6 }
+    ];
+
+    positions.forEach((position, index) => {
+      setTimeout(() => {
+        confetti({
+          particleCount: 50,
+          spread: 360,
+          origin: position,
+          colors: ['#fbbf24', '#f59e0b', '#d97706', '#84cc16', '#22c55e'],
+          zIndex: 200
+        });
+      }, index * 150);
+    });
+  }, []);
 
   useEffect(() => {
     if (badge) {
-      fireworks();
+      // Fire immediately
+      fireConfetti();
+      // Fire again after a short delay
       const timer = setTimeout(() => {
-        fireworks();
-      }, 500);
+        fireConfetti();
+      }, 800);
       return () => clearTimeout(timer);
     }
-  }, [badge, fireworks]);
+  }, [badge, fireConfetti]);
 
   if (!badge) return null;
 
