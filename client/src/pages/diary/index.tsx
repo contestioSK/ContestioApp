@@ -35,24 +35,24 @@ import { cn } from "@/lib/utils";
 import type { DiaryCatch, DiaryTrip } from "@shared/schema";
 import type { DateRange } from "react-day-picker";
 
-// Function to get fish icon based on fish type
-const getFishIcon = (fishType?: string) => {
-  const iconColor = getFishIconColor(fishType);
-  return <Fish className={`w-5 h-5 ${iconColor}`} />;
+// Function to get fish variant based on fish type - mapped to Contestio palette
+const getFishVariant = (fishType?: string): "amber" | "emerald" | "purple" | "cyan" | "rose" | "orange" | "blue" => {
+  if (!fishType) return "cyan";
+  
+  if (fishType.includes("kapor")) return "amber";
+  if (fishType.includes("stuka")) return "emerald";
+  if (fishType.includes("sumec")) return "purple";
+  if (fishType.includes("amur")) return "cyan";
+  if (fishType.includes("pstruh")) return "rose";
+  if (fishType.includes("zubac")) return "orange";
+  
+  return "cyan"; // default
 };
 
-// Function to get fish icon color based on fish type
-const getFishIconColor = (fishType?: string) => {
-  if (!fishType) return "text-blue-400";
-  
-  if (fishType.includes("kapor")) return "text-yellow-400";
-  if (fishType.includes("stuka")) return "text-green-400";
-  if (fishType.includes("sumec")) return "text-purple-400";
-  if (fishType.includes("amur")) return "text-emerald-400";
-  if (fishType.includes("pstruh")) return "text-pink-400";
-  if (fishType.includes("zubac")) return "text-orange-400";
-  
-  return "text-blue-400"; // default
+// Function to get fish icon based on fish type with color variant (hexagonal)
+const getFishIcon = (fishType?: string) => {
+  const variant = getFishVariant(fishType);
+  return <TacticalIcon icon={Fish} variant={variant} size="sm" showLabel={false} />;
 };
 
 // Function to get catch thumbnail - photo or fish icon
