@@ -176,7 +176,7 @@ export default function DiaryStats() {
                 <CardContent className="p-5">
                   <div className="flex justify-between items-start mb-3">
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Celkové úlovky</p>
-                    <TacticalIconInline icon={Fish} variant="cyan" size="sm" />
+                    <TacticalIcon icon={Fish} variant="cyan" size="sm" showLabel={false} />
                   </div>
                   <div className="flex items-baseline gap-2">
                     <span className="text-3xl font-bold text-foreground">{basicStats.totalCatches}</span>
@@ -189,7 +189,7 @@ export default function DiaryStats() {
                 <CardContent className="p-5">
                   <div className="flex justify-between items-start mb-3">
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Najväčšia ryba</p>
-                    <TacticalIconInline icon={Weight} variant="orange" size="sm" />
+                    <TacticalIcon icon={Weight} variant="orange" size="sm" showLabel={false} />
                   </div>
                   <div className="flex items-baseline gap-2">
                     <span className="text-3xl font-bold text-foreground">{basicStats.biggestCatch.toFixed(1)}</span>
@@ -203,7 +203,7 @@ export default function DiaryStats() {
                 <CardContent className="p-5">
                   <div className="flex justify-between items-start mb-3">
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Výpravy</p>
-                    <TacticalIconInline icon={MapPin} variant="emerald" size="sm" />
+                    <TacticalIcon icon={MapPin} variant="emerald" size="sm" showLabel={false} />
                   </div>
                   <div className="flex items-baseline gap-2">
                     <span className="text-3xl font-bold text-foreground">{basicStats.totalTrips}</span>
@@ -217,7 +217,7 @@ export default function DiaryStats() {
                 <CardContent className="p-5">
                   <div className="flex justify-between items-start mb-3">
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Úspešnosť</p>
-                    <TacticalIconInline icon={Target} variant="purple" size="sm" />
+                    <TacticalIcon icon={Target} variant="purple" size="sm" showLabel={false} />
                   </div>
                   <div className="flex items-baseline gap-2">
                     <span className="text-3xl font-bold text-foreground">{basicStats.successRate.toFixed(1)}</span>
