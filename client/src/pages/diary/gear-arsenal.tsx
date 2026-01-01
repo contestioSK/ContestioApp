@@ -464,9 +464,7 @@ export default function GearArsenalPage() {
           <TabsContent value="baits" className="space-y-5 mt-5 animate-in fade-in-50 duration-300">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-amber-500/10 rounded-lg border border-amber-500/20">
-                  <TacticalIconInline icon={Fish} variant="amber" size="md" />
-                </div>
+                <TacticalIcon icon={Fish} variant="amber" size="sm" showLabel={false} />
                 <div>
                   <h2 className="text-xl font-black uppercase tracking-wide text-slate-200">Arzenál Boilies</h2>
                   <p className="text-sm text-muted-foreground italic">
