@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { useLocation, useParams } from "wouter";
 import DiaryLayout from "@/components/DiaryLayout";
+import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 
 // Goal Types Configuration (same as create)
 const goalTypeConfig = {
@@ -240,7 +241,9 @@ export default function SeasonalGoalsEdit() {
           <div className="max-w-2xl mx-auto">
             <Card>
               <CardContent className="p-8 text-center">
-                <Target className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <div className="flex justify-center mb-4">
+                  <TacticalIcon icon={Target} variant="neutral" size="lg" showLabel={false} />
+                </div>
                 <h3 className="text-lg font-medium text-foreground mb-2">
                   Cieľ nenájdený
                 </h3>
@@ -264,7 +267,9 @@ export default function SeasonalGoalsEdit() {
         <div className="max-w-2xl mx-auto space-y-8">
           {/* Header */}
           <div className="text-center space-y-2">
-            <Target className="w-12 h-12 text-primary mx-auto" />
+            <div className="flex justify-center">
+              <TacticalIcon icon={Target} variant="active" size="lg" showLabel={false} />
+            </div>
             <h1 className="text-3xl font-bold text-foreground">Upraviť cieľ</h1>
             <p className="text-muted-foreground">
               Upravte detaily vášho sezónneho cieľa

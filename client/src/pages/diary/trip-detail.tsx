@@ -4,6 +4,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { format, isPast, isToday } from "date-fns";
 import { sk } from "date-fns/locale";
 import { ArrowLeft, MapPin, Calendar as CalendarIcon, Fish, Weight, Trophy, FileText, Medal, Ruler, Target, Cloud, Thermometer, Wind, Gauge, XCircle, Download, Grid3x3, MoreHorizontal, Share2, ChevronRight, X, ZoomIn } from "lucide-react";
+import { TacticalIconInline } from "@/components/ui/tactical-icon";
 import html2canvas from "html2canvas";
 import contestioLogo from "@assets/contestio logo_1760283270014.png";
 
@@ -323,13 +324,13 @@ export default function TripDetail() {
             </div>
             <div className="flex flex-wrap gap-3 md:gap-4 text-sm md:text-base text-muted-foreground">
               <div className="flex items-center gap-2">
-                <CalendarIcon className="w-4 h-4" />
+                <TacticalIconInline icon={CalendarIcon} variant="indigo" />
                 <span data-testid="text-trip-dates">
                   {format(new Date(trip.startDate), "d. MMM", { locale: sk })} - {format(new Date(trip.endDate), "d. MMM yyyy", { locale: sk })}
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4" />
+                <TacticalIconInline icon={MapPin} variant="emerald" />
                 <span data-testid="text-trip-location">{trip.location}</span>
               </div>
             </div>
@@ -341,7 +342,7 @@ export default function TripDetail() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Počet úlovkov</CardTitle>
-              <Fish className="h-4 w-4 text-muted-foreground" />
+              <TacticalIconInline icon={Fish} variant="cyan" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold" data-testid="text-total-catches">{totalCatches}</div>
@@ -354,7 +355,7 @@ export default function TripDetail() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Celková váha</CardTitle>
-              <Weight className="h-4 w-4 text-muted-foreground" />
+              <TacticalIconInline icon={Weight} variant="orange" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold" data-testid="text-total-weight">{totalWeight.toFixed(1)} kg</div>
@@ -367,7 +368,7 @@ export default function TripDetail() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Najväčší úlovok</CardTitle>
-              <Trophy className="h-4 w-4 text-muted-foreground" />
+              <TacticalIconInline icon={Trophy} variant="amber" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold" data-testid="text-biggest-catch">

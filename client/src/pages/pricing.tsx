@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Check, X, Star, Crown, Zap, Building, BookOpen, Sparkles, Trophy, BookHeart, ChevronDown } from "lucide-react";
+import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
 
@@ -249,7 +250,7 @@ export default function Pricing() {
                       : 'bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground hover:scale-[1.01]'
                   }`}
                 >
-                  <Trophy className={`w-5 h-5 ${activeTab === 'competitions' ? 'text-white' : 'text-blue-500'}`} />
+                  <TacticalIconInline icon={Trophy} variant={activeTab === 'competitions' ? 'active' : 'blue'} size="md" />
                   <span>Rybárske súťaže</span>
                 </TabsTrigger>
                 <TabsTrigger 
@@ -261,7 +262,7 @@ export default function Pricing() {
                       : 'bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground hover:scale-[1.01]'
                   }`}
                 >
-                  <BookHeart className={`w-5 h-5 ${activeTab === 'diary' ? 'text-white' : 'text-teal-500'}`} />
+                  <TacticalIconInline icon={BookHeart} variant={activeTab === 'diary' ? 'active' : 'emerald'} size="md" />
                   <span>Rybársky denník</span>
                 </TabsTrigger>
               </TabsList>
@@ -305,8 +306,8 @@ export default function Pricing() {
                     >
                       <CardHeader className="text-center pb-8 pt-8">
                         {/* Icon with gradient background */}
-                        <div className={`w-16 h-16 bg-gradient-to-br ${plan.color} rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg`}>
-                          <IconComponent className="w-8 h-8 text-white" />
+                        <div className="flex justify-center mb-4">
+                          <TacticalIcon icon={IconComponent} variant={plan.id === 'basic' ? 'blue' : plan.id === 'pro' ? 'purple' : plan.id === 'premium' ? 'amber' : 'slate'} size="md" showLabel={false} />
                         </div>
                         
                         {/* Plan Name */}
@@ -405,28 +406,28 @@ export default function Pricing() {
                         <th className="text-left p-4 font-semibold text-foreground min-w-[200px]">Funkcia</th>
                         <th className="text-center p-4 font-semibold text-blue-600 min-w-[100px]">
                           <div className="flex flex-col items-center gap-1">
-                            <Zap className="w-5 h-5" />
+                            <TacticalIconInline icon={Zap} variant="blue" size="md" />
                             <span>Basic</span>
                             <span className="text-xs font-normal text-muted-foreground">69€</span>
                           </div>
                         </th>
                         <th className="text-center p-4 font-semibold text-purple-600 min-w-[100px] bg-purple-50 dark:bg-purple-900/20">
                           <div className="flex flex-col items-center gap-1">
-                            <Star className="w-5 h-5" />
+                            <TacticalIconInline icon={Star} variant="amber" size="md" />
                             <span>Pro</span>
                             <span className="text-xs font-normal text-muted-foreground">199€</span>
                           </div>
                         </th>
                         <th className="text-center p-4 font-semibold text-amber-600 min-w-[100px]">
                           <div className="flex flex-col items-center gap-1">
-                            <Crown className="w-5 h-5" />
+                            <TacticalIconInline icon={Crown} variant="amber" size="md" />
                             <span>Premium</span>
                             <span className="text-xs font-normal text-muted-foreground">599€</span>
                           </div>
                         </th>
                         <th className="text-center p-4 font-semibold text-gray-600 min-w-[100px]">
                           <div className="flex flex-col items-center gap-1">
-                            <Building className="w-5 h-5" />
+                            <TacticalIconInline icon={Building} variant="slate" size="md" />
                             <span>Enterprise</span>
                             <span className="text-xs font-normal text-muted-foreground">Na mieru</span>
                           </div>
@@ -498,8 +499,8 @@ export default function Pricing() {
                   data-testid="card-diary-plan-free"
                 >
                   <CardHeader className="text-center pb-8 pt-8">
-                    <div className={`w-16 h-16 bg-gradient-to-br ${diaryFreePlan.color} rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg`}>
-                      <BookOpen className="w-8 h-8 text-white" />
+                    <div className="flex justify-center mb-4">
+                      <TacticalIcon icon={BookOpen} variant="slate" size="md" showLabel={false} />
                     </div>
                     
                     <h3 className="text-2xl font-bold text-foreground mb-2">
@@ -568,8 +569,8 @@ export default function Pricing() {
                   data-testid="card-diary-plan-premium"
                 >
                   <CardHeader className="text-center pb-8 pt-8">
-                    <div className={`w-16 h-16 bg-gradient-to-br ${diaryPremiumPlan.color} rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg`}>
-                      <Sparkles className="w-8 h-8 text-white" />
+                    <div className="flex justify-center mb-4">
+                      <TacticalIcon icon={Sparkles} variant="cyan" size="md" showLabel={false} />
                     </div>
                     
                     <h3 className="text-2xl font-bold text-foreground mb-2">
@@ -650,8 +651,8 @@ export default function Pricing() {
         {/* FAQ Preview */}
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="text-center">
-            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Check className="w-6 h-6 text-blue-600" />
+            <div className="flex justify-center mb-4">
+              <TacticalIcon icon={Check} variant="blue" size="sm" showLabel={false} />
             </div>
             <h4 className="font-semibold text-foreground mb-2">Bez skrytých poplatkov</h4>
             <p className="text-sm text-muted-foreground">
@@ -660,8 +661,8 @@ export default function Pricing() {
           </div>
           
           <div className="text-center">
-            <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Star className="w-6 h-6 text-green-600" />
+            <div className="flex justify-center mb-4">
+              <TacticalIcon icon={Star} variant="emerald" size="sm" showLabel={false} />
             </div>
             <h4 className="font-semibold text-foreground mb-2">Podpora počas celého obdobia</h4>
             <p className="text-sm text-muted-foreground">
@@ -670,8 +671,8 @@ export default function Pricing() {
           </div>
           
           <div className="text-center">
-            <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Crown className="w-6 h-6 text-purple-600" />
+            <div className="flex justify-center mb-4">
+              <TacticalIcon icon={Crown} variant="purple" size="sm" showLabel={false} />
             </div>
             <h4 className="font-semibold text-foreground mb-2">Flexibilné možnosti</h4>
             <p className="text-sm text-muted-foreground">

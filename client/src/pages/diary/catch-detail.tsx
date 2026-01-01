@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
 import { Fish, Weight, Ruler, MapPin, Target, Calendar as CalendarIcon, ArrowLeft, Thermometer, Wind, Droplets, Gauge, Share2, Copy, Check } from "lucide-react";
+import { TacticalIconInline } from "@/components/ui/tactical-icon";
 import { SiFacebook } from "react-icons/si";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -112,7 +113,7 @@ export default function CatchDetail() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-slate-700/50 rounded-lg flex items-center justify-center">
-                  <Weight className="w-5 h-5 text-slate-400" />
+                  <TacticalIconInline icon={Weight} variant="orange" size="md" />
                 </div>
                 <div>
                   <div className="text-sm text-slate-400">Váha</div>
@@ -124,7 +125,7 @@ export default function CatchDetail() {
 
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-slate-700/50 rounded-lg flex items-center justify-center">
-                  <Ruler className="w-5 h-5 text-slate-400" />
+                  <TacticalIconInline icon={Ruler} variant="orange" size="md" />
                 </div>
                 <div>
                   <div className="text-sm text-slate-400">Dĺžka</div>
@@ -136,7 +137,7 @@ export default function CatchDetail() {
 
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-slate-700/50 rounded-lg flex items-center justify-center">
-                  <MapPin className="w-5 h-5 text-slate-400" />
+                  <TacticalIconInline icon={MapPin} variant="emerald" size="md" />
                 </div>
                 <div>
                   <div className="text-sm text-slate-400">Revír</div>
@@ -148,7 +149,7 @@ export default function CatchDetail() {
 
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-slate-700/50 rounded-lg flex items-center justify-center">
-                  <Target className="w-5 h-5 text-slate-400" />
+                  <TacticalIconInline icon={Target} variant="purple" size="md" />
                 </div>
                 <div>
                   <div className="text-sm text-slate-400">Nástraha</div>
@@ -160,7 +161,7 @@ export default function CatchDetail() {
 
               <div className="flex items-center gap-3 md:col-span-2">
                 <div className="w-10 h-10 bg-slate-700/50 rounded-lg flex items-center justify-center">
-                  <CalendarIcon className="w-5 h-5 text-slate-400" />
+                  <TacticalIconInline icon={CalendarIcon} variant="indigo" size="md" />
                 </div>
                 <div>
                   <div className="text-sm text-slate-400">Dátum úlovku</div>

@@ -4,7 +4,7 @@ import { Fish, Trophy, BookOpen, Menu, X, Info, DollarSign, HelpCircle, Phone, M
 import { SiFacebook, SiInstagram, SiYoutube } from "react-icons/si";
 import { ContestCategories } from "@/components/contest-categories";
 import { Link } from "wouter";
-import { TacticalIcon } from "@/components/ui/tactical-icon";
+import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 import { useState, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -149,10 +149,13 @@ export default function Landing() {
                 {/* Main Navigation */}
                 {navItems.map((item) => {
                   const IconComponent = item.icon;
+                  let variant: any = "slate";
+                  if (item.label === "Zaregistrovať súťaž") variant = "amber";
+                  
                   return (
                     <Link key={item.href} href={item.href}>
                       <div className="flex items-center space-x-1 text-white/90 hover:text-white transition-colors cursor-pointer" data-testid={`nav-${item.href.slice(1) || 'home'}`}>
-                        <IconComponent className="w-4 h-4" />
+                        <TacticalIconInline icon={IconComponent} variant={variant} size="sm" />
                         <span className="text-sm font-medium">{item.label}</span>
                       </div>
                     </Link>
@@ -203,6 +206,9 @@ export default function Landing() {
                   {/* Main Navigation */}
                   {navItems.map((item) => {
                     const IconComponent = item.icon;
+                    let variant: any = "slate";
+                    if (item.label === "Zaregistrovať súťaž") variant = "amber";
+
                     return (
                       <Link key={item.href} href={item.href}>
                         <div 
@@ -210,7 +216,7 @@ export default function Landing() {
                           onClick={() => setIsMobileMenuOpen(false)}
                           data-testid={`mobile-nav-${item.href.slice(1) || 'home'}`}
                         >
-                          <IconComponent className="w-5 h-5" />
+                          <TacticalIconInline icon={IconComponent} variant={variant} size="md" />
                           <span className="text-sm font-medium">{item.label}</span>
                         </div>
                       </Link>
@@ -274,7 +280,7 @@ export default function Landing() {
                     }`}
                     data-testid="tab-competitions"
                   >
-                    <Trophy className="w-5 h-5" />
+                    <TacticalIconInline icon={Trophy} variant="amber" size="sm" />
                     <span>Súťaže</span>
                   </button>
                   
@@ -287,7 +293,7 @@ export default function Landing() {
                     }`}
                     data-testid="tab-diary"
                   >
-                    <BookOpen className="w-5 h-5" />
+                    <TacticalIconInline icon={BookOpen} variant="slate" size="sm" />
                     <span>Rybársky denník</span>
                   </button>
                 </div>
@@ -370,9 +376,7 @@ export default function Landing() {
                         <div className="flex-1 p-4 space-y-3 bg-gray-50">
                           <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-200">
                             <div className="flex items-center gap-3 mb-2">
-                              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <Fish className="w-6 h-6 text-blue-600" />
-                              </div>
+                              <TacticalIcon icon={Fish} variant="cyan" size="sm" showLabel={false} />
                               <div className="flex-1">
                                 <div className="font-medium text-gray-900" data-testid="text-catch-kapor">Kapor 8.5 kg</div>
                                 <div className="text-sm text-gray-500" data-testid="text-time-kapor">Dnes, 14:30</div>
@@ -438,6 +442,9 @@ export default function Landing() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center mb-24 md:mb-32">
             {/* Text Content - Left on Desktop */}
             <div className="text-left order-2 lg:order-1">
+              <div className="mb-6">
+                <TacticalIcon icon={Trophy} variant="amber" size="md" showLabel={false} />
+              </div>
               <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
                 Centrum Súťaží
               </h3>
@@ -474,6 +481,9 @@ export default function Landing() {
 
             {/* Text Content - Right on Desktop */}
             <div className="text-left order-2 lg:order-2">
+              <div className="mb-6">
+                <TacticalIcon icon={BookOpen} variant="slate" size="md" showLabel={false} />
+              </div>
               <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-6 bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
                 Inteligentný Denník
               </h3>
@@ -586,7 +596,7 @@ export default function Landing() {
           <div className="py-8 border-t border-gray-800 mb-4">
             <div className="max-w-md">
               <h4 className="text-white font-semibold mb-2 flex items-center gap-2">
-                <Mail className="w-5 h-5 text-emerald-400" />
+                <TacticalIconInline icon={Mail} variant="emerald" size="sm" />
                 Odber noviniek
               </h4>
               <p className="text-gray-400 text-sm mb-4">

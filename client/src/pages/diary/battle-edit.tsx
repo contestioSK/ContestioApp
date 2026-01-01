@@ -18,7 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Trophy, Users, Plus, X, CalendarIcon, ArrowLeft, Loader2, User as UserIcon, Swords } from "lucide-react";
 import { useLocation, useParams } from "wouter";
 import DiaryLayout from "@/components/DiaryLayout";
-import { TacticalIcon } from "@/components/ui/tactical-icon";
+import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 import { UserSearch } from "@/components/diary/user-search";
 import type { DiaryBattle } from "@shared/schema";
 import { format } from "date-fns";
@@ -202,7 +202,7 @@ export default function BattleEdit() {
               Späť na battle
             </Button>
             <div className="flex items-center gap-4">
-              <TacticalIcon icon={Swords} variant="active" size="lg" showLabel={false} />
+              <TacticalIcon icon={Swords} variant="rose" size="lg" showLabel={false} />
               <h1 className="text-3xl font-bold text-foreground">
                 Upraviť Battle
               </h1>
@@ -341,7 +341,7 @@ export default function BattleEdit() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Users className="w-5 h-5" />
+                    <TacticalIconInline icon={Users} variant="lime" size="md" />
                     Účastníci
                   </CardTitle>
                 </CardHeader>

@@ -9,7 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Trophy, Plus, AlertCircle, Clock, Fish, CheckCircle2, Medal, Flag, BarChart3, TrendingUp, Award, QrCode, Swords } from "lucide-react";
 import { QRShareDialog } from "@/components/QRShareDialog";
-import { TacticalIcon } from "@/components/ui/tactical-icon";
+import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 import { format, formatDistanceToNow } from "date-fns";
 import { sk } from "date-fns/locale";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -317,7 +317,7 @@ export default function BattleDetail() {
               <Card>
                 <CardHeader className="p-4 md:p-6">
                   <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-                    <Trophy className="w-4 h-4 md:w-5 md:h-5 text-yellow-500" />
+                    <TacticalIconInline icon={Trophy} variant="amber" size="md" />
                     Priebežné Poradie
                   </CardTitle>
                 </CardHeader>
@@ -380,7 +380,7 @@ export default function BattleDetail() {
                 <Card>
                   <CardHeader className="p-4 md:p-6">
                     <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-                      <BarChart3 className="w-4 h-4 md:w-5 md:h-5 text-primary" />
+                      <TacticalIconInline icon={BarChart3} variant="lime" size="md" />
                       Porovnanie Výsledkov
                     </CardTitle>
                   </CardHeader>
@@ -447,7 +447,7 @@ export default function BattleDetail() {
                 <Card>
                   <CardHeader className="p-4 md:p-6">
                     <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-                      <Fish className="w-4 h-4 md:w-5 md:h-5 text-primary" />
+                      <TacticalIconInline icon={Fish} variant="cyan" size="md" />
                       Rozdelenie Druhov Rýb
                     </CardTitle>
                   </CardHeader>
@@ -509,7 +509,7 @@ export default function BattleDetail() {
               <Card>
                 <CardHeader className="p-4 md:p-6">
                   <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-                    <Fish className="w-4 h-4 md:w-5 md:h-5" />
+                    <TacticalIconInline icon={Fish} variant="cyan" size="md" />
                     Live Feed Úlovkov
                   </CardTitle>
                 </CardHeader>

@@ -155,7 +155,7 @@ export default function Onboarding() {
           <div className="w-full max-w-lg animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="text-center mb-8">
               <div className="flex justify-center mb-4">
-                <TacticalIcon icon={Fish} variant="active" size="lg" showLabel={false} />
+                <TacticalIcon icon={Fish} variant="cyan" size="lg" showLabel={false} />
               </div>
               <h1 className="text-2xl font-bold mb-2">Aké druhy rybolovu máš najradšej?</h1>
               <p className="text-muted-foreground">
@@ -215,7 +215,7 @@ export default function Onboarding() {
           <div className="w-full max-w-lg animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="text-center mb-8">
               <div className="flex justify-center mb-4">
-                <TacticalIcon icon={Target} variant="active" size="lg" showLabel={false} />
+                <TacticalIcon icon={Target} variant="purple" size="lg" showLabel={false} />
               </div>
               <h1 className="text-2xl font-bold mb-2">Aká je tvoja hlavná misia?</h1>
               <p className="text-muted-foreground">
@@ -277,7 +277,7 @@ export default function Onboarding() {
           <div className="w-full max-w-lg animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="text-center mb-8">
               <div className="flex justify-center mb-4">
-                <TacticalIcon icon={LineChart} variant="active" size="lg" showLabel={false} />
+                <TacticalIcon icon={LineChart} variant="blue" size="lg" showLabel={false} />
               </div>
               <h1 className="text-2xl font-bold mb-2">Zvoľ si svoj štýl</h1>
               <p className="text-muted-foreground">

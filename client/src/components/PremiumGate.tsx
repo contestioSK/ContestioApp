@@ -1,7 +1,7 @@
 import { Lock, TrendingUp, Trophy, PieChart, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
-import { TacticalIcon } from "@/components/ui/tactical-icon";
+import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 
 type PremiumGateType = 'trends' | 'achievements' | 'analysis';
 
@@ -19,7 +19,7 @@ const gateContent: Record<PremiumGateType, {
   cta: string;
 }> = {
   trends: {
-    icon: <TacticalIcon icon={TrendingUp} variant="neutral" size="lg" showLabel={false} />,
+    icon: <TacticalIcon icon={TrendingUp} variant="amber" size="lg" showLabel={false} />,
     title: "Trendy úlovkov",
     description: "Zisti, kedy ryby berú najčastejšie podľa času, počasia a sezóny.",
     benefits: [
@@ -30,7 +30,7 @@ const gateContent: Record<PremiumGateType, {
     cta: "Odomknúť trendy v PREMIUM"
   },
   achievements: {
-    icon: <TacticalIcon icon={Trophy} variant="neutral" size="lg" showLabel={false} />,
+    icon: <TacticalIcon icon={Trophy} variant="amber" size="lg" showLabel={false} />,
     title: "Úspechy a progres",
     description: "Sleduj, ako sa zlepšuješ a v čom máš rezervy.",
     benefits: [
@@ -41,7 +41,7 @@ const gateContent: Record<PremiumGateType, {
     cta: "Zobraziť úspechy v PREMIUM"
   },
   analysis: {
-    icon: <TacticalIcon icon={PieChart} variant="neutral" size="lg" showLabel={false} />,
+    icon: <TacticalIcon icon={PieChart} variant="purple" size="lg" showLabel={false} />,
     title: "Pokročilé analýzy",
     description: "Toto je nástroj pre rybárov, ktorí chcú chytať viac, nie len zapisovať.",
     benefits: [
@@ -73,7 +73,7 @@ export function PremiumGate({ type, children, showPreview = false }: PremiumGate
             </div>
             
             <div className="flex items-center justify-center gap-2 mb-3">
-              <Lock className="w-4 h-4 text-amber-500" />
+              <TacticalIconInline icon={Lock} variant="rose" size="sm" />
               <h3 className="text-xl font-bold text-foreground">{content.title}</h3>
             </div>
             
@@ -112,7 +112,7 @@ export function PremiumGate({ type, children, showPreview = false }: PremiumGate
         </div>
         
         <div className="flex items-center justify-center gap-2 mb-3">
-          <Lock className="w-4 h-4 text-amber-500" />
+          <TacticalIconInline icon={Lock} variant="rose" size="sm" />
           <h3 className="text-xl font-bold text-foreground">{content.title}</h3>
         </div>
         
@@ -159,7 +159,7 @@ export function PremiumTeaserCard({ type, previewValue, previewLabel }: PremiumT
       data-testid={`teaser-card-${type}`}
     >
       <div className="flex items-center gap-2 text-amber-500 dark:text-amber-400 mb-3">
-        <Lock className="w-4 h-4" />
+        <TacticalIconInline icon={Lock} variant="rose" size="sm" />
         <span className="text-xs font-bold uppercase tracking-widest">{content.title}</span>
       </div>
       

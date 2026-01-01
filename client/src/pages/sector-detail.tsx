@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Users, Trophy, Fish, MapPin, Target, Scale, TrendingUp } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TacticalIconInline } from "@/components/ui/tactical-icon";
 import { Team, TeamMember, Catch } from "@shared/schema";
 import { formatSectorPlace, getSectorLetter } from "@/lib/utils";
 
@@ -104,8 +105,8 @@ export default function SectorDetail() {
             
             {/* Fish Count */}
             <div className="text-center" data-testid="stat-sector-fish-count">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500/20 to-blue-500/10 rounded-lg flex items-center justify-center mx-auto mb-2">
-                <Fish className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <div className="w-8 h-8 bg-gradient-to-br from-cyan-500/20 to-cyan-500/10 rounded-lg flex items-center justify-center mx-auto mb-2">
+                <TacticalIconInline icon={Fish} variant="cyan" size="sm" />
               </div>
               <p className="text-xs text-muted-foreground mb-1">Počet rýb</p>
               <p className="text-lg font-bold text-foreground">
@@ -115,8 +116,8 @@ export default function SectorDetail() {
             
             {/* Biggest Fish */}
             <div className="text-center" data-testid="stat-sector-biggest-fish">
-              <div className="w-8 h-8 bg-gradient-to-br from-yellow-500/20 to-yellow-500/10 rounded-lg flex items-center justify-center mx-auto mb-2">
-                <Trophy className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
+              <div className="w-8 h-8 bg-gradient-to-br from-amber-500/20 to-amber-500/10 rounded-lg flex items-center justify-center mx-auto mb-2">
+                <TacticalIconInline icon={Trophy} variant="amber" size="sm" />
               </div>
               <p className="text-xs text-muted-foreground mb-1">Najväčšia ryba</p>
               <p className="text-lg font-bold text-foreground">
@@ -141,8 +142,8 @@ export default function SectorDetail() {
         <div className="mb-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <Trophy className="w-5 h-5 mr-2" />
+              <CardTitle className="flex items-center gap-2">
+                <TacticalIconInline icon={Trophy} variant="amber" size="md" />
                 Priebežné poradie v sektore {sector?.toUpperCase()}
               </CardTitle>
               <p className="text-sm text-muted-foreground">Tímy zoradené podľa celkovej váhy úlovkov</p>

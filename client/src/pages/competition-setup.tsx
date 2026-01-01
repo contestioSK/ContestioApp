@@ -39,6 +39,7 @@ import {
   Gift,
   MapPin
 } from "lucide-react";
+import { TacticalIconInline } from "@/components/ui/tactical-icon";
 import { z } from "zod";
 
 const STEPS = [
@@ -713,7 +714,9 @@ export default function CompetitionSetup() {
             {currentStep === 5 && (
               <div className="space-y-6">
                 <div className="p-8 bg-muted/30 rounded-lg text-center">
-                  <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                  <div className="flex justify-center mb-4">
+                    <TacticalIconInline icon={Users} variant="lime" size="lg" />
+                  </div>
                   <h4 className="font-medium mb-2">Pridávanie rozhodcov</h4>
                   <p className="text-sm text-muted-foreground mb-4">
                     Rozhodcov budete môcť pridať po schválení súťaže administrátorom.

@@ -1,7 +1,7 @@
 import { useState, useMemo, Fragment } from "react";
 import DiaryLayout from "@/components/DiaryLayout";
 import { Search, Shield, Ruler, Clock, AlertCircle, MapPin, Loader2, Scale } from "lucide-react";
-import { TacticalIcon } from "@/components/ui/tactical-icon";
+import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";

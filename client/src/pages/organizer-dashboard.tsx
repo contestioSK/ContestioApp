@@ -20,6 +20,7 @@ import {
   Plus,
   LogIn
 } from "lucide-react";
+import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 import type { Competition } from "@shared/schema";
 
 export default function OrganizerDashboard() {
@@ -134,7 +135,7 @@ export default function OrganizerDashboard() {
                         />
                       ) : (
                         <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <Trophy className="w-6 h-6 text-primary" />
+                          <TacticalIconInline icon={Trophy} variant="amber" size="lg" />
                         </div>
                       )}
                       <div>
@@ -146,16 +147,16 @@ export default function OrganizerDashboard() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex items-center text-sm text-muted-foreground">
-                    <MapPin className="w-4 h-4 mr-2" />
+                    <TacticalIconInline icon={MapPin} variant="emerald" size="sm" className="mr-2" />
                     {competition.location}
                   </div>
                   <div className="flex items-center text-sm text-muted-foreground">
-                    <Calendar className="w-4 h-4 mr-2" />
+                    <TacticalIconInline icon={Calendar} variant="indigo" size="sm" className="mr-2" />
                     {new Date(competition.startDate).toLocaleDateString('sk-SK')} - {new Date(competition.endDate).toLocaleDateString('sk-SK')}
                   </div>
                   {competition.maxTeams && (
                     <div className="flex items-center text-sm text-muted-foreground">
-                      <Users className="w-4 h-4 mr-2" />
+                      <TacticalIconInline icon={Users} variant="lime" size="sm" className="mr-2" />
                       Max. {competition.maxTeams} tímov
                     </div>
                   )}
@@ -195,8 +196,8 @@ export default function OrganizerDashboard() {
         ) : (
           <Card className="max-w-md mx-auto">
             <CardContent className="text-center py-12">
-              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
-                <Trophy className="w-8 h-8 text-muted-foreground" />
+              <div className="flex justify-center mb-4">
+                <TacticalIcon icon={Trophy} variant="amber" size="lg" showLabel={false} />
               </div>
               <h3 className="text-lg font-medium text-foreground mb-2">Žiadne súťaže</h3>
               <p className="text-muted-foreground mb-6">
