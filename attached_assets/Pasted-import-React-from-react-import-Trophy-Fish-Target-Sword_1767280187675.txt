@@ -1,0 +1,214 @@
+import React from "react";
+import { 
+  Trophy, 
+  Fish, 
+  Target, 
+  Swords, 
+  Moon, 
+  Crown, 
+  Lock,
+  ChevronRight,
+  Share2,
+  Calendar,
+  FileText,
+  Shield,
+  Crosshair,
+  Compass,
+  Zap,
+  Clock,
+  Dna,
+  Snowflake
+} from "lucide-react";
+
+// --- 1. TACTICAL SOLID ICON COMPONENT ---
+// Čistý, statický dizajn bez zbytočných animácií
+const TacticalIcon = ({ icon: Icon, tier, isLocked }: { icon: any, tier: string, isLocked?: boolean }) => {
+  const tierThemes: any = {
+    locked: {
+      border: "border-slate-800",
+      accent: "text-slate-800",
+      bg: "bg-slate-950/40"
+    },
+    bronze: {
+      border: "border-orange-500/40",
+      accent: "text-orange-600",
+      bg: "bg-orange-500/5"
+    },
+    silver: {
+      border: "border-slate-400/40",
+      accent: "text-slate-400",
+      bg: "bg-slate-400/5"
+    },
+    gold: {
+      border: "border-amber-500/40",
+      accent: "text-amber-500",
+      bg: "bg-amber-500/5"
+    }
+  };
+
+  const theme = isLocked ? tierThemes.locked : tierThemes[tier];
+
+  return (
+    <div className="relative w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center shrink-0">
+      
+      {/* Octagon Frame - Čistá technická geometria */}
+      <div className={`absolute inset-0 border-2 ${theme.border} ${theme.bg} transition-colors duration-300`}
+           style={{ clipPath: "polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)" }} 
+      />
+      
+      {/* Static Tech Markers */}
+      <div className={`absolute inset-0 opacity-40 ${theme.accent} pointer-events-none`}>
+        <div className="absolute top-1 left-1/2 -translate-x-1/2 w-4 h-[1px] bg-current" />
+        <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-4 h-[1px] bg-current" />
+        <div className="absolute left-1 top-1/2 -translate-y-1/2 h-4 w-[1px] bg-current" />
+        <div className="absolute right-1 top-1/2 -translate-y-1/2 h-4 w-[1px] bg-current" />
+      </div>
+
+      {/* Main Icon */}
+      <div className={`relative z-10 ${theme.accent}`}>
+        {isLocked ? (
+          <Lock className="w-5 h-5 opacity-40" />
+        ) : (
+          <Icon className="w-7 h-7 sm:w-8 sm:h-8 stroke-[1.5]" />
+        )}
+      </div>
+    </div>
+  );
+};
+
+// --- 2. DATA (PODĽA TVOJHO ZOZNAMU) ---
+const TIER_META: Record<string, any> = {
+  locked: { label: "Zamknuté", color: "text-slate-700" },
+  bronze: { label: "Bronz", color: "text-orange-500" },
+  silver: { label: "Striebro", color: "text-slate-300" },
+  gold: { label: "Zlato", color: "text-amber-500" }
+};
+
+const ALL_BADGES = [
+  { id: "fanatic", name: "Rybársky Fanatik", icon: Calendar, current: 3, thresholds: { bronze: 10, silver: 50, gold: 100 }, unit: "dní" },
+  { id: "predator", name: "Dravčia Hrozba", icon: Crosshair, current: 1, thresholds: { bronze: 5, silver: 20, gold: 50 }, unit: "ks" },
+  { id: "big_mama", name: "Big Mama Hunter - Lovec Trofejí", icon: Target, current: 12, thresholds: { bronze: 10, silver: 15, gold: 20 }, unit: "kg" },
+  { id: "carp_master", name: "Kaprársky Majster", icon: Crown, current: 15, thresholds: { bronze: 10, silver: 50, gold: 100 }, unit: "ks" },
+  { id: "diversity", name: "Druhová Rozmanitosť", icon: Dna, current: 5, thresholds: { bronze: 3, silver: 5, gold: 10 }, unit: "druhov" },
+  { id: "night_hunter", name: "Nočný Lovec", icon: Moon, current: 0, thresholds: { bronze: 1, silver: 10, gold: 50 }, unit: "ks" },
+  { id: "chronicler", name: "Kronikár", icon: FileText, current: 13, thresholds: { bronze: 5, silver: 20, gold: 50 }, unit: "zápisov" },
+  { id: "all_season", name: "Celoročný Lovec", icon: Snowflake, current: 2, thresholds: { bronze: 2, silver: 3, gold: 4 }, unit: "obdobia" }
+];
+
+// --- 3. UI COMPONENTS ---
+
+const BadgeCard = ({ badge }: { badge: any }) => {
+  let currentTier = "locked";
+  let nextThreshold = badge.thresholds.bronze;
+  
+  if (badge.current >= badge.thresholds.gold) { currentTier = "gold"; nextThreshold = badge.thresholds.gold; }
+  else if (badge.current >= badge.thresholds.silver) { currentTier = "silver"; nextThreshold = badge.thresholds.gold; }
+  else if (badge.current >= badge.thresholds.bronze) { currentTier = "bronze"; nextThreshold = badge.thresholds.silver; }
+
+  const progress = Math.min((badge.current / nextThreshold) * 100, 100);
+  const meta = TIER_META[currentTier];
+
+  return (
+    <div className="bg-slate-900/40 border border-white/5 rounded-[2rem] p-6 flex flex-col sm:flex-row items-center sm:items-start gap-6 shadow-xl hover:bg-slate-900/60 transition-colors duration-300">
+      <TacticalIcon icon={badge.icon} tier={currentTier} isLocked={currentTier === 'locked'} />
+      
+      <div className="flex-1 w-full text-center sm:text-left">
+        <div className="mb-2">
+          <h4 className="text-sm font-black uppercase italic text-white tracking-widest leading-none mb-2">
+            {badge.name}
+          </h4>
+          <div className="flex items-center justify-center sm:justify-start gap-2">
+            <span className={`text-[9px] font-black uppercase tracking-[0.2em] ${meta.color}`}>{meta.label}</span>
+            <span className="text-[9px] font-bold text-slate-600 uppercase tracking-wider">{badge.current} / {nextThreshold} {badge.unit}</span>
+          </div>
+        </div>
+
+        {/* Solid Progress Bar */}
+        <div className="relative h-1 w-full bg-slate-950 rounded-full mt-4 overflow-hidden border border-white/5">
+           <div 
+             className={`h-full ${currentTier === 'locked' ? 'bg-slate-800' : 'bg-lime-500 opacity-80'}`}
+             style={{ width: `${progress}%` }}
+           />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default function App() {
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans p-4 sm:p-8 lg:p-12 overflow-x-hidden selection:bg-lime-500/30">
+      
+      <div className="max-w-6xl mx-auto relative">
+        
+        {/* Simple Technical Header */}
+        <header className="mb-20 text-center sm:text-left border-b border-white/5 pb-16">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-900 border border-white/10 rounded-lg mb-6">
+             <span className="text-[9px] font-black uppercase tracking-[0.4em] text-slate-500">Achievement Data Logs</span>
+          </div>
+          <h1 className="text-5xl sm:text-7xl font-black italic uppercase tracking-tighter text-white mb-6 leading-none">
+            Sieň <span className="text-lime-500">Legiend</span>
+          </h1>
+          <p className="text-slate-500 text-sm max-w-xl leading-relaxed font-bold uppercase tracking-wide opacity-70">
+            Záznamy o rybárskej odbornosti. Odznaky potvrdzujú tvoje nasadenie a výsledky dosiahnuté v teréne.
+          </p>
+        </header>
+
+        {/* Master List */}
+        <section className="mb-32">
+          <div className="flex items-center gap-4 mb-10">
+            <h2 className="text-xl font-black italic uppercase text-white tracking-widest">Prehľad úspechov</h2>
+            <div className="h-px flex-1 bg-slate-900" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {ALL_BADGES.map((badge) => (
+              <BadgeCard key={badge.id} badge={badge} />
+            ))}
+          </div>
+        </section>
+
+        {/* Static Showcase */}
+        <section className="bg-slate-900/20 border border-white/5 rounded-[2rem] p-8 sm:p-12 mb-20">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-black italic uppercase text-white mb-4">Hierarchia odznakov</h2>
+            <p className="text-slate-500 text-xs font-black uppercase tracking-widest">Katalóg úrovní a typov</p>
+          </div>
+
+          <div className="space-y-12">
+            {ALL_BADGES.map((badge) => (
+              <div key={badge.id} className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 pb-10 border-b border-white/5 last:border-0">
+                <div className="lg:w-1/4">
+                  <h3 className="text-lg font-black italic uppercase text-white">{badge.name}</h3>
+                  <p className="text-[10px] text-slate-600 font-black uppercase tracking-widest mt-1">ID-LOG: {badge.id}</p>
+                </div>
+
+                <div className="flex-1 flex justify-between md:justify-end gap-2 sm:gap-6">
+                  {['locked', 'bronze', 'silver', 'gold'].map(t => (
+                    <div key={t} className="flex flex-col items-center gap-3">
+                      <TacticalIcon icon={badge.icon} tier={t} isLocked={t === 'locked'} />
+                      <span className={`text-[8px] font-black uppercase tracking-tighter ${TIER_META[t].color}`}>
+                        {TIER_META[t].label}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Static Footer */}
+        <footer className="py-20 flex flex-col items-center text-center">
+           <div className="w-12 h-12 bg-slate-900 border border-white/10 flex items-center justify-center mb-8 rotate-45">
+             <Trophy className="w-5 h-5 text-lime-500 -rotate-45" />
+           </div>
+           <button className="h-14 px-12 bg-lime-500 hover:bg-white text-slate-950 rounded-none font-black uppercase tracking-widest text-xs transition-colors duration-300 flex items-center gap-4">
+             <Share2 className="w-4 h-4" />
+             Exportovať progres
+           </button>
+        </footer>
+
+      </div>
+    </div>
+  );
+}
