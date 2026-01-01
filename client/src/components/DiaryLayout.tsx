@@ -39,7 +39,8 @@ import {
   Lock,
   Sun,
   Moon,
-  Package
+  Package,
+  Wrench
 } from "lucide-react";
 import { TacticalIconInline } from "@/components/ui/tactical-icon";
 import contestioLogo from "@assets/contestio logo_1760283270014.png";
@@ -236,7 +237,7 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
                 data-testid="button-profile"
               >
                 <div className="w-8 h-8 md:w-10 md:h-10 bg-sidebar-accent rounded-full flex items-center justify-center group-hover:bg-sidebar-primary/20">
-                  <User className="h-4 w-4 md:h-6 md:w-6 text-sidebar-accent-foreground group-hover:text-sidebar-primary" />
+                  <TacticalIconInline icon={User} variant="blue" size="md" />
                 </div>
                 <div className="flex-1 min-w-0 text-left">
                   <p className="text-xs md:text-sm font-medium text-sidebar-foreground truncate">
@@ -312,9 +313,10 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
               <div className="px-2 md:px-3 mb-2">
                 <div className="h-px bg-gradient-to-r from-transparent via-primary dark:via-blue-500/30 to-transparent"></div>
               </div>
-              <div className="px-2 md:px-3">
-                <p className="text-[10px] md:text-xs font-bold text-primary dark:text-blue-400/70 uppercase tracking-wider">
-                  🎣 Môj Rybársky Život
+              <div className="px-2 md:px-3 flex items-center gap-1.5">
+                <TacticalIconInline icon={Fish} variant="cyan" size="sm" />
+                <p className="text-[10px] md:text-xs font-bold text-primary dark:text-cyan-500 uppercase tracking-wider">
+                  Môj Rybársky Život
                 </p>
               </div>
             </div>
@@ -358,9 +360,10 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
               <div className="px-2 md:px-3 mb-2">
                 <div className="h-px bg-gradient-to-r from-transparent via-amber-600 dark:via-amber-500/30 to-transparent"></div>
               </div>
-              <div className="px-2 md:px-3">
-                <p className="text-[10px] md:text-xs font-bold text-amber-700 dark:text-amber-400/70 uppercase tracking-wider">
-                  ⚔️ Súťaže & Komunita
+              <div className="px-2 md:px-3 flex items-center gap-1.5">
+                <TacticalIconInline icon={Swords} variant="amber" size="sm" />
+                <p className="text-[10px] md:text-xs font-bold text-amber-600 dark:text-amber-500 uppercase tracking-wider">
+                  Súťaže & Komunita
                 </p>
               </div>
             </div>
@@ -420,9 +423,10 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
               <div className="px-2 md:px-3 mb-2">
                 <div className="h-px bg-gradient-to-r from-transparent via-amber-600 dark:via-orange-500/30 to-transparent"></div>
               </div>
-              <div className="px-2 md:px-3">
-                <p className="text-[10px] md:text-xs font-bold text-amber-700 dark:text-orange-400/70 uppercase tracking-wider">
-                  🛠️ Nástroje & Progres
+              <div className="px-2 md:px-3 flex items-center gap-1.5">
+                <TacticalIconInline icon={Wrench} variant="orange" size="sm" />
+                <p className="text-[10px] md:text-xs font-bold text-orange-600 dark:text-orange-500 uppercase tracking-wider">
+                  Nástroje & Progres
                 </p>
               </div>
             </div>
@@ -466,9 +470,10 @@ export default function DiaryLayout({ children }: DiaryLayoutProps) {
               <div className="px-2 md:px-3 mb-2">
                 <div className="h-px bg-gradient-to-r from-transparent via-emerald-600 dark:via-emerald-500/50 to-transparent"></div>
               </div>
-              <div className="px-2 md:px-3">
-                <p className="text-[10px] md:text-xs font-bold text-emerald-700 dark:text-emerald-500/80 uppercase tracking-wider">
-                  🏆 Oficiálne Súťaže
+              <div className="px-2 md:px-3 flex items-center gap-1.5">
+                <TacticalIconInline icon={Trophy} variant="emerald" size="sm" />
+                <p className="text-[10px] md:text-xs font-bold text-emerald-600 dark:text-emerald-500 uppercase tracking-wider">
+                  Oficiálne Súťaže
                 </p>
               </div>
             </div>
