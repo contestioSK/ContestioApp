@@ -13,7 +13,6 @@ export const officialFishTypes = {
   jalec_tmavy: "Jalec tmavý",
   jeseter_maly: "Jeseter malý",
   jeseter_sibirsky: "Jeseter sibírsky",
-  kapor_rybnicny: "Kapor rybničný",
   kapor_supinac: "Kapor rybničný (šupináč)",
   kapor_lysec: "Kapor rybničný (lysec)",
   lien_sliznaty: "Lieň sliznatý",
@@ -46,6 +45,7 @@ export const officialFishTypes = {
 // Legacy alias map - maps old codes to official codes (for backward compatibility)
 // These are NOT shown in dropdown, but used to resolve existing data
 export const legacyAliasMap: Record<string, keyof typeof officialFishTypes> = {
+  kapor_rybnicny: "kapor_supinac",
   amur: "amur_biely",
   sumec: "sumec_velky",
   zubac: "zubac_velkousty",
@@ -87,7 +87,6 @@ export type OfficialFishType = keyof typeof officialFishTypes;
 // Keys match the preferences.fishingStyle values from user schema: "carp", "spinning", "feeder", "fly", "catfish"
 export const fishPrioritiesByStyle: Record<string, OfficialFishType[]> = {
   carp: [
-    "kapor_rybnicny",
     "kapor_supinac",
     "kapor_lysec",
     "amur_biely",
@@ -117,7 +116,7 @@ export const fishPrioritiesByStyle: Record<string, OfficialFishType[]> = {
     "pleskac_vysoky",
     "mrena_severna",
     "podustva_severna",
-    "kapor_rybnicny",
+    "kapor_supinac",
     "lien_sliznaty",
     "jalec_hlavaty"
   ],

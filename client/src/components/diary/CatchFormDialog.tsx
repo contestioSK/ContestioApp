@@ -173,7 +173,7 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
     if (userFishingStyle && fishPrioritiesByStyle[userFishingStyle]) {
       return fishPrioritiesByStyle[userFishingStyle][0] || "kapor_rybnicny";
     }
-    return "kapor_rybnicny";
+    return "kapor_supinac";
   };
 
   const form = useForm<CatchFormData>({
