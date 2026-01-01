@@ -226,12 +226,12 @@ export function BadgeCelebrationModal({ badge, onClose }: BadgeCelebrationModalP
               style={{ borderColor: theme.hex, backgroundColor: theme.hex }}
             />
             
-            <div className="relative z-10 text-6xl filter drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]">
+            <div className="relative z-10 text-6xl filter drop-shadow-[0_0_20px_rgba(255,255,255,0.3)] leading-none flex items-center justify-center h-full w-full">
               {badgeIcon}
             </div>
 
             <div 
-              className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full border shadow-xl font-black uppercase text-[10px] tracking-widest"
+              className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 px-3 py-0.5 rounded-full border shadow-xl font-black uppercase text-[10px] tracking-widest z-20"
               style={{ backgroundColor: theme.hex, color: '#0f172a' }}
             >
               {tierLabel}
