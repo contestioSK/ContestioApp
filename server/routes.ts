@@ -36,6 +36,7 @@ import {
 } from "@shared/schema";
 import { z } from "zod";
 import { canUseFeature } from "@shared/plan-capabilities";
+import { BADGE_DEFINITIONS, type BadgeTier } from "@shared/badges";
 import { NotificationService } from "./notification-service";
 import { checkResultBlocking, checkPartialResultBlocking, checkPartialResultBlockingByTeam } from "./middleware/result-blocking";
 import {
@@ -5509,6 +5510,142 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
+  // Helper function to check and award badges after catch creation
+  async function checkAndAwardBadges(userId: string): Promise<Array<{ badgeType: string; tier: string; badgeName: string; icon: string }>> {
+    const newBadges: Array<{ badgeType: string; tier: string; badgeName: string; icon: string }> = [];
+    
+    try {
+      // Get existing badges for this user only
+      const existingBadges = await db.query.userBadges.findMany({
+        where: (badges: any) => eq(badges.userId, userId),
+      });
+      const existingBadgeSet = new Set(existingBadges.map(b => `${b.badgeType}_${b.tier}`));
+      
+      // Get user trips (only this user's trips)
+      const userTrips = await db.query.diaryTrips.findMany({
+        where: (trips: any) => eq(trips.ownerUserId, userId),
+      });
+      const tripIds = userTrips.map(t => t.id);
+      
+      // Get user catches - only catches from this user's trips or where user is angler
+      // Use storage layer pattern to get catches efficiently
+      let userCatches: any[] = [];
+      for (const tripId of tripIds) {
+        const tripCatches = await storage.getDiaryCatches(tripId, userId);
+        userCatches.push(...tripCatches);
+      }
+      
+      // Also get catches where user is angler but trip might belong to someone else (battle catches)
+      const allUserCatches = await db.query.diaryCatches.findMany({
+        where: (c: any) => sql`${c.angler}->>'userId' = ${userId}`,
+      });
+      
+      // Merge and deduplicate
+      const catchIds = new Set(userCatches.map(c => c.id));
+      for (const c of allUserCatches) {
+        if (!catchIds.has(c.id)) {
+          userCatches.push(c);
+        }
+      }
+      
+      // Calculate progress for each badge type
+      const progress: Record<string, number> = {};
+      
+      // fishing_fanatic: Count unique days with trips (fix Date mutation bug)
+      const uniqueTripDays = new Set<string>();
+      userTrips.forEach(trip => {
+        const startTime = new Date(trip.startDate).getTime();
+        const endTime = new Date(trip.endDate).getTime();
+        for (let time = startTime; time <= endTime; time += 86400000) {
+          uniqueTripDays.add(new Date(time).toISOString().split('T')[0]);
+        }
+      });
+      progress.fishing_fanatic = uniqueTripDays.size;
+      
+      // predator_threat: Count predator fish (stuka, zubac, sumec)
+      const predatorTypes = ['stuka', 'zubac', 'sumec', 'zubac_zubatovity'];
+      progress.predator_threat = userCatches.filter(c => predatorTypes.includes(c.fishType)).length;
+      
+      // big_mama_hunter: Biggest carp weight
+      const carpTypes = ['kapor_supinac', 'kapor_lysec'];
+      const carpCatches = userCatches.filter(c => carpTypes.includes(c.fishType));
+      progress.big_mama_hunter = carpCatches.length > 0 
+        ? Math.max(...carpCatches.map(c => parseFloat(c.weight) || 0))
+        : 0;
+      
+      // carp_master: Count carps
+      progress.carp_master = carpCatches.length;
+      
+      // species_collector: Unique fish types
+      const uniqueSpecies = new Set(userCatches.map(c => c.fishType));
+      progress.species_collector = uniqueSpecies.size;
+      
+      // night_hunter: Catches between 22:00-04:00
+      progress.night_hunter = userCatches.filter(c => {
+        if (!c.capturedAt) return false;
+        const hour = new Date(c.capturedAt).getHours();
+        return hour >= 22 || hour < 4;
+      }).length;
+      
+      // detail_keeper: Catches with photo, bait, and weather
+      progress.detail_keeper = userCatches.filter(c => {
+        const hasPhoto = c.photos && Array.isArray(c.photos) && c.photos.length > 0;
+        const hasBait = !!c.bait;
+        const hasWeather = c.airTemp || c.waterTemp || c.windSpeed || c.airPressure;
+        return hasPhoto && hasBait && hasWeather;
+      }).length;
+      
+      // season_warrior: Unique seasons with catches
+      const seasons = new Set<string>();
+      userCatches.forEach(c => {
+        if (!c.capturedAt) return;
+        const month = new Date(c.capturedAt).getMonth();
+        if (month >= 2 && month <= 4) seasons.add('spring');
+        else if (month >= 5 && month <= 7) seasons.add('summer');
+        else if (month >= 8 && month <= 10) seasons.add('autumn');
+        else seasons.add('winter');
+      });
+      progress.season_warrior = seasons.size;
+      
+      // Check each badge type and tier for new achievements
+      for (const [badgeId, badgeDef] of Object.entries(BADGE_DEFINITIONS)) {
+        const currentValue = progress[badgeId] || 0;
+        
+        for (const tier of ['bronze', 'silver', 'gold'] as const) {
+          const badgeKey = `${badgeId}_${tier}`;
+          
+          // Skip if already unlocked
+          if (existingBadgeSet.has(badgeKey)) continue;
+          
+          const threshold = badgeDef.tiers[tier].threshold;
+          
+          // Check if threshold is met
+          if (currentValue >= threshold) {
+            // Award the badge
+            await db.insert(userBadges).values({
+              userId,
+              badgeType: badgeId,
+              tier,
+            });
+            
+            newBadges.push({
+              badgeType: badgeId,
+              tier,
+              badgeName: badgeDef.name,
+              icon: badgeDef.icon
+            });
+            
+            console.log(`[BADGES] Awarded ${badgeDef.name} (${tier}) to user ${userId}`);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('[BADGES] Error in checkAndAwardBadges:', error);
+    }
+    
+    return newBadges;
+  }
+
   app.post('/api/diary/catches', isAuthenticated, catchCreationLimiter, async (req: any, res) => {
     try {
       const userId = req.user?.id || req.user?.claims?.sub;
@@ -5649,7 +5786,15 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         });
       }, 0);
       
-      res.status(201).json(newCatch);
+      // Check and award badges synchronously (user needs to see them for confetti)
+      let newBadges: Array<{ badgeType: string; tier: string; badgeName: string; icon: string }> = [];
+      try {
+        newBadges = await checkAndAwardBadges(userId);
+      } catch (badgeError) {
+        console.error('[BADGES] Error checking/awarding badges:', badgeError);
+      }
+      
+      res.status(201).json({ ...newCatch, newBadges });
     } catch (error) {
       console.error("Error creating diary catch:", error);
       if (error instanceof z.ZodError) {

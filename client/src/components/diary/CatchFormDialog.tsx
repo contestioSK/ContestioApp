@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { showErrorToast } from "@/lib/errorUtils";
+import { useConfetti } from "@/hooks/useConfetti";
 import { FishingAreaSelect } from "@/components/FishingAreaSelect";
 
 import { 
@@ -133,6 +134,7 @@ interface CatchFormDialogProps {
 export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSuccess, battleId }: CatchFormDialogProps) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { fireworks, celebrateGoalCompletion } = useConfetti();
   const [selectedPhotos, setSelectedPhotos] = useState<File[]>([]);
   const [existingPhotos, setExistingPhotos] = useState<Array<PhotoObject>>([]);
   const [isLoadingWeather, setIsLoadingWeather] = useState(false);
@@ -257,15 +259,34 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
       const response = await apiRequest("POST", "/api/diary/catches", data);
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
       queryClient.invalidateQueries({ queryKey: ["/api/diary/catch-limits"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/diary/badges"] });
       handleClose();
-      toast({
-        title: "✅ Úlovok pridaný!",
-        description: "Váš úlovok bol úspešne pridaný do denníka.",
-        variant: "success" as any,
-      });
+      
+      // Check for new badges and show confetti
+      const newBadges = data?.newBadges || [];
+      if (newBadges.length > 0) {
+        // Show confetti for new badges!
+        fireworks();
+        
+        // Show toast for each badge
+        newBadges.forEach((badge: { badgeName: string; tier: string; icon: string }) => {
+          const tierEmoji = badge.tier === 'gold' ? '🥇' : badge.tier === 'silver' ? '🥈' : '🥉';
+          toast({
+            title: `${badge.icon} Nový odznak odomknutý!`,
+            description: `${badge.badgeName} ${tierEmoji} ${badge.tier.toUpperCase()}`,
+            variant: "success" as any,
+          });
+        });
+      } else {
+        toast({
+          title: "✅ Úlovok pridaný!",
+          description: "Váš úlovok bol úspešne pridaný do denníka.",
+          variant: "success" as any,
+        });
+      }
       onSuccess?.();
     },
     onError: (error: Error) => {
