@@ -1,0 +1,170 @@
+Toto je veľmi dobrý kód. Funkčne aj UX-ovo.
+Ale má ešte 3 slabé miesta, ktoré keď doladíš, posunieš to z “dobré” na “produkt, čo pôsobí profesionálne a premyslene”.
+
+Nižšie ide tvrdé, ale konštruktívne hodnotenie 👇
+
+✅ ČO JE UŽ TERAZ VEĽMI DOBRÉ
+1. Architektúra
+
+✔️ Rozdelenie:
+
+FriendsList
+
+FriendRequests
+
+UserSearch
+
+→ presne takto sa to má robiť
+→ komponenty sú čitateľné
+→ stránka nerastie do monštra
+
+Toto je sen pre údržbu.
+
+2. Stav tabu v URL (?tab=)
+
+🔥 Výborné rozhodnutie.
+
+const getInitialTab = () => {
+  const params = new URLSearchParams(window.location.search);
+  const tab = params.get('tab');
+  ...
+}
+
+
+To je:
+
+dobré pre deep-linking
+
+dobré pre budúce notifikácie
+
+dobré pre UX (návrat späť)
+
+Veľa aplikácií toto nerobí a potom to ľutujú.
+
+3. Badge logika (9+)
+
+Toto je presne detail, ktorý robí appku „hotovú“.
+
+const formatBadgeCount = (count: number) => {
+  return count > 9 ? "9+" : String(count);
+};
+
+
+✔️ UX friendly
+✔️ prehľadné
+✔️ mobilne čitateľné
+
+⚠️ KDE BY SOM TO EŠTE VYLEPŠIL (DÔLEŽITÉ)
+1️⃣ Empty state je dobrý, ale musí byť ešte viac „akčný“
+
+Teraz robíš:
+
+<FriendsList userId={user.id} onFindFriends={() => setActiveTab('search')} />
+
+
+👍 super
+ALE…
+
+👉 musíš zabezpečiť, aby sa empty state zobrazil iba keď je 0 priateľov, nie keď sa ešte len načítava.
+
+Odporúčanie:
+
+Vo vnútri FriendsList rozlišuj:
+
+if (isLoading) return <Skeleton />
+if (!friends.length) return <EmptyFriendsState />
+
+
+A NIE:
+
+zobrazovať empty pri undefined
+
+alebo počas loadingu
+
+Inak bude UI pôsobiť „blikajúco“.
+
+2️⃣ UX detail: automatický presun do „Hľadať“
+
+Toto je malý, ale brutálne silný UX hack:
+
+Ak:
+
+user má 0 priateľov
+
+a 0 requestov
+
+👉 automaticky ho prehoď na tab search
+(alebo aspoň zvýrazni)
+
+Ako:
+useEffect(() => {
+  if (myFriends.length === 0 && friendRequests.length === 0) {
+    setActiveTab("search");
+  }
+}, [myFriends.length, friendRequests.length]);
+
+
+👉 user nemusí rozmýšľať
+👉 appka ho vedie za ruku
+👉 onboarding pôsobí inteligentne
+
+3️⃣ Textácia – drobná, ale dôležitá úprava
+
+Toto je OK:
+
+„Spravuj svoje kontakty a vyzývaj ich na súboje“
+
+Ale lepšie by fungovalo:
+
+✅ „Pridaj si kamarátov a vyzvi ich na rybársky súboj.“
+
+Lebo:
+
+menej korporátne
+
+viac emočné
+
+viac „rybárske“
+
+4️⃣ Technická poznámka (malý refactor)
+
+Toto:
+
+if (!user?.id) {
+  return (...)
+}
+
+
+je OK, ale lepšie je:
+
+if (!user) return null;
+
+
+Lebo:
+
+useAuth() by mal garantovať tvar
+
+menej podmienok = čistejší kód
+
+🧠 CELKOVÝ VERDIKT (ÚPRIMNE)
+✅ ČO JE SUPER
+
+architektúra
+
+rozdelenie komponentov
+
+UX logika
+
+navigácia
+
+použitie query + tabs
+
+pripravenosť na škálovanie
+
+⚠️ ČO TREBA DOLADIŤ
+
+empty state musí byť ešte viac „navádzací“
+
+prvý dojem → viac akcie, menej textu
+
+automatický presun na „Hľadať“, keď je prázdno
