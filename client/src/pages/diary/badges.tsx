@@ -8,7 +8,19 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Lock, Unlock, ChevronDown, ChevronUp, Target, Plus, Trophy, Sparkles, Award } from "lucide-react";
+import { Lock, Unlock, ChevronDown, ChevronUp, Target, Plus, Trophy, Sparkles, Award, Calendar, Crosshair, Crown, Moon, FileText, Snowflake, type LucideIcon } from "lucide-react";
+import { Dna } from "lucide-react";
+
+const BADGE_ICON_MAP: Record<string, LucideIcon> = {
+  Calendar,
+  Crosshair,
+  Target,
+  Crown,
+  Dna,
+  Moon,
+  FileText,
+  Snowflake,
+};
 import { useLocation } from "wouter";
 import DiaryLayout from "@/components/DiaryLayout";
 import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
@@ -162,7 +174,7 @@ export default function BadgesPage() {
           <Card className="mb-6 border-lime-500/30 bg-lime-500/5">
             <CardContent className="p-5">
               <div className="flex items-start gap-4">
-                <div className="text-4xl">{nextGoal.badgeDef.icon}</div>
+                <TacticalIcon icon={BADGE_ICON_MAP[nextGoal.badgeDef.icon] || Award} variant="amber" size="md" showLabel={false} />
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <TacticalIconInline icon={Target} variant="purple" size="sm" />
@@ -217,7 +229,7 @@ export default function BadgesPage() {
                     data-testid={`badge-unlocked-${badgeDef.id}-${tier}`}
                   >
                     <div className="flex items-center gap-3">
-                      <span className="text-3xl">{badgeDef.icon}</span>
+                      <TacticalIcon icon={BADGE_ICON_MAP[badgeDef.icon] || Award} variant="amber" size="sm" showLabel={false} />
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-0.5">
                           <span className={`font-bold ${textClass}`}>{badgeDef.name}</span>
@@ -254,7 +266,7 @@ export default function BadgesPage() {
               {badgesList.map(badgeDef => (
                 <Card key={badgeDef.id} className="p-4">
                   <div className="flex items-start gap-3 mb-3">
-                    <span className="text-2xl">{badgeDef.icon}</span>
+                    <TacticalIcon icon={BADGE_ICON_MAP[badgeDef.icon] || Award} variant="amber" size="sm" showLabel={false} />
                     <div>
                       <h3 className="font-bold text-foreground">{badgeDef.name}</h3>
                       <p className="text-xs text-muted-foreground">{badgeDef.description}</p>
