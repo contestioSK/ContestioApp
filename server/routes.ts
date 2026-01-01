@@ -5892,6 +5892,87 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
+  // Create historical catch - for old catches that don't count towards stats/badges
+  app.post('/api/diary/catches/historical', isAuthenticated, upload.array('photos', 5), async (req: any, res) => {
+    try {
+      const userId = req.user?.id || req.user?.claims?.sub;
+      
+      const { capturedAt, weight, fishType, spot, lengthCm, notes } = req.body;
+      
+      // Validate required fields
+      if (!capturedAt || !weight || !fishType || !spot) {
+        return res.status(400).json({ 
+          message: "Chýbajú povinné polia (dátum, váha, druh ryby, revír)" 
+        });
+      }
+      
+      // Validate date is in the past
+      const catchDate = new Date(capturedAt);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      if (catchDate >= today) {
+        return res.status(400).json({ 
+          message: "Historický úlovok musí byť z minulosti" 
+        });
+      }
+      
+      // Validate weight is positive
+      const weightNum = parseFloat(weight);
+      if (isNaN(weightNum) || weightNum <= 0) {
+        return res.status(400).json({ 
+          message: "Váha musí byť väčšia ako 0" 
+        });
+      }
+      
+      // Process uploaded photos
+      const photos: Array<{ id: string; url: string; status: 'ready' }> = [];
+      if (req.files && Array.isArray(req.files)) {
+        for (const file of req.files) {
+          photos.push({
+            id: `photo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            url: `/uploads/${file.filename}`,
+            status: 'ready' as const
+          });
+        }
+      }
+      
+      // Get user info for angler field
+      const user = await storage.getUser(userId);
+      const anglerName = user?.firstName && user?.lastName 
+        ? `${user.firstName} ${user.lastName}` 
+        : user?.email?.split('@')[0] || 'Unknown';
+      
+      // Create historical catch data - explicitly marked as historical
+      const catchData = {
+        capturedAt: catchDate,
+        weight: weight.toString(),
+        fishType,
+        spot,
+        lengthCm: lengthCm ? parseInt(lengthCm) : undefined,
+        notes: notes || undefined,
+        photos,
+        angler: {
+          userId,
+          name: anglerName
+        },
+        isHistorical: true, // CRITICAL: Mark as historical - won't count in stats/badges
+        verified: false,
+        tripId: undefined,
+        battleId: undefined
+      };
+      
+      const newCatch = await storage.createDiaryCatch(catchData as any, userId);
+      
+      console.log(`[HISTORICAL] Created historical catch for user ${userId}: ${fishType} ${weight}kg`);
+      
+      res.status(201).json(newCatch);
+    } catch (error) {
+      console.error("Error creating historical catch:", error);
+      res.status(500).json({ message: "Nepodarilo sa uložiť historický úlovok" });
+    }
+  });
+
   app.put('/api/diary/catches/:id', isAuthenticated, async (req: any, res) => {
     try {
       const userId = getUserId(req);
