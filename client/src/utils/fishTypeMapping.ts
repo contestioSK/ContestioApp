@@ -52,8 +52,7 @@ export const fishTypeMapping = {
   jalec: "Jalec hlavatý",
   zubac_zubatovity: "Zubáč volžský",
   ostretus: "Jeseter malý",
-  bream: "Pleskáč vysoký",
-  other: "Iný druh"
+  bream: "Pleskáč vysoký"
 } as const;
 
 export type FishType = keyof typeof fishTypeMapping;
@@ -63,6 +62,8 @@ export type FishType = keyof typeof fishTypeMapping;
 export const fishPrioritiesByStyle: Record<string, FishType[]> = {
   carp: [
     "kapor_rybnicny",
+    "kapor_supinac",
+    "kapor_lysec",
     "amur_biely",
     "pleskac_vysoky",
     "jalec_hlavaty",
