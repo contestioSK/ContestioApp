@@ -1,0 +1,502 @@
+import React, { useState, useEffect, useRef, useMemo, memo } from "react";
+import { useLocation } from "wouter";
+import { 
+  Lock, 
+  Unlock, 
+  ChevronDown, 
+  ChevronUp, 
+  Target, 
+  Plus, 
+  Trophy, 
+  Medal,
+  CheckCircle2,
+  X,
+  Share2,
+  Sparkles,
+  Star,
+  Crown
+} from "lucide-react";
+
+// --- 1. CONFIG & MOCKS ---
+
+const useAuth = () => ({ user: { id: 1, username: "Rybár" } });
+const useConfetti = () => ({ celebrateGoalCompletion: () => console.log("🎉 Confetti Triggered! 🎉") });
+
+const DiaryLayout = ({ children }: { children: React.ReactNode }) => (
+  <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-lime-500/30 relative">{children}</div>
+);
+
+const BADGE_DEFINITIONS: Record<string, any> = {
+  first_catch: { 
+    id: "first_catch", 
+    name: "Prvý Úlovok", 
+    icon: "🎣", 
+    description: "Zaznamenaj svoje prvé úlovky", 
+    tiers: { 
+      bronze: { threshold: 1, description: "Prvý úlovok" }, 
+      silver: { threshold: 10, description: "10 úlovkov" }, 
+      gold: { threshold: 50, description: "50 úlovkov" } 
+    } 
+  },
+  big_fish: { 
+    id: "big_fish", 
+    name: "Big Fish Hunter", 
+    icon: "🐋", 
+    description: "Lov ťažkých rýb", 
+    tiers: { 
+      bronze: { threshold: 5, description: "5kg+" }, 
+      silver: { threshold: 10, description: "10kg+" }, 
+      gold: { threshold: 20, description: "20kg+" } 
+    } 
+  },
+  night_owl: { 
+    id: "night_owl", 
+    name: "Nočná Sova", 
+    icon: "🦉", 
+    description: "Lov v noci", 
+    tiers: { 
+      bronze: { threshold: 1, description: "1 noc" }, 
+      silver: { threshold: 5, description: "5 nocí" }, 
+      gold: { threshold: 20, description: "20 nocí" } 
+    } 
+  },
+  carp_master: { 
+    id: "carp_master", 
+    name: "Kaprový Kráľ", 
+    icon: "👑", 
+    description: "Špecialista na kapry", 
+    tiers: { 
+      bronze: { threshold: 5, description: "5 kaprov" }, 
+      silver: { threshold: 25, description: "25 kaprov" }, 
+      gold: { threshold: 100, description: "100 kaprov" } 
+    } 
+  },
+};
+
+// --- 2. LOGIC HOOK ---
+
+const useBadgeGamification = (userBadges: any[], badgeProgress: Record<string, number>) => {
+  const { unlockedSet, unlockedList } = useMemo(() => {
+    const set = new Set(userBadges.map(b => `${b.badgeType}_${b.tier}`));
+    const list: any[] = [];
+    
+    Object.values(BADGE_DEFINITIONS).forEach(def => {
+      ['gold', 'silver', 'bronze'].forEach(tier => {
+        if (set.has(`${def.id}_${tier}`)) {
+          list.push({ ...def, tier, tierInfo: def.tiers[tier] });
+        }
+      });
+    });
+    
+    return { unlockedSet: set, unlockedList: list };
+  }, [userBadges]);
+
+  const nextGoal = useMemo(() => {
+    let bestCandidate: any = null;
+
+    Object.values(BADGE_DEFINITIONS).forEach(badgeDef => {
+      let targetTier = null;
+      if (!unlockedSet.has(`${badgeDef.id}_bronze`)) targetTier = 'bronze';
+      else if (!unlockedSet.has(`${badgeDef.id}_silver`)) targetTier = 'silver';
+      else if (!unlockedSet.has(`${badgeDef.id}_gold`)) targetTier = 'gold';
+
+      if (targetTier) {
+        const currentValue = badgeProgress[badgeDef.id] || 0;
+        const threshold = badgeDef.tiers[targetTier].threshold;
+        const remaining = Math.max(0, threshold - currentValue);
+        const percent = Math.min((currentValue / threshold) * 100, 100);
+
+        if (!bestCandidate || percent > bestCandidate.percent) {
+          bestCandidate = {
+            badgeDef,
+            tier: targetTier,
+            currentValue,
+            threshold,
+            percent,
+            remaining
+          };
+        }
+      }
+    });
+
+    return bestCandidate;
+  }, [unlockedSet, badgeProgress]);
+
+  return { unlockedSet, unlockedList, nextGoal };
+};
+
+// --- 3. UI COMPONENTS (Refined & Cleaned) ---
+
+const ProgressBar = ({ value }: { value: number }) => (
+  <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+    <div 
+      className="h-full bg-lime-500 transition-all duration-1000 ease-out" 
+      style={{ width: `${value}%` }} 
+    />
+  </div>
+);
+
+const BadgeCard = ({ badge, tier }: any) => {
+  // Zjemnené štýly - menej saturované, viac "tech"
+  const styles: any = {
+    gold: "border-amber-500/10 bg-gradient-to-br from-amber-500/5 to-slate-900",
+    silver: "border-slate-400/10 bg-gradient-to-br from-slate-400/5 to-slate-900",
+    bronze: "border-orange-700/10 bg-gradient-to-br from-orange-900/10 to-slate-900",
+  };
+  
+  const textColors: any = {
+    gold: "text-amber-500/90",
+    silver: "text-slate-400",
+    bronze: "text-orange-600/90",
+  };
+
+  return (
+    <div className={`p-4 rounded-xl border flex items-center gap-4 transition-all hover:border-opacity-30 ${styles[tier]}`}>
+      <div className="text-3xl filter drop-shadow-sm opacity-90">{badge.icon}</div>
+      <div>
+        <h4 className="font-bold text-slate-200 text-sm">{badge.name}</h4>
+        <div className={`text-[10px] font-bold uppercase tracking-wider ${textColors[tier]}`}>{tier}</div>
+        <p className="text-xs text-slate-500 mt-0.5">{badge.tierInfo.description}</p>
+      </div>
+    </div>
+  );
+};
+
+// --- 4. VISUAL EFFECTS: CONFETTI (Optimized) ---
+const BadgeConfetti = memo(() => {
+  const particles = Array.from({ length: 30 }).map((_, i) => { // Znížený počet na 30
+    const left = Math.random() * 100;
+    const animDelay = Math.random() * 0.5; 
+    const animDuration = 2 + Math.random() * 2;
+    // Tlmenejšie farby
+    const colors = ['#d97706', '#fbbf24', '#94a3b8', '#ea580c', '#f8fafc'];
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const size = 5 + Math.random() * 4;
+    
+    return (
+      <div 
+        key={i}
+        className="absolute top-[-20px] rounded-full pointer-events-none"
+        style={{
+          left: `${left}%`,
+          width: `${size}px`,
+          height: `${size}px`,
+          backgroundColor: color,
+          opacity: 0.7, // Mierne priehľadné
+          animation: `badge-fall ${animDuration}s linear forwards`,
+          animationDelay: `${animDelay}s`,
+        }}
+      />
+    );
+  });
+
+  return (
+    <div className="fixed inset-0 pointer-events-none z-[100] overflow-hidden">
+      <style>{`
+        @keyframes badge-fall {
+          0% { transform: translateY(-50px) translateX(0px); opacity: 0; }
+          10% { opacity: 0.8; }
+          100% { transform: translateY(100vh) translateX(-10px); opacity: 0; }
+        }
+      `}</style>
+      {particles}
+    </div>
+  );
+});
+BadgeConfetti.displayName = "BadgeConfetti";
+
+// --- 5. LEVEL UP MODAL (POLISHED & DIGNIFIED) ---
+
+const LevelUpModal = ({ badge, onClose }: { badge: any, onClose: () => void }) => {
+  const { celebrateGoalCompletion } = useConfetti();
+
+  useEffect(() => {
+    celebrateGoalCompletion(); 
+  }, []);
+
+  if (!badge) return null;
+
+  // Tier Styles - Menej "neónové", viac "kovové"
+  const tierConfig: any = {
+    gold: { 
+      text: "text-amber-400", 
+      bg: "bg-amber-500", 
+      border: "border-amber-500/20",
+      gradient: "from-amber-400/20 via-transparent to-transparent",
+      ringColor: "border-amber-500/20"
+    },
+    silver: { 
+      text: "text-slate-300", 
+      bg: "bg-slate-400", 
+      border: "border-slate-400/20",
+      gradient: "from-slate-400/20 via-transparent to-transparent",
+      ringColor: "border-slate-400/20"
+    },
+    bronze: { 
+      text: "text-orange-400", 
+      bg: "bg-orange-500", 
+      border: "border-orange-500/20",
+      gradient: "from-orange-500/20 via-transparent to-transparent",
+      ringColor: "border-orange-500/20"
+    },
+  };
+
+  const theme = tierConfig[badge.tier] || tierConfig.bronze;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/95 backdrop-blur-md animate-in fade-in duration-300">
+      
+      <BadgeConfetti />
+
+      {/* Background Ambience - Veľmi jemné */}
+      <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] max-w-[500px] max-h-[500px] rounded-full blur-[100px] opacity-10 pointer-events-none ${theme.bg}`} />
+
+      <div className="relative w-full max-w-sm text-center animate-in zoom-in-95 slide-in-from-bottom-4 duration-500 ease-out-back z-[101]">
+        
+        {/* 1. HEADER: CLEAN & CLEAR */}
+        <div className="mb-8 relative flex flex-col items-center">
+           {/* Badge Category Tag - Subtle */}
+           <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border mb-4 bg-slate-900/50 backdrop-blur-sm ${theme.border}`}>
+             <Medal className={`w-3 h-3 ${theme.text}`} />
+             <span className={`text-[10px] font-bold uppercase tracking-widest text-slate-300`}>
+               {badge.badgeDef?.name}
+             </span>
+           </div>
+
+           {/* TITLE */}
+           <h2 className={`text-4xl font-black italic uppercase tracking-tighter text-white drop-shadow-md`}>
+             Odomknuté
+           </h2>
+        </div>
+
+        {/* 2. CENTRAL VISUAL: DIGNIFIED ROTATION */}
+        <div className="relative mx-auto w-48 h-48 mb-10 flex items-center justify-center">
+           {/* Slow Rotating Ring */}
+           <div className={`absolute inset-0 rounded-full border border-dashed ${theme.ringColor} animate-[spin_20s_linear_infinite] opacity-50`} />
+           
+           {/* Central Container */}
+           <div className={`relative z-10 w-36 h-36 rounded-full bg-gradient-to-b ${theme.gradient} flex items-center justify-center border border-white/5`}>
+             <div className="relative z-10 text-7xl filter drop-shadow-xl transform transition-transform duration-300">
+               {badge.badgeDef?.icon || "🏆"}
+             </div>
+
+             {/* Tier Label - Minimal */}
+             <div className={`absolute -bottom-3 px-3 py-1 rounded-full bg-slate-900 border ${theme.border} z-20 shadow-lg`}>
+               <span className={`text-[10px] font-black uppercase tracking-widest ${theme.text}`}>
+                 {badge.tier}
+               </span>
+             </div>
+           </div>
+        </div>
+
+        {/* 3. DESCRIPTION */}
+        <div className="bg-slate-900/50 border border-white/5 p-4 rounded-xl mb-6 mx-4">
+           <p className="text-slate-400 text-sm font-medium leading-relaxed">
+             {badge.badgeDef?.description || "Gratulujeme k dosiahnutiu tohto míľnika!"}
+           </p>
+        </div>
+
+        {/* 4. ACTIONS */}
+        <div className="flex flex-col gap-3 px-4">
+           <button className={`relative w-full h-12 rounded-xl font-bold uppercase tracking-widest text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 text-slate-950 bg-lime-500 hover:bg-lime-400`}>
+             <Share2 className="w-4 h-4" />
+             <span>Pochváľ sa</span>
+           </button>
+           
+           <button 
+             onClick={onClose}
+             className="w-full h-10 flex items-center justify-center gap-2 text-slate-500 hover:text-white font-bold uppercase text-[10px] tracking-wider transition-colors"
+           >
+             Pokračovať
+           </button>
+        </div>
+
+      </div>
+    </div>
+  );
+};
+
+// --- 6. MAIN PAGE ---
+
+export default function BadgesPage() {
+  const [, setLocation] = useLocation();
+  const [showAllBadges, setShowAllBadges] = useState(false);
+  const previousCountRef = useRef<number | null>(null);
+  
+  const [newlyUnlockedBadge, setNewlyUnlockedBadge] = useState<any>(null);
+
+  // MOCK DATA
+  const [userBadges, setUserBadges] = useState([
+    { badgeType: "first_catch", tier: "bronze" },
+    { badgeType: "first_catch", tier: "silver" },
+  ]);
+  
+  const badgeProgress = {
+    first_catch: 12, 
+    big_fish: 8,     
+    night_owl: 0,
+    carp_master: 2
+  };
+
+  const { unlockedList, nextGoal, unlockedSet } = useBadgeGamification(userBadges, badgeProgress);
+
+  const simulateUnlock = () => {
+    const newBadge = { badgeType: "big_fish", tier: "bronze" };
+    setUserBadges([...userBadges, newBadge]);
+    
+    setNewlyUnlockedBadge({
+        ...newBadge,
+        badgeDef: BADGE_DEFINITIONS[newBadge.badgeType]
+    });
+  };
+
+  useEffect(() => {
+    previousCountRef.current = userBadges.length;
+  }, [userBadges]);
+
+  return (
+    <DiaryLayout>
+      <div className="relative min-h-screen pb-20 p-4 md:p-8 max-w-3xl mx-auto">
+        
+        {newlyUnlockedBadge && (
+           <LevelUpModal 
+             badge={newlyUnlockedBadge} 
+             onClose={() => setNewlyUnlockedBadge(null)} 
+           />
+        )}
+        
+        {/* Ambient background - very subtle now */}
+        <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-lime-500/5 blur-[150px] rounded-full pointer-events-none opacity-50" />
+
+        <header className="mb-8 relative z-10 flex justify-between items-end border-b border-white/5 pb-6">
+          <div>
+            <h1 className="text-3xl font-black italic uppercase tracking-tighter text-white mb-1">
+              Sieň Slávy
+            </h1>
+            <p className="text-slate-500 text-sm font-medium flex items-center gap-2">
+              <Trophy className="w-3.5 h-3.5 text-lime-600" />
+              <span>{unlockedList.length} trofejí</span>
+            </p>
+          </div>
+          
+          <button 
+            onClick={simulateUnlock}
+            className="text-[10px] bg-slate-900 px-3 py-1.5 rounded-lg border border-white/10 text-slate-500 hover:text-white transition-colors"
+          >
+            [DEMO]
+          </button>
+        </header>
+
+        {/* Hero Section: Aktuálna Misia (Cleaned Up) */}
+        {nextGoal ? (
+          <section className="mb-10 relative z-10">
+            <div className="flex items-center justify-between mb-3 px-1">
+              <div className="flex items-center gap-2">
+                <Target className="w-3.5 h-3.5 text-lime-500" />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Aktuálna Misia</span>
+              </div>
+              <span className="text-[10px] font-mono text-slate-600">{nextGoal.currentValue} / {nextGoal.threshold}</span>
+            </div>
+            
+            <div className="relative overflow-hidden rounded-2xl bg-slate-900 border border-white/5 p-6 shadow-xl">
+              <div className="flex flex-col sm:flex-row items-center gap-6">
+                {/* Icon - Less glow, clearer visual */}
+                <div className="relative shrink-0">
+                  <div className="w-20 h-20 rounded-xl bg-slate-950 border border-white/5 flex items-center justify-center text-4xl shadow-inner">
+                    {nextGoal.badgeDef.icon}
+                  </div>
+                  <div className={`absolute -bottom-2 -right-2 w-7 h-7 rounded-full flex items-center justify-center border-2 border-slate-900 text-xs shadow-md font-bold
+                    ${nextGoal.tier === 'gold' ? 'bg-amber-500 text-slate-950' : nextGoal.tier === 'silver' ? 'bg-slate-300 text-slate-950' : 'bg-orange-500 text-slate-950'}
+                  `}>
+                    {nextGoal.tier === 'gold' ? 'I' : nextGoal.tier === 'silver' ? 'II' : 'III'}
+                  </div>
+                </div>
+
+                {/* Info */}
+                <div className="flex-1 w-full text-center sm:text-left">
+                  <h2 className="text-xl font-bold text-white mb-1">
+                    {nextGoal.badgeDef.name}
+                  </h2>
+                  <p className="text-slate-500 text-sm mb-4 leading-relaxed">
+                    {nextGoal.badgeDef.tiers[nextGoal.tier].description}
+                  </p>
+                  <div className="space-y-2">
+                    <ProgressBar value={nextGoal.percent} />
+                  </div>
+                </div>
+
+                {/* CTA - The only "Pop" of Lime */}
+                <div className="w-full sm:w-auto mt-2 sm:mt-0">
+                  <button 
+                    onClick={() => setLocation('/diary')}
+                    className="w-full sm:w-auto h-10 px-5 rounded-lg bg-lime-500 hover:bg-lime-400 text-slate-950 font-bold uppercase tracking-wide text-xs transition-all flex items-center justify-center gap-2"
+                  >
+                    <Plus className="w-3.5 h-3.5 stroke-[3]" />
+                    Nahrať
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+        ) : (
+          <div className="mb-10 p-8 rounded-2xl bg-slate-900/30 border border-dashed border-slate-800 text-center">
+             <p className="text-slate-500 text-sm">Začni loviť a odomkni svoju prvú misiu.</p>
+          </div>
+        )}
+
+        {/* Grid Odomknutých */}
+        {unlockedList.length > 0 && (
+          <section className="mb-10 relative z-10">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4 flex items-center gap-2 px-1">
+              <Medal className="w-3.5 h-3.5" />
+              Tvoja Zbierka
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {unlockedList.map((item) => (
+                <BadgeCard key={`${item.id}_${item.tier}`} badge={item} tier={item.tier} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Zoznam Všetkých */}
+        <section className="border-t border-white/5 pt-6">
+          <button
+            onClick={() => setShowAllBadges(!showAllBadges)}
+            className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-slate-900/50 transition-colors text-slate-500 hover:text-white group"
+          >
+            <span className="font-bold uppercase tracking-wide text-xs flex items-center gap-2">
+              <Lock className="w-3.5 h-3.5" /> Prehľad všetkých výziev
+            </span>
+            {showAllBadges ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          </button>
+
+          {showAllBadges && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 animate-in fade-in slide-in-from-top-2">
+              {Object.values(BADGE_DEFINITIONS).map(badge => (
+                <div key={badge.id} className="p-4 rounded-xl bg-slate-900/20 border border-white/5">
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="text-xl grayscale opacity-30">{badge.icon}</span>
+                    <h4 className="font-bold text-slate-400 text-xs uppercase tracking-wide">{badge.name}</h4>
+                  </div>
+                  <div className="space-y-1">
+                    {['bronze', 'silver', 'gold'].map((tier: any) => {
+                      const isUnlocked = unlockedSet.has(`${badge.id}_${tier}`);
+                      return (
+                        <div key={tier} className="flex justify-between items-center text-[10px] py-1 border-b border-white/5 last:border-0">
+                          <span className={`uppercase font-bold ${isUnlocked ? 'text-slate-300' : 'text-slate-700'}`}>{tier}</span>
+                          {isUnlocked ? <CheckCircle2 className="w-3 h-3 text-lime-600/70" /> : <Lock className="w-3 h-3 text-slate-800" />}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+      </div>
+    </DiaryLayout>
+  );
+}
