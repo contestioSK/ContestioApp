@@ -688,57 +688,49 @@ export default function DiaryCatches() {
               <div className="mb-6">
                 <h2 className="text-sm font-medium text-muted-foreground dark:text-slate-400 mb-3">Moja celková štatistika</h2>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                  <Card className="bg-blue-50 dark:bg-transparent dark:bg-gradient-to-br dark:from-blue-600/20 dark:to-cyan-600/20 border-blue-200 dark:border-blue-500/30" data-testid="card-total-count">
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 bg-blue-100 dark:bg-blue-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <TacticalIconInline icon={Fish} variant="cyan" size="md" />
-                        </div>
-                        <div>
-                          <div className="text-xs text-muted-foreground dark:text-slate-400">Úlovky</div>
-                          <div className="text-xl font-bold text-foreground dark:text-white" data-testid="text-total-count">{totalCount} ks</div>
+                  <Card className="bg-white/90 backdrop-blur-sm bg-gradient-to-br from-teal-500/10 via-transparent to-transparent dark:bg-transparent dark:bg-gradient-to-br dark:from-blue-600/20 dark:to-cyan-600/20 border-teal-200/60 dark:border-blue-500/30 transition-all duration-200 hover:from-teal-500/20 hover:shadow-lg hover:shadow-teal-500/10 hover:border-teal-300/80 dark:hover:from-blue-600/30 dark:hover:to-cyan-600/30 dark:hover:border-blue-400/50 dark:hover:shadow-blue-500/20" data-testid="card-total-count">
+                    <CardContent className="p-4 md:p-6">
+                      <div className="flex items-start gap-3 md:gap-4">
+                        <TacticalIcon icon={Fish} variant="cyan" size="sm" showLabel={false} />
+                        <div className="flex-1">
+                          <div className="text-xs md:text-sm text-muted-foreground dark:text-slate-300 mb-1">Úlovky</div>
+                          <div className="text-xl md:text-2xl font-bold text-teal-700 dark:text-white" data-testid="text-total-count">{totalCount} ks</div>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
                   
-                  <Card className="bg-emerald-50 dark:bg-transparent dark:bg-gradient-to-br dark:from-emerald-600/20 dark:to-green-600/20 border-emerald-200 dark:border-emerald-500/30" data-testid="card-total-biggest">
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 bg-emerald-100 dark:bg-emerald-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <TacticalIconInline icon={Trophy} variant="amber" size="md" />
-                        </div>
-                        <div>
-                          <div className="text-xs text-muted-foreground dark:text-slate-400">Najväčšia ryba</div>
-                          <div className="text-xl font-bold text-foreground dark:text-white" data-testid="text-total-biggest">{biggestFish.toFixed(1)} kg</div>
+                  <Card className="bg-white/90 backdrop-blur-sm bg-gradient-to-br from-amber-400/15 via-transparent to-transparent dark:bg-transparent dark:bg-gradient-to-br dark:from-emerald-600/20 dark:to-green-600/20 border-amber-300/60 dark:border-emerald-500/30 transition-all duration-200 hover:from-amber-400/25 hover:shadow-lg hover:shadow-amber-500/10 hover:border-amber-400/80 dark:hover:from-emerald-600/30 dark:hover:to-green-600/30 dark:hover:border-emerald-400/50 dark:hover:shadow-emerald-500/20" data-testid="card-total-biggest">
+                    <CardContent className="p-4 md:p-6">
+                      <div className="flex items-start gap-3 md:gap-4">
+                        <TacticalIcon icon={Trophy} variant="amber" size="sm" showLabel={false} />
+                        <div className="flex-1">
+                          <div className="text-xs md:text-sm text-muted-foreground dark:text-slate-300 mb-1">Najväčšia ryba</div>
+                          <div className="text-xl md:text-2xl font-bold text-amber-700 dark:text-white" data-testid="text-total-biggest">{biggestFish.toFixed(1)} kg</div>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
                   
-                  <Card className="bg-purple-50 dark:bg-transparent dark:bg-gradient-to-br dark:from-purple-600/20 dark:to-pink-600/20 border-purple-200 dark:border-purple-500/30" data-testid="card-total-weight">
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 bg-purple-100 dark:bg-purple-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <TacticalIconInline icon={Weight} variant="orange" size="md" />
-                        </div>
-                        <div>
-                          <div className="text-xs text-muted-foreground dark:text-slate-400">Celková váha</div>
-                          <div className="text-xl font-bold text-foreground dark:text-white" data-testid="text-total-weight">{totalWeight.toFixed(1)} kg</div>
+                  <Card className="bg-white/90 backdrop-blur-sm bg-gradient-to-br from-slate-400/12 via-transparent to-transparent dark:bg-transparent dark:bg-gradient-to-br dark:from-purple-600/20 dark:to-pink-600/20 border-slate-300/60 dark:border-purple-500/30 transition-all duration-200 hover:from-slate-400/20 hover:shadow-lg hover:shadow-slate-500/10 dark:hover:from-purple-600/30 dark:hover:to-pink-600/30 dark:hover:border-purple-400/50 dark:hover:shadow-purple-500/20" data-testid="card-total-weight">
+                    <CardContent className="p-4 md:p-6">
+                      <div className="flex items-start gap-3 md:gap-4">
+                        <TacticalIcon icon={Weight} variant="indigo" size="sm" showLabel={false} />
+                        <div className="flex-1">
+                          <div className="text-xs md:text-sm text-muted-foreground dark:text-slate-300 mb-1">Celková váha</div>
+                          <div className="text-xl md:text-2xl font-bold text-slate-700 dark:text-white" data-testid="text-total-weight">{totalWeight.toFixed(1)} kg</div>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
                   
-                  <Card className="bg-amber-50 dark:bg-transparent dark:bg-gradient-to-br dark:from-amber-600/20 dark:to-orange-600/20 border-amber-200 dark:border-amber-500/30" data-testid="card-total-average">
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 bg-amber-100 dark:bg-amber-600/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <TacticalIconInline icon={Target} variant="purple" size="md" />
-                        </div>
-                        <div>
-                          <div className="text-xs text-muted-foreground dark:text-slate-400">Váhový priemer</div>
-                          <div className="text-xl font-bold text-foreground dark:text-white" data-testid="text-total-average">{averageWeight.toFixed(2)} kg</div>
+                  <Card className="bg-white/90 backdrop-blur-sm bg-gradient-to-br from-violet-400/12 via-transparent to-transparent dark:bg-transparent dark:bg-gradient-to-br dark:from-amber-600/20 dark:to-orange-600/20 border-violet-300/60 dark:border-amber-500/30 transition-all duration-200 hover:from-violet-400/20 hover:shadow-lg hover:shadow-violet-500/10 dark:hover:from-amber-600/30 dark:hover:to-orange-600/30 dark:hover:border-amber-400/50 dark:hover:shadow-amber-500/20" data-testid="card-total-average">
+                    <CardContent className="p-4 md:p-6">
+                      <div className="flex items-start gap-3 md:gap-4">
+                        <TacticalIcon icon={Target} variant="purple" size="sm" showLabel={false} />
+                        <div className="flex-1">
+                          <div className="text-xs md:text-sm text-muted-foreground dark:text-slate-300 mb-1">Váhový priemer</div>
+                          <div className="text-xl md:text-2xl font-bold text-violet-700 dark:text-white" data-testid="text-total-average">{averageWeight.toFixed(2)} kg</div>
                         </div>
                       </div>
                     </CardContent>
