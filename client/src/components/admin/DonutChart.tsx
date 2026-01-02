@@ -52,17 +52,17 @@ export function DonutChart({ title, data }: DonutChartProps) {
   };
 
   return (
-    <Card className="bg-card border-border p-6">
-      <h3 className="text-lg font-semibold text-foreground mb-4">{title}</h3>
+    <Card className="bg-card border-border p-4 md:p-6">
+      <h3 className="text-base md:text-lg font-semibold text-foreground mb-3 md:mb-4">{title}</h3>
       
-      <ResponsiveContainer width="100%" height={250}>
+      <ResponsiveContainer width="100%" height={200} className="md:h-[250px]">
         <PieChart>
           <Pie
             data={data}
             cx="50%"
             cy="50%"
-            innerRadius={60}
-            outerRadius={80}
+            innerRadius={45}
+            outerRadius={65}
             paddingAngle={2}
             dataKey="value"
             label={renderCustomLabel}
