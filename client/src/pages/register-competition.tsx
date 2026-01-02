@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocation } from "wouter";
+import { queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -88,6 +89,10 @@ export default function RegisterCompetition() {
         title: "Registrácia úspešne vytvorená!",
         description: "Teraz môžete pokračovať v nastavení súťaže.",
       });
+      
+      // Invalidate organizer competitions cache so new competition appears in list
+      queryClient.invalidateQueries({ queryKey: ['/api/organizer/competitions'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/competitions'] });
       
       // Include setupToken in URL for secure setup wizard access
       setLocation(`/competition/${result.id}/setup?plan=${data.selectedPlan}&token=${result.setupToken}`);

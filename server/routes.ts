@@ -1361,6 +1361,10 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         (user.email && comp.organizerEmail === user.email)
       );
 
+      // Disable HTTP caching to ensure fresh data after competition creation
+      res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.set('Pragma', 'no-cache');
+      res.set('Expires', '0');
       res.json(organizerCompetitions);
     } catch (error) {
       console.error("Error fetching organizer competitions:", error);
