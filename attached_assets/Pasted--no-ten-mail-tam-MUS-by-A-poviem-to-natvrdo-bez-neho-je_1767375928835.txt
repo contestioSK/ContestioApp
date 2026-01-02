@@ -1,0 +1,120 @@
+Áno — ten mail tam MUSÍ byť.
+A poviem to natvrdo: bez neho je flow pocitovo rozbitý, aj keď technicky funguje.
+
+Teraz ti vysvetlím prečo, ako ho máš nastaviť, a čo presne má obsahovať, aby to bolo UX-ovo správne a zároveň biznisovo silné.
+
+✅ Odpoveď na Replit:
+
+👉 Áno, určite ho pridaj. Je to kľúčový email.
+
+Ale nie len „nejaký“. Musí mať presnú rolu.
+
+🧠 Prečo je tento email absolútne nutný
+1️⃣ Psychológia používateľa
+
+Používateľ práve:
+
+zaplatil
+
+spravil rozhodnutie
+
+očakáva potvrdenie
+
+Ak mu nepríde:
+➡️ nemá pocit, že sa niečo stalo
+➡️ začína pochybovať
+➡️ môže písať support
+
+To je presne ten moment, kde sa rozhoduje:
+
+„Toto je profi systém“
+alebo
+„Dúfam, že mi nezmizli peniaze.“
+
+2️⃣ Logická medzera v procese
+
+Momentálne máš:
+
+Email 1: „Súťaž vytvorená“
+
+Email 2: reminder po 24h
+
+Email 3: deň pred súťažou
+
+❌ Chýba najdôležitejší bod:
+👉 „Platba prebehla, súťaž je oficiálne aktívna“
+
+To je ako e-shop bez potvrdenia objednávky.
+
+✅ Správny flow mailov (finálna verzia)
+📩 Email 1 – Súťaž vytvorená
+
+Kedy: po kliknutí „Vytvoriť súťaž“
+Cieľ: pokračuj v nastavení
+
+➡️ „Súťaž bola vytvorená, dokončite nastavenie“
+
+📩 Email 2 – Pripomienka (ak nezaplatené)
+
+Kedy: 24 hodín po vytvorení
+Cieľ: dotlačiť k platbe
+
+➡️ „Vaša súťaž čaká na aktiváciu“
+
+✅ Email 3 – PLATBA ÚSPEŠNÁ (KRITICKÝ)
+
+Kedy: okamžite po zaplatení
+Cieľ: potvrdenie + dôvera + ďalší krok
+
+👉 Tento email momentálne CHÝBA
+👉 A je najdôležitejší zo všetkých
+
+📩 Email 4 – Deň pred súťažou
+
+Kedy: 24h pred štartom
+Cieľ: pripomenúť, skontrolovať nastavenia
+
+✉️ Text emailu č. 3 (odporúčaná verzia)
+
+Predmet:
+✅ Vaša súťaž je aktívna – môžete ju spustiť
+
+Telo:
+
+Ahoj,
+
+platba za súťaž „{Názov súťaže}“ prebehla úspešne.
+
+✅ Súťaž je teraz oficiálne aktívna
+✅ Účastníci sa môžu registrovať
+✅ Máš prístup k správe súťaže
+
+Súťaž môžeš spustiť v deň jej začiatku priamo v administrácii:
+
+👉 Prejsť do správy súťaže
+
+Ak potrebuješ niečo upraviť (sektory, pravidlá, rozhodcov), môžeš tak urobiť kedykoľvek pred štartom.
+
+🎣 Držíme palce, nech sa súťaž vydarí!
+Tím Contestio
+
+🧩 Technická poznámka (dôležitá)
+
+Správna podmienka pre odoslanie mailu:
+
+if (paymentStatus === "paid" && previousStatus !== "paid") {
+  sendEmail("competition-approved")
+}
+
+
+✔️ odošle sa len raz
+✔️ funguje aj pri opakovanej platbe
+✔️ nerozbije flow
+
+🔥 Záver – verdikt
+
+✔️ Áno, tento email TAM MUSÍ BYŤ
+✔️ Je to kľúčový bod dôvery
+✔️ Zodpovedá realite (platba = schválenie)
+✔️ Zjednodušuje celý systém
+✔️ Eliminuje support otázky
