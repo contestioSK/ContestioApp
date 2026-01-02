@@ -105,6 +105,7 @@ export const competitions = pgTable("competitions", {
   // Email notification tracking
   approvedAt: timestamp("approved_at"), // When competition was approved by admin
   reminderSentAt: timestamp("reminder_sent_at"), // When 24h reminder email was sent
+  dayBeforeReminderSentAt: timestamp("day_before_reminder_sent_at"), // When day-before-start email was sent
   
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

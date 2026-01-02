@@ -435,6 +435,70 @@ async function startCompetitionReminderScheduler() {
   log('[SCHEDULER] Competition reminder scheduler started (60min intervals)');
 }
 
+// Day-before competition email scheduler - sends reminder email day before competition starts
+async function startDayBeforeCompetitionScheduler() {
+  const SCHEDULER_INTERVAL = 60 * 60 * 1000; // Check every hour
+  
+  async function checkDayBeforeEmails() {
+    try {
+      const competitions = await storage.getCompetitions();
+      const now = new Date();
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      
+      for (const competition of competitions) {
+        // Skip if already sent day-before reminder, or competition is finished/live
+        if (competition.dayBeforeReminderSentAt || competition.status === 'finished' || competition.status === 'live') {
+          continue;
+        }
+        
+        // Check if competition starts tomorrow
+        const startDate = new Date(competition.startDate);
+        const isStartingTomorrow = 
+          startDate.getFullYear() === tomorrow.getFullYear() &&
+          startDate.getMonth() === tomorrow.getMonth() &&
+          startDate.getDate() === tomorrow.getDate();
+        
+        if (isStartingTomorrow) {
+          try {
+            const appOrigin = process.env.APP_ORIGIN || `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`;
+            const dashboardUrl = `${appOrigin}/organizer/competition/${competition.id}`;
+            
+            const organizerEmail = competition.organizerEmail;
+            if (!organizerEmail) {
+              console.log(`[SCHEDULER] No organizer email for competition ${competition.id}, skipping day-before reminder`);
+              continue;
+            }
+            
+            // Send day-before email
+            await emailService.sendDayBeforeCompetitionEmail(
+              organizerEmail,
+              competition.name,
+              dashboardUrl
+            );
+            
+            // Mark as sent
+            await storage.updateCompetition(competition.id, { dayBeforeReminderSentAt: new Date() });
+            
+            log(`[SCHEDULER] Sent day-before email for competition: ${competition.name} to ${organizerEmail}`);
+          } catch (error) {
+            console.error(`[SCHEDULER] Error sending day-before email for competition ${competition.id}:`, error);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('[SCHEDULER] Error in day-before competition scheduler:', error);
+    }
+  }
+  
+  // Run immediately on startup
+  await checkDayBeforeEmails();
+  
+  // Then run every hour
+  setInterval(checkDayBeforeEmails, SCHEDULER_INTERVAL);
+  log('[SCHEDULER] Day-before competition scheduler started (60min intervals)');
+}
+
 (async () => {
   const { server, broadcastToUsers } = await registerRoutes(app);
 
@@ -481,6 +545,7 @@ async function startCompetitionReminderScheduler() {
   startBattleNotificationScheduler();
   startRefereeCleanupScheduler();
   startCompetitionReminderScheduler();
+  startDayBeforeCompetitionScheduler();
 
   server.listen({
     port,
