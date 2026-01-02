@@ -346,11 +346,20 @@ export default function CreateCompetition() {
 
   const handleFinish = async () => {
     await saveProgress();
-    toast({
-      title: "🎉 Súťaž uložená!",
-      description: "Súťaž je uložená ako rozpracovaná. Keď budete pripravení, môžete ju publikovať.",
-    });
-    setLocation('/organizer');
+    const compId = competitionIdRef.current;
+    if (compId) {
+      toast({
+        title: "🎉 Súťaž uložená!",
+        description: "Teraz vyberte balík a dokončite registráciu.",
+      });
+      setLocation(`/organizer/competition/${compId}/checkout`);
+    } else {
+      toast({
+        title: "🎉 Súťaž uložená!",
+        description: "Súťaž je uložená ako rozpracovaná.",
+      });
+      setLocation('/organizer');
+    }
   };
 
   const updateSectorName = (index: number, name: string) => {
@@ -1010,11 +1019,11 @@ export default function CreateCompetition() {
               <Button
                 onClick={handleFinish}
                 disabled={isSaving}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-orange-500 hover:bg-orange-600"
                 data-testid="button-finish"
               >
                 {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Check className="w-4 h-4 mr-2" />}
-                Uložiť súťaž
+                Pokračovať na výber balíka
               </Button>
             )}
           </div>
