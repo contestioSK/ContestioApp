@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+
+<html lang="sk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Contestio – Registrácia súťaže</title>
+</head>
+<body style="margin:0; padding:0; background-color:#0c1f28; font-family: Arial, Helvetica, sans-serif; color:#ffffff;">
+
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0c1f28; padding:40px 0;">
+    <tr>
+      <td align="center">
+        <table width="100%" max-width="600" cellpadding="0" cellspacing="0" style="background:#0f2632; border-radius:12px; overflow:hidden; box-shadow:0 10px 40px rgba(0,0,0,0.4);">
+
+```
+      <!-- HEADER -->
+      <tr>
+        <td style="padding:32px 32px 20px; text-align:center;">
+          <h1 style="margin:0; font-size:28px; letter-spacing:0.5px;">
+            🎣 Contestio
+          </h1>
+          <p style="margin:8px 0 0; font-size:13px; color:#94a3b8; text-transform:uppercase; letter-spacing:2px;">
+            Registrácia súťaže prijatá
+          </p>
+        </td>
+      </tr>
+
+      <!-- CONTENT -->
+      <tr>
+        <td style="padding:24px 32px;">
+          <p style="font-size:16px; line-height:1.6; margin-bottom:16px;">
+            Ahoj 👋,
+          </p>
+
+          <p style="font-size:16px; line-height:1.6;">
+            ďakujeme za registráciu súťaže <strong>„ostrý test“</strong> v systéme <strong>Contestio</strong>.
+          </p>
+
+          <p style="font-size:16px; line-height:1.6;">
+            Tvoja žiadosť bola úspešne prijatá a teraz je čas dokončiť nastavenie, aby si mohol súťaž spustiť a pustiť rybárov do akcie.
+          </p>
+
+          <div style="margin:24px 0; padding:16px; background:#132f3f; border-left:4px solid #f97316;">
+            <strong>Čo ťa čaká ďalej:</strong>
+            <ul style="margin:12px 0 0; padding-left:18px; color:#cbd5e1;">
+              <li>doplnenie detailov súťaže</li>
+              <li>nastavenie pravidiel a kategórií</li>
+              <li>kontrola údajov</li>
+              <li>schválenie naším tímom</li>
+            </ul>
+          </div>
+
+          <!-- CTA -->
+          <div style="text-align:center; margin:32px 0;">
+            <a href="https://workspace.lubomirsulek.repl.co/competition/ba53069b-0660-4ce4-9b58-2b30e6394e60/setup?plan=premium&token=087123a032d5d4b413b178c90012b2ef"
+               style="
+                 display:inline-block;
+                 background:#f97316;
+                 color:#0c1f28;
+                 padding:14px 28px;
+                 border-radius:10px;
+                 text-decoration:none;
+                 font-weight:bold;
+                 letter-spacing:0.5px;
+               ">
+              Dokončiť nastavenie súťaže
+            </a>
+          </div>
+
+          <p style="font-size:14px; color:#94a3b8; line-height:1.6;">
+            Ak by tlačidlo nefungovalo, skopíruj tento odkaz do prehliadača:<br>
+            <span style="word-break:break-all; color:#f97316;">
+              https://workspace.lubomirsulek.repl.co/competition/ba53069b-0660-4ce4-9b58-2b30e6394e60/setup?plan=premium&token=087123a032d5d4b413b178c90012b2ef
+            </span>
+          </p>
+
+          <p style="margin-top:32px; font-size:15px;">
+            🎯 <strong>Tip:</strong> Čím skôr súťaž nastavíš, tým skôr ju môžeš zdieľať s účastníkmi a rozhodcami.
+          </p>
+
+          <p style="margin-top:24px;">
+            Lovu zdar!<br>
+            <strong>Tím Contestio</strong>
+          </p>
+        </td>
+      </tr>
+
+      <!-- FOOTER -->
+      <tr>
+        <td style="background:#0b1a22; padding:20px; text-align:center; font-size:12px; color:#64748b;">
+          © 2024 Contestio · Všetky práva vyhradené<br/>
+          Tento e-mail bol odoslaný automaticky, prosím neodpovedajte naň.
+        </td>
+      </tr>
+
+    </table>
+  </td>
+</tr>
+```
+
+  </table>
+
+</body>
+</html>

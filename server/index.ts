@@ -3,6 +3,7 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { storage } from "./storage";
 import { NotificationService } from "./notification-service";
+import { emailService } from "./utils/email";
 import helmet from "helmet";
 import cors from "cors";
 import { apiLimiter } from "./middleware/rate-limiting";
@@ -373,6 +374,67 @@ async function startBattleNotificationScheduler() {
   log('[SCHEDULER] Battle notification scheduler started (60s intervals)');
 }
 
+// Competition reminder scheduler - sends 24h reminder emails to organizers
+async function startCompetitionReminderScheduler() {
+  const REMINDER_INTERVAL = 60 * 60 * 1000; // Check every hour
+  const REMINDER_DELAY_MS = 24 * 60 * 60 * 1000; // 24 hours after approval
+  
+  async function checkCompetitionReminders() {
+    try {
+      const competitions = await storage.getCompetitions();
+      const now = new Date();
+      
+      for (const competition of competitions) {
+        // Skip if no approvedAt, already sent reminder, or competition is finished
+        if (!competition.approvedAt || competition.reminderSentAt || competition.status === 'finished') {
+          continue;
+        }
+        
+        const approvedTime = new Date(competition.approvedAt).getTime();
+        const timeSinceApproval = now.getTime() - approvedTime;
+        
+        // Send reminder if 24+ hours have passed since approval
+        if (timeSinceApproval >= REMINDER_DELAY_MS) {
+          try {
+            const appOrigin = process.env.APP_ORIGIN || `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`;
+            const dashboardUrl = `${appOrigin}/organizer/competition/${competition.id}`;
+            
+            // Get organizer email
+            const organizerEmail = competition.organizerEmail;
+            if (!organizerEmail) {
+              console.log(`[SCHEDULER] No organizer email for competition ${competition.id}, skipping reminder`);
+              continue;
+            }
+            
+            // Send reminder email
+            await emailService.sendCompetitionReminderEmail(
+              organizerEmail,
+              competition.name,
+              dashboardUrl
+            );
+            
+            // Mark reminder as sent
+            await storage.updateCompetition(competition.id, { reminderSentAt: new Date() });
+            
+            log(`[SCHEDULER] Sent 24h reminder for competition: ${competition.name} to ${organizerEmail}`);
+          } catch (error) {
+            console.error(`[SCHEDULER] Error sending reminder for competition ${competition.id}:`, error);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('[SCHEDULER] Error in competition reminder scheduler:', error);
+    }
+  }
+  
+  // Run immediately on startup
+  await checkCompetitionReminders();
+  
+  // Then run every hour
+  setInterval(checkCompetitionReminders, REMINDER_INTERVAL);
+  log('[SCHEDULER] Competition reminder scheduler started (60min intervals)');
+}
+
 (async () => {
   const { server, broadcastToUsers } = await registerRoutes(app);
 
@@ -418,6 +480,7 @@ async function startBattleNotificationScheduler() {
   startBattleScheduler(broadcastToUsers);
   startBattleNotificationScheduler();
   startRefereeCleanupScheduler();
+  startCompetitionReminderScheduler();
 
   server.listen({
     port,

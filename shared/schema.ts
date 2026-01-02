@@ -102,6 +102,10 @@ export const competitions = pgTable("competitions", {
   resultBlockStartTime: timestamp("result_block_start_time"), // Automatically calculated when competition is created/updated
   resultBlockActive: boolean("result_block_active").notNull().default(false), // Cache for performance - whether blocking is currently active
   
+  // Email notification tracking
+  approvedAt: timestamp("approved_at"), // When competition was approved by admin
+  reminderSentAt: timestamp("reminder_sent_at"), // When 24h reminder email was sent
+  
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

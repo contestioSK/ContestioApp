@@ -395,121 +395,331 @@ class EmailService {
     });
   }
 
+  async sendCompetitionReminderEmail(
+    email: string,
+    competitionName: string,
+    dashboardUrl: string
+  ): Promise<boolean> {
+    const subject = `Pripomienka: Dokončite nastavenie súťaže "${competitionName}"`;
+    const html = this.generateCompetitionReminderTemplate(competitionName, dashboardUrl);
+
+    return this.sendEmail({
+      to: email,
+      subject,
+      html,
+    });
+  }
+
+  private generateCompetitionReminderTemplate(competitionName: string, dashboardUrl: string): string {
+    const escapedName = this.escapeHtml(competitionName);
+    return `
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Contestio – Pripomienka súťaže</title>
+</head>
+<body style="margin:0; padding:0; background-color:#0c1f28; font-family: Arial, Helvetica, sans-serif; color:#ffffff;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0c1f28; padding:40px 0;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background:#0f2632; border-radius:12px; overflow:hidden; box-shadow:0 10px 40px rgba(0,0,0,0.4);">
+          <!-- HEADER -->
+          <tr>
+            <td style="padding:32px 32px 20px; text-align:center;">
+              <h1 style="margin:0; font-size:28px; letter-spacing:0.5px;">
+                🎣 Contestio
+              </h1>
+              <p style="margin:8px 0 0; font-size:13px; color:#94a3b8; text-transform:uppercase; letter-spacing:2px;">
+                Pripomienka - Vaša súťaž čaká
+              </p>
+            </td>
+          </tr>
+          <!-- CONTENT -->
+          <tr>
+            <td style="padding:24px 32px;">
+              <p style="font-size:16px; line-height:1.6; margin-bottom:16px;">
+                Ahoj 👋,
+              </p>
+              <p style="font-size:16px; line-height:1.6;">
+                Vaša súťaž <strong>„${escapedName}"</strong> bola schválená pred 24 hodinami a čaká na dokončenie nastavenia.
+              </p>
+              <p style="font-size:16px; line-height:1.6;">
+                Nezabudnite skontrolovať všetky detaily súťaže, aby ste mohli začať prijímať prihlášky tímov.
+              </p>
+              <div style="margin:24px 0; padding:16px; background:#132f3f; border-left:4px solid #f97316;">
+                <strong>Čo by ste mali skontrolovať:</strong>
+                <ul style="margin:12px 0 0; padding-left:18px; color:#cbd5e1;">
+                  <li>základné informácie a pravidlá</li>
+                  <li>dátumy a miesto konania</li>
+                  <li>nastavenie sektorov (ak ich používate)</li>
+                  <li>výšku štartovného</li>
+                </ul>
+              </div>
+              <div style="text-align:center; margin:32px 0;">
+                <a href="${dashboardUrl}"
+                   style="display:inline-block; background:#f97316; color:#ffffff; padding:14px 36px; border-radius:8px; text-decoration:none; font-weight:600; font-size:15px;">
+                  Prejsť do správy súťaže
+                </a>
+              </div>
+            </td>
+          </tr>
+          <!-- FOOTER -->
+          <tr>
+            <td style="padding:20px 32px; background:#0c1f28; text-align:center; font-size:12px; color:#64748b;">
+              Tento email bol odoslaný automaticky systémom <strong>Contestio</strong>.<br/>
+              Ak máte akékoľvek otázky, kontaktujte nás na <a href="mailto:info@contestio.sk" style="color:#f97316;">info@contestio.sk</a>.
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`;
+  }
+
   private generateRegistrationConfirmationTemplate(competitionName: string, setupUrl: string): string {
     const escapedName = this.escapeHtml(competitionName);
     return `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1">
-          <title>Registrácia súťaže prijatá</title>
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
-            .content { background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; }
-            .button { display: inline-block; background: #16a34a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0; }
-            .footer { background: #f8fafc; padding: 20px; text-align: center; color: #6b7280; border-radius: 0 0 8px 8px; }
-            .info-box { background: #f0fdf4; border-left: 4px solid #22c55e; padding: 12px; margin: 16px 0; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>🎣 Contestio</h1>
-              <p>Registrácia súťaže prijatá</p>
-            </div>
-            <div class="content">
-              <h2>Ďakujeme za registráciu!</h2>
-              <p>Vaša žiadosť o vytvorenie súťaže <strong>"${escapedName}"</strong> bola úspešne prijatá.</p>
-              
-              <div class="info-box">
-                <strong>📋 Ďalšie kroky:</strong>
-                <ol>
-                  <li>Dokončite nastavenie súťaže cez odkaz nižšie</li>
-                  <li>Vaša súťaž bude posúdená naším tímom</li>
-                  <li>Po schválení dostanete ďalší email s prístupom</li>
-                </ol>
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Contestio – Registrácia súťaže</title>
+</head>
+<body style="margin:0; padding:0; background-color:#0c1f28; font-family: Arial, Helvetica, sans-serif; color:#ffffff;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0c1f28; padding:40px 0;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background:#0f2632; border-radius:12px; overflow:hidden; box-shadow:0 10px 40px rgba(0,0,0,0.4);">
+          <!-- HEADER -->
+          <tr>
+            <td style="padding:32px 32px 20px; text-align:center;">
+              <h1 style="margin:0; font-size:28px; letter-spacing:0.5px;">
+                🎣 Contestio
+              </h1>
+              <p style="margin:8px 0 0; font-size:13px; color:#94a3b8; text-transform:uppercase; letter-spacing:2px;">
+                Registrácia súťaže prijatá
+              </p>
+            </td>
+          </tr>
+          <!-- CONTENT -->
+          <tr>
+            <td style="padding:24px 32px;">
+              <p style="font-size:16px; line-height:1.6; margin-bottom:16px;">
+                Ahoj 👋,
+              </p>
+              <p style="font-size:16px; line-height:1.6;">
+                ďakujeme za registráciu súťaže <strong>„${escapedName}"</strong> v systéme <strong>Contestio</strong>.
+              </p>
+              <p style="font-size:16px; line-height:1.6;">
+                Tvoja žiadosť bola úspešne prijatá a teraz je čas dokončiť nastavenie, aby si mohol súťaž spustiť a pustiť rybárov do akcie.
+              </p>
+              <div style="margin:24px 0; padding:16px; background:#132f3f; border-left:4px solid #f97316;">
+                <strong>Čo ťa čaká ďalej:</strong>
+                <ul style="margin:12px 0 0; padding-left:18px; color:#cbd5e1;">
+                  <li>doplnenie detailov súťaže</li>
+                  <li>nastavenie pravidiel a kategórií</li>
+                  <li>kontrola údajov</li>
+                  <li>schválenie naším tímom</li>
+                </ul>
               </div>
-              
-              <p>Pokračujte v nastavení súťaže kliknutím na tlačidlo:</p>
-              <a href="${setupUrl}" class="button">Dokončiť nastavenie</a>
-              
-              <p>Ak tlačidlo nefunguje, skopírujte tento odkaz:</p>
-              <p style="word-break: break-all; color: #16a34a;">${setupUrl}</p>
-            </div>
-            <div class="footer">
-              <p>© 2024 Contestio. Všetky práva vyhradené.</p>
-              <p>Toto je automatický email, prosím neodpovedajte naň.</p>
-            </div>
-          </div>
-        </body>
-      </html>
+              <!-- CTA -->
+              <div style="text-align:center; margin:32px 0;">
+                <a href="${setupUrl}"
+                   style="display:inline-block; background:#f97316; color:#0c1f28; padding:14px 28px; border-radius:10px; text-decoration:none; font-weight:bold; letter-spacing:0.5px;">
+                  Dokončiť nastavenie súťaže
+                </a>
+              </div>
+              <p style="font-size:14px; color:#94a3b8; line-height:1.6;">
+                Ak by tlačidlo nefungovalo, skopíruj tento odkaz do prehliadača:<br>
+                <span style="word-break:break-all; color:#f97316;">
+                  ${setupUrl}
+                </span>
+              </p>
+              <p style="margin-top:32px; font-size:15px;">
+                🎯 <strong>Tip:</strong> Čím skôr súťaž nastavíš, tým skôr ju môžeš zdieľať s účastníkmi a rozhodcami.
+              </p>
+              <p style="margin-top:24px;">
+                Lovu zdar!<br>
+                <strong>Tím Contestio</strong>
+              </p>
+            </td>
+          </tr>
+          <!-- FOOTER -->
+          <tr>
+            <td style="background:#0b1a22; padding:20px; text-align:center; font-size:12px; color:#64748b;">
+              © 2024 Contestio · Všetky práva vyhradené<br/>
+              Tento e-mail bol odoslaný automaticky, prosím neodpovedajte naň.
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
     `;
   }
 
   private generateCompetitionApprovalTemplate(competitionName: string, loginUrl: string, competitionUrl: string): string {
     const escapedName = this.escapeHtml(competitionName);
     return `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1">
-          <title>Súťaž schválená</title>
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
-            .content { background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; }
-            .button { display: inline-block; background: #0ea5e9; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0; }
-            .button-secondary { display: inline-block; background: #6b7280; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0 20px 10px; }
-            .footer { background: #f8fafc; padding: 20px; text-align: center; color: #6b7280; border-radius: 0 0 8px 8px; }
-            .success-box { background: #f0fdf4; border-left: 4px solid #22c55e; padding: 12px; margin: 16px 0; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>🏆 Gratulujeme!</h1>
-              <p>Vaša súťaž bola schválená</p>
-            </div>
-            <div class="content">
-              <h2>Súťaž "${escapedName}" je aktívna!</h2>
-              
-              <div class="success-box">
-                <strong>✅ Vaša súťaž bola úspešne schválená</strong><br>
-                Teraz môžete spravovať tímy, rozhodcov a sledovať výsledky.
-              </div>
-              
-              <p>Pre správu súťaže sa prihláste do organizátorského panelu:</p>
-              <a href="${loginUrl}" class="button">Prihlásiť sa</a>
-              
-              <p>Alebo si pozrite vašu súťaž:</p>
-              <a href="${competitionUrl}" class="button-secondary">Zobraziť súťaž</a>
-              
-              <h3>Čo môžete robiť ako organizátor:</h3>
-              <ul>
-                <li>📋 Spravovať registrácie tímov</li>
-                <li>👨‍⚖️ Pridávať a priraďovať rozhodcov</li>
-                <li>🐟 Sledovať úlovky v reálnom čase</li>
-                <li>📊 Zobrazovať živý rebríček</li>
-                <li>⚙️ Upravovať nastavenia súťaže</li>
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Contestio – Súťaž schválená</title>
+</head>
+<body style="margin:0; padding:0; background-color:#0c1f28; font-family: Arial, Helvetica, sans-serif; color:#ffffff;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0c1f28; padding:40px 0;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background:#0f2632; border-radius:12px; overflow:hidden; box-shadow:0 10px 40px rgba(0,0,0,0.4);">
+          <!-- HEADER -->
+          <tr>
+            <td style="padding:32px; text-align:center;">
+              <h1 style="margin:0; font-size:28px;">🎉 Súťaž schválená!</h1>
+              <p style="margin-top:8px; font-size:13px; color:#94a3b8; text-transform:uppercase; letter-spacing:2px;">
+                Contestio Organizer
+              </p>
+            </td>
+          </tr>
+          <!-- CONTENT -->
+          <tr>
+            <td style="padding:24px 32px;">
+              <p style="font-size:16px; line-height:1.6;">
+                Super správa! Tvoja súťaž <strong>„${escapedName}"</strong> bola úspešne schválená ✅
+              </p>
+              <p style="font-size:16px; line-height:1.6;">
+                Teraz máš plný prístup k organizátorskému panelu a môžeš:
+              </p>
+              <ul style="margin:16px 0; padding-left:20px; color:#cbd5e1;">
+                <li>👥 pridávať tímy</li>
+                <li>🎣 spravovať úlovky</li>
+                <li>👨‍⚖️ pozvať rozhodcov</li>
+                <li>📣 posielať oznamy účastníkom</li>
+                <li>🚦 spustiť súťaž v správny čas</li>
               </ul>
-            </div>
-            <div class="footer">
-              <p>© 2024 Contestio. Všetky práva vyhradené.</p>
-              <p>Toto je automatický email, prosím neodpovedajte naň.</p>
-            </div>
-          </div>
-        </body>
-      </html>
+              <div style="margin:32px 0; text-align:center;">
+                <a href="${loginUrl}"
+                   style="display:inline-block; background:#22c55e; color:#06210f; padding:14px 28px; border-radius:10px; text-decoration:none; font-weight:bold;">
+                  Prejsť do organizátorského panelu
+                </a>
+              </div>
+              <p style="font-size:14px; color:#94a3b8;">
+                💡 Tip: Nezabudni pridať rozhodcov ešte pred štartom súťaže – výrazne ti to uľahčí priebeh.
+              </p>
+              <p style="margin-top:24px;">
+                Držíme palce a prajeme úspešný priebeh súťaže! 🎣<br>
+                <strong>Tím Contestio</strong>
+              </p>
+            </td>
+          </tr>
+          <!-- FOOTER -->
+          <tr>
+            <td style="background:#0b1a22; padding:20px; text-align:center; font-size:12px; color:#64748b;">
+              © 2024 Contestio · Automatická správa
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
     `;
   }
 
   private stripHtml(html: string): string {
     return html.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+  }
+
+  async sendCompetitionReminderEmail(
+    email: string,
+    competitionName: string,
+    dashboardUrl: string
+  ): Promise<boolean> {
+    const subject = `🚦 Čas začať – pozvi tímy do súťaže "${competitionName}"`;
+    const html = this.generateCompetitionReminderTemplate(competitionName, dashboardUrl);
+
+    return this.sendEmail({
+      to: email,
+      subject,
+      html,
+    });
+  }
+
+  private generateCompetitionReminderTemplate(competitionName: string, dashboardUrl: string): string {
+    const escapedName = this.escapeHtml(competitionName);
+    return `
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Contestio – Čas začať!</title>
+</head>
+<body style="margin:0; padding:0; background-color:#0c1f28; font-family: Arial, Helvetica, sans-serif; color:#ffffff;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0c1f28; padding:40px 0;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background:#0f2632; border-radius:12px; overflow:hidden; box-shadow:0 10px 40px rgba(0,0,0,0.4);">
+          <!-- HEADER -->
+          <tr>
+            <td style="padding:32px; text-align:center;">
+              <h1 style="margin:0; font-size:28px;">🚦 Čas začať!</h1>
+              <p style="margin-top:8px; font-size:13px; color:#94a3b8;">
+                Tvoja súťaž „${escapedName}" čaká na prvých účastníkov
+              </p>
+            </td>
+          </tr>
+          <!-- CONTENT -->
+          <tr>
+            <td style="padding:24px 32px;">
+              <p style="font-size:16px; line-height:1.6;">
+                Ahoj,<br><br>
+                Tvoja súťaž je pripravená – teraz je ideálny čas:
+              </p>
+              <ul style="margin:16px 0; padding-left:20px; color:#cbd5e1;">
+                <li>📨 poslať pozvánky tímom</li>
+                <li>📲 zdieľať súťaž cez QR kód</li>
+                <li>🎯 nastaviť pravidlá a hodnotenie</li>
+                <li>▶️ spustiť súťaž v správnom momente</li>
+              </ul>
+              <div style="margin:32px 0; text-align:center;">
+                <a href="${dashboardUrl}"
+                   style="display:inline-block; background:#f97316; color:#0c1f28; padding:14px 28px; border-radius:10px; text-decoration:none; font-weight:bold;">
+                  Otvoriť správu súťaže
+                </a>
+              </div>
+              <p style="font-size:14px; color:#94a3b8;">
+                💡 Tip: Organizátori, ktorí pozvú tímy hneď, majú vyššiu účasť a menej problémov počas preteku.
+              </p>
+              <p style="margin-top:24px;">
+                Držíme palce! 🎣<br>
+                <strong>Tím Contestio</strong>
+              </p>
+            </td>
+          </tr>
+          <!-- FOOTER -->
+          <tr>
+            <td style="background:#0b1a22; padding:20px; text-align:center; font-size:12px; color:#64748b;">
+              © 2024 Contestio · Tento e-mail bol odoslaný automaticky
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+    `;
   }
 
   isReady(): boolean {

@@ -1,0 +1,136 @@
+Nižšie máš EMAIL #2 a EMAIL #3, pripravené produkčne, vizuálne aj textovo v rovnakom štýle ako prvý mail. Môžeš ich rovno nasadiť do Replit / SendGrid / Resend.
+
+✅ EMAIL #2
+„Tvoja súťaž je schválená – môžeš začať“
+
+👉 Trigger: po schválení súťaže administrátorom
+👉 Cieľ: dať istotu + naviesť na prvé akcie (tímy, rozhodcovia, štart)
+
+E-mail
+Predmet
+    <!-- HEADER -->
+    <tr>
+      <td style="padding:32px; text-align:center;">
+        <h1 style="margin:0; font-size:28px;">🎉 Súťaž schválená!</h1>
+        <p style="margin-top:8px; font-size:13px; color:#94a3b8; text-transform:uppercase; letter-spacing:2px;">
+          Contestio Organizer
+        </p>
+      </td>
+    </tr>
+
+    <!-- CONTENT -->
+    <tr>
+      <td style="padding:24px 32px;">
+        <p style="font-size:16px; line-height:1.6;">
+          Super správa! Tvoja súťaž <strong>„ostrý test“</strong> bola úspešne schválená ✅
+        </p>
+
+        <p style="font-size:16px; line-height:1.6;">
+          Teraz máš plný prístup k organizátorskému panelu a môžeš:
+        </p>
+
+        <ul style="margin:16px 0; padding-left:20px; color:#cbd5e1;">
+          <li>👥 pridávať tímy</li>
+          <li>🎣 spravovať úlovky</li>
+          <li>👨‍⚖️ pozvať rozhodcov</li>
+          <li>📣 posielať oznamy účastníkom</li>
+          <li>🚦 spustiť súťaž v správny čas</li>
+        </ul>
+
+        <div style="margin:32px 0; text-align:center;">
+          <a href="https://workspace.lubomirsulek.repl.co/organizer/dashboard"
+             style="display:inline-block; background:#22c55e; color:#06210f; padding:14px 28px; border-radius:10px; text-decoration:none; font-weight:bold;">
+            Prejsť do organizátorského panelu
+          </a>
+        </div>
+
+        <p style="font-size:14px; color:#94a3b8;">
+          💡 Tip: Nezabudni pridať rozhodcov ešte pred štartom súťaže – výrazne ti to uľahčí priebeh.
+        </p>
+
+        <p style="margin-top:24px;">
+          Držíme palce a prajeme úspešný priebeh súťaže! 🎣<br>
+          <strong>Tím Contestio</strong>
+        </p>
+      </td>
+    </tr>
+
+    <!-- FOOTER -->
+    <tr>
+      <td style="background:#0b1a22; padding:20px; text-align:center; font-size:12px; color:#64748b;">
+        © 2024 Contestio · Automatická správa
+      </td>
+    </tr>
+
+  </table>
+</td>
+✅ EMAIL #3
+„Pozvi tímy & spusti súťaž“
+
+👉 Trigger: 24 hodín po schválení
+👉 Cieľ: prinútiť organizátora konať (pozvať ľudí, spustiť súťaž)
+
+E-mail
+Predmet
+    <!-- HEADER -->
+    <tr>
+      <td style="padding:32px; text-align:center;">
+        <h1 style="margin:0; font-size:28px;">🚦 Čas začať!</h1>
+        <p style="margin-top:8px; font-size:13px; color:#94a3b8;">
+          Tvoja súťaž čaká na prvých účastníkov
+        </p>
+      </td>
+    </tr>
+
+    <!-- CONTENT -->
+    <tr>
+      <td style="padding:24px 32px;">
+        <p style="font-size:16px; line-height:1.6;">
+          Ahoj,<br><br>
+          Tvoja súťaž je pripravená – teraz je ideálny čas:
+        </p>
+
+        <ul style="margin:16px 0; padding-left:20px; color:#cbd5e1;">
+          <li>📨 poslať pozvánky tímom</li>
+          <li>📲 zdieľať súťaž cez QR kód</li>
+          <li>🎯 nastaviť pravidlá a hodnotenie</li>
+          <li>▶️ spustiť súťaž v správnom momente</li>
+        </ul>
+
+        <div style="margin:32px 0; text-align:center;">
+          <a href="https://workspace.lubomirsulek.repl.co/organizer/dashboard"
+             style="display:inline-block; background:#f97316; color:#0c1f28; padding:14px 28px; border-radius:10px; text-decoration:none; font-weight:bold;">
+            Otvoriť správu súťaže
+          </a>
+        </div>
+
+        <p style="font-size:14px; color:#94a3b8;">
+          💡 Tip: Organizátori, ktorí pozvú tímy hneď, majú vyššiu účasť a menej problémov počas preteku.
+        </p>
+
+        <p style="margin-top:24px;">
+          Držíme palce! 🎣<br>
+          <strong>Tím Contestio</strong>
+        </p>
+      </td>
+    </tr>
+
+    <!-- FOOTER -->
+    <tr>
+      <td style="background:#0b1a22; padding:20px; text-align:center; font-size:12px; color:#64748b;">
+        © 2024 Contestio · Tento e-mail bol odoslaný automaticky
+      </td>
+    </tr>
+
+  </table>
+</td>
+🔥 ZHRNUTIE – čo teraz máš
+
+✔ Email #1 – Registrácia súťaže
+✔ Email #2 – Schválenie + prístup
+✔ Email #3 – Aktivácia / výzva k akcii
+
+➡️ Máš komplet email onboarding funnel pre organizátora
+➡️ Vyzerá profesionálne
+➡️ Funguje pred výstavou aj po nej
+➡️ Podporuje monetizáciu (Premium, organizátori, opakovanie)

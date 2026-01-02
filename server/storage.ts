@@ -136,7 +136,7 @@ export interface IStorage {
   getCompetitions(): Promise<Competition[]>;
   getCompetition(id: string): Promise<Competition | undefined>;
   createCompetition(competition: InsertCompetition): Promise<Competition>;
-  updateCompetition(id: string, competition: Partial<InsertCompetition>): Promise<Competition>;
+  updateCompetition(id: string, competition: Partial<InsertCompetition> & { approvedAt?: Date; reminderSentAt?: Date }): Promise<Competition>;
   updateCompetitionStatus(id: string, status: string): Promise<void>;
   deleteCompetition(id: string): Promise<void>;
   resetCompetitionCatches(competitionId: string): Promise<void>;
@@ -837,7 +837,7 @@ export class DatabaseStorage implements IStorage {
     return newCompetition;
   }
 
-  async updateCompetition(id: string, competition: Partial<InsertCompetition>): Promise<Competition> {
+  async updateCompetition(id: string, competition: Partial<InsertCompetition> & { approvedAt?: Date; reminderSentAt?: Date }): Promise<Competition> {
     const [updatedCompetition] = await db
       .update(competitions)
       .set({ ...competition, updatedAt: new Date() })
@@ -944,6 +944,13 @@ export class DatabaseStorage implements IStorage {
     };
 
     const newCompetition = await this.createCompetition(competitionData);
+    
+    // Set approvedAt timestamp on the competition for 24h reminder email scheduling
+    const [approvedCompetition] = await db
+      .update(competitions)
+      .set({ approvedAt: new Date() })
+      .where(eq(competitions.id, newCompetition.id))
+      .returning();
 
     // Update registration status and link to created competition
     const [updatedRegistration] = await db
@@ -956,7 +963,7 @@ export class DatabaseStorage implements IStorage {
       .where(eq(competitionRegistrations.id, id))
       .returning();
 
-    return { registration: updatedRegistration, competition: newCompetition };
+    return { registration: updatedRegistration, competition: approvedCompetition };
   }
 
   async updateCompetitionRegistration(id: string, data: Partial<InsertCompetitionRegistration>): Promise<CompetitionRegistration> {
