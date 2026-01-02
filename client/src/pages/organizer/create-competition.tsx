@@ -40,16 +40,58 @@ import {
   Settings,
   Save,
   Calendar,
-  Info
+  Info,
+  CreditCard,
+  Star,
+  Crown,
+  Zap
 } from "lucide-react";
 import { z } from "zod";
 
+const PLANS = [
+  {
+    id: 'basic',
+    name: 'Basic',
+    price: 69,
+    description: 'Pre menšie súťaže',
+    icon: Star,
+    features: ['Max 15 tímov', '2 rozhodcovia', 'Bez sektorov', 'Základná štatistika'],
+    maxTeams: 15,
+    maxReferees: 2,
+    hasSectors: false,
+  },
+  {
+    id: 'pro',
+    name: 'Pro',
+    price: 199,
+    description: 'Pre stredné súťaže',
+    icon: Zap,
+    features: ['Neobmedzené tímy', '5 rozhodcov', 'Podpora sektorov', 'Rozšírená štatistika', 'Email notifikácie'],
+    maxTeams: null,
+    maxReferees: 5,
+    hasSectors: true,
+    recommended: true,
+  },
+  {
+    id: 'premium',
+    name: 'Premium',
+    price: 599,
+    description: 'Pre veľké podujatia',
+    icon: Crown,
+    features: ['Neobmedzené tímy', 'Neobmedzený počet rozhodcov', 'Všetky funkcie', 'Logo a branding', 'Prioritná podpora'],
+    maxTeams: null,
+    maxReferees: null,
+    hasSectors: true,
+  },
+];
+
 const STEPS = [
-  { id: 1, title: "Základné údaje", icon: FileText, description: "Názov, miesto a dátumy" },
-  { id: 2, title: "Pravidlá", icon: Settings, description: "Bodovanie a nastavenia" },
-  { id: 3, title: "Sektory", icon: MapPin, description: "Rozdelenie na sektory" },
-  { id: 4, title: "Špeciálne súťaže", icon: Trophy, description: "Doplnkové kategórie" },
-  { id: 5, title: "Súhrn", icon: Check, description: "Kontrola a uloženie" },
+  { id: 1, title: "Výber balíka", icon: CreditCard, description: "Vyberte si plán" },
+  { id: 2, title: "Základné údaje", icon: FileText, description: "Názov, miesto a dátumy" },
+  { id: 3, title: "Pravidlá", icon: Settings, description: "Bodovanie a nastavenia" },
+  { id: 4, title: "Sektory", icon: MapPin, description: "Rozdelenie na sektory" },
+  { id: 5, title: "Špeciálne súťaže", icon: Trophy, description: "Doplnkové kategórie" },
+  { id: 6, title: "Súhrn", icon: Check, description: "Kontrola a uloženie" },
 ];
 
 const SIDE_COMPETITIONS = [
@@ -111,11 +153,16 @@ export default function CreateCompetition() {
   const [currentStep, setCurrentStep] = useState(1);
   const [competitionId, setCompetitionId] = useState<string | null>(editId);
   const competitionIdRef = useRef<string | null>(editId);
+  const [selectedPlan, setSelectedPlan] = useState<string>('pro');
   const [hasSectors, setHasSectors] = useState(false);
   const [numSectors, setNumSectors] = useState(2);
   const [sectorPlaces, setSectorPlaces] = useState<Array<{ sectorName: string; places: string[] }>>([]);
   const [sideCompetitions, setSideCompetitions] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  
+  const currentPlanLimits = useMemo(() => {
+    return PLANS.find(p => p.id === selectedPlan) || PLANS[1];
+  }, [selectedPlan]);
 
   const form = useForm<FormData>({
     resolver: zodResolver(fullSchema),
@@ -209,6 +256,7 @@ export default function CreateCompetition() {
         sectorPlaces: hasSectors ? sectorPlaces : [],
         sideCompetitions,
         status: 'draft',
+        planTier: selectedPlan,
       });
       return response.json();
     },
@@ -241,6 +289,7 @@ export default function CreateCompetition() {
         hasSectors,
         sectorPlaces: hasSectors ? sectorPlaces : [],
         sideCompetitions,
+        planTier: selectedPlan,
       });
       return response.json();
     },
@@ -271,22 +320,41 @@ export default function CreateCompetition() {
   };
 
   const handleNext = async () => {
-    // Guard: ak sme za krokom 1 a nemáme competitionId, niečo je zle
+    // Guard: ak sme za krokom 2 a nemáme competitionId, niečo je zle
     // Používame ref namiesto state kvôli race condition
-    if (currentStep > 1 && !competitionIdRef.current) {
+    if (currentStep > 2 && !competitionIdRef.current) {
       toast({
         title: "Chyba",
-        description: "Najprv vytvor súťaž v kroku 1",
+        description: "Najprv vytvor súťaž v kroku 2",
         variant: "destructive",
       });
-      setCurrentStep(1);
+      setCurrentStep(2);
       return;
     }
     
     let isValid = false;
     
+    // Step 1: Plan selection - just validate a plan is selected
     if (currentStep === 1) {
-      isValid = await form.trigger(['name', 'location', 'startDate', 'endDate']);
+      if (!selectedPlan) {
+        toast({
+          title: "Vyberte balík",
+          description: "Pre pokračovanie musíte vybrať cenový balík.",
+          variant: "destructive",
+        });
+        return;
+      }
+      // If Basic plan, disable sectors
+      if (selectedPlan === 'basic') {
+        setHasSectors(false);
+      }
+      setCurrentStep(2);
+      return;
+    }
+    
+    // Step 2: Basic info - create competition
+    if (currentStep === 2) {
+      isValid = await form.trigger(['name', 'location', 'startDate', 'endDate', 'contactEmail', 'contactPhone']);
       if (isValid && !competitionId) {
         // Create competition and wait for ID before proceeding
         setIsSaving(true);
@@ -296,18 +364,18 @@ export default function CreateCompetition() {
           // Set ref first (synchronous), then state
           competitionIdRef.current = result.id;
           setCompetitionId(result.id);
-          setCurrentStep(2);
+          setCurrentStep(3);
         } finally {
           setIsSaving(false);
         }
         return; // Stop here, don't continue to the normal flow
       }
-    } else if (currentStep === 2) {
+    } else if (currentStep === 3) {
       isValid = await form.trigger(['description', 'rules', 'scoringType', 'minWeight']);
       if (isValid && competitionIdRef.current) {
         await saveProgress();
       }
-    } else if (currentStep === 3) {
+    } else if (currentStep === 4) {
       // Validácia sektorov ak sú zapnuté
       if (hasSectors) {
         const isSectorsValid = sectorPlaces.every(s => s.sectorName.trim() !== "" && s.places.length > 0);
@@ -324,7 +392,8 @@ export default function CreateCompetition() {
       if (competitionIdRef.current) {
         await saveProgress();
       }
-    } else if (currentStep === 4) {
+    } else if (currentStep === 5) {
+      // Step 5: Špeciálne súťaže
       isValid = true;
       if (competitionIdRef.current) {
         await saveProgress();
@@ -350,7 +419,7 @@ export default function CreateCompetition() {
     if (compId) {
       toast({
         title: "🎉 Súťaž uložená!",
-        description: "Teraz vyberte balík a dokončite registráciu.",
+        description: "Teraz dokončite registráciu platbou.",
       });
       setLocation(`/organizer/competition/${compId}/checkout`);
     } else {
@@ -492,6 +561,77 @@ export default function CreateCompetition() {
                 {currentStep === 1 && (
                   <div className="space-y-6">
                     <div className="flex items-center gap-2 mb-4">
+                      <CreditCard className="w-5 h-5 text-orange-500" />
+                      <h2 className="text-lg font-semibold">Vyberte cenový balík</h2>
+                    </div>
+                    <p className="text-muted-foreground mb-6">
+                      Výber balíka určuje limity a funkcie pre vašu súťaž. Platba bude až na konci.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {PLANS.map((plan) => {
+                        const Icon = plan.icon;
+                        const isSelected = selectedPlan === plan.id;
+                        return (
+                          <div
+                            key={plan.id}
+                            onClick={() => setSelectedPlan(plan.id)}
+                            className={`relative cursor-pointer rounded-xl border-2 p-5 transition-all hover:shadow-md ${
+                              isSelected
+                                ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20'
+                                : 'border-border hover:border-orange-300'
+                            }`}
+                            data-testid={`plan-${plan.id}`}
+                          >
+                            {'recommended' in plan && plan.recommended && (
+                              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                                Odporúčané
+                              </div>
+                            )}
+                            <div className="flex items-center gap-3 mb-3">
+                              <div className={`p-2 rounded-lg ${isSelected ? 'bg-orange-500 text-white' : 'bg-muted'}`}>
+                                <Icon className="w-5 h-5" />
+                              </div>
+                              <div>
+                                <h3 className="font-bold text-foreground">{plan.name}</h3>
+                                <p className="text-2xl font-bold text-orange-500">{plan.price}€</p>
+                              </div>
+                            </div>
+                            <p className="text-sm text-muted-foreground mb-3">{plan.description}</p>
+                            <ul className="text-sm space-y-1">
+                              {plan.features.map((feature, i) => (
+                                <li key={i} className="flex items-center gap-2 text-muted-foreground">
+                                  <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                                  {feature}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {selectedPlan === 'basic' && (
+                      <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4 mt-4">
+                        <div className="flex items-start gap-2">
+                          <Info className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                          <div>
+                            <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                              Basic balík má obmedzenia
+                            </p>
+                            <p className="text-sm text-amber-700 dark:text-amber-300">
+                              Maximum 15 tímov, 2 rozhodcovia a sektory nie sú podporované.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {currentStep === 2 && (
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-2 mb-4">
                       <Calendar className="w-5 h-5 text-orange-500" />
                       <h2 className="text-lg font-semibold">Základné informácie</h2>
                     </div>
@@ -589,7 +729,7 @@ export default function CreateCompetition() {
                   </div>
                 )}
 
-                {currentStep === 2 && (
+                {currentStep === 3 && (
                   <div className="space-y-6">
                     <div className="flex items-center gap-2 mb-4">
                       <Settings className="w-5 h-5 text-orange-500" />
@@ -765,107 +905,121 @@ export default function CreateCompetition() {
                   </div>
                 )}
 
-                {currentStep === 3 && (
+                {currentStep === 4 && (
                   <div className="space-y-6">
                     <div className="flex items-center gap-2 mb-4">
                       <MapPin className="w-5 h-5 text-orange-500" />
                       <h2 className="text-lg font-semibold">Sektory a miesta</h2>
                     </div>
 
-                    <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                      <div>
-                        <p className="font-medium">Rozdeliť súťaž na sektory?</p>
-                        <p className="text-sm text-muted-foreground">Sektory umožňujú priradiť tímy k jednotlivým zónam</p>
+                    {selectedPlan === 'basic' ? (
+                      <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-6 text-center">
+                        <Info className="w-12 h-12 mx-auto mb-4 text-amber-500 opacity-50" />
+                        <h3 className="font-medium text-amber-800 dark:text-amber-200 mb-2">
+                          Sektory nie sú dostupné v Basic balíku
+                        </h3>
+                        <p className="text-sm text-amber-700 dark:text-amber-300">
+                          Pre používanie sektorov potrebujete balík Pro alebo Premium.
+                        </p>
                       </div>
-                      <Switch 
-                        checked={hasSectors} 
-                        onCheckedChange={setHasSectors}
-                        data-testid="switch-sectors"
-                      />
-                    </div>
-
-                    {hasSectors && (
+                    ) : (
                       <>
-                        <div className="flex items-center gap-4">
-                          <label className="text-sm font-medium">Počet sektorov:</label>
-                          <Select 
-                            value={numSectors.toString()} 
-                            onValueChange={(v) => setNumSectors(parseInt(v))}
-                          >
-                            <SelectTrigger className="w-24" data-testid="select-num-sectors">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {[2, 3, 4, 5, 6, 7, 8].map(n => (
-                                <SelectItem key={n} value={n.toString()}>{n}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                        <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                          <div>
+                            <p className="font-medium">Rozdeliť súťaž na sektory?</p>
+                            <p className="text-sm text-muted-foreground">Sektory umožňujú priradiť tímy k jednotlivým zónam</p>
+                          </div>
+                          <Switch 
+                            checked={hasSectors} 
+                            onCheckedChange={setHasSectors}
+                            data-testid="switch-sectors"
+                          />
                         </div>
 
-                        <div className="space-y-4">
-                          {sectorPlaces.map((sector, sectorIndex) => (
-                            <Card key={sectorIndex} className="border-dashed">
-                              <CardHeader className="pb-2">
-                                <Input
-                                  value={sector.sectorName}
-                                  onChange={(e) => updateSectorName(sectorIndex, e.target.value)}
-                                  className="font-semibold text-lg border-0 px-0 focus-visible:ring-0"
-                                  data-testid={`input-sector-name-${sectorIndex}`}
-                                />
-                              </CardHeader>
-                              <CardContent>
-                                <div className="flex flex-wrap gap-2">
-                                  {sector.places.map((place, placeIndex) => (
-                                    <div key={placeIndex} className="flex items-center gap-1">
-                                      <Input
-                                        value={place}
-                                        onChange={(e) => updatePlaceName(sectorIndex, placeIndex, e.target.value)}
-                                        className="w-28 h-8 text-sm"
-                                        data-testid={`input-place-${sectorIndex}-${placeIndex}`}
-                                      />
-                                      {sector.places.length > 1 && (
-                                        <Button
-                                          type="button"
-                                          variant="ghost"
-                                          size="icon"
-                                          className="h-8 w-8"
-                                          onClick={() => removePlace(sectorIndex, placeIndex)}
-                                        >
-                                          <Trash2 className="h-3 w-3" />
-                                        </Button>
-                                      )}
-                                    </div>
+                        {hasSectors && (
+                          <>
+                            <div className="flex items-center gap-4">
+                              <label className="text-sm font-medium">Počet sektorov:</label>
+                              <Select 
+                                value={numSectors.toString()} 
+                                onValueChange={(v) => setNumSectors(parseInt(v))}
+                              >
+                                <SelectTrigger className="w-24" data-testid="select-num-sectors">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {[2, 3, 4, 5, 6, 7, 8].map(n => (
+                                    <SelectItem key={n} value={n.toString()}>{n}</SelectItem>
                                   ))}
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => addPlace(sectorIndex)}
-                                    className="h-8"
-                                  >
-                                    <Plus className="h-3 w-3 mr-1" />
-                                    Miesto
-                                  </Button>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                      </>
-                    )}
+                                </SelectContent>
+                              </Select>
+                            </div>
 
-                    {!hasSectors && (
-                      <div className="text-center py-8 text-muted-foreground">
-                        <MapPin className="w-12 h-12 mx-auto mb-4 opacity-30" />
-                        <p>Sektory nie sú povolené.</p>
-                        <p className="text-sm">Zapnite ich prepínačom vyššie, ak ich potrebujete.</p>
-                      </div>
+                            <div className="space-y-4">
+                              {sectorPlaces.map((sector, sectorIndex) => (
+                                <Card key={sectorIndex} className="border-dashed">
+                                  <CardHeader className="pb-2">
+                                    <Input
+                                      value={sector.sectorName}
+                                      onChange={(e) => updateSectorName(sectorIndex, e.target.value)}
+                                      className="font-semibold text-lg border-0 px-0 focus-visible:ring-0"
+                                      data-testid={`input-sector-name-${sectorIndex}`}
+                                    />
+                                  </CardHeader>
+                                  <CardContent>
+                                    <div className="flex flex-wrap gap-2">
+                                      {sector.places.map((place, placeIndex) => (
+                                        <div key={placeIndex} className="flex items-center gap-1">
+                                          <Input
+                                            value={place}
+                                            onChange={(e) => updatePlaceName(sectorIndex, placeIndex, e.target.value)}
+                                            className="w-28 h-8 text-sm"
+                                            data-testid={`input-place-${sectorIndex}-${placeIndex}`}
+                                          />
+                                          {sector.places.length > 1 && (
+                                            <Button
+                                              type="button"
+                                              variant="ghost"
+                                              size="icon"
+                                              className="h-8 w-8"
+                                              onClick={() => removePlace(sectorIndex, placeIndex)}
+                                            >
+                                              <Trash2 className="h-3 w-3" />
+                                            </Button>
+                                          )}
+                                        </div>
+                                      ))}
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => addPlace(sectorIndex)}
+                                        className="h-8"
+                                      >
+                                        <Plus className="h-3 w-3 mr-1" />
+                                        Miesto
+                                      </Button>
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              ))}
+                            </div>
+                          </>
+                        )}
+
+                        {!hasSectors && (
+                          <div className="text-center py-8 text-muted-foreground">
+                            <MapPin className="w-12 h-12 mx-auto mb-4 opacity-30" />
+                            <p>Sektory nie sú povolené.</p>
+                            <p className="text-sm">Zapnite ich prepínačom vyššie, ak ich potrebujete.</p>
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                 )}
 
-                {currentStep === 4 && (
+                {currentStep === 5 && (
                   <div className="space-y-6">
                     <div className="flex items-center gap-2 mb-4">
                       <Trophy className="w-5 h-5 text-orange-500" />
@@ -903,11 +1057,25 @@ export default function CreateCompetition() {
                   </div>
                 )}
 
-                {currentStep === 5 && (
+                {currentStep === 6 && (
                   <div className="space-y-6">
                     <div className="flex items-center gap-2 mb-4">
                       <Check className="w-5 h-5 text-green-500" />
                       <h2 className="text-lg font-semibold">Súhrn súťaže</h2>
+                    </div>
+
+                    <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4 mb-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <CreditCard className="w-5 h-5 text-orange-600" />
+                          <div>
+                            <p className="text-sm text-orange-700 dark:text-orange-300">Vybraný balík</p>
+                            <p className="font-bold text-orange-800 dark:text-orange-200">
+                              {PLANS.find(p => p.id === selectedPlan)?.name} - {PLANS.find(p => p.id === selectedPlan)?.price}€
+                            </p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
                     <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
@@ -915,11 +1083,11 @@ export default function CreateCompetition() {
                         <Info className="w-5 h-5 text-green-600 mt-0.5" />
                         <div>
                           <h4 className="font-medium text-green-800 dark:text-green-200">
-                            Súťaž bude uložená ako rozpracovaná
+                            Ďalší krok: Platba
                           </h4>
                           <p className="text-sm text-green-700 dark:text-green-300 mt-1">
-                            Po kliknutí na "Uložiť" sa súťaž uloží do vášho dashboardu. 
-                            Keď budete pripravení, môžete ju publikovať a prijímať prihlášky tímov.
+                            Po kliknutí na "Pokračovať" budete presmerovaní na platobnú stránku 
+                            kde dokončíte registráciu súťaže.
                           </p>
                         </div>
                       </div>
