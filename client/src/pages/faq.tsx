@@ -2,7 +2,7 @@ import NavigationHeader from "@/components/navigation-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TacticalIcon, TacticalIconVariant } from "@/components/ui/tactical-icon";
-import { ChevronDown, Crown, Trophy, Book, KeyRound, Wrench, ArrowLeft, LucideIcon } from "lucide-react";
+import { ChevronDown, Crown, Trophy, BookOpen, KeyRound, Wrench, ArrowLeft, LucideIcon } from "lucide-react";
 import { useState } from "react";
 
 interface FAQItem {
@@ -85,7 +85,7 @@ export default function FAQ() {
     },
     {
       title: "Rybársky denník",
-      icon: Book,
+      icon: BookOpen,
       variant: "cyan",
       description: "Zápis úlovkov, štatistiky, sezónne ciele a offline režim",
       items: [
