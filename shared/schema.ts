@@ -691,33 +691,46 @@ export const battleInvitationsRelations = relations(battleInvitations, ({ one })
   }),
 }));
 
-// Helper to convert empty strings to null for optional numeric fields
-const emptyStringToNull = z.preprocess(
-  (val) => (val === "" || val === undefined ? null : val),
-  z.string().nullable().optional()
-);
-
-// Helper for optional decimal fields - converts "" to null, then parses to string for database
+// Helper for optional decimal fields - converts "" to null, preserves undefined, validates numeric input
 const optionalDecimalField = z.preprocess(
   (val) => {
-    if (val === "" || val === undefined || val === null) return null;
-    // If it's a valid number string or number, keep it as string for decimal column
-    const num = typeof val === 'string' ? parseFloat(val) : val;
-    if (typeof num === 'number' && !isNaN(num)) return num.toString();
-    return null;
+    // Preserve undefined - important for partial updates (don't overwrite existing data)
+    if (val === undefined) return undefined;
+    // Convert empty strings and null to null (explicit "no value")
+    if (val === "" || val === null) return null;
+    // Keep valid values for further validation
+    return val;
   },
-  z.string().nullable().optional()
+  z.union([
+    z.undefined(),
+    z.null(),
+    z.string().refine(
+      (val) => !isNaN(parseFloat(val)) && isFinite(Number(val)),
+      { message: "Musí byť platné číslo" }
+    ),
+    z.number().transform(val => val.toString())
+  ]).optional()
 );
 
-// Helper for optional integer fields - converts "" to null
+// Helper for optional integer fields - converts "" to null, preserves undefined, validates numeric input
 const optionalIntegerField = z.preprocess(
   (val) => {
-    if (val === "" || val === undefined || val === null) return null;
-    const num = typeof val === 'string' ? parseInt(val, 10) : val;
-    if (typeof num === 'number' && !isNaN(num)) return num;
-    return null;
+    // Preserve undefined - important for partial updates (don't overwrite existing data)
+    if (val === undefined) return undefined;
+    // Convert empty strings and null to null (explicit "no value")
+    if (val === "" || val === null) return null;
+    // Keep valid values for further validation
+    return val;
   },
-  z.number().int().nullable().optional()
+  z.union([
+    z.undefined(),
+    z.null(),
+    z.string().refine(
+      (val) => !isNaN(parseInt(val, 10)) && Number.isInteger(Number(val)),
+      { message: "Musí byť celé číslo" }
+    ).transform(val => parseInt(val, 10)),
+    z.number().int()
+  ]).optional()
 );
 
 // Insert schemas
@@ -748,6 +761,7 @@ export const insertCompetitionSchema = createInsertSchema(competitions).omit({
   thirdPlacePrize: optionalDecimalField,
   registrationFee: optionalDecimalField,
   maxTeams: optionalIntegerField,
+  maxReferees: optionalIntegerField,
 });
 
 export const insertCompetitionRegistrationSchema = createInsertSchema(competitionRegistrations).omit({

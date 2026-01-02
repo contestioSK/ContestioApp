@@ -374,32 +374,46 @@ export interface IStorage {
   getPromoCodeStats(id: number): Promise<{ totalUsages: number; usages: PromoCodeUsage[] }>;
 }
 
-// Sanitizer for competition numeric fields - converts empty strings to null
-// This provides a second layer of defense after Zod validation
+// Comprehensive sanitizer for competition data
+// 1. Removes ALL undefined keys so partial updates don't overwrite existing data
+// 2. Converts empty strings to null for numeric fields
+// 3. Handles integer field string-to-number conversion
+// This provides a robust second layer of defense after Zod validation
 function sanitizeCompetitionData<T extends Record<string, any>>(data: T): T {
-  const numericFields = [
+  const numericFields = new Set([
     'firstPlacePrize', 'secondPlacePrize', 'thirdPlacePrize', 
-    'registrationFee', 'maxTeams', 'latitude', 'longitude'
-  ];
+    'registrationFee', 'maxTeams', 'maxReferees', 'latitude', 'longitude'
+  ]);
   
-  const sanitized = { ...data };
+  const integerFields = new Set(['maxTeams', 'maxReferees']);
   
-  for (const field of numericFields) {
-    if (field in sanitized) {
-      const value = sanitized[field];
+  const sanitized: Record<string, any> = {};
+  
+  for (const [key, value] of Object.entries(data)) {
+    // Skip undefined values entirely - prevents overwriting existing data
+    if (value === undefined) continue;
+    
+    // Handle numeric fields specially
+    if (numericFields.has(key)) {
       // Convert empty strings to null
-      if (value === '' || value === undefined) {
-        (sanitized as any)[field] = null;
+      if (value === '') {
+        sanitized[key] = null;
+        continue;
       }
-      // Ensure maxTeams is a number or null (not a string)
-      if (field === 'maxTeams' && typeof value === 'string' && value !== '') {
+      
+      // Convert integer fields from string to number
+      if (integerFields.has(key) && typeof value === 'string') {
         const parsed = parseInt(value, 10);
-        (sanitized as any)[field] = isNaN(parsed) ? null : parsed;
+        sanitized[key] = isNaN(parsed) ? null : parsed;
+        continue;
       }
     }
+    
+    // Keep the value as-is
+    sanitized[key] = value;
   }
   
-  return sanitized;
+  return sanitized as T;
 }
 
 export class DatabaseStorage implements IStorage {
