@@ -55,7 +55,7 @@ const STEPS = [
 const SIDE_COMPETITIONS = [
   { id: "big-fish-overall", label: "Najväčšia ryba" },
   { id: "big-common-carp", label: "Najväčší šupináč" },
-  { id: "big-mirror-carp", label: "Najväčší zrkadlák" },
+  { id: "big-mirror-carp", label: "Najväčší lysec" },
   { id: "first-catch", label: "Prvý úlovok" },
   { id: "last-catch", label: "Posledný úlovok" },
   { id: "most-fish-caught", label: "Najviac úlovkov" },
