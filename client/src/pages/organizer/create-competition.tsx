@@ -868,24 +868,28 @@ export default function CreateCompetition() {
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {SIDE_COMPETITIONS.map((comp) => (
-                        <div
-                          key={comp.id}
-                          className={`flex items-center space-x-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                            sideCompetitions.includes(comp.id)
-                              ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-300 dark:border-orange-700'
-                              : 'bg-muted/30 hover:bg-muted/50'
-                          }`}
-                          onClick={() => toggleSideCompetition(comp.id)}
-                          data-testid={`checkbox-side-${comp.id}`}
-                        >
-                          <Checkbox
-                            checked={sideCompetitions.includes(comp.id)}
-                            className="pointer-events-none"
-                          />
-                          <span className="text-sm font-medium">{comp.label}</span>
-                        </div>
-                      ))}
+                      {SIDE_COMPETITIONS.map((comp) => {
+                        const isChecked = sideCompetitions.includes(comp.id);
+                        return (
+                          <label
+                            key={comp.id}
+                            className={`flex items-center space-x-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                              isChecked
+                                ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-300 dark:border-orange-700'
+                                : 'bg-muted/30 hover:bg-muted/50'
+                            }`}
+                            data-testid={`checkbox-side-${comp.id}`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => toggleSideCompetition(comp.id)}
+                              className="h-4 w-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+                            />
+                            <span className="text-sm font-medium">{comp.label}</span>
+                          </label>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
