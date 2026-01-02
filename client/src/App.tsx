@@ -54,6 +54,8 @@ import BattleArchive from "@/pages/diary/battle-archive";
 import TripGallery from "@/pages/diary/trip-gallery";
 import Register from "@/pages/register";
 import OrganizerDashboard from "@/pages/organizer-dashboard";
+import OrganizerCompetitions from "@/pages/organizer/competitions";
+import OrganizerCompetitionManage from "@/pages/organizer/competition-manage";
 import AuthRegister from "@/pages/auth/register";
 import AuthLogin from "@/pages/auth/login";
 import VerifyEmail from "@/pages/auth/verify-email";
@@ -130,7 +132,21 @@ function Router() {
         </ProtectedRoute>
       </Route>
       <Route path="/referee-interface" component={RefereeInterface} />
-      <Route path="/organizer" component={OrganizerDashboard} />
+      <Route path="/organizer">
+        <ProtectedRoute redirectTo="/auth/login">
+          <OrganizerDashboard />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/organizer/competitions">
+        <ProtectedRoute redirectTo="/auth/login">
+          <OrganizerCompetitions />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/organizer/competition/:id">
+        <ProtectedRoute redirectTo="/auth/login">
+          <OrganizerCompetitionManage />
+        </ProtectedRoute>
+      </Route>
       <Route path="/notification-preferences">
         <ProtectedRoute>
           <NotificationPreferences />
