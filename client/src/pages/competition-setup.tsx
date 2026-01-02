@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -41,6 +41,7 @@ import {
 } from "lucide-react";
 import { TacticalIconInline } from "@/components/ui/tactical-icon";
 import { z } from "zod";
+import type { CompetitionRegistration } from "@shared/schema";
 
 const STEPS = [
   { id: 1, title: "Základy", icon: FileText, description: "Logo, popis, pravidlá a bodovanie" },
@@ -122,7 +123,7 @@ export default function CompetitionSetup() {
     return validUrlPlan;
   });
 
-  const { data: registration, isLoading } = useQuery<{ selectedPlan?: string; contactEmail?: string }>({
+  const { data: registration, isLoading } = useQuery<CompetitionRegistration>({
     queryKey: ['/api/competition-registrations', id],
     enabled: !!id && !isDemoMode, // Always fetch to get contactEmail for verification
   });
@@ -142,6 +143,37 @@ export default function CompetitionSetup() {
       thirdPlacePrize: "",
     },
   });
+
+  // Load saved registration data into the form when available
+  useEffect(() => {
+    if (registration) {
+      // Populate form fields with saved data
+      basicsForm.reset({
+        description: registration.description || "",
+        rules: registration.rules || "",
+        scoringType: (registration.scoringType as "total" | "avg3" | "avg5") || "total",
+        minWeight: registration.minWeight ? parseFloat(registration.minWeight) : 2,
+        firstPlacePrize: registration.firstPlacePrize || "",
+        secondPlacePrize: registration.secondPlacePrize || "",
+        thirdPlacePrize: registration.thirdPlacePrize || "",
+      });
+      
+      // Populate sectors state - always sync with saved data
+      setHasSectors(!!registration.hasSectors);
+      if (registration.hasSectors && registration.sectorPlaces && Array.isArray(registration.sectorPlaces)) {
+        setSectorPlaces(registration.sectorPlaces);
+        setNumSectors(registration.sectorPlaces.length);
+      } else if (!registration.hasSectors) {
+        setSectorPlaces([]);
+        setNumSectors(2);
+      }
+      
+      // Populate side competitions state
+      if (registration.sideCompetitions && Array.isArray(registration.sideCompetitions)) {
+        setSideCompetitions(registration.sideCompetitions);
+      }
+    }
+  }, [registration]);
 
   const handleLogoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -323,6 +355,11 @@ export default function CompetitionSetup() {
           </Button>
           
           <h1 className="text-3xl font-bold text-foreground">Nastavenie súťaže</h1>
+          {registration?.name && (
+            <p className="text-lg font-medium text-primary mt-1">
+              {registration.name}
+            </p>
+          )}
           <p className="text-muted-foreground mt-2">
             Nakonfigurujte detaily vašej súťaže krok za krokom.
           </p>
