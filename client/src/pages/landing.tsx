@@ -10,6 +10,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import contestioLogo from "@assets/contestio logo_1760283270014.png";
+import diaryMockupImage from "@assets/image_1767349381338.png";
 interface Competition {
   id: string;
   name: string;
@@ -366,47 +367,13 @@ export default function Landing() {
                         </div>
                       </div>
                     ) : (
-                      /* Diary UI - Light Mode */
-                      <div className="w-full h-full bg-white flex flex-col">
-                        {/* Header */}
-                        <div className="bg-emerald-500 p-4">
-                          <h2 className="text-white font-bold text-lg">Môj Denník</h2>
-                        </div>
-                        {/* Content */}
-                        <div className="flex-1 p-4 space-y-3 bg-gray-50">
-                          <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-200">
-                            <div className="flex items-center gap-3 mb-2">
-                              <TacticalIcon icon={Fish} variant="cyan" size="sm" showLabel={false} />
-                              <div className="flex-1">
-                                <div className="font-medium text-gray-900" data-testid="text-catch-kapor">Kapor 8.5 kg</div>
-                                <div className="text-sm text-gray-500" data-testid="text-time-kapor">Dnes, 14:30</div>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-200">
-                            <div className="flex items-center gap-3 mb-2">
-                              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                                <Fish className="w-6 h-6 text-green-600" />
-                              </div>
-                              <div className="flex-1">
-                                <div className="font-medium text-gray-900" data-testid="text-catch-stuka">Šťuka 4.2 kg</div>
-                                <div className="text-sm text-gray-500" data-testid="text-time-stuka">Včera, 09:15</div>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-200">
-                            <div className="flex items-center gap-3 mb-2">
-                              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                                <Fish className="w-6 h-6 text-purple-600" />
-                              </div>
-                              <div className="flex-1">
-                                <div className="font-medium text-gray-900" data-testid="text-catch-zubac">Zubáč 3.8 kg</div>
-                                <div className="text-sm text-gray-500" data-testid="text-time-zubac">2 dni, 16:45</div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                      /* Diary UI - Screenshot */
+                      <img 
+                        src={diaryMockupImage} 
+                        alt="Rybársky denník - ukážka aplikácie" 
+                        className="w-full h-full object-cover object-top"
+                        data-testid="img-diary-mockup"
+                      />
                     )}
                   </div>
                 </div>
