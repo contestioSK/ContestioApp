@@ -177,6 +177,8 @@ export default function DiaryLayout({ children, fullBleed = false }: DiaryLayout
   const { data: organizedCompetitions = [] } = useQuery<any[]>({
     queryKey: ['/api/organizer/competitions'],
     enabled: !!user?.id,
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 
   const hasFriendRequests = (friendRequests || []).length > 0;
