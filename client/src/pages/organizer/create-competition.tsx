@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useLocation, useSearch } from "wouter";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { Competition } from "@shared/schema";
@@ -110,6 +110,7 @@ export default function CreateCompetition() {
   
   const [currentStep, setCurrentStep] = useState(1);
   const [competitionId, setCompetitionId] = useState<string | null>(editId);
+  const competitionIdRef = useRef<string | null>(editId);
   const [hasSectors, setHasSectors] = useState(false);
   const [numSectors, setNumSectors] = useState(2);
   const [sectorPlaces, setSectorPlaces] = useState<Array<{ sectorName: string; places: string[] }>>([]);
@@ -212,6 +213,7 @@ export default function CreateCompetition() {
       return response;
     },
     onSuccess: (data: any) => {
+      competitionIdRef.current = data.id;
       setCompetitionId(data.id);
       queryClient.invalidateQueries({ queryKey: ['/api/organizer/competitions'] });
       toast({
@@ -268,11 +270,9 @@ export default function CreateCompetition() {
   };
 
   const handleNext = async () => {
-    console.log('[handleNext] currentStep:', currentStep, 'competitionId:', competitionId);
-    
     // Guard: ak sme za krokom 1 a nemáme competitionId, niečo je zle
-    if (currentStep > 1 && !competitionId) {
-      console.log('[handleNext] GUARD TRIGGERED - no competitionId for step > 1');
+    // Používame ref namiesto state kvôli race condition
+    if (currentStep > 1 && !competitionIdRef.current) {
       toast({
         title: "Chyba",
         description: "Najprv vytvor súťaž v kroku 1",
@@ -292,7 +292,8 @@ export default function CreateCompetition() {
         try {
           const values = form.getValues();
           const result = await createMutation.mutateAsync(values);
-          // Wait for ID to be set before proceeding
+          // Set ref first (synchronous), then state
+          competitionIdRef.current = result.id;
           setCompetitionId(result.id);
           setCurrentStep(2);
         } finally {
