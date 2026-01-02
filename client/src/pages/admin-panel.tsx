@@ -2779,7 +2779,7 @@ export default function AdminPanel() {
                         </div>
 
                         {/* Info Grid */}
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="bg-muted/30 p-4 rounded-lg">
                             <p className="text-xs text-muted-foreground mb-1">Registrácia</p>
                             <p className="font-medium">
@@ -3223,11 +3223,11 @@ export default function AdminPanel() {
                 </Dialog>
 
                   {activeTab === 'competitions' && (
-                  <div className="p-6">
+                  <div className="p-4 md:p-6">
                     <div className="space-y-6">
-                      <div className="flex justify-between items-center">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                         <div>
-                          <h2 className="text-2xl font-bold text-foreground mb-2">Správa súťaží</h2>
+                          <h2 className="text-xl md:text-2xl font-bold text-foreground mb-2">Správa súťaží</h2>
                           <p className="text-muted-foreground">Spravujte všetky súťaže v systéme</p>
                         </div>
                         <Dialog>
@@ -3243,7 +3243,7 @@ export default function AdminPanel() {
                             </DialogHeader>
                             <Form {...form}>
                               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                   <FormField
                                     control={form.control}
                                     name="name"
@@ -3286,7 +3286,7 @@ export default function AdminPanel() {
                                   )}
                                 />
 
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                   <FormField
                                     control={form.control}
                                     name="startDate"
@@ -3357,7 +3357,7 @@ export default function AdminPanel() {
                                   )}
                                 />
 
-                                <div className="grid grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                   <FormField
                                     control={form.control}
                                     name="firstPlacePrize"
@@ -3431,7 +3431,7 @@ export default function AdminPanel() {
                                 </div>
 
                                 {/* Competition Configuration */}
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                   <FormField
                                     control={form.control}
                                     name="scoringType"
@@ -3646,7 +3646,7 @@ export default function AdminPanel() {
                                       <Settings className="w-5 h-5 text-muted-foreground" />
                                       <h3 className="text-lg font-medium">Branding</h3>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                       <FormField
                                         control={form.control}
                                         name="branding.primaryColor"
@@ -3952,7 +3952,7 @@ export default function AdminPanel() {
                               })} className="space-y-6">
                                 
                                 {/* Basic Information */}
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                   <FormField
                                     control={form.control}
                                     name="name"
@@ -3995,7 +3995,7 @@ export default function AdminPanel() {
                                   )}
                                 />
 
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                   <FormField
                                     control={form.control}
                                     name="startDate"
@@ -4039,7 +4039,7 @@ export default function AdminPanel() {
                                 />
 
                                 {/* Status and Image */}
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                   <FormField
                                     control={form.control}
                                     name="status"
@@ -4158,7 +4158,7 @@ export default function AdminPanel() {
                                   )}
                                 />
 
-                                <div className="grid grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                   <FormField
                                     control={form.control}
                                     name="firstPlacePrize"
@@ -4201,7 +4201,7 @@ export default function AdminPanel() {
                                 </div>
 
                                 {/* Competition Configuration */}
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                   <FormField
                                     control={form.control}
                                     name="scoringType"
@@ -4247,7 +4247,7 @@ export default function AdminPanel() {
                                 </div>
 
                                 {/* Plan Selection and Advanced Settings */}
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                   <FormField
                                     control={form.control}
                                     name="selectedPlan"
@@ -4475,7 +4475,7 @@ export default function AdminPanel() {
                                       </Badge>
                                     </div>
                                     
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                       <FormField
                                         control={form.control}
                                         name="branding.primaryColor"
@@ -4533,7 +4533,7 @@ export default function AdminPanel() {
 
                                 {/* Advanced Features */}
                                 {(form.watch("selectedPlan") === 'premium' || form.watch("selectedPlan") === 'enterprise') && (
-                                  <div className="grid grid-cols-2 gap-4">
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <FormField
                                       control={form.control}
                                       name="mediaAccess"
@@ -4939,7 +4939,7 @@ export default function AdminPanel() {
                           </DialogHeader>
                           {selectedRegistration && (
                             <div className="space-y-6">
-                              <div className="grid grid-cols-2 gap-4">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                   <Label className="text-sm font-medium text-muted-foreground">Názov súťaže</Label>
                                   <p className="text-foreground">{selectedRegistration.name}</p>
@@ -4981,7 +4981,7 @@ export default function AdminPanel() {
                                 <p className="text-foreground">{selectedRegistration.description || 'Žiadny popis'}</p>
                               </div>
 
-                              <div className="grid grid-cols-2 gap-4">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                   <Label className="text-sm font-medium text-muted-foreground">Kontaktná osoba</Label>
                                   <p className="text-foreground">{selectedRegistration.contactName}</p>
@@ -5193,7 +5193,7 @@ export default function AdminPanel() {
                             </DialogDescription>
                           </DialogHeader>
                           <div className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div>
                                 <Label htmlFor="promo-code">Kód</Label>
                                 <Input
@@ -5225,7 +5225,7 @@ export default function AdminPanel() {
                                 data-testid="input-promo-description"
                               />
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div>
                                 <Label>Platí pre</Label>
                                 <Select
@@ -5272,7 +5272,7 @@ export default function AdminPanel() {
                                 </div>
                               )}
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div>
                                 <Label>Typ akcie</Label>
                                 {promoFormData.scope === 'competition' ? (
@@ -5309,7 +5309,7 @@ export default function AdminPanel() {
                                 />
                               </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div>
                                 <Label htmlFor="promo-valid-from">Platnosť od</Label>
                                 <Input
@@ -5429,7 +5429,7 @@ export default function AdminPanel() {
                             </DialogDescription>
                           </DialogHeader>
                           <div className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div>
                                 <Label htmlFor="export-date-from">Dátum od (voliteľné)</Label>
                                 <Input
@@ -6852,7 +6852,7 @@ export default function AdminPanel() {
             <div className="space-y-6">
               {/* Team Basic Info */}
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label className="text-sm font-medium text-muted-foreground">Názov tímu</Label>
                     <p className="text-foreground font-medium" data-testid="team-name">
