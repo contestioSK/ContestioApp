@@ -468,7 +468,7 @@ export default function OrganizerDashboard() {
                     data-testid={`button-manage-${competition.id}`}
                   >
                     <Settings className="w-4 h-4 mr-1" />
-                    Pokračovať
+                    Spravovať súťaž
                   </Button>
                 </div>
               </CardContent>
