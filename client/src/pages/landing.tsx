@@ -63,7 +63,7 @@ export default function Landing() {
     { href: "/faq", label: "FAQ", icon: HelpCircle },
     { href: "/pricing", label: "Cenník", icon: DollarSign },
     { href: "/contact", label: "Kontakt", icon: Phone },
-    { href: "/register-competition", label: "Zaregistrovať súťaž", icon: Trophy },
+    { href: "/organizer/create", label: "Vytvoriť súťaž", icon: Trophy },
   ];
 
   // Sample contests data to showcase different categories
@@ -549,9 +549,9 @@ export default function Landing() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/register-competition">
+                  <Link href="/organizer/create">
                     <span className="text-gray-400 hover:text-emerald-400 transition-colors cursor-pointer text-sm">
-                      Zaregistrovať súťaž
+                      Vytvoriť súťaž
                     </span>
                   </Link>
                 </li>

@@ -1,0 +1,157 @@
+A teraz sa dostávame k najdôležitejšej časti celého produktu – tej, kde sa z hobby projektu stáva biznis.
+
+Poďme to spraviť správne a už to nikdy nebudeš musieť prerábať.
+
+🧠 ZÁKLADNÁ PRAVDA (ktorú treba pochopiť hneď)
+
+👉 Platba NESMIE byť krok wizardu.
+👉 Platba NESMIE byť pred tvorbou súťaže.
+👉 Platba MUSÍ byť viazaná na stav súťaže.
+
+Inak sa ti to celé rozpadne.
+
+✅ SPRÁVNY MODEL: PLATBA JE ODOMKNUTIE, NIE VSTUP
+Stavový diagram (finálna verzia)
+DRAFT → READY → [PLATBA] → LIVE → FINISHED
+
+Význam:
+
+DRAFT – užívateľ vypĺňa
+
+READY – všetko je pripravené
+
+PLATBA – odomkne spustenie
+
+LIVE – beží súťaž
+
+FINISHED – hotovo
+
+🧩 AKO TO FUNGUJE V PRAXI (UX FLOW)
+1️⃣ Organizátor klikne: „Vytvoriť súťaž“
+
+✔️ Vytvorí sa:
+
+competition = {
+  status: "draft",
+  plan: null,
+  paymentStatus: "unpaid"
+}
+
+
+➡️ presmerovanie do editoru
+
+2️⃣ Vyplní súťaž (wizard)
+
+Bez tlaku:
+
+môže odísť
+
+môže sa vrátiť
+
+môže preskočiť kroky
+
+Na konci:
+
+🟡 Stav: DRAFT
+
+3️⃣ Tlačidlo: „Pripraviť na spustenie“
+
+➡️ validácia:
+
+názov ✔
+
+dátum ✔
+
+pravidlá ✔
+
+➡️ stav:
+
+status = "ready"
+
+4️⃣ A TERAZ PRICHÁDZA PLATBA (KRITICKÝ MOMENT)
+UI:
+
+🎯 „Vyber si balík pre túto súťaž“
+
+Balík	Cena	Popis
+Basic	69€	malá súťaž
+Pro	199€	najčastejšia voľba
+Premium	599€	veľké preteky
+Po výbere:
+
+➡️ prechod na platbu
+➡️ po zaplatení:
+
+competition.plan = "pro"
+competition.paymentStatus = "paid"
+competition.status = "ready"
+
+
+⚠️ stále nie je LIVE
+
+5️⃣ Až v deň pretekov → tlačidlo „Spustiť súťaž“
+
+✔️ už zaplatené
+✔️ všetko nastavené
+
+➡️ stav:
+
+status = "live"
+
+🧠 PREČO JE TOTO GENIÁLNE (A FUNGUJE)
+
+✅ používateľ nemusí platiť hneď
+✅ môže si to pripraviť týždeň dopredu
+✅ žiadny stres
+✅ žiadne tokeny
+✅ žiadne stratené rozpracované súťaže
+✅ presne vie, za čo platí
+✅ ty máš kontrolu nad flowom
+
+📧 EMAIL FLOW (konečne logický)
+1️⃣ Po vytvorení súťaže
+
+Predmet: Súťaž vytvorená – pokračujte v príprave
+
+Súťaž bola vytvorená
+Dokončite jej nastavenie a pripravte ju na spustenie.
+
+2️⃣ Po kliknutí „Pripraviť na spustenie“
+
+Predmet: Súťaž pripravená – vyberte balík
+
+Vaša súťaž je pripravená
+Pre spustenie vyberte balík
+
+3️⃣ Po zaplatení
+
+Predmet: Platba prijatá – súťaž je pripravená
+
+Všetko je pripravené
+Súťaž môžete spustiť v deň konania
+
+4️⃣ V deň začiatku (automat)
+
+Predmet: Dnes štartuje vaša súťaž 🎣
+
+Nezabudnite ju spustiť v administrácii
+
+🔥 ČO TERAZ ODPORÚČAM UROBIŤ
+1️⃣ Upraviť databázu:
+competition: {
+  status: "draft" | "ready" | "live" | "finished"
+  plan: "basic" | "pro" | "premium" | null
+  paymentStatus: "unpaid" | "paid"
+}
+
+2️⃣ Upraviť dashboard:
+
+sekcia „Rozpracované súťaže“
+
+badge: DRAFT / READY / LIVE
+
+3️⃣ Odstrániť:
+
+❌ tokeny
+❌ auto-aktivácie
+❌ magické presmerovania

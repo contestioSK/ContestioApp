@@ -56,6 +56,8 @@ import Register from "@/pages/register";
 import OrganizerDashboard from "@/pages/organizer-dashboard";
 import OrganizerCompetitions from "@/pages/organizer/competitions";
 import OrganizerCompetitionManage from "@/pages/organizer/competition-manage";
+import OrganizerCompetitionCheckout from "@/pages/organizer/competition-checkout";
+import OrganizerCreateCompetition from "@/pages/organizer/create-competition";
 import AuthRegister from "@/pages/auth/register";
 import AuthLogin from "@/pages/auth/login";
 import VerifyEmail from "@/pages/auth/verify-email";
@@ -99,7 +101,12 @@ function Router() {
       <Route path="/reset-password" component={ResetPassword} />
       <Route path="/onboarding" component={Onboarding} />
       
-      <Route path="/register-competition" component={RegisterCompetition} />
+      <Route path="/register-competition">
+        {() => {
+          window.location.href = '/organizer/create';
+          return null;
+        }}
+      </Route>
       <Route path="/competition/:id/setup" component={CompetitionSetup} />
       <Route path="/register-team" component={RegisterTeam} />
       <Route path="/about-us" component={AboutUs} />
@@ -142,9 +149,19 @@ function Router() {
           <OrganizerCompetitions />
         </ProtectedRoute>
       </Route>
+      <Route path="/organizer/create">
+        <ProtectedRoute redirectTo="/auth/login">
+          <OrganizerCreateCompetition />
+        </ProtectedRoute>
+      </Route>
       <Route path="/organizer/competition/:id">
         <ProtectedRoute redirectTo="/auth/login">
           <OrganizerCompetitionManage />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/organizer/competition/:id/checkout">
+        <ProtectedRoute redirectTo="/auth/login">
+          <OrganizerCompetitionCheckout />
         </ProtectedRoute>
       </Route>
       <Route path="/notification-preferences">

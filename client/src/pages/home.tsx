@@ -112,13 +112,13 @@ export default function Home() {
             {/* Register Competition Button */}
             <div className="mt-8">
               <Button
-                onClick={() => setLocation("/register-competition")}
+                onClick={() => setLocation("/organizer/create")}
                 size="lg"
                 className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground font-semibold px-8 py-3 rounded-full shadow-lg transition-all duration-300 hover:shadow-xl transform hover:scale-105"
                 data-testid="button-register-competition"
               >
                 <PlusCircle className="w-5 h-5 mr-2" />
-                Zaregistrujte svoju súťaž
+                Vytvoriť súťaž
               </Button>
               <p className="text-sm text-muted-foreground mt-3 max-w-md mx-auto">
                 Chystáte rybársku súťaž? Zverte ju Contestiu – registrácie, výsledky aj štatistiky zvládnete na pár klikov. Spustite ju ešte dnes

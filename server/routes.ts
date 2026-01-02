@@ -1390,8 +1390,13 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       const userId = getUserId(req);
       const user = await storage.getUser(userId);
       
-      if (user?.role !== 'organizer' && user?.role !== 'admin') {
-        return res.status(403).json({ message: "Only organizers and admins can create competitions" });
+      if (!user) {
+        return res.status(403).json({ message: "User not found" });
+      }
+
+      // If user is not an organizer or admin, upgrade them to organizer when creating a competition
+      if (user.role !== 'organizer' && user.role !== 'admin') {
+        await storage.updateUser(userId, { role: 'organizer' });
       }
 
       // Ensure sideCompetitions is properly typed
@@ -1585,6 +1590,160 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
+  // PATCH competition details endpoint (for wizard auto-save)
+  app.patch('/api/competitions/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'organizer' && user?.role !== 'admin') {
+        return res.status(403).json({ message: "Only organizers and admins can update competitions" });
+      }
+
+      const existingCompetition = await storage.getCompetition(req.params.id);
+      if (!existingCompetition) {
+        return res.status(404).json({ message: "Competition not found" });
+      }
+
+      if (user?.role === 'organizer' && existingCompetition.organizerId !== userId) {
+        return res.status(403).json({ message: "You can only update your own competitions" });
+      }
+
+      // Build update data from request body
+      const updateData: Record<string, any> = {};
+      
+      // Allowed fields for all organizers
+      const allowedFields = [
+        'name', 'description', 'rules', 'location', 'startDate', 'endDate',
+        'firstPlacePrize', 'secondPlacePrize', 'thirdPlacePrize', 'registrationFee',
+        'maxTeams', 'hasSectors', 'sectorPlaces', 'sideCompetitions', 'scoringType',
+        'minWeight', 'planTier', 'contactEmail', 'contactPhone'
+      ];
+      
+      // SECURITY: paymentStatus can ONLY be updated by admin or Stripe webhook
+      // Organizers cannot directly set paymentStatus - this must go through payment processing
+      const adminOnlyFields = ['paymentStatus'];
+      if (user?.role === 'admin') {
+        allowedFields.push(...adminOnlyFields);
+      } else if (req.body.paymentStatus !== undefined) {
+        // Block non-admin users from setting paymentStatus
+        console.log(`[SECURITY] Blocked attempt by organizer ${userId} to set paymentStatus directly`);
+      }
+
+      for (const field of allowedFields) {
+        if (req.body[field] !== undefined) {
+          if (field === 'minWeight') {
+            updateData[field] = req.body[field].toString();
+          } else if (field === 'startDate' || field === 'endDate') {
+            updateData[field] = new Date(req.body[field]);
+          } else {
+            updateData[field] = req.body[field];
+          }
+        }
+      }
+
+      const updatedCompetition = await storage.updateCompetition(req.params.id, updateData);
+      
+      broadcast({ 
+        type: 'competition_updated', 
+        competitionId: req.params.id, 
+        payload: updatedCompetition 
+      });
+      
+      res.json(updatedCompetition);
+    } catch (error) {
+      console.error("Error updating competition:", error);
+      res.status(500).json({ message: "Failed to update competition" });
+    }
+  });
+
+  // POST competition payment - initiates payment and marks as paid (placeholder for Stripe)
+  // In production, this should create a Stripe checkout session and return the session URL
+  // The paymentStatus should only be set to 'paid' via Stripe webhook after successful payment
+  app.post('/api/competitions/:id/pay', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'organizer' && user?.role !== 'admin') {
+        return res.status(403).json({ message: "Only organizers and admins can initiate payment" });
+      }
+
+      const existingCompetition = await storage.getCompetition(req.params.id);
+      if (!existingCompetition) {
+        return res.status(404).json({ message: "Competition not found" });
+      }
+
+      if (user?.role === 'organizer' && existingCompetition.organizerId !== userId) {
+        return res.status(403).json({ message: "You can only pay for your own competitions" });
+      }
+
+      // Validate plan tier
+      const planSchema = z.object({
+        planTier: z.enum(['basic', 'premium', 'enterprise'])
+      });
+      
+      const validationResult = planSchema.safeParse(req.body);
+      if (!validationResult.success) {
+        return res.status(400).json({ 
+          message: "Invalid plan tier",
+          errors: validationResult.error.errors 
+        });
+      }
+
+      const { planTier } = validationResult.data;
+
+      // Competition must be in 'ready' status to initiate payment
+      if (existingCompetition.status !== 'ready') {
+        return res.status(400).json({ 
+          message: "Súťaž musí byť v stave 'ready' pred platbou",
+          currentStatus: existingCompetition.status
+        });
+      }
+
+      // Already paid check
+      if (existingCompetition.paymentStatus === 'paid') {
+        return res.status(400).json({ 
+          message: "Súťaž je už zaplatená"
+        });
+      }
+
+      // TODO: In production, create Stripe Checkout Session here:
+      // const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+      // const session = await stripe.checkout.sessions.create({
+      //   line_items: [...],
+      //   mode: 'payment',
+      //   success_url: `${process.env.BASE_URL}/organizer/competition/${req.params.id}?payment=success`,
+      //   cancel_url: `${process.env.BASE_URL}/organizer/competition/${req.params.id}/checkout`,
+      //   metadata: { competitionId: req.params.id, planTier }
+      // });
+      // return res.json({ checkoutUrl: session.url });
+
+      // PLACEHOLDER: For development, directly mark as paid
+      console.log(`[DEV PAYMENT] Competition ${req.params.id} payment initiated for plan: ${planTier}`);
+      
+      const updatedCompetition = await storage.updateCompetition(req.params.id, {
+        planTier,
+        paymentStatus: 'paid'
+      });
+      
+      broadcast({ 
+        type: 'competition_updated', 
+        competitionId: req.params.id, 
+        payload: updatedCompetition 
+      });
+      
+      res.json({ 
+        message: "Platba úspešná",
+        competition: updatedCompetition,
+        // In production: checkoutUrl: session.url
+      });
+    } catch (error) {
+      console.error("Error processing competition payment:", error);
+      res.status(500).json({ message: "Failed to process payment" });
+    }
+  });
+
   // PATCH competition status endpoint
   app.patch('/api/competitions/:id/status', isAuthenticated, async (req: any, res) => {
     try {
@@ -1608,7 +1767,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
 
       // Validate status transitions using Zod
       const statusSchema = z.object({
-        status: z.enum(['registration', 'live', 'finished'])
+        status: z.enum(['draft', 'ready', 'live', 'finished'])
       });
       
       const validationResult = statusSchema.safeParse(req.body);
@@ -1623,6 +1782,8 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
 
       // Validate status transition logic
       const validTransitions: Record<string, string[]> = {
+        'draft': ['ready'],
+        'ready': ['live'],
         'registration': ['live'],
         'live': ['finished'],
         'finished': []
@@ -1634,6 +1795,14 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
           message: `Invalid status transition from ${existingCompetition.status} to ${status}`,
           currentStatus: existingCompetition.status,
           allowedTransitions: allowedNextStates
+        });
+      }
+
+      // Check payment status before allowing transition to live
+      if (status === 'live' && existingCompetition.paymentStatus !== 'paid') {
+        return res.status(400).json({ 
+          message: "Súťaž musí byť zaplatená pred spustením",
+          paymentStatus: existingCompetition.paymentStatus
         });
       }
 
@@ -3033,7 +3202,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       }
 
       const { status } = req.body;
-      if (!['registration', 'live', 'completed'].includes(status)) {
+      if (!['draft', 'ready', 'live', 'finished'].includes(status)) {
         return res.status(400).json({ message: "Invalid status" });
       }
 

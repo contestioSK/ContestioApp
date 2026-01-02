@@ -45,7 +45,7 @@ const navigationItems = [
   {
     icon: Plus,
     label: "Vytvoriť súťaž",
-    href: "/register-competition",
+    href: "/organizer/create",
     description: "Nová súťaž"
   }
 ];

@@ -196,7 +196,7 @@ export default function Pricing() {
     if (planId === 'enterprise') {
       window.location.href = 'mailto:info@contestio.sk?subject=Záujem o Enterprise balík&body=Dobrý deň,%0A%0AMám záujem o Enterprise balík pre našu organizáciu.%0A%0AĎakujem';
     } else {
-      window.location.href = `/register-competition?plan=${planId}`;
+      window.location.href = `/organizer/create?plan=${planId}`;
     }
   };
 

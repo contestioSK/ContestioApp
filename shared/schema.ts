@@ -73,7 +73,7 @@ export const competitions = pgTable("competitions", {
   description: text("description"),
   rules: text("rules"),
   location: varchar("location", { length: 255 }).notNull(),
-  status: varchar("status").notNull().default("registration"), // "registration", "live", "finished"
+  status: varchar("status").notNull().default("draft"), // "draft", "ready", "live", "finished"
   startDate: timestamp("start_date").notNull(),
   endDate: timestamp("end_date").notNull(),
   firstPlacePrize: decimal("first_place_prize", { precision: 10, scale: 2 }),
@@ -91,7 +91,9 @@ export const competitions = pgTable("competitions", {
   minWeight: decimal("min_weight", { precision: 10, scale: 2 }).notNull().default("2.00"), // minimum weight for scoring in kg
   
   // Plan-related fields  
-  planTier: varchar("plan_tier").notNull().default("basic"), // "basic", "pro", "premium", "enterprise"
+  planTier: varchar("plan_tier"), // "basic", "pro", "premium", "enterprise" - null until plan is selected
+  paymentStatus: varchar("payment_status").notNull().default("unpaid"), // "unpaid", "paid"
+  checkoutSessionId: varchar("checkout_session_id"), // Stripe checkout session ID
   maxReferees: integer("max_referees"), // 2 for basic, 5 for pro, null for unlimited (premium/enterprise)
   branding: jsonb("branding").$type<{primaryColor?: string; secondaryColor?: string; subdomain?: string}>(),
   mediaAccess: boolean("media_access").notNull().default(false), // Premium/Enterprise feature

@@ -25,7 +25,8 @@ import {
   Zap,
   Timer,
   ArrowRight,
-  Radio
+  Radio,
+  Edit
 } from "lucide-react";
 import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 import { PulsingDot } from "@/components/ui/pulsing-dot";
@@ -62,12 +63,22 @@ export default function OrganizerDashboard() {
     enabled: !!user,
   });
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string, paymentStatus?: string) => {
     switch (status) {
-      case 'registration':
+      case 'draft':
         return (
-          <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 border-blue-200 dark:border-blue-700">
-            <Clock className="w-3 h-3 mr-1" />Registrácia
+          <Badge variant="secondary" className="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700">
+            <Clock className="w-3 h-3 mr-1" />Rozpracovaná
+          </Badge>
+        );
+      case 'ready':
+        return paymentStatus === 'paid' ? (
+          <Badge variant="secondary" className="bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300 border-amber-200 dark:border-amber-700">
+            <CheckCircle className="w-3 h-3 mr-1" />Pripravená
+          </Badge>
+        ) : (
+          <Badge variant="secondary" className="bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300 border-orange-200 dark:border-orange-700">
+            <AlertCircle className="w-3 h-3 mr-1" />Čaká na platbu
           </Badge>
         );
       case 'live':
@@ -127,11 +138,12 @@ export default function OrganizerDashboard() {
   }
 
   const liveCompetitions = competitions?.filter(c => c.status === 'live') || [];
-  const registrationCompetitions = competitions?.filter(c => c.status === 'registration') || [];
+  const draftCompetitions = competitions?.filter(c => c.status === 'draft') || [];
+  const readyCompetitions = competitions?.filter(c => c.status === 'ready') || [];
   const finishedCompetitions = competitions?.filter(c => c.status === 'finished') || [];
   const totalCompetitions = competitions?.length || 0;
   
-  const heroCompetition = liveCompetitions[0] || registrationCompetitions[0];
+  const heroCompetition = liveCompetitions[0] || readyCompetitions[0];
 
   return (
     <OrganizerLayout>
@@ -147,10 +159,15 @@ export default function OrganizerDashboard() {
                   <span className="w-2 h-2 rounded-full bg-green-500" />
                   <span className="text-xs font-medium text-green-600 dark:text-green-400 uppercase tracking-wider">Práve prebieha</span>
                 </>
+              ) : heroCompetition.status === 'ready' ? (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-amber-500" />
+                  <span className="text-xs font-medium text-amber-600 dark:text-amber-400 uppercase tracking-wider">Pripravená na spustenie</span>
+                </>
               ) : (
                 <>
-                  <span className="w-2 h-2 rounded-full bg-blue-500" />
-                  <span className="text-xs font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wider">Registrácia otvorená</span>
+                  <span className="w-2 h-2 rounded-full bg-slate-500" />
+                  <span className="text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wider">Rozpracovaná</span>
                 </>
               )}
             </div>
@@ -230,7 +247,8 @@ export default function OrganizerDashboard() {
             </p>
             <Button 
               className="bg-orange-500 hover:bg-orange-600 text-white shadow-sm"
-              onClick={() => setLocation('/register-competition')}
+              onClick={() => setLocation('/organizer/create')}
+              data-testid="button-create-competition"
             >
               <Plus className="w-4 h-4 mr-2" />
               Vytvoriť súťaž
@@ -283,22 +301,22 @@ export default function OrganizerDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="bg-card border border-blue-200 dark:border-blue-900/50 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-cyan-500" />
+        <Card className="bg-card border border-amber-200 dark:border-amber-900/50 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-500" />
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30">
-                  <TacticalIconInline icon={Clock} variant="blue" size="md" />
+                <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30">
+                  <TacticalIconInline icon={Clock} variant="amber" size="md" />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Registrácia</p>
-                  <p className="text-2xl font-black text-foreground">{registrationCompetitions.length}</p>
+                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Rozpracované</p>
+                  <p className="text-2xl font-black text-foreground">{draftCompetitions.length + readyCompetitions.length}</p>
                 </div>
               </div>
-              {registrationCompetitions.length > 0 && (
-                <span className="text-[10px] text-blue-600 dark:text-blue-400 font-medium bg-blue-100 dark:bg-blue-900/30 px-2 py-0.5 rounded-full">
-                  čaká
+              {(draftCompetitions.length + readyCompetitions.length) > 0 && (
+                <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 rounded-full">
+                  draft
                 </span>
               )}
             </div>
@@ -359,8 +377,10 @@ export default function OrganizerDashboard() {
               className={`bg-card shadow-sm hover:shadow-lg transition-all cursor-pointer group relative overflow-hidden ${
                 competition.status === 'live' 
                   ? 'border-2 border-green-500/50 dark:border-green-500/30' 
-                  : competition.status === 'registration'
-                  ? 'border border-blue-200 dark:border-blue-900/50'
+                  : competition.status === 'ready'
+                  ? 'border border-amber-200 dark:border-amber-900/50'
+                  : competition.status === 'draft'
+                  ? 'border border-slate-300 dark:border-slate-600'
                   : 'border border-slate-200 dark:border-slate-700'
               }`}
               onClick={() => setLocation(`/organizer/competition/${competition.id}`)}
@@ -370,8 +390,10 @@ export default function OrganizerDashboard() {
               <div className={`absolute top-0 left-0 right-0 h-1 ${
                 competition.status === 'live' 
                   ? 'bg-gradient-to-r from-green-500 to-emerald-500' 
-                  : competition.status === 'registration'
-                  ? 'bg-gradient-to-r from-blue-500 to-cyan-500'
+                  : competition.status === 'ready'
+                  ? 'bg-gradient-to-r from-amber-500 to-orange-500'
+                  : competition.status === 'draft'
+                  ? 'bg-slate-400 dark:bg-slate-500'
                   : 'bg-slate-300 dark:bg-slate-600'
               }`} />
               
@@ -402,7 +424,7 @@ export default function OrganizerDashboard() {
                       <CardTitle className="text-base font-bold truncate group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
                         {competition.name}
                       </CardTitle>
-                      <div className="mt-1">{getStatusBadge(competition.status)}</div>
+                      <div className="mt-1">{getStatusBadge(competition.status, competition.paymentStatus)}</div>
                     </div>
                   </div>
                 </div>
@@ -445,31 +467,48 @@ export default function OrganizerDashboard() {
                 )}
                 
                 <div className="flex gap-2 pt-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="flex-1"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setLocation(`/competition/${competition.id}`);
-                    }}
-                    data-testid={`button-view-${competition.id}`}
-                  >
-                    <Eye className="w-4 h-4 mr-1" />
-                    Zobraziť
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    className="flex-1 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white border-0"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setLocation(`/organizer/competition/${competition.id}`);
-                    }}
-                    data-testid={`button-manage-${competition.id}`}
-                  >
-                    <Settings className="w-4 h-4 mr-1" />
-                    Spravovať súťaž
-                  </Button>
+                  {competition.status === 'draft' ? (
+                    <Button 
+                      size="sm" 
+                      className="flex-1 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white border-0"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setLocation(`/organizer/create?id=${competition.id}`);
+                      }}
+                      data-testid={`button-continue-${competition.id}`}
+                    >
+                      <Edit className="w-4 h-4 mr-1" />
+                      Dokončiť
+                    </Button>
+                  ) : (
+                    <>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="flex-1"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setLocation(`/competition/${competition.id}`);
+                        }}
+                        data-testid={`button-view-${competition.id}`}
+                      >
+                        <Eye className="w-4 h-4 mr-1" />
+                        Zobraziť
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        className="flex-1 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white border-0"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setLocation(`/organizer/competition/${competition.id}`);
+                        }}
+                        data-testid={`button-manage-${competition.id}`}
+                      >
+                        <Settings className="w-4 h-4 mr-1" />
+                        Spravovať
+                      </Button>
+                    </>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -488,7 +527,7 @@ export default function OrganizerDashboard() {
               Zatiaľ nemáte žiadne súťaže. Vytvorte svoju prvú súťaž a začnite organizovať!
             </p>
             <Button 
-              onClick={() => setLocation('/register-competition')}
+              onClick={() => setLocation('/organizer/create')}
               className="bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white shadow-lg shadow-orange-500/25"
             >
               <Plus className="w-4 h-4 mr-2" />

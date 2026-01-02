@@ -114,13 +114,13 @@ export default function Register() {
                   </div>
                 </div>
               </div>
-              <Link href="/register-competition">
+              <Link href="/organizer/create">
                 <Button 
                   className="w-full bg-secondary hover:bg-secondary/80 text-secondary-foreground font-medium"
                   size="lg"
                   data-testid="button-register-organizer"
                 >
-                  Zaregistrovať súťaž
+                  Vytvoriť súťaž
                 </Button>
               </Link>
               <p className="text-xs text-muted-foreground text-center mt-3">
