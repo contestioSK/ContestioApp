@@ -55,6 +55,35 @@ const getFishIcon = (fishType?: string) => {
   return <TacticalIcon icon={Fish} variant={variant} size="sm" showLabel={false} />;
 };
 
+// Function to format bait for mobile view - simplified format: Name (size)
+const formatBaitShort = (bait?: string): string => {
+  if (!bait) return 'N/A';
+  
+  // Extract size in parentheses if present (e.g., "(24mm)")
+  const sizeMatch = bait.match(/\((\d+mm)\)/i);
+  const size = sizeMatch ? sizeMatch[1] : null;
+  
+  // Try to extract just the product name - remove manufacturer prefixes and product lines
+  let name = bait;
+  
+  // Remove size from the string for processing
+  if (sizeMatch) {
+    name = name.replace(sizeMatch[0], '').trim();
+  }
+  
+  // If there are dashes, take the last meaningful part (usually the flavor/name)
+  const parts = name.split(' - ').map(p => p.trim()).filter(Boolean);
+  if (parts.length > 1) {
+    name = parts[parts.length - 1];
+  }
+  
+  // Clean up extra spaces
+  name = name.replace(/\s+/g, ' ').trim();
+  
+  // Reconstruct with size if available
+  return size ? `${name} (${size})` : name;
+};
+
 // Function to get catch thumbnail - photo or fish icon
 const getCatchThumbnail = (catch_: any) => {
   // If catch has photos, show first photo thumbnail
@@ -1378,10 +1407,10 @@ export default function DiaryIndex() {
                         </div>
                         <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground dark:text-slate-400">
                           <div>
-                            <span className="text-muted-foreground/70 dark:text-slate-500">Miesto:</span> {catch_.spot || 'N/A'}
+                            <span className="text-muted-foreground/70 dark:text-slate-500">Revír:</span> {catch_.spotName || catch_.tripLocation || catch_.spot || 'N/A'}
                           </div>
                           <div>
-                            <span className="text-muted-foreground/70 dark:text-slate-500">Návnada/Nástraha:</span> {catch_.bait || 'N/A'}
+                            <span className="text-muted-foreground/70 dark:text-slate-500">Nástraha:</span> {formatBaitShort(catch_.bait)}
                           </div>
                           <div className="col-span-2">
                             <span className="text-muted-foreground/70 dark:text-slate-500">Dátum:</span> {catch_.capturedAt ? format(new Date(catch_.capturedAt), "dd. MMM yyyy", { locale: sk }) : 'N/A'}
