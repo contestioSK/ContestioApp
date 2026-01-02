@@ -2466,13 +2466,23 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(diaryCatches.capturedAt));
   }
 
-  async getAllUserCatches(userId: string): Promise<DiaryCatch[]> {
-    // Get all catches for user (including those without tripId)
-    return await db
-      .select()
+  async getAllUserCatches(userId: string): Promise<(DiaryCatch & { tripLocation?: string })[]> {
+    // Get all catches for user (including those without tripId) with trip location
+    const results = await db
+      .select({
+        catch: diaryCatches,
+        tripLocation: diaryTrips.location,
+      })
       .from(diaryCatches)
+      .leftJoin(diaryTrips, eq(diaryCatches.tripId, diaryTrips.id))
       .where(sql`${diaryCatches.angler}->>'userId' = ${userId}`)
       .orderBy(desc(diaryCatches.capturedAt));
+    
+    // Flatten the result to include tripLocation on the catch object
+    return results.map(r => ({
+      ...r.catch,
+      tripLocation: r.tripLocation || undefined,
+    }));
   }
 
   async getBattleCatches(battleId: string): Promise<DiaryCatch[]> {
