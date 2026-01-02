@@ -210,7 +210,7 @@ export default function CreateCompetition() {
         sideCompetitions,
         status: 'draft',
       });
-      return response;
+      return response.json();
     },
     onSuccess: (data: any) => {
       competitionIdRef.current = data.id;
@@ -232,8 +232,9 @@ export default function CreateCompetition() {
 
   const updateMutation = useMutation({
     mutationFn: async (data: Partial<FormData>) => {
-      if (!competitionId) throw new Error("No competition ID");
-      const response = await apiRequest('PATCH', `/api/competitions/${competitionId}`, {
+      const id = competitionIdRef.current;
+      if (!id) throw new Error("No competition ID");
+      const response = await apiRequest('PATCH', `/api/competitions/${id}`, {
         ...data,
         startDate: data.startDate ? new Date(data.startDate).toISOString() : undefined,
         endDate: data.endDate ? new Date(data.endDate).toISOString() : undefined,
@@ -241,7 +242,7 @@ export default function CreateCompetition() {
         sectorPlaces: hasSectors ? sectorPlaces : [],
         sideCompetitions,
       });
-      return response;
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/organizer/competitions'] });
