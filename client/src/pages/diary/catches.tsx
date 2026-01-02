@@ -1497,7 +1497,12 @@ export default function DiaryCatches() {
                       <TacticalIconInline icon={MapPin} variant="emerald" size="md" />
                       <div>
                         <div className="text-sm text-muted-foreground dark:text-slate-400">Revír</div>
-                        <div className="font-semibold">{selectedCatch.spot || 'Neuvedené'}</div>
+                        <div className="font-semibold">
+                          {selectedCatch.spotName || selectedCatch.tripLocation || selectedCatch.spot || 'Neuvedené'}
+                        </div>
+                        {selectedCatch.spot && selectedCatch.spotName && (
+                          <div className="text-xs text-muted-foreground dark:text-slate-500">{selectedCatch.spot}</div>
+                        )}
                       </div>
                     </div>
 
