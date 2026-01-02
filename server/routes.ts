@@ -1732,6 +1732,39 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         competitionId: req.params.id, 
         payload: updatedCompetition 
       });
+
+      // Send payment confirmation email using updated competition data
+      const contactEmail = updatedCompetition?.contactEmail || existingCompetition.contactEmail;
+      if (contactEmail) {
+        const planNames: Record<string, string> = {
+          'basic': 'Základný',
+          'premium': 'Premium',
+          'enterprise': 'Enterprise'
+        };
+        const actualPlanTier = updatedCompetition?.planTier || planTier;
+        const planDisplayName = planNames[actualPlanTier] || actualPlanTier;
+        const competitionName = updatedCompetition?.name || existingCompetition.name;
+        const appOrigin = process.env.APP_ORIGIN || 
+          (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : 
+          (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` : 
+          'https://contestio.sk'));
+        const dashboardUrl = `${appOrigin}/organizer/competition/${req.params.id}`;
+        
+        emailService.sendPaymentConfirmationEmail(
+          contactEmail,
+          competitionName,
+          planDisplayName,
+          dashboardUrl
+        ).then(success => {
+          if (success) {
+            console.log(`[Email] Payment confirmation sent to ${contactEmail}`);
+          } else {
+            console.error(`[Email] Failed to send payment confirmation to ${contactEmail}`);
+          }
+        }).catch(err => {
+          console.error('[Email] Error sending payment confirmation:', err);
+        });
+      }
       
       res.json({ 
         message: "Platba úspešná",
