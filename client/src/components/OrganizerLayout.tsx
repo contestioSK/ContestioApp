@@ -3,12 +3,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { 
   LayoutDashboard,
   Trophy,
@@ -133,79 +127,64 @@ export default function OrganizerLayout({ children }: OrganizerLayoutProps) {
 
           {/* Navigation */}
           <nav className="flex-1 px-2 md:px-3 py-4 md:py-6 space-y-1 overflow-y-auto">
-            <TooltipProvider delayDuration={300}>
-              {/* Section Header */}
-              <div className="pb-2">
-                <div className="px-2 md:px-3 flex items-center gap-1.5">
-                  <TacticalIconInline icon={Trophy} variant="amber" size="sm" />
-                  <p className="text-[10px] md:text-xs font-bold text-amber-600 dark:text-amber-500 uppercase tracking-wider">
-                    Správa súťaží
-                  </p>
-                </div>
+            {/* Section Header */}
+            <div className="pb-2">
+              <div className="px-2 md:px-3 flex items-center gap-1.5">
+                <TacticalIconInline icon={Trophy} variant="amber" size="sm" />
+                <p className="text-[10px] md:text-xs font-bold text-amber-600 dark:text-amber-500 uppercase tracking-wider">
+                  Správa súťaží
+                </p>
               </div>
+            </div>
 
-              {navigationItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = isActivePath(item.href);
-                
-                return (
-                  <Tooltip key={item.href}>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        onClick={() => {
-                          setLocation(item.href);
-                          setSidebarOpen(false);
-                          window.scrollTo(0, 0);
-                        }}
-                        className={`
-                          w-full justify-start px-2 md:px-3 py-2 md:py-3 h-auto text-sm font-medium rounded-lg transition-all
-                          ${isActive 
-                            ? 'bg-primary dark:bg-transparent text-primary-foreground dark:bg-gradient-to-r dark:from-amber-600/30 dark:to-orange-600/30 dark:text-white border border-primary/50 dark:border-amber-500/50 shadow-sm dark:shadow-lg dark:shadow-amber-500/20' 
-                            : 'text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent'
-                          }
-                        `}
-                        data-testid={`nav-organizer-${item.label.toLowerCase().replace(' ', '-')}`}
-                      >
-                        <TacticalIconInline icon={Icon} variant={isActive ? "amber" : "slate"} size="md" className="mr-2 md:mr-3 flex-shrink-0" />
-                        <span className="font-medium text-xs md:text-sm">{item.label}</span>
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="right" className="bg-popover text-popover-foreground border shadow-md">
-                      <p>{item.description}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                );
-              })}
+            {navigationItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = isActivePath(item.href);
+              
+              return (
+                <Button
+                  key={item.href}
+                  variant="ghost"
+                  onClick={() => {
+                    setLocation(item.href);
+                    setSidebarOpen(false);
+                    window.scrollTo(0, 0);
+                  }}
+                  className={`
+                    w-full justify-start px-2 md:px-3 py-2 md:py-3 h-auto text-sm font-medium rounded-lg transition-all
+                    ${isActive 
+                      ? 'bg-primary dark:bg-transparent text-primary-foreground dark:bg-gradient-to-r dark:from-amber-600/30 dark:to-orange-600/30 dark:text-white border border-primary/50 dark:border-amber-500/50 shadow-sm dark:shadow-lg dark:shadow-amber-500/20' 
+                      : 'text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent'
+                    }
+                  `}
+                  data-testid={`nav-organizer-${item.label.toLowerCase().replace(' ', '-')}`}
+                >
+                  <TacticalIconInline icon={Icon} variant={isActive ? "amber" : "slate"} size="md" className="mr-2 md:mr-3 flex-shrink-0" />
+                  <span className="font-medium text-xs md:text-sm">{item.label}</span>
+                </Button>
+              );
+            })}
 
-              {/* Divider */}
-              <div className="pt-4 pb-2">
-                <div className="px-2 md:px-3">
-                  <div className="h-px bg-gradient-to-r from-transparent via-sidebar-border to-transparent"></div>
-                </div>
+            {/* Divider */}
+            <div className="pt-4 pb-2">
+              <div className="px-2 md:px-3">
+                <div className="h-px bg-gradient-to-r from-transparent via-sidebar-border to-transparent"></div>
               </div>
+            </div>
 
-              {/* Back to Diary */}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    onClick={() => {
-                      setLocation('/diary');
-                      setSidebarOpen(false);
-                    }}
-                    className="w-full justify-start px-2 md:px-3 py-2 md:py-3 h-auto text-sm font-medium rounded-lg transition-all text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
-                    data-testid="nav-back-to-diary"
-                  >
-                    <TacticalIconInline icon={ArrowLeft} variant="slate" size="md" className="mr-2 md:mr-3 flex-shrink-0" />
-                    <span className="font-medium text-xs md:text-sm">Späť do denníka</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="right" className="bg-popover text-popover-foreground border shadow-md">
-                  <p>Vrátiť sa do rybárskeho denníka</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            {/* Back to Diary */}
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setLocation('/diary');
+                setSidebarOpen(false);
+              }}
+              className="w-full justify-start px-2 md:px-3 py-2 md:py-3 h-auto text-sm font-medium rounded-lg transition-all text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
+              data-testid="nav-back-to-diary"
+            >
+              <TacticalIconInline icon={ArrowLeft} variant="slate" size="md" className="mr-2 md:mr-3 flex-shrink-0" />
+              <span className="font-medium text-xs md:text-sm">Späť do denníka</span>
+            </Button>
           </nav>
 
           {/* Logout */}
