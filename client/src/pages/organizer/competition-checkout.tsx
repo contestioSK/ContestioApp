@@ -93,9 +93,9 @@ export default function CompetitionCheckout() {
 
   const paymentMutation = useMutation({
     mutationFn: async (planTier: string) => {
-      return apiRequest('PATCH', `/api/competitions/${competitionId}`, {
+      // Use dedicated payment endpoint that validates and processes payment server-side
+      return apiRequest('POST', `/api/competitions/${competitionId}/pay`, {
         planTier,
-        paymentStatus: 'paid',
       });
     },
     onSuccess: () => {
