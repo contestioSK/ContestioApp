@@ -1680,7 +1680,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
 
       // Validate plan tier
       const planSchema = z.object({
-        planTier: z.enum(['basic', 'premium', 'enterprise'])
+        planTier: z.enum(['basic', 'pro', 'premium', 'enterprise'])
       });
       
       const validationResult = planSchema.safeParse(req.body);
@@ -1693,10 +1693,10 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
 
       const { planTier } = validationResult.data;
 
-      // Competition must be in 'ready' status to initiate payment
-      if (existingCompetition.status !== 'ready') {
+      // Competition must be in 'draft' or 'ready' status to initiate payment
+      if (existingCompetition.status !== 'draft' && existingCompetition.status !== 'ready') {
         return res.status(400).json({ 
-          message: "Súťaž musí byť v stave 'ready' pred platbou",
+          message: "Súťaž musí byť v stave 'draft' alebo 'ready' pred platbou",
           currentStatus: existingCompetition.status
         });
       }
@@ -1720,11 +1720,13 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       // return res.json({ checkoutUrl: session.url });
 
       // PLACEHOLDER: For development, directly mark as paid
+      // Payment also transitions status from draft to ready (approved)
       console.log(`[DEV PAYMENT] Competition ${req.params.id} payment initiated for plan: ${planTier}`);
       
       const updatedCompetition = await storage.updateCompetition(req.params.id, {
         planTier,
-        paymentStatus: 'paid'
+        paymentStatus: 'paid',
+        status: 'ready'
       });
       
       broadcast({ 
@@ -1737,7 +1739,8 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       const contactEmail = updatedCompetition?.contactEmail || existingCompetition.contactEmail;
       if (contactEmail) {
         const planNames: Record<string, string> = {
-          'basic': 'Základný',
+          'basic': 'Basic',
+          'pro': 'Pro',
           'premium': 'Premium',
           'enterprise': 'Enterprise'
         };
