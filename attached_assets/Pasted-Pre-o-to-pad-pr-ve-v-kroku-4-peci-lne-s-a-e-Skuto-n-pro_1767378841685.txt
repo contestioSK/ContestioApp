@@ -1,0 +1,133 @@
+Prečo to padá práve v kroku 4 (Špeciálne súťaže)
+Skutočný problém:
+
+👉 do kroku 4 sa vieš dostať skôr, než existuje competitionId
+
+A keď sa potom pokúsiš ukladať → appka spadne.
+
+🔥 Kritický bod v kóde
+Tu je problémová logika:
+const handleNext = async () => {
+  let isValid = false;
+
+  if (currentStep === 1) {
+    isValid = await form.trigger(...)
+    if (isValid && !competitionId) {
+      await saveProgress(); // 🔥 ASYNC
+    }
+  }
+
+  ...
+
+  if (isValid && currentStep < STEPS.length) {
+    setCurrentStep(currentStep + 1);
+  }
+};
+
+Čo sa reálne stane:
+
+Klikneš Ďalej na kroku 1
+
+saveProgress() sa spustí
+
+ALE createMutation je async
+
+setCurrentStep(2) sa vykoná skôr, než:
+
+setCompetitionId(data.id)
+
+
+Ty sa preklikáš až na krok 4
+
+Klikneš „Ďalej“
+
+A tu padne aplikácia:
+
+if (!competitionId) throw new Error("No competition ID");
+
+
+💥 CRASH
+
+🎯 Prečo to vyzerá, že padá „pri doplnkových súťažiach“
+
+Lebo:
+
+krok 4 je prvý, kde:
+
+už nevaliduješ formulár
+
+ale stále voláš saveProgress()
+
+a tam už ide PATCH /competitions/:id
+
+lenže competitionId === null
+
+✅ RIEŠENIE (správne a čisté)
+✔️ Riešenie 1 – Zablokuj prechod, kým nemáš ID
+
+Najjednoduchšie a správne riešenie:
+
+🔧 Oprav handleNext
+const handleNext = async () => {
+  let isValid = false;
+
+  if (currentStep === 1) {
+    isValid = await form.trigger(['name', 'location', 'startDate', 'endDate']);
+
+    if (isValid && !competitionId) {
+      const result = await createMutation.mutateAsync(form.getValues());
+      setCompetitionId(result.id); // ← DÔLEŽITÉ
+      return setCurrentStep(2); // STOP, nepokračuj ďalej
+    }
+  }
+
+  if (currentStep >= 2 && competitionId) {
+    await saveProgress();
+  }
+
+  if (isValid && currentStep < STEPS.length) {
+    setCurrentStep(prev => prev + 1);
+  }
+};
+
+✔️ Riešenie 2 – UX poistka (odporúčané)
+
+Zabráň vstupu do ďalších krokov, kým nemáš ID:
+
+{currentStep > 1 && !competitionId && (
+  <div className="text-red-500 text-sm">
+    Najprv ulož základné údaje súťaže.
+  </div>
+)}
+
+
+alebo:
+
+<Button
+  disabled={!competitionId && currentStep > 1}
+>
+  Ďalej
+</Button>
+
+🧠 Prečo je toto kritické architektonicky
+
+Tvoj systém je správne navrhnutý:
+
+✔ draft
+✔ autosave
+✔ wizard
+✔ postupné ukladanie
+
+Ale:
+
+❌ chýba garantovaný bod vzniku entity
+
+➡️ súťaž musí existovať ešte pred krokom 2
+
+✅ Zhrnutie (jasne a bez omáčky)
+Problém	Stav
+Padá v kroku 4	❌ ÁNO
+Príčina	competitionId === null
+Skutočný dôvod	async create → step sa prepne skôr
+Riešenie	zablokovať postup bez ID
+UX chyba	používateľ nevie, že ešte neexistuje súťaž

@@ -258,7 +258,18 @@ export default function CreateCompetition() {
     if (currentStep === 1) {
       isValid = await form.trigger(['name', 'location', 'startDate', 'endDate']);
       if (isValid && !competitionId) {
-        await saveProgress();
+        // Create competition and wait for ID before proceeding
+        setIsSaving(true);
+        try {
+          const values = form.getValues();
+          const result = await createMutation.mutateAsync(values);
+          // Wait for ID to be set before proceeding
+          setCompetitionId(result.id);
+          setCurrentStep(2);
+        } finally {
+          setIsSaving(false);
+        }
+        return; // Stop here, don't continue to the normal flow
       }
     } else if (currentStep === 2) {
       isValid = await form.trigger(['description', 'rules', 'scoringType', 'minWeight']);
@@ -934,11 +945,11 @@ export default function CreateCompetition() {
             {currentStep < STEPS.length ? (
               <Button
                 onClick={handleNext}
-                disabled={createMutation.isPending || updateMutation.isPending}
+                disabled={isSaving || createMutation.isPending || updateMutation.isPending || (currentStep > 1 && !competitionId)}
                 className="bg-orange-500 hover:bg-orange-600"
                 data-testid="button-next-step"
               >
-                {(createMutation.isPending || updateMutation.isPending) && (
+                {(isSaving || createMutation.isPending || updateMutation.isPending) && (
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 )}
                 Ďalej
