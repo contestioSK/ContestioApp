@@ -963,17 +963,21 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createCompetition(competition: InsertCompetition): Promise<Competition> {
+    // Sanitize numeric fields to prevent empty string database errors
+    const sanitizedData = sanitizeCompetitionData(competition);
     const [newCompetition] = await db
       .insert(competitions)
-      .values(competition as typeof competitions.$inferInsert)
+      .values(sanitizedData as typeof competitions.$inferInsert)
       .returning();
     return newCompetition;
   }
 
   async updateCompetition(id: string, competition: Partial<InsertCompetition> & { approvedAt?: Date | null; reminderSentAt?: Date | null; dayBeforeReminderSentAt?: Date | null }): Promise<Competition> {
+    // Sanitize numeric fields to prevent empty string database errors
+    const sanitizedData = sanitizeCompetitionData(competition);
     const [updatedCompetition] = await db
       .update(competitions)
-      .set({ ...competition, updatedAt: new Date() })
+      .set({ ...sanitizedData, updatedAt: new Date() })
       .where(eq(competitions.id, id))
       .returning();
     return updatedCompetition;
