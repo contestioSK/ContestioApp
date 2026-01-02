@@ -25,48 +25,76 @@ import type { Competition } from "@shared/schema";
 const PLANS = [
   {
     id: 'basic',
-    name: 'Základný',
-    price: 9.99,
-    description: 'Pre menšie súťaže do 10 tímov',
+    name: 'Basic',
+    price: 69,
+    description: 'Ideálne pre menšie súťaže',
     features: [
-      'Max. 10 tímov',
+      'Registrácia tímov',
+      'Maximálne 15 tímov',
+      'Zápis úlovkov rozhodcami',
+      'Live tabuľka výsledkov',
       'Základné štatistiky',
-      'QR kódy pre registráciu',
-      'Email podpora',
+      'Až 2 rozhodcovia',
     ],
-    maxTeams: 10,
+    maxTeams: 15,
+    maxReferees: 2,
     icon: Shield,
   },
   {
-    id: 'premium',
-    name: 'Premium',
-    price: 24.99,
-    description: 'Pre stredné súťaže do 30 tímov',
+    id: 'pro',
+    name: 'Pro',
+    price: 199,
+    description: 'Najobľúbenejší balík pre väčšinu súťaží',
     features: [
-      'Max. 30 tímov',
-      'Pokročilé štatistiky',
-      'Vedľajšie súťaže',
-      'Rozhodcovia a sektory',
-      'Prioritná podpora',
+      'Všetko z Basic +',
+      'Neobmedzený počet tímov',
+      'Doplnkové súťaže',
+      'Sektory a vyhodnotenie sektorov',
+      'Detailné profily tímov a úlovkov',
+      'Sponzori (logá, ceny)',
+      'Export výsledkov (PDF, Excel)',
+      'Až 5 rozhodcov',
     ],
-    maxTeams: 30,
+    maxTeams: null,
+    maxReferees: 5,
     icon: Star,
     popular: true,
   },
   {
-    id: 'enterprise',
-    name: 'Enterprise',
-    price: 49.99,
-    description: 'Pre veľké súťaže bez limitu',
+    id: 'premium',
+    name: 'Premium',
+    price: 599,
+    description: 'Pre veľké súťaže s vlastným brandingom',
     features: [
-      'Neobmedzený počet tímov',
-      'Všetky funkcie Premium',
-      'Vlastný branding',
-      'Prioritná podpora 24/7',
-      'Dedikovaný account manager',
+      'Všetko z Pro +',
+      'Branding (logo, farby, subdoména)',
+      'Pokročilé štatistiky a grafy',
+      'Neobmedzený počet rozhodcov',
+      'Prístup pre médiá a live výsledky',
+      'Prioritná podpora počas preteku',
     ],
     maxTeams: null,
+    maxReferees: null,
     icon: Crown,
+  },
+  {
+    id: 'enterprise',
+    name: 'Enterprise',
+    price: null,
+    description: 'Komplexné riešenie pre organizácie',
+    features: [
+      'Všetko z Premium +',
+      'Interaktívna mapa sektorov',
+      'Viacero súťaží pod jednou organizáciou',
+      'White-label riešenie',
+      'API prístup',
+      'Garantovaná dostupnosť (SLA)',
+      'Osobné zaškolenie rozhodcov',
+    ],
+    maxTeams: null,
+    maxReferees: null,
+    icon: Crown,
+    isEnterprise: true,
   },
 ];
 
@@ -80,7 +108,7 @@ export default function CompetitionCheckout() {
   
   const selectedPlanId = useMemo(() => {
     const urlParams = new URLSearchParams(searchString);
-    return urlParams.get('plan') || 'premium';
+    return urlParams.get('plan') || 'pro';
   }, [searchString]);
 
   const [currentPlan, setCurrentPlan] = useState(selectedPlanId);
@@ -130,7 +158,8 @@ export default function CompetitionCheckout() {
       <OrganizerLayout>
         <div className="max-w-4xl mx-auto px-4 py-6">
           <Skeleton className="h-12 w-64 mb-6" />
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
+            <Skeleton className="h-[400px]" />
             <Skeleton className="h-[400px]" />
             <Skeleton className="h-[400px]" />
             <Skeleton className="h-[400px]" />
@@ -181,10 +210,11 @@ export default function CompetitionCheckout() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
           {PLANS.map((plan) => {
             const Icon = plan.icon;
             const isSelected = currentPlan === plan.id;
+            const isEnterprise = plan.id === 'enterprise';
             
             return (
               <Card 
@@ -193,8 +223,8 @@ export default function CompetitionCheckout() {
                   isSelected 
                     ? 'border-orange-500 ring-2 ring-orange-500/20' 
                     : 'border-slate-200 dark:border-slate-700 hover:border-orange-300'
-                } ${plan.popular ? 'relative' : ''}`}
-                onClick={() => setCurrentPlan(plan.id)}
+                } ${plan.popular ? 'relative' : ''} ${isEnterprise ? 'opacity-75' : ''}`}
+                onClick={() => !isEnterprise && setCurrentPlan(plan.id)}
                 data-testid={`card-plan-${plan.id}`}
               >
                 {plan.popular && (
@@ -211,8 +241,14 @@ export default function CompetitionCheckout() {
                   <CardTitle className="text-xl">{plan.name}</CardTitle>
                   <CardDescription>{plan.description}</CardDescription>
                   <div className="mt-4">
-                    <span className="text-3xl font-bold text-foreground">{plan.price}€</span>
-                    <span className="text-muted-foreground">/súťaž</span>
+                    {isEnterprise ? (
+                      <span className="text-xl font-bold text-foreground">Cena na vyžiadanie</span>
+                    ) : (
+                      <>
+                        <span className="text-3xl font-bold text-foreground">{plan.price}€</span>
+                        <span className="text-muted-foreground"> / súťaž</span>
+                      </>
+                    )}
                   </div>
                 </CardHeader>
                 <CardContent className="pt-0">
@@ -224,6 +260,18 @@ export default function CompetitionCheckout() {
                       </li>
                     ))}
                   </ul>
+                  {isEnterprise && (
+                    <Button 
+                      variant="outline" 
+                      className="w-full mt-4"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.location.href = 'mailto:info@contestio.sk?subject=Záujem o Enterprise balík';
+                      }}
+                    >
+                      Kontaktujte nás
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             );
@@ -243,18 +291,27 @@ export default function CompetitionCheckout() {
                 <p className="font-medium text-foreground">{competition.name}</p>
                 <p className="text-sm text-muted-foreground">Balík: {selectedPlan.name}</p>
               </div>
-              <p className="text-2xl font-bold text-foreground">{selectedPlan.price}€</p>
+              <p className="text-2xl font-bold text-foreground">
+                {selectedPlan.price ? `${selectedPlan.price}€` : 'Na vyžiadanie'}
+              </p>
             </div>
-            <div className="border-t pt-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-muted-foreground">Súťaž</span>
-                <span className="text-foreground">{selectedPlan.price}€</span>
+            {selectedPlan.price && (
+              <div className="border-t pt-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-muted-foreground">Súťaž</span>
+                  <span className="text-foreground">{selectedPlan.price}€</span>
+                </div>
+                <div className="flex items-center justify-between font-bold text-lg">
+                  <span className="text-foreground">Celkom</span>
+                  <span className="text-orange-500">{selectedPlan.price}€</span>
+                </div>
               </div>
-              <div className="flex items-center justify-between font-bold text-lg">
-                <span className="text-foreground">Celkom</span>
-                <span className="text-orange-500">{selectedPlan.price}€</span>
+            )}
+            {!selectedPlan.price && (
+              <div className="border-t pt-4 text-center">
+                <p className="text-muted-foreground">Pre Enterprise balík nás kontaktujte.</p>
               </div>
-            </div>
+            )}
           </CardContent>
         </Card>
 
@@ -266,24 +323,33 @@ export default function CompetitionCheckout() {
           >
             Zrušiť
           </Button>
-          <Button
-            onClick={handlePayment}
-            disabled={isProcessing || paymentMutation.isPending}
-            className="bg-orange-500 hover:bg-orange-600 text-white order-1 sm:order-2"
-            data-testid="button-pay"
-          >
-            {isProcessing || paymentMutation.isPending ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Spracúvam...
-              </>
-            ) : (
-              <>
-                <CreditCard className="w-4 h-4 mr-2" />
-                Zaplatiť {selectedPlan.price}€
-              </>
-            )}
-          </Button>
+          {selectedPlan.price ? (
+            <Button
+              onClick={handlePayment}
+              disabled={isProcessing || paymentMutation.isPending}
+              className="bg-orange-500 hover:bg-orange-600 text-white order-1 sm:order-2"
+              data-testid="button-pay"
+            >
+              {isProcessing || paymentMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Spracúvam...
+                </>
+              ) : (
+                <>
+                  <CreditCard className="w-4 h-4 mr-2" />
+                  Zaplatiť {selectedPlan.price}€
+                </>
+              )}
+            </Button>
+          ) : (
+            <Button
+              onClick={() => window.location.href = 'mailto:info@contestio.sk?subject=Záujem o Enterprise balík'}
+              className="bg-gray-700 hover:bg-gray-800 text-white order-1 sm:order-2"
+            >
+              Kontaktujte nás
+            </Button>
+          )}
         </div>
 
         {/* Development mode notice - remove in production */}
