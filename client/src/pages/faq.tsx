@@ -1,7 +1,7 @@
 import NavigationHeader from "@/components/navigation-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Users, Fish, Settings, BookOpen, UserCircle, ArrowLeft } from "lucide-react";
+import { ChevronDown, Crown, Trophy, Compass, KeyRound, Wrench, ArrowLeft } from "lucide-react";
 import { useState } from "react";
 
 interface FAQItem {
@@ -32,7 +32,7 @@ export default function FAQ() {
   const faqSections: FAQSection[] = [
     {
       title: "Organizátori",
-      icon: Users,
+      icon: Crown,
       color: "from-blue-500 to-blue-600",
       description: "Ako registrovať a spravovať súťaže, tímy a rozhodcov",
       items: [
@@ -60,7 +60,7 @@ export default function FAQ() {
     },
     {
       title: "Súťažiaci",
-      icon: Fish,
+      icon: Trophy,
       color: "from-green-500 to-green-600",
       description: "Prihlásenie do súťaží, záznam úlovkov a sledovanie výsledkov",
       items: [
@@ -84,7 +84,7 @@ export default function FAQ() {
     },
     {
       title: "Rybársky denník",
-      icon: BookOpen,
+      icon: Compass,
       color: "from-teal-500 to-teal-600",
       description: "Zápis úlovkov, štatistiky, sezónne ciele a offline režim",
       items: [
@@ -116,7 +116,7 @@ export default function FAQ() {
     },
     {
       title: "Registrácia a účty",
-      icon: UserCircle,
+      icon: KeyRound,
       color: "from-orange-500 to-orange-600",
       description: "Vytvorenie účtu, prihlásenie a správa tímu",
       items: [
@@ -140,7 +140,7 @@ export default function FAQ() {
     },
     {
       title: "Technické otázky",
-      icon: Settings,
+      icon: Wrench,
       color: "from-purple-500 to-purple-600",
       description: "Kompatibilita zariadení, offline režim a integrácie",
       items: [
