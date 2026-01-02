@@ -55,7 +55,8 @@ import {
   Mail,
   Timer,
   Shield,
-  ClipboardCheck
+  ClipboardCheck,
+  CreditCard
 } from "lucide-react";
 import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 import { PulsingDot } from "@/components/ui/pulsing-dot";
@@ -541,16 +542,11 @@ export default function CompetitionManage() {
             {competition.status === 'draft' && (
               <Button 
                 className="bg-orange-500 hover:bg-orange-600 text-white"
-                onClick={handlePrepareForLaunch}
-                disabled={statusMutation.isPending}
-                data-testid="button-prepare-launch"
+                onClick={() => setLocation(`/organizer/competition/${competition.id}/checkout`)}
+                data-testid="button-go-to-checkout"
               >
-                {statusMutation.isPending ? (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                ) : (
-                  <ClipboardCheck className="w-4 h-4 mr-2" />
-                )}
-                Pripraviť na spustenie
+                <CreditCard className="w-4 h-4 mr-2" />
+                Vybrať balík a zaplatiť
               </Button>
             )}
             {competition.status === 'ready' && competition.paymentStatus !== 'paid' && (

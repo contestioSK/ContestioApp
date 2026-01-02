@@ -144,7 +144,44 @@ export default function CompetitionCheckout() {
     },
   });
 
+  const validateCompetitionReadiness = (): string[] => {
+    const errors: string[] = [];
+    if (!competition) return errors;
+    
+    if (!competition.name || competition.name.trim() === '') errors.push("Názov súťaže");
+    if (!competition.location || competition.location.trim() === '') errors.push("Miesto konania");
+    if (!competition.startDate) errors.push("Dátum začiatku");
+    if (!competition.endDate) errors.push("Dátum konca");
+    if (!competition.scoringType) errors.push("Typ bodovania");
+    if (!competition.contactEmail || competition.contactEmail.trim() === '') errors.push("Kontaktný email");
+    if (!competition.contactPhone || competition.contactPhone.trim() === '') errors.push("Kontaktný telefón");
+    
+    if (competition.startDate && competition.endDate) {
+      const start = new Date(competition.startDate);
+      const end = new Date(competition.endDate);
+      if (end < start) {
+        errors.push("Dátum konca musí byť po dátume začiatku");
+      }
+    }
+    
+    if (competition.hasSectors && (!competition.sectorPlaces || competition.sectorPlaces.length === 0)) {
+      errors.push("Konfigurácia sektorov");
+    }
+    
+    return errors;
+  };
+
   const handlePayment = async () => {
+    const validationErrors = validateCompetitionReadiness();
+    if (validationErrors.length > 0) {
+      toast({
+        title: "Chýbajúce údaje",
+        description: `Pred platbou vyplňte: ${validationErrors.join(", ")}`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsProcessing(true);
     try {
       await paymentMutation.mutateAsync(currentPlan);
