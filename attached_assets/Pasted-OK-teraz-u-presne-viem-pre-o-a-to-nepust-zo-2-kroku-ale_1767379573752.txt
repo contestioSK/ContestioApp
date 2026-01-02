@@ -1,0 +1,109 @@
+OK, teraz už presne viem, prečo ťa to nepustí zo 2. kroku ďalej – a nie je to žiadna mystika ani Replit, ale kombinácia Zod + react-hook-form + number input.
+
+Poďme to rozobrať chirurgicky.
+
+❌ PROBLÉM: krok 2 sa nikdy nepovažuje za „validný“
+Tvoja logika:
+if (currentStep === 2) {
+  isValid = await form.trigger([
+    'description',
+    'rules',
+    'scoringType',
+    'minWeight'
+  ]);
+}
+
+
+➡️ Ak isValid === false, neprepneš sa ďalej
+➡️ A presne to sa deje
+
+🎯 SKUTOČNÁ PRÍČINA
+❌ minWeight je definované ako:
+minWeight: z.number().min(1).max(15)
+
+❌ Ale input posiela STRING:
+<Input
+  type="number"
+  {...field}
+/>
+
+
+➡️ react-hook-form vždy posiela string, nie number
+➡️ Zod čaká number
+➡️ validácia FAILNE
+➡️ form.trigger() vráti false
+➡️ krok 2 sa nikdy neposunie
+
+💥 Prečo to nevidíš?
+
+Lebo:
+
+nemáš zobrazenú chybu
+
+FormMessage sa síce renderuje, ale pole nie je focusnuté
+
+trigger() len vráti false, nehodí error
+
+✅ RIEŠENIE (správne a čisté)
+🟢 RIEŠENIE 1 – ODPORÚČANÉ
+Použi z.coerce.number()
+
+➡️ automaticky premení string → number
+
+✅ Oprav schému:
+const step2Schema = z.object({
+  description: z.string().max(2000).optional(),
+  rules: z.string().optional(),
+  scoringType: z.enum(["total", "avg3", "avg5"]).default("total"),
+  minWeight: z.coerce.number().min(1).max(15),
+  firstPlacePrize: z.string().optional(),
+  secondPlacePrize: z.string().optional(),
+  thirdPlacePrize: z.string().optional(),
+  registrationFee: z.string().optional(),
+  maxTeams: z.coerce.number().optional(),
+});
+
+
+💡 TOTO je presne to, čo chceš.
+
+🟡 RIEŠENIE 2 – Menej čisté (neodporúčam)
+
+Ručne parsovať:
+
+onChange={(e) => field.onChange(parseFloat(e.target.value))}
+
+
+➡️ už to máš, ale Zod aj tak validuje string, nie number
+➡️ funguje len náhodou
+
+🧠 PREČO TO PADALO AŽ TERAZ
+Krok	Prečo fungoval
+1	všetko stringy
+2	minWeight = number → FAIL
+3	už sa tam nikdy nedostaneš
+4	nedosiahnuteľné
+✅ FINÁLNY FIX (urob toto)
+1️⃣ Zmeň schema
+minWeight: z.coerce.number().min(1).max(15)
+maxTeams: z.coerce.number().optional()
+
+2️⃣ Nechaj input tak ako máš
+3️⃣ Nič iné nemeníš
+🧠 Bonus – odporúčaná ochrana
+
+Pridaj si debug:
+
+console.log("Errors:", form.formState.errors);
+
+
+hneď uvidíš, keď niečo blokuje postup.
+
+✅ ZHRNUTIE
+
+✔ problém NIE JE v navigácii
+✔ NIE JE v mutation
+✔ NIE JE v state
+❌ je v Zod type mismatch
+
+➡️ z.number() + input = problém
+➡️ z.coerce.number() = správne riešenie
