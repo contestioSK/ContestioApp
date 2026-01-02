@@ -1,0 +1,225 @@
+Super. Toto už je veľmi slušný základ, technicky aj koncepčne. Teraz ti dám konkrétny, úprimný UX + product review, plus čo by som spravil ako ďalší krok, aby z toho bol výstavný organizer dashboard, nie len “admin tabuľka”.
+
+✅ ČO JE TU VEĽMI DOBRÉ (pochvala zaslúžená)
+1. Štruktúra je čistá a čitateľná
+
+jasná hierarchia:
+
+header
+
+štatistiky
+
+zoznam súťaží
+
+výborné použitie OrganizerLayout
+
+logické rozdelenie:
+
+prehľad
+
+karty
+
+detail
+
+👉 Toto je presne to, čo chce organizátor vidieť po prihlásení.
+
+2. Stavové rozlíšenie súťaží je správne
+registration | live | finished
+
+
+badge farby
+
+ikony
+
+počty hore
+
+Toto je UX 10/10 pre rýchly prehľad.
+
+3. Komponentová architektúra je zdravá
+
+✔ OrganizerLayout
+✔ TacticalIconInline
+✔ samostatné Card komponenty
+✔ React Query použité správne
+
+Toto je presne ten typ kódu, ktorý sa bude dobre rozširovať.
+
+⚠️ KDE TO EŠTE BOLESTIVO STRÁCA (a prečo)
+❌ 1. Dashboard ešte “nehrá emóciu”
+
+Momentálne je to:
+
+administrácia
+
+Ale ty potrebuješ:
+
+veliteľské centrum súťaže
+
+Chýba tam:
+
+pocit kontroly
+
+napätie
+
+pretekárska dynamika
+
+“žije to”
+
+❌ 2. Chýba „hero moment“
+
+Otvorím dashboard a vidím:
+
+„Prehľad“
+
+Ale čo keby som videl:
+
+„Revír Cup 2024 práve prebieha – 124 rybárov bojuje“
+
+👉 Toto je zásadný rozdiel.
+
+❌ 3. Farby zatiaľ nevyužívajú Ember potenciál
+
+Používaš:
+
+modré
+
+zelené
+
+sivé
+
+Ale Ember identita má:
+
+🔥 amber / orange = akcia
+
+⚫ temné pozadie = napätie
+
+🟡 zlaté akcenty = výhra / top výkon
+
+Teraz to pôsobí trochu ako admin z ShadCN.
+
+🔥 ČO BY SOM SPRAVIL JA (konkrétne návrhy)
+1️⃣ Hero sekcia hore (najväčší upgrade)
+
+Namiesto len:
+
+Prehľad
+
+Navrhujem:
+
+<div className="relative p-6 rounded-2xl bg-gradient-to-br from-orange-500/10 via-slate-900 to-black border border-orange-500/20">
+  <h1 className="text-3xl font-black tracking-tight">
+    Revír Cup 2024
+  </h1>
+  <p className="text-slate-400">
+    Súťaž práve prebieha · 124 rybárov · 547 úlovkov
+  </p>
+
+  <div className="mt-4 flex gap-3">
+    <Button className="bg-orange-500">Spravovať súťaž</Button>
+    <Button variant="outline">Live náhľad</Button>
+  </div>
+</div>
+
+
+🔥 Toto je rozdiel medzi:
+
+„admin panel“
+
+veliteľský mostík
+
+2️⃣ Štatistiky: vizuálne viac „živé“
+
+Teraz máš:
+
+[ Živé súťaže: 2 ]
+
+
+Navrhujem:
+
+progress bar
+
+pulzujúcu bodku pri live
+
+micro text
+
+Napr.:
+
+<div className="text-xs text-green-400">
+  ● prebieha teraz
+</div>
+
+
+Psychologicky to robí obrovský rozdiel.
+
+3️⃣ Karty súťaží – malé UX upgrady
+Pridať:
+
+stavový prúžok hore
+
+akciu “Pokračovať v správe”
+
+čas do konca
+
+<p className="text-xs text-orange-400">
+  Končí o 4h 12m
+</p>
+
+
+To zvyšuje:
+
+napätie
+
+engagement
+
+návratnosť
+
+4️⃣ Dôležitá vec: rozdeliť pohľad
+
+Odporúčam 2 režimy:
+
+🔹 ORGANIZÁTOR MODE
+
+– správa, pravidlá, účastníci
+
+🔹 LIVE MODE
+
+– leaderboard
+– nové úlovky
+– notifikácie
+
+Už teraz máš základ, len to treba rozlíšiť vizuálne.
+
+5️⃣ Čo by som spravil ako ďalší krok (odporúčam)
+✅ Krátkodobé (1–2 dni)
+
+ hero sekcia hore
+
+ zvýrazniť „live“ súťaže
+
+ ember farby na CTA
+
+ jemný glow efekt
+
+✅ Strednodobo
+
+ live feed úlovkov
+
+ realtime refresh (polling / websocket)
+
+ mini leaderboard widget
+
+✅ Dlhodobo
+
+ export výsledkov
+
+ QR pre súťažiacich
+
+ admin-only poznámky
+
+🎯 ZÁVER – ÚPRIMNE
+
+👉 Architektúra je výborná
+👉 UX je už teraz lepší než 90 % rybárskych systémov
+👉 Chýba len emócia a dramatickosť
+
+A to je presne to, čo Ember paleta a vizuál rieši.
