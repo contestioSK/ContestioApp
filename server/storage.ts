@@ -1597,9 +1597,8 @@ export class DatabaseStorage implements IStorage {
     const competitionCatches = await db
       .select({
         id: catches.id,
-        fishSpecies: catches.fishSpecies,
+        fishType: catches.fishType,
         weight: catches.weight,
-        length: catches.length,
         photoUrl: catches.photoUrl,
         capturedAt: catches.submittedAt,
         teamName: teams.name,
@@ -1615,10 +1614,10 @@ export class DatabaseStorage implements IStorage {
     const diaryCatchesResult = await db
       .select({
         id: diaryCatches.id,
-        fishSpecies: diaryCatches.fishSpecies,
+        fishType: diaryCatches.fishType,
         weight: diaryCatches.weight,
-        length: diaryCatches.length,
-        photoUrl: diaryCatches.photoUrl,
+        lengthCm: diaryCatches.lengthCm,
+        photos: diaryCatches.photos,
         capturedAt: diaryCatches.capturedAt,
         angler: diaryCatches.angler,
         tripId: diaryCatches.tripId,
@@ -1632,9 +1631,9 @@ export class DatabaseStorage implements IStorage {
       ...competitionCatches.map(c => ({
         id: c.id,
         source: 'competition' as const,
-        fishSpecies: c.fishSpecies,
+        fishSpecies: c.fishType,
         weight: Number(c.weight),
-        length: c.length ? Number(c.length) : null,
+        length: null,
         photoUrl: c.photoUrl,
         capturedAt: c.capturedAt as Date,
         userName: c.teamName,
@@ -1643,13 +1642,15 @@ export class DatabaseStorage implements IStorage {
       })),
       ...diaryCatchesResult.map(c => {
         const angler = c.angler as { name?: string; userId?: string } | null;
+        const photos = c.photos as Array<{ url?: string }> | null;
+        const firstPhoto = (photos && photos.length > 0 ? photos[0]?.url : null) || null;
         return {
           id: c.id,
           source: 'diary' as const,
-          fishSpecies: c.fishSpecies,
+          fishSpecies: c.fishType,
           weight: Number(c.weight),
-          length: c.length ? Number(c.length) : null,
-          photoUrl: c.photoUrl,
+          length: c.lengthCm ? Number(c.lengthCm) : null,
+          photoUrl: firstPhoto,
           capturedAt: c.capturedAt as Date,
           userName: angler?.name || 'Neznámy',
           userEmail: null,

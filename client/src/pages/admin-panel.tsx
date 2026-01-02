@@ -894,6 +894,23 @@ export default function AdminPanel() {
     enabled: isAuthenticated && isAdmin,
   });
 
+  // Activity catches query - all recent catches from all sources
+  const { data: activityCatches, isLoading: catchesLoading } = useQuery<Array<{
+    id: string;
+    source: 'competition' | 'diary';
+    fishSpecies: string;
+    weight: number;
+    length: number | null;
+    photoUrl: string | null;
+    capturedAt: string;
+    userName: string;
+    userEmail: string | null;
+    contextName: string;
+  }>>({
+    queryKey: ["/api/admin/activity-catches"],
+    enabled: isAuthenticated && isAdmin,
+  });
+
   // All competitions for promo code scope selection
   const { data: allCompetitions } = useQuery<any[]>({
     queryKey: ["/api/competitions"],
@@ -2220,6 +2237,73 @@ export default function AdminPanel() {
                               setIsUserActionDialogOpen(true);
                             }}
                           />
+
+                          {/* Recent Catches Activity Feed */}
+                          <Card className="bg-card border-border p-6">
+                            <div className="flex items-center justify-between mb-6">
+                              <h3 className="text-lg font-semibold text-foreground">Posledné úlovky</h3>
+                              <Badge variant="outline" className="text-muted-foreground">
+                                {activityCatches?.length || 0} úlovkov
+                              </Badge>
+                            </div>
+                            {catchesLoading ? (
+                              <div className="space-y-3">
+                                {[...Array(5)].map((_, i) => (
+                                  <Skeleton key={i} className="h-16 w-full" />
+                                ))}
+                              </div>
+                            ) : activityCatches && activityCatches.length > 0 ? (
+                              <div className="space-y-3">
+                                {activityCatches.slice(0, 10).map((catch_) => (
+                                  <div
+                                    key={catch_.id}
+                                    className="flex items-center gap-4 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+                                  >
+                                    {catch_.photoUrl ? (
+                                      <img
+                                        src={catch_.photoUrl}
+                                        alt={catch_.fishSpecies}
+                                        className="w-12 h-12 rounded-lg object-cover"
+                                      />
+                                    ) : (
+                                      <div className="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                                        <Trophy className="w-6 h-6 text-blue-500" />
+                                      </div>
+                                    )}
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-2">
+                                        <span className="font-medium text-foreground truncate">
+                                          {catch_.fishSpecies}
+                                        </span>
+                                        <Badge
+                                          variant="outline"
+                                          className={catch_.source === 'competition'
+                                            ? 'bg-orange-500/10 text-orange-500 border-orange-500/20'
+                                            : 'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                                          }
+                                        >
+                                          {catch_.source === 'competition' ? 'Súťaž' : 'Denník'}
+                                        </Badge>
+                                      </div>
+                                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                        <span>{catch_.weight} kg</span>
+                                        {catch_.length && <span>• {catch_.length} cm</span>}
+                                        <span>• {catch_.userName}</span>
+                                      </div>
+                                      <p className="text-xs text-muted-foreground truncate">
+                                        {catch_.contextName} • {new Date(catch_.capturedAt).toLocaleString('sk-SK')}
+                                      </p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="text-center py-8 text-muted-foreground">
+                                <Trophy className="w-12 h-12 mx-auto mb-4 opacity-30" />
+                                <p>Zatiaľ žiadne úlovky</p>
+                              </div>
+                            )}
+                          </Card>
                         </>
                       )}
                     </div>
