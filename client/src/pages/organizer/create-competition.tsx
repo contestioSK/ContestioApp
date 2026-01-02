@@ -303,7 +303,7 @@ export default function CreateCompetition() {
       }
     } else if (currentStep === 2) {
       isValid = await form.trigger(['description', 'rules', 'scoringType', 'minWeight']);
-      if (isValid && competitionId) {
+      if (isValid && competitionIdRef.current) {
         await saveProgress();
       }
     } else if (currentStep === 3) {
@@ -320,12 +320,12 @@ export default function CreateCompetition() {
         }
       }
       isValid = true;
-      if (competitionId) {
+      if (competitionIdRef.current) {
         await saveProgress();
       }
     } else if (currentStep === 4) {
       isValid = true;
-      if (competitionId) {
+      if (competitionIdRef.current) {
         await saveProgress();
       }
     } else {
