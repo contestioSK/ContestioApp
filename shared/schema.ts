@@ -691,6 +691,35 @@ export const battleInvitationsRelations = relations(battleInvitations, ({ one })
   }),
 }));
 
+// Helper to convert empty strings to null for optional numeric fields
+const emptyStringToNull = z.preprocess(
+  (val) => (val === "" || val === undefined ? null : val),
+  z.string().nullable().optional()
+);
+
+// Helper for optional decimal fields - converts "" to null, then parses to string for database
+const optionalDecimalField = z.preprocess(
+  (val) => {
+    if (val === "" || val === undefined || val === null) return null;
+    // If it's a valid number string or number, keep it as string for decimal column
+    const num = typeof val === 'string' ? parseFloat(val) : val;
+    if (typeof num === 'number' && !isNaN(num)) return num.toString();
+    return null;
+  },
+  z.string().nullable().optional()
+);
+
+// Helper for optional integer fields - converts "" to null
+const optionalIntegerField = z.preprocess(
+  (val) => {
+    if (val === "" || val === undefined || val === null) return null;
+    const num = typeof val === 'string' ? parseInt(val, 10) : val;
+    if (typeof num === 'number' && !isNaN(num)) return num;
+    return null;
+  },
+  z.number().int().nullable().optional()
+);
+
 // Insert schemas
 export const insertCompetitionSchema = createInsertSchema(competitions).omit({
   id: true,
@@ -713,6 +742,12 @@ export const insertCompetitionSchema = createInsertSchema(competitions).omit({
   }).nullable().optional(),
   minWeight: z.string().or(z.number().transform(val => val.toString())).default("2.00"),
   organizerEmail: z.string().email().optional().nullable(),
+  // Numeric fields with proper empty string handling
+  firstPlacePrize: optionalDecimalField,
+  secondPlacePrize: optionalDecimalField,
+  thirdPlacePrize: optionalDecimalField,
+  registrationFee: optionalDecimalField,
+  maxTeams: optionalIntegerField,
 });
 
 export const insertCompetitionRegistrationSchema = createInsertSchema(competitionRegistrations).omit({
