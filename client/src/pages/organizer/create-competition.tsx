@@ -72,6 +72,8 @@ const step1Schema = z.object({
   location: z.string().min(1, "Miesto je povinné").max(255, "Miesto je príliš dlhé"),
   startDate: z.string().min(1, "Dátum začiatku je povinný"),
   endDate: z.string().min(1, "Dátum konca je povinný"),
+  contactEmail: z.string().min(1, "Kontaktný email je povinný").email("Neplatný email"),
+  contactPhone: z.string().min(1, "Kontaktný telefón je povinný").max(50, "Telefón je príliš dlhý"),
 });
 
 const step2Schema = z.object({
@@ -116,6 +118,8 @@ export default function CreateCompetition() {
       location: "",
       startDate: new Date().toISOString().slice(0, 16),
       endDate: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString().slice(0, 16),
+      contactEmail: user?.email || "",
+      contactPhone: "",
       description: "",
       rules: "",
       scoringType: "total",
@@ -144,10 +148,12 @@ export default function CreateCompetition() {
         endDate: existingCompetition.endDate 
           ? new Date(existingCompetition.endDate).toISOString().slice(0, 16) 
           : new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString().slice(0, 16),
+        contactEmail: existingCompetition.contactEmail || user?.email || "",
+        contactPhone: existingCompetition.contactPhone || "",
         description: existingCompetition.description || "",
         rules: existingCompetition.rules || "",
         scoringType: (existingCompetition.scoringType as "total" | "avg3" | "avg5") || "total",
-        minWeight: existingCompetition.minWeight ?? 2,
+        minWeight: existingCompetition.minWeight ? parseFloat(existingCompetition.minWeight) : 2,
         firstPlacePrize: existingCompetition.firstPlacePrize || "",
         secondPlacePrize: existingCompetition.secondPlacePrize || "",
         thirdPlacePrize: existingCompetition.thirdPlacePrize || "",
@@ -478,6 +484,39 @@ export default function CreateCompetition() {
                           </FormItem>
                         )}
                       />
+                    </div>
+
+                    <div className="border-t pt-6 mt-6">
+                      <h3 className="text-sm font-medium text-muted-foreground mb-4">Kontaktné údaje organizátora</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="contactEmail"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Kontaktný email *</FormLabel>
+                              <FormControl>
+                                <Input type="email" placeholder="napr. info@vasasutaz.sk" {...field} data-testid="input-contact-email" />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="contactPhone"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Kontaktný telefón *</FormLabel>
+                              <FormControl>
+                                <Input type="tel" placeholder="napr. +421 900 123 456" {...field} data-testid="input-contact-phone" />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                     </div>
                   </div>
                 )}

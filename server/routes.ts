@@ -1798,6 +1798,55 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         });
       }
 
+      // Validate required fields before allowing transition to 'ready'
+      if (status === 'ready') {
+        const missingFields: string[] = [];
+        
+        if (!existingCompetition.name || existingCompetition.name.trim() === '') {
+          missingFields.push('Názov súťaže');
+        }
+        if (!existingCompetition.location || existingCompetition.location.trim() === '') {
+          missingFields.push('Miesto konania');
+        }
+        if (!existingCompetition.startDate) {
+          missingFields.push('Dátum začiatku');
+        }
+        if (!existingCompetition.endDate) {
+          missingFields.push('Dátum konca');
+        }
+        if (!existingCompetition.scoringType) {
+          missingFields.push('Typ bodovania');
+        }
+        if (!existingCompetition.contactEmail || existingCompetition.contactEmail.trim() === '') {
+          missingFields.push('Kontaktný email');
+        }
+        if (!existingCompetition.contactPhone || existingCompetition.contactPhone.trim() === '') {
+          missingFields.push('Kontaktný telefón');
+        }
+        
+        // Validate date order
+        if (existingCompetition.startDate && existingCompetition.endDate) {
+          const start = new Date(existingCompetition.startDate);
+          const end = new Date(existingCompetition.endDate);
+          if (end < start) {
+            missingFields.push('Dátum konca musí byť po dátume začiatku');
+          }
+        }
+        
+        // Check sectors if enabled
+        if (existingCompetition.hasSectors && 
+            (!existingCompetition.sectorPlaces || existingCompetition.sectorPlaces.length === 0)) {
+          missingFields.push('Definujte aspoň jeden sektor');
+        }
+        
+        if (missingFields.length > 0) {
+          return res.status(400).json({ 
+            message: "Chýbajúce údaje",
+            missingFields
+          });
+        }
+      }
+
       // Check payment status before allowing transition to live
       if (status === 'live' && existingCompetition.paymentStatus !== 'paid') {
         return res.status(400).json({ 

@@ -90,6 +90,10 @@ export const competitions = pgTable("competitions", {
   scoringType: varchar("scoring_type").notNull().default("total"), // "total", "avg3", "avg5"
   minWeight: decimal("min_weight", { precision: 10, scale: 2 }).notNull().default("2.00"), // minimum weight for scoring in kg
   
+  // Contact information
+  contactEmail: varchar("contact_email", { length: 255 }),
+  contactPhone: varchar("contact_phone", { length: 50 }),
+  
   // Plan-related fields  
   planTier: varchar("plan_tier"), // "basic", "pro", "premium", "enterprise" - null until plan is selected
   paymentStatus: varchar("payment_status").notNull().default("unpaid"), // "unpaid", "paid"
