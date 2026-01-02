@@ -183,10 +183,18 @@ export default function CreateCompetition() {
     
     setSectorPlaces(prev => {
       if (prev.length === numSectors) return prev;
-      return Array.from({ length: numSectors }, (_, i) => ({
-        sectorName: `Sektor ${String.fromCharCode(65 + i)}`,
-        places: Array.from({ length: 5 }, (_, j) => `Miesto ${j + 1}`),
-      }));
+      
+      if (numSectors > prev.length) {
+        // Pridávame nové sektory, staré zachováme
+        const added = Array.from({ length: numSectors - prev.length }, (_, i) => ({
+          sectorName: `Sektor ${String.fromCharCode(65 + prev.length + i)}`,
+          places: Array.from({ length: 5 }, (_, j) => `Miesto ${j + 1}`),
+        }));
+        return [...prev, ...added];
+      } else {
+        // Odoberáme sektory z konca
+        return prev.slice(0, numSectors);
+      }
     });
   }, [hasSectors, numSectors]);
 
@@ -294,7 +302,24 @@ export default function CreateCompetition() {
       if (isValid && competitionId) {
         await saveProgress();
       }
-    } else if (currentStep === 3 || currentStep === 4) {
+    } else if (currentStep === 3) {
+      // Validácia sektorov ak sú zapnuté
+      if (hasSectors) {
+        const isSectorsValid = sectorPlaces.every(s => s.sectorName.trim() !== "" && s.places.length > 0);
+        if (!isSectorsValid) {
+          toast({
+            title: "Chýbajúce údaje",
+            description: "Všetky sektory musia mať názov a aspoň jedno miesto.",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+      isValid = true;
+      if (competitionId) {
+        await saveProgress();
+      }
+    } else if (currentStep === 4) {
       isValid = true;
       if (competitionId) {
         await saveProgress();

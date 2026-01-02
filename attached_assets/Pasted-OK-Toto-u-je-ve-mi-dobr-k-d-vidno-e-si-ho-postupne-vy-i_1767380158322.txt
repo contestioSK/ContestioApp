@@ -1,0 +1,135 @@
+OK. Toto už je veľmi dobrý kód – vidno, že si ho postupne vyčistil a premyslel.
+Teraz ti dám presný technický verdict, nie kecy.
+
+✅ VERDIKT:
+
+👉 Tento kód je funkčný a architektonicky správny.
+👉 Z bodu 2 sa teraz už preklikneš správne.
+👉 Nevidím žiadnu kritickú chybu, ktorá by spôsobila crash.
+
+Ale… 👇
+sú tu 3 menšie technické riziká + 2 UX vylepšenia, ktoré odporúčam opraviť.
+
+🧠 ČO JE TERAZ SPRÁVNE (pochvala)
+✅ 1. Zod schéma – konečne správne
+minWeight: z.coerce.number().min(1).max(15)
+maxTeams: z.coerce.number().optional()
+
+
+✔ presne takto sa to má robiť
+✔ vyriešilo to hlavný bug so Step 2
+
+✅ 2. Flow vytvorenia súťaže
+
+Toto je už správne navrhnuté:
+
+if (currentStep === 1) {
+  const result = await createMutation.mutateAsync(values);
+  setCompetitionId(result.id);
+  setCurrentStep(2);
+  return;
+}
+
+
+✔ žiadne preteky
+✔ žiadne undefined ID
+✔ žiadny race condition
+
+✅ 3. Ošetrený edge-case
+if (currentStep > 1 && !competitionId)
+
+
+Toto je presne ten guard, ktorý tam mal byť od začiatku.
+
+✅ 4. useEffect pre sektory – už bezpečný
+
+Tvoja verzia:
+
+setSectorPlaces(prev => {
+  if (prev.length === numSectors) return prev;
+  return ...
+});
+
+
+✔ žiadna nekonečná slučka
+✔ stabilné
+✔ predvídateľné
+
+⚠️ VECI, KTORÉ ODPORÚČAM DOLADIŤ
+1️⃣ form.trigger() v kroku 2 – mierne zbytočne prísne
+
+Teraz:
+
+await form.trigger(['description', 'rules', 'scoringType', 'minWeight']);
+
+
+Ale:
+
+description → optional
+
+rules → optional
+
+➡️ môže to zbytočne failnúť
+
+Lepšie:
+await form.trigger(['scoringType', 'minWeight']);
+
+
+alebo rovno:
+
+await form.trigger();
+
+2️⃣ saveProgress() sa volá aj keď sa nič nezmenilo
+
+Nie je to bug, ale:
+
+zbytočné API volania
+
+zbytočný load
+
+👉 ak chceš byť pedant:
+
+if (!form.formState.isDirty) return;
+
+3️⃣ Side competitions – chýba ochrana pred duplicitou v DB
+
+Frontend to rieši, ale backend by mal:
+
+sideCompetitions = [...new Set(sideCompetitions)]
+
+
+Inak sa ti môže stať bordel, ak niekto pošle request ručne.
+
+⚠️ UX DETAIL (nie bug, ale cítiť to)
+Tlačidlo „Ďalej“ je aktívne aj keď:
+
+ešte nič nevyplnil
+
+formulár má chyby
+
+To je UX OK, ale ak chceš profesionálny pocit:
+
+disabled={
+  isSaving ||
+  createMutation.isPending ||
+  updateMutation.isPending ||
+  !form.formState.isValid
+}
+
+
+Ale toto je voliteľné.
+
+🟢 ZÁVER
+🔥 Stav kódu:
+Oblasť	Stav
+Logika wizardu	✅ výborná
+Validácia	✅ správna
+Step flow	✅ stabilný
+API handling	✅ korektný
+UX	🟡 veľmi dobrý
+Architektúra	✅ čistá
+🎯 Verdikt ako tech lead:
+
+👉 Toto je už produkčne použiteľný kód.
+👉 Nemáš tam nič, čo by som označil za blocker.
+👉 Ak by si toto pushol dnes, nebude sa to rozpadávať.

@@ -1,0 +1,81 @@
+Kód je po tvojej úprave výrazne stabilnejší. Pridaná validácia dátumov v Zode a poistka (guard) v handleNext sú presne tie prvky, ktoré zabránia nekonzistentným stavom.
+
+Našiel som však ešte dva momenty, kde by si sa mohol "zaseknúť" pri reálnom používaní, a jeden detail v logike sektorov, ktorý by frustroval používateľa.
+
+1. Problém: Prepísanie sektorov (UX "zaseknutie")
+V tvojom useEffect pre sektory stále dochádza k úplnému prepísaniu poľa, ak sa zmení počet:
+
+JavaScript
+
+setSectorPlaces(prev => {
+  if (prev.length === numSectors) return prev;
+  return Array.from({ length: numSectors }, (_, i) => ({ ... })); // Tu sa všetko staré vymaže
+});
+Prečo je to problém: Ak organizátor premenuje "Sektor A" na "Zátoka" a potom zistí, že potrebuje pridať ešte jeden sektor, tvoj kód mu "Zátoku" prepíše naspäť na "Sektor A".
+
+Oprava (zachovanie existujúcich dát):
+
+JavaScript
+
+useEffect(() => {
+  if (!hasSectors) return;
+
+  setSectorPlaces(prev => {
+    if (prev.length === numSectors) return prev;
+    
+    if (numSectors > prev.length) {
+      // Pridávame nové sektory, staré zachováme
+      const added = Array.from({ length: numSectors - prev.length }, (_, i) => ({
+        sectorName: `Sektor ${String.fromCharCode(65 + prev.length + i)}`,
+        places: Array.from({ length: 5 }, (_, j) => `Miesto ${j + 1}`),
+      }));
+      return [...prev, ...added];
+    } else {
+      // Odoberáme sektory z konca
+      return prev.slice(0, numSectors);
+    }
+  });
+}, [hasSectors, numSectors]);
+2. Logické "zaseknutie": Validácia v Kroku 3
+V handleNext pre krok 3 máš isValid = true. Riziko: Používateľ môže nechať názov sektora prázdny alebo vymazať všetky miesta v sektore. Keďže tieto dáta nie sú v form (React Hook Form), Zod ich neskontroluje. Riešenie: Pridaj jednoduchú manuálnu kontrolu pred saveProgress():
+
+JavaScript
+
+} else if (currentStep === 3) {
+  if (hasSectors) {
+    const isSectorsValid = sectorPlaces.every(s => s.sectorName.trim() !== "" && s.places.length > 0);
+    if (!isSectorsValid) {
+      toast({
+        title: "Chýbajúce údaje",
+        description: "Všetky sektory musia mať názov a aspoň jedno miesto.",
+        variant: "destructive",
+      });
+      return;
+    }
+  }
+  isValid = true;
+  if (competitionId) await saveProgress();
+}
+3. Možné zaseknutie: Form Trigger a Refine
+V Kroku 1 voláš form.trigger(['name', 'location', 'startDate', 'endDate']). Tvoj fullSchema má na konci .refine, ktorý kontroluje startDate vs endDate.
+
+Dobrá správa: React Hook Form pri volaní trigger na poliach, ktoré sú súčasťou refine, spustí aj túto validáciu.
+
+Pozor: Ak by si v trigger vynechal endDate, validácia by neprebehla správne. Ty ich tam máš oba, takže je to v poriadku.
+
+4. Technický detail: isSaving vs mutation.isPending
+V tlačidle "Ďalej" máš: disabled={isSaving || createMutation.isPending || updateMutation.isPending} Všimni si, že v handleNext nastavuješ setIsSaving(true) a hneď voláš await createMutation.mutateAsync. To znamená, že tlačidlo bude deaktivované správne, ale vizuálne v tlačidle "Ďalej" zobrazuješ loader len ak je jedna z mutácií pending. Keďže používaš mutateAsync vo vnútri try-catch, stav isPending nemusí vždy presne korelovať s tvojím manuálnym isSaving.
+
+Odporúčanie: Zjednoť vizuálny loader v tlačidle takto:
+
+JavaScript
+
+{(isSaving || createMutation.isPending || updateMutation.isPending) && (
+  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+)}
+(Čo už v kóde máš, takže je to len potvrdenie, že je to takto správne).
+
+Záverečné hodnotenie:
+Kód je pripravený na produkciu. Ak opravíš logiku v useEffect (bod č. 1), aby si ľuďom nemazal prepísané názvy sektorov, bude to z pohľadu UX vynikajúce. Ostatné procesy (vytvorenie v kroku 1, následné updaty) sú ošetrené dobre.
+
+Ešte jedna drobnosť: Pri načítavaní existujúcej súťaže (useEffect s form.reset) odporúčam pridať kontrolu, či už používateľ nie je v procese úpravy, aby mu reset neprepísal rozrobené zmeny (hoci pri multi-step forme je to menej pravdepodobné). V tvojom prípade je to však štandardné riešenie pre "Edit" režim.
