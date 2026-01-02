@@ -64,7 +64,7 @@ export default function CompetitionManage() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const competitionId = params?.id ? parseInt(params.id) : null;
+  const competitionId = params?.id || null;
 
   const [showStartDialog, setShowStartDialog] = useState(false);
   const [showEndDialog, setShowEndDialog] = useState(false);
