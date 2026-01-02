@@ -38,7 +38,7 @@ export default function NavigationHeader() {
     { href: "/faq", label: "FAQ", icon: HelpCircle },
     { href: "/pricing", label: "Cenník", icon: DollarSign },
     { href: "/contact", label: "Kontakt", icon: Phone },
-    { href: "/register-competition", label: "Zaregistrovať súťaž", icon: Trophy },
+    { href: "/organizer/create", label: "Vytvoriť súťaž", icon: Trophy },
   ];
 
   const getRoleDisplayName = (role: string) => {

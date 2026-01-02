@@ -91,6 +91,8 @@ export default function CompetitionManage() {
 
   const [showStartDialog, setShowStartDialog] = useState(false);
   const [showEndDialog, setShowEndDialog] = useState(false);
+  const [showPrepareDialog, setShowPrepareDialog] = useState(false);
+  const [showSelectPlanDialog, setShowSelectPlanDialog] = useState(false);
   const [showAddRefereeDialog, setShowAddRefereeDialog] = useState(false);
   const [showAddAnnouncementDialog, setShowAddAnnouncementDialog] = useState(false);
   const [refereeEmail, setRefereeEmail] = useState("");
@@ -215,8 +217,16 @@ export default function CompetitionManage() {
     },
   });
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string, paymentStatus?: string) => {
     switch (status) {
+      case 'draft':
+        return <Badge variant="secondary" className="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"><Clock className="w-3 h-3 mr-1" />Rozpracovaná</Badge>;
+      case 'ready':
+        return paymentStatus === 'paid' ? (
+          <Badge variant="secondary" className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200"><CheckCircle className="w-3 h-3 mr-1" />Pripravená</Badge>
+        ) : (
+          <Badge variant="secondary" className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"><AlertCircle className="w-3 h-3 mr-1" />Čaká na platbu</Badge>
+        );
       case 'registration':
         return <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"><Clock className="w-3 h-3 mr-1" />Registrácia</Badge>;
       case 'live':
@@ -226,6 +236,56 @@ export default function CompetitionManage() {
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
+  };
+
+  const validateForReady = () => {
+    const errors: string[] = [];
+    if (!competition?.name || competition.name.trim() === '') errors.push("Názov súťaže");
+    if (!competition?.location || competition.location.trim() === '') errors.push("Miesto konania");
+    if (!competition?.startDate) errors.push("Dátum začiatku");
+    if (!competition?.endDate) errors.push("Dátum konca");
+    if (!competition?.scoringType) errors.push("Typ bodovania");
+    if (!competition?.contactEmail || competition.contactEmail.trim() === '') errors.push("Kontaktný email");
+    if (!competition?.contactPhone || competition.contactPhone.trim() === '') errors.push("Kontaktný telefón");
+    
+    // Check if dates are valid (end date after start date)
+    if (competition?.startDate && competition?.endDate) {
+      const start = new Date(competition.startDate);
+      const end = new Date(competition.endDate);
+      if (end < start) {
+        errors.push("Dátum konca musí byť po dátume začiatku");
+      }
+    }
+    
+    // If sectors are enabled, check if they exist
+    if (competition?.hasSectors && (!competition?.sectorPlaces || competition.sectorPlaces.length === 0)) {
+      errors.push("Definujte aspoň jeden sektor");
+    }
+    
+    return errors;
+  };
+
+  const handlePrepareForLaunch = () => {
+    const errors = validateForReady();
+    if (errors.length > 0) {
+      toast({
+        title: "Chýbajúce údaje",
+        description: `Vyplňte: ${errors.join(", ")}`,
+        variant: "destructive",
+      });
+      return;
+    }
+    setShowPrepareDialog(true);
+  };
+
+  const confirmPrepareForLaunch = () => {
+    statusMutation.mutate('ready');
+    setShowPrepareDialog(false);
+    toast({
+      title: "✅ Súťaž pripravená",
+      description: "Teraz vyberte balík a zaplaťte pre aktiváciu.",
+    });
+    setShowSelectPlanDialog(true);
   };
 
   const handleStartCompetition = () => {
@@ -428,7 +488,7 @@ export default function CompetitionManage() {
           <div>
             <div className="flex items-center gap-3 flex-wrap">
               <h1 className="text-xl md:text-2xl font-bold text-foreground">{competition.name}</h1>
-              {getStatusBadge(competition.status)}
+              {getStatusBadge(competition.status, competition.paymentStatus)}
             </div>
             <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground flex-wrap">
               <div className="flex items-center">
@@ -455,11 +515,15 @@ export default function CompetitionManage() {
           <Button 
             variant="outline" 
             size="sm"
-            onClick={() => setLocation(`/competition/${competition.id}/setup`)}
+            onClick={() => setLocation(
+              competition.status === 'draft' 
+                ? `/organizer/create?id=${competition.id}` 
+                : `/competition/${competition.id}/setup`
+            )}
             data-testid="button-edit-competition"
           >
             <Edit className="w-4 h-4 mr-1" />
-            Upraviť
+            {competition.status === 'draft' ? 'Dokončiť' : 'Upraviť'}
           </Button>
         </div>
       </div>
@@ -474,6 +538,46 @@ export default function CompetitionManage() {
         </CardHeader>
         <CardContent className="pt-0">
           <div className="flex flex-wrap gap-2">
+            {competition.status === 'draft' && (
+              <Button 
+                className="bg-orange-500 hover:bg-orange-600 text-white"
+                onClick={handlePrepareForLaunch}
+                disabled={statusMutation.isPending}
+                data-testid="button-prepare-launch"
+              >
+                {statusMutation.isPending ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <ClipboardCheck className="w-4 h-4 mr-2" />
+                )}
+                Pripraviť na spustenie
+              </Button>
+            )}
+            {competition.status === 'ready' && competition.paymentStatus !== 'paid' && (
+              <Button 
+                className="bg-orange-500 hover:bg-orange-600 text-white"
+                onClick={() => setShowSelectPlanDialog(true)}
+                data-testid="button-select-plan"
+              >
+                <Trophy className="w-4 h-4 mr-2" />
+                Vybrať balík a zaplatiť
+              </Button>
+            )}
+            {competition.status === 'ready' && competition.paymentStatus === 'paid' && (
+              <Button 
+                className="bg-green-600 hover:bg-green-700 text-white"
+                onClick={() => setShowStartDialog(true)}
+                disabled={statusMutation.isPending}
+                data-testid="button-start-competition"
+              >
+                {statusMutation.isPending ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Play className="w-4 h-4 mr-2" />
+                )}
+                Spustiť súťaž
+              </Button>
+            )}
             {competition.status === 'registration' && (
               <Button 
                 className="bg-green-600 hover:bg-green-700"
@@ -813,6 +917,96 @@ export default function CompetitionManage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Prepare for Launch Dialog */}
+      <AlertDialog open={showPrepareDialog} onOpenChange={setShowPrepareDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Pripraviť súťaž na spustenie?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Po potvrdení bude súťaž "{competition.name}" označená ako pripravená. 
+              Následne budete presmerovaní na výber balíka a platbu.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Zrušiť</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmPrepareForLaunch}
+              className="bg-orange-500 hover:bg-orange-600"
+            >
+              <ClipboardCheck className="w-4 h-4 mr-1" />
+              Pokračovať
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Plan Selection Dialog */}
+      <Dialog open={showSelectPlanDialog} onOpenChange={setShowSelectPlanDialog}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Vyberte balík pre vašu súťaž</DialogTitle>
+            <DialogDescription>
+              Vyberte si balík podľa veľkosti a potrieb vašej súťaže.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div 
+              className="p-4 border-2 border-slate-200 dark:border-slate-700 rounded-lg hover:border-orange-500 cursor-pointer transition-colors"
+              onClick={() => setLocation(`/organizer/competition/${competitionId}/checkout?plan=basic`)}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-lg font-semibold">Základný</h3>
+                <span className="text-2xl font-bold text-orange-500">9.99€</span>
+              </div>
+              <p className="text-sm text-muted-foreground mb-2">Pre menšie súťaže do 10 tímov</p>
+              <ul className="text-sm space-y-1">
+                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-500" /> Max. 10 tímov</li>
+                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-500" /> Základné štatistiky</li>
+                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-500" /> QR kódy pre registráciu</li>
+              </ul>
+            </div>
+            <div 
+              className="p-4 border-2 border-orange-500 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-950 cursor-pointer transition-colors relative"
+              onClick={() => setLocation(`/organizer/competition/${competitionId}/checkout?plan=premium`)}
+            >
+              <Badge className="absolute -top-2 right-4 bg-orange-500">Najobľúbenejší</Badge>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-lg font-semibold">Premium</h3>
+                <span className="text-2xl font-bold text-orange-500">24.99€</span>
+              </div>
+              <p className="text-sm text-muted-foreground mb-2">Pre stredné súťaže do 30 tímov</p>
+              <ul className="text-sm space-y-1">
+                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-500" /> Max. 30 tímov</li>
+                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-500" /> Pokročilé štatistiky</li>
+                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-500" /> Vedľajšie súťaže</li>
+                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-500" /> Rozhodcovia a sektory</li>
+              </ul>
+            </div>
+            <div 
+              className="p-4 border-2 border-slate-200 dark:border-slate-700 rounded-lg hover:border-orange-500 cursor-pointer transition-colors"
+              onClick={() => setLocation(`/organizer/competition/${competitionId}/checkout?plan=enterprise`)}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-lg font-semibold">Enterprise</h3>
+                <span className="text-2xl font-bold text-orange-500">49.99€</span>
+              </div>
+              <p className="text-sm text-muted-foreground mb-2">Pre veľké súťaže bez limitu</p>
+              <ul className="text-sm space-y-1">
+                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-500" /> Neobmedzený počet tímov</li>
+                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-500" /> Všetky funkcie Premium</li>
+                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-500" /> Prioritná podpora</li>
+                <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-500" /> Vlastné branding</li>
+              </ul>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowSelectPlanDialog(false)}>
+              Zavrieť
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Add Referee Dialog */}
       <Dialog open={showAddRefereeDialog} onOpenChange={setShowAddRefereeDialog}>

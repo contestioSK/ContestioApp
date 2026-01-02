@@ -117,7 +117,7 @@ export default function OrganizerCompetitions() {
           )}
         </div>
         <Button 
-          onClick={() => setLocation('/register-competition')} 
+          onClick={() => setLocation('/organizer/create')} 
           className="bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white shadow-lg shadow-orange-500/25 border-0"
           data-testid="button-create-competition"
         >
@@ -312,7 +312,7 @@ export default function OrganizerCompetitions() {
                   Zatiaľ nemáte žiadne súťaže. Vytvorte svoju prvú súťaž!
                 </p>
                 <Button 
-                  onClick={() => setLocation('/register-competition')}
+                  onClick={() => setLocation('/organizer/create')}
                   className="bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white shadow-lg shadow-orange-500/25"
                 >
                   <Plus className="w-4 h-4 mr-2" />
