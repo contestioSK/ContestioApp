@@ -80,12 +80,12 @@ const step2Schema = z.object({
   description: z.string().max(2000).optional(),
   rules: z.string().optional(),
   scoringType: z.enum(["total", "avg3", "avg5"]).default("total"),
-  minWeight: z.number().min(1).max(15).default(2),
+  minWeight: z.coerce.number().min(1).max(15).default(2),
   firstPlacePrize: z.string().optional(),
   secondPlacePrize: z.string().optional(),
   thirdPlacePrize: z.string().optional(),
   registrationFee: z.string().optional(),
-  maxTeams: z.number().optional(),
+  maxTeams: z.coerce.number().optional(),
 });
 
 const fullSchema = step1Schema.merge(step2Schema);
@@ -273,7 +273,6 @@ export default function CreateCompetition() {
       }
     } else if (currentStep === 2) {
       isValid = await form.trigger(['description', 'rules', 'scoringType', 'minWeight']);
-      console.log('[Step 2] isValid:', isValid, 'competitionId:', competitionId, 'errors:', form.formState.errors);
       if (isValid && competitionId) {
         await saveProgress();
       }
@@ -615,11 +614,6 @@ export default function CreateCompetition() {
                                 max={15} 
                                 step={0.5}
                                 {...field}
-                                value={field.value ?? 2}
-                                onChange={(e) => {
-                                  const val = parseFloat(e.target.value);
-                                  field.onChange(isNaN(val) ? 2 : val);
-                                }}
                                 data-testid="input-min-weight"
                               />
                             </FormControl>
