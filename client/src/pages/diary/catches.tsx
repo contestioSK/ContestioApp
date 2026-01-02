@@ -1498,9 +1498,9 @@ export default function DiaryCatches() {
                       <div>
                         <div className="text-sm text-muted-foreground dark:text-slate-400">Revír</div>
                         <div className="font-semibold">
-                          {selectedCatch.spotName || selectedCatch.tripLocation || selectedCatch.spot || 'Neuvedené'}
+                          {(selectedCatch as any).spotName || (selectedCatch as any).tripLocation || selectedCatch.spot || 'Neuvedené'}
                         </div>
-                        {selectedCatch.spot && selectedCatch.spotName && (
+                        {selectedCatch.spot && (selectedCatch as any).spotName && (
                           <div className="text-xs text-muted-foreground dark:text-slate-500">{selectedCatch.spot}</div>
                         )}
                       </div>
