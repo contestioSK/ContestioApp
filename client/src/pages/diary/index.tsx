@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Fish, Plus, X, MapPin, Target, Ruler, Weight, Swords, Trophy, Crown, Play, Edit2, Trash2, CalendarIcon, CalendarDays, ChevronLeft, ChevronRight, Loader2, AlertCircle, Check, UserPlus, WifiOff } from "lucide-react";
+import { Fish, Plus, X, MapPin, Target, Ruler, Weight, Swords, Trophy, Crown, Play, Edit2, Trash2, CalendarIcon, CalendarDays, ChevronLeft, ChevronRight, Loader2, AlertCircle, Check, UserPlus, WifiOff, SlidersHorizontal } from "lucide-react";
 import { useLocation, Link } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -300,6 +300,7 @@ export default function DiaryIndex() {
   const [selectedFishType, setSelectedFishType] = useState<string>("all");
   const [selectedSpot, setSelectedSpot] = useState<string>("all");
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
   // Load all catches for statistics
   const { data: allCatches = [] } = useQuery({
@@ -1043,8 +1044,157 @@ export default function DiaryIndex() {
         {/* Recent Catches Section */}
         <h2 className="text-sm font-medium text-slate-400 mb-3">Moje posledné úlovky</h2>
         
-        {/* Filters */}
-        <div className="flex flex-wrap gap-3 mb-4">
+        {/* Mobile Filter Toggle Button */}
+        <div className="md:hidden mb-4">
+          <Button
+            variant="outline"
+            onClick={() => setIsMobileFiltersOpen(true)}
+            className="w-full bg-slate-700/50 border text-white hover:bg-slate-700/70 justify-between"
+            data-testid="button-mobile-filters"
+          >
+            <span className="flex items-center gap-2">
+              <SlidersHorizontal className="w-4 h-4" />
+              Filtre
+            </span>
+            {hasActiveFilters && (
+              <span className="bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full">
+                Aktívne
+              </span>
+            )}
+          </Button>
+        </div>
+
+        {/* Mobile Filters Sheet */}
+        <Sheet open={isMobileFiltersOpen} onOpenChange={setIsMobileFiltersOpen}>
+          <SheetContent side="bottom" className="bg-slate-800 border-t border-slate-700 text-white h-auto max-h-[80vh] overflow-y-auto">
+            <SheetHeader className="pb-4">
+              <SheetTitle className="text-white flex items-center gap-2">
+                <SlidersHorizontal className="w-5 h-5" />
+                Filtre úlovkov
+              </SheetTitle>
+            </SheetHeader>
+            
+            <div className="space-y-4 pb-6">
+              <div>
+                <label className="text-sm text-slate-400 mb-2 block">Technika</label>
+                <Select value={selectedTechnique} onValueChange={setSelectedTechnique}>
+                  <SelectTrigger className="w-full bg-slate-700/50 border text-white" data-testid="mobile-filter-technique">
+                    <SelectValue placeholder="Všetky Techniky" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Všetky Techniky</SelectItem>
+                    {uniqueTechniques.map((technique: string) => (
+                      <SelectItem key={technique} value={technique}>
+                        {technique}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-sm text-slate-400 mb-2 block">Druh ryby</label>
+                <Select value={selectedFishType} onValueChange={setSelectedFishType}>
+                  <SelectTrigger className="w-full bg-slate-700/50 border text-white" data-testid="mobile-filter-fish-type">
+                    <SelectValue placeholder="Všetky Druhy" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Všetky Druhy</SelectItem>
+                    {getFishTypeOptions().map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-sm text-slate-400 mb-2 block">Revír</label>
+                <Select value={selectedSpot} onValueChange={setSelectedSpot}>
+                  <SelectTrigger className="w-full bg-slate-700/50 border text-white" data-testid="mobile-filter-spot">
+                    <SelectValue placeholder="Všetky Revíry" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Všetky Revíry</SelectItem>
+                    {uniqueSpots.map((spot: string) => (
+                      <SelectItem key={spot} value={spot}>
+                        {spot}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-sm text-slate-400 mb-2 block">Obdobie</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal bg-slate-700/50 border text-white hover:bg-slate-700/70",
+                        !dateRange?.from && "text-slate-400"
+                      )}
+                      data-testid="mobile-filter-date"
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {dateRange?.from ? (
+                        dateRange.to ? (
+                          dateRange.from.getFullYear() === dateRange.to.getFullYear() 
+                            ? `${format(dateRange.from, "dd. MMM", { locale: sk })} - ${format(dateRange.to, "dd. MMM yyyy", { locale: sk })}`
+                            : `${format(dateRange.from, "dd. MMM yyyy", { locale: sk })} - ${format(dateRange.to, "dd. MMM yyyy", { locale: sk })}`
+                        ) : (
+                          format(dateRange.from, "dd. MMM yyyy", { locale: sk })
+                        )
+                      ) : (
+                        "Vybrať obdobie"
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="range"
+                      selected={dateRange}
+                      onSelect={setDateRange}
+                      initialFocus
+                      numberOfMonths={1}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                {hasActiveFilters && (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setSelectedTechnique("all");
+                      setSelectedFishType("all");
+                      setSelectedSpot("all");
+                      setDateRange(undefined);
+                    }}
+                    className="flex-1 text-slate-400 hover:text-white border-slate-600"
+                    data-testid="mobile-button-clear-filters"
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    Zrušiť filtre
+                  </Button>
+                )}
+                <Button
+                  onClick={() => setIsMobileFiltersOpen(false)}
+                  className="flex-1 bg-primary hover:bg-primary/90"
+                  data-testid="mobile-button-apply-filters"
+                >
+                  Použiť filtre
+                </Button>
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
+
+        {/* Desktop Filters - Hidden on Mobile */}
+        <div className="hidden md:flex flex-wrap gap-3 mb-4">
             <Select value={selectedTechnique} onValueChange={setSelectedTechnique}>
             <SelectTrigger className="w-[200px] bg-slate-700/50 border text-white" data-testid="filter-technique">
               <SelectValue placeholder="Všetky Techniky" />
