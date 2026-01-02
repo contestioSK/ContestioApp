@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRoute, useLocation, useSearch } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
@@ -111,13 +111,26 @@ export default function CompetitionCheckout() {
     return urlParams.get('plan') || 'pro';
   }, [searchString]);
 
-  const [currentPlan, setCurrentPlan] = useState(selectedPlanId);
-  const [isProcessing, setIsProcessing] = useState(false);
-
   const { data: competition, isLoading } = useQuery<Competition>({
     queryKey: ['/api/competitions', competitionId],
     enabled: !!competitionId,
   });
+
+  // Prioritize plan from competition (set in wizard) over URL param
+  const [currentPlan, setCurrentPlan] = useState<string | null>(null);
+  
+  // Sync currentPlan when competition loads or changes
+  useEffect(() => {
+    if (competition?.planTier) {
+      setCurrentPlan(competition.planTier);
+    } else if (currentPlan === null) {
+      setCurrentPlan(selectedPlanId);
+    }
+  }, [competition?.planTier, selectedPlanId, currentPlan]);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  // Use effective plan (from competition or selected)
+  const effectivePlan = currentPlan || selectedPlanId;
 
   const paymentMutation = useMutation({
     mutationFn: async (planTier: string) => {
@@ -185,7 +198,7 @@ export default function CompetitionCheckout() {
     
     setIsProcessing(true);
     try {
-      await paymentMutation.mutateAsync(currentPlan);
+      await paymentMutation.mutateAsync(effectivePlan);
     } finally {
       setIsProcessing(false);
     }
@@ -224,7 +237,7 @@ export default function CompetitionCheckout() {
     );
   }
 
-  const selectedPlan = PLANS.find(p => p.id === currentPlan) || PLANS[1];
+  const selectedPlan = PLANS.find(p => p.id === effectivePlan) || PLANS[1];
 
   return (
     <OrganizerLayout>
@@ -251,7 +264,7 @@ export default function CompetitionCheckout() {
         <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
           {PLANS.map((plan) => {
             const Icon = plan.icon;
-            const isSelected = currentPlan === plan.id;
+            const isSelected = effectivePlan === plan.id;
             const isEnterprise = plan.id === 'enterprise';
             
             return (
