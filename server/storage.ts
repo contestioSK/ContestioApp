@@ -374,6 +374,34 @@ export interface IStorage {
   getPromoCodeStats(id: number): Promise<{ totalUsages: number; usages: PromoCodeUsage[] }>;
 }
 
+// Sanitizer for competition numeric fields - converts empty strings to null
+// This provides a second layer of defense after Zod validation
+function sanitizeCompetitionData<T extends Record<string, any>>(data: T): T {
+  const numericFields = [
+    'firstPlacePrize', 'secondPlacePrize', 'thirdPlacePrize', 
+    'registrationFee', 'maxTeams', 'latitude', 'longitude'
+  ];
+  
+  const sanitized = { ...data };
+  
+  for (const field of numericFields) {
+    if (field in sanitized) {
+      const value = sanitized[field];
+      // Convert empty strings to null
+      if (value === '' || value === undefined) {
+        (sanitized as any)[field] = null;
+      }
+      // Ensure maxTeams is a number or null (not a string)
+      if (field === 'maxTeams' && typeof value === 'string' && value !== '') {
+        const parsed = parseInt(value, 10);
+        (sanitized as any)[field] = isNaN(parsed) ? null : parsed;
+      }
+    }
+  }
+  
+  return sanitized;
+}
+
 export class DatabaseStorage implements IStorage {
   // User operations
   async getUser(id: string): Promise<User | undefined> {
