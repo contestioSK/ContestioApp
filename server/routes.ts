@@ -3502,6 +3502,25 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
+  // Admin activity feed - all recent catches
+  app.get('/api/admin/activity-catches', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const user = await storage.getUser(userId);
+      
+      if (!isAdmin(user)) {
+        return res.status(403).json({ message: "Only admins can access activity feed" });
+      }
+
+      const limit = parseInt(req.query.limit as string) || 50;
+      const catches = await storage.getAllRecentCatches(Math.min(limit, 100));
+      res.json(catches);
+    } catch (error) {
+      console.error("Error fetching activity catches:", error);
+      res.status(500).json({ message: "Failed to fetch activity catches" });
+    }
+  });
+
   // Admin registrations management endpoints
   app.get('/api/admin/registrations', isAuthenticated, async (req: any, res) => {
     try {
