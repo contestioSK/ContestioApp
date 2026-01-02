@@ -412,6 +412,23 @@ class EmailService {
     });
   }
 
+  // EMAIL - Potvrdenie platby (hneď po úspešnej platbe)
+  async sendPaymentConfirmationEmail(
+    email: string,
+    competitionName: string,
+    planName: string,
+    dashboardUrl: string
+  ): Promise<boolean> {
+    const subject = `✅ Vaša súťaž je aktívna – môžete ju spustiť`;
+    const html = this.generatePaymentConfirmationTemplate(competitionName, planName, dashboardUrl);
+
+    return this.sendEmail({
+      to: email,
+      subject,
+      html,
+    });
+  }
+
   // EMAIL 2 - Pripomienka (24-48h po registrácii)
   private generateCompetitionReminderTemplate(competitionName: string, dashboardUrl: string): string {
     const escapedName = this.escapeHtml(competitionName);
@@ -638,6 +655,113 @@ class EmailService {
               </p>
               <p style="margin-top:24px;">
                 Tím Contestio 🎣
+              </p>
+            </td>
+          </tr>
+          <!-- FOOTER -->
+          <tr>
+            <td style="padding:20px 32px; background:#0c1f28; text-align:center; font-size:12px; color:#64748b;">
+              Automatický e-mail, neodpovedaj naň prosím.
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`;
+  }
+
+  // EMAIL - Potvrdenie platby template
+  private generatePaymentConfirmationTemplate(competitionName: string, planName: string, dashboardUrl: string): string {
+    const escapedName = this.escapeHtml(competitionName);
+    const escapedPlan = this.escapeHtml(planName);
+    return `
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Contestio – Platba úspešná</title>
+</head>
+<body style="margin:0; padding:0; background-color:#0c1f28; font-family: Arial, Helvetica, sans-serif; color:#ffffff;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0c1f28; padding:40px 0;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background:#0f2632; border-radius:12px; overflow:hidden; box-shadow:0 10px 40px rgba(0,0,0,0.4);">
+          <!-- HEADER -->
+          <tr>
+            <td style="padding:32px 32px 20px; text-align:center;">
+              <h1 style="margin:0; font-size:28px; letter-spacing:0.5px;">
+                🎣 Contestio
+              </h1>
+              <p style="margin:8px 0 0; font-size:13px; color:#94a3b8; text-transform:uppercase; letter-spacing:2px;">
+                Platba úspešná
+              </p>
+            </td>
+          </tr>
+          <!-- SUCCESS BANNER -->
+          <tr>
+            <td style="padding:0 32px;">
+              <div style="background:linear-gradient(135deg, #22c55e 0%, #16a34a 100%); padding:20px; border-radius:8px; text-align:center;">
+                <p style="margin:0; font-size:24px;">✅</p>
+                <p style="margin:8px 0 0; font-size:18px; font-weight:bold;">
+                  Vaša súťaž je aktívna!
+                </p>
+              </div>
+            </td>
+          </tr>
+          <!-- CONTENT -->
+          <tr>
+            <td style="padding:24px 32px;">
+              <p style="font-size:16px; line-height:1.6; margin-bottom:16px;">
+                Ahoj,
+              </p>
+              <p style="font-size:16px; line-height:1.6;">
+                platba za súťaž <strong>„${escapedName}"</strong> prebehla úspešne.
+              </p>
+              <div style="margin:24px 0; padding:16px; background:#132f3f; border-radius:8px;">
+                <table width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td style="padding:8px 0; color:#94a3b8;">Súťaž:</td>
+                    <td style="padding:8px 0; text-align:right; font-weight:bold;">${escapedName}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:8px 0; color:#94a3b8;">Balík:</td>
+                    <td style="padding:8px 0; text-align:right; font-weight:bold; color:#f97316;">${escapedPlan}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:8px 0; color:#94a3b8;">Stav:</td>
+                    <td style="padding:8px 0; text-align:right; font-weight:bold; color:#22c55e;">Aktívna ✓</td>
+                  </tr>
+                </table>
+              </div>
+              <div style="margin:24px 0; padding:16px; background:#132f3f; border-left:4px solid #22c55e;">
+                <strong>Čo to znamená:</strong>
+                <ul style="margin:12px 0 0; padding-left:18px; color:#cbd5e1;">
+                  <li>súťaž je oficiálne aktívna</li>
+                  <li>účastníci sa môžu registrovať</li>
+                  <li>máte prístup k plnej správe súťaže</li>
+                </ul>
+              </div>
+              <p style="font-size:15px; line-height:1.6; color:#94a3b8;">
+                👉 Súťaž môžete spustiť v deň jej začiatku priamo v administrácii.
+              </p>
+              <div style="text-align:center; margin:32px 0;">
+                <a href="${dashboardUrl}"
+                   style="display:inline-block; background:#f97316; color:#ffffff; padding:14px 36px; border-radius:8px; text-decoration:none; font-weight:600; font-size:15px;">
+                  Prejsť do správy súťaže
+                </a>
+              </div>
+              <p style="font-size:15px; line-height:1.6;">
+                Ak potrebujete niečo upraviť (sektory, pravidlá, rozhodcov), môžete tak urobiť kedykoľvek pred štartom.
+              </p>
+              <p style="font-size:15px; line-height:1.6; margin-top:20px;">
+                🎣 Držíme palce, nech sa súťaž vydarí!
+              </p>
+              <p style="margin-top:24px;">
+                Tím Contestio
               </p>
             </td>
           </tr>
