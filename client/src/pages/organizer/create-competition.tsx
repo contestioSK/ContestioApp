@@ -273,6 +273,7 @@ export default function CreateCompetition() {
       }
     } else if (currentStep === 2) {
       isValid = await form.trigger(['description', 'rules', 'scoringType', 'minWeight']);
+      console.log('[Step 2] isValid:', isValid, 'competitionId:', competitionId, 'errors:', form.formState.errors);
       if (isValid && competitionId) {
         await saveProgress();
       }
@@ -614,7 +615,11 @@ export default function CreateCompetition() {
                                 max={15} 
                                 step={0.5}
                                 {...field}
-                                onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                value={field.value ?? 2}
+                                onChange={(e) => {
+                                  const val = parseFloat(e.target.value);
+                                  field.onChange(isNaN(val) ? 2 : val);
+                                }}
                                 data-testid="input-min-weight"
                               />
                             </FormControl>
