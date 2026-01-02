@@ -1,7 +1,8 @@
 import NavigationHeader from "@/components/navigation-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Crown, Trophy, Compass, KeyRound, Wrench, ArrowLeft } from "lucide-react";
+import { TacticalIcon, TacticalIconVariant } from "@/components/ui/tactical-icon";
+import { ChevronDown, Crown, Trophy, Compass, KeyRound, Wrench, ArrowLeft, LucideIcon } from "lucide-react";
 import { useState } from "react";
 
 interface FAQItem {
@@ -11,8 +12,8 @@ interface FAQItem {
 
 interface FAQSection {
   title: string;
-  icon: any;
-  color: string;
+  icon: LucideIcon;
+  variant: TacticalIconVariant;
   description: string;
   items: FAQItem[];
 }
@@ -33,7 +34,7 @@ export default function FAQ() {
     {
       title: "Organizátori",
       icon: Crown,
-      color: "from-blue-500 to-blue-600",
+      variant: "blue",
       description: "Ako registrovať a spravovať súťaže, tímy a rozhodcov",
       items: [
         {
@@ -61,7 +62,7 @@ export default function FAQ() {
     {
       title: "Súťažiaci",
       icon: Trophy,
-      color: "from-green-500 to-green-600",
+      variant: "emerald",
       description: "Prihlásenie do súťaží, záznam úlovkov a sledovanie výsledkov",
       items: [
         {
@@ -85,7 +86,7 @@ export default function FAQ() {
     {
       title: "Rybársky denník",
       icon: Compass,
-      color: "from-teal-500 to-teal-600",
+      variant: "cyan",
       description: "Zápis úlovkov, štatistiky, sezónne ciele a offline režim",
       items: [
         {
@@ -117,7 +118,7 @@ export default function FAQ() {
     {
       title: "Registrácia a účty",
       icon: KeyRound,
-      color: "from-orange-500 to-orange-600",
+      variant: "orange",
       description: "Vytvorenie účtu, prihlásenie a správa tímu",
       items: [
         {
@@ -141,7 +142,7 @@ export default function FAQ() {
     {
       title: "Technické otázky",
       icon: Wrench,
-      color: "from-purple-500 to-purple-600",
+      variant: "purple",
       description: "Kompatibilita zariadení, offline režim a integrácie",
       items: [
         {
@@ -188,33 +189,29 @@ export default function FAQ() {
               Vyberte si oblasť, ktorá vás zaujíma
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {faqSections.map((section, index) => {
-                const IconComponent = section.icon;
-                
-                return (
-                  <Card 
-                    key={index}
-                    className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105"
-                    onClick={() => setSelectedCategory(index)}
-                    data-testid={`category-card-${index}`}
-                  >
-                    <CardContent className="p-6 text-center">
-                      <div className={`w-14 h-14 bg-gradient-to-br ${section.color} rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg`}>
-                        <IconComponent className="w-7 h-7 text-white" />
-                      </div>
-                      <h3 className="text-lg font-bold text-foreground mb-2">
-                        {section.title}
-                      </h3>
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        {section.description}
-                      </p>
-                      <div className="mt-4 text-xs text-primary font-semibold">
-                        {section.items.length} {section.items.length === 1 ? 'otázka' : section.items.length < 5 ? 'otázky' : 'otázok'}
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+              {faqSections.map((section, index) => (
+                <Card 
+                  key={index}
+                  className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105"
+                  onClick={() => setSelectedCategory(index)}
+                  data-testid={`category-card-${index}`}
+                >
+                  <CardContent className="p-6 text-center">
+                    <div className="flex justify-center mb-4">
+                      <TacticalIcon icon={section.icon} variant={section.variant} size="md" showLabel={false} />
+                    </div>
+                    <h3 className="text-lg font-bold text-foreground mb-2">
+                      {section.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {section.description}
+                    </p>
+                    <div className="mt-4 text-xs text-primary font-semibold">
+                      {section.items.length} {section.items.length === 1 ? 'otázka' : section.items.length < 5 ? 'otázky' : 'otázok'}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </div>
         ) : (
@@ -240,12 +237,9 @@ export default function FAQ() {
             <div className="flex items-center gap-4 mb-6">
               {(() => {
                 const section = faqSections[selectedCategory];
-                const IconComponent = section.icon;
                 return (
                   <>
-                    <div className={`w-12 h-12 bg-gradient-to-br ${section.color} rounded-full flex items-center justify-center shadow-lg flex-shrink-0`}>
-                      <IconComponent className="w-6 h-6 text-white" />
-                    </div>
+                    <TacticalIcon icon={section.icon} variant={section.variant} size="md" showLabel={false} />
                     <div>
                       <h2 className="text-2xl md:text-3xl font-bold text-foreground">
                         {section.title}
