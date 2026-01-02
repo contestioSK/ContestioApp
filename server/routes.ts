@@ -1532,7 +1532,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         planTier: selectedPlan, // Map selectedPlan to planTier for competitions table
       });
       
-      const updatedCompetition = await storage.updateCompetition(req.params.id, updateData);
+      const updatedCompetition = await storage.updateCompetition(req.params.id, updateData as Parameters<typeof storage.updateCompetition>[1]);
       
       // Broadcast competition update
       broadcast({ 
@@ -3299,18 +3299,16 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
 
       const result = await storage.approveCompetitionRegistration(req.params.id, userId);
       
-      // Send approval email to organizer
+      // Send registration confirmation email to organizer
       const appOrigin = process.env.APP_ORIGIN || `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`;
-      const loginUrl = `${appOrigin}/organizer`;
-      const competitionUrl = `${appOrigin}/competition/${result.competition.id}`;
+      const setupUrl = `${appOrigin}/organizer/competition/${result.competition.id}`;
       
-      emailService.sendCompetitionApprovalEmail(
+      emailService.sendRegistrationConfirmationEmail(
         result.registration.contactEmail,
         result.competition.name,
-        loginUrl,
-        competitionUrl
+        setupUrl
       ).catch(err => {
-        console.error('[Email] Failed to send competition approval email:', err);
+        console.error('[Email] Failed to send registration confirmation email:', err);
       });
       
       res.json({ 
@@ -4132,18 +4130,16 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
 
       const result = await storage.approveCompetitionRegistration(req.params.id, userId);
       
-      // Send approval email to organizer
+      // Send registration confirmation email to organizer
       const appOrigin = process.env.APP_ORIGIN || `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`;
-      const loginUrl = `${appOrigin}/organizer`;
-      const competitionUrl = `${appOrigin}/competition/${result.competition.id}`;
+      const setupUrl = `${appOrigin}/organizer/competition/${result.competition.id}`;
       
-      emailService.sendCompetitionApprovalEmail(
+      emailService.sendRegistrationConfirmationEmail(
         result.registration.contactEmail,
         result.competition.name,
-        loginUrl,
-        competitionUrl
+        setupUrl
       ).catch(err => {
-        console.error('[Email] Failed to send competition approval email:', err);
+        console.error('[Email] Failed to send registration confirmation email:', err);
       });
       
       res.json({
