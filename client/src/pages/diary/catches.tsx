@@ -835,8 +835,28 @@ export default function DiaryCatches() {
 
           {/* Filters */}
           <div className="space-y-4">
-            {/* Search, Season and Sort Row */}
-            <div className="flex flex-col sm:flex-row gap-3">
+            {/* Mobile Filter Button - Only visible on mobile */}
+            <div className="md:hidden">
+              <Button 
+                variant="outline" 
+                className="w-full bg-muted dark:bg-slate-700/50 border text-foreground dark:text-white justify-between"
+                onClick={() => setIsFilterSheetOpen(true)}
+                data-testid="button-open-filters"
+              >
+                <span className="flex items-center gap-2">
+                  <SlidersHorizontal className="w-4 h-4" />
+                  Filtre a vyhľadávanie
+                </span>
+                {activeFilterCount > 0 && (
+                  <Badge variant="secondary" className="h-5 px-2 flex items-center justify-center text-xs">
+                    {activeFilterCount} aktívne
+                  </Badge>
+                )}
+              </Button>
+            </div>
+
+            {/* Desktop: Search, Season and Sort Row - Hidden on mobile */}
+            <div className="hidden md:flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground dark:text-slate-400" />
                 <Input
@@ -875,22 +895,6 @@ export default function DiaryCatches() {
                   <SelectItem value="lightest">Najmenšie</SelectItem>
                 </SelectContent>
               </Select>
-              
-              {/* Mobile Filter Button */}
-              <Button 
-                variant="outline" 
-                className="md:hidden bg-muted dark:bg-slate-700/50 border text-foreground dark:text-white"
-                onClick={() => setIsFilterSheetOpen(true)}
-                data-testid="button-open-filters"
-              >
-                <SlidersHorizontal className="w-4 h-4 mr-2" />
-                Filtre
-                {activeFilterCount > 0 && (
-                  <Badge variant="secondary" className="ml-2 h-5 w-5 p-0 flex items-center justify-center text-xs">
-                    {activeFilterCount}
-                  </Badge>
-                )}
-              </Button>
             </div>
 
             {/* Desktop Filter Controls - Hidden on mobile */}
@@ -1095,14 +1099,63 @@ export default function DiaryCatches() {
 
           {/* Mobile Filter Sheet */}
           <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>
-            <SheetContent side="bottom" className="bg-card dark:bg-slate-800 border-t border-border dark:border-slate-700 text-foreground dark:text-white max-h-[80vh] overflow-y-auto">
+            <SheetContent side="bottom" className="bg-card dark:bg-slate-800 border-t border-border dark:border-slate-700 text-foreground dark:text-white max-h-[85vh] overflow-y-auto">
               <SheetHeader className="pb-4">
                 <SheetTitle className="text-foreground dark:text-white flex items-center gap-2">
                   <SlidersHorizontal className="w-5 h-5" />
-                  Filtrovať úlovky
+                  Filtre a vyhľadávanie
                 </SheetTitle>
               </SheetHeader>
-              <div className="space-y-4">
+              <div className="space-y-4 pb-6">
+                {/* Search */}
+                <div>
+                  <label className="text-sm text-muted-foreground dark:text-slate-400 mb-2 block">Vyhľadávanie</label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground dark:text-slate-400" />
+                    <Input
+                      type="text"
+                      placeholder="Hľadať v úlovkoch..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10 bg-muted dark:bg-slate-700/50 border text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-slate-400"
+                      data-testid="mobile-input-search"
+                    />
+                  </div>
+                </div>
+
+                {/* Season and Sort Row */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-sm text-muted-foreground dark:text-slate-400 mb-2 block">Sezóna</label>
+                    <Select value={selectedSeason} onValueChange={setSelectedSeason}>
+                      <SelectTrigger className="w-full bg-muted dark:bg-slate-700/50 border text-foreground dark:text-white" data-testid="mobile-filter-season">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Všetky roky</SelectItem>
+                        <SelectItem value="2025">Sezóna 2025</SelectItem>
+                        <SelectItem value="2024">Sezóna 2024</SelectItem>
+                        <SelectItem value="2023">Sezóna 2023</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <label className="text-sm text-muted-foreground dark:text-slate-400 mb-2 block">Zoradiť</label>
+                    <Select value={sortBy} onValueChange={setSortBy}>
+                      <SelectTrigger className="w-full bg-muted dark:bg-slate-700/50 border text-foreground dark:text-white" data-testid="mobile-filter-sort">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="newest">Najnovšie</SelectItem>
+                        <SelectItem value="oldest">Najstaršie</SelectItem>
+                        <SelectItem value="heaviest">Najväčšie</SelectItem>
+                        <SelectItem value="lightest">Najmenšie</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
                 <div>
                   <label className="text-sm text-muted-foreground dark:text-slate-400 mb-2 block">Technika</label>
                   <Select value={selectedTechnique} onValueChange={setSelectedTechnique}>
@@ -1181,8 +1234,11 @@ export default function DiaryCatches() {
                 <div className="flex gap-3 pt-4">
                   <Button 
                     variant="outline" 
-                    className="flex-1"
+                    className="flex-1 border-slate-600"
                     onClick={() => {
+                      setSearchQuery("");
+                      setSelectedSeason("2025");
+                      setSortBy("newest");
                       setSelectedTechnique("all");
                       setSelectedFishType("all");
                       setSelectedSpot("all");
@@ -1190,10 +1246,10 @@ export default function DiaryCatches() {
                       setMaxWeight("");
                     }}
                   >
-                    Vyčistiť
+                    Vyčistiť všetko
                   </Button>
                   <Button 
-                    className="flex-1"
+                    className="flex-1 bg-primary hover:bg-primary/90"
                     onClick={() => setIsFilterSheetOpen(false)}
                   >
                     Použiť filtre
