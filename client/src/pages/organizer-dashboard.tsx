@@ -135,22 +135,22 @@ export default function OrganizerDashboard() {
 
   return (
     <OrganizerLayout>
-      {/* Hero Section - Live Competition Banner */}
+      {/* Hero Section - Live Competition Banner (Softened Design) */}
       {heroCompetition ? (
-        <div className="relative mb-8 p-6 md:p-8 rounded-2xl overflow-hidden bg-gradient-to-br from-orange-500/10 via-slate-900 to-black dark:from-orange-500/20 dark:via-slate-900 dark:to-black border border-orange-500/20 shadow-xl shadow-orange-500/10">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-orange-500/20 via-transparent to-transparent pointer-events-none" />
+        <div className="relative mb-8 p-6 md:p-8 rounded-2xl overflow-hidden bg-gradient-to-br from-slate-100 via-slate-50 to-white dark:from-slate-800 dark:via-slate-850 dark:to-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent pointer-events-none" />
           
           <div className="relative z-10">
             <div className="flex items-center gap-2 mb-3">
               {heroCompetition.status === 'live' ? (
                 <>
-                  <PulsingDot color="orange" />
-                  <span className="text-xs font-medium text-orange-400 uppercase tracking-wider">Práve prebieha</span>
+                  <span className="w-2 h-2 rounded-full bg-green-500" />
+                  <span className="text-xs font-medium text-green-600 dark:text-green-400 uppercase tracking-wider">Práve prebieha</span>
                 </>
               ) : (
                 <>
-                  <Radio className="w-3 h-3 text-blue-400" />
-                  <span className="text-xs font-medium text-blue-400 uppercase tracking-wider">Registrácia otvorená</span>
+                  <span className="w-2 h-2 rounded-full bg-blue-500" />
+                  <span className="text-xs font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wider">Registrácia otvorená</span>
                 </>
               )}
             </div>
@@ -161,25 +161,25 @@ export default function OrganizerDashboard() {
                   <img 
                     src={heroCompetition.imageUrl} 
                     alt={heroCompetition.name}
-                    className="w-16 h-16 md:w-20 md:h-20 rounded-xl object-cover border-2 border-orange-500/30 shadow-lg"
+                    className="w-16 h-16 md:w-20 md:h-20 rounded-xl object-cover border border-slate-200 dark:border-slate-600 shadow-sm"
                   />
                 ) : (
-                  <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center shadow-lg shadow-orange-500/30">
-                    <TacticalIconInline icon={Trophy} variant="amber" size="lg" className="text-white" />
+                  <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center border border-slate-200 dark:border-slate-600">
+                    <TacticalIconInline icon={Trophy} variant="amber" size="lg" />
                   </div>
                 )}
                 <div>
-                  <h1 className="text-2xl md:text-3xl font-black tracking-tight text-white">
+                  <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
                     {heroCompetition.name}
                   </h1>
-                  <div className="flex items-center gap-4 mt-2 text-slate-300 text-sm flex-wrap">
-                    <div className="flex items-center gap-1">
-                      <TacticalIconInline icon={MapPin} variant="emerald" size="sm" />
+                  <div className="flex items-center gap-4 mt-2 text-slate-600 dark:text-slate-300 text-sm flex-wrap">
+                    <div className="flex items-center gap-1.5">
+                      <MapPin className="w-4 h-4 text-slate-400" />
                       <span>{heroCompetition.location}</span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <TacticalIconInline icon={Timer} variant="orange" size="sm" />
-                      <span className="text-orange-400 font-medium">
+                    <div className="flex items-center gap-1.5">
+                      <Timer className="w-4 h-4 text-orange-500 dark:text-orange-400" />
+                      <span className="text-orange-600 dark:text-orange-400 font-medium">
                         {heroCompetition.status === 'live' 
                           ? `Končí o ${formatTimeRemaining(heroCompetition.endDate, currentTime)}`
                           : `Štart o ${formatTimeRemaining(heroCompetition.startDate, currentTime)}`
@@ -187,8 +187,8 @@ export default function OrganizerDashboard() {
                       </span>
                     </div>
                     {heroCompetition.maxTeams && (
-                      <div className="flex items-center gap-1">
-                        <TacticalIconInline icon={Users} variant="cyan" size="sm" />
+                      <div className="flex items-center gap-1.5">
+                        <Users className="w-4 h-4 text-slate-400" />
                         <span>Max. {heroCompetition.maxTeams} tímov</span>
                       </div>
                     )}
@@ -198,7 +198,7 @@ export default function OrganizerDashboard() {
               
               <div className="flex gap-3">
                 <Button 
-                  className="bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white shadow-lg shadow-orange-500/25 border-0"
+                  className="bg-orange-500 hover:bg-orange-600 text-white shadow-sm"
                   onClick={() => setLocation(`/organizer/competition/${heroCompetition.id}`)}
                   data-testid="button-hero-manage"
                 >
@@ -207,7 +207,7 @@ export default function OrganizerDashboard() {
                 </Button>
                 <Button 
                   variant="outline" 
-                  className="border-slate-600 text-slate-200 hover:bg-slate-800 hover:text-white"
+                  className="border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
                   onClick={() => setLocation(`/competition/${heroCompetition.id}`)}
                   data-testid="button-hero-view"
                 >
@@ -219,17 +219,17 @@ export default function OrganizerDashboard() {
           </div>
         </div>
       ) : (
-        <div className="relative mb-8 p-6 md:p-8 rounded-2xl overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 shadow-xl">
+        <div className="relative mb-8 p-6 md:p-8 rounded-2xl overflow-hidden bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 shadow-sm">
           <div className="text-center py-6">
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-orange-500/20 to-amber-600/20 flex items-center justify-center mx-auto mb-4 border border-orange-500/30">
+            <div className="w-20 h-20 rounded-2xl bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center mx-auto mb-4 border border-orange-200 dark:border-orange-800/30">
               <TacticalIconInline icon={Trophy} variant="amber" size="lg" />
             </div>
-            <h2 className="text-xl font-bold text-white mb-2">Vytvorte svoju prvú súťaž</h2>
-            <p className="text-slate-400 mb-6 max-w-md mx-auto">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Vytvorte svoju prvú súťaž</h2>
+            <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
               Začnite organizovať rybárske súťaže a sledujte výsledky v reálnom čase.
             </p>
             <Button 
-              className="bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white shadow-lg shadow-orange-500/25"
+              className="bg-orange-500 hover:bg-orange-600 text-white shadow-sm"
               onClick={() => setLocation('/register-competition')}
             >
               <Plus className="w-4 h-4 mr-2" />
