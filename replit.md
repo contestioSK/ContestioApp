@@ -20,6 +20,20 @@ A unified 10-color palette has been implemented in `client/src/lib/colors.ts` fo
 - Colors: Lime (brand), Blue (water), Amber (attention), Purple (premium), Rose (critical), Cyan (fresh), Emerald (nature), Orange (action), Indigo (night), Fuchsia (tech)
 - Use `getChartColorByIndex(index)` for Recharts and `BG_CLASSES_DARK/LIGHT` arrays for Tailwind
 
+## Email System (January 2025)
+
+Competition registration email flow:
+1. **Registration Confirmation**: Sent immediately when organizer submits competition registration form
+2. **Approval Email**: Sent when admin approves competition with link to organizer dashboard
+3. **24h Reminder Email**: Automated reminder sent 24 hours after approval if organizer hasn't completed setup
+
+### Reminder Email Scheduler
+- **Location**: `server/index.ts` - `startCompetitionReminderScheduler()`
+- **Interval**: Runs every 60 minutes
+- **Schema fields**: `competitions.approvedAt` and `competitions.reminderSentAt`
+- **Template**: Dark theme (#0c1f28 background) matching other competition emails
+- **Logic**: Sends reminder if `approvedAt` is 24+ hours ago AND `reminderSentAt` is null AND status is not 'finished'
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
