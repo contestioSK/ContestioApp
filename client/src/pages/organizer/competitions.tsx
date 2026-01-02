@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
 import {
   Select,
   SelectContent,
@@ -26,11 +27,30 @@ import {
   AlertCircle,
   Plus,
   Search,
-  Filter
+  Filter,
+  Timer,
+  Zap
 } from "lucide-react";
 import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
+import { PulsingDot } from "@/components/ui/pulsing-dot";
 import type { Competition } from "@shared/schema";
 import { useState, useMemo } from "react";
+
+function formatTimeRemaining(endDate: string | Date): string {
+  const end = new Date(endDate);
+  const now = new Date();
+  const diff = end.getTime() - now.getTime();
+  
+  if (diff <= 0) return "Ukončené";
+  
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  
+  if (days > 0) return `${days}d ${hours}h`;
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  return `${minutes}m`;
+}
 
 export default function OrganizerCompetitions() {
   const { user } = useAuth();
@@ -46,11 +66,20 @@ export default function OrganizerCompetitions() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'registration':
-        return <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"><Clock className="w-3 h-3 mr-1" />Registrácia</Badge>;
+        return (
+          <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 border-blue-200 dark:border-blue-700">
+            <Clock className="w-3 h-3 mr-1" />Registrácia
+          </Badge>
+        );
       case 'live':
-        return <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"><CheckCircle className="w-3 h-3 mr-1" />Živá</Badge>;
+        return (
+          <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 shadow-lg shadow-green-500/25">
+            <PulsingDot color="green" />
+            <span className="ml-2">Živá</span>
+          </Badge>
+        );
       case 'finished':
-        return <Badge variant="outline"><AlertCircle className="w-3 h-3 mr-1" />Ukončená</Badge>;
+        return <Badge variant="outline" className="text-slate-500"><AlertCircle className="w-3 h-3 mr-1" />Ukončená</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -67,17 +96,31 @@ export default function OrganizerCompetitions() {
     });
   }, [competitions, searchQuery, statusFilter]);
 
+  const liveCount = competitions?.filter(c => c.status === 'live').length || 0;
+
   return (
     <OrganizerLayout>
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Moje súťaže</h1>
-          <p className="text-muted-foreground mt-1">
-            Zoznam všetkých vašich súťaží
-          </p>
+        <div className="flex items-center gap-3">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">Moje súťaže</h1>
+            <p className="text-muted-foreground mt-1">
+              Zoznam všetkých vašich súťaží
+            </p>
+          </div>
+          {liveCount > 0 && (
+            <Badge className="bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20 ml-2">
+              <PulsingDot color="green" />
+              <span className="ml-2">{liveCount} živá</span>
+            </Badge>
+          )}
         </div>
-        <Button onClick={() => setLocation('/register-competition')} data-testid="button-create-competition">
+        <Button 
+          onClick={() => setLocation('/register-competition')} 
+          className="bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white shadow-lg shadow-orange-500/25 border-0"
+          data-testid="button-create-competition"
+        >
           <Plus className="w-4 h-4 mr-2" />
           Vytvoriť súťaž
         </Button>
@@ -113,7 +156,7 @@ export default function OrganizerCompetitions() {
       {isLoading ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Skeleton key={i} className="h-48" />
+            <Skeleton key={i} className="h-52" />
           ))}
         </div>
       ) : filteredCompetitions.length > 0 ? (
@@ -121,46 +164,102 @@ export default function OrganizerCompetitions() {
           {filteredCompetitions.map((competition) => (
             <Card 
               key={competition.id} 
-              className="bg-card border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-lg transition-shadow cursor-pointer"
+              className={`bg-card shadow-sm hover:shadow-lg transition-all cursor-pointer group relative overflow-hidden ${
+                competition.status === 'live' 
+                  ? 'border-2 border-green-500/50 dark:border-green-500/30' 
+                  : competition.status === 'registration'
+                  ? 'border border-blue-200 dark:border-blue-900/50'
+                  : 'border border-slate-200 dark:border-slate-700'
+              }`}
               onClick={() => setLocation(`/organizer/competition/${competition.id}`)}
               data-testid={`card-competition-${competition.id}`}
             >
-              <CardHeader className="pb-2">
+              {/* Status ribbon at top */}
+              <div className={`absolute top-0 left-0 right-0 h-1 ${
+                competition.status === 'live' 
+                  ? 'bg-gradient-to-r from-green-500 to-emerald-500' 
+                  : competition.status === 'registration'
+                  ? 'bg-gradient-to-r from-blue-500 to-cyan-500'
+                  : 'bg-slate-300 dark:bg-slate-600'
+              }`} />
+              
+              <CardHeader className="pb-2 pt-4">
                 <div className="flex items-start gap-3">
                   {competition.imageUrl ? (
                     <img 
                       src={competition.imageUrl} 
                       alt={competition.name}
-                      className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                      className="w-12 h-12 rounded-xl object-cover flex-shrink-0 border border-slate-200 dark:border-slate-700"
                     />
                   ) : (
-                    <div className="w-12 h-12 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
-                      <TacticalIconInline icon={Trophy} variant="amber" size="lg" />
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                      competition.status === 'live' 
+                        ? 'bg-gradient-to-br from-green-500 to-emerald-600' 
+                        : 'bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30'
+                    }`}>
+                      <TacticalIconInline 
+                        icon={competition.status === 'live' ? Zap : Trophy} 
+                        variant={competition.status === 'live' ? 'emerald' : 'amber'} 
+                        size="md" 
+                        className={competition.status === 'live' ? 'text-white' : ''}
+                      />
                     </div>
                   )}
                   <div className="min-w-0 flex-1">
-                    <CardTitle className="text-base truncate">{competition.name}</CardTitle>
+                    <CardTitle className="text-base font-bold truncate group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
+                      {competition.name}
+                    </CardTitle>
                     <div className="mt-1">{getStatusBadge(competition.status)}</div>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="pt-2 space-y-2">
+              <CardContent className="pt-2 space-y-3">
                 <div className="flex items-center text-sm text-muted-foreground">
                   <TacticalIconInline icon={MapPin} variant="emerald" size="sm" className="mr-2 flex-shrink-0" />
                   <span className="truncate">{competition.location}</span>
                 </div>
-                <div className="flex items-center text-sm text-muted-foreground">
-                  <TacticalIconInline icon={Calendar} variant="indigo" size="sm" className="mr-2 flex-shrink-0" />
-                  {new Date(competition.startDate).toLocaleDateString('sk-SK')} - {new Date(competition.endDate).toLocaleDateString('sk-SK')}
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center text-muted-foreground">
+                    <TacticalIconInline icon={Calendar} variant="indigo" size="sm" className="mr-2 flex-shrink-0" />
+                    {new Date(competition.startDate).toLocaleDateString('sk-SK')} - {new Date(competition.endDate).toLocaleDateString('sk-SK')}
+                  </div>
                 </div>
-                {competition.maxTeams && (
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <TacticalIconInline icon={Users} variant="orange" size="sm" className="mr-2 flex-shrink-0" />
-                    Max. {competition.maxTeams} tímov
+                
+                {/* Time remaining badge */}
+                {competition.status !== 'finished' && (
+                  <div className="flex items-center justify-between">
+                    {competition.maxTeams && (
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        <TacticalIconInline icon={Users} variant="orange" size="sm" className="mr-1 flex-shrink-0" />
+                        <span className="text-xs">Max. {competition.maxTeams}</span>
+                      </div>
+                    )}
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                      competition.status === 'live' 
+                        ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400'
+                        : 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                    }`}>
+                      <Timer className="w-3 h-3 inline mr-1" />
+                      {competition.status === 'live' 
+                        ? formatTimeRemaining(competition.endDate)
+                        : formatTimeRemaining(competition.startDate)
+                      }
+                    </span>
                   </div>
                 )}
                 
-                <div className="flex gap-2 pt-3">
+                {/* Progress bar for registration */}
+                {competition.status === 'registration' && competition.maxTeams && (
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>Registrácia</span>
+                      <span>0/{competition.maxTeams}</span>
+                    </div>
+                    <Progress value={0} className="h-1.5" />
+                  </div>
+                )}
+                
+                <div className="flex gap-2 pt-2">
                   <Button 
                     variant="outline" 
                     size="sm" 
@@ -175,9 +274,8 @@ export default function OrganizerCompetitions() {
                     Zobraziť
                   </Button>
                   <Button 
-                    variant="default" 
                     size="sm" 
-                    className="flex-1"
+                    className="flex-1 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white border-0"
                     onClick={(e) => {
                       e.stopPropagation();
                       setLocation(`/organizer/competition/${competition.id}`);
@@ -196,22 +294,27 @@ export default function OrganizerCompetitions() {
         <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-sm">
           <CardContent className="text-center py-12">
             <div className="flex justify-center mb-4">
-              <TacticalIcon icon={Trophy} variant="amber" size="lg" showLabel={false} />
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-orange-500/10 to-amber-600/10 flex items-center justify-center border border-orange-500/20">
+                <TacticalIconInline icon={Trophy} variant="amber" size="lg" />
+              </div>
             </div>
             {competitions && competitions.length > 0 ? (
               <>
-                <h3 className="text-lg font-medium text-foreground mb-2">Žiadne výsledky</h3>
+                <h3 className="text-lg font-bold text-foreground mb-2">Žiadne výsledky</h3>
                 <p className="text-muted-foreground">
                   Žiadne súťaže nevyhovujú vášmu vyhľadávaniu.
                 </p>
               </>
             ) : (
               <>
-                <h3 className="text-lg font-medium text-foreground mb-2">Žiadne súťaže</h3>
+                <h3 className="text-lg font-bold text-foreground mb-2">Žiadne súťaže</h3>
                 <p className="text-muted-foreground mb-6">
                   Zatiaľ nemáte žiadne súťaže. Vytvorte svoju prvú súťaž!
                 </p>
-                <Button onClick={() => setLocation('/register-competition')}>
+                <Button 
+                  onClick={() => setLocation('/register-competition')}
+                  className="bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white shadow-lg shadow-orange-500/25"
+                >
                   <Plus className="w-4 h-4 mr-2" />
                   Vytvoriť súťaž
                 </Button>
