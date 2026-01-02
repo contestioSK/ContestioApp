@@ -21,6 +21,7 @@ import {
   friendships,
   promoCodes,
   promoCodeUsages,
+  fishingAreas,
   type User,
   type UpsertUser,
   type Competition,
@@ -2466,22 +2467,25 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(diaryCatches.capturedAt));
   }
 
-  async getAllUserCatches(userId: string): Promise<(DiaryCatch & { tripLocation?: string })[]> {
-    // Get all catches for user (including those without tripId) with trip location
+  async getAllUserCatches(userId: string): Promise<(DiaryCatch & { tripLocation?: string; spotName?: string })[]> {
+    // Get all catches for user (including those without tripId) with trip location and fishing area name
     const results = await db
       .select({
         catch: diaryCatches,
         tripLocation: diaryTrips.location,
+        fishingAreaName: fishingAreas.name,
       })
       .from(diaryCatches)
       .leftJoin(diaryTrips, eq(diaryCatches.tripId, diaryTrips.id))
+      .leftJoin(fishingAreas, eq(diaryCatches.spot, fishingAreas.number))
       .where(sql`${diaryCatches.angler}->>'userId' = ${userId}`)
       .orderBy(desc(diaryCatches.capturedAt));
     
-    // Flatten the result to include tripLocation on the catch object
+    // Flatten the result to include tripLocation and spotName on the catch object
     return results.map(r => ({
       ...r.catch,
       tripLocation: r.tripLocation || undefined,
+      spotName: r.fishingAreaName || undefined,
     }));
   }
 

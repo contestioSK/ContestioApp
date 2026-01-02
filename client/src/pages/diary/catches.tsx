@@ -1418,7 +1418,7 @@ export default function DiaryCatches() {
                           </div>
                           <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground dark:text-slate-400">
                             <div>
-                              <span className="text-muted-foreground/70 dark:text-slate-500">Revír:</span> {catch_.tripLocation || catch_.spot || 'N/A'}
+                              <span className="text-muted-foreground/70 dark:text-slate-500">Revír:</span> {catch_.spotName || catch_.tripLocation || catch_.spot || 'N/A'}
                             </div>
                             <div>
                               <span className="text-muted-foreground/70 dark:text-slate-500">Nástraha:</span> {formatBaitShort(catch_.bait)}
