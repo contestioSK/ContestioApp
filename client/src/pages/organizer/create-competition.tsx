@@ -823,7 +823,7 @@ export default function CreateCompetition() {
                         >
                           <Checkbox
                             checked={sideCompetitions.includes(comp.id)}
-                            onClick={(e) => e.stopPropagation()}
+                            className="pointer-events-none"
                           />
                           <span className="text-sm font-medium">{comp.label}</span>
                         </div>
