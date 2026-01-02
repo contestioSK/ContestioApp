@@ -134,8 +134,8 @@ export function ActivityTable({ users, allUsers = [], onViewAll, onUserClick }: 
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full">
+      <div className="overflow-x-auto -mx-2 px-2 md:mx-0 md:px-0">
+        <table className="w-full min-w-[600px]">
           <thead>
             <tr className="border-b border-border">
               <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider py-3 px-2">

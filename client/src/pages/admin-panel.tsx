@@ -1776,10 +1776,11 @@ export default function AdminPanel() {
       {/* Sidebar */}
       <div className={`
         fixed inset-y-0 left-0 z-50 bg-sidebar border-r border-sidebar-border transform transition-transform duration-300 ease-in-out
-        w-[280px] md:w-[240px] lg:w-[280px]
+        w-[85vw] max-w-[280px] md:w-[240px] lg:w-[280px]
         lg:translate-x-0 lg:static lg:inset-0
         md:translate-x-0 md:static md:inset-0
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+        overflow-y-auto pb-[env(safe-area-inset-bottom,16px)]
       `}>
         <div className="flex flex-col h-full">
           {/* Header */}
@@ -2110,7 +2111,7 @@ export default function AdminPanel() {
             <div className="w-full">
               {/* Admin-only Tabs */}
               {isAdmin && activeTab === 'dashboard' && (
-                  <div className="p-6 flex flex-col min-h-0">
+                  <div className="p-4 md:p-6 flex flex-col min-h-0">
                     <div className="space-y-6 flex-1 min-h-0">
                       <div>
                         <h2 className="text-2xl font-bold text-foreground mb-2">Prehľad systému</h2>
@@ -2118,7 +2119,7 @@ export default function AdminPanel() {
                       </div>
 
                       {dashboardLoading ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
                           {[...Array(4)].map((_, i) => (
                             <Card key={i} className="p-6">
                               <Skeleton className="h-8 w-24 mb-2" />
@@ -2130,7 +2131,7 @@ export default function AdminPanel() {
                       ) : (
                         <>
                           {/* Trend Cards Row */}
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
                             <TrendCard
                               title="Celkový počet užívateľov"
                               value={dashboardStats?.totalUsers || 0}
@@ -2181,7 +2182,7 @@ export default function AdminPanel() {
                           </div>
 
                           {/* Charts Row - Donut Charts */}
-                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                             <DonutChart
                               title="Užívatelia podľa rolí"
                               data={(dashboardStats?.usersByRole || []).map(item => ({
@@ -2226,7 +2227,7 @@ export default function AdminPanel() {
                 )}
 
                   {activeTab === 'users' && (
-                  <div className="p-6">
+                  <div className="p-4 md:p-6">
                     <div className="space-y-6">
                       <div>
                         <h2 className="text-2xl font-bold text-foreground mb-2">Správa používateľov</h2>
@@ -2235,9 +2236,9 @@ export default function AdminPanel() {
 
                       {/* User Statistics Cards */}
                       {usersLoading ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                           {[...Array(4)].map((_, i) => (
-                            <Card key={i} className="p-4">
+                            <Card key={i} className="p-3 md:p-4">
                               <Skeleton className="h-6 w-20 mb-2" />
                               <Skeleton className="h-8 w-16 mb-1" />
                               <Skeleton className="h-3 w-24" />
@@ -2245,47 +2246,47 @@ export default function AdminPanel() {
                           ))}
                         </div>
                       ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                           <Card className="border border-border">
-                            <CardContent className="p-4">
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <p className="text-sm font-medium text-muted-foreground">Celkom používateľov</p>
-                                  <p className="text-2xl font-bold text-foreground">{allUsers?.length || 0}</p>
-                                  <p className="text-xs text-muted-foreground mt-1">Všetci registrovaní</p>
+                            <CardContent className="p-3 md:p-4">
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="min-w-0">
+                                  <p className="text-xs md:text-sm font-medium text-muted-foreground truncate">Celkom používateľov</p>
+                                  <p className="text-xl md:text-2xl font-bold text-foreground">{allUsers?.length || 0}</p>
+                                  <p className="text-xs text-muted-foreground mt-1 hidden md:block">Všetci registrovaní</p>
                                 </div>
-                                <div className="h-12 w-12 rounded-full bg-blue-500/10 flex items-center justify-center">
-                                  <Users className="h-6 w-6 text-blue-500" />
+                                <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0">
+                                  <Users className="h-5 w-5 md:h-6 md:w-6 text-blue-500" />
                                 </div>
                               </div>
                             </CardContent>
                           </Card>
                           
                           <Card className="border border-border">
-                            <CardContent className="p-4">
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <p className="text-sm font-medium text-muted-foreground">Premium používatelia</p>
-                                  <p className="text-2xl font-bold text-foreground">
+                            <CardContent className="p-3 md:p-4">
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="min-w-0">
+                                  <p className="text-xs md:text-sm font-medium text-muted-foreground truncate">Premium</p>
+                                  <p className="text-xl md:text-2xl font-bold text-foreground">
                                     {allUsers?.filter((u: any) => u.isPremium).length || 0}
                                   </p>
-                                  <p className="text-xs text-muted-foreground mt-1">
+                                  <p className="text-xs text-muted-foreground mt-1 hidden md:block">
                                     {allUsers?.length ? Math.round((allUsers.filter((u: any) => u.isPremium).length / allUsers.length) * 100) : 0}% z celku
                                   </p>
                                 </div>
-                                <div className="h-12 w-12 rounded-full bg-amber-500/10 flex items-center justify-center">
-                                  <Star className="h-6 w-6 text-amber-500" />
+                                <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-amber-500/10 flex items-center justify-center shrink-0">
+                                  <Star className="h-5 w-5 md:h-6 md:w-6 text-amber-500" />
                                 </div>
                               </div>
                             </CardContent>
                           </Card>
                           
                           <Card className="border border-border">
-                            <CardContent className="p-4">
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <p className="text-sm font-medium text-muted-foreground">Noví (7 dní)</p>
-                                  <p className="text-2xl font-bold text-foreground">
+                            <CardContent className="p-3 md:p-4">
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="min-w-0">
+                                  <p className="text-xs md:text-sm font-medium text-muted-foreground truncate">Noví (7 dní)</p>
+                                  <p className="text-xl md:text-2xl font-bold text-foreground">
                                     {allUsers?.filter((u: any) => {
                                       const created = new Date(u.createdAt);
                                       const sevenDaysAgo = new Date();
@@ -2293,27 +2294,27 @@ export default function AdminPanel() {
                                       return created >= sevenDaysAgo;
                                     }).length || 0}
                                   </p>
-                                  <p className="text-xs text-muted-foreground mt-1">Za posledný týždeň</p>
+                                  <p className="text-xs text-muted-foreground mt-1 hidden md:block">Za posledný týždeň</p>
                                 </div>
-                                <div className="h-12 w-12 rounded-full bg-emerald-500/10 flex items-center justify-center">
-                                  <UserPlus className="h-6 w-6 text-emerald-500" />
+                                <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
+                                  <UserPlus className="h-5 w-5 md:h-6 md:w-6 text-emerald-500" />
                                 </div>
                               </div>
                             </CardContent>
                           </Card>
                           
                           <Card className="border border-border">
-                            <CardContent className="p-4">
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <p className="text-sm font-medium text-muted-foreground">Neaktívni/Banned</p>
-                                  <p className="text-2xl font-bold text-foreground">
+                            <CardContent className="p-3 md:p-4">
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="min-w-0">
+                                  <p className="text-xs md:text-sm font-medium text-muted-foreground truncate">Neaktívni</p>
+                                  <p className="text-xl md:text-2xl font-bold text-foreground">
                                     {allUsers?.filter((u: any) => !u.active).length || 0}
                                   </p>
-                                  <p className="text-xs text-muted-foreground mt-1">Deaktivované účty</p>
+                                  <p className="text-xs text-muted-foreground mt-1 hidden md:block">Deaktivované účty</p>
                                 </div>
-                                <div className="h-12 w-12 rounded-full bg-red-500/10 flex items-center justify-center">
-                                  <UserX className="h-6 w-6 text-red-500" />
+                                <div className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-red-500/10 flex items-center justify-center shrink-0">
+                                  <UserX className="h-5 w-5 md:h-6 md:w-6 text-red-500" />
                                 </div>
                               </div>
                             </CardContent>
@@ -2324,9 +2325,9 @@ export default function AdminPanel() {
                       {/* Advanced Filters */}
                       <Card className="border border-border">
                         <CardContent className="p-4">
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-2 md:gap-4">
                             {/* Search */}
-                            <div className="relative lg:col-span-2">
+                            <div className="relative col-span-2 lg:col-span-2">
                               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                               <Input
                                 placeholder="Vyhľadať používateľa..."
@@ -2512,8 +2513,8 @@ export default function AdminPanel() {
                           <>
                             {/* Data Table */}
                             <div className="border border-border rounded-lg overflow-hidden">
-                              <div className="overflow-x-auto">
-                                <table className="w-full">
+                              <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+                                <table className="w-full min-w-[900px]">
                                   <thead className="bg-muted/50 border-b border-border">
                                     <tr>
                                       <th 
