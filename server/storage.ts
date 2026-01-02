@@ -24,6 +24,7 @@ import {
   fishingAreas,
   teamPenalties,
   userArsenalEquipment,
+  competitionAlerts,
   type User,
   type UpsertUser,
   type Competition,
@@ -958,19 +959,60 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteCompetition(id: string): Promise<void> {
-    // Delete related data first (foreign key constraints)
-    await db.delete(catches).where(eq(catches.competitionId, id));
-    await db.delete(teamMembers).where(
-      inArray(teamMembers.teamId, 
-        db.select({ id: teams.id }).from(teams).where(eq(teams.competitionId, id))
-      )
-    );
-    await db.delete(teams).where(eq(teams.competitionId, id));
-    await db.delete(referees).where(eq(referees.competitionId, id));
-    await db.delete(sponsors).where(eq(sponsors.competitionId, id));
-    
-    // Finally delete the competition
-    await db.delete(competitions).where(eq(competitions.id, id));
+    // Use transaction to ensure atomic deletion - if any step fails, all changes are rolled back
+    await db.transaction(async (tx) => {
+      // Delete related data first (foreign key constraints)
+      // Order matters - delete child records before parent records
+      
+      // Delete catches first (references teams and competitions)
+      await tx.delete(catches).where(eq(catches.competitionId, id));
+      
+      // Delete team members before teams
+      await tx.delete(teamMembers).where(
+        inArray(teamMembers.teamId, 
+          tx.select({ id: teams.id }).from(teams).where(eq(teams.competitionId, id))
+        )
+      );
+      
+      // Delete team penalties before teams
+      await tx.delete(teamPenalties).where(eq(teamPenalties.competitionId, id));
+      
+      // Delete teams
+      await tx.delete(teams).where(eq(teams.competitionId, id));
+      
+      // Delete referees
+      await tx.delete(referees).where(eq(referees.competitionId, id));
+      
+      // Delete sponsors
+      await tx.delete(sponsors).where(eq(sponsors.competitionId, id));
+      
+      // Delete favorite competitions (user preferences)
+      await tx.delete(favoriteCompetitions).where(eq(favoriteCompetitions.competitionId, id));
+      
+      // Delete competition alerts
+      await tx.delete(competitionAlerts).where(eq(competitionAlerts.competitionId, id));
+      
+      // Delete announcements
+      await tx.delete(announcements).where(eq(announcements.competitionId, id));
+      
+      // Delete promo code usages for promo codes of this competition (before deleting promo codes)
+      await tx.delete(promoCodeUsages).where(
+        inArray(promoCodeUsages.promoCodeId,
+          tx.select({ id: promoCodes.id }).from(promoCodes).where(eq(promoCodes.competitionId, id))
+        )
+      );
+      
+      // Delete promo codes for this competition
+      await tx.delete(promoCodes).where(eq(promoCodes.competitionId, id));
+      
+      // Nullify approvedCompetitionId in competition registrations that reference this competition
+      await tx.update(competitionRegistrations)
+        .set({ approvedCompetitionId: null })
+        .where(eq(competitionRegistrations.approvedCompetitionId, id));
+      
+      // Finally delete the competition
+      await tx.delete(competitions).where(eq(competitions.id, id));
+    });
   }
 
   async resetCompetitionCatches(competitionId: string): Promise<void> {
