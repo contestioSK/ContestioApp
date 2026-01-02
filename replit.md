@@ -22,17 +22,28 @@ A unified 10-color palette has been implemented in `client/src/lib/colors.ts` fo
 
 ## Email System (January 2025)
 
-Competition registration email flow:
-1. **Registration Confirmation**: Sent immediately when organizer submits competition registration form
-2. **Approval Email**: Sent when admin approves competition with link to organizer dashboard
-3. **24h Reminder Email**: Automated reminder sent 24 hours after approval if organizer hasn't completed setup
+Competition email flow with 3 automated emails:
 
-### Reminder Email Scheduler
-- **Location**: `server/index.ts` - `startCompetitionReminderScheduler()`
-- **Interval**: Runs every 60 minutes
-- **Schema fields**: `competitions.approvedAt` and `competitions.reminderSentAt`
-- **Template**: Dark theme (#0c1f28 background) matching other competition emails
-- **Logic**: Sends reminder if `approvedAt` is 24+ hours ago AND `reminderSentAt` is null AND status is not 'finished'
+1. **Email 1 - Registration Confirmation**: Sent immediately when organizer submits competition registration form
+   - Function: `sendRegistrationConfirmationEmail()`
+   - Trigger: On competition creation in routes.ts
+
+2. **Email 2 - Setup Reminder**: Sent 24-48h after competition registration
+   - Function: `sendCompetitionReminderEmail()`
+   - Scheduler: `startCompetitionReminderScheduler()` (runs every 60 minutes)
+   - Schema field: `competitions.reminderSentAt`
+   - Logic: Sends if `createdAt` is 24+ hours ago AND `reminderSentAt` is null AND status is not 'finished'
+
+3. **Email 3 - Day-Before Competition**: Sent the day before competition starts
+   - Function: `sendDayBeforeCompetitionEmail()`
+   - Scheduler: `startDayBeforeCompetitionScheduler()` (runs every 60 minutes)
+   - Schema field: `competitions.dayBeforeReminderSentAt`
+   - Logic: Sends if `startDate` is tomorrow AND `dayBeforeReminderSentAt` is null AND status is not 'finished'/'live'
+
+### Email Templates
+- Dark theme: #0c1f28 background, #0f2632 card background
+- Orange CTA buttons: #f97316
+- All emails in Slovak language
 
 # User Preferences
 
