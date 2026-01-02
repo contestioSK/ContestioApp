@@ -224,6 +224,20 @@ export interface IStorage {
   getCatchesByTeam(teamId: string): Promise<Catch[]>;
   createCatch(catch_: InsertCatch): Promise<Catch>;
   
+  // Admin activity feed - all catches from all sources
+  getAllRecentCatches(limit?: number): Promise<Array<{
+    id: string;
+    source: 'competition' | 'diary';
+    fishSpecies: string;
+    weight: number;
+    length: number | null;
+    photoUrl: string | null;
+    capturedAt: Date;
+    userName: string;
+    userEmail: string | null;
+    contextName: string;
+  }>>;
+  
   // Sponsor operations
   getSponsorsByCompetition(competitionId: string): Promise<Sponsor[]>;
   createSponsor(sponsor: InsertSponsor): Promise<Sponsor>;
@@ -1565,6 +1579,89 @@ export class DatabaseStorage implements IStorage {
       .values(catch_)
       .returning();
     return newCatch;
+  }
+
+  async getAllRecentCatches(limit: number = 50): Promise<Array<{
+    id: string;
+    source: 'competition' | 'diary';
+    fishSpecies: string;
+    weight: number;
+    length: number | null;
+    photoUrl: string | null;
+    capturedAt: Date;
+    userName: string;
+    userEmail: string | null;
+    contextName: string;
+  }>> {
+    // Get competition catches with team and competition info
+    const competitionCatches = await db
+      .select({
+        id: catches.id,
+        fishSpecies: catches.fishSpecies,
+        weight: catches.weight,
+        length: catches.length,
+        photoUrl: catches.photoUrl,
+        capturedAt: catches.submittedAt,
+        teamName: teams.name,
+        competitionName: competitions.name,
+      })
+      .from(catches)
+      .innerJoin(teams, eq(catches.teamId, teams.id))
+      .innerJoin(competitions, eq(catches.competitionId, competitions.id))
+      .orderBy(desc(catches.submittedAt))
+      .limit(limit);
+
+    // Get diary catches with user info
+    const diaryCatchesResult = await db
+      .select({
+        id: diaryCatches.id,
+        fishSpecies: diaryCatches.fishSpecies,
+        weight: diaryCatches.weight,
+        length: diaryCatches.length,
+        photoUrl: diaryCatches.photoUrl,
+        capturedAt: diaryCatches.capturedAt,
+        angler: diaryCatches.angler,
+        tripId: diaryCatches.tripId,
+      })
+      .from(diaryCatches)
+      .orderBy(desc(diaryCatches.capturedAt))
+      .limit(limit);
+
+    // Combine and sort both sources
+    const allCatches = [
+      ...competitionCatches.map(c => ({
+        id: c.id,
+        source: 'competition' as const,
+        fishSpecies: c.fishSpecies,
+        weight: Number(c.weight),
+        length: c.length ? Number(c.length) : null,
+        photoUrl: c.photoUrl,
+        capturedAt: c.capturedAt as Date,
+        userName: c.teamName,
+        userEmail: null,
+        contextName: c.competitionName,
+      })),
+      ...diaryCatchesResult.map(c => {
+        const angler = c.angler as { name?: string; userId?: string } | null;
+        return {
+          id: c.id,
+          source: 'diary' as const,
+          fishSpecies: c.fishSpecies,
+          weight: Number(c.weight),
+          length: c.length ? Number(c.length) : null,
+          photoUrl: c.photoUrl,
+          capturedAt: c.capturedAt as Date,
+          userName: angler?.name || 'Neznámy',
+          userEmail: null,
+          contextName: 'Rybársky denník',
+        };
+      }),
+    ];
+
+    // Sort by capturedAt descending and limit
+    return allCatches
+      .sort((a, b) => new Date(b.capturedAt).getTime() - new Date(a.capturedAt).getTime())
+      .slice(0, limit);
   }
 
   // Sponsor operations
