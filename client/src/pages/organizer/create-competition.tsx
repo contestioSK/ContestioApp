@@ -268,8 +268,11 @@ export default function CreateCompetition() {
   };
 
   const handleNext = async () => {
+    console.log('[handleNext] currentStep:', currentStep, 'competitionId:', competitionId);
+    
     // Guard: ak sme za krokom 1 a nemáme competitionId, niečo je zle
     if (currentStep > 1 && !competitionId) {
+      console.log('[handleNext] GUARD TRIGGERED - no competitionId for step > 1');
       toast({
         title: "Chyba",
         description: "Najprv vytvor súťaž v kroku 1",
