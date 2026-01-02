@@ -1,0 +1,55 @@
+Kód je napísaný veľmi profesionálne, používa moderné knižnice (React Hook Form, TanStack Query, Zod, Shadcn UI) a má jasnú logiku. Architektúra "multi-step" formulára so synchronizáciou na backend je implementovaná správne.
+
+Tu je podrobný rozbor a miesta, kde by si sa mohol "zaseknúť" alebo ktoré odporúčam vylepšiť:
+
+1. Kritická logika: Straty údajov v Sektoroch (Step 3)
+V useEffect, ktorý sleduje numSectors, máš túto logiku:
+
+JavaScript
+
+if (hasSectors && sectorPlaces.length !== numSectors) {
+  const newSectorPlaces = Array.from({ length: numSectors }, ...);
+  setSectorPlaces(newSectorPlaces);
+}
+Problém: Ak používateľ v 3. kroku manuálne premenuje sektory alebo pridá miesta a potom si povie "ach, potrebujem o jeden sektor viac" a zmení numSectors, všetka jeho doterajšia práca v tomto kroku sa vymaže, pretože pole vygeneruješ úplne nanovo. Riešenie: Uprav logiku tak, aby zachovávala existujúce sektory a len pridávala/odoberala nové na koniec poľa.
+
+2. Validácia dátumov (Zod)
+V step1Schema kontroluješ len prítomnosť stringu. Riešenie: Pridaj .refine do fullSchema, aby si zabezpečil, že endDate je neskôr ako startDate. Inak ti používateľ môže omylom zadať súťaž, ktorá končí skôr, než začne, čo pravdepodobne spôsobí chybu na backende alebo pri výpočtoch.
+
+JavaScript
+
+const fullSchema = step1Schema.merge(step2Schema).refine((data) => {
+  return new Date(data.endDate) > new Date(data.startDate);
+}, {
+  message: "Dátum konca musí byť neskorší ako začiatok",
+  path: ["endDate"]
+});
+3. "Zaseknutie" pri vytváraní (Race Condition)
+V handleNext pre Step 1 robíš toto:
+
+createMutation.mutateAsync(values)
+
+setCompetitionId(result.id)
+
+setCurrentStep(2)
+
+Zároveň máš v createMutation definovaný onSuccess, ktorý tiež robí setCompetitionId(data.id). Riešenie: Je lepšie držať logiku na jednom mieste. Ak mutateAsync zlyhá, setCurrentStep(2) sa nevykoná, čo je správne. Ale pozor na to, že editId z URL sa ti bije s lokálnym competitionId. Ak prídeš na stránku s ?id=123, competitionId sa nastaví, ale ak potom niečo zmeníš v prvom kroku, musíš si byť istý, či voláš create alebo update. Tvoj kód to rieši v saveProgress, čo je OK.
+
+4. Typy dát v Zod vs. DB
+V step2Schema máš: minWeight: z.coerce.number().min(1).max(15).default(2) Ale v useEffect pri načítavaní existujúcej súťaže robíš: minWeight: existingCompetition.minWeight ? parseFloat(existingCompetition.minWeight) : 2 Upozornenie: Ak tvoja databáza (napr. PostgreSQL) ukladá minWeight ako numeric/decimal, Prisma alebo iné ORM ho často vráti ako string. z.coerce.number() v Zode to ošetrí pri odosielaní, ale uisti sa, že tvoj backend neočakáva string.
+
+5. Chýbajúca validácia pre Step 3 a 4
+Tvoj handleNext kontroluje validitu formulára (Zod), ale sectorPlaces a sideCompetitions sú uložené v lokálnom state mimo React Hook Form. Problém: Ak používateľ v kroku 3 zapne sektory, ale nevyplní v nich žiadne miesta (alebo ich nechá prázdne), form.trigger vráti true (lebo v Zode sektory nemáš) a pustí ho ďalej. Riešenie: V handleNext pre currentStep === 3 pridaj manuálnu kontrolu poľa sectorPlaces.
+
+6. UX: Tlačidlo "Späť"
+Máš data-testid="button-back", ktoré ide na /organizer. To je v poriadku, ale ak je používateľ v 5. kroku a chce sa vrátiť na 4., musí použiť handleBack. Bolo by dobré pridať varovanie ("Máte neuložené zmeny"), ak používateľ klikne na "Späť na dashboard" uprostred procesu.
+
+7. Drobné vylepšenia (Best Practices):
+Zod Schema: Premenné ako SIDE_COMPETITIONS by bolo fajn mať v zdieľanom súbore @shared/schema, aby si mal rovnaké ID kategórií na fronte aj backende.
+
+Loading state: Tlačidlo "Ďalej" má disabled={... || (currentStep > 1 && !competitionId)}. To je super poistka, aby sa nepokračovalo bez vytvoreného záznamu v DB.
+
+Zhrnutie: Kde sa môžeš zaseknúť?
+Najpravdepodobnejšie sa zasekneš pri validácii sektorov, pretože ich Zod nevidí. Ak používateľ vymaže všetky miesta v sektore a klikne ďalej, backend môže spadnúť na validácii (ak ju tam máš) alebo uložíš nekonzistentné dáta.
+
+Odporúčanie: Skús integrovať sectorPlaces a sideCompetitions priamo do Zod schémy a React Hook Form. Tým získaš unifikovanú validáciu a kód bude čistejší. Ak to chceš nechať v state, pridaj manuálnu kontrolu do handleNext.

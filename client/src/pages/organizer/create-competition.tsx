@@ -88,7 +88,12 @@ const step2Schema = z.object({
   maxTeams: z.coerce.number().optional(),
 });
 
-const fullSchema = step1Schema.merge(step2Schema);
+const fullSchema = step1Schema.merge(step2Schema).refine((data) => {
+  return new Date(data.endDate) > new Date(data.startDate);
+}, {
+  message: "Dátum konca musí byť neskorší ako začiatok",
+  path: ["endDate"]
+});
 
 type FormData = z.infer<typeof fullSchema>;
 
@@ -174,14 +179,16 @@ export default function CreateCompetition() {
   }, [existingCompetition, form]);
 
   useEffect(() => {
-    if (hasSectors && sectorPlaces.length !== numSectors) {
-      const newSectorPlaces = Array.from({ length: numSectors }, (_, i) => ({
+    if (!hasSectors) return;
+    
+    setSectorPlaces(prev => {
+      if (prev.length === numSectors) return prev;
+      return Array.from({ length: numSectors }, (_, i) => ({
         sectorName: `Sektor ${String.fromCharCode(65 + i)}`,
         places: Array.from({ length: 5 }, (_, j) => `Miesto ${j + 1}`),
       }));
-      setSectorPlaces(newSectorPlaces);
-    }
-  }, [hasSectors, numSectors, sectorPlaces.length]);
+    });
+  }, [hasSectors, numSectors]);
 
   const createMutation = useMutation({
     mutationFn: async (data: FormData) => {
@@ -253,6 +260,17 @@ export default function CreateCompetition() {
   };
 
   const handleNext = async () => {
+    // Guard: ak sme za krokom 1 a nemáme competitionId, niečo je zle
+    if (currentStep > 1 && !competitionId) {
+      toast({
+        title: "Chyba",
+        description: "Najprv vytvor súťaž v kroku 1",
+        variant: "destructive",
+      });
+      setCurrentStep(1);
+      return;
+    }
+    
     let isValid = false;
     
     if (currentStep === 1) {
@@ -944,7 +962,7 @@ export default function CreateCompetition() {
             {currentStep < STEPS.length ? (
               <Button
                 onClick={handleNext}
-                disabled={isSaving || createMutation.isPending || updateMutation.isPending || (currentStep > 1 && !competitionId)}
+                disabled={isSaving || createMutation.isPending || updateMutation.isPending}
                 className="bg-orange-500 hover:bg-orange-600"
                 data-testid="button-next-step"
               >

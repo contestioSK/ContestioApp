@@ -1,0 +1,232 @@
+ČO JE DOBRÉ (môže ostať)
+1. Architektúra wizardu
+
+✔️ rozdelenie na kroky
+✔️ lokálny currentStep
+✔️ react-hook-form + zod
+✔️ rozumné rozdelenie zodpovednosti
+
+👉 toto je úplne v poriadku a profesionálne
+
+2. Práca s draftom
+
+✔️ status: draft
+✔️ create → update
+✔️ návrat do rozpracovanej súťaže
+
+Toto je presne správny smer.
+
+3. UX flow
+
+✔️ progress bar
+✔️ možnosť uložiť rozpracované
+✔️ krok 5 = rekapitulácia
+✔️ neblokuješ používateľa zbytočne
+
+❌ PROBLÉMY, KTORÉ TI TERAZ ROBIA ZLE
+❌ 1. Zod vs Input (hlavný bug – už vieš)
+
+Toto si už vyriešil, ale zopakujem:
+
+minWeight: z.number()
+
+
+❌ zle
+✅ musí byť:
+
+minWeight: z.coerce.number()
+maxTeams: z.coerce.number().optional()
+
+
+Inak sa ti wizard nikdy nepohne.
+
+❌ 2. handleNext() má zlú logiku toku
+
+Teraz máš toto:
+
+if (currentStep === 1) {
+  // create
+}
+else if (currentStep === 2) {
+  // update
+}
+
+
+ALE:
+
+❗ PROBLÉM
+
+Ak sa create nepodarí (API error),
+
+competitionId zostane null
+
+krok 2 sa zablokuje
+
+UI sa tvári ako zaseknuté
+
+✅ Oprava (odporúčaná)
+
+Po úspešnom vytvorení hneď nastav krok, nie až neskôr:
+
+const result = await createMutation.mutateAsync(values);
+setCompetitionId(result.id);
+setCurrentStep(2);
+return;
+
+
+➡️ presne to už máš – toto je správne riešenie, len si ho predtým nemal.
+
+❌ 3. Validuješ veci, ktoré nemusia existovať
+Problém:
+form.trigger(['description', 'rules', 'scoringType', 'minWeight'])
+
+
+Ale:
+
+description je optional
+
+rules je optional
+
+scoringType má default
+
+minWeight je jediný reálne kritický
+
+👉 Ak sa niečo z toho pokazí, celý krok padne.
+
+Odporúčané riešenie:
+await form.trigger(['scoringType', 'minWeight']);
+
+
+alebo:
+
+await form.trigger();
+
+
+(keď máš schema dobre spravené)
+
+❌ 4. useEffect so sectorPlaces je nebezpečný
+
+Toto je problém:
+
+useEffect(() => {
+  if (hasSectors && sectorPlaces.length !== numSectors) {
+    setSectorPlaces(...)
+  }
+}, [hasSectors, numSectors, sectorPlaces.length])
+
+❗ Problém:
+
+meníš sectorPlaces
+
+ktorý je v dependency array
+
+čo môže spôsobiť nekonečný re-render
+
+✅ Oprava:
+useEffect(() => {
+  if (!hasSectors) return;
+
+  setSectorPlaces(prev => {
+    if (prev.length === numSectors) return prev;
+    return Array.from({ length: numSectors }, (_, i) => ({
+      sectorName: `Sektor ${String.fromCharCode(65 + i)}`,
+      places: Array.from({ length: 5 }, (_, j) => `Miesto ${j + 1}`)
+    }));
+  });
+}, [hasSectors, numSectors]);
+
+❌ 5. saveProgress() môže prepisovať dáta neúmyselne
+
+Teraz:
+
+const values = form.getValues();
+await updateMutation.mutateAsync(values);
+
+
+➡️ pošleš aj polia, ktoré user nikdy neupravoval
+
+Lepšie:
+
+Buď:
+
+len to, čo patrí ku kroku
+
+alebo drž draft objekt
+
+Ale zatiaľ OK, ak backend merge-uje.
+
+❌ 6. sideCompetitions nemá validáciu
+
+Teraz:
+
+sideCompetitions: string[]
+
+
+Ale:
+
+nič nekontroluje, či ID existuje
+
+nič nebráni duplicitám
+
+Odporúčané:
+
+const sideCompetitionsSchema = z.array(z.enum([
+  "big-fish-overall",
+  ...
+]));
+
+⚠️ 7. UX detail – button disabled logika
+
+Toto je nebezpečné:
+
+disabled={isSaving || createMutation.isPending || updateMutation.isPending || (currentStep > 1 && !competitionId)}
+
+
+Ak:
+
+create zlyhá
+
+competitionId ostane null
+
+➡️ tlačidlo je navždy disabled
+
+Odporúčam:
+disabled={isSaving || createMutation.isPending || updateMutation.isPending}
+
+
+A kontrolu robiť v handleNext().
+
+✅ ČO BY SOM URČITE SPRAVIL NAVYŠE
+1️⃣ Log pre debug
+console.log({
+  step: currentStep,
+  isValid,
+  errors: form.formState.errors,
+  competitionId
+});
+
+2️⃣ Guard na krok 2
+if (!competitionId) {
+  toast({ title: "Najprv vytvor súťaž" });
+  return;
+}
+
+3️⃣ Centralizovaný step validator
+
+(neskôr, nie teraz)
+
+🧠 ZHRNUTIE – PREČO TI TO PADALO
+
+❌ Zod očakával number
+❌ Input posielal string
+❌ form.trigger() vracal false
+❌ krok 2 nikdy neprešiel
+❌ tlačidlo „Ďalej“ sa tvárilo, že funguje
+
+✅ PO OPRAVE BUDE:
+
+✔ fungovať preklik
+✔ dáta sa budú ukladať
+✔ wizard bude stabilný
+✔ nebude sa zasekávať
+✔ backend dostane čisté dáta
