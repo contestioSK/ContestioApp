@@ -22,6 +22,8 @@ import {
   promoCodes,
   promoCodeUsages,
   fishingAreas,
+  teamPenalties,
+  userArsenalEquipment,
   type User,
   type UpsertUser,
   type Competition,
@@ -809,14 +811,116 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteUser(userId: string): Promise<void> {
-    const [deletedUser] = await db
-      .delete(users)
-      .where(eq(users.id, userId))
-      .returning();
+    // Delete all related data in a transaction to ensure atomicity
+    await db.transaction(async (tx) => {
+      // 1. Get user's trips (needed for battles and catches)
+      const userTrips = await tx.select({ id: diaryTrips.id }).from(diaryTrips).where(eq(diaryTrips.ownerUserId, userId));
+      const tripIds = userTrips.map(t => t.id);
+      
+      if (tripIds.length > 0) {
+        // 2. Delete battles linked to user's trips FIRST (battles reference trips)
+        const userBattles = await tx.select({ id: diaryBattles.id }).from(diaryBattles).where(inArray(diaryBattles.tripId, tripIds));
+        const battleIds = userBattles.map(b => b.id);
+        
+        if (battleIds.length > 0) {
+          await tx.delete(battleInvitations).where(inArray(battleInvitations.battleId, battleIds));
+          await tx.delete(diaryBattles).where(inArray(diaryBattles.id, battleIds));
+        }
+        
+        // 3. Delete catches from user's trips (catches reference trips)
+        await tx.delete(diaryCatches).where(inArray(diaryCatches.tripId, tripIds));
+      }
+      
+      // 4. Delete diary trips (now safe - battles and catches are deleted)
+      await tx.delete(diaryTrips).where(eq(diaryTrips.ownerUserId, userId));
+      
+      // 5. Delete battle invitations where user is invited
+      await tx.delete(battleInvitations).where(
+        or(
+          eq(battleInvitations.invitedUserId, userId),
+          eq(battleInvitations.invitedByUserId, userId)
+        )
+      );
+      
+      // 6. Delete friendships (both sides - sender/recipient)
+      await tx.delete(friendships).where(
+        or(
+          eq(friendships.senderId, userId),
+          eq(friendships.recipientId, userId)
+        )
+      );
+      
+      // 7. Delete season goals
+      await tx.delete(seasonGoals).where(eq(seasonGoals.userId, userId));
+      
+      // 8. Delete user subscriptions
+      await tx.delete(userSubscriptions).where(eq(userSubscriptions.userId, userId));
+      
+      // 9. Delete favorite competitions and teams
+      await tx.delete(favoriteCompetitions).where(eq(favoriteCompetitions.userId, userId));
+      await tx.delete(favoriteTeams).where(eq(favoriteTeams.userId, userId));
+      
+      // 10. Delete notification preferences
+      await tx.delete(notificationPreferences).where(eq(notificationPreferences.userId, userId));
+      
+      // 11. Delete push subscriptions (has CASCADE but delete explicitly for safety)
+      await tx.delete(pushSubscriptions).where(eq(pushSubscriptions.userId, userId));
+      
+      // 12. Delete referee records
+      await tx.delete(referees).where(eq(referees.userId, userId));
+      
+      // 13. Delete team members
+      await tx.delete(teamMembers).where(eq(teamMembers.userId, userId));
+      
+      // 14. Delete promo code usages
+      await tx.delete(promoCodeUsages).where(eq(promoCodeUsages.userId, userId));
+      
+      // 15. Delete arsenal equipment (has CASCADE but delete explicitly)
+      await tx.delete(userArsenalEquipment).where(eq(userArsenalEquipment.userId, userId));
+      
+      // 16. Delete announcements authored by user
+      await tx.delete(announcements).where(eq(announcements.authorId, userId));
+      
+      // 17. Delete team penalties issued by user
+      await tx.delete(teamPenalties).where(eq(teamPenalties.issuedBy, userId));
+      
+      // 18. Set promoCodes.createdById to null (nullable reference)
+      await tx.update(promoCodes).set({ createdById: null }).where(eq(promoCodes.createdById, userId));
+      
+      // 19. Delete competitions organized by user (and their related data)
+      const userCompetitions = await tx.select({ id: competitions.id }).from(competitions).where(eq(competitions.organizerId, userId));
+      for (const comp of userCompetitions) {
+        // Delete catches for competition
+        await tx.delete(catches).where(eq(catches.competitionId, comp.id));
+        // Delete team members and teams
+        const compTeams = await tx.select({ id: teams.id }).from(teams).where(eq(teams.competitionId, comp.id));
+        for (const team of compTeams) {
+          await tx.delete(teamMembers).where(eq(teamMembers.teamId, team.id));
+        }
+        await tx.delete(teams).where(eq(teams.competitionId, comp.id));
+        // Delete referees for competition
+        await tx.delete(referees).where(eq(referees.competitionId, comp.id));
+        // Delete sponsors
+        await tx.delete(sponsors).where(eq(sponsors.competitionId, comp.id));
+        // Competition registrations linked via approvedCompetitionId
+        await tx.delete(competitionRegistrations).where(eq(competitionRegistrations.approvedCompetitionId, comp.id));
+        // Delete announcements
+        await tx.delete(announcements).where(eq(announcements.competitionId, comp.id));
+        // Delete favorite competitions
+        await tx.delete(favoriteCompetitions).where(eq(favoriteCompetitions.competitionId, comp.id));
+      }
+      await tx.delete(competitions).where(eq(competitions.organizerId, userId));
+      
+      // Finally delete the user
+      const [deletedUser] = await tx
+        .delete(users)
+        .where(eq(users.id, userId))
+        .returning();
 
-    if (!deletedUser) {
-      throw new Error('User not found');
-    }
+      if (!deletedUser) {
+        throw new Error('User not found');
+      }
+    });
   }
 
   // Competition operations
