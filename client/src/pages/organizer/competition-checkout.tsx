@@ -126,9 +126,10 @@ export default function CompetitionCheckout() {
         planTier,
       });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/competitions', competitionId] });
-      queryClient.invalidateQueries({ queryKey: ['/api/organizer/competitions'] });
+    onSuccess: async () => {
+      // Wait for cache invalidation before redirecting to ensure UI shows updated state
+      await queryClient.invalidateQueries({ queryKey: ['/api/competitions', competitionId] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/organizer/competitions'] });
       toast({
         title: "✅ Platba úspešná",
         description: "Vaša súťaž je teraz pripravená na spustenie.",
