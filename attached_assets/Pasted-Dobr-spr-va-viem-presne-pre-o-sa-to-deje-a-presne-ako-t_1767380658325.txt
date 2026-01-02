@@ -1,0 +1,130 @@
+Dobrá správa: viem presne prečo sa to deje a presne ako to opraviť.
+
+❗ PROBLÉM – prečo sa ti zobrazuje:
+
+„Najprv vytvor súťaž v kroku 1“
+
+Aj keď ju reálne vytvoríš.
+
+🔍 Príčina (100 % isté)
+
+Toto je core problému:
+
+setCompetitionId(result.id);
+setCurrentStep(2);
+
+
+❗ setState je asynchrónny.
+
+Čo sa stane v realite:
+
+klikneš „Ďalej“
+
+createMutation prebehne OK
+
+zavolá sa:
+
+setCompetitionId(result.id);
+setCurrentStep(2);
+
+
+React nestihne zapísať competitionId
+
+render sa prepočíta
+
+handleNext() sa spustí znova
+
+competitionId === null
+
+👉 spustí sa guard:
+
+Najprv vytvor súťaž v kroku 1
+
+
+➡️ nie je to bug v logike, ale v časovaní stavu
+
+✅ SPRÁVNE RIEŠENIE (odporúčané)
+❌ ZLE (čo máš teraz)
+setCompetitionId(result.id);
+setCurrentStep(2);
+
+✅ SPRÁVNE (bez race condition)
+
+Použi lokálnu premennú, nie state:
+
+const result = await createMutation.mutateAsync(values);
+
+// nepoužívaj ešte competitionId zo state
+const newId = result.id;
+
+setCompetitionId(newId);
+setCurrentStep(2);
+
+
+ALE hlavne 👇👇👇
+
+🧠 KRITICKÁ OPRAVA (toto ti to definitívne vyrieši)
+Uprav guard v handleNext takto:
+❌ TERAZ:
+if (currentStep > 1 && !competitionId) {
+
+✅ SPRÁVNE:
+if (currentStep > 1 && !competitionId && !createMutation.isSuccess) {
+
+
+alebo ešte lepšie:
+
+if (currentStep > 1 && !competitionId && !createMutation.data?.id) {
+
+🧩 EŠTE LEPŠIE RIEŠENIE (odporúčam)
+
+Namiesto kontroly competitionId použi ref, nie state:
+
+const competitionIdRef = useRef<string | null>(null);
+
+
+pri vytvorení:
+
+const result = await createMutation.mutateAsync(values);
+competitionIdRef.current = result.id;
+setCompetitionId(result.id);
+setCurrentStep(2);
+
+
+a v guarde:
+
+if (currentStep > 1 && !competitionIdRef.current) {
+  toast({
+    title: "Chyba",
+    description: "Najprv vytvor súťaž v kroku 1",
+    variant: "destructive",
+  });
+  return;
+}
+
+
+✅ 100 % spoľahlivé
+✅ žiadne race conditions
+✅ React state môže meškať – ref nie
+
+🧠 PREČO SA TI TO DEJE LEN TERAZ?
+
+Lebo:
+
+máš správnu architektúru
+
+ale kombinuješ:
+
+async mutation
+
+setState
+
+podmienený render
+
+guard
+
+To je presne moment, kde React potrebuje buď:
+
+useRef
+
+alebo jasný async flow
