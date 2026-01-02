@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRoute, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
@@ -52,12 +52,35 @@ import {
   Trash2,
   Send,
   Loader2,
-  Mail
+  Mail,
+  Timer,
+  Shield,
+  ClipboardCheck
 } from "lucide-react";
 import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
+import { PulsingDot } from "@/components/ui/pulsing-dot";
 import type { Competition, Team, Referee, Announcement } from "@shared/schema";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
+
+function formatCountdown(targetDate: string | Date, _tick?: Date): { text: string; urgent: boolean } {
+  const target = new Date(targetDate);
+  const now = new Date();
+  const diff = target.getTime() - now.getTime();
+  
+  if (diff <= 0) return { text: "0h 0m", urgent: true };
+  
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+  
+  const urgent = diff < 1000 * 60 * 60; // less than 1 hour
+  
+  if (days > 0) return { text: `${days}d ${hours}h ${minutes}m`, urgent: false };
+  if (hours > 0) return { text: `${hours}h ${minutes}m ${seconds}s`, urgent };
+  return { text: `${minutes}m ${seconds}s`, urgent: true };
+}
 
 export default function CompetitionManage() {
   const [, params] = useRoute("/organizer/competition/:id");
@@ -73,6 +96,12 @@ export default function CompetitionManage() {
   const [refereeEmail, setRefereeEmail] = useState("");
   const [announcementTitle, setAnnouncementTitle] = useState("");
   const [announcementContent, setAnnouncementContent] = useState("");
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const { data: competition, isLoading: competitionLoading } = useQuery<Competition>({
     queryKey: ['/api/competitions', competitionId],
@@ -261,9 +290,127 @@ export default function CompetitionManage() {
 
   const teamsCount = teams?.length || 0;
   const refereesCount = referees?.length || 0;
+  
+  const countdown = competition.status === 'live' 
+    ? formatCountdown(competition.endDate, currentTime)
+    : formatCountdown(competition.startDate, currentTime);
 
   return (
     <OrganizerLayout>
+      {/* Progress Timeline */}
+      <div className="mb-6 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 md:gap-4 flex-1">
+            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+              competition.status === 'registration' 
+                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300 ring-2 ring-blue-500/30' 
+                : 'bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
+            }`}>
+              <Clock className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Príprava</span>
+            </div>
+            
+            <div className={`flex-1 h-0.5 ${
+              competition.status !== 'registration' 
+                ? 'bg-green-500' 
+                : 'bg-slate-300 dark:bg-slate-600'
+            }`} />
+            
+            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+              competition.status === 'live' 
+                ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300 ring-2 ring-green-500/30' 
+                : competition.status === 'finished'
+                  ? 'bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
+                  : 'bg-slate-200 text-slate-400 dark:bg-slate-700 dark:text-slate-500'
+            }`}>
+              {competition.status === 'live' && <PulsingDot color="green" />}
+              {competition.status !== 'live' && <Play className="w-3.5 h-3.5" />}
+              <span className="hidden sm:inline">Prebieha</span>
+            </div>
+            
+            <div className={`flex-1 h-0.5 ${
+              competition.status === 'finished' 
+                ? 'bg-slate-500' 
+                : 'bg-slate-300 dark:bg-slate-600'
+            }`} />
+            
+            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+              competition.status === 'finished' 
+                ? 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300 ring-2 ring-slate-500/30' 
+                : 'bg-slate-200 text-slate-400 dark:bg-slate-700 dark:text-slate-500'
+            }`}>
+              <CheckCircle className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Ukončené</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Critical Info Panel - Commander Dashboard */}
+      {competition.status !== 'finished' && (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+          <Card className={`border-2 ${countdown.urgent ? 'border-orange-500 bg-orange-50 dark:bg-orange-950/20' : 'border-slate-200 dark:border-slate-700 bg-card'} shadow-sm`}>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className={`p-2.5 rounded-xl ${countdown.urgent ? 'bg-orange-100 dark:bg-orange-900/30' : 'bg-slate-100 dark:bg-slate-800'}`}>
+                  <Timer className={`w-5 h-5 ${countdown.urgent ? 'text-orange-600 dark:text-orange-400' : 'text-slate-600 dark:text-slate-400'}`} />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
+                    {competition.status === 'live' ? 'Do konca' : 'Do štartu'}
+                  </p>
+                  <p className={`text-xl font-mono font-bold ${countdown.urgent ? 'text-orange-600 dark:text-orange-400' : 'text-foreground'}`}>
+                    {countdown.text}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-sm">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-cyan-100 dark:bg-cyan-900/30">
+                  <Fish className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Úlovky dnes</p>
+                  <p className="text-xl font-bold text-foreground">0</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-sm">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-purple-100 dark:bg-purple-900/30">
+                  <Shield className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Rozhodcovia</p>
+                  <p className="text-xl font-bold text-foreground">{refereesCount} aktívnych</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-sm">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-amber-100 dark:bg-amber-900/30">
+                  <ClipboardCheck className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Čakajúce</p>
+                  <p className="text-xl font-bold text-foreground">0 potvrdení</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-6 gap-4">
         <div className="flex items-start gap-4">
@@ -317,115 +464,103 @@ export default function CompetitionManage() {
         </div>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
-        <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-sm">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
-                <TacticalIconInline icon={Users} variant="orange" size="md" />
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Tímy</p>
-                <p className="text-xl font-bold text-foreground">{teamsCount}{competition.maxTeams ? `/${competition.maxTeams}` : ''}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-sm">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-cyan-100 dark:bg-cyan-900/30">
-                <TacticalIconInline icon={Fish} variant="cyan" size="md" />
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Úlovky</p>
-                <p className="text-xl font-bold text-foreground">0</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-sm">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
-                <TacticalIconInline icon={UserPlus} variant="purple" size="md" />
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Rozhodcovia</p>
-                <p className="text-xl font-bold text-foreground">{refereesCount}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-sm">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                <TacticalIconInline icon={MessageSquare} variant="blue" size="md" />
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Oznamy</p>
-                <p className="text-xl font-bold text-foreground">{announcements?.length || 0}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
-        {competition.status === 'registration' && (
-          <Button 
-            className="h-auto py-4 flex flex-col items-center gap-2 bg-green-600 hover:bg-green-700"
-            onClick={() => setShowStartDialog(true)}
-            disabled={statusMutation.isPending}
-            data-testid="button-start-competition"
-          >
-            {statusMutation.isPending ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <Play className="w-5 h-5" />
+      {/* Unified Action Panel */}
+      <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-sm mb-6">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <TacticalIconInline icon={BarChart3} variant="orange" size="sm" />
+            Akcie
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="flex flex-wrap gap-2">
+            {competition.status === 'registration' && (
+              <Button 
+                className="bg-green-600 hover:bg-green-700"
+                onClick={() => setShowStartDialog(true)}
+                disabled={statusMutation.isPending}
+                data-testid="button-start-competition"
+              >
+                {statusMutation.isPending ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Play className="w-4 h-4 mr-2" />
+                )}
+                Spustiť súťaž
+              </Button>
             )}
-            <span>Spustiť súťaž</span>
-          </Button>
-        )}
-        {competition.status === 'live' && (
-          <Button 
-            variant="destructive" 
-            className="h-auto py-4 flex flex-col items-center gap-2"
-            onClick={() => setShowEndDialog(true)}
-            disabled={statusMutation.isPending}
-            data-testid="button-end-competition"
-          >
-            {statusMutation.isPending ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <StopCircle className="w-5 h-5" />
+            {competition.status === 'live' && (
+              <Button 
+                variant="destructive"
+                onClick={() => setShowEndDialog(true)}
+                disabled={statusMutation.isPending}
+                data-testid="button-end-competition"
+              >
+                {statusMutation.isPending ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <StopCircle className="w-4 h-4 mr-2" />
+                )}
+                Ukončiť súťaž
+              </Button>
             )}
-            <span>Ukončiť súťaž</span>
-          </Button>
-        )}
-        <Button 
-          variant="outline" 
-          className="h-auto py-4 flex flex-col items-center gap-2"
-          onClick={() => setShowAddAnnouncementDialog(true)}
-          data-testid="button-new-announcement"
-        >
-          <MessageSquare className="w-5 h-5" />
-          <span>Nový oznam</span>
-        </Button>
-        <Button variant="outline" className="h-auto py-4 flex flex-col items-center gap-2">
-          <QrCode className="w-5 h-5" />
-          <span>QR kód</span>
-        </Button>
-        <Button variant="outline" className="h-auto py-4 flex flex-col items-center gap-2">
-          <Share2 className="w-5 h-5" />
-          <span>Zdieľať</span>
-        </Button>
+            <Button 
+              variant="outline"
+              onClick={() => setShowAddAnnouncementDialog(true)}
+              data-testid="button-new-announcement"
+            >
+              <MessageSquare className="w-4 h-4 mr-2" />
+              Nový oznam
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={() => setShowAddRefereeDialog(true)}
+            >
+              <UserPlus className="w-4 h-4 mr-2" />
+              Pridať rozhodcu
+            </Button>
+            <Button variant="outline">
+              <QrCode className="w-4 h-4 mr-2" />
+              QR kód
+            </Button>
+            <Button variant="outline">
+              <Share2 className="w-4 h-4 mr-2" />
+              Zdieľať
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Quick Stats Row */}
+      <div className="grid gap-4 md:grid-cols-4 mb-6">
+        <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+          <TacticalIconInline icon={Users} variant="orange" size="md" />
+          <div>
+            <p className="text-xs text-muted-foreground">Tímy</p>
+            <p className="text-lg font-bold text-foreground">{teamsCount}{competition.maxTeams ? `/${competition.maxTeams}` : ''}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+          <TacticalIconInline icon={Fish} variant="cyan" size="md" />
+          <div>
+            <p className="text-xs text-muted-foreground">Celkom úlovkov</p>
+            <p className="text-lg font-bold text-foreground">0</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+          <TacticalIconInline icon={UserPlus} variant="purple" size="md" />
+          <div>
+            <p className="text-xs text-muted-foreground">Rozhodcovia</p>
+            <p className="text-lg font-bold text-foreground">{refereesCount}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+          <TacticalIconInline icon={MessageSquare} variant="blue" size="md" />
+          <div>
+            <p className="text-xs text-muted-foreground">Oznamy</p>
+            <p className="text-lg font-bold text-foreground">{announcements?.length || 0}</p>
+          </div>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -502,7 +637,22 @@ export default function CompetitionManage() {
             <CardContent>
               <div className="text-center py-8">
                 <TacticalIcon icon={Fish} variant="cyan" size="lg" showLabel={false} className="mx-auto mb-4" />
-                <p className="text-muted-foreground">Zatiaľ žiadne úlovky</p>
+                {competition.status === 'registration' ? (
+                  <>
+                    <p className="text-muted-foreground font-medium mb-1">Súťaž ešte nezačala</p>
+                    <p className="text-sm text-muted-foreground">Úlovky sa zobrazia po spustení súťaže</p>
+                  </>
+                ) : competition.status === 'live' ? (
+                  <>
+                    <p className="text-muted-foreground font-medium mb-1">Zatiaľ žiadne úlovky</p>
+                    <p className="text-sm text-muted-foreground">Čakáme na prvé úlovky od súťažiacich</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-muted-foreground font-medium mb-1">Žiadne úlovky v súťaži</p>
+                    <p className="text-sm text-muted-foreground">V tejto súťaži neboli zaznamenané žiadne úlovky</p>
+                  </>
+                )}
               </div>
             </CardContent>
           </Card>

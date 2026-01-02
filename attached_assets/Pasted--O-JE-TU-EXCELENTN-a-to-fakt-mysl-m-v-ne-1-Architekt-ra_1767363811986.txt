@@ -1,0 +1,217 @@
+ČO JE TU EXCELENTNÉ (a to fakt myslím vážne)
+1️⃣ Architektúra je zdravá
+
+Toto nie je hobby kód.
+
+✔️ jasné rozdelenie:
+
+query vrstvy
+
+UI logika
+
+dialogy
+
+akcie
+
+statusy
+
+✔️ použitie:
+
+react-query správne
+
+OrganizerLayout → veľmi dobré
+
+oddelené Dialog / AlertDialog
+
+state manažment je čitateľný
+
+👉 Toto sa dá udržiavať roky.
+
+2️⃣ UX logika je veľmi dobrá
+
+Konkrétne:
+
+jasné CTA podľa stavu súťaže
+
+iný layout pre:
+
+registráciu
+
+live
+
+finished
+
+dobré fallbacky (Skeleton, empty state)
+
+používateľ nikdy neostane „zaseknutý“
+
+To je presne to, čo od organizačného dashboardu chceš.
+
+3️⃣ Myslíš ako produkt, nie len ako dev
+
+Veľké plus:
+
+oznamy
+
+rozhodcovia
+
+stav súťaže
+
+QR / zdieľanie
+
+oddelené tabuľky
+
+To už nie je MVP, to je platforma.
+
+⚠️ TERAZ PRÍDE TVRDÁ ČASŤ – ČO TREBA ZLEPŠIŤ
+❌ 1. Komponent je príliš veľký (a začne ťa bolieť)
+
+Tento komponent robí:
+
+fetchovanie
+
+riadenie stavu
+
+UI
+
+business logiku
+
+dialogy
+
+validácie
+
+➡️ je už za hranou „únosnosti“
+
+Čo by som spravil:
+
+Rozbiť minimálne na:
+
+CompetitionHeader.tsx
+CompetitionStats.tsx
+CompetitionActions.tsx
+CompetitionTabs.tsx
+RefereesPanel.tsx
+AnnouncementsPanel.tsx
+
+
+Výhoda:
+
+lepšia čitateľnosť
+
+menší cognitive load
+
+jednoduchší refactor neskôr
+
+❌ 2. Chýba „stav súťaže ako príbeh“
+
+Momentálne máš:
+
+status = registration | live | finished
+
+Ale UX by malo cítiť:
+
+Príprava
+
+Spustenie
+
+Boj
+
+Vyhodnotenie
+
+Navrhujem:
+
+V hornej časti progress bar alebo timeline
+
+[ Príprava ] → [ Prebieha ] → [ Ukončené ]
+
+
+S aktívnym stavom.
+
+To okamžite zvyšuje profesionalitu.
+
+❌ 3. Chýba „critical info panel“
+
+Ako organizátor chcem hneď vidieť:
+
+⏱️ koľko zostáva do konca
+
+🎣 počet úlovkov dnes
+
+👥 aktívni rozhodcovia
+
+⚠️ čakajúce potvrdenia
+
+To je veliteľský panel, nie len prehľad.
+
+❌ 4. Akcie sú roztrúsené
+
+Momentálne:
+
+spustiť súťaž → hore
+
+ukončiť → inde
+
+oznam → inde
+
+rozhodca → inde
+
+UX lepšie:
+👉 „Akčný panel“ vpravo alebo hore
+
+Napríklad:
+
+┌──────────────┐
+│   AKCIE      │
+│ ───────────  │
+│ ▶ Spustiť    │
+│ ⏹ Ukončiť    │
+│ ✉ Oznam      │
+│ 👤 Rozhodca  │
+└──────────────┘
+
+❌ 5. Úlovky sú zatiaľ slabé (ale to vieš 😄)
+
+Teraz máš:
+
+„Zatiaľ žiadne úlovky“
+
+Ale toto je srdce aplikácie.
+
+Čo tam má byť neskôr:
+
+filter (dátum / tím / váha)
+
+označenie TOP úlovku
+
+schválené / čakajúce
+
+fotka
+
+rozhodca
+
+Už teraz by som tam nechal aspoň:
+
+„Úlovky sa zobrazia po spustení súťaže“
+
+🔥 ČO JE NA TOM CELÉM NAJLEPŠIE
+
+👉 Tento kód je:
+
+rozšíriteľný
+
+čitateľný
+
+pripravený na produkciu
+
+dizajnovo konzistentný
+
+A hlavne:
+
+Je to už systém, nie experiment.
+
+🎯 MOJ VERDIKT (úprimný)
+
+🟢 Architektúra: 9/10
+🟢 UX základ: 8/10
+🟡 Vizual & flow: 7/10 (ľahko zlepšiteľné)
+🟢 Produktový potenciál: 10/10
