@@ -772,9 +772,14 @@ export default function DiaryCatches() {
               const weight = parseFloat(c.weight || '0');
               return sum + (isNaN(weight) ? 0 : weight);
             }, 0);
-            const biggestFish = nonHistoricalCatches.length > 0
-              ? Math.max(...nonHistoricalCatches.map((c: any) => parseFloat(c.weight || '0') || 0))
-              : 0;
+            const biggestFishCatch = nonHistoricalCatches.length > 0
+              ? nonHistoricalCatches.reduce((max: any, c: any) => {
+                  const weight = parseFloat(c.weight || '0') || 0;
+                  const maxWeight = parseFloat(max?.weight || '0') || 0;
+                  return weight > maxWeight ? c : max;
+                }, nonHistoricalCatches[0])
+              : null;
+            const biggestFish = biggestFishCatch ? parseFloat(biggestFishCatch.weight || '0') || 0 : 0;
             const averageWeight = totalCount > 0 ? totalWeight / totalCount : 0;
 
             return (
@@ -793,7 +798,14 @@ export default function DiaryCatches() {
                     </CardContent>
                   </Card>
                   
-                  <Card className="bg-card border border-slate-200 shadow-sm dark:bg-transparent dark:bg-gradient-to-br dark:from-emerald-600/20 dark:to-green-600/20 dark:border-emerald-500/30 transition-all duration-200 hover:shadow-md dark:hover:from-emerald-600/30 dark:hover:to-green-600/30 dark:hover:border-emerald-400/50 dark:hover:shadow-emerald-500/20" data-testid="card-total-biggest">
+                  <Card 
+                    className={cn(
+                      "bg-card border border-slate-200 shadow-sm dark:bg-transparent dark:bg-gradient-to-br dark:from-emerald-600/20 dark:to-green-600/20 dark:border-emerald-500/30 transition-all duration-200 hover:shadow-md dark:hover:from-emerald-600/30 dark:hover:to-green-600/30 dark:hover:border-emerald-400/50 dark:hover:shadow-emerald-500/20",
+                      biggestFishCatch && "cursor-pointer hover:scale-[1.02]"
+                    )}
+                    onClick={() => biggestFishCatch && setSelectedCatch(biggestFishCatch)}
+                    data-testid="card-total-biggest"
+                  >
                     <CardContent className="p-4 md:p-6">
                       <div className="flex items-center gap-3 md:gap-4">
                         <TacticalIcon icon={Trophy} variant="amber" size="sm" showLabel={false} />
