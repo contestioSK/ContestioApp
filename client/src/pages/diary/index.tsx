@@ -939,7 +939,7 @@ export default function DiaryIndex() {
                 ) : (
                   <Button
                     size="sm"
-                    onClick={() => setLocation("/diary/battle-paywall")}
+                    onClick={() => setLocation("/diary/battles/paywall")}
                     className="bg-red-600 hover:bg-red-700 text-white text-xs md:text-sm w-full md:w-auto"
                     data-testid="button-unlock-battle"
                   >

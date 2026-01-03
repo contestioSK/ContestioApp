@@ -155,7 +155,7 @@ export default function BattleCreate() {
   // Redirect FREE users to paywall
   useEffect(() => {
     if (!isLoadingPremium && !isPremium && user) {
-      setLocation('/diary/battle-paywall');
+      setLocation('/diary/battles/paywall');
     }
   }, [isPremium, isLoadingPremium, user, setLocation]);
 
