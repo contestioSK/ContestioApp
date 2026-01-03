@@ -2687,8 +2687,8 @@ export class DatabaseStorage implements IStorage {
     
     if (!trip) return undefined;
     
-    // Verify ownership (mandatory)
-    if (!(await this.checkTripOwnership(id, userId))) {
+    // Verify access (owner OR battle participant)
+    if (!(await this.checkTripAccess(id, userId))) {
       throw new Error("Nemáte oprávnenie na zobrazenie tejto výpravy");
     }
 
@@ -2773,10 +2773,42 @@ export class DatabaseStorage implements IStorage {
     return trip?.ownerUserId === userId;
   }
 
+  // Check if user is a participant in any battle on the given trip
+  async isUserBattleParticipantOnTrip(tripId: string, userId: string): Promise<boolean> {
+    // Get all battles on this trip
+    const battles = await db
+      .select()
+      .from(diaryBattles)
+      .where(eq(diaryBattles.tripId, tripId));
+    
+    if (battles.length === 0) return false;
+    
+    // Get user info for name matching
+    const user = await this.getUser(userId);
+    const userName = user?.firstName && user?.lastName 
+      ? `${user.firstName} ${user.lastName}` 
+      : user?.email || "";
+    
+    // Check if user is a participant in any battle
+    return battles.some(battle => 
+      battle.participants.some((p: any) => p.userId === userId || p.name === userName)
+    );
+  }
+
+  // Check if user has access to trip (owner OR battle participant)
+  async checkTripAccess(tripId: string, userId: string): Promise<boolean> {
+    // First check ownership (fast)
+    if (await this.checkTripOwnership(tripId, userId)) {
+      return true;
+    }
+    // Then check battle participation
+    return await this.isUserBattleParticipantOnTrip(tripId, userId);
+  }
+
   // Diary catch operations
   async getDiaryCatches(tripId: string, userId: string): Promise<DiaryCatch[]> {
-    // Verify trip ownership (mandatory)
-    if (!(await this.checkTripOwnership(tripId, userId))) {
+    // Verify trip access (owner OR battle participant)
+    if (!(await this.checkTripAccess(tripId, userId))) {
       throw new Error("Nemáte oprávnenie na zobrazenie úlovkov tejto výpravy");
     }
     
@@ -2828,8 +2860,8 @@ export class DatabaseStorage implements IStorage {
       return undefined;
     }
     
-    // Verify trip ownership via catch's tripId (if tripId exists)
-    if (catch_.tripId && !(await this.checkTripOwnership(catch_.tripId, userId))) {
+    // Verify trip access (owner OR battle participant)
+    if (catch_.tripId && !(await this.checkTripAccess(catch_.tripId, userId))) {
       throw new Error("Nemáte oprávnenie na zobrazenie tohto úlovku");
     }
     
@@ -2919,8 +2951,8 @@ export class DatabaseStorage implements IStorage {
       throw new Error("Fishing Battle je dostupný iba v PREMIUM verzii. Prejdite na PREMIUM pre súboje medzi kamarátmi!");
     }
     
-    // Verify trip ownership (mandatory)
-    if (!(await this.checkTripOwnership(tripId, userId))) {
+    // Verify trip access (owner OR battle participant)
+    if (!(await this.checkTripAccess(tripId, userId))) {
       throw new Error("Nemáte oprávnenie na zobrazenie battles tejto výpravy");
     }
     
