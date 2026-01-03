@@ -2992,8 +2992,21 @@ export class DatabaseStorage implements IStorage {
       return undefined;
     }
     
-    // Verify trip ownership (mandatory)
-    if (!(await this.checkTripOwnership(battle.tripId, userId))) {
+    // Check if user is trip owner (organizer)
+    const isTripOwner = await this.checkTripOwnership(battle.tripId, userId);
+    
+    // Check if user is a participant in the battle
+    const user = await this.getUser(userId);
+    const userName = user?.firstName && user?.lastName 
+      ? `${user.firstName} ${user.lastName}` 
+      : user?.email || "";
+    
+    const isParticipant = battle.participants.some(
+      (p: any) => p.userId === userId || p.name === userName
+    );
+    
+    // Allow access if user is trip owner OR battle participant
+    if (!isTripOwner && !isParticipant) {
       throw new Error("Nemáte oprávnenie na zobrazenie tohto battle");
     }
     
