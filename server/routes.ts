@@ -1902,6 +1902,18 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       // Get or create Stripe customer
       let stripeCustomerId = existingSubscription?.stripeCustomerId;
       
+      // Verify existing customer ID is valid in current Stripe mode
+      if (stripeCustomerId) {
+        try {
+          await stripe.customers.retrieve(stripeCustomerId);
+          console.log(`[Stripe Subscribe] Existing customer ${stripeCustomerId} verified`);
+        } catch (customerError: any) {
+          // Customer doesn't exist in current mode (test vs live mismatch)
+          console.log(`[Stripe Subscribe] Customer ${stripeCustomerId} not found in current mode, will create new`);
+          stripeCustomerId = null;
+        }
+      }
+      
       if (!stripeCustomerId) {
         const customer = await stripe.customers.create({
           email: user.email || undefined,
@@ -1913,7 +1925,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
           }
         });
         stripeCustomerId = customer.id;
-        console.log(`[Stripe] Created customer ${stripeCustomerId} for user ${userId}`);
+        console.log(`[Stripe Subscribe] Created new customer ${stripeCustomerId} for user ${userId}`);
       }
 
       // Determine app origin for redirect URLs
