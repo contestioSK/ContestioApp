@@ -6131,12 +6131,55 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
+  // Helper function to safely move file with fallback to copy+delete
+  async function safeFileMoveWithRetry(sourcePath: string, destPath: string, maxRetries = 3): Promise<boolean> {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        // First try rename (fastest, works on same filesystem)
+        await fsPromises.rename(sourcePath, destPath);
+        console.log(`[PhotoUpload] File moved successfully via rename: ${sourcePath} -> ${destPath}`);
+        return true;
+      } catch (renameError: any) {
+        console.log(`[PhotoUpload] Rename failed (attempt ${attempt}/${maxRetries}), trying copy+delete: ${renameError.code || renameError.message}`);
+        
+        try {
+          // Fallback: copy file then delete original
+          await fsPromises.copyFile(sourcePath, destPath);
+          
+          // Verify the copy was successful by checking file exists and has size
+          const destStats = await fsPromises.stat(destPath);
+          const sourceStats = await fsPromises.stat(sourcePath);
+          
+          if (destStats.size === sourceStats.size) {
+            // Delete original only after successful copy verification
+            await fsPromises.unlink(sourcePath);
+            console.log(`[PhotoUpload] File moved successfully via copy+delete: ${sourcePath} -> ${destPath} (${destStats.size} bytes)`);
+            return true;
+          } else {
+            console.error(`[PhotoUpload] Size mismatch after copy: source=${sourceStats.size}, dest=${destStats.size}`);
+            // Clean up failed copy
+            try { await fsPromises.unlink(destPath); } catch {}
+          }
+        } catch (copyError: any) {
+          console.error(`[PhotoUpload] Copy+delete failed (attempt ${attempt}/${maxRetries}):`, copyError.message);
+        }
+      }
+      
+      // Wait before retry
+      if (attempt < maxRetries) {
+        await new Promise(resolve => setTimeout(resolve, 100 * attempt));
+      }
+    }
+    
+    return false;
+  }
+
   // Diary Photo Upload endpoint - FAST upload with background processing
   app.post('/api/diary/photos/upload', isAuthenticated, (req: any, res, next) => {
     // Handle multiple file upload (max 5 photos)
     upload.array('photos', 5)(req, res, (err: any) => {
       if (err) {
-        console.error("Multer error:", err);
+        console.error("[PhotoUpload] Multer error:", err);
         if (err.code === 'LIMIT_FILE_SIZE') {
           return res.status(400).json({ 
             message: "Jeden alebo viac súborov je príliš veľkých. Maximálna veľkosť je 5MB." 
@@ -6163,32 +6206,71 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       const userId = req.user?.id || req.user?.claims?.sub;
       const catchId = req.body.catchId; // Optional: for queuing jobs with catch context
       
+      console.log(`[PhotoUpload] Starting upload for user: ${userId}, files: ${req.files?.length || 0}`);
+      
       if (!req.files || req.files.length === 0) {
+        console.log(`[PhotoUpload] No files received for user: ${userId}`);
         return res.status(400).json({ message: "Žiadne súbory neboli nahrané" });
       }
 
-      // Create diary photos directory
+      // Create diary photos directory with explicit verification
       const diaryPhotosDir = path.join('attached_assets', 'diary_photos', userId);
-      if (!existsSync(diaryPhotosDir)) {
+      
+      try {
         await fsPromises.mkdir(diaryPhotosDir, { recursive: true });
+        console.log(`[PhotoUpload] Directory created/verified: ${diaryPhotosDir}`);
+      } catch (mkdirError: any) {
+        console.error(`[PhotoUpload] Failed to create directory ${diaryPhotosDir}:`, mkdirError);
+        return res.status(500).json({ message: "Nepodarilo sa vytvoriť priečinok pre fotografie" });
+      }
+      
+      // Double-check directory exists
+      if (!existsSync(diaryPhotosDir)) {
+        console.error(`[PhotoUpload] Directory still doesn't exist after creation: ${diaryPhotosDir}`);
+        return res.status(500).json({ message: "Priečinok pre fotografie neexistuje" });
       }
 
       // Quickly save photos and return immediately - processing happens in background
-      const photos = await Promise.all(req.files.map(async (file: any) => {
+      const photos = [];
+      const failedPhotos = [];
+      
+      for (const file of req.files as any[]) {
         const photoId = randomUUID();
         const baseFilename = `${photoId}`;
         const originalFilename = `${baseFilename}-original${path.extname(file.originalname)}`;
         const originalPath = path.join(diaryPhotosDir, originalFilename);
         
-        // Move uploaded file to permanent location immediately
-        await fsPromises.rename(file.path, originalPath);
+        console.log(`[PhotoUpload] Processing file: ${file.originalname} (${file.size} bytes), temp: ${file.path}`);
+        
+        // Check if source file exists
+        if (!existsSync(file.path)) {
+          console.error(`[PhotoUpload] Source file doesn't exist: ${file.path}`);
+          failedPhotos.push(file.originalname);
+          continue;
+        }
+        
+        // Move uploaded file to permanent location with retry logic
+        const moveSuccess = await safeFileMoveWithRetry(file.path, originalPath);
+        
+        if (!moveSuccess) {
+          console.error(`[PhotoUpload] Failed to move file after all retries: ${file.path} -> ${originalPath}`);
+          failedPhotos.push(file.originalname);
+          continue;
+        }
+        
+        // Final verification - ensure file exists at destination
+        if (!existsSync(originalPath)) {
+          console.error(`[PhotoUpload] File doesn't exist at destination after move: ${originalPath}`);
+          failedPhotos.push(file.originalname);
+          continue;
+        }
+        
+        const destStats = await fsPromises.stat(originalPath);
+        console.log(`[PhotoUpload] File saved successfully: ${originalPath} (${destStats.size} bytes)`);
         
         const originalUrl = `/attached_assets/diary_photos/${userId}/${originalFilename}`;
         
-        // Don't queue job yet - will be queued when photo is attached to catch
-        // This prevents race condition where PhotoQueue looks for catch before photo is attached
-        
-        return {
+        photos.push({
           id: photoId,
           url: originalUrl, // Return original immediately
           status: 'processing' as const,
@@ -6200,16 +6282,31 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
             originalFilename: file.originalname,
             outputBasePath: path.join(diaryPhotosDir, baseFilename)
           }
-        };
-      }));
+        });
+      }
 
+      if (photos.length === 0) {
+        console.error(`[PhotoUpload] All photos failed to upload for user: ${userId}`);
+        return res.status(500).json({ 
+          message: "Nepodarilo sa uložiť žiadnu fotografiu. Skúste to prosím znova.",
+          failedPhotos 
+        });
+      }
+      
+      if (failedPhotos.length > 0) {
+        console.warn(`[PhotoUpload] Some photos failed: ${failedPhotos.join(', ')}`);
+      }
+
+      console.log(`[PhotoUpload] Upload complete for user ${userId}: ${photos.length} successful, ${failedPhotos.length} failed`);
+      
       res.json({ 
         photos,
-        message: `Nahraných ${photos.length} fotiek, optimalizácia prebieha na pozadí...` 
+        message: `Nahraných ${photos.length} fotiek, optimalizácia prebieha na pozadí...`,
+        failedPhotos: failedPhotos.length > 0 ? failedPhotos : undefined
       });
       
     } catch (error) {
-      console.error("Error uploading diary photos:", error);
+      console.error("[PhotoUpload] Unexpected error:", error);
       res.status(500).json({ message: "Chyba pri nahrávaní fotografií" });
     }
   });
