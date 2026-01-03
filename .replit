@@ -47,5 +47,5 @@ waitForPort = 5000
 APP_ORIGIN = "https://contestio.replit.app"
 
 [userenv.shared]
-STRIPE_PRICE_MONTHLY = "price_1SlPP4La3APD9cgQ9sMDivyW"
-STRIPE_PRICE_YEARLY = "price_1SlPvGLa3APD9cgQCPlBEa15"
+STRIPE_PRICE_MONTHLY = "price_1SlRqILa3APD9cgQwBCVVHW6"
+STRIPE_PRICE_YEARLY = "price_1SlRqiLa3APD9cgQzt25AAil"
