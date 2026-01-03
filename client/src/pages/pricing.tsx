@@ -5,16 +5,41 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Check, X, Star, Crown, Zap, Building, BookOpen, Sparkles, Trophy, BookHeart, ChevronDown } from "lucide-react";
+import { Check, X, Star, Crown, Zap, Building, BookOpen, Sparkles, Trophy, BookHeart, ChevronDown, Loader2 } from "lucide-react";
 import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Pricing() {
   const [activeTab, setActiveTab] = useState("diary");
   const [isYearly, setIsYearly] = useState(false);
   const [showComparisonTable, setShowComparisonTable] = useState(false);
   const [, navigate] = useLocation();
+  const { user, isLoading: authLoading } = useAuth();
+  const { toast } = useToast();
+
+  const subscribeMutation = useMutation({
+    mutationFn: async (billingInterval: 'monthly' | 'yearly') => {
+      const response = await apiRequest('POST', '/api/diary/subscribe', { billingInterval });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+      }
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Chyba",
+        description: error.message || "Nepodarilo sa vytvoriť predplatné",
+        variant: "destructive",
+      });
+    },
+  });
 
   const renderFeatureText = (text: string) => {
     if (!text.includes('**')) {
@@ -204,7 +229,18 @@ export default function Pricing() {
     if (planId === 'free') {
       navigate('/diary');
     } else {
-      navigate('/diary');
+      // Premium subscription - requires login
+      if (!user) {
+        toast({
+          title: "Prihlásenie potrebné",
+          description: "Pre predplatné Premium sa najprv prihláste",
+        });
+        navigate('/auth/login?redirect=/pricing?tab=diary');
+        return;
+      }
+      
+      const billingInterval = planId === 'premium-yearly' ? 'yearly' : 'monthly';
+      subscribeMutation.mutate(billingInterval);
     }
   };
 
@@ -608,10 +644,18 @@ export default function Pricing() {
 
                     <Button
                       onClick={() => handleDiaryPlanSelect(isYearly ? 'premium-yearly' : 'premium-monthly')}
-                      className="w-full py-6 text-lg font-semibold transition-all duration-200 bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white shadow-lg hover:shadow-xl ring-2 ring-teal-200"
+                      disabled={subscribeMutation.isPending}
+                      className="w-full py-6 text-lg font-semibold transition-all duration-200 bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white shadow-lg hover:shadow-xl ring-2 ring-teal-200 disabled:opacity-70"
                       data-testid="button-select-diary-premium"
                     >
-                      {diaryPremiumPlan.cta}
+                      {subscribeMutation.isPending ? (
+                        <>
+                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                          Presmerovanie na platbu...
+                        </>
+                      ) : (
+                        diaryPremiumPlan.cta
+                      )}
                     </Button>
                   </CardContent>
                 </Card>

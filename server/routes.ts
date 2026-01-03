@@ -65,11 +65,17 @@ if (!stripe) {
   console.log('[Stripe] Initialized successfully');
 }
 
-// Plan prices in EUR cents
+// Plan prices in EUR cents for competitions
 const PLAN_PRICES: Record<string, { amount: number; name: string }> = {
   basic: { amount: 6900, name: 'Basic Plan' },
   pro: { amount: 19900, name: 'Pro Plan' },
   premium: { amount: 59900, name: 'Premium Plan' },
+};
+
+// Diary subscription price IDs from Stripe
+const DIARY_SUBSCRIPTION_PRICES = {
+  monthly: process.env.STRIPE_PRICE_MONTHLY || '',
+  yearly: process.env.STRIPE_PRICE_YEARLY || '',
 };
 
 // Setup token generation and verification for competition registration
@@ -1840,6 +1846,183 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
+  // Diary Premium Subscription Checkout endpoint
+  app.post('/api/diary/subscribe', isAuthenticated, async (req: any, res) => {
+    try {
+      if (!stripe) {
+        return res.status(400).json({ message: "Platby nie sú nakonfigurované" });
+      }
+
+      const userId = getUserId(req);
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(401).json({ message: "Používateľ neexistuje" });
+      }
+
+      // Validate billing interval
+      const subscribeSchema = z.object({
+        billingInterval: z.enum(['monthly', 'yearly'])
+      });
+      
+      const validationResult = subscribeSchema.safeParse(req.body);
+      if (!validationResult.success) {
+        return res.status(400).json({ 
+          message: "Neplatný fakturačný interval",
+          errors: validationResult.error.errors 
+        });
+      }
+
+      const { billingInterval } = validationResult.data;
+      const priceId = billingInterval === 'yearly' 
+        ? DIARY_SUBSCRIPTION_PRICES.yearly 
+        : DIARY_SUBSCRIPTION_PRICES.monthly;
+
+      if (!priceId) {
+        console.error(`[Stripe] Missing price ID for ${billingInterval} subscription`);
+        return res.status(500).json({ message: "Cenová konfigurácia nie je dostupná" });
+      }
+
+      // Check if user already has an active subscription
+      const existingSubscription = await storage.getUserSubscription(userId, "diary_premium");
+      if (existingSubscription?.status === 'active') {
+        return res.status(400).json({ 
+          message: "Už máte aktívne predplatné. Správa predplatného je dostupná v profile." 
+        });
+      }
+
+      // Get or create Stripe customer
+      let stripeCustomerId = existingSubscription?.stripeCustomerId;
+      
+      if (!stripeCustomerId) {
+        const customer = await stripe.customers.create({
+          email: user.email || undefined,
+          name: user.firstName && user.lastName 
+            ? `${user.firstName} ${user.lastName}` 
+            : user.nickname || undefined,
+          metadata: {
+            userId: userId
+          }
+        });
+        stripeCustomerId = customer.id;
+        console.log(`[Stripe] Created customer ${stripeCustomerId} for user ${userId}`);
+      }
+
+      // Determine app origin for redirect URLs
+      const appOrigin = process.env.APP_ORIGIN || 
+        (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : 
+        (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` : 
+        'https://contestio.sk'));
+
+      // Create Stripe Checkout Session for subscription
+      const session = await stripe.checkout.sessions.create({
+        customer: stripeCustomerId,
+        line_items: [
+          {
+            price: priceId,
+            quantity: 1,
+          },
+        ],
+        mode: 'subscription',
+        success_url: `${appOrigin}/diary?subscription=success`,
+        cancel_url: `${appOrigin}/pricing?tab=diary`,
+        metadata: { 
+          userId: userId,
+          product: 'diary_premium',
+          billingInterval: billingInterval
+        },
+        subscription_data: {
+          metadata: {
+            userId: userId,
+            product: 'diary_premium',
+            billingInterval: billingInterval
+          }
+        }
+      });
+
+      console.log(`[Stripe] Subscription checkout session created for user ${userId}, interval: ${billingInterval}`);
+      
+      if (!session.url) {
+        console.error('[Stripe] Subscription checkout session created but URL is missing');
+        return res.status(500).json({ message: "Chyba pri vytváraní platobnej stránky" });
+      }
+
+      // Store checkout session ID for later reference
+      await storage.createOrUpdateSubscription({
+        userId: userId,
+        product: 'diary_premium',
+        status: 'none',
+        checkoutSessionId: session.id,
+        stripeCustomerId: stripeCustomerId,
+        billingInterval: billingInterval
+      });
+      
+      res.json({ 
+        checkoutUrl: session.url
+      });
+    } catch (error) {
+      console.error("Error creating subscription checkout:", error);
+      res.status(500).json({ message: "Nepodarilo sa vytvoriť predplatné" });
+    }
+  });
+
+  // Customer Portal endpoint for subscription management
+  app.post('/api/diary/subscription/portal', isAuthenticated, async (req: any, res) => {
+    try {
+      if (!stripe) {
+        return res.status(400).json({ message: "Platby nie sú nakonfigurované" });
+      }
+
+      const userId = getUserId(req);
+      const subscription = await storage.getUserSubscription(userId, "diary_premium");
+      
+      if (!subscription?.stripeCustomerId) {
+        return res.status(400).json({ message: "Nemáte aktívne predplatné" });
+      }
+
+      const appOrigin = process.env.APP_ORIGIN || 
+        (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : 
+        (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` : 
+        'https://contestio.sk'));
+
+      const portalSession = await stripe.billingPortal.sessions.create({
+        customer: subscription.stripeCustomerId,
+        return_url: `${appOrigin}/diary/profile`,
+      });
+
+      res.json({ portalUrl: portalSession.url });
+    } catch (error) {
+      console.error("Error creating billing portal session:", error);
+      res.status(500).json({ message: "Nepodarilo sa otvoriť správu predplatného" });
+    }
+  });
+
+  // Get current user subscription status
+  app.get('/api/diary/subscription', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const subscription = await storage.getUserSubscription(userId, "diary_premium");
+      
+      if (!subscription) {
+        return res.json({ 
+          status: 'none',
+          isPremium: false
+        });
+      }
+
+      res.json({
+        status: subscription.status,
+        isPremium: subscription.status === 'active',
+        billingInterval: subscription.billingInterval,
+        currentPeriodEnd: subscription.currentPeriodEnd,
+        cancelAtPeriodEnd: subscription.cancelAtPeriodEnd
+      });
+    } catch (error) {
+      console.error("Error fetching subscription status:", error);
+      res.status(500).json({ message: "Nepodarilo sa načítať stav predplatného" });
+    }
+  });
+
   // Stripe Webhook endpoint - handles successful payments
   // IMPORTANT: This must use express.raw() body parser, not express.json()
   app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
@@ -1876,71 +2059,210 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session;
       
-      const competitionId = session.metadata?.competitionId;
-      const planTier = session.metadata?.planTier;
-      
-      if (!competitionId || !planTier) {
-        console.error('[Stripe Webhook] Missing metadata in session:', session.id);
-        return res.status(400).send('Missing metadata');
-      }
-
-      console.log(`[Stripe Webhook] Payment completed for competition ${competitionId}, plan: ${planTier}`);
-
-      try {
-        // Get competition for email
-        const existingCompetition = await storage.getCompetition(competitionId);
+      // Check if this is a subscription checkout (diary premium)
+      if (session.mode === 'subscription' && session.metadata?.product === 'diary_premium') {
+        const userId = session.metadata?.userId;
+        const billingInterval = session.metadata?.billingInterval;
+        const subscriptionId = session.subscription as string;
         
-        // Update competition status and payment
-        const updatedCompetition = await storage.updateCompetition(competitionId, {
-          planTier: planTier as any,
-          paymentStatus: 'paid',
-          status: 'ready'
-        });
-        
-        // Broadcast update
-        broadcast({ 
-          type: 'competition_updated', 
-          competitionId: competitionId, 
-          payload: updatedCompetition 
-        });
-
-        // Send payment confirmation email
-        const contactEmail = updatedCompetition?.contactEmail || existingCompetition?.contactEmail;
-        if (contactEmail) {
-          const planNames: Record<string, string> = {
-            'basic': 'Basic',
-            'pro': 'Pro',
-            'premium': 'Premium',
-            'enterprise': 'Enterprise'
-          };
-          const planDisplayName = planNames[planTier] || planTier;
-          const competitionName = updatedCompetition?.name || existingCompetition?.name || 'Súťaž';
-          const appOrigin = process.env.APP_ORIGIN || 
-            (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : 
-            (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` : 
-            'https://contestio.sk'));
-          const dashboardUrl = `${appOrigin}/organizer/competition/${competitionId}`;
-          
-          emailService.sendPaymentConfirmationEmail(
-            contactEmail,
-            competitionName,
-            planDisplayName,
-            dashboardUrl
-          ).then(success => {
-            if (success) {
-              console.log(`[Email] Payment confirmation sent to ${contactEmail}`);
-            } else {
-              console.error(`[Email] Failed to send payment confirmation to ${contactEmail}`);
-            }
-          }).catch(err => {
-            console.error('[Email] Error sending payment confirmation:', err);
-          });
+        if (!userId) {
+          console.error('[Stripe Webhook] Missing userId in subscription session:', session.id);
+          return res.status(400).send('Missing userId');
         }
 
-        console.log(`[Stripe Webhook] Competition ${competitionId} updated successfully`);
-      } catch (error) {
-        console.error('[Stripe Webhook] Error updating competition:', error);
-        return res.status(500).send('Error processing webhook');
+        console.log(`[Stripe Webhook] Subscription checkout completed for user ${userId}, interval: ${billingInterval}`);
+
+        try {
+          // Get subscription details from Stripe
+          const subscription = await stripe.subscriptions.retrieve(subscriptionId) as any;
+          
+          // Update user subscription status
+          await storage.createOrUpdateSubscription({
+            userId: userId,
+            product: 'diary_premium',
+            status: 'active',
+            stripeSubscriptionId: subscriptionId,
+            stripeCustomerId: session.customer as string,
+            billingInterval: billingInterval as 'monthly' | 'yearly',
+            currentPeriodEnd: new Date((subscription.current_period_end as number) * 1000),
+            cancelAtPeriodEnd: subscription.cancel_at_period_end
+          });
+
+          // Update user's premium status
+          await db.update(users).set({
+            isPremium: true,
+            userTier: 'PREMIUM',
+            premiumExpiresAt: new Date((subscription.current_period_end as number) * 1000)
+          }).where(eq(users.id, userId));
+
+          console.log(`[Stripe Webhook] User ${userId} subscription activated successfully`);
+        } catch (error) {
+          console.error('[Stripe Webhook] Error processing subscription:', error);
+          return res.status(500).send('Error processing subscription webhook');
+        }
+      } 
+      // Handle competition payment (one-time)
+      else if (session.mode === 'payment') {
+        const competitionId = session.metadata?.competitionId;
+        const planTier = session.metadata?.planTier;
+        
+        if (!competitionId || !planTier) {
+          console.error('[Stripe Webhook] Missing metadata in session:', session.id);
+          return res.status(400).send('Missing metadata');
+        }
+
+        console.log(`[Stripe Webhook] Payment completed for competition ${competitionId}, plan: ${planTier}`);
+
+        try {
+          // Get competition for email
+          const existingCompetition = await storage.getCompetition(competitionId);
+          
+          // Update competition status and payment
+          const updatedCompetition = await storage.updateCompetition(competitionId, {
+            planTier: planTier as any,
+            paymentStatus: 'paid',
+            status: 'ready'
+          });
+          
+          // Broadcast update
+          broadcast({ 
+            type: 'competition_updated', 
+            competitionId: competitionId, 
+            payload: updatedCompetition 
+          });
+
+          // Send payment confirmation email
+          const contactEmail = updatedCompetition?.contactEmail || existingCompetition?.contactEmail;
+          if (contactEmail) {
+            const planNames: Record<string, string> = {
+              'basic': 'Basic',
+              'pro': 'Pro',
+              'premium': 'Premium',
+              'enterprise': 'Enterprise'
+            };
+            const planDisplayName = planNames[planTier] || planTier;
+            const competitionName = updatedCompetition?.name || existingCompetition?.name || 'Súťaž';
+            const appOrigin = process.env.APP_ORIGIN || 
+              (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : 
+              (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` : 
+              'https://contestio.sk'));
+            const dashboardUrl = `${appOrigin}/organizer/competition/${competitionId}`;
+            
+            emailService.sendPaymentConfirmationEmail(
+              contactEmail,
+              competitionName,
+              planDisplayName,
+              dashboardUrl
+            ).then(success => {
+              if (success) {
+                console.log(`[Email] Payment confirmation sent to ${contactEmail}`);
+              } else {
+                console.error(`[Email] Failed to send payment confirmation to ${contactEmail}`);
+              }
+            }).catch(err => {
+              console.error('[Email] Error sending payment confirmation:', err);
+            });
+          }
+
+          console.log(`[Stripe Webhook] Competition ${competitionId} updated successfully`);
+        } catch (error) {
+          console.error('[Stripe Webhook] Error updating competition:', error);
+          return res.status(500).send('Error processing webhook');
+        }
+      }
+    }
+
+    // Handle subscription updates (renewal, cancellation, etc.)
+    if (event.type === 'customer.subscription.updated') {
+      const subscription = event.data.object as any;
+      const userId = subscription.metadata?.userId;
+      
+      if (userId && subscription.metadata?.product === 'diary_premium') {
+        console.log(`[Stripe Webhook] Subscription updated for user ${userId}, status: ${subscription.status}`);
+        
+        try {
+          const status = subscription.status === 'active' ? 'active' 
+            : subscription.status === 'past_due' ? 'past_due' 
+            : subscription.status === 'canceled' ? 'canceled' 
+            : 'none';
+
+          await storage.createOrUpdateSubscription({
+            userId: userId,
+            product: 'diary_premium',
+            status: status,
+            stripeSubscriptionId: subscription.id,
+            currentPeriodEnd: new Date((subscription.current_period_end as number) * 1000),
+            cancelAtPeriodEnd: subscription.cancel_at_period_end
+          });
+
+          // Update user's premium status
+          const isPremium = status === 'active';
+          await db.update(users).set({
+            isPremium: isPremium,
+            userTier: isPremium ? 'PREMIUM' : 'FREE',
+            premiumExpiresAt: isPremium ? new Date((subscription.current_period_end as number) * 1000) : null
+          }).where(eq(users.id, userId));
+
+          console.log(`[Stripe Webhook] User ${userId} subscription updated to ${status}`);
+        } catch (error) {
+          console.error('[Stripe Webhook] Error updating subscription:', error);
+        }
+      }
+    }
+
+    // Handle subscription deletion
+    if (event.type === 'customer.subscription.deleted') {
+      const subscription = event.data.object as any;
+      const userId = subscription.metadata?.userId;
+      
+      if (userId && subscription.metadata?.product === 'diary_premium') {
+        console.log(`[Stripe Webhook] Subscription deleted for user ${userId}`);
+        
+        try {
+          await storage.createOrUpdateSubscription({
+            userId: userId,
+            product: 'diary_premium',
+            status: 'canceled',
+            stripeSubscriptionId: subscription.id,
+            cancelAtPeriodEnd: false
+          });
+
+          // Downgrade user to free tier
+          await db.update(users).set({
+            isPremium: false,
+            userTier: 'FREE',
+            premiumExpiresAt: null
+          }).where(eq(users.id, userId));
+
+          console.log(`[Stripe Webhook] User ${userId} subscription canceled and downgraded to FREE`);
+        } catch (error) {
+          console.error('[Stripe Webhook] Error canceling subscription:', error);
+        }
+      }
+    }
+
+    // Handle invoice payment failure
+    if (event.type === 'invoice.payment_failed') {
+      const invoice = event.data.object as any;
+      const subscriptionId = invoice.subscription as string;
+      
+      if (subscriptionId) {
+        try {
+          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+          const userId = subscription.metadata?.userId;
+          
+          if (userId && subscription.metadata?.product === 'diary_premium') {
+            console.log(`[Stripe Webhook] Payment failed for user ${userId}`);
+            
+            await storage.createOrUpdateSubscription({
+              userId: userId,
+              product: 'diary_premium',
+              status: 'past_due'
+            });
+          }
+        } catch (error) {
+          console.error('[Stripe Webhook] Error handling payment failure:', error);
+        }
       }
     }
 
