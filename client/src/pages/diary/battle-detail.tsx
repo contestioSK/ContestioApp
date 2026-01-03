@@ -807,7 +807,11 @@ export default function BattleDetail() {
                 </CardHeader>
                 <CardContent>
                   {biggestCatch ? (
-                    <div className="space-y-3">
+                    <div 
+                      className="space-y-3 cursor-pointer hover:bg-muted/50 rounded-lg transition-colors p-2 -m-2"
+                      onClick={() => setSelectedCatch(biggestCatch)}
+                      data-testid="highlight-catch-card"
+                    >
                       {biggestCatch.photos && biggestCatch.photos.length > 0 && (
                         <div className="w-full h-40 rounded-lg overflow-hidden">
                           <img 
