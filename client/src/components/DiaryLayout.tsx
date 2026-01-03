@@ -54,6 +54,16 @@ type CatchLimits = {
   limit: number;
 };
 
+// Routes where FAB should be hidden (pages with their own primary CTA)
+// Uses startsWith() so both exact matches and nested routes are covered
+const HIDE_FAB_ROUTES = [
+  '/diary/battles',       // Battle list, create, detail, edit, archive
+  '/organizer',           // Competition management (dashboard, create, detail)
+  '/competition',         // Competition pages (detail, setup, catches)
+  '/referee',             // Referee interface
+  '/register-competition', // Competition registration form
+];
+
 // Type for premium check
 type PremiumStatus = {
   isPremium: boolean;
@@ -687,32 +697,35 @@ export default function DiaryLayout({ children, fullBleed = false }: DiaryLayout
         </div>
 
         {/* Floating Action Button for Quick Catch Entry */}
-        <TooltipProvider delayDuration={300}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={handleFabClick}
-                className="fixed bottom-20 right-6 md:bottom-6 z-50 transition-all hover:scale-110"
-                data-testid="fab-add-catch"
-                aria-label="Pridať úlovok"
-              >
-                {!isPremium && catchLimits && !catchLimits.canCreate ? (
-                  <TacticalIcon icon={Lock} variant="slate" size="lg" showLabel={false} />
-                ) : (
-                  <TacticalIcon icon={Plus} variant="cyan" size="lg" showLabel={false} />
+        {/* Hidden on pages with their own primary CTA (battle detail, organizer, competition) */}
+        {!HIDE_FAB_ROUTES.some(route => location.startsWith(route)) && (
+          <TooltipProvider delayDuration={300}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={handleFabClick}
+                  className="fixed bottom-20 right-6 md:bottom-6 z-50 transition-all duration-200 hover:scale-110 animate-in fade-in zoom-in-95"
+                  data-testid="fab-add-catch"
+                  aria-label="Pridať úlovok"
+                >
+                  {!isPremium && catchLimits && !catchLimits.canCreate ? (
+                    <TacticalIcon icon={Lock} variant="slate" size="lg" showLabel={false} />
+                  ) : (
+                    <TacticalIcon icon={Plus} variant="cyan" size="lg" showLabel={false} />
+                  )}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="left" className="bg-popover text-popover-foreground border shadow-md px-3 py-2">
+                <p className="font-medium">{!isPremium && catchLimits && !catchLimits.canCreate 
+                  ? "Limit dosiahnutý" 
+                  : "Pridať úlovok"}</p>
+                {!isPremium && catchLimits && !catchLimits.canCreate && (
+                  <p className="text-xs text-muted-foreground mt-0.5">Klikni pre Premium</p>
                 )}
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="left" className="bg-popover text-popover-foreground border shadow-md px-3 py-2">
-              <p className="font-medium">{!isPremium && catchLimits && !catchLimits.canCreate 
-                ? "Limit dosiahnutý" 
-                : "Pridať úlovok"}</p>
-              {!isPremium && catchLimits && !catchLimits.canCreate && (
-                <p className="text-xs text-muted-foreground mt-0.5">Klikni pre Premium</p>
-              )}
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
 
         {/* Global Catch Creation Dialog */}
         <CatchFormDialog
