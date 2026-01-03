@@ -45,6 +45,33 @@ Competition email flow with 3 automated emails:
 - Orange CTA buttons: #f97316
 - All emails in Slovak language
 
+## Stripe Payment Integration (January 2025)
+
+### Competition Payments (One-time)
+- **Endpoint**: `POST /api/competitions/:id/pay`
+- **Plans**: Basic (€69), Pro (€199), Premium (€599)
+- **Flow**: Creates Stripe Checkout session → Webhook confirms payment → Competition status → 'ready'
+
+### Diary Premium Subscriptions (Recurring)
+- **Checkout Endpoint**: `POST /api/diary/subscribe`
+- **Billing Portal**: `POST /api/diary/subscription/portal`
+- **Status Endpoint**: `GET /api/diary/subscription`
+- **Plans**: 
+  - Monthly: €5.90 (STRIPE_PRICE_MONTHLY env var)
+  - Yearly: €59.90 (STRIPE_PRICE_YEARLY env var) - 15% savings
+- **Database**: `user_subscriptions` table with `stripeCustomerId`, `stripeSubscriptionId`, `billingInterval`, `cancelAtPeriodEnd`
+
+### Webhook Events Handled
+- `checkout.session.completed` - Activates subscription/payment
+- `customer.subscription.updated` - Syncs status changes (renewal, cancellation scheduled)
+- `customer.subscription.deleted` - Downgrades user to FREE tier
+- `invoice.payment_failed` - Marks subscription as past_due
+
+### User Fields Synced
+- `users.isPremium` - Boolean premium status
+- `users.userTier` - 'FREE' or 'PREMIUM'
+- `users.premiumExpiresAt` - Subscription end timestamp
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
