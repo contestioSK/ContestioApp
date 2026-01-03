@@ -14,7 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Fish, Plus, X, MapPin, Target, Ruler, Weight, Swords, Trophy, Crown, Play, Edit2, Trash2, CalendarIcon, CalendarDays, ChevronLeft, ChevronRight, Loader2, AlertCircle, Check, UserPlus, WifiOff, SlidersHorizontal } from "lucide-react";
-import { useLocation, Link } from "wouter";
+import { useLocation, Link, useSearch } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -27,7 +27,7 @@ import { LocationSearchField } from "@/components/LocationSearchField";
 import { TacticalIcon } from "@/components/ui/tactical-icon";
 import { BookOpen } from "lucide-react";
 import { getFishTypeLabel, getFishTypeOptions } from "@/utils/fishTypeMapping";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
@@ -294,6 +294,7 @@ type FreemiumLimits = {
 export default function DiaryIndex() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
+  const searchString = useSearch();
   const [selectedCatch, setSelectedCatch] = useState<any>(null);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [isStartFishingOpen, setIsStartFishingOpen] = useState(false);
@@ -302,6 +303,31 @@ export default function DiaryIndex() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [catchToDelete, setCatchToDelete] = useState<string | null>(null);
   const { toast } = useToast();
+  const subscriptionSuccessHandled = useRef(false);
+
+  // Handle Stripe subscription success redirect
+  useEffect(() => {
+    const urlParams = new URLSearchParams(searchString);
+    const subscriptionStatus = urlParams.get('subscription');
+    
+    if (subscriptionStatus === 'success' && !subscriptionSuccessHandled.current) {
+      subscriptionSuccessHandled.current = true;
+      
+      // Immediately invalidate cache and refetch fresh data
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/premium-status'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/diary/subscription'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      
+      // Show success toast
+      toast({
+        title: "🎉 Vitaj v Premium!",
+        description: "Tvoje predplatné je aktívne. Užívaj si neobmedzený denník!",
+      });
+      
+      // Clean URL (remove query param) without page reload
+      window.history.replaceState({}, '', '/diary');
+    }
+  }, [searchString, toast]);
 
   // Sync status indicator
   const { isOffline, pendingTrips, pendingCatches } = useDiaryOffline();
