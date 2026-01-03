@@ -2908,6 +2908,21 @@ export default function AdminPanel() {
                         <div className="border-t border-border pt-4">
                           <p className="text-sm font-medium mb-3 text-muted-foreground">Akcie</p>
                           <div className="space-y-3">
+                            {/* View Full Profile Button */}
+                            <Button
+                              variant="default"
+                              className="w-full justify-start bg-primary hover:bg-primary/90"
+                              onClick={() => {
+                                navigate(`/admin/users/${selectedUserForAction.id}/profile`);
+                                setIsUserActionDialogOpen(false);
+                                setSelectedUserForAction(null);
+                              }}
+                              data-testid={`button-view-profile-${selectedUserForAction.id}`}
+                            >
+                              <Eye className="w-4 h-4 mr-2" />
+                              Zobraziť kompletný profil
+                            </Button>
+
                             {/* Premium Management with Expiry Date */}
                         <Dialog open={isPremiumDialogOpen} onOpenChange={setIsPremiumDialogOpen}>
                           <DialogTrigger asChild>
