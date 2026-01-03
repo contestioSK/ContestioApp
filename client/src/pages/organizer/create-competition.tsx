@@ -46,6 +46,7 @@ import {
   Crown,
   Zap
 } from "lucide-react";
+import { DateTimePicker } from "@/components/ui/datetime-picker";
 import { z } from "zod";
 
 const PLANS = [
@@ -683,7 +684,12 @@ export default function CreateCompetition() {
                           <FormItem>
                             <FormLabel>Začiatok súťaže *</FormLabel>
                             <FormControl>
-                              <Input type="datetime-local" {...field} data-testid="input-start-date" />
+                              <DateTimePicker
+                                value={field.value}
+                                onChange={field.onChange}
+                                placeholder="Vyberte dátum a čas začiatku"
+                                data-testid="input-start-date"
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -697,7 +703,12 @@ export default function CreateCompetition() {
                           <FormItem>
                             <FormLabel>Koniec súťaže *</FormLabel>
                             <FormControl>
-                              <Input type="datetime-local" {...field} data-testid="input-end-date" />
+                              <DateTimePicker
+                                value={field.value}
+                                onChange={field.onChange}
+                                placeholder="Vyberte dátum a čas konca"
+                                data-testid="input-end-date"
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
