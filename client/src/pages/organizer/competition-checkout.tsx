@@ -135,19 +135,25 @@ export default function CompetitionCheckout() {
   const paymentMutation = useMutation({
     mutationFn: async (planTier: string) => {
       // Use dedicated payment endpoint that validates and processes payment server-side
-      return apiRequest('POST', `/api/competitions/${competitionId}/pay`, {
+      const response = await apiRequest('POST', `/api/competitions/${competitionId}/pay`, {
         planTier,
       });
+      return response.json();
     },
-    onSuccess: async () => {
-      // Wait for cache invalidation before redirecting to ensure UI shows updated state
-      await queryClient.invalidateQueries({ queryKey: ['/api/competitions', competitionId] });
-      await queryClient.invalidateQueries({ queryKey: ['/api/organizer/competitions'] });
-      toast({
-        title: "✅ Platba úspešná",
-        description: "Vaša súťaž je teraz pripravená na spustenie.",
-      });
-      setLocation(`/organizer/competition/${competitionId}`);
+    onSuccess: async (data: { checkoutUrl?: string; competition?: Competition }) => {
+      if (data.checkoutUrl) {
+        // Redirect to Stripe Checkout
+        window.location.href = data.checkoutUrl;
+      } else {
+        // Dev mode - payment processed locally
+        await queryClient.invalidateQueries({ queryKey: ['/api/competitions', competitionId] });
+        await queryClient.invalidateQueries({ queryKey: ['/api/organizer/competitions'] });
+        toast({
+          title: "✅ Platba úspešná",
+          description: "Vaša súťaž je teraz pripravená na spustenie.",
+        });
+        setLocation(`/organizer/competition/${competitionId}`);
+      }
     },
     onError: (error: any) => {
       toast({
@@ -402,16 +408,6 @@ export default function CompetitionCheckout() {
             </Button>
           )}
         </div>
-
-        {/* Development mode notice - remove in production */}
-        <Card className="mt-6 border-amber-300 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-700">
-          <CardContent className="pt-4 pb-3">
-            <p className="text-sm text-amber-800 dark:text-amber-200">
-              <strong>Vývojový režim:</strong> Platobná brána nie je zatiaľ prepojená so Stripe. 
-              Kliknutím na "Zaplatiť" sa súťaž aktivuje bez skutočnej platby.
-            </p>
-          </CardContent>
-        </Card>
 
         <p className="text-center text-xs text-muted-foreground mt-6">
           Kliknutím na "Zaplatiť" súhlasíte s obchodnými podmienkami.

@@ -52,6 +52,25 @@ import fs, { existsSync } from "fs";
 import { promises as fsPromises } from "fs";
 import { ImageService, type ProcessedImageResult } from "./image-service";
 import QRCode from "qrcode";
+import Stripe from "stripe";
+
+// Initialize Stripe
+const stripe = process.env.STRIPE_SECRET_KEY 
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2025-03-31.basil' as any })
+  : null;
+
+if (!stripe) {
+  console.warn('[Stripe] STRIPE_SECRET_KEY not configured - payment features will be disabled');
+} else {
+  console.log('[Stripe] Initialized successfully');
+}
+
+// Plan prices in EUR cents
+const PLAN_PRICES: Record<string, { amount: number; name: string }> = {
+  basic: { amount: 6900, name: 'Basic Plan' },
+  pro: { amount: 19900, name: 'Pro Plan' },
+  premium: { amount: 59900, name: 'Premium Plan' },
+};
 
 // Setup token generation and verification for competition registration
 // Uses HMAC with a secret derived from SESSION_SECRET
@@ -1742,76 +1761,190 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         });
       }
 
-      // TODO: In production, create Stripe Checkout Session here:
-      // const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-      // const session = await stripe.checkout.sessions.create({
-      //   line_items: [...],
-      //   mode: 'payment',
-      //   success_url: `${process.env.BASE_URL}/organizer/competition/${req.params.id}?payment=success`,
-      //   cancel_url: `${process.env.BASE_URL}/organizer/competition/${req.params.id}/checkout`,
-      //   metadata: { competitionId: req.params.id, planTier }
-      // });
-      // return res.json({ checkoutUrl: session.url });
-
-      // PLACEHOLDER: For development, directly mark as paid
-      // Payment also transitions status from draft to ready (approved)
-      console.log(`[DEV PAYMENT] Competition ${req.params.id} payment initiated for plan: ${planTier}`);
-      
-      const updatedCompetition = await storage.updateCompetition(req.params.id, {
-        planTier,
-        paymentStatus: 'paid',
-        status: 'ready'
-      });
-      
-      broadcast({ 
-        type: 'competition_updated', 
-        competitionId: req.params.id, 
-        payload: updatedCompetition 
-      });
-
-      // Send payment confirmation email using updated competition data
-      const contactEmail = updatedCompetition?.contactEmail || existingCompetition.contactEmail;
-      if (contactEmail) {
-        const planNames: Record<string, string> = {
-          'basic': 'Basic',
-          'pro': 'Pro',
-          'premium': 'Premium',
-          'enterprise': 'Enterprise'
-        };
-        const actualPlanTier = updatedCompetition?.planTier || planTier;
-        const planDisplayName = planNames[actualPlanTier] || actualPlanTier;
-        const competitionName = updatedCompetition?.name || existingCompetition.name;
-        const appOrigin = process.env.APP_ORIGIN || 
-          (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : 
-          (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` : 
-          'https://contestio.sk'));
-        const dashboardUrl = `${appOrigin}/organizer/competition/${req.params.id}`;
+      // Check if Stripe is configured
+      if (!stripe) {
+        // Fallback for development - directly mark as paid
+        console.log(`[DEV PAYMENT] Competition ${req.params.id} payment initiated for plan: ${planTier}`);
         
-        emailService.sendPaymentConfirmationEmail(
-          contactEmail,
-          competitionName,
-          planDisplayName,
-          dashboardUrl
-        ).then(success => {
-          if (success) {
-            console.log(`[Email] Payment confirmation sent to ${contactEmail}`);
-          } else {
-            console.error(`[Email] Failed to send payment confirmation to ${contactEmail}`);
-          }
-        }).catch(err => {
-          console.error('[Email] Error sending payment confirmation:', err);
+        const updatedCompetition = await storage.updateCompetition(req.params.id, {
+          planTier,
+          paymentStatus: 'paid',
+          status: 'ready'
         });
+        
+        broadcast({ 
+          type: 'competition_updated', 
+          competitionId: req.params.id, 
+          payload: updatedCompetition 
+        });
+
+        return res.json({ 
+          message: "Platba úspešná (dev mode)",
+          competition: updatedCompetition,
+        });
+      }
+
+      // Get plan price
+      const planPrice = PLAN_PRICES[planTier];
+      if (!planPrice) {
+        return res.status(400).json({ 
+          message: "Neplatný cenový plán. Pre Enterprise kontaktujte podporu."
+        });
+      }
+
+      // Build success/cancel URLs
+      const appOrigin = process.env.APP_ORIGIN || 
+        (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : 
+        (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` : 
+        'https://contestio.sk'));
+
+      // Create Stripe Checkout Session
+      const session = await stripe.checkout.sessions.create({
+        line_items: [
+          {
+            price_data: {
+              currency: 'eur',
+              product_data: {
+                name: `Contestio ${planPrice.name}`,
+                description: `Súťaž: ${existingCompetition.name}`,
+              },
+              unit_amount: planPrice.amount,
+            },
+            quantity: 1,
+          },
+        ],
+        mode: 'payment',
+        success_url: `${appOrigin}/organizer/competition/${req.params.id}?payment=success`,
+        cancel_url: `${appOrigin}/organizer/competition/${req.params.id}/checkout?plan=${planTier}`,
+        metadata: { 
+          competitionId: req.params.id, 
+          planTier,
+          userId: userId
+        },
+        customer_email: existingCompetition.contactEmail || undefined,
+      });
+
+      console.log(`[Stripe] Checkout session created for competition ${req.params.id}, plan: ${planTier}, url: ${session.url ? 'present' : 'missing'}`);
+      
+      if (!session.url) {
+        console.error('[Stripe] Checkout session created but URL is missing');
+        return res.status(500).json({ message: "Chyba pri vytváraní platobnej stránky" });
       }
       
       res.json({ 
-        message: "Platba úspešná",
-        competition: updatedCompetition,
-        // In production: checkoutUrl: session.url
+        checkoutUrl: session.url
       });
     } catch (error) {
       console.error("Error processing competition payment:", error);
       res.status(500).json({ message: "Failed to process payment" });
     }
+  });
+
+  // Stripe Webhook endpoint - handles successful payments
+  // IMPORTANT: This must use express.raw() body parser, not express.json()
+  app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+    if (!stripe) {
+      console.warn('[Stripe Webhook] Stripe not configured');
+      return res.status(400).send('Stripe not configured');
+    }
+
+    const sig = req.headers['stripe-signature'];
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    
+    // SECURITY: Always require webhook secret for signature verification
+    if (!webhookSecret) {
+      console.error('[Stripe Webhook] STRIPE_WEBHOOK_SECRET not configured - rejecting webhook');
+      return res.status(500).send('Webhook secret not configured');
+    }
+    
+    if (!sig) {
+      console.error('[Stripe Webhook] Missing stripe-signature header');
+      return res.status(400).send('Missing signature');
+    }
+    
+    let event: Stripe.Event;
+
+    try {
+      // Verify webhook signature for security
+      event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+    } catch (err: any) {
+      console.error('[Stripe Webhook] Signature verification failed:', err.message);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    // Handle the checkout.session.completed event
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object as Stripe.Checkout.Session;
+      
+      const competitionId = session.metadata?.competitionId;
+      const planTier = session.metadata?.planTier;
+      
+      if (!competitionId || !planTier) {
+        console.error('[Stripe Webhook] Missing metadata in session:', session.id);
+        return res.status(400).send('Missing metadata');
+      }
+
+      console.log(`[Stripe Webhook] Payment completed for competition ${competitionId}, plan: ${planTier}`);
+
+      try {
+        // Get competition for email
+        const existingCompetition = await storage.getCompetition(competitionId);
+        
+        // Update competition status and payment
+        const updatedCompetition = await storage.updateCompetition(competitionId, {
+          planTier: planTier as any,
+          paymentStatus: 'paid',
+          status: 'ready'
+        });
+        
+        // Broadcast update
+        broadcast({ 
+          type: 'competition_updated', 
+          competitionId: competitionId, 
+          payload: updatedCompetition 
+        });
+
+        // Send payment confirmation email
+        const contactEmail = updatedCompetition?.contactEmail || existingCompetition?.contactEmail;
+        if (contactEmail) {
+          const planNames: Record<string, string> = {
+            'basic': 'Basic',
+            'pro': 'Pro',
+            'premium': 'Premium',
+            'enterprise': 'Enterprise'
+          };
+          const planDisplayName = planNames[planTier] || planTier;
+          const competitionName = updatedCompetition?.name || existingCompetition?.name || 'Súťaž';
+          const appOrigin = process.env.APP_ORIGIN || 
+            (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : 
+            (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` : 
+            'https://contestio.sk'));
+          const dashboardUrl = `${appOrigin}/organizer/competition/${competitionId}`;
+          
+          emailService.sendPaymentConfirmationEmail(
+            contactEmail,
+            competitionName,
+            planDisplayName,
+            dashboardUrl
+          ).then(success => {
+            if (success) {
+              console.log(`[Email] Payment confirmation sent to ${contactEmail}`);
+            } else {
+              console.error(`[Email] Failed to send payment confirmation to ${contactEmail}`);
+            }
+          }).catch(err => {
+            console.error('[Email] Error sending payment confirmation:', err);
+          });
+        }
+
+        console.log(`[Stripe Webhook] Competition ${competitionId} updated successfully`);
+      } catch (error) {
+        console.error('[Stripe Webhook] Error updating competition:', error);
+        return res.status(500).send('Error processing webhook');
+      }
+    }
+
+    res.json({ received: true });
   });
 
   // PATCH competition status endpoint
