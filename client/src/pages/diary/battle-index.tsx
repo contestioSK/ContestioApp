@@ -338,7 +338,7 @@ export default function BattleIndex() {
               
               <Button
                 size="sm"
-                onClick={() => setLocation(isPremium ? "/diary/battles/create" : "/diary/battle-paywall")}
+                onClick={() => setLocation(isPremium ? "/diary/battles/create" : "/diary/battles/paywall")}
                 className={isPremium 
                   ? "bg-green-600 hover:bg-green-700 text-white w-full md:w-auto"
                   : "bg-yellow-600 hover:bg-yellow-700 text-white w-full md:w-auto"
@@ -456,7 +456,7 @@ export default function BattleIndex() {
                         Je čas preveriť svoje rybárske zručnosti. Vyzvite svojich kamarátov!
                       </p>
                       <Button
-                        onClick={() => setLocation(isPremium ? "/diary/battles/create" : "/diary/battle-paywall")}
+                        onClick={() => setLocation(isPremium ? "/diary/battles/create" : "/diary/battles/paywall")}
                         className={isPremium 
                           ? "bg-blue-600 hover:bg-blue-700 text-white"
                           : "bg-yellow-600 hover:bg-yellow-700 text-white"
