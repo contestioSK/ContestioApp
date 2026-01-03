@@ -14,6 +14,7 @@ import TeamDetail from "@/pages/team-detail";
 import SectorDetail from "@/pages/sector-detail";
 import AdminPanel from "@/pages/admin-panel";
 import UserDetail from "@/pages/user-detail";
+import AdminUserProfile from "@/pages/admin-user-profile";
 import RefereeInterface from "@/pages/referee-interface";
 import RegisterCompetition from "@/pages/register-competition";
 import CompetitionSetup from "@/pages/competition-setup";
@@ -126,6 +127,11 @@ function Router() {
       <Route path="/admin/users/:userId">
         <ProtectedRoute roles={["admin"]}>
           <UserDetail />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/users/:userId/profile">
+        <ProtectedRoute roles={["admin"]}>
+          <AdminUserProfile />
         </ProtectedRoute>
       </Route>
       <Route path="/admin">
