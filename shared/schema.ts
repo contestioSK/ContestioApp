@@ -369,9 +369,13 @@ export const userSubscriptions = pgTable("user_subscriptions", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id),
   product: varchar("product").notNull().default("diary_premium"), // "diary_premium"
-  status: varchar("status").notNull().default("none"), // "none", "active", "canceled"
-  checkoutSessionId: varchar("checkout_session_id"), // Stripe session ID
-  currentPeriodEnd: timestamp("current_period_end"), // When current subscription ends
+  status: varchar("status").notNull().default("none"), // "none", "active", "canceled", "past_due"
+  checkoutSessionId: varchar("checkout_session_id"), // Stripe checkout session ID
+  stripeCustomerId: varchar("stripe_customer_id"), // Stripe customer ID for managing subscriptions
+  stripeSubscriptionId: varchar("stripe_subscription_id"), // Stripe subscription ID
+  billingInterval: varchar("billing_interval"), // "monthly" or "yearly"
+  currentPeriodEnd: timestamp("current_period_end"), // When current subscription period ends
+  cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false), // If subscription will cancel at period end
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 }, (table) => ({
@@ -953,9 +957,13 @@ export const insertUserSubscriptionSchema = createInsertSchema(userSubscriptions
   updatedAt: true,
 }).extend({
   product: z.literal("diary_premium"),
-  status: z.enum(["none", "active", "canceled"]).default("none"),
+  status: z.enum(["none", "active", "canceled", "past_due"]).default("none"),
   currentPeriodEnd: z.string().or(z.date()).transform((val) => new Date(val)).optional(),
   checkoutSessionId: z.string().optional(),
+  stripeCustomerId: z.string().optional(),
+  stripeSubscriptionId: z.string().optional(),
+  billingInterval: z.enum(["monthly", "yearly"]).optional(),
+  cancelAtPeriodEnd: z.boolean().optional(),
 });
 
 export const insertDiaryTripSchema = createInsertSchema(diaryTrips).omit({
