@@ -1,0 +1,182 @@
+Áno, zľavové kódy pre opakované platby MUSIA ísť cez Stripe.
+Tvoj existujúci promo systém NECHAJ, ale iba na nefinančné benefity (dni zdarma, interné akcie, support).
+
+Ak to zmiešaš → rozbiješ si:
+
+účtovníctvo
+
+refundy
+
+upgrade/downgrade
+
+reporting
+
+budúce kampane
+
+Prečo NIKDY neriešiť zľavy na subscription mimo Stripe
+
+Toto je dôležité pochopiť:
+
+❌ Zľava mimo Stripe = technický dlh
+
+Ak by si:
+
+upravoval cenu v databáze
+
+alebo „dorovnával“ rozdiel
+
+alebo robil vlastnú logiku na renew
+
+➡️ Stripe o tom nevie
+➡️ opakované platby sa budú správať inak
+➡️ zákazník zaplatí niečo iné, než vidíš ty
+
+To je SaaS smrť.
+
+Správna architektúra (odporúčaná)
+1️⃣ ROZDEL promo kódy na 2 SVETY (a nikdy ich nemiešaj)
+🟢 A) STRIPE PROMO KÓDY
+
+Iba pre PLATENÉ SUBSCRIPTION (Diary Premium)
+
+Používaj:
+
+Coupon
+
+Promotion Code
+
+allow_promotion_codes: true v Checkout Session
+
+Typy:
+
+once → zľava len prvá platba
+
+repeating → napr. 3 mesiace
+
+forever → partner / ambasádor
+
+👉 Stripe rieši:
+
+cenu
+
+obnovy
+
+faktúry
+
+refundy
+
+reporting
+
+Frontend len zobrazuje výsledok.
+
+🔵 B) INTERNÉ PROMO KÓDY (tvoj admin panel)
+
+Bez Stripe, bez peňazí
+
+Použitie:
+
+days → +30 dní Premium zdarma
+
+beta access
+
+influenceri
+
+manuálne kompenzácie
+
+support zásahy
+
+Toto je:
+
+mimo checkout
+
+bez peňazí
+
+bez subscription billing
+
+➡️ Tento systém už MÁŠ a je správny.
+
+2️⃣ UX FLOW – ako to má vyzerať pre používateľa
+Diary Premium – ideálny flow
+
+User klikne „Prejsť na Premium“
+
+Vyberie plán (mesačný / ročný)
+
+Stripe Checkout
+
+pole: „Zľavový kód“
+
+Stripe:
+
+aplikuje zľavu
+
+zobrazí finálnu cenu
+
+Po návrate:
+
+subscriptionStatus = active
+
+toast „Vitaj v Premium“
+
+❗ ŽIADNE zadávanie zľavových kódov v tvojom UI pre subscription
+
+Prečo?
+
+Stripe to robí lepšie
+
+menej chýb
+
+menej edge case-ov
+
+3️⃣ Čo spraviť s EXISTUJÚCOU sekciou „Promo akcie“ v admin paneli
+Upratať terminológiu (veľmi dôležité!)
+
+Navrhujem:
+
+Premenovať na „Interné benefity“ alebo „Promo – bez platby“
+
+Jasný popis:
+
+„Tieto kódy neovplyvňujú cenu predplatného. Slúžia na bezplatné dni alebo špeciálne prístupy.“
+
+A naopak:
+
+Stripe promo kódy NESPRAVOVAŤ v tvojom admin paneli
+
+Spravovať ich len v Stripe Dashboarde
+
+To je normálne a profesionálne riešenie.
+
+4️⃣ Typické scenáre a ako ich riešiť
+„LETO25“ – 25 % zľava na subscription
+
+➡️ Stripe Promotion Code
+➡️ repeating: 3 months alebo once
+
+„SKUSAJ30“ – 30 dní zdarma
+
+➡️ Tvoj existujúci days promo kód
+➡️ Bez Stripe
+➡️ Ideálne pre trial bez karty
+
+Influencer / partner
+
+➡️ Stripe promo forever
+➡️ alebo interný days + manuálny upgrade
+
+Finálny verdikt (UX + biznis + tech)
+
+✔ Máš už správne rozdelené základy, len si to potreboval pomenovať
+✔ Stripe = peniaze a ceny
+✔ Admin promo = benefity a trialy
+✔ Nikdy ich nemiešať
+
+Toto riešenie:
+
+je škálovateľné
+
+je auditovateľné
+
+je pochopiteľné aj o 2 roky
+
+a hlavne: nebudeš to prerábať
