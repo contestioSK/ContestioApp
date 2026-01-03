@@ -1848,12 +1848,15 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
 
   // Diary Premium Subscription Checkout endpoint
   app.post('/api/diary/subscribe', isAuthenticated, async (req: any, res) => {
+    console.log('[Stripe Subscribe] Endpoint called, body:', JSON.stringify(req.body));
     try {
       if (!stripe) {
+        console.error('[Stripe Subscribe] Stripe not configured');
         return res.status(400).json({ message: "Platby nie sú nakonfigurované" });
       }
 
       const userId = getUserId(req);
+      console.log('[Stripe Subscribe] User ID:', userId);
       const user = await storage.getUser(userId);
       
       if (!user) {
@@ -1874,12 +1877,17 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       }
 
       const { billingInterval } = validationResult.data;
+      console.log('[Stripe Subscribe] Billing interval:', billingInterval);
+      console.log('[Stripe Subscribe] Available prices:', JSON.stringify(DIARY_SUBSCRIPTION_PRICES));
+      
       const priceId = billingInterval === 'yearly' 
         ? DIARY_SUBSCRIPTION_PRICES.yearly 
         : DIARY_SUBSCRIPTION_PRICES.monthly;
+      
+      console.log('[Stripe Subscribe] Selected price ID:', priceId);
 
       if (!priceId) {
-        console.error(`[Stripe] Missing price ID for ${billingInterval} subscription`);
+        console.error(`[Stripe Subscribe] Missing price ID for ${billingInterval} subscription`);
         return res.status(500).json({ message: "Cenová konfigurácia nie je dostupná" });
       }
 
@@ -1960,9 +1968,16 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       res.json({ 
         checkoutUrl: session.url
       });
-    } catch (error) {
-      console.error("Error creating subscription checkout:", error);
-      res.status(500).json({ message: "Nepodarilo sa vytvoriť predplatné" });
+    } catch (error: any) {
+      console.error("[Stripe Subscribe] Error creating subscription checkout:", error);
+      console.error("[Stripe Subscribe] Error type:", error?.type);
+      console.error("[Stripe Subscribe] Error code:", error?.code);
+      console.error("[Stripe Subscribe] Error message:", error?.message);
+      console.error("[Stripe Subscribe] Raw error:", error?.raw?.message);
+      
+      // Return more specific error message for debugging
+      const errorMessage = error?.message || "Nepodarilo sa vytvoriť predplatné";
+      res.status(500).json({ message: errorMessage });
     }
   });
 
