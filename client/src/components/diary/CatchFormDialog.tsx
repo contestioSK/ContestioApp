@@ -317,10 +317,11 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
   const handleSubmit = async (data: CatchFormData) => {
     // Convert "none" values to undefined (no selection)
     // CRITICAL: Always include userId in angler object
-    // Include tripId if active battle exists (so it gets assigned to battle trip, not just today's active trip)
+    // Include tripId and battleId if active battle exists (for participant permission checks)
     const processedData = {
       ...data,
       tripId: selectedTripId, // Include tripId from active battle or selected trip
+      battleId: activeBattle?.id, // Include battleId for participant permission checks
       angler: {
         name: user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : "",
         userId: user?.id || ''
