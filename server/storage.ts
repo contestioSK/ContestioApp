@@ -2891,9 +2891,9 @@ export class DatabaseStorage implements IStorage {
       }
     }
     
-    // 2. If no battle permission, check trip ownership
+    // 2. If no battle permission, check trip access (owner OR battle participant on the trip)
     if (!hasPermission && catch_.tripId) {
-      hasPermission = await this.checkTripOwnership(catch_.tripId, userId);
+      hasPermission = await this.checkTripAccess(catch_.tripId, userId);
     }
     
     // 3. If no tripId, allow (catch without trip)
