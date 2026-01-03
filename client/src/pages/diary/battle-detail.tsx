@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Trophy, Plus, AlertCircle, Clock, Fish, CheckCircle2, Medal, Flag, BarChart3, TrendingUp, Award, QrCode, Swords } from "lucide-react";
+import { Trophy, Plus, AlertCircle, Clock, Fish, CheckCircle2, Medal, Flag, BarChart3, TrendingUp, Award, QrCode, Swords, Weight, Ruler, MapPin, Target, Calendar as CalendarIcon, Cloud, Thermometer, Wind, Gauge } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { QRShareDialog } from "@/components/QRShareDialog";
 import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 import { format, formatDistanceToNow } from "date-fns";
@@ -51,6 +52,7 @@ export default function BattleDetail() {
   const [isAddCatchDialogOpen, setIsAddCatchDialogOpen] = useState(false);
   const [showEndBattleDialog, setShowEndBattleDialog] = useState(false);
   const [showVictoryModal, setShowVictoryModal] = useState(false);
+  const [selectedCatch, setSelectedCatch] = useState<DiaryCatch | null>(null);
 
   // WebSocket connection for live updates
   useWebSocket((message: WebSocketMessage) => {
@@ -524,7 +526,8 @@ export default function BattleDetail() {
                         return (
                           <div 
                             key={catch_.id}
-                            className={`flex gap-4 p-3 rounded-lg border transition-colors ${
+                            onClick={() => setSelectedCatch(catch_)}
+                            className={`flex gap-4 p-3 rounded-lg border transition-colors cursor-pointer ${
                               meetsMinWeight 
                                 ? 'border-border hover:bg-muted/50' 
                                 : 'border-muted bg-muted/30 opacity-60'
@@ -923,6 +926,153 @@ export default function BattleDetail() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Catch Detail Side Panel */}
+      <Sheet open={!!selectedCatch} onOpenChange={() => setSelectedCatch(null)}>
+        <SheetContent className="w-full sm:max-w-md bg-card dark:bg-slate-800 border text-foreground dark:text-white overflow-y-auto" data-testid="catch-detail-panel">
+          <SheetHeader className="pb-6">
+            <SheetTitle className="text-foreground dark:text-white flex items-center gap-3">
+              <Fish className="w-6 h-6 text-primary" />
+              {selectedCatch?.fishType ? getFishTypeLabel(selectedCatch.fishType) : 'Detail úlovku'}
+            </SheetTitle>
+          </SheetHeader>
+
+          {selectedCatch && (
+            <div className="space-y-6">
+              {/* Photo */}
+              {selectedCatch.photos && selectedCatch.photos.length > 0 && (
+                <div className="rounded-lg overflow-hidden">
+                  <img 
+                    src={typeof selectedCatch.photos[0] === 'string' ? selectedCatch.photos[0] : selectedCatch.photos[0].url}
+                    alt={getFishTypeLabel(selectedCatch.fishType)}
+                    className="w-full h-auto object-cover"
+                  />
+                </div>
+              )}
+
+              {/* Basic Info */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <TacticalIconInline icon={Weight} variant="orange" size="md" />
+                  <div>
+                    <div className="text-sm text-muted-foreground dark:text-slate-400">Váha</div>
+                    <div className="font-semibold">{selectedCatch.weight ? `${selectedCatch.weight} kg` : 'Neuvedené'}</div>
+                  </div>
+                </div>
+
+                {selectedCatch.lengthCm && (
+                  <div className="flex items-center gap-3">
+                    <TacticalIconInline icon={Ruler} variant="orange" size="md" />
+                    <div>
+                      <div className="text-sm text-muted-foreground dark:text-slate-400">Dĺžka</div>
+                      <div className="font-semibold">{selectedCatch.lengthCm} cm</div>
+                    </div>
+                  </div>
+                )}
+
+                {selectedCatch.spot && (
+                  <div className="flex items-center gap-3">
+                    <TacticalIconInline icon={MapPin} variant="emerald" size="md" />
+                    <div>
+                      <div className="text-sm text-muted-foreground dark:text-slate-400">Revír</div>
+                      <div className="font-semibold">{selectedCatch.spot}</div>
+                    </div>
+                  </div>
+                )}
+
+                {selectedCatch.bait && (
+                  <div className="flex items-center gap-3">
+                    <TacticalIconInline icon={Target} variant="purple" size="md" />
+                    <div>
+                      <div className="text-sm text-muted-foreground dark:text-slate-400">Nástraha</div>
+                      <div className="font-semibold">{selectedCatch.bait}</div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-3">
+                  <TacticalIconInline icon={CalendarIcon} variant="indigo" size="md" />
+                  <div>
+                    <div className="text-sm text-muted-foreground dark:text-slate-400">Dátum úlovku</div>
+                    <div className="font-semibold">
+                      {selectedCatch.capturedAt ? format(new Date(selectedCatch.capturedAt), "EEEE, d. MMMM yyyy", { locale: sk }) : 'Neuvedené'}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <TacticalIconInline icon={Trophy} variant="amber" size="md" />
+                  <div>
+                    <div className="text-sm text-muted-foreground dark:text-slate-400">Rybár</div>
+                    <div className="font-semibold">{selectedCatch.angler.name}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Notes */}
+              {selectedCatch.notes && (
+                <div>
+                  <div className="text-sm text-muted-foreground dark:text-slate-400 mb-2">Poznámky</div>
+                  <div className="bg-muted dark:bg-slate-700/50 rounded-lg p-3 text-sm">
+                    {selectedCatch.notes}
+                  </div>
+                </div>
+              )}
+
+              {/* Weather Conditions */}
+              {((selectedCatch.waterTemp !== null && selectedCatch.waterTemp !== undefined) || 
+               (selectedCatch.airTemp !== null && selectedCatch.airTemp !== undefined) || 
+               (selectedCatch.windSpeed !== null && selectedCatch.windSpeed !== undefined) || 
+               (selectedCatch.airPressure !== null && selectedCatch.airPressure !== undefined)) && (
+                <div className="border-t border-border dark:border-slate-700 pt-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Cloud className="w-5 h-5 text-muted-foreground dark:text-slate-400" />
+                    <div className="text-sm text-muted-foreground dark:text-slate-400">Podmienky počasia</div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    {(selectedCatch.waterTemp !== null && selectedCatch.waterTemp !== undefined) && (
+                      <div className="bg-muted dark:bg-slate-700/50 rounded-lg p-3">
+                        <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400 mb-1">
+                          <Thermometer className="w-4 h-4" />
+                          <span className="text-xs">Teplota vody</span>
+                        </div>
+                        <div className="font-semibold">{selectedCatch.waterTemp}°C</div>
+                      </div>
+                    )}
+                    {(selectedCatch.airTemp !== null && selectedCatch.airTemp !== undefined) && (
+                      <div className="bg-muted dark:bg-slate-700/50 rounded-lg p-3">
+                        <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400 mb-1">
+                          <Thermometer className="w-4 h-4" />
+                          <span className="text-xs">Teplota vzduchu</span>
+                        </div>
+                        <div className="font-semibold">{selectedCatch.airTemp}°C</div>
+                      </div>
+                    )}
+                    {(selectedCatch.windSpeed !== null && selectedCatch.windSpeed !== undefined) && (
+                      <div className="bg-muted dark:bg-slate-700/50 rounded-lg p-3">
+                        <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400 mb-1">
+                          <Wind className="w-4 h-4" />
+                          <span className="text-xs">Vietor</span>
+                        </div>
+                        <div className="font-semibold">{selectedCatch.windSpeed} km/h</div>
+                      </div>
+                    )}
+                    {(selectedCatch.airPressure !== null && selectedCatch.airPressure !== undefined) && (
+                      <div className="bg-muted dark:bg-slate-700/50 rounded-lg p-3">
+                        <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400 mb-1">
+                          <Gauge className="w-4 h-4" />
+                          <span className="text-xs">Tlak vzduchu</span>
+                        </div>
+                        <div className="font-semibold">{selectedCatch.airPressure} mb</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
     </DiaryLayout>
   );
 }
