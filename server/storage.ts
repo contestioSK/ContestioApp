@@ -209,6 +209,7 @@ export interface IStorage {
   
   // Team member operations
   addTeamMember(member: InsertTeamMember): Promise<TeamMember>;
+  getTeamMembershipsByUser(userId: string): Promise<(TeamMember & { team: Team & { competition: Competition } })[]>;
   
   // Referee operations
   getRefereesByCompetition(competitionId: string): Promise<Referee[]>;
@@ -1425,6 +1426,28 @@ export class DatabaseStorage implements IStorage {
       .values(member)
       .returning();
     return newMember;
+  }
+
+  async getTeamMembershipsByUser(userId: string): Promise<(TeamMember & { team: Team & { competition: Competition } })[]> {
+    const memberships = await db
+      .select({
+        teamMember: teamMembers,
+        team: teams,
+        competition: competitions,
+      })
+      .from(teamMembers)
+      .innerJoin(teams, eq(teamMembers.teamId, teams.id))
+      .innerJoin(competitions, eq(teams.competitionId, competitions.id))
+      .where(eq(teamMembers.userId, userId))
+      .orderBy(desc(competitions.startDate));
+
+    return memberships.map(m => ({
+      ...m.teamMember,
+      team: {
+        ...m.team,
+        competition: m.competition,
+      },
+    }));
   }
 
   // Referee operations

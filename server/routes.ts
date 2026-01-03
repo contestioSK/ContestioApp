@@ -3749,6 +3749,82 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
+  // Get complete user profile for admin (read-only, invisible to user)
+  app.get('/api/admin/users/:userId/profile', isAuthenticated, async (req: any, res) => {
+    try {
+      const adminUserId = getUserId(req);
+      const adminUser = await storage.getUser(adminUserId);
+      
+      if (!isAdmin(adminUser)) {
+        return res.status(403).json({ message: "Only admins can view user profiles" });
+      }
+
+      const targetUserId = req.params.userId;
+      const targetUser = await storage.getUser(targetUserId);
+      if (!targetUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Fetch all related user data in parallel
+      const [
+        userTeams,
+        favoriteCompetitions,
+        favoriteTeams,
+        diaryCatches,
+        diaryTrips,
+        battles,
+        friends,
+        seasonGoals,
+        subscription,
+        notificationPreferences
+      ] = await Promise.all([
+        storage.getTeamMembershipsByUser(targetUserId),
+        storage.getUserFavoriteCompetitions(targetUserId),
+        storage.getUserFavoriteTeams(targetUserId),
+        storage.getAllUserCatches(targetUserId),
+        storage.getDiaryTrips(targetUserId),
+        storage.getAllUserBattles(targetUserId),
+        storage.getUserFriends(targetUserId),
+        storage.getUserSeasonGoals(targetUserId),
+        storage.getUserSubscription(targetUserId),
+        storage.getUserNotificationPreferences(targetUserId)
+      ]);
+
+      // Remove sensitive data from response
+      const { password: _, verificationToken: __, ...userWithoutSensitive } = targetUser;
+
+      // Build comprehensive profile response
+      const profile = {
+        user: userWithoutSensitive,
+        teams: userTeams || [],
+        favoriteCompetitions: favoriteCompetitions || [],
+        favoriteTeams: favoriteTeams || [],
+        diaryCatches: diaryCatches || [],
+        diaryTrips: diaryTrips || [],
+        battles: battles || [],
+        friends: (friends || []).map((f: any) => {
+          const { password: _, ...friendWithoutPassword } = f;
+          return friendWithoutPassword;
+        }),
+        seasonGoals: seasonGoals || [],
+        subscription: subscription || null,
+        notificationPreferences: notificationPreferences || null,
+        statistics: {
+          totalTeams: userTeams?.length || 0,
+          totalDiaryCatches: diaryCatches?.length || 0,
+          totalTrips: diaryTrips?.length || 0,
+          totalBattles: battles?.length || 0,
+          totalFriends: friends?.length || 0
+        }
+      };
+
+      res.json(profile);
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+      res.status(500).json({ message: "Failed to fetch user profile" });
+    }
+  });
+
   // Update user profile (admin)
   app.put('/api/admin/users/:userId', isAuthenticated, async (req: any, res) => {
     try {
