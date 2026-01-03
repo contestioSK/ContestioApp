@@ -1,0 +1,152 @@
+Diagnóza problému – správna
+
+Replit presne pomenoval, čo sa deje:
+
+Stripe redirect:
+
+/organizer/competition/${id}?payment=success
+
+
+competition-manage.tsx:
+
+❌ ignoruje query param
+
+❌ nerobí invalidate
+
+❌ UI sa renderuje zo stale cache
+
+Výsledok:
+
+zaplatené, ale UI to nevie
+
+CTA na platbu stále svieti
+
+používateľ pochybuje, či zaplatil
+
+➡️ Presne toto je moment, kde appka vyzerá „rozbitá“, aj keď backend je OK.
+
+2️⃣ Navrhované 3 zmeny – 100 % správne
+
+Tieto tri body sú nutné minimum:
+
+✅ 1. Handling ?payment=success
+
+pri mountnutí stránky:
+
+detekcia parametra
+
+okamžitý invalidate + refetch
+
+Bez diskusie.
+Toto je single source of truth refresh moment.
+
+✅ 2. Success toast po návrate zo Stripe
+
+UX drobnosť, ale extrémne dôležitá:
+
+dá používateľovi:
+
+istotu
+
+uzavretie flow
+
+pocit úspechu
+
+Bez tohto je Stripe flow „tiché“ a mätúce.
+
+✅ 3. UI sa riadi výhradne paymentStatus === 'paid'
+
+TOTO je najdôležitejší bod.
+
+žiadne:
+
+query param logiky
+
+lokálne flagy
+
+odhady
+
+Len:
+
+if (competition.paymentStatus === 'paid') {
+  // žiadna platba
+}
+
+
+To je správna architektúra.
+
+3️⃣ Čo tam stále chýba (a Replit to nespomenul)
+
+Teraz kritická UX poznámka 👇
+
+❗ Chýba „post-payment stav“ v UI
+
+Momentálne riešite:
+
+aby zmizlo tlačidlo
+
+Ale neriešite:
+
+čo má používateľ VIDIEŤ namiesto neho
+
+To je chyba.
+
+Správne UX po zaplatení má obsahovať aspoň jedno z:
+
+status badge:
+
+„Zaplatené“
+
+„Balík: Premium“
+
+success banner:
+
+„Súťaž je aktívna a pripravená“
+
+jasný next step:
+
+„Prejsť do správy súťaže“
+
+„Pozvať tímy“
+
+Inak sa stane toto:
+
+„OK, zmizlo tlačidlo… a čo teraz?“
+
+A to je UX smrť.
+
+4️⃣ Čo by si mal Replitu odpísať (ideálna reakcia)
+
+Odporúčaná odpoveď z tvojej strany:
+
+Super, toto je presne ono.
+Spravme tie 3 body.
+Navyše chcem po zaplatení aj jasný UI stav (badge / banner), aby používateľ videl, že je hotovo a čo je ďalší krok.
+
+Tým:
+
+potvrdíš riešenie
+
+zároveň posunieš produkt o úroveň vyššie
+
+nedovolíš „len zmiznuté tlačidlo“ riešenie
+
+5️⃣ Úprimný záver (UX verdikt)
+
+architektúra: už dospelá
+
+Stripe flow: správne navrhnutý
+
+bug: banálny, ale kritický
+
+UX po platbe: treba ešte dotiahnuť
+
+Si presne v bode, kde sa z:
+
+„technicky funkčnej appky“
+
+stáva:
+
+„produkt, ktorému ľudia veria“
+
+A to je rozdiel, ktorý robí úspech vs. chaos v supporte.
