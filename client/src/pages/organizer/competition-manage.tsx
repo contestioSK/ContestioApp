@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useRoute, useLocation } from "wouter";
+import { useState, useEffect, useRef } from "react";
+import { useRoute, useLocation, useSearch } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -87,6 +87,7 @@ export default function CompetitionManage() {
   const [, params] = useRoute("/organizer/competition/:id");
   const { user } = useAuth();
   const [, setLocation] = useLocation();
+  const searchString = useSearch();
   const { toast } = useToast();
   const competitionId = params?.id || null;
 
@@ -100,11 +101,39 @@ export default function CompetitionManage() {
   const [announcementTitle, setAnnouncementTitle] = useState("");
   const [announcementContent, setAnnouncementContent] = useState("");
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
+  const paymentSuccessHandled = useRef(false);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // Handle Stripe payment success redirect
+  useEffect(() => {
+    const urlParams = new URLSearchParams(searchString);
+    const paymentStatus = urlParams.get('payment');
+    
+    if (paymentStatus === 'success' && !paymentSuccessHandled.current) {
+      paymentSuccessHandled.current = true;
+      
+      // Immediately invalidate cache and refetch fresh data
+      queryClient.invalidateQueries({ queryKey: ['/api/competitions', competitionId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/organizer/competitions'] });
+      
+      // Show success toast
+      toast({
+        title: "✅ Platba úspešná!",
+        description: "Vaša súťaž je aktivovaná a pripravená na spustenie.",
+      });
+      
+      // Show success banner
+      setShowPaymentSuccess(true);
+      
+      // Clean URL (remove query param) without page reload
+      window.history.replaceState({}, '', `/organizer/competition/${competitionId}`);
+    }
+  }, [searchString, competitionId, toast]);
 
   const { data: competition, isLoading: competitionLoading } = useQuery<Competition>({
     queryKey: ['/api/competitions', competitionId],
@@ -528,6 +557,48 @@ export default function CompetitionManage() {
           </Button>
         </div>
       </div>
+
+      {/* Payment Success Banner - shows after successful payment */}
+      {(showPaymentSuccess || competition.paymentStatus === 'paid') && competition.status === 'ready' && (
+        <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200 dark:border-green-800 mb-6">
+          <CardContent className="p-4">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-full bg-green-100 dark:bg-green-900/50">
+                  <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-green-800 dark:text-green-200">
+                    Súťaž je zaplatená a pripravená
+                  </h3>
+                  <p className="text-sm text-green-700 dark:text-green-300">
+                    Balík: <span className="font-medium capitalize">{competition.planTier || 'Pro'}</span> • Môžete pozvať tímy a spustiť súťaž
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-green-300 dark:border-green-700 text-green-700 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/30"
+                  onClick={() => setShowAddRefereeDialog(true)}
+                >
+                  <UserPlus className="w-4 h-4 mr-1" />
+                  Pridať rozhodcu
+                </Button>
+                <Button
+                  size="sm"
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                  onClick={() => setShowStartDialog(true)}
+                >
+                  <Play className="w-4 h-4 mr-1" />
+                  Spustiť súťaž
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Unified Action Panel */}
       <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-sm mb-6">
