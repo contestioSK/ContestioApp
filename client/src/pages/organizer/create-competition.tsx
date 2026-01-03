@@ -372,6 +372,17 @@ export default function CreateCompetition() {
       }
     } else if (currentStep === 3) {
       isValid = await form.trigger(['description', 'rules', 'scoringType', 'minWeight']);
+      
+      // Validate maxTeams against plan limit
+      const maxTeamsValue = form.getValues('maxTeams');
+      if (maxTeamsValue && currentPlanLimits.maxTeams !== null && maxTeamsValue > currentPlanLimits.maxTeams) {
+        form.setError('maxTeams', {
+          type: 'manual',
+          message: `Balík ${currentPlanLimits.name} povoľuje maximálne ${currentPlanLimits.maxTeams} tímov`
+        });
+        isValid = false;
+      }
+      
       if (isValid && competitionIdRef.current) {
         await saveProgress();
       }
@@ -890,13 +901,19 @@ export default function CreateCompetition() {
                               <Input 
                                 type="number" 
                                 min={2}
-                                placeholder="neobmedzené"
+                                max={currentPlanLimits.maxTeams ?? undefined}
+                                placeholder={currentPlanLimits.maxTeams ? `max ${currentPlanLimits.maxTeams}` : "neobmedzené"}
                                 {...field}
                                 value={field.value || ''}
                                 onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
                                 data-testid="input-max-teams"
                               />
                             </FormControl>
+                            {currentPlanLimits.maxTeams !== null && (
+                              <FormDescription>
+                                Balík {currentPlanLimits.name} povoľuje max. {currentPlanLimits.maxTeams} tímov
+                              </FormDescription>
+                            )}
                             <FormMessage />
                           </FormItem>
                         )}

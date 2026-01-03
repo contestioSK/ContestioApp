@@ -35,7 +35,7 @@ import {
   insertFriendshipSchema,
 } from "@shared/schema";
 import { z } from "zod";
-import { canUseFeature } from "@shared/plan-capabilities";
+import { canUseFeature, validatePlanConstraints, getMaxTeams, type PlanTier } from "@shared/plan-capabilities";
 import { BADGE_DEFINITIONS, type BadgeTier } from "@shared/badges";
 import { NotificationService } from "./notification-service";
 import { checkResultBlocking, checkPartialResultBlocking, checkPartialResultBlockingByTeam } from "./middleware/result-blocking";
@@ -1404,6 +1404,21 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         ? [...req.body.sideCompetitions] 
         : (req.body.sideCompetitions ? [req.body.sideCompetitions] : []);
 
+      // Validate plan constraints before creating competition
+      const planTier = (req.body.planTier || 'pro') as PlanTier;
+      const planValidation = validatePlanConstraints(planTier, {
+        teamCount: req.body.maxTeams ? parseInt(req.body.maxTeams) : undefined,
+        hasSectors: req.body.hasSectors || false,
+        sideCompetitions: sideCompetitions.length > 0 ? sideCompetitions : undefined,
+      });
+      
+      if (!planValidation.valid) {
+        return res.status(400).json({ 
+          message: "Nastavenia presahujú limity zvoleného balíka", 
+          errors: planValidation.errors 
+        });
+      }
+
       const { sideCompetitions: _, branding: __, ...bodyData } = req.body;
       const competitionData = insertCompetitionSchema.parse({
         ...bodyData,
@@ -1607,6 +1622,25 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
 
       if (user?.role === 'organizer' && existingCompetition.organizerId !== userId) {
         return res.status(403).json({ message: "You can only update your own competitions" });
+      }
+
+      // Validate plan constraints before updating
+      const planTier = (req.body.planTier || existingCompetition.planTier || 'pro') as PlanTier;
+      const sideComps = Array.isArray(req.body.sideCompetitions) ? req.body.sideCompetitions : 
+                        (existingCompetition.sideCompetitions || []);
+      const planValidation = validatePlanConstraints(planTier, {
+        teamCount: req.body.maxTeams !== undefined ? parseInt(req.body.maxTeams) : 
+                   (existingCompetition.maxTeams ?? undefined),
+        hasSectors: req.body.hasSectors !== undefined ? req.body.hasSectors : 
+                    existingCompetition.hasSectors,
+        sideCompetitions: sideComps.length > 0 ? sideComps : undefined,
+      });
+      
+      if (!planValidation.valid) {
+        return res.status(400).json({ 
+          message: "Nastavenia presahujú limity zvoleného balíka", 
+          errors: planValidation.errors 
+        });
       }
 
       // Build update data from request body
