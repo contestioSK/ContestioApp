@@ -2837,9 +2837,40 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createDiaryCatch(catch_: InsertDiaryCatch, userId: string): Promise<DiaryCatch> {
-    // Verify trip ownership (if tripId exists)
-    if (catch_.tripId && !(await this.checkTripOwnership(catch_.tripId, userId))) {
-      throw new Error("Nemáte oprávnenie na pridanie úlovku do tejto výpravy");
+    // Check if user has permission to add catch
+    let hasPermission = false;
+    
+    // 1. If battleId is provided, check if user is a battle participant
+    if (catch_.battleId) {
+      const battle = await this.getDiaryBattleById(catch_.battleId);
+      if (battle) {
+        const user = await this.getUser(userId);
+        const userName = user?.firstName && user?.lastName 
+          ? `${user.firstName} ${user.lastName}` 
+          : user?.email || "";
+        
+        const isParticipant = battle.participants.some(
+          (p: any) => p.userId === userId || p.name === userName
+        );
+        
+        if (isParticipant) {
+          hasPermission = true;
+        }
+      }
+    }
+    
+    // 2. If no battle permission, check trip ownership
+    if (!hasPermission && catch_.tripId) {
+      hasPermission = await this.checkTripOwnership(catch_.tripId, userId);
+    }
+    
+    // 3. If no tripId, allow (catch without trip)
+    if (!catch_.tripId && !catch_.battleId) {
+      hasPermission = true;
+    }
+    
+    if (!hasPermission) {
+      throw new Error("Nemáte oprávnenie na pridanie úlovku");
     }
     
     // NOTE: Freemium limit check moved to route handler (routes.ts) to avoid duplicate queries
