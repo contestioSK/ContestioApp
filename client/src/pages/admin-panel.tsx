@@ -1998,7 +1998,7 @@ export default function AdminPanel() {
                 >
                   <Ticket className="h-5 w-5 flex-shrink-0" />
                   <div className="flex-1 text-left">
-                    <p className="text-sm font-medium">Promo akcie</p>
+                    <p className="text-sm font-medium">Interné benefity</p>
                   </div>
                 </button>
               </>
@@ -5132,14 +5132,15 @@ export default function AdminPanel() {
                   </div>
                 )}
 
-                {/* Promo Codes Section */}
+                {/* Internal Benefits Section */}
                 {isAdmin && activeTab === 'promo' && (
                   <div className="p-6">
                     <div className="space-y-6">
                       <div className="flex items-center justify-between">
                         <div>
-                          <h2 className="text-2xl font-bold text-foreground mb-2">Promo akcie</h2>
-                          <p className="text-muted-foreground">Spravujte zľavové kódy a hromadné akcie</p>
+                          <h2 className="text-2xl font-bold text-foreground mb-2">Interné benefity</h2>
+                          <p className="text-muted-foreground">Tieto kódy neovplyvňujú cenu predplatného. Slúžia na bezplatné dni Premium alebo špeciálne prístupy.</p>
+                          <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">💡 Pre finančné zľavy na predplatné používajte Stripe Promotion Codes v Stripe Dashboard.</p>
                         </div>
                         <div className="flex items-center space-x-2">
                           <Button 

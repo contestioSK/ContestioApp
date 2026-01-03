@@ -1944,6 +1944,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
           },
         ],
         mode: 'subscription',
+        allow_promotion_codes: true,
         success_url: `${appOrigin}/diary?subscription=success`,
         cancel_url: `${appOrigin}/pricing?tab=diary`,
         metadata: { 
