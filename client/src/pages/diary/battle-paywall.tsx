@@ -151,7 +151,7 @@ export default function BattlePaywall() {
                  <Button 
                    size="sm" 
                    className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white border border-amber-400/20"
-                   onClick={() => setLocation('/diary/premium')}
+                   onClick={() => setLocation('/pricing?tab=diary')}
                    data-testid="button-unlock-battle"
                  >
                    Odomknúť Battle
@@ -282,7 +282,7 @@ export default function BattlePaywall() {
                  <Button 
                    size="default"
                    className="w-full md:w-auto md:min-w-[200px] bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white font-bold uppercase tracking-wider text-sm md:text-base py-2.5"
-                   onClick={() => setLocation('/diary/premium')}
+                   onClick={() => setLocation('/pricing?tab=diary')}
                    data-testid="button-get-premium-footer"
                  >
                    <Zap className="w-4 h-4 mr-2" />
