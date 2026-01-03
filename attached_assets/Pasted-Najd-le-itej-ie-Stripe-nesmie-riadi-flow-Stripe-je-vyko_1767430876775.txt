@@ -1,0 +1,142 @@
+Najdôležitejšie: Stripe nesmie riadiť flow
+
+Stripe je vykonávateľ, nie dirigent.
+
+❌ Zlé:
+
+„Stripe payment = vznik súťaže“
+
+„Stripe redirect = zmena stavu súťaže“
+
+✅ Správne:
+
+Súťaž existuje ako DRAFT ešte pred platbou
+
+Stripe iba potvrdí oprávnenie publikovať
+
+2️⃣ Správna produktová logika (toto si zapíš)
+Stav súťaže
+
+Používaj dva oddelené stavy (toto je kľúčové):
+
+competition.status: 'draft' | 'ready' | 'live' | 'finished'
+competition.paymentStatus: 'unpaid' | 'paid'
+
+Význam:
+
+draft → rozpracovaná súťaž
+
+ready → kompletná, čaká na štart
+
+live → prebieha
+
+finished → skončená
+
+💡 Platba nikdy nemení status priamo.
+Platba iba nastaví paymentStatus = paid.
+
+3️⃣ Nový správny wizard flow (bez kompromisov)
+Krok 0 – Výber balíka (BEZ platby)
+
+Basic / Pro / Premium
+
+Okamžite:
+
+nastavíš limity
+
+UI zablokuje zakázané veci
+
+validácia počas wizardu
+
+👉 Tu nič neplatíš, len si vyberáš rámec.
+
+Krok 1–4 – Konfigurácia súťaže
+
+názov, dátumy
+
+pravidlá
+
+sektory (ak balík dovolí)
+
+tímy, rozhodcovia
+
+vedľajšie súťaže
+
+⚠️ Ak niekto prekročí limit balíka:
+
+inline warning
+
+disabled next step
+
+jasná hláška:
+„Balík Basic umožňuje max. 15 tímov“
+
+Krok 5 – Súhrn + CTA
+
+Tu má byť jediné miesto, kde existuje Stripe:
+
+Primárne CTA:
+
+💳 Zaplatiť a publikovať súťaž
+
+Sekundárne CTA:
+
+Uložiť ako draft
+
+4️⃣ Čo má robiť Stripe (konkrétne)
+Po kliknutí na „Zaplatiť“
+
+Vytvoríš Stripe Checkout Session
+
+Po úspešnej platbe:
+
+webhook nastaví:
+
+paymentStatus = 'paid'
+status = 'ready'
+
+
+NIKDY to nerob cez redirect page
+
+5️⃣ Prečo ti teraz svieti „Vybrať balík a zaplatiť“ (pravda bez obalu)
+
+👉 Cache + zlý zdroj pravdy
+
+Momentálne:
+
+UI sa pozerá na staré query
+
+Stripe redirect príde skôr než invalidateQueries
+
+UI sa rozhoduje podľa paymentStatus z cache
+
+Fix (povinný):
+
+po návrate zo Stripe:
+
+await queryClient.invalidateQueries(['/api/organizer/competitions'])
+
+
+a UI sa MUSÍ pýtať:
+
+if (competition.paymentStatus !== 'paid') showPayButton
+
+
+Nie podľa URL. Nie podľa redirectu.
+Iba podľa dát.
+
+6️⃣ UX verdikt (úprimný)
+
+❌ Výber balíka na konci = UX fail
+
+❌ Platba pred konfiguráciou = UX fail
+
+❌ Stripe ako „mozog aplikácie“ = architektonický fail
+
+Ale:
+
+✅ Rozdelenie výber balíka / platba = výborné rozhodnutie
+
+✅ Stripe až na konci = profesionálny produkt
+
+✅ Limity počas wizardu = presne to, čo čakajú organizátori
