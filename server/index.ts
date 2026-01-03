@@ -6,7 +6,7 @@ import { NotificationService } from "./notification-service";
 import { emailService } from "./utils/email";
 import helmet from "helmet";
 import cors from "cors";
-import { apiLimiter } from "./middleware/rate-limiting";
+// Rate limiting is handled per-endpoint in routes.ts (after auth middleware)
 import { sanitizeInput } from "./middleware/input-sanitization";
 import fs from "fs";
 import path from "path";
@@ -88,8 +88,12 @@ app.use(express.urlencoded({ extended: false }));
 // Security: Input sanitization (removes XSS attempts from all request bodies)
 app.use(sanitizeInput);
 
-// Security: General API rate limiting (100 requests per 15 minutes)
-app.use('/api', apiLimiter);
+// Rate limiting is handled per-endpoint in routes.ts:
+// - Auth endpoints: 20 req/15min (brute force protection)
+// - Password reset: 5 req/hour
+// - Catches: 150/min per user
+// - Battles: 60/hour per user
+// - Public endpoints: 100 req/15min
 
 app.use((req, res, next) => {
   const start = Date.now();

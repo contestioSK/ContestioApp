@@ -1,0 +1,183 @@
+ČO SA STALO (v skratke)
+
+Dvaja prihlásení používatelia → appka spadne → hláška „príliš veľa požiadaviek“.
+
+To znamená len jedno:
+➡️ rate limiting je nastavený ako pre verejný blog, nie pre interaktívnu SaaS aplikáciu.
+
+❌ KDE JE ZÁSADNÁ CHYBA
+
+Limit 100 requestov / 15 min / user je:
+
+OK pre login endpoint
+
+OK pre verejné API
+
+ÚPLNE NEPOUŽITEĽNÉ pre:
+
+dashboard
+
+wizard
+
+polling
+
+websocket reconnecty
+
+react-query refetch
+
+invalidateQueries
+
+Stripe návraty
+
+toast refresh
+
+Reálne čísla:
+
+jeden wizard krok = 5–15 requestov
+
+jeden dashboard = 10–30 requestov
+
+refresh + refetch = ďalších 10+
+
+websocket reconnect = niekoľko pokusov
+
+👉 100 requestov je minutých za 2–3 minúty.
+
+🚨 PREČO TO PADLO AŽ TERAZ
+
+Lebo:
+
+lokálne ste boli sami
+
+produkcia = reálne tempo, reálne refetch-e
+
+dvaja useri = dvojnásobný traffic
+
+Stripe návraty + cache invalidácie = spike
+
+➡️ Toto by sa stalo každému reálnemu používateľovi po pár minútach.
+
+✅ SPRÁVNE RIEŠENIE (nie rýchla záplata)
+1️⃣ Rozdeliť rate limiting podľa typu používateľa
+
+Toto je MUST.
+
+❌ ZLÉ (čo máte teraz)
+100 req / 15 min / user
+
+✅ DOBRÉ (minimum)
+if (!isAuthenticated) {
+  limit = 100 / 15 min
+} else {
+  limit = 1000 / 15 min
+}
+
+
+Ale ešte lepšie 👇
+
+2️⃣ Endpoint-based rate limiting
+
+Nie všetky requesty majú rovnakú hodnotu.
+
+Odporúčaná logika:
+Typ endpointu	Limit
+/auth/*	20 / 15 min
+/public/*	100 / 15 min
+/api/* (auth user)	1000–2000 / 15 min
+/webhook/stripe	NO LIMIT
+/ws	NO LIMIT
+
+➡️ Stripe webhook NIKDY nesmie byť limitovaný.
+
+3️⃣ Pre AUTH userov: soft-limit, nie hard crash
+
+Najväčší UX fail je:
+
+„Príliš veľa požiadaviek“
+
+Lepšie:
+
+loguj
+
+spomaľ
+
+ale neblokuj
+
+Ak už musíš:
+
+vráť 429 len pre abusive pattern
+
+nie pre bežný flow
+
+⚠️ KRITICKÁ UX CHYBA
+
+V SaaS aplikácii:
+
+Rate limit nesmie byť viditeľný bežnému používateľovi.
+
+Ak ho vidí:
+
+myslí si, že appka je nestabilná
+
+stráca dôveru
+
+odchádza
+
+Toto je P0 bug, nie technický detail.
+
+🧠 REALISTICKÉ ČÍSLA PRE CONTESTIO
+
+Bez preháňania, ale bezpečne:
+
+Auth user:
+
+2000 requestov / 15 min
+
+alebo ~130 req / min
+
+To je úplne normálne.
+
+Neauth:
+
+100 / 15 min (OK)
+
+Stripe / webhook:
+
+unlimited
+
+verify signature, nie rate limit
+
+🧩 BONUS: prečo WebSocket zhoršuje situáciu
+
+Ak máš:
+
+reconnect logic
+
+heartbeat
+
+fallback polling
+
+Tak:
+
+jeden problém = 5–10 requestov navyše
+
+a limit padá ešte rýchlejšie
+
+➡️ ďalší dôvod neobmedzovať auth usera.
+
+🎯 MOJA JASNÁ ODPORÚČANÁ ODPOVEĎ PRE REPLIT
+
+Ak chceš, môžeš mu to poslať doslova:
+
+Toto je P0 problém.
+Auth používateľ nesmie mať rovnaký rate limit ako verejný traffic.
+
+Navrhujem:
+
+odstrániť rate limit pre authenticated API calls
+
+ponechať strict limit len pre auth endpoints a public API
+
+Stripe webhooky úplne bez limitu
+
+Aktuálne nastavenie robí aplikáciu nepoužiteľnou v reálnej prevádzke.
