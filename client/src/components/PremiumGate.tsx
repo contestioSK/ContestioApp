@@ -89,7 +89,7 @@ export function PremiumGate({ type, children, showPreview = false }: PremiumGate
             </ul>
             
             <Button 
-              onClick={() => setLocation('/diary/premium')}
+              onClick={() => setLocation('/pricing?tab=diary')}
               className="w-full gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white"
               data-testid={`button-premium-gate-${type}`}
             >
@@ -128,7 +128,7 @@ export function PremiumGate({ type, children, showPreview = false }: PremiumGate
         </ul>
         
         <Button 
-          onClick={() => setLocation('/diary/premium')}
+          onClick={() => setLocation('/pricing?tab=diary')}
           className="w-full gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white"
           data-testid={`button-premium-gate-${type}`}
         >
@@ -155,7 +155,7 @@ export function PremiumTeaserCard({ type, previewValue, previewLabel }: PremiumT
   return (
     <div 
       className="bg-muted/30 border border-dashed border-amber-500/30 rounded-xl p-5 hover:border-amber-500/50 transition-colors cursor-pointer group"
-      onClick={() => setLocation('/diary/premium')}
+      onClick={() => setLocation('/pricing?tab=diary')}
       data-testid={`teaser-card-${type}`}
     >
       <div className="flex items-center gap-2 text-amber-500 dark:text-amber-400 mb-3">

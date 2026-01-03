@@ -454,7 +454,7 @@ export default function Profile() {
                       variant="outline" 
                       size="sm" 
                       className="w-full gap-2 border-amber-300 dark:border-amber-500/30 text-amber-700 dark:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10"
-                      onClick={() => window.location.href = '/diary/premium'}
+                      onClick={() => window.location.href = '/pricing?tab=diary'}
                       data-testid="button-unlock-premium"
                     >
                       <Sparkles className="w-4 h-4" />

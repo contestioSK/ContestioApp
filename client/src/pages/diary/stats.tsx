@@ -361,7 +361,7 @@ export default function DiaryStats() {
                   <Button 
                     variant="outline"
                     className="relative z-10 border-amber-500/30 text-amber-600 hover:bg-amber-500/10 font-medium px-6"
-                    onClick={() => setLocation('/diary/premium')}
+                    onClick={() => setLocation('/pricing?tab=diary')}
                     data-testid="button-get-premium"
                   >
                     <Crown className="w-4 h-4 mr-2" />
