@@ -41,10 +41,11 @@ import { NotificationService } from "./notification-service";
 import { checkResultBlocking, checkPartialResultBlocking, checkPartialResultBlockingByTeam } from "./middleware/result-blocking";
 import {
   authLimiter,
+  passwordResetLimiter,
+  publicEndpointLimiter,
   catchCreationLimiter,
   battleCreationLimiter,
-  apiLimiter,
-  passwordResetLimiter
+  authenticatedApiLimiter
 } from "./middleware/rate-limiting";
 import multer from "multer";
 import path from "path";
@@ -150,6 +151,11 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
   // Load new auth system after setupAuth to override serialize/deserialize functions
   const passportModule = await import("./utils/passport");
   const passport = passportModule.default;
+
+  // Apply global rate limiting for authenticated API traffic (2000 req/15min per user)
+  // This runs AFTER auth middleware so req.user is available
+  // Skips: webhooks, auth endpoints (have their own limits), unauthenticated requests
+  app.use('/api', authenticatedApiLimiter);
 
   // Create HTTP server
   const httpServer = createServer(app);
@@ -629,7 +635,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
   });
 
   // Newsletter subscription endpoint (public - no auth required)
-  app.post('/api/newsletter/subscribe', apiLimiter, async (req, res) => {
+  app.post('/api/newsletter/subscribe', publicEndpointLimiter, async (req, res) => {
     try {
       const { email } = req.body;
       
