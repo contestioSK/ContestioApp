@@ -189,7 +189,7 @@ export default function NavigationHeader() {
                 <Link href="/auth/login">
                   <Button 
                     data-testid="button-login"
-                    className="bg-orange-500 text-white hover:bg-orange-600 text-sm px-6 rounded-lg"
+                    className="bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 hover:to-orange-500 text-white text-sm px-6 rounded-lg shadow-lg shadow-orange-500/25"
                   >
                     Prihlásiť sa
                   </Button>
@@ -255,7 +255,7 @@ export default function NavigationHeader() {
                 <Link href="/auth/login" onClick={() => setMobileMenuOpen(false)}>
                   <Button 
                     data-testid="button-login-mobile"
-                    className="w-full bg-orange-500 text-white hover:bg-orange-600 text-sm"
+                    className="w-full bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 hover:to-orange-500 text-white text-sm shadow-lg shadow-orange-500/25"
                   >
                     Prihlásiť sa
                   </Button>
