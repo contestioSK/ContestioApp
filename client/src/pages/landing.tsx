@@ -161,7 +161,7 @@ export default function Landing() {
                 {/* CTA Buttons */}
                 <div className="flex items-center space-x-3">
                   <Button asChild
-                    className="bg-orange-500 hover:bg-orange-600 text-white font-medium px-6 rounded-lg"
+                    className="bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 hover:to-orange-500 text-white font-medium px-6 rounded-lg shadow-lg shadow-orange-500/25"
                     size="sm"
                     data-testid="button-login"
                   >
@@ -218,7 +218,7 @@ export default function Landing() {
                   {/* CTA Buttons */}
                   <div className="space-y-2">
                     <Button asChild
-                      className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium"
+                      className="w-full bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-600 hover:to-orange-500 text-white font-medium shadow-lg shadow-orange-500/25"
                       data-testid="mobile-button-login"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
