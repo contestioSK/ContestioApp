@@ -1,22 +1,18 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
-import { useTheme } from "@/contexts/ThemeContext";
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Fish, Menu, DollarSign, Bell, Sun, Moon, Info, HelpCircle, Phone, Trophy, Heart } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Menu, X, Heart } from "lucide-react";
 import { NotificationCenter } from "@/components/diary/notification-center";
 import contestioLogo from "@assets/contestio logo_1760283270014.png";
-import contestioLogoDark from "@assets/contestio_logo_black_1766308180088.png";
 
 export default function NavigationHeader() {
   const { user, isAuthenticated } = useAuth();
   const [location, setLocation] = useLocation();
-  const { theme, toggleTheme } = useTheme();
   const headerRef = useRef<HTMLElement>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Dynamically measure header height and set CSS custom property
   useEffect(() => {
     const updateHeaderHeight = () => {
       if (headerRef.current) {
@@ -25,20 +21,18 @@ export default function NavigationHeader() {
       }
     };
 
-    // Delay to ensure DOM is fully rendered
     setTimeout(updateHeaderHeight, 100);
     window.addEventListener('resize', updateHeaderHeight);
     
     return () => window.removeEventListener('resize', updateHeaderHeight);
   }, []);
 
-  // Main navigation items matching landing page
   const navItems = [
-    { href: "/about-us", label: "O nás", icon: Info },
-    { href: "/faq", label: "FAQ", icon: HelpCircle },
-    { href: "/pricing", label: "Cenník", icon: DollarSign },
-    { href: "/contact", label: "Kontakt", icon: Phone },
-    { href: "/organizer/create", label: "Vytvoriť súťaž", icon: Trophy },
+    { href: "/about-us", label: "O nás" },
+    { href: "/faq", label: "FAQ" },
+    { href: "/pricing", label: "Cenník" },
+    { href: "/contact", label: "Kontakt" },
+    { href: "/organizer/create", label: "Vytvoriť súťaž" },
   ];
 
   const getRoleDisplayName = (role: string) => {
@@ -72,39 +66,43 @@ export default function NavigationHeader() {
   };
 
   return (
-    <header ref={headerRef} className="bg-sidebar border-b border-sidebar-border shadow-lg fixed top-0 left-0 right-0 z-[9999]">
+    <header 
+      ref={headerRef} 
+      className="fixed top-0 left-0 right-0 z-[9999]"
+      style={{ backgroundColor: '#0c1425' }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo and Brand */}
-          <div className="flex items-center space-x-4">
+          {/* Logo */}
+          <div className="flex items-center">
             <Link href="/" className="flex items-center" data-testid="link-home">
-              <img src={theme === 'dark' ? contestioLogo : contestioLogoDark} alt="Contestio" className="h-8" />
+              <img src={contestioLogo} alt="Contestio" className="h-7" />
             </Link>
           </div>
           
-          {/* Navigation Links */}
-          <nav className="hidden md:flex items-center space-x-6">
-            {navItems.map((item) => {
-              const IconComponent = item.icon;
-              return (
-                <Link 
-                  key={item.href}
-                  href={item.href} 
-                  className={`flex items-center space-x-1 font-medium transition-colors ${
-                    location === item.href ? 'text-sidebar-primary' : 'text-sidebar-foreground/70 hover:text-sidebar-foreground'
-                  }`}
-                  data-testid={`nav-${item.href.slice(1) || 'home'}`}
-                >
-                  <IconComponent className="w-4 h-4" />
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
+          {/* Desktop Navigation Links */}
+          <nav className="hidden md:flex items-center space-x-8">
+            {navItems.map((item) => (
+              <Link 
+                key={item.href}
+                href={item.href} 
+                className={`text-sm font-medium transition-colors ${
+                  location === item.href 
+                    ? 'text-orange-500' 
+                    : 'text-gray-300 hover:text-white'
+                }`}
+                data-testid={`nav-${item.href.slice(1) || 'home'}`}
+              >
+                {item.label}
+              </Link>
+            ))}
             {isAuthenticated && (
               <Link 
                 href="/diary" 
-                className={`font-medium transition-colors ${
-                  location.startsWith('/diary') ? 'text-sidebar-primary' : 'text-sidebar-foreground/70 hover:text-sidebar-foreground'
+                className={`text-sm font-medium transition-colors ${
+                  location.startsWith('/diary') 
+                    ? 'text-orange-500' 
+                    : 'text-gray-300 hover:text-white'
                 }`}
                 data-testid="nav-diary"
               >
@@ -113,22 +111,8 @@ export default function NavigationHeader() {
             )}
           </nav>
           
-          {/* User Actions */}
+          {/* Right Side Actions */}
           <div className="flex items-center space-x-3">
-            {/* Theme Toggle */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleTheme}
-              className="text-sidebar-foreground hover:text-sidebar-primary hover:bg-sidebar-accent"
-              data-testid="button-theme-toggle"
-            >
-              {theme === 'light' ? (
-                <Moon className="h-4 w-4" />
-              ) : (
-                <Sun className="h-4 w-4" />
-              )}
-            </Button>
             {isAuthenticated && user && (
               <div className="hidden sm:flex items-center space-x-2">
                 <Select 
@@ -136,19 +120,19 @@ export default function NavigationHeader() {
                   onValueChange={handleRoleChange}
                   data-testid="select-role"
                 >
-                  <SelectTrigger className="w-40 bg-sidebar-accent border-sidebar-border text-sidebar-foreground">
+                  <SelectTrigger className="w-40 bg-white/10 border-white/20 text-white text-sm">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-sidebar-accent border-sidebar-border text-sidebar-foreground">
-                    <SelectItem value="public" className="text-sidebar-foreground focus:bg-sidebar-primary focus:text-sidebar-primary-foreground">Verejné zobrazenie</SelectItem>
+                  <SelectContent className="bg-[#1a2332] border-white/20 text-white">
+                    <SelectItem value="public" className="text-white focus:bg-orange-500 focus:text-white">Verejné zobrazenie</SelectItem>
                     {user.role === 'organizer' && (
-                      <SelectItem value="organizer" className="text-sidebar-foreground focus:bg-sidebar-primary focus:text-sidebar-primary-foreground">Panel organizátora</SelectItem>
+                      <SelectItem value="organizer" className="text-white focus:bg-orange-500 focus:text-white">Panel organizátora</SelectItem>
                     )}
                     {user.role === 'admin' && (
-                      <SelectItem value="admin" className="text-sidebar-foreground focus:bg-sidebar-primary focus:text-sidebar-primary-foreground">Admin panel</SelectItem>
+                      <SelectItem value="admin" className="text-white focus:bg-orange-500 focus:text-white">Admin panel</SelectItem>
                     )}
                     {user.role === 'referee' && (
-                      <SelectItem value="referee" className="text-sidebar-foreground focus:bg-sidebar-primary focus:text-sidebar-primary-foreground">Rozhranie rozhodcu</SelectItem>
+                      <SelectItem value="referee" className="text-white focus:bg-orange-500 focus:text-white">Rozhranie rozhodcu</SelectItem>
                     )}
                   </SelectContent>
                 </Select>
@@ -157,7 +141,7 @@ export default function NavigationHeader() {
             
             {user?.role === 'admin' && (
               <Button 
-                className="bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90"
+                className="bg-orange-500 text-white hover:bg-orange-600 text-sm"
                 onClick={() => setLocation('/admin-panel')}
                 data-testid="button-admin-panel"
               >
@@ -177,8 +161,10 @@ export default function NavigationHeader() {
                 )}
                 <Link 
                   href="/favorites"
-                  className={`p-2 rounded-md transition-colors hover:bg-sidebar-accent ${
-                    location.startsWith('/favorites') ? 'text-red-500' : 'text-sidebar-foreground hover:text-sidebar-primary'
+                  className={`p-2 rounded-md transition-colors ${
+                    location.startsWith('/favorites') 
+                      ? 'text-red-500' 
+                      : 'text-gray-300 hover:text-white'
                   }`}
                   data-testid="nav-favorites"
                 >
@@ -191,26 +177,26 @@ export default function NavigationHeader() {
                     window.location.href = '/api/logout';
                   }}
                   data-testid="button-logout"
-                  className="bg-transparent border-sidebar-border text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground focus:bg-sidebar-accent focus:text-sidebar-foreground"
+                  className="bg-transparent border-white/30 text-gray-300 hover:bg-white/10 hover:text-white text-sm"
                 >
                   Odhlásiť sa
                 </Button>
               </div>
             ) : (
-              <div className="flex items-center space-x-2">
+              <div className="hidden md:flex items-center space-x-3">
                 <Link href="/auth/login">
                   <Button 
-                    variant="outline"
                     data-testid="button-login"
-                    className="bg-transparent border-sidebar-border text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground focus:bg-sidebar-accent focus:text-sidebar-foreground"
+                    className="bg-orange-500 text-white hover:bg-orange-600 text-sm px-6"
                   >
                     Prihlásiť sa
                   </Button>
                 </Link>
                 <Link href="/register">
                   <Button 
-                    className="bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90"
+                    variant="outline"
                     data-testid="button-register"
+                    className="bg-transparent border-white/30 text-white hover:bg-white/10 text-sm px-6"
                   >
                     Zaregistrovať sa
                   </Button>
@@ -218,12 +204,74 @@ export default function NavigationHeader() {
               </div>
             )}
             
-            <Button variant="ghost" className="md:hidden text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground" data-testid="button-menu">
-              <Menu className="h-5 w-5" />
+            {/* Mobile Menu Button */}
+            <Button 
+              variant="ghost" 
+              className="md:hidden text-gray-300 hover:bg-white/10 hover:text-white" 
+              data-testid="button-menu"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
           </div>
         </div>
       </div>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t border-white/10" style={{ backgroundColor: '#0c1425' }}>
+          <div className="px-4 py-4 space-y-3">
+            {navItems.map((item) => (
+              <Link 
+                key={item.href}
+                href={item.href} 
+                className={`block py-2 text-sm font-medium transition-colors ${
+                  location === item.href 
+                    ? 'text-orange-500' 
+                    : 'text-gray-300 hover:text-white'
+                }`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {item.label}
+              </Link>
+            ))}
+            {isAuthenticated && (
+              <Link 
+                href="/diary" 
+                className={`block py-2 text-sm font-medium transition-colors ${
+                  location.startsWith('/diary') 
+                    ? 'text-orange-500' 
+                    : 'text-gray-300 hover:text-white'
+                }`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Denník
+              </Link>
+            )}
+            {!isAuthenticated && (
+              <div className="pt-4 space-y-3 border-t border-white/10">
+                <Link href="/auth/login" onClick={() => setMobileMenuOpen(false)}>
+                  <Button 
+                    data-testid="button-login-mobile"
+                    className="w-full bg-orange-500 text-white hover:bg-orange-600 text-sm"
+                  >
+                    Prihlásiť sa
+                  </Button>
+                </Link>
+                <Link href="/register" onClick={() => setMobileMenuOpen(false)}>
+                  <Button 
+                    variant="outline"
+                    data-testid="button-register-mobile"
+                    className="w-full bg-transparent border-white/30 text-white hover:bg-white/10 text-sm"
+                  >
+                    Zaregistrovať sa
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </header>
   );
 }
