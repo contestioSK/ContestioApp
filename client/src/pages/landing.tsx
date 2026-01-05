@@ -137,50 +137,44 @@ export default function Landing() {
       >
         
         {/* Integrated Navigation */}
-        <div className="relative z-20 w-full">
+        <div className="relative z-20 w-full" style={{ backgroundColor: '#0c1425' }}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
               {/* Logo */}
               <Link href="/">
-                <img src={contestioLogo} alt="Contestio" className="h-8" />
+                <img src={contestioLogo} alt="Contestio" className="h-7" />
               </Link>
 
               {/* Desktop Navigation */}
-              <div className="hidden md:flex items-center space-x-6">
+              <div className="hidden md:flex items-center space-x-8">
                 {/* Main Navigation */}
-                {navItems.map((item) => {
-                  const IconComponent = item.icon;
-                  let variant: any = "slate";
-                  if (item.label === "Zaregistrovať súťaž") variant = "amber";
-                  
-                  return (
-                    <Link key={item.href} href={item.href}>
-                      <div className="flex items-center space-x-1 text-white/90 hover:text-white transition-colors cursor-pointer" data-testid={`nav-${item.href.slice(1) || 'home'}`}>
-                        <TacticalIconInline icon={IconComponent} variant={variant} size="sm" />
-                        <span className="text-sm font-medium">{item.label}</span>
-                      </div>
-                    </Link>
-                  );
-                })}
+                {navItems.map((item) => (
+                  <Link key={item.href} href={item.href}>
+                    <span className="text-sm font-medium text-gray-300 hover:text-white transition-colors cursor-pointer" data-testid={`nav-${item.href.slice(1) || 'home'}`}>
+                      {item.label}
+                    </span>
+                  </Link>
+                ))}
                 
                 {/* CTA Buttons */}
                 <div className="flex items-center space-x-3">
                   <Button asChild
-                    className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium"
-                    size="sm"
-                    data-testid="button-register"
-                  >
-                    <Link href="/auth/register">
-                      Zaregistrovať sa
-                    </Link>
-                  </Button>
-                  <Button asChild
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-medium"
+                    className="bg-orange-500 hover:bg-orange-600 text-white font-medium px-6"
                     size="sm"
                     data-testid="button-login"
                   >
                     <Link href="/auth/login">
                       Prihlásiť sa
+                    </Link>
+                  </Button>
+                  <Button asChild
+                    variant="outline"
+                    className="bg-transparent border-white/30 text-white hover:bg-white/10 font-medium px-6"
+                    size="sm"
+                    data-testid="button-register"
+                  >
+                    <Link href="/auth/register">
+                      Zaregistrovať sa
                     </Link>
                   </Button>
                 </div>
@@ -202,48 +196,42 @@ export default function Landing() {
 
             {/* Mobile Navigation Menu */}
             {isMobileMenuOpen && (
-              <div className="md:hidden border-t border-white/20 mt-2 pt-4 pb-6">
+              <div className="md:hidden border-t border-white/10 mt-2 pt-4 pb-6">
                 <div className="space-y-2">
                   {/* Main Navigation */}
-                  {navItems.map((item) => {
-                    const IconComponent = item.icon;
-                    let variant: any = "slate";
-                    if (item.label === "Zaregistrovať súťaž") variant = "amber";
-
-                    return (
-                      <Link key={item.href} href={item.href}>
-                        <div 
-                          className="flex items-center space-x-3 px-3 py-3 rounded-lg text-white/90 hover:text-white hover:bg-white/10 cursor-pointer transition-all duration-200"
-                          onClick={() => setIsMobileMenuOpen(false)}
-                          data-testid={`mobile-nav-${item.href.slice(1) || 'home'}`}
-                        >
-                          <TacticalIconInline icon={IconComponent} variant={variant} size="md" />
-                          <span className="text-sm font-medium">{item.label}</span>
-                        </div>
-                      </Link>
-                    );
-                  })}
+                  {navItems.map((item) => (
+                    <Link key={item.href} href={item.href}>
+                      <div 
+                        className="px-3 py-3 rounded-lg text-gray-300 hover:text-white hover:bg-white/10 cursor-pointer transition-all duration-200"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        data-testid={`mobile-nav-${item.href.slice(1) || 'home'}`}
+                      >
+                        <span className="text-sm font-medium">{item.label}</span>
+                      </div>
+                    </Link>
+                  ))}
                   
-                  <div className="border-t border-white/20 my-4"></div>
+                  <div className="border-t border-white/10 my-4"></div>
                   
                   {/* CTA Buttons */}
                   <div className="space-y-2">
                     <Button asChild
-                      className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-medium"
-                      data-testid="mobile-button-register"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      <Link href="/auth/register">
-                        Zaregistrovať sa
-                      </Link>
-                    </Button>
-                    <Button asChild
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium"
+                      className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium"
                       data-testid="mobile-button-login"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       <Link href="/auth/login">
                         Prihlásiť sa
+                      </Link>
+                    </Button>
+                    <Button asChild
+                      variant="outline"
+                      className="w-full bg-transparent border-white/30 text-white hover:bg-white/10 font-medium"
+                      data-testid="mobile-button-register"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Link href="/auth/register">
+                        Zaregistrovať sa
                       </Link>
                     </Button>
                   </div>
