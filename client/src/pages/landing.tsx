@@ -146,20 +146,22 @@ export default function Landing() {
               </Link>
 
               {/* Desktop Navigation */}
-              <div className="hidden md:flex items-center space-x-8">
-                {/* Main Navigation */}
-                {navItems.map((item) => (
-                  <Link key={item.href} href={item.href}>
-                    <span className="text-sm font-medium text-gray-300 hover:text-white transition-colors cursor-pointer" data-testid={`nav-${item.href.slice(1) || 'home'}`}>
-                      {item.label}
-                    </span>
-                  </Link>
-                ))}
+              <div className="hidden md:flex items-center space-x-6">
+                {/* Main Navigation - Pill Container */}
+                <div className="flex items-center space-x-1 px-2 py-1.5 rounded-full border border-white/20 bg-white/5">
+                  {navItems.map((item) => (
+                    <Link key={item.href} href={item.href}>
+                      <span className="px-4 py-1.5 text-sm font-medium text-gray-300 hover:text-white transition-colors cursor-pointer" data-testid={`nav-${item.href.slice(1) || 'home'}`}>
+                        {item.label}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
                 
                 {/* CTA Buttons */}
                 <div className="flex items-center space-x-3">
                   <Button asChild
-                    className="bg-orange-500 hover:bg-orange-600 text-white font-medium px-6"
+                    className="bg-orange-500 hover:bg-orange-600 text-white font-medium px-6 rounded-lg"
                     size="sm"
                     data-testid="button-login"
                   >
@@ -169,7 +171,7 @@ export default function Landing() {
                   </Button>
                   <Button asChild
                     variant="outline"
-                    className="bg-transparent border-white/30 text-white hover:bg-white/10 font-medium px-6"
+                    className="bg-transparent border-white/20 text-white hover:bg-white/10 font-medium px-6 rounded-lg"
                     size="sm"
                     data-testid="button-register"
                   >

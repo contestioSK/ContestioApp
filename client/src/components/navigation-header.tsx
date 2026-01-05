@@ -80,35 +80,37 @@ export default function NavigationHeader() {
             </Link>
           </div>
           
-          {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center space-x-8">
-            {navItems.map((item) => (
-              <Link 
-                key={item.href}
-                href={item.href} 
-                className={`text-sm font-medium transition-colors ${
-                  location === item.href 
-                    ? 'text-orange-500' 
-                    : 'text-gray-300 hover:text-white'
-                }`}
-                data-testid={`nav-${item.href.slice(1) || 'home'}`}
-              >
-                {item.label}
-              </Link>
-            ))}
-            {isAuthenticated && (
-              <Link 
-                href="/diary" 
-                className={`text-sm font-medium transition-colors ${
-                  location.startsWith('/diary') 
-                    ? 'text-orange-500' 
-                    : 'text-gray-300 hover:text-white'
-                }`}
-                data-testid="nav-diary"
-              >
-                Denník
-              </Link>
-            )}
+          {/* Desktop Navigation Links - Pill Container */}
+          <nav className="hidden md:flex items-center">
+            <div className="flex items-center space-x-1 px-2 py-1.5 rounded-full border border-white/20 bg-white/5">
+              {navItems.map((item) => (
+                <Link 
+                  key={item.href}
+                  href={item.href} 
+                  className={`px-4 py-1.5 text-sm font-medium transition-colors ${
+                    location === item.href 
+                      ? 'text-orange-500' 
+                      : 'text-gray-300 hover:text-white'
+                  }`}
+                  data-testid={`nav-${item.href.slice(1) || 'home'}`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+              {isAuthenticated && (
+                <Link 
+                  href="/diary" 
+                  className={`px-4 py-1.5 text-sm font-medium transition-colors ${
+                    location.startsWith('/diary') 
+                      ? 'text-orange-500' 
+                      : 'text-gray-300 hover:text-white'
+                  }`}
+                  data-testid="nav-diary"
+                >
+                  Denník
+                </Link>
+              )}
+            </div>
           </nav>
           
           {/* Right Side Actions */}
@@ -187,7 +189,7 @@ export default function NavigationHeader() {
                 <Link href="/auth/login">
                   <Button 
                     data-testid="button-login"
-                    className="bg-orange-500 text-white hover:bg-orange-600 text-sm px-6"
+                    className="bg-orange-500 text-white hover:bg-orange-600 text-sm px-6 rounded-lg"
                   >
                     Prihlásiť sa
                   </Button>
@@ -196,7 +198,7 @@ export default function NavigationHeader() {
                   <Button 
                     variant="outline"
                     data-testid="button-register"
-                    className="bg-transparent border-white/30 text-white hover:bg-white/10 text-sm px-6"
+                    className="bg-transparent border-white/20 text-white hover:bg-white/10 text-sm px-6 rounded-lg"
                   >
                     Zaregistrovať sa
                   </Button>
