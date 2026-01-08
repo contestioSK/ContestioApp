@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { useConfetti } from "@/hooks/useConfetti";
@@ -10,6 +10,8 @@ import { Progress } from "@/components/ui/progress";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Lock, Unlock, ChevronDown, ChevronUp, Target, Plus, Trophy, Sparkles, Award, Calendar, Crosshair, Crown, Moon, FileText, Snowflake, type LucideIcon } from "lucide-react";
 import { Dna } from "lucide-react";
+
+const BADGE_COUNT_STORAGE_KEY = 'lastKnownBadgeCount';
 
 const BADGE_ICON_MAP: Record<string, LucideIcon> = {
   Calendar,
@@ -33,7 +35,6 @@ export default function BadgesPage() {
   const { celebrateGoalCompletion } = useConfetti();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
-  const previousBadgeCount = useRef<number | null>(null);
   const [showAllBadges, setShowAllBadges] = useState(false);
   const [demoBadge, setDemoBadge] = useState<{
     badgeType: string;
@@ -42,7 +43,7 @@ export default function BadgesPage() {
     icon: string;
   } | null>(null);
 
-  const { data: userBadges = [] } = useQuery<UserBadge[]>({
+  const { data: userBadges = [], isSuccess: badgesLoaded } = useQuery<UserBadge[]>({
     queryKey: ["/api/diary/badges"],
     enabled: !!user?.id
   });
@@ -53,15 +54,25 @@ export default function BadgesPage() {
   });
 
   useEffect(() => {
-    if (previousBadgeCount.current !== null && userBadges.length > previousBadgeCount.current) {
-      celebrateGoalCompletion();
-      toast({
-        title: "🏅 Nový odznak odomknutý!",
-        description: "Gratulujeme! Získali ste nový odznak.",
-      });
+    if (!badgesLoaded || userBadges.length === 0) return;
+    
+    try {
+      const storedCount = localStorage.getItem(BADGE_COUNT_STORAGE_KEY);
+      const lastKnownCount = storedCount ? parseInt(storedCount, 10) : null;
+      
+      if (lastKnownCount !== null && userBadges.length > lastKnownCount) {
+        celebrateGoalCompletion();
+        toast({
+          title: "🏅 Nový odznak odomknutý!",
+          description: "Gratulujeme! Získali ste nový odznak.",
+        });
+      }
+      
+      localStorage.setItem(BADGE_COUNT_STORAGE_KEY, userBadges.length.toString());
+    } catch {
+      // localStorage not available
     }
-    previousBadgeCount.current = userBadges.length;
-  }, [userBadges.length, celebrateGoalCompletion, toast]);
+  }, [badgesLoaded, userBadges.length, celebrateGoalCompletion, toast]);
 
   const unlockedBadges = new Set(
     userBadges.map(b => `${b.badgeType}_${b.tier}`)
