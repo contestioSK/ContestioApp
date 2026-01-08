@@ -61,7 +61,7 @@ export default function TripGallery() {
       if (catch_.photos && catch_.photos.length > 0) {
         catch_.photos.forEach(photo => {
           photos.push({
-            url: typeof photo === 'string' ? photo : photo.url,
+            url: typeof photo === 'string' ? photo : (photo.url || photo.originalUrl || ''),
             catchId: catch_.id,
             fishType: catch_.fishType,
             weight: catch_.weight,
@@ -297,7 +297,7 @@ export default function TripGallery() {
             </Card>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-4">
-              {filteredPhotos.map((photo, index) => (
+              {filteredPhotos.filter(p => p.url).map((photo, index) => (
                 <Card
                   key={`${photo.catchId}-${index}`}
                   className="overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-[1.02] animate-in fade-in-50 fill-mode-both"

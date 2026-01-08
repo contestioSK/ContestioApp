@@ -182,6 +182,7 @@ export class ImageService {
   static detectUrlBase(outputDir: string): string {
     const normalizedPath = outputDir.replace(/\\/g, '/');
     
+    // Handle attached_assets/diary_photos/{userId} paths
     if (normalizedPath.includes('attached_assets/diary_photos/')) {
       const match = normalizedPath.match(/attached_assets\/diary_photos\/([^/]+)/);
       if (match) {
@@ -189,16 +190,44 @@ export class ImageService {
       }
     }
     
+    // Handle legacy uploads/diary_photos/{userId} paths
+    if (normalizedPath.includes('uploads/diary_photos/')) {
+      const match = normalizedPath.match(/uploads\/diary_photos\/([^/]+)/);
+      if (match) {
+        return `/uploads/diary_photos/${match[1]}`;
+      }
+    }
+    
+    // Handle uploads/users/{userId} paths (avatars)
+    if (normalizedPath.includes('uploads/users/')) {
+      const match = normalizedPath.match(/uploads\/users\/([^/]+)/);
+      if (match) {
+        return `/uploads/users/${match[1]}`;
+      }
+    }
+    
+    // Handle uploads/competitions/{competitionId} paths
+    if (normalizedPath.includes('uploads/competitions/')) {
+      const match = normalizedPath.match(/uploads\/competitions\/([^/]+)/);
+      if (match) {
+        return `/uploads/competitions/${match[1]}`;
+      }
+    }
+    
+    // Handle other attached_assets paths
     if (normalizedPath.includes('attached_assets/')) {
       const relativePath = normalizedPath.split('attached_assets/')[1] || '';
       return `/attached_assets/${relativePath}`.replace(/\/$/, '');
     }
     
+    // Handle other uploads paths - preserve full structure
     if (normalizedPath.includes('uploads/')) {
       const relativePath = normalizedPath.split('uploads/')[1] || '';
       return `/uploads/${relativePath}`.replace(/\/$/, '');
     }
     
+    // Fallback - should rarely happen
+    console.warn(`[ImageService] Could not detect URL base for path: ${outputDir}`);
     return `/uploads`;
   }
 }
