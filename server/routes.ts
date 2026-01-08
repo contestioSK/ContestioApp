@@ -6275,6 +6275,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
           url: originalUrl, // Return original immediately
           status: 'processing' as const,
           originalUrl,
+          processingStartedAt: new Date().toISOString(), // Track when processing started
           // Store processing info for later queuing
           _processingInfo: {
             userId,

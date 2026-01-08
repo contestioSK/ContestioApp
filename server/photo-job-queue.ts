@@ -129,8 +129,12 @@ export class PhotoJobQueue extends EventEmitter {
                           ImageService.getBestVariantForWidth(imageMetadata.variants, 800, 'jpeg') ||
                           imageMetadata.variants[0];
 
-      // Clean up original temp file
-      await ImageService.cleanupTempFile(job.originalPath);
+      // Only clean up original AFTER variants are successfully created
+      if (imageMetadata.variants && imageMetadata.variants.length > 0) {
+        await ImageService.cleanupTempFile(job.originalPath);
+      } else {
+        console.warn(`[PhotoQueue] No variants created for ${job.photoId}, keeping original`);
+      }
 
       return {
         photoId: job.photoId,
@@ -142,6 +146,7 @@ export class PhotoJobQueue extends EventEmitter {
       };
     } catch (error) {
       console.error(`[PhotoQueue] Processing failed for job ${job.id}:`, error);
+      // Don't delete original on failure - it can be used as fallback
       throw error;
     }
   }
@@ -161,6 +166,20 @@ export class PhotoJobQueue extends EventEmitter {
    */
   getJobsByCatchId(catchId: string): PhotoJob[] {
     return this.queue.filter(job => job.catchId === catchId);
+  }
+
+  /**
+   * Check if there's an active job for a specific photo
+   */
+  hasActiveJobForPhoto(photoId: string): boolean {
+    return this.queue.some(job => job.photoId === photoId);
+  }
+
+  /**
+   * Check if the queue has any active processing
+   */
+  isProcessingActive(): boolean {
+    return this.processing || this.queue.length > 0;
   }
 }
 

@@ -4,6 +4,39 @@ Contestio is a live fishing competition platform offering multi-role management 
 
 The platform is expanding with a "Fishing Diary" module for personal catch logging, including freemium tiers (FREE: 1 trip/20 catches; PREMIUM: unlimited, battles). Recent key features include instant catch saving with background photo uploads, a dark theme, a weather forecast module with a premium "Fish Activity Index", a favorites system for competitions and teams, clickable statistics cards on the diary dashboard, enhanced toast notifications with emoji icons and color-coded success states, and a global Floating Action Button (FAB) for instant catch entry across all diary pages. The battle system has been enhanced with automatic catch assignment, minimum weight filtering, and optimized login.
 
+## Photo Processing System (January 2025)
+
+Robust background photo processing with automatic recovery:
+
+### Architecture
+- **PhotoJobQueue**: In-memory job queue with retry logic (3 attempts max)
+- **ImageService**: Creates WebP/JPEG variants at 200w, 800w, 1920w
+- **Storage**: `attached_assets/diary_photos/{userId}/` for new photos
+
+### Auto-Recovery Features
+1. **Photo Cleanup Scheduler**: Runs every 5 minutes (`startPhotoCleanupScheduler()`)
+   - Waits 5 minutes after server start before first run (to let normal processing complete)
+   - Checks `processingStartedAt` timestamp on each photo
+   - Only recovers photos stuck in 'processing' for > 5 minutes
+   - Sets status to 'ready' using originalUrl as fallback
+   - Logs recovery: `[PHOTO_CLEANUP] Fixing stuck photo {id} - processing for X min`
+
+2. **Original File Preservation**: Original file kept until variants successfully created
+
+3. **Frontend Fallbacks**:
+   - Shows original photo immediately with "Optimalizujem..." badge when processing
+   - Falls back to `photo.originalUrl` if `photo.url` is empty
+   - Placeholder fish icon if no photo URL available
+
+4. **Timestamp Tracking**: Each photo has `processingStartedAt` ISO timestamp for accurate stuck detection
+
+### URL Detection
+`ImageService.detectUrlBase()` handles multiple storage paths:
+- `attached_assets/diary_photos/{userId}` - new photos
+- `uploads/diary_photos/{userId}` - legacy photos
+- `uploads/users/{userId}` - avatars
+- `uploads/competitions/{id}` - competition images
+
 ## QR Code Sharing (December 2024)
 
 "Scan-and-Go" QR code feature for quick onboarding:
