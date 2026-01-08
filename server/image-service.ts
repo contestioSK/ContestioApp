@@ -25,10 +25,14 @@ export class ImageService {
   static async processImage(
     inputPath: string,
     outputBasePath: string,
-    baseFilename: string
+    baseFilename: string,
+    urlBasePath?: string
   ): Promise<ProcessedImageResult> {
     // Create output directory if it doesn't exist
     const outputDir = path.dirname(outputBasePath);
+    
+    // Determine URL base path - detect from output directory if not provided
+    const effectiveUrlBase = urlBasePath || ImageService.detectUrlBase(outputDir);
     if (!existsSync(outputDir)) {
       await fs.mkdir(outputDir, { recursive: true });
     }
@@ -78,7 +82,7 @@ export class ImageService {
           (async () => {
             const filename = `${baseFilename}-${targetWidth}w.${format}`;
             const outputPath = path.join(outputDir, filename);
-            const url = `/uploads/${path.relative('uploads', outputPath).replace(/\\/g, '/')}`;
+            const url = `${effectiveUrlBase}/${filename}`;
 
             try {
               let processedVariant = processedImage
@@ -173,5 +177,28 @@ export class ImageService {
 
     // Return the smallest suitable variant
     return suitableVariants[0];
+  }
+
+  static detectUrlBase(outputDir: string): string {
+    const normalizedPath = outputDir.replace(/\\/g, '/');
+    
+    if (normalizedPath.includes('attached_assets/diary_photos/')) {
+      const match = normalizedPath.match(/attached_assets\/diary_photos\/([^/]+)/);
+      if (match) {
+        return `/attached_assets/diary_photos/${match[1]}`;
+      }
+    }
+    
+    if (normalizedPath.includes('attached_assets/')) {
+      const relativePath = normalizedPath.split('attached_assets/')[1] || '';
+      return `/attached_assets/${relativePath}`.replace(/\/$/, '');
+    }
+    
+    if (normalizedPath.includes('uploads/')) {
+      const relativePath = normalizedPath.split('uploads/')[1] || '';
+      return `/uploads/${relativePath}`.replace(/\/$/, '');
+    }
+    
+    return `/uploads`;
   }
 }
