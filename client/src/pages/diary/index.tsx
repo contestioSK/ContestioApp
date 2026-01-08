@@ -175,8 +175,8 @@ function PhotoCarousel({ photos, onPhotoClick }: { photos: (string | PhotoObject
     const any800 = photo.variants?.find(v => v.width === 800);
     if (any800) return any800.url;
     
-    // Use main URL
-    return photo.url;
+    // Use main URL, fallback to originalUrl if url is empty or undefined
+    return photo.url || photo.originalUrl || '';
   };
 
   // Helper to get photo status
@@ -197,13 +197,19 @@ function PhotoCarousel({ photos, onPhotoClick }: { photos: (string | PhotoObject
             
             return (
               <div key={typeof photo === 'string' ? index : photo.id} className="flex-[0_0_100%] min-w-0 relative">
-                <img 
-                  src={photoUrl} 
-                  alt={`Fotografia úlovku ${index + 1}`}
-                  className="w-full h-48 sm:h-64 object-cover cursor-pointer hover:opacity-80 transition-opacity"
-                  onClick={() => status !== 'processing' && onPhotoClick(photoUrl)}
-                  data-testid={`catch-photo-${index}`}
-                />
+                {photoUrl ? (
+                  <img 
+                    src={photoUrl} 
+                    alt={`Fotografia úlovku ${index + 1}`}
+                    className="w-full h-48 sm:h-64 object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() => status !== 'processing' && onPhotoClick(photoUrl)}
+                    data-testid={`catch-photo-${index}`}
+                  />
+                ) : (
+                  <div className="w-full h-48 sm:h-64 bg-muted flex items-center justify-center">
+                    <Fish className="w-16 h-16 text-muted-foreground/30" />
+                  </div>
+                )}
                 {status === 'processing' && (
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                     <Loader2 className="w-8 h-8 text-white animate-spin" />
