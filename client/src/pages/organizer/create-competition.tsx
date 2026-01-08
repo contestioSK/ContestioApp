@@ -300,7 +300,7 @@ export default function CreateCompetition() {
     onError: (error: any) => {
       toast({
         title: "Chyba pri ukladaní",
-        description: error.message || "Skúste znovu",
+        description: error.message || "Skúste to znovu.",
         variant: "destructive",
       });
     },

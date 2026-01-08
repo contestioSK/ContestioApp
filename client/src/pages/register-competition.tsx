@@ -99,7 +99,7 @@ export default function RegisterCompetition() {
     } catch (error: any) {
       toast({
         title: "Nepodarilo sa vytvoriť registráciu",
-        description: error.message || "Prosím skúste znovu.",
+        description: error.message || "Prosím, skúste to znovu.",
         variant: "destructive",
       });
     } finally {
