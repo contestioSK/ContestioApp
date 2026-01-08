@@ -1,5 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
+
+const FISHING_TIME_DISMISSED_KEY = 'fishingTimeNotificationDismissed';
 
 type ClosingTimeResult = {
   closingTime: string | null;
@@ -39,10 +41,36 @@ function isWithin30MinutesOfClosing(closingHour: number): boolean {
   return currentTotalMinutes >= alertTotalMinutes && currentTotalMinutes < closingTotalMinutes;
 }
 
+function isDismissedToday(): boolean {
+  try {
+    const dismissed = localStorage.getItem(FISHING_TIME_DISMISSED_KEY);
+    if (!dismissed) return false;
+    
+    const today = new Date().toDateString();
+    return dismissed === today;
+  } catch {
+    return false;
+  }
+}
+
+function dismissForToday(): void {
+  try {
+    const today = new Date().toDateString();
+    localStorage.setItem(FISHING_TIME_DISMISSED_KEY, today);
+  } catch {
+    // localStorage not available
+  }
+}
+
 export function useFishingTimeGuard() {
-  const { toast } = useToast();
-  const hasNotifiedRef = useRef(false);
-  const lastNotificationDateRef = useRef<string | null>(null);
+  const { toast, dismiss } = useToast();
+
+  const handleDismiss = useCallback((toastId?: string) => {
+    dismissForToday();
+    if (toastId) {
+      dismiss(toastId);
+    }
+  }, [dismiss]);
 
   useEffect(() => {
     function checkFishingTime() {
@@ -53,25 +81,24 @@ export function useFishingTimeGuard() {
         return;
       }
 
-      // Check if we should show notification
-      const today = new Date().toDateString();
-      const shouldNotify = isWithin30MinutesOfClosing(closingHour);
-      
-      // Reset notification flag if it's a new day
-      if (lastNotificationDateRef.current !== today) {
-        hasNotifiedRef.current = false;
-        lastNotificationDateRef.current = today;
+      // Check if already dismissed today (persists across page refreshes)
+      if (isDismissedToday()) {
+        return;
       }
 
-      // Show notification only once per day
-      if (shouldNotify && !hasNotifiedRef.current) {
-        hasNotifiedRef.current = true;
+      // Check if we should show notification
+      const shouldNotify = isWithin30MinutesOfClosing(closingHour);
+
+      // Show notification
+      if (shouldNotify) {
+        // Mark as dismissed so we don't show again this session
+        dismissForToday();
         
         toast({
           title: "🎣 Pozor na čas lovu!",
           description: `Je to škoda, ale o ${closingTime} končí doba lovu. Nezabudni vytiahnuť udice!`,
           variant: "default",
-          duration: 20000,
+          duration: 30000, // 30 seconds - gives user time to read and dismiss
           className: "bg-amber-100 dark:bg-amber-900/80 border-l-4 border-amber-500 text-amber-800 dark:text-amber-100",
         });
       }
@@ -87,5 +114,5 @@ export function useFishingTimeGuard() {
   }, [toast]);
 
   // Return current closing time info for potential UI display
-  return getClosingTime();
+  return { ...getClosingTime(), dismissForToday: handleDismiss };
 }
