@@ -124,6 +124,7 @@ const step2Schema = z.object({
   rules: z.string().optional(),
   scoringType: z.enum(["total", "avg3", "avg5"]).default("total"),
   minWeight: z.coerce.number().min(1).max(15).default(2),
+  resultBlocking: z.enum(["none", "12h", "24h"]).default("none"),
   firstPlacePrize: z.string().optional(),
   secondPlacePrize: z.string().optional(),
   thirdPlacePrize: z.string().optional(),
@@ -178,6 +179,7 @@ export default function CreateCompetition() {
       rules: "",
       scoringType: "total",
       minWeight: 2,
+      resultBlocking: "none",
       firstPlacePrize: "",
       secondPlacePrize: "",
       thirdPlacePrize: "",
@@ -208,6 +210,7 @@ export default function CreateCompetition() {
         rules: existingCompetition.rules || "",
         scoringType: (existingCompetition.scoringType as "total" | "avg3" | "avg5") || "total",
         minWeight: existingCompetition.minWeight ? parseFloat(existingCompetition.minWeight) : 2,
+        resultBlocking: (existingCompetition.resultBlocking as "none" | "12h" | "24h") || "none",
         firstPlacePrize: existingCompetition.firstPlacePrize || "",
         secondPlacePrize: existingCompetition.secondPlacePrize || "",
         thirdPlacePrize: existingCompetition.thirdPlacePrize || "",
@@ -372,7 +375,7 @@ export default function CreateCompetition() {
         return; // Stop here, don't continue to the normal flow
       }
     } else if (currentStep === 3) {
-      isValid = await form.trigger(['description', 'rules', 'scoringType', 'minWeight']);
+      isValid = await form.trigger(['description', 'rules', 'scoringType', 'minWeight', 'resultBlocking']);
       
       // Validate maxTeams against plan limit
       const maxTeamsValue = form.getValues('maxTeams');
@@ -843,6 +846,32 @@ export default function CreateCompetition() {
                       />
                     </div>
 
+                    <FormField
+                      control={form.control}
+                      name="resultBlocking"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Skrytie výsledkov pred koncom</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger data-testid="select-result-blocking">
+                                <SelectValue placeholder="Vyberte možnosť" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="none">Žiadne - výsledky vždy viditeľné</SelectItem>
+                              <SelectItem value="12h">Skryť posledných 12 hodín</SelectItem>
+                              <SelectItem value="24h">Skryť posledných 24 hodín</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormDescription>
+                            Zamrazí tabuľku pre divákov a rozhodcov. Výsledky uvidia len organizátor a admin.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <FormField
                         control={form.control}
@@ -1157,6 +1186,14 @@ export default function CreateCompetition() {
                       <div className="space-y-2">
                         <p className="text-sm text-muted-foreground">Min. váha</p>
                         <p className="font-medium">{form.getValues('minWeight')} kg</p>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-sm text-muted-foreground">Skrytie výsledkov</p>
+                        <p className="font-medium">
+                          {form.getValues('resultBlocking') === 'none' ? 'Nie' :
+                           form.getValues('resultBlocking') === '12h' ? 'Posledných 12h' :
+                           'Posledných 24h'}
+                        </p>
                       </div>
                       <div className="space-y-2">
                         <p className="text-sm text-muted-foreground">Sektory</p>

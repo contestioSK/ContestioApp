@@ -1682,7 +1682,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         'name', 'description', 'rules', 'location', 'startDate', 'endDate',
         'firstPlacePrize', 'secondPlacePrize', 'thirdPlacePrize', 'registrationFee',
         'maxTeams', 'hasSectors', 'sectorPlaces', 'sideCompetitions', 'scoringType',
-        'minWeight', 'planTier', 'contactEmail', 'contactPhone'
+        'minWeight', 'planTier', 'contactEmail', 'contactPhone', 'resultBlocking'
       ];
       
       // SECURITY: paymentStatus can ONLY be updated by admin or Stripe webhook

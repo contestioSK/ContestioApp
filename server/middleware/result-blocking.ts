@@ -29,14 +29,30 @@ export const checkResultBlocking = async (
       user = await storage.getUser((req as any).user.claims.sub);
     }
 
-    // Bypass blocking for organizers, referees, and admins
-    if (user && ['organizer', 'referee', 'admin'].includes(user.role)) {
-      console.log(`[ResultBlocking] Bypassing block for ${user.role}: ${user.email}`);
+    // Check if results are blocked for this competition
+    const isBlocked = await storage.isResultBlocked(competitionId);
+    
+    if (!isBlocked) {
       return next();
     }
 
-    // Check if results are blocked for this competition
-    const isBlocked = await storage.isResultBlocked(competitionId);
+    // During blackout, only admin and the competition's organizer can see results
+    // Referees are excluded to prevent info leaks
+    if (user?.role === 'admin') {
+      console.log(`[ResultBlocking] Bypassing block for admin: ${user.email}`);
+      return next();
+    }
+
+    // Check if user is the organizer of this specific competition
+    if (user?.role === 'organizer') {
+      const competition = await storage.getCompetition(competitionId);
+      if (competition && competition.organizerId === user.id) {
+        console.log(`[ResultBlocking] Bypassing block for competition organizer: ${user.email}`);
+        return next();
+      }
+    }
+
+    // Results are blocked for everyone else (including referees)
     
     if (isBlocked) {
       const competition = await storage.getCompetition(competitionId);
@@ -84,19 +100,30 @@ export const checkPartialResultBlocking = async (
       user = await storage.getUser((req as any).user.claims.sub);
     }
 
-    // Bypass blocking for organizers, referees, and admins
-    if (user && ['organizer', 'referee', 'admin'].includes(user.role)) {
-      return next();
-    }
-
     // Check if results are blocked
     const isBlocked = await storage.isResultBlocked(competitionId);
     
-    if (isBlocked) {
-      // Add flag to request to indicate partial blocking
-      (req as any).partialBlocking = true;
-      console.log(`[ResultBlocking] Partial blocking active for competition: ${competitionId}`);
+    if (!isBlocked) {
+      return next();
     }
+
+    // During blackout, only admin and the competition's organizer can see full results
+    // Referees are excluded to prevent info leaks
+    if (user?.role === 'admin') {
+      return next();
+    }
+
+    // Check if user is the organizer of this specific competition
+    if (user?.role === 'organizer') {
+      const competition = await storage.getCompetition(competitionId);
+      if (competition && competition.organizerId === user.id) {
+        return next();
+      }
+    }
+
+    // Add flag to request to indicate partial blocking for everyone else
+    (req as any).partialBlocking = true;
+    console.log(`[ResultBlocking] Partial blocking active for competition: ${competitionId}`);
 
     next();
     
@@ -137,21 +164,32 @@ export const checkPartialResultBlockingByTeam = async (
       user = await storage.getUser((req as any).user.claims.sub);
     }
 
-    // Bypass blocking for organizers, referees, and admins
-    if (user && ['organizer', 'referee', 'admin'].includes(user.role)) {
-      console.log(`[ResultBlocking] Bypassing partial block for ${user.role}: ${user.email}`);
-      return next();
-    }
-
     // Check if results are blocked for this competition
     const isBlocked = await storage.isResultBlocked(competitionId);
     
-    if (isBlocked) {
-      console.log(`[ResultBlocking] Partial blocking active for team ${teamId} in competition ${competitionId}`);
-      
-      // Set partial blocking flag for the route handler
-      (req as any).partialBlocking = true;
+    if (!isBlocked) {
+      return next();
     }
+
+    // During blackout, only admin and the competition's organizer can see full results
+    // Referees are excluded to prevent info leaks
+    if (user?.role === 'admin') {
+      console.log(`[ResultBlocking] Bypassing partial block for admin: ${user.email}`);
+      return next();
+    }
+
+    // Check if user is the organizer of this specific competition
+    if (user?.role === 'organizer') {
+      const competition = await storage.getCompetition(competitionId);
+      if (competition && competition.organizerId === user.id) {
+        console.log(`[ResultBlocking] Bypassing partial block for competition organizer: ${user.email}`);
+        return next();
+      }
+    }
+
+    // Set partial blocking flag for everyone else (including referees)
+    console.log(`[ResultBlocking] Partial blocking active for team ${teamId} in competition ${competitionId}`);
+    (req as any).partialBlocking = true;
 
     // Continue to route handler
     next();
