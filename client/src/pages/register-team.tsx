@@ -205,7 +205,7 @@ export default function RegisterTeam() {
     } catch (error: any) {
       toast({
         title: "Registrácia zlyhala",
-        description: error.message || "Nepodarilo sa zaregistrovať tím. Prosím skúste znovu.",
+        description: error.message || "Nepodarilo sa zaregistrovať tím. Prosím, skúste to znovu.",
         variant: "destructive",
       });
     } finally {

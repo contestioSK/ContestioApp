@@ -118,14 +118,14 @@ export function useToggleFavoriteCompetition() {
   return {
     addFavorite: (id: string) => {
       if (!user?.id) {
-        toast({ title: "Chyba", description: "Musíte byť prihlásený", variant: "destructive" });
+        toast({ title: "Chyba", description: "Musíte byť prihlásení", variant: "destructive" });
         return;
       }
       addMutation.mutate(id);
     },
     removeFavorite: (id: string) => {
       if (!user?.id) {
-        toast({ title: "Chyba", description: "Musíte byť prihlásený", variant: "destructive" });
+        toast({ title: "Chyba", description: "Musíte byť prihlásení", variant: "destructive" });
         return;
       }
       removeMutation.mutate(id);
@@ -215,14 +215,14 @@ export function useToggleFavoriteTeam() {
   return {
     addFavorite: (id: string) => {
       if (!user?.id) {
-        toast({ title: "Chyba", description: "Musíte byť prihlásený", variant: "destructive" });
+        toast({ title: "Chyba", description: "Musíte byť prihlásení", variant: "destructive" });
         return;
       }
       addMutation.mutate(id);
     },
     removeFavorite: (id: string) => {
       if (!user?.id) {
-        toast({ title: "Chyba", description: "Musíte byť prihlásený", variant: "destructive" });
+        toast({ title: "Chyba", description: "Musíte byť prihlásení", variant: "destructive" });
         return;
       }
       removeMutation.mutate(id);

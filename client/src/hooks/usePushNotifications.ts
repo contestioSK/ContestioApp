@@ -156,7 +156,7 @@ export function usePushNotifications() {
     } catch (error) {
       console.error('[Push] Subscription failed:', error);
       toast({
-        title: "Chyba subscripcie",
+        title: "Chyba prihlásenia",
         description: "Nepodarilo sa pripojiť k push notifikáciám",
         variant: "destructive",
       });

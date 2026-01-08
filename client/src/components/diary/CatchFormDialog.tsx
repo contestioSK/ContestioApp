@@ -504,7 +504,7 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
     if (!datetime) {
       toast({
         title: "Chýbajúci dátum",
-        description: "Prosím zadajte dátum a čas úlovku pred načítaním počasia.",
+        description: "Prosím, zadajte dátum a čas úlovku pred načítaním počasia.",
         variant: "destructive",
       });
       return;
