@@ -503,6 +503,116 @@ async function startDayBeforeCompetitionScheduler() {
   log('[SCHEDULER] Day-before competition scheduler started (60min intervals)');
 }
 
+// Photo processing cleanup scheduler - fixes stuck photos
+async function startPhotoCleanupScheduler() {
+  const SCHEDULER_INTERVAL = 5 * 60 * 1000; // Check every 5 minutes
+  const STUCK_THRESHOLD_MS = 5 * 60 * 1000; // Consider stuck after 5 minutes
+  
+  async function cleanupStuckPhotos() {
+    try {
+      const { photoJobQueue } = await import('./photo-job-queue');
+      const { db } = await import('./db');
+      const { diaryCatches } = await import('@shared/schema');
+      const { sql } = await import('drizzle-orm');
+      
+      // Query only catches that have photos with 'processing' status
+      const catchesWithProcessingPhotos = await db
+        .select()
+        .from(diaryCatches)
+        .where(sql`photos::text LIKE '%"status":"processing"%'`);
+      
+      if (catchesWithProcessingPhotos.length === 0) {
+        return; // No stuck photos to process
+      }
+      
+      const now = Date.now();
+      let fixedCount = 0;
+      
+      for (const catch_ of catchesWithProcessingPhotos) {
+        if (!catch_.photos || !Array.isArray(catch_.photos)) continue;
+        
+        const photos = catch_.photos as any[];
+        let needsUpdate = false;
+        
+        const updatedPhotos = photos.map((photo: any) => {
+          if (typeof photo !== 'object') return photo;
+          
+          // Check if photo is stuck in processing
+          if (photo.status === 'processing') {
+            // Skip if there's an active job for this photo
+            if (photo.id && photoJobQueue.hasActiveJobForPhoto(photo.id)) {
+              return photo;
+            }
+            
+            let isStuck = false;
+            
+            // Check timestamp - only consider stuck if processing started more than threshold ago
+            if (photo.processingStartedAt) {
+              const startedAt = new Date(photo.processingStartedAt).getTime();
+              const elapsed = now - startedAt;
+              isStuck = elapsed > STUCK_THRESHOLD_MS;
+              
+              if (!isStuck) {
+                // Photo is still within normal processing time
+                return photo;
+              }
+            } else {
+              // No timestamp means legacy photo - assume stuck
+              isStuck = true;
+            }
+            
+            if (isStuck && photo.originalUrl) {
+              // Mark as ready with original URL as fallback
+              needsUpdate = true;
+              fixedCount++;
+              const elapsedMinutes = photo.processingStartedAt 
+                ? Math.round((now - new Date(photo.processingStartedAt).getTime()) / 60000)
+                : 'unknown';
+              console.log(`[PHOTO_CLEANUP] Fixing stuck photo ${photo.id} - processing for ${elapsedMinutes} min, using originalUrl`);
+              return {
+                ...photo,
+                status: 'ready',
+                url: photo.originalUrl,
+                _recoveredAt: new Date().toISOString(),
+                _wasStuck: true
+              };
+            }
+          }
+          
+          return photo;
+        });
+        
+        if (needsUpdate) {
+          await db
+            .update(diaryCatches)
+            .set({ 
+              photos: sql`${JSON.stringify(updatedPhotos)}::jsonb`,
+              updatedAt: new Date()
+            })
+            .where(sql`id = ${catch_.id}`);
+          
+          console.log(`[PHOTO_CLEANUP] Updated catch ${catch_.id} with fixed photos`);
+        }
+      }
+      
+      if (fixedCount > 0) {
+        log(`[SCHEDULER] Photo cleanup: Fixed ${fixedCount} stuck photo(s)`);
+      }
+    } catch (error) {
+      console.error('[SCHEDULER] Error in photo cleanup scheduler:', error);
+    }
+  }
+  
+  // Don't run immediately on startup - let processing queue handle fresh uploads first
+  // Start cleanup after initial delay
+  setTimeout(async () => {
+    await cleanupStuckPhotos();
+    // Then run every 5 minutes
+    setInterval(cleanupStuckPhotos, SCHEDULER_INTERVAL);
+    log('[SCHEDULER] Photo cleanup scheduler started (5min intervals)');
+  }, SCHEDULER_INTERVAL); // Wait 5 minutes before first cleanup run
+}
+
 (async () => {
   const { server, broadcastToUsers } = await registerRoutes(app);
 
@@ -550,6 +660,7 @@ async function startDayBeforeCompetitionScheduler() {
   startRefereeCleanupScheduler();
   startCompetitionReminderScheduler();
   startDayBeforeCompetitionScheduler();
+  startPhotoCleanupScheduler();
 
   server.listen({
     port,

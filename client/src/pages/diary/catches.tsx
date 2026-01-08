@@ -214,7 +214,13 @@ function PhotoCarousel({ photos, onPhotoClick }: { photos: (string | PhotoObject
                     <Fish className="w-16 h-16 text-muted-foreground/30" />
                   </div>
                 )}
-                {status === 'processing' && (
+                {status === 'processing' && photoUrl && (
+                  <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    <span>Optimalizujem...</span>
+                  </div>
+                )}
+                {status === 'processing' && !photoUrl && (
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                     <Loader2 className="w-8 h-8 text-white animate-spin" />
                   </div>
