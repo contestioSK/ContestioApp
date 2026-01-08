@@ -2414,6 +2414,39 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         });
       }
 
+      // Date validation for status transitions (admins can override)
+      const isAdmin = user?.role === 'admin';
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // For transition to 'live': must be on the start date (day comparison only)
+      if (status === 'live' && !isAdmin && existingCompetition.startDate) {
+        const startDate = new Date(existingCompetition.startDate);
+        startDate.setHours(0, 0, 0, 0);
+        
+        if (today.getTime() !== startDate.getTime()) {
+          return res.status(400).json({ 
+            message: "Súťaž je možné spustiť len v deň začiatku. Kontaktujte administrátora.",
+            startDate: existingCompetition.startDate,
+            today: today.toISOString()
+          });
+        }
+      }
+
+      // For transition to 'finished': must be on the end date (day comparison only)
+      if (status === 'finished' && !isAdmin && existingCompetition.endDate) {
+        const endDate = new Date(existingCompetition.endDate);
+        endDate.setHours(0, 0, 0, 0);
+        
+        if (today.getTime() !== endDate.getTime()) {
+          return res.status(400).json({ 
+            message: "Súťaž je možné ukončiť len v deň ukončenia. Kontaktujte administrátora.",
+            endDate: existingCompetition.endDate,
+            today: today.toISOString()
+          });
+        }
+      }
+
       await storage.updateCompetitionStatus(req.params.id, status);
       
       // Broadcast status update
