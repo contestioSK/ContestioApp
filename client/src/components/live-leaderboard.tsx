@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { RotateCcw, ArrowRight, Trophy } from "lucide-react";
+import { RotateCcw, ArrowRight, Trophy, EyeOff } from "lucide-react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import type { Team, TeamMember, Competition } from "@shared/schema";
@@ -79,9 +79,13 @@ export default function LiveLeaderboard({ teams, isLoading, competitionId }: Liv
     );
   }
 
+  // Check if results are blocked (all teams have null totalWeight)
+  const approvedTeams = teams.filter(team => team.status === 'approved');
+  const isResultsBlocked = approvedTeams.length > 0 && 
+    approvedTeams.every(team => team.totalWeight === null);
+
   // Sort teams by total weight (descending)
-  const sortedTeams = [...teams]
-    .filter(team => team.status === 'approved')
+  const sortedTeams = [...approvedTeams]
     .sort((a, b) => parseFloat(b.totalWeight || '0') - parseFloat(a.totalWeight || '0'));
 
   const getRankBadge = (rank: number) => {
@@ -148,7 +152,13 @@ export default function LiveLeaderboard({ teams, isLoading, competitionId }: Liv
           <div className="flex flex-col space-y-2">
             <div className="flex items-center gap-2">
               <CardTitle>Aktuálna tabuľka</CardTitle>
-              {sortedTeams.length > 10 && (
+              {isResultsBlocked && (
+                <Badge variant="outline" className="text-xs bg-orange-100 text-orange-700 border-orange-300 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-700">
+                  <EyeOff className="w-3 h-3 mr-1" />
+                  Výsledky skryté
+                </Badge>
+              )}
+              {!isResultsBlocked && sortedTeams.length > 10 && (
                 <Badge variant="secondary" className="text-xs">
                   Top 10 z {sortedTeams.length}
                 </Badge>
@@ -164,7 +174,21 @@ export default function LiveLeaderboard({ teams, isLoading, competitionId }: Liv
       </CardHeader>
       
       <CardContent className="p-0 flex-1 flex flex-col">
-        {sortedTeams.length === 0 ? (
+        {isResultsBlocked ? (
+          <div className="text-center py-12 px-6 bg-orange-50/50 dark:bg-orange-900/10 border-t border-orange-200 dark:border-orange-800">
+            <EyeOff className="w-12 h-12 mx-auto text-orange-400 mb-4" />
+            <h3 className="text-lg font-semibold text-orange-700 dark:text-orange-400 mb-2">
+              Výsledky sú dočasne skryté
+            </h3>
+            <p className="text-muted-foreground max-w-md mx-auto">
+              Priebežné výsledky sú skryté pred koncom súťaže. 
+              Finálne poradie sa dozviete pri oficiálnom vyhlásení.
+            </p>
+            <p className="text-sm text-muted-foreground mt-4">
+              Počet tímov: <span className="font-semibold">{approvedTeams.length}</span>
+            </p>
+          </div>
+        ) : sortedTeams.length === 0 ? (
           <div className="text-center py-12 px-6">
             <p className="text-muted-foreground text-lg">Zatiaľ žiadne schválené tímy</p>
           </div>
