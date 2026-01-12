@@ -2,9 +2,9 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Menu, X, Heart } from "lucide-react";
 import { NotificationCenter } from "@/components/diary/notification-center";
+import { ModeSwitcher } from "@/components/ModeSwitcher";
 import contestioLogo from "@assets/contestio logo_1760283270014.png";
 
 export default function NavigationHeader() {
@@ -34,36 +34,6 @@ export default function NavigationHeader() {
     { href: "/contact", label: "Kontakt" },
     { href: "/organizer/create", label: "Vytvoriť súťaž" },
   ];
-
-  const getRoleDisplayName = (role: string) => {
-    switch (role) {
-      case 'organizer':
-        return 'Panel organizátora';
-      case 'admin':
-        return 'Admin panel';
-      case 'referee':
-        return 'Rozhranie rozhodcu';
-      default:
-        return 'Verejné zobrazenie';
-    }
-  };
-
-  const handleRoleChange = (newRole: string) => {
-    switch (newRole) {
-      case 'public':
-        setLocation('/');
-        break;
-      case 'organizer':
-        setLocation('/admin-panel');
-        break;
-      case 'admin':
-        setLocation('/admin-panel');
-        break;
-      case 'referee':
-        setLocation('/referee-interface');
-        break;
-    }
-  };
 
   return (
     <header 
@@ -117,27 +87,7 @@ export default function NavigationHeader() {
           <div className="flex items-center space-x-3">
             {isAuthenticated && user && (
               <div className="hidden sm:flex items-center space-x-2">
-                <Select 
-                  value={user.role} 
-                  onValueChange={handleRoleChange}
-                  data-testid="select-role"
-                >
-                  <SelectTrigger className="w-40 bg-white/10 border-white/20 text-white text-sm">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#1a2332] border-white/20 text-white">
-                    <SelectItem value="public" className="text-white focus:bg-orange-500 focus:text-white">Verejné zobrazenie</SelectItem>
-                    {user.role === 'organizer' && (
-                      <SelectItem value="organizer" className="text-white focus:bg-orange-500 focus:text-white">Panel organizátora</SelectItem>
-                    )}
-                    {user.role === 'admin' && (
-                      <SelectItem value="admin" className="text-white focus:bg-orange-500 focus:text-white">Admin panel</SelectItem>
-                    )}
-                    {user.role === 'referee' && (
-                      <SelectItem value="referee" className="text-white focus:bg-orange-500 focus:text-white">Rozhranie rozhodcu</SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
+                <ModeSwitcher />
               </div>
             )}
             

@@ -1,0 +1,223 @@
+Inteligentný Auth Systém s Režimami (User / Referee / Organizer)
+Cieľ
+
+Implementovať robustný prihlasovací a režimový systém pre platformu Contestio, ktorý striktne oddeľuje oprávnenia (roly) od aktívneho režimu používateľa (UX).
+
+Používateľ môže mať viacero rolí naraz (user, referee, organizer), ale v jednom momente môže pracovať iba v jednom režime aplikácie.
+
+Základné princípy (NEPORUŠITEĽNÉ)
+1. Roly ≠ Režimy
+
+ROLY (backend, permissions):
+
+user – každý prihlásený používateľ
+
+referee – viazaná na konkrétnu súťaž
+
+organizer – viazaná na konkrétnu súťaž
+
+Používateľ môže mať viacero rolí naraz.
+
+REŽIMY (frontend, UX):
+
+user (Denník)
+
+referee (Rozhodca)
+
+organizer (Organizátor)
+
+👉 Používateľ môže mať aktívny iba jeden režim naraz (activeMode).
+
+Post-Login Logic (Role Checking)
+
+Po úspešnom prihlásení:
+
+Backend endpoint /me/context vráti:
+
+dostupné roly používateľa
+
+zoznam súťaží, kde je:
+
+referee
+
+organizer
+
+iba súťaže, ktoré:
+
+majú status active
+
+aktuálny čas je medzi startDate a endDate
+
+Súťaže so statusom draft alebo completed sa ignorujú pre aktívne režimy.
+
+Logika po prihlásení (Redirect Flow)
+Prípad A – Používateľ má iba rolu user
+
+➡️ automaticky presmeruj do:
+
+Denník (user mode)
+➡️ NEZOBRAZUJ Role Selector
+
+Prípad B – Používateľ má:
+
+user + referee alebo
+
+user + organizer
+
+➡️ zobraz RoleSelectionScreen
+
+Prípad C – Používateľ má:
+
+user + referee + organizer
+(napr. organizátor je zároveň rozhodca)
+
+➡️ zobraz rozšírený RoleSelectionScreen s tromi možnosťami
+
+RoleSelectionScreen (UX požiadavky)
+Dizajn
+
+Dark mode
+
+Glassmorphism
+
+Framer Motion animácie (hover, entry, selection)
+
+Karty (dynamicky podľa rolí)
+🎣 Karta – Rybár (User mode)
+
+Nadpis: Pokračovať do Denníka
+
+Popis: „Tvoje úlovky a osobné štatistiky“
+
+CTA: Vstúpiť
+
+🏁 Karta – Rozhodca (Referee mode)
+
+Nadpis: Bodovať preteky
+
+Popis: názov aktívnej súťaže
+
+CTA: Spustiť váženie
+
+Ak má viac aktívnych súťaží → zobraz zoznam
+
+🧭 Karta – Organizátor (Organizer mode)
+
+Nadpis: Spravovať súťaž
+
+Popis: názov súťaže
+
+CTA: Otvoriť správu
+
+State Management
+
+Po výbere sa uloží:
+
+activeMode: 'user' | 'referee' | 'organizer'
+activeCompetitionId?: string
+
+
+Stav sa uloží do:
+
+React Context / Zustand
+
+session (nie localStorage)
+
+Navigácia – Prepínanie režimov
+
+Do hlavnej navigácie pridaj tlačidlo:
+
+„Prepnúť režim“
+
+Po kliknutí:
+
+zobraz modal / dropdown s dostupnými režimami
+
+prepnutie:
+
+nemení auth
+
+nemení Stripe
+
+nemení session
+
+mení iba activeMode
+
+Bezpečnosť (kritické)
+Backend pravidlá
+
+Každý chránený endpoint musí kontrolovať:
+
+activeMode + role + competitionId
+
+
+Príklady:
+
+Rozhodca (referee) NESMIE používať organizer endpointy
+
+Organizátor NESMIE vážiť ryby
+
+Aj keď má obe roly – rozhoduje aktívny režim
+
+Zmena stavu súťaže (Live → Completed)
+
+Ak organizátor ukončí súťaž:
+
+automaticky:
+
+zruš referee režim pre túto súťaž
+
+ďalší pokus o vstup → read-only režim
+
+pri ďalšom prihlásení:
+
+súťaž sa nezobrazí v Role Selectore ako aktívna
+
+Frontend komponenty
+
+Vytvor:
+
+RoleSelectionScreen.tsx
+
+useUserContext()
+
+ModeSwitcher.tsx
+
+Použi:
+
+React
+
+Framer Motion
+
+Dark UI
+
+Oranžové akcenty pre súťaže
+
+Modro-zelené tóny pre denník
+
+Zakázané riešenia
+
+❌ Miešanie režimov na jednej obrazovke
+❌ Automatický vstup do referee / organizer režimu bez výberu
+❌ Oprávnenia riešené iba na fronte
+❌ Prepínanie režimov bez backend validácie
+
+Verdikt (UX + architektúra)
+
+Týmto modelom:
+
+máš škálovateľný systém rolí
+
+eliminuješ chaos pri viacerých oprávneniach
+
+a zároveň máš čistý UX mentálny model pre používateľa
+
+Ak chceš ďalší krok, odporúčam:
+
+wireframe RoleSelectionScreen
+
+presný API kontrakt /me/context
+
+test scenáre (organizátor počas súťaže, strata role, multi-device login)
+
+Toto je architektúra, ktorú ti nebude treba prerábať o pol roka.
