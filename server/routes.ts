@@ -883,6 +883,58 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
+  // Competition history endpoint - returns competitions where user was a team member
+  app.get('/api/me/competition-history', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      
+      // Get all team memberships for this user
+      const memberships = await storage.getTeamMembershipsByUser(userId);
+      
+      // Transform to competition history format with biggest catch
+      const competitionHistory = await Promise.all(memberships.map(async m => {
+        const competition = m.team.competition;
+        
+        // Get team catches to find biggest one
+        const teamCatches = await storage.getCatchesByTeam(m.team.id);
+        const biggestCatch = teamCatches.length > 0 
+          ? teamCatches.reduce((max, c) => 
+              parseFloat(c.weight) > parseFloat(max.weight) ? c : max
+            )
+          : null;
+        
+        return {
+          id: competition.id,
+          name: competition.name,
+          startDate: competition.startDate,
+          endDate: competition.endDate,
+          location: competition.location,
+          status: competition.status,
+          teamId: m.team.id,
+          teamName: m.team.name,
+          teamPosition: m.team.position,
+          teamTotalWeight: m.team.totalWeight,
+          teamFishCount: m.team.fishCount,
+          memberRole: m.role,
+          biggestCatch: biggestCatch ? {
+            weight: biggestCatch.weight,
+            fishType: biggestCatch.fishType,
+          } : null,
+        };
+      }));
+      
+      // Sort by startDate descending (most recent first)
+      competitionHistory.sort((a, b) => 
+        new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+      );
+      
+      res.json(competitionHistory);
+    } catch (error) {
+      console.error("[HISTORY] Error fetching competition history:", error);
+      res.status(500).json({ message: "Failed to fetch competition history" });
+    }
+  });
+
   // Profile update endpoint
   app.patch('/api/auth/profile', isAuthenticated, async (req: any, res) => {
     try {

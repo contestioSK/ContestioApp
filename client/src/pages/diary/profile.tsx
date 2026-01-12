@@ -31,12 +31,39 @@ import {
   Target,
   ChevronDown,
   History,
-  Settings
+  Settings,
+  Trophy,
+  MapPin,
+  Fish,
+  Medal,
+  Scale,
+  ChevronRight
 } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { SiFacebook, SiInstagram } from "react-icons/si";
+import { useLocation } from "wouter";
 import DiaryLayout from "@/components/DiaryLayout";
 import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
+
+// Competition history type
+interface CompetitionHistoryItem {
+  id: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+  location: string;
+  status: string;
+  teamId: string;
+  teamName: string;
+  teamPosition: number | null;
+  teamTotalWeight: string | null;
+  teamFishCount: number | null;
+  memberRole: string | null;
+  biggestCatch: {
+    weight: string;
+    fishType: string;
+  } | null;
+}
 
 // Profile form schema - email removed (read-only)
 const profileSchema = z.object({
@@ -225,6 +252,7 @@ function ProfileSkeleton() {
 export default function Profile() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [isEditing, setIsEditing] = useState(false);
   const [showTechDetails, setShowTechDetails] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -236,6 +264,12 @@ export default function Profile() {
     enabled: !!user,
   });
   const isPremium = premiumStatus?.isPremium || false;
+
+  // Fetch competition history
+  const { data: competitionHistory = [], isLoading: isHistoryLoading } = useQuery<CompetitionHistoryItem[]>({
+    queryKey: ["/api/me/competition-history"],
+    enabled: !!user,
+  });
 
   const form = useForm<ProfileForm>({
     resolver: zodResolver(profileSchema),
@@ -748,6 +782,172 @@ export default function Profile() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Competition History Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Trophy className="w-5 h-5 text-amber-500" />
+                História pretekov
+              </CardTitle>
+              <CardDescription>
+                Súťaže, ktorých ste sa zúčastnili ako člen tímu
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isHistoryLoading ? (
+                <div className="space-y-4">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="flex items-center gap-4 p-4 rounded-lg border">
+                      <Skeleton className="h-12 w-12 rounded-full" />
+                      <div className="flex-1 space-y-2">
+                        <Skeleton className="h-4 w-48" />
+                        <Skeleton className="h-3 w-32" />
+                      </div>
+                      <Skeleton className="h-8 w-24" />
+                    </div>
+                  ))}
+                </div>
+              ) : competitionHistory.length === 0 ? (
+                <div className="text-center py-8">
+                  <Trophy className="w-12 h-12 mx-auto text-muted-foreground/30 mb-4" />
+                  <h3 className="font-medium text-muted-foreground mb-2">
+                    Zatiaľ žiadne preteky
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Keď sa zúčastníte súťaže ako člen tímu, objaví sa tu vaša história.
+                  </p>
+                  <Button
+                    variant="outline"
+                    className="mt-4"
+                    onClick={() => setLocation('/categories/live')}
+                  >
+                    Preskúmať súťaže
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {competitionHistory.map((item) => {
+                    const startDate = new Date(item.startDate);
+                    const endDate = new Date(item.endDate);
+                    const isCompleted = item.status === 'completed';
+                    const isLive = item.status === 'live';
+                    
+                    return (
+                      <div 
+                        key={`${item.id}-${item.teamId}`}
+                        className="group relative p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                      >
+                        <div className="flex items-start gap-4">
+                          <div className={`
+                            w-12 h-12 rounded-full flex items-center justify-center shrink-0
+                            ${isCompleted ? 'bg-emerald-500/10 text-emerald-500' : 
+                              isLive ? 'bg-amber-500/10 text-amber-500' : 
+                              'bg-muted text-muted-foreground'}
+                          `}>
+                            {isCompleted ? (
+                              <Medal className="w-6 h-6" />
+                            ) : isLive ? (
+                              <Trophy className="w-6 h-6" />
+                            ) : (
+                              <Calendar className="w-6 h-6" />
+                            )}
+                          </div>
+                          
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="font-medium text-foreground truncate">
+                                {item.name}
+                              </h4>
+                              <Badge 
+                                variant="secondary"
+                                className={
+                                  isCompleted ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' :
+                                  isLive ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 animate-pulse' :
+                                  ''
+                                }
+                              >
+                                {isCompleted ? 'Ukončená' : isLive ? 'LIVE' : item.status}
+                              </Badge>
+                            </div>
+                            
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground mb-2">
+                              <span className="flex items-center gap-1">
+                                <Calendar className="w-3.5 h-3.5" />
+                                {startDate.toLocaleDateString('sk-SK')} - {endDate.toLocaleDateString('sk-SK')}
+                              </span>
+                              {item.location && (
+                                <span className="flex items-center gap-1">
+                                  <MapPin className="w-3.5 h-3.5" />
+                                  {item.location}
+                                </span>
+                              )}
+                            </div>
+                            
+                            <div className="flex items-center gap-1 text-sm">
+                              <span className="font-medium text-primary">{item.teamName}</span>
+                              {item.memberRole === 'captain' && (
+                                <Badge variant="outline" className="text-xs px-1.5 py-0">
+                                  Kapitán
+                                </Badge>
+                              )}
+                            </div>
+                            
+                            {isCompleted && (
+                              <div className="flex flex-wrap items-center gap-3 mt-3 pt-3 border-t">
+                                {item.teamPosition && (
+                                  <div className="flex items-center gap-1.5">
+                                    <div className={`
+                                      w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold
+                                      ${item.teamPosition === 1 ? 'bg-amber-500 text-white' :
+                                        item.teamPosition === 2 ? 'bg-slate-400 text-white' :
+                                        item.teamPosition === 3 ? 'bg-amber-700 text-white' :
+                                        'bg-muted text-muted-foreground'}
+                                    `}>
+                                      {item.teamPosition}
+                                    </div>
+                                    <span className="text-sm text-muted-foreground">miesto</span>
+                                  </div>
+                                )}
+                                {item.teamTotalWeight && parseFloat(item.teamTotalWeight) > 0 && (
+                                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                    <Scale className="w-3.5 h-3.5" />
+                                    <span>{parseFloat(item.teamTotalWeight).toFixed(2)} kg</span>
+                                  </div>
+                                )}
+                                {item.teamFishCount && item.teamFishCount > 0 && (
+                                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                    <Fish className="w-3.5 h-3.5" />
+                                    <span>{item.teamFishCount} úlovkov</span>
+                                  </div>
+                                )}
+                                {item.biggestCatch && (
+                                  <div className="flex items-center gap-1 text-sm text-amber-600 dark:text-amber-400 font-medium">
+                                    <Trophy className="w-3.5 h-3.5" />
+                                    <span>Najväčší: {parseFloat(item.biggestCatch.weight).toFixed(2)} kg</span>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                          
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="shrink-0"
+                            onClick={() => setLocation(`/competition/${item.id}/leaderboard`)}
+                          >
+                            <span className="hidden sm:inline mr-1">Výsledky</span>
+                            <ChevronRight className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Diary Settings Section */}
           <Card>
