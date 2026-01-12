@@ -1,0 +1,169 @@
+Finálna logika práv po ukončení súťaže
+Stav súťaže: completed
+👨‍⚖️ Referee (Rozhodca)
+Po skončení súťaže:
+
+❌ stráca možnosť:
+
+vážiť ryby
+
+pridávať záznamy
+
+upravovať úlovky
+
+čokoľvek zapisovať
+
+👀 má iba Read-only prístup:
+
+výsledky
+
+váženia
+
+históriu úlovkov
+
+časovú os súťaže
+
+UX správanie:
+
+Súťaž sa:
+
+❌ nezobrazí ako aktívna v Role Selectore
+
+❌ nezobrazí v „Spustiť váženie“
+
+Ak sa k nej dostane cez priamy link:
+
+zobraz Read-only banner:
+
+„Súťaž je ukončená. Úpravy nie sú povolené.“
+
+👉 Referee režim pre túto súťaž je deaktivovaný, nie odstránený.
+
+🧭 Organizer (Organizátor)
+Po skončení súťaže:
+
+✅ zachováva plný prístup k dátam
+
+❌ nemôže meniť výsledky alebo váženia
+
+✅ môže:
+
+prehliadať všetky úlovky
+
+sťahovať fotky
+
+kopírovať odkazy
+
+generovať výstupy pre sociálne siete
+
+zdieľať výsledky
+
+UX správanie:
+
+Súťaž:
+
+✅ zostáva dostupná v Organizer režime
+
+❌ nie je označená ako „aktívna“
+
+✅ má badge „Ukončená súťaž“
+
+CTA príklady:
+
+„Zdieľať výsledky“
+
+„Stiahnuť galériu“
+
+„Zobraziť finálny rebríček“
+
+🎣 User (Bežný používateľ / Rybár)
+
+Vidí:
+
+výsledky
+
+poradie
+
+fotky (ak sú verejné)
+
+❌ nemá žiadne edit práva
+
+UX = pasívny konzument obsahu
+
+Rozšírenie Replit promptu (presná formulácia)
+
+Toto môžeš priamo prilepiť Replitu ako doplnenie:
+
+Post-Competition Permission Rules
+
+After competition status changes to completed:
+
+Referee:
+
+Loses all write permissions immediately
+
+Competition is removed from active referee context
+
+Any access is strictly read-only
+
+Referee mode must not be selectable for completed competitions
+
+Organizer:
+
+Retains full read access to all competition data
+
+May not modify results or weighings
+
+Explicitly allowed to:
+
+browse catch gallery
+
+download images
+
+share results to social media
+
+Organizer mode remains available for completed competitions
+
+UI Rules:
+
+Referee UI for completed competitions must be disabled or hidden
+
+Organizer UI must clearly indicate "Completed competition"
+
+All write actions must be hard-disabled on backend
+
+Bezpečnostná poznámka (dôležité)
+
+Toto NESMIE byť riešené iba na fronte.
+
+Backend musí:
+
+kontrolovať:
+
+competition.status
+
+user role
+
+activeMode
+
+odmietnuť každú write request po completed
+
+➡️ aj keby si niekto otvoril Postman.
+
+UX verdict (na rovinu)
+
+Toto riešenie je:
+
+🔥 logické pre rybársku realitu
+
+🧠 mentálne pochopiteľné (rozhodca = práca, organizátor = správa)
+
+📣 ideálne pre marketing (zdieľanie po súťaži)
+
+Ak chceš, ďalší krok by mohol byť:
+
+návrh Organizer post-competition dashboardu
+
+alebo automatický „Share pack“ (grafiky + texty pre Facebook / IG)
+
+Toto má veľmi dobrý základ.

@@ -750,6 +750,139 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
+  // Set active mode in session
+  app.post('/api/me/mode', isAuthenticated, async (req: any, res) => {
+    try {
+      const { mode, competitionId } = req.body;
+      
+      if (!['user', 'referee', 'organizer'].includes(mode)) {
+        return res.status(400).json({ message: "Invalid mode" });
+      }
+      
+      const userId = getUserId(req);
+      const now = new Date();
+      
+      // Validate mode permissions
+      if (mode === 'referee' && competitionId) {
+        const refereeAssignments = await storage.getRefereeAssignmentsForUser(userId);
+        const validAssignment = refereeAssignments.find(r => {
+          const startDate = new Date(r.competition.startDate);
+          const endDate = new Date(r.competition.endDate);
+          return r.competitionId === competitionId && 
+                 r.competition.status === 'live' && 
+                 now >= startDate && 
+                 now <= endDate;
+        });
+        if (!validAssignment) {
+          return res.status(403).json({ message: "Not authorized as referee for this competition or competition is not active" });
+        }
+      }
+      
+      if (mode === 'organizer' && competitionId) {
+        const competition = await storage.getCompetition(competitionId);
+        if (!competition || competition.organizerId !== userId) {
+          return res.status(403).json({ message: "Not authorized as organizer for this competition" });
+        }
+      }
+      
+      // Store in session
+      req.session.activeMode = mode;
+      req.session.activeCompetitionId = competitionId || null;
+      
+      res.json({ 
+        activeMode: mode, 
+        activeCompetitionId: competitionId || null 
+      });
+    } catch (error) {
+      console.error("[MODE] Error setting active mode:", error);
+      res.status(500).json({ message: "Failed to set active mode" });
+    }
+  });
+
+  // User context endpoint - returns available roles and active competitions
+  app.get('/api/me/context', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const now = new Date();
+
+      // Get referee assignments for active competitions (status = 'live' AND within time range)
+      const refereeAssignments = await storage.getRefereeAssignmentsForUser(userId);
+      const activeRefereeCompetitions = refereeAssignments
+        .filter(r => {
+          const startDate = new Date(r.competition.startDate);
+          const endDate = new Date(r.competition.endDate);
+          return r.competition.status === 'live' && now >= startDate && now <= endDate;
+        })
+        .map(r => ({
+          id: r.competition.id,
+          name: r.competition.name,
+          assignedSector: r.assignedSector,
+          startDate: r.competition.startDate,
+          endDate: r.competition.endDate,
+        }));
+
+      // Get ONLY competitions where this user is the organizer (security fix)
+      const allCompetitions = await storage.getCompetitions();
+      const organizerCompetitions = allCompetitions
+        .filter(c => c.organizerId === userId)
+        .map(c => ({
+          id: c.id,
+          name: c.name,
+          status: c.status,
+          startDate: c.startDate,
+          endDate: c.endDate,
+        }));
+      
+      // Active organizer competitions (live status and within time range)
+      const activeOrganizerCompetitions = organizerCompetitions.filter(c => {
+        const startDate = new Date(c.startDate);
+        const endDate = new Date(c.endDate);
+        return c.status === 'live' && now >= startDate && now <= endDate;
+      });
+      // Completed competitions (for read-only access)
+      const completedOrganizerCompetitions = organizerCompetitions.filter(c => c.status === 'completed');
+
+      // Determine available roles
+      const availableRoles: string[] = ['user']; // Everyone has user role
+      if (activeRefereeCompetitions.length > 0) {
+        availableRoles.push('referee');
+      }
+      if (organizerCompetitions.length > 0) {
+        availableRoles.push('organizer');
+      }
+
+      // Determine if role selection is needed
+      const needsRoleSelection = availableRoles.length > 1;
+
+      // Include session-stored mode if available
+      const sessionMode = req.session?.activeMode || null;
+      const sessionCompetitionId = req.session?.activeCompetitionId || null;
+
+      res.json({
+        userId,
+        email: user.email,
+        availableRoles,
+        needsRoleSelection,
+        refereeCompetitions: activeRefereeCompetitions,
+        organizerCompetitions: {
+          active: activeOrganizerCompetitions,
+          completed: completedOrganizerCompetitions,
+        },
+        sessionMode,
+        sessionCompetitionId,
+      });
+    } catch (error) {
+      console.error("[CONTEXT] Error fetching user context:", error);
+      res.status(500).json({ message: "Failed to fetch user context" });
+    }
+  });
+
   // Profile update endpoint
   app.patch('/api/auth/profile', isAuthenticated, async (req: any, res) => {
     try {

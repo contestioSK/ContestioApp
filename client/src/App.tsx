@@ -5,7 +5,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { UserModeProvider } from "@/contexts/UserModeContext";
 import NotFound from "@/pages/not-found";
+import RoleSelection from "@/pages/role-selection";
 import Landing from "@/pages/landing";
 import Home from "@/pages/home";
 import CompetitionDetail from "@/pages/competition-detail";
@@ -67,27 +69,34 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Onboarding from "@/pages/onboarding";
 import { useEffect } from "react";
 import { useLocation } from "wouter";
+import { useUserMode } from "@/contexts/UserModeContext";
 
 function Router() {
   const { isLoading, user } = useAuth();
   const [location, setLocation] = useLocation();
+  const { needsRoleSelection, isLoading: contextLoading, activeMode } = useUserMode();
   
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading || contextLoading) return;
     if (!user) return;
     
-    const onboardingExemptRoutes = ["/onboarding", "/auth/login", "/auth/register", "/auth/verify-email", "/auth/reset-password", "/reset-password", "/pricing", "/about-us", "/faq", "/contact", "/terms", "/privacy", "/register"];
-    const onboardingExemptPrefixes = ["/competition/", "/team/", "/categories/"];
+    const exemptRoutes = ["/onboarding", "/auth/login", "/auth/register", "/auth/verify-email", "/auth/reset-password", "/reset-password", "/pricing", "/about-us", "/faq", "/contact", "/terms", "/privacy", "/register", "/select-role"];
+    const exemptPrefixes = ["/competition/", "/team/", "/categories/"];
     
-    const isExempt = onboardingExemptRoutes.includes(location) || 
-                     onboardingExemptPrefixes.some(prefix => location.startsWith(prefix));
+    const isExempt = exemptRoutes.includes(location) || 
+                     exemptPrefixes.some(prefix => location.startsWith(prefix));
     
     if (isExempt) return;
     
     if (!user.preferences?.onboardingCompleted) {
       setLocation("/onboarding");
+      return;
     }
-  }, [user, isLoading, location, setLocation]);
+    
+    if (needsRoleSelection && location === "/" && !activeMode) {
+      setLocation("/select-role");
+    }
+  }, [user, isLoading, location, setLocation, needsRoleSelection, contextLoading, activeMode]);
 
   return (
     <Switch>
@@ -101,6 +110,7 @@ function Router() {
       <Route path="/auth/reset-password" component={ResetPassword} />
       <Route path="/reset-password" component={ResetPassword} />
       <Route path="/onboarding" component={Onboarding} />
+      <Route path="/select-role" component={RoleSelection} />
       
       <Route path="/register-competition">
         {() => {
@@ -295,10 +305,12 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="dark">
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
+        <UserModeProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Router />
+          </TooltipProvider>
+        </UserModeProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
