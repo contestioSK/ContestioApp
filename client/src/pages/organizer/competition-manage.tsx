@@ -29,6 +29,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import OrganizerLayout from "@/components/OrganizerLayout";
+import { UserSearchAutocomplete } from "@/components/UserSearchAutocomplete";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -98,6 +99,8 @@ export default function CompetitionManage() {
   const [showAddRefereeDialog, setShowAddRefereeDialog] = useState(false);
   const [showAddAnnouncementDialog, setShowAddAnnouncementDialog] = useState(false);
   const [refereeEmail, setRefereeEmail] = useState("");
+  const [selectedRefereeUser, setSelectedRefereeUser] = useState<{ id: string; email: string } | null>(null);
+  const [refereeSector, setRefereeSector] = useState("all");
   const [announcementTitle, setAnnouncementTitle] = useState("");
   const [announcementContent, setAnnouncementContent] = useState("");
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -178,17 +181,28 @@ export default function CompetitionManage() {
   });
 
   const addRefereeMutation = useMutation({
-    mutationFn: async (email: string) => {
-      return apiRequest('POST', `/api/competitions/${competitionId}/referees`, { email });
+    mutationFn: async (data: { userId?: string; email?: string; assignedSector?: string }) => {
+      const response = await apiRequest('POST', `/api/competitions/${competitionId}/referees`, data);
+      return response;
     },
-    onSuccess: () => {
+    onSuccess: (data: any, variables) => {
       queryClient.invalidateQueries({ queryKey: ['/api/competitions', competitionId, 'referees'] });
       setRefereeEmail("");
+      setSelectedRefereeUser(null);
+      setRefereeSector("all");
       setShowAddRefereeDialog(false);
-      toast({
-        title: "Rozhodca pridaný",
-        description: "Rozhodca bol úspešne pridaný do súťaže.",
-      });
+      
+      if (data?.invitationSent) {
+        toast({
+          title: "Pozvánka odoslaná",
+          description: data.message || "Pozvánka bola odoslaná na zadaný email.",
+        });
+      } else {
+        toast({
+          title: "Rozhodca pridaný",
+          description: "Rozhodca bol úspešne pridaný do súťaže.",
+        });
+      }
     },
     onError: (error: any) => {
       toast({
@@ -329,8 +343,20 @@ export default function CompetitionManage() {
   };
 
   const handleAddReferee = () => {
-    if (refereeEmail.trim()) {
-      addRefereeMutation.mutate(refereeEmail.trim());
+    if (selectedRefereeUser) {
+      addRefereeMutation.mutate({ userId: selectedRefereeUser.id, assignedSector: refereeSector });
+    } else if (refereeEmail.trim()) {
+      addRefereeMutation.mutate({ email: refereeEmail.trim(), assignedSector: refereeSector });
+    }
+  };
+
+  const handleRefereeSelect = (user: { id: string; email: string } | null, newEmail?: string) => {
+    if (user) {
+      setSelectedRefereeUser(user);
+      setRefereeEmail("");
+    } else if (newEmail) {
+      setSelectedRefereeUser(null);
+      setRefereeEmail(newEmail);
     }
   };
 
@@ -1076,29 +1102,63 @@ export default function CompetitionManage() {
       </Dialog>
 
       {/* Add Referee Dialog */}
-      <Dialog open={showAddRefereeDialog} onOpenChange={setShowAddRefereeDialog}>
-        <DialogContent>
+      <Dialog open={showAddRefereeDialog} onOpenChange={(open) => {
+        setShowAddRefereeDialog(open);
+        if (!open) {
+          setSelectedRefereeUser(null);
+          setRefereeEmail("");
+          setRefereeSector("all");
+        }
+      }}>
+        <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>Pridať rozhodcu</DialogTitle>
             <DialogDescription>
-              Zadajte email používateľa, ktorého chcete pridať ako rozhodcu.
+              Vyhľadajte existujúceho používateľa alebo pozvite nového rozhodcu.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="referee-email">Email rozhodcu</Label>
-              <div className="flex gap-2">
-                <Mail className="w-4 h-4 mt-3 text-muted-foreground" />
-                <Input
-                  id="referee-email"
-                  type="email"
-                  placeholder="rozhodca@example.com"
-                  value={refereeEmail}
-                  onChange={(e) => setRefereeEmail(e.target.value)}
-                  data-testid="input-referee-email"
-                />
-              </div>
+              <Label>Vyhľadať používateľa</Label>
+              <UserSearchAutocomplete
+                onSelect={handleRefereeSelect}
+                placeholder="Meno alebo email rozhodcu..."
+                allowNewEmail={true}
+                excludeUserIds={referees?.map(r => (r as any).userId).filter(Boolean) || []}
+              />
             </div>
+            {(selectedRefereeUser || refereeEmail) && (
+              <div className="p-3 bg-muted rounded-lg space-y-3">
+                <p className="text-sm font-medium">
+                  {selectedRefereeUser ? (
+                    <>Vybraný používateľ: <span className="text-primary">{selectedRefereeUser.email}</span></>
+                  ) : (
+                    <>Nová pozvánka: <span className="text-primary">{refereeEmail}</span></>
+                  )}
+                </p>
+                {selectedRefereeUser && competition?.hasSectors && (
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Priradený sektor</Label>
+                    <select
+                      value={refereeSector}
+                      onChange={(e) => setRefereeSector(e.target.value)}
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    >
+                      <option value="all">Všetky sektory</option>
+                      <option value="A">Sektor A</option>
+                      <option value="B">Sektor B</option>
+                      <option value="C">Sektor C</option>
+                      <option value="D">Sektor D</option>
+                    </select>
+                  </div>
+                )}
+              </div>
+            )}
+            {refereeEmail && !selectedRefereeUser && (
+              <p className="text-xs text-muted-foreground">
+                Po odoslaní pozvánky sa rozhodca zaregistruje a vy ho budete môcť pridať do súťaže.
+              </p>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAddRefereeDialog(false)}>
@@ -1106,7 +1166,7 @@ export default function CompetitionManage() {
             </Button>
             <Button 
               onClick={handleAddReferee}
-              disabled={!refereeEmail.trim() || addRefereeMutation.isPending}
+              disabled={(!selectedRefereeUser && !refereeEmail.trim()) || addRefereeMutation.isPending}
               data-testid="button-confirm-add-referee"
             >
               {addRefereeMutation.isPending ? (
@@ -1114,7 +1174,7 @@ export default function CompetitionManage() {
               ) : (
                 <UserPlus className="w-4 h-4 mr-1" />
               )}
-              Pridať rozhodcu
+              {selectedRefereeUser ? "Pridať rozhodcu" : "Pozvať rozhodcu"}
             </Button>
           </DialogFooter>
         </DialogContent>

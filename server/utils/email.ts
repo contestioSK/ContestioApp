@@ -780,6 +780,98 @@ class EmailService {
 `;
   }
 
+  async sendRefereeInvitationEmail(
+    email: string,
+    competitionName: string,
+    organizerName: string,
+    registerUrl: string
+  ): Promise<boolean> {
+    const subject = `🎣 Pozvánka: Staňte sa rozhodcom súťaže „${competitionName}"`;
+    const html = this.generateRefereeInvitationTemplate(competitionName, organizerName, registerUrl);
+
+    return this.sendEmail({
+      to: email,
+      subject,
+      html,
+    });
+  }
+
+  private generateRefereeInvitationTemplate(competitionName: string, organizerName: string, registerUrl: string): string {
+    const escapedCompetition = this.escapeHtml(competitionName);
+    const escapedOrganizer = this.escapeHtml(organizerName);
+    return `
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Contestio – Pozvánka rozhodcu</title>
+</head>
+<body style="margin:0; padding:0; background-color:#0c1f28; font-family: Arial, Helvetica, sans-serif; color:#ffffff;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0c1f28; padding:40px 0;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background:#0f2632; border-radius:12px; overflow:hidden; box-shadow:0 10px 40px rgba(0,0,0,0.4);">
+          <!-- HEADER -->
+          <tr>
+            <td style="padding:32px 32px 20px; text-align:center;">
+              <h1 style="margin:0; font-size:28px; letter-spacing:0.5px;">
+                🎣 Contestio
+              </h1>
+              <p style="margin:8px 0 0; font-size:13px; color:#94a3b8; text-transform:uppercase; letter-spacing:2px;">
+                Pozvánka rozhodcu
+              </p>
+            </td>
+          </tr>
+          <!-- CONTENT -->
+          <tr>
+            <td style="padding:24px 32px;">
+              <p style="font-size:16px; line-height:1.6; margin-bottom:16px;">
+                Dobrý deň,
+              </p>
+              <p style="font-size:16px; line-height:1.6;">
+                organizátor <strong>${escapedOrganizer}</strong> vás pozýva stať sa rozhodcom súťaže <strong>„${escapedCompetition}"</strong>.
+              </p>
+              <div style="margin:24px 0; padding:16px; background:#132f3f; border-left:4px solid #f97316;">
+                <strong>Ako rozhodca budete môcť:</strong>
+                <ul style="margin:12px 0 0; padding-left:18px; color:#cbd5e1;">
+                  <li>Zaznamenávať úlovky tímov</li>
+                  <li>Overovať hmotnosť rýb</li>
+                  <li>Sledovať priebežné výsledky</li>
+                </ul>
+              </div>
+              <p style="font-size:15px; line-height:1.6; color:#94a3b8;">
+                Pre prijatie pozvania sa zaregistrujte v systéme Contestio.
+              </p>
+              <div style="text-align:center; margin:32px 0;">
+                <a href="${registerUrl}"
+                   style="display:inline-block; background:#f97316; color:#ffffff; padding:14px 36px; border-radius:8px; text-decoration:none; font-weight:600; font-size:15px;">
+                  Zaregistrovať sa
+                </a>
+              </div>
+              <p style="font-size:14px; line-height:1.6; color:#64748b;">
+                Po registrácii vás organizátor pridá do súťaže ako rozhodcu.
+              </p>
+              <p style="margin-top:24px;">
+                Tím Contestio 🎣
+              </p>
+            </td>
+          </tr>
+          <!-- FOOTER -->
+          <tr>
+            <td style="padding:20px 32px; background:#0c1f28; text-align:center; font-size:12px; color:#64748b;">
+              Automatický e-mail, neodpovedaj naň prosím.
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`;
+  }
+
   private stripHtml(html: string): string {
     return html.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
   }

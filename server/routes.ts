@@ -3144,24 +3144,82 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
 
   app.post('/api/competitions/:id/referees', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = getUserId(req);
-      const user = await storage.getUser(userId);
+      const currentUserId = getUserId(req);
+      const currentUser = await storage.getUser(currentUserId);
       
-      if (user?.role !== 'organizer' && user?.role !== 'admin') {
+      if (currentUser?.role !== 'organizer' && currentUser?.role !== 'admin') {
         return res.status(403).json({ message: "Only organizers and admins can create referees" });
       }
 
+      const competition = await storage.getCompetition(req.params.id);
+      if (!competition) {
+        return res.status(404).json({ message: "Competition not found" });
+      }
+
       // Verify competition ownership for non-admin users
-      if (user?.role === 'organizer') {
-        const competition = await storage.getCompetition(req.params.id);
-        if (!competition || competition.organizerId !== userId) {
-          return res.status(403).json({ message: "You can only create referees for your own competitions" });
+      if (currentUser?.role === 'organizer' && competition.organizerId !== currentUserId) {
+        return res.status(403).json({ message: "You can only create referees for your own competitions" });
+      }
+
+      const { userId, email, assignedSector = 'all' } = req.body;
+      let refereeUserId = userId;
+
+      // If email provided instead of userId, try to find the user
+      if (!refereeUserId && email) {
+        const existingUser = await storage.getUserByEmail(email);
+        if (existingUser) {
+          refereeUserId = existingUser.id;
+        } else {
+          // User not found - send email invitation
+          const organizerName = currentUser?.firstName && currentUser?.lastName 
+            ? `${currentUser.firstName} ${currentUser.lastName}` 
+            : currentUser?.email || 'Organizátor';
+          
+          const baseUrl = process.env.APP_ORIGIN || 
+            (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` : 'http://localhost:5000');
+          const registerUrl = `${baseUrl}/register`;
+          
+          const emailSent = await emailService.sendRefereeInvitationEmail(
+            email,
+            competition.name,
+            organizerName,
+            registerUrl
+          );
+          
+          if (emailSent) {
+            return res.status(200).json({ 
+              message: "Pozvánka bola odoslaná na email. Po registrácii ho budete môcť pridať ako rozhodcu.",
+              invitationSent: true,
+              email: email
+            });
+          } else {
+            return res.status(500).json({ 
+              message: "Nepodarilo sa odoslať pozvánku. Skúste to prosím neskôr."
+            });
+          }
         }
       }
 
+      if (!refereeUserId) {
+        return res.status(400).json({ message: "userId alebo email je povinný" });
+      }
+
+      // Check if user is already a referee for this competition
+      const existingReferee = await storage.getRefereeByUserAndCompetition(refereeUserId, req.params.id);
+      if (existingReferee) {
+        return res.status(400).json({ message: "Tento používateľ je už rozhodcom tejto súťaže" });
+      }
+
+      // Update user role to referee if not already
+      const refereeUser = await storage.getUser(refereeUserId);
+      if (refereeUser && refereeUser.role === 'public') {
+        await storage.updateUserRole(refereeUserId, 'referee');
+      }
+
       const refereeData = insertRefereeSchema.parse({
-        ...req.body,
+        userId: refereeUserId,
         competitionId: req.params.id,
+        assignedSector: assignedSector,
       });
       
       const referee = await storage.createReferee(refereeData);
