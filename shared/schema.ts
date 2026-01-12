@@ -430,6 +430,11 @@ export const diaryCatches = pgTable("diary_catches", {
   windSpeed: decimal("wind_speed", { precision: 6, scale: 2 }), // Wind speed in km/h (from API)
   airPressure: decimal("air_pressure", { precision: 7, scale: 2 }), // Air pressure in mb/hPa (from API)
   isHistorical: boolean("is_historical").default(false).notNull(), // Historical catches don't count in stats
+  // Source tracking for competition imports
+  source: varchar("source").default("manual"), // "manual" | "competition"
+  sourceCompetitionId: uuid("source_competition_id").references(() => competitions.id),
+  sourceCatchId: uuid("source_catch_id").references(() => catches.id),
+  authorshipRole: varchar("authorship_role"), // "author" | "assistant" | null (only for competition imports)
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
