@@ -7,6 +7,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -37,7 +41,10 @@ import {
   Fish,
   Medal,
   Scale,
-  ChevronRight
+  ChevronRight,
+  CheckCircle2,
+  Plus,
+  Image
 } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { SiFacebook, SiInstagram } from "react-icons/si";
@@ -63,6 +70,25 @@ interface CompetitionHistoryItem {
     weight: string;
     fishType: string;
   } | null;
+}
+
+// Competition catch type
+interface CompetitionCatchItem {
+  id: string;
+  weight: string;
+  fishType: string;
+  photoUrl: string | null;
+  sector: string;
+  submittedAt: string;
+  isVerified: boolean;
+  competitionId: string;
+  competitionName: string;
+  competitionStatus: string;
+  competitionStartDate: string;
+  teamId: string;
+  teamName: string;
+  memberRole: string | null;
+  isImportedToDiary: boolean;
 }
 
 // Profile form schema - email removed (read-only)
@@ -270,6 +296,62 @@ export default function Profile() {
     queryKey: ["/api/me/competition-history"],
     enabled: !!user,
   });
+
+  // Fetch competition catches for import
+  const { data: competitionCatches = [], isLoading: isCatchesLoading } = useQuery<CompetitionCatchItem[]>({
+    queryKey: ["/api/me/competition-catches"],
+    enabled: !!user,
+  });
+
+  // State for import dialog
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [selectedCatch, setSelectedCatch] = useState<CompetitionCatchItem | null>(null);
+  const [authorshipRole, setAuthorshipRole] = useState<'author' | 'assistant' | null>(null);
+  const [personalNote, setPersonalNote] = useState('');
+
+  // Import mutation
+  const importCatchMutation = useMutation({
+    mutationFn: async (data: { competitionCatchId: string; competitionId: string; authorshipRole: string; personalNote?: string }) => {
+      const res = await apiRequest('POST', '/api/diary/catches/import', data);
+      return res.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Úlovok pridaný do denníka",
+        description: "Úlovok bol úspešne importovaný do vášho rybárskeho denníka.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/me/competition-catches"] });
+      setImportDialogOpen(false);
+      setSelectedCatch(null);
+      setAuthorshipRole(null);
+      setPersonalNote('');
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Chyba pri importe",
+        description: error.message || "Nepodarilo sa importovať úlovok.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleImportClick = (catchItem: CompetitionCatchItem) => {
+    setSelectedCatch(catchItem);
+    setAuthorshipRole(null);
+    setPersonalNote('');
+    setImportDialogOpen(true);
+  };
+
+  const handleImportConfirm = () => {
+    if (!selectedCatch || !authorshipRole) return;
+    
+    importCatchMutation.mutate({
+      competitionCatchId: selectedCatch.id,
+      competitionId: selectedCatch.competitionId,
+      authorshipRole,
+      personalNote: personalNote || undefined,
+    });
+  };
 
   const form = useForm<ProfileForm>({
     resolver: zodResolver(profileSchema),
@@ -949,6 +1031,118 @@ export default function Profile() {
             </CardContent>
           </Card>
 
+          {/* Competition Catches Import Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Fish className="w-5 h-5 text-blue-500" />
+                Moje úlovky zo súťaží
+              </CardTitle>
+              <CardDescription>
+                Úlovky z vašich tímov - môžete si ich pridať do osobného denníka
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isCatchesLoading ? (
+                <div className="space-y-3">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="flex items-center gap-4 p-3 rounded-lg border">
+                      <Skeleton className="h-12 w-12 rounded" />
+                      <div className="flex-1 space-y-2">
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-3 w-24" />
+                      </div>
+                      <Skeleton className="h-8 w-24" />
+                    </div>
+                  ))}
+                </div>
+              ) : competitionCatches.length === 0 ? (
+                <div className="text-center py-8">
+                  <Fish className="w-12 h-12 mx-auto text-muted-foreground/30 mb-4" />
+                  <h3 className="font-medium text-muted-foreground mb-2">
+                    Zatiaľ žiadne súťažné úlovky
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Keď váš tím chytí úlovok na súťaži, objaví sa tu.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {competitionCatches.map((catchItem) => {
+                    const fishTypeLabels: Record<string, string> = {
+                      'scaly': 'Šupináč',
+                      'mirror': 'Lysec',
+                      'grass': 'Amur',
+                      'other': 'Iný',
+                    };
+                    
+                    return (
+                      <div 
+                        key={catchItem.id}
+                        className={`flex items-center gap-4 p-3 rounded-lg border transition-colors ${
+                          catchItem.isImportedToDiary 
+                            ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800' 
+                            : 'hover:bg-muted/50'
+                        }`}
+                      >
+                        {/* Photo or placeholder */}
+                        <div className="w-12 h-12 rounded bg-muted flex items-center justify-center shrink-0 overflow-hidden">
+                          {catchItem.photoUrl ? (
+                            <img 
+                              src={catchItem.photoUrl} 
+                              alt="Úlovok" 
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <Image className="w-6 h-6 text-muted-foreground/50" />
+                          )}
+                        </div>
+                        
+                        {/* Catch details */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-medium">
+                              {parseFloat(catchItem.weight).toFixed(2)} kg
+                            </span>
+                            <Badge variant="secondary" className="text-xs">
+                              {fishTypeLabels[catchItem.fishType] || catchItem.fishType}
+                            </Badge>
+                            {catchItem.isImportedToDiary && (
+                              <Badge variant="default" className="text-xs bg-emerald-500">
+                                <CheckCircle2 className="w-3 h-3 mr-1" />
+                                V denníku
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="text-sm text-muted-foreground mt-1">
+                            <span>{catchItem.competitionName}</span>
+                            <span className="mx-1.5">•</span>
+                            <span>{catchItem.teamName}</span>
+                            <span className="mx-1.5">•</span>
+                            <span>{new Date(catchItem.submittedAt).toLocaleDateString('sk-SK')}</span>
+                          </div>
+                        </div>
+                        
+                        {/* Import button */}
+                        {!catchItem.isImportedToDiary && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="shrink-0"
+                            onClick={() => handleImportClick(catchItem)}
+                          >
+                            <Plus className="w-4 h-4 mr-1" />
+                            <span className="hidden sm:inline">Do denníka</span>
+                          </Button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Diary Settings Section */}
           <Card>
             <CardHeader>
@@ -1035,6 +1229,108 @@ export default function Profile() {
             </Card>
           </Collapsible>
       </div>
+
+      {/* Import Competition Catch Dialog */}
+      <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Pridať úlovok do denníka</DialogTitle>
+            <DialogDescription>
+              Bol si autorom tohto úlovku?
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedCatch && (
+            <div className="space-y-4">
+              {/* Catch preview */}
+              <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+                <div className="w-10 h-10 rounded bg-background flex items-center justify-center overflow-hidden">
+                  {selectedCatch.photoUrl ? (
+                    <img 
+                      src={selectedCatch.photoUrl} 
+                      alt="Úlovok" 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <Fish className="w-5 h-5 text-muted-foreground" />
+                  )}
+                </div>
+                <div>
+                  <div className="font-medium">{parseFloat(selectedCatch.weight).toFixed(2)} kg</div>
+                  <div className="text-sm text-muted-foreground">{selectedCatch.competitionName}</div>
+                </div>
+              </div>
+              
+              {/* Authorship selection */}
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">Tvoja rola pri úlovku</Label>
+                <RadioGroup
+                  value={authorshipRole || ''}
+                  onValueChange={(value) => setAuthorshipRole(value as 'author' | 'assistant')}
+                >
+                  <div className="flex items-start space-x-3 p-3 rounded-lg border hover:bg-muted/50 cursor-pointer">
+                    <RadioGroupItem value="author" id="author" className="mt-0.5" />
+                    <Label htmlFor="author" className="cursor-pointer flex-1">
+                      <div className="font-medium">Bol som autor</div>
+                      <div className="text-sm text-muted-foreground">
+                        Tento úlovok som chytil ja
+                      </div>
+                    </Label>
+                  </div>
+                  <div className="flex items-start space-x-3 p-3 rounded-lg border hover:bg-muted/50 cursor-pointer">
+                    <RadioGroupItem value="assistant" id="assistant" className="mt-0.5" />
+                    <Label htmlFor="assistant" className="cursor-pointer flex-1">
+                      <div className="font-medium">Len som asistoval</div>
+                      <div className="text-sm text-muted-foreground">
+                        Pomáhal som kolegovi z tímu
+                      </div>
+                    </Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              
+              {/* Personal note */}
+              <div className="space-y-2">
+                <Label htmlFor="personalNote" className="text-sm font-medium">
+                  Osobná poznámka (voliteľné)
+                </Label>
+                <Textarea
+                  id="personalNote"
+                  placeholder="Tvoj príbeh, emócia, čokoľvek..."
+                  value={personalNote}
+                  onChange={(e) => setPersonalNote(e.target.value)}
+                  rows={3}
+                />
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => setImportDialogOpen(false)}
+            >
+              Zrušiť
+            </Button>
+            <Button
+              onClick={handleImportConfirm}
+              disabled={!authorshipRole || importCatchMutation.isPending}
+            >
+              {importCatchMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Pridávam...
+                </>
+              ) : (
+                <>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Pridať do denníka
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DiaryLayout>
   );
 }

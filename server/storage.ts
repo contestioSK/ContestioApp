@@ -77,7 +77,7 @@ import {
   type PromoCodeUsage,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, or, not, sql, ne, count, gt, gte, lt, lte, inArray } from "drizzle-orm";
+import { eq, desc, and, or, not, sql, ne, count, gt, gte, lt, lte, inArray, isNotNull } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (required for Replit Auth)
@@ -317,6 +317,8 @@ export interface IStorage {
   createDiaryCatch(catch_: InsertDiaryCatch, userId: string): Promise<DiaryCatch>;
   updateDiaryCatch(id: string, catch_: Partial<InsertDiaryCatch>, userId: string): Promise<DiaryCatch>;
   deleteDiaryCatch(id: string, userId: string): Promise<void>;
+  getImportedCompetitionCatchIds(userId: string): Promise<string[]>;
+  importCompetitionCatch(userId: string, competitionCatchId: string, competitionId: string, authorshipRole: string, personalNote?: string): Promise<DiaryCatch>;
   
   // Diary battle operations
   getDiaryBattles(tripId: string, userId: string): Promise<DiaryBattle[]>;
@@ -2942,6 +2944,120 @@ export class DatabaseStorage implements IStorage {
     }
     
     await db.delete(diaryCatches).where(eq(diaryCatches.id, id));
+  }
+
+  async getImportedCompetitionCatchIds(userId: string): Promise<string[]> {
+    const result = await db
+      .select({ sourceCatchId: diaryCatches.sourceCatchId })
+      .from(diaryCatches)
+      .innerJoin(diaryTrips, eq(diaryCatches.tripId, diaryTrips.id))
+      .where(
+        and(
+          eq(diaryTrips.ownerUserId, userId),
+          eq(diaryCatches.source, 'competition'),
+          isNotNull(diaryCatches.sourceCatchId)
+        )
+      );
+    return result.map(r => r.sourceCatchId!);
+  }
+
+  async importCompetitionCatch(
+    userId: string, 
+    competitionCatchId: string, 
+    competitionId: string,
+    authorshipRole: string, 
+    personalNote?: string
+  ): Promise<DiaryCatch> {
+    // Get the competition catch
+    const competitionCatch = await db
+      .select()
+      .from(catches)
+      .where(eq(catches.id, competitionCatchId))
+      .limit(1);
+    
+    if (!competitionCatch.length) {
+      throw new Error("Súťažný úlovok nenájdený");
+    }
+    
+    const compCatch = competitionCatch[0];
+    
+    // Get competition for location data
+    const competition = await this.getCompetition(competitionId);
+    if (!competition) {
+      throw new Error("Súťaž nenájdená");
+    }
+    
+    // Get user info
+    const user = await this.getUser(userId);
+    if (!user) {
+      throw new Error("Používateľ nenájdený");
+    }
+    
+    // Create or get a diary trip for competition imports
+    const tripDate = compCatch.submittedAt ? new Date(compCatch.submittedAt) : new Date();
+    const tripName = `Súťaž: ${competition.name}`;
+    
+    // Try to find existing trip for this competition import
+    const existingTrips = await db
+      .select()
+      .from(diaryTrips)
+      .where(
+        and(
+          eq(diaryTrips.ownerUserId, userId),
+          eq(diaryTrips.name, tripName)
+        )
+      );
+    
+    let tripId: string;
+    if (existingTrips.length > 0) {
+      tripId = existingTrips[0].id;
+    } else {
+      // Create new trip for this competition's imports
+      const newTrip = await this.createDiaryTrip({
+        name: tripName,
+        startDate: competition.startDate,
+        endDate: competition.endDate,
+        location: competition.location,
+        ownerUserId: userId,
+        visibility: 'private' as const,
+      }, userId);
+      tripId = newTrip.id;
+    }
+    
+    // Map competition fishType to diary fishType if possible
+    const fishTypeMapping: Record<string, string> = {
+      'scaly': 'kapor_rybnicny',
+      'mirror': 'kapor_rybnicny',
+      'grass': 'amur_biely',
+      'other': 'kapor_rybnicny',
+    };
+    const mappedFishType = fishTypeMapping[compCatch.fishType] || 'kapor_rybnicny';
+    
+    // Create diary catch linked to competition catch
+    const [newCatch] = await db
+      .insert(diaryCatches)
+      .values({
+        tripId,
+        angler: { userId, name: user.firstName || user.lastName || 'Ja' },
+        capturedAt: compCatch.submittedAt || new Date(),
+        weight: compCatch.weight,
+        fishType: mappedFishType,
+        spot: competition.location,
+        notes: personalNote || `Úlovok zo súťaže ${competition.name}`,
+        photos: compCatch.photoUrl ? [{ 
+          id: crypto.randomUUID(), 
+          url: compCatch.photoUrl, 
+          status: 'ready' as const 
+        }] : [],
+        source: 'competition',
+        sourceCompetitionId: competitionId,
+        sourceCatchId: competitionCatchId,
+        authorshipRole,
+        isHistorical: false,
+      })
+      .returning();
+    
+    return newCatch;
   }
 
   // Diary battle operations

@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Switch } from "@/components/ui/switch";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
@@ -355,6 +356,7 @@ export default function DiaryCatches() {
   const [sortBy, setSortBy] = useState<string>("newest");
   const [selectedSeason, setSelectedSeason] = useState<string>("2025");
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
+  const [showCompetitionCatches, setShowCompetitionCatches] = useState<boolean>(false);
   
   // Offline functionality
   const { 
@@ -552,6 +554,11 @@ export default function DiaryCatches() {
   // Apply filters to catches
   const filteredCatches = seasonFilteredCatches
     .filter((catch_: any) => {
+      // Filter out competition catches by default (unless showCompetitionCatches is true)
+      if (!showCompetitionCatches && catch_.source === 'competition') {
+        return false;
+      }
+      
       // Filter by technique
       if (selectedTechnique !== "all" && catch_.bait !== selectedTechnique) {
         return false;
@@ -1285,6 +1292,21 @@ export default function DiaryCatches() {
                     />
                   </div>
                 </div>
+
+                {/* Competition catches toggle */}
+                <div className="flex items-center justify-between py-3 px-1 border-t border-b">
+                  <div>
+                    <label className="text-sm font-medium text-foreground dark:text-white">Súťažné úlovky</label>
+                    <p className="text-xs text-muted-foreground dark:text-slate-400">
+                      Zobraziť úlovky importované zo súťaží
+                    </p>
+                  </div>
+                  <Switch
+                    checked={showCompetitionCatches}
+                    onCheckedChange={setShowCompetitionCatches}
+                    data-testid="switch-competition-catches"
+                  />
+                </div>
                 
                 <div className="flex gap-3 pt-4">
                   <Button 
@@ -1299,6 +1321,7 @@ export default function DiaryCatches() {
                       setSelectedSpot("all");
                       setMinWeight("");
                       setMaxWeight("");
+                      setShowCompetitionCatches(false);
                     }}
                   >
                     Vyčistiť všetko

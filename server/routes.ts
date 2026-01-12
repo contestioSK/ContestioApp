@@ -935,6 +935,98 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
+  // Competition catches endpoint - returns all catches from competitions where user was a team member
+  app.get('/api/me/competition-catches', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      
+      // Get all team memberships for this user
+      const memberships = await storage.getTeamMembershipsByUser(userId);
+      
+      // Get catches for each team and flatten, with competition/team context
+      const allCatches = await Promise.all(memberships.map(async m => {
+        const competition = m.team.competition;
+        const teamCatches = await storage.getCatchesByTeam(m.team.id);
+        
+        return teamCatches.map(c => ({
+          id: c.id,
+          weight: c.weight,
+          fishType: c.fishType,
+          photoUrl: c.photoUrl,
+          sector: c.sector,
+          submittedAt: c.submittedAt,
+          isVerified: c.isVerified,
+          competitionId: competition.id,
+          competitionName: competition.name,
+          competitionStatus: competition.status,
+          competitionStartDate: competition.startDate,
+          teamId: m.team.id,
+          teamName: m.team.name,
+          memberRole: m.role,
+        }));
+      }));
+      
+      // Flatten and sort by date descending
+      const flatCatches = allCatches.flat().sort((a, b) => 
+        new Date(b.submittedAt || 0).getTime() - new Date(a.submittedAt || 0).getTime()
+      );
+      
+      // Check which catches are already imported to diary
+      const importedCatchIds = await storage.getImportedCompetitionCatchIds(userId);
+      const catchesWithImportStatus = flatCatches.map(c => ({
+        ...c,
+        isImportedToDiary: importedCatchIds.includes(c.id),
+      }));
+      
+      res.json(catchesWithImportStatus);
+    } catch (error) {
+      console.error("[CATCHES] Error fetching competition catches:", error);
+      res.status(500).json({ message: "Failed to fetch competition catches" });
+    }
+  });
+
+  // Import competition catch to diary
+  app.post('/api/diary/catches/import', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      
+      const importSchema = z.object({
+        competitionCatchId: z.string().uuid(),
+        competitionId: z.string().uuid(),
+        authorshipRole: z.enum(['author', 'assistant']),
+        personalNote: z.string().optional(),
+      });
+      
+      const { competitionCatchId, competitionId, authorshipRole, personalNote } = importSchema.parse(req.body);
+      
+      // Check if already imported
+      const importedIds = await storage.getImportedCompetitionCatchIds(userId);
+      if (importedIds.includes(competitionCatchId)) {
+        return res.status(400).json({ message: "Tento úlovok už máte v denníku" });
+      }
+      
+      // Import the catch
+      const diaryCatch = await storage.importCompetitionCatch(
+        userId, 
+        competitionCatchId, 
+        competitionId,
+        authorshipRole, 
+        personalNote
+      );
+      
+      res.json({ 
+        message: "Úlovok bol pridaný do denníka", 
+        catch: diaryCatch 
+      });
+    } catch (error) {
+      console.error("[IMPORT] Error importing competition catch:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Neplatné dáta", errors: error.errors });
+      }
+      res.status(500).json({ message: "Chyba pri importe úlovku" });
+    }
+  });
+
   // Profile update endpoint
   app.patch('/api/auth/profile', isAuthenticated, async (req: any, res) => {
     try {
