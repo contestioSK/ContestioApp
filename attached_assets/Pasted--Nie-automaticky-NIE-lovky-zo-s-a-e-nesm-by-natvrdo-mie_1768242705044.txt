@@ -1,0 +1,279 @@
+❌ Nie, automaticky NIE.
+Úlovky zo súťaže nesmú byť natvrdo miešané do rybárskeho denníka.
+
+ALE 👇
+✔️ Musí existovať kontrolovaný most medzi súťažou a denníkom.
+
+Prečo ich striktne nemiešať (zásadné dôvody)
+1. Denník = osobná pravda rybára
+
+Denník je:
+
+subjektívny
+
+osobný
+
+niekedy „upravený“ (vieme ako to chodí 😄)
+
+nie vždy oficiálny
+
+Súťažný úlovok je:
+
+oficiálny
+
+vážený rozhodcom
+
+s časom, sektorom, pravidlami
+
+často verejný
+
+➡️ Tieto dve veci majú úplne iný význam.
+
+2. Iné metriky, iný kontext
+
+Súťažný úlovok:
+
+počíta sa do výsledkov
+
+má minimálnu váhu
+
+má presný čas
+
+patrí do tímu, nie vždy do osobného príbehu
+
+Denníkový úlovok:
+
+„chytil som po robote“
+
+nemá stres, pravidlá, rozhodcu
+
+je to zážitok, nie výsledok
+
+Ak to zmiešaš:
+❌ pokazíš štatistiky
+❌ rozbiješ UX
+❌ stratíš dôveru
+
+3. Mentálny model rybára
+
+Rybár NEČAKÁ, že:
+
+„Všetko zo súťaže mi automaticky naskáče do denníka.“
+
+Ale VEĽMI OCENÍ, keď:
+
+„Tento úlovok si viem jedným klikom pridať do denníka.“
+
+➡️ kontrola = dôvera
+
+Správne riešenie: „PREPOJENÉ, NIE ZMIEŠANÉ“
+🏆 Súťaž → má vlastný systém úlovkov
+
+uzavretý
+
+oficiálny
+
+read-only po skončení
+
+slúži výsledkom
+
+📓 Denník → osobný záznam
+
+len to, čo si rybár vedome vyberie
+
+jeho príbeh, jeho jazyk
+
+Most medzi nimi (toto je kľúč)
+Po skončení súťaže:
+
+Pri každom úlovku, ktorý rybár chytil, zobraz:
+
+„Pridať do denníka“
+
+Klik → otvorí sa predvyplnený formulár:
+
+druh ryby ✔
+
+váha ✔
+
+dátum ✔
+
+fotka ✔
+
+miesto ✔
+
+A navyše:
+
+pole „Poznámka rybára“ (emócia, príbeh)
+
+➡️ Po uložení:
+
+v denníku: normálny záznam
+
+malá značka: „získané na súťaži“
+
+UX bonus (silná vec)
+
+V denníku môžeš mať filter:
+
+☑️ Zobraziť súťažné úlovky
+
+Ale:
+
+default = vypnuté
+
+Finálny verdikt (bez cukru)
+
+❌ Automatické miešanie = zlá architektúra
+❌ Jeden model pre všetko = technický dlh
+
+✔️ Oddelené systémy
+✔️ Manuálny import
+✔️ Jasná kontrola užívateľa
+
+Toto riešenie:
+
+rešpektuje rybára
+
+rešpektuje súťaž
+
+umožní budúce funkcie (AI, štatistiky, profily)
+
+Ak chceš, ďalší krok môžeme:
+
+navrhnúť UX flow „Import do denníka“
+
+alebo databázový model (competition_catch vs diary_catch)
+
+ide tu o to, že rybár nikdy v tíme nie je sám, vždy sú tam 2-4 osoby, čiže podľa mňa tá možnosť manuáneho pridania do denníka je dobrá voľba, čo ak daný rybár chytí na preteku 2 ryby a jeho kolegovia z tímu chytia 20...
+
+Presne. A týmto si sám potvrdil, že automatický zápis by bol fatálna chyba.
+Tvoje uvažovanie je 100 % správne – poďme to uzavrieť do jasnej, obhájiteľnej logiky.
+
+Prečo je manuálne pridanie JEDINÁ správna cesta (v kontexte tímov)
+Realita súťaží (nie teória)
+
+Tím = 2–4 rybári
+
+Úlovky sú tímové, nie osobné
+
+Jeden maká, druhý krmí, tretí má šťastie
+
+Výsledok ≠ individuálny výkon
+
+➡️ Denník je osobný. Súťaž je kolektívna.
+To sa nikdy nesmie automaticky miešať.
+
+Konkrétny scenár (ktorý si presne trafil)
+
+Rybár A chytí 2 ryby
+Zvyšok tímu chytí 20 rýb
+
+Ak by si:
+❌ automaticky pridal všetkých 22 úlovkov do denníka každému → klamstvo
+❌ alebo pridal len „tímové úlovky“ → nejasné autorstvo
+
+➡️ Denník by sa stal nedôveryhodným.
+
+Správna mentálna logika (ktorú musí mať appka)
+Súťaž:
+
+Úlovok patrí tímu
+
+Vážený je rozhodcom
+
+Autor = tím
+
+Denník:
+
+Úlovok patrí jednému rybárovi
+
+Autor = JA
+
+Príbeh = JA
+
+➡️ Preto:
+✔️ Ryba ide do denníka až vtedy, keď ju rybár označí ako „svoju“
+
+UX riešenie (čisté, férové, rybárske)
+Po skončení súťaže:
+
+V profile rybára → sekcia:
+„Moje úlovky zo súťaží“
+
+Pri každom úlovku:
+
+Ryba
+
+Váha
+
+Dátum
+
+Súťaž
+
+Tím
+
+A CTA:
+🟠 „Pridať do môjho denníka“
+
+Po kliknutí:
+
+Formulár s otázkou (a tu je sila UX):
+
+„Bol si autorom tohto úlovku?“
+(áno – nie – len som asistoval)
+
+Áno → normálny denníkový záznam
+
+Asistoval → voliteľne „poznámka“, ale bez štatistiky
+
+Nie → nič sa neuloží
+
+➡️ Denník zostáva čistý
+
+Dôležitý detail (UX aj psychológia)
+
+Nikdy sa nepýtaj:
+❌ „Chceš importovať úlovok?“
+
+Ale:
+✔️ „Chceš si tento úlovok zapísať do svojho denníka?“
+
+Jemný rozdiel. Obrovský efekt.
+
+Technická poznámka (krátko)
+
+competition_catches
+
+team_id
+
+referee_id
+
+weight
+
+diary_entries
+
+user_id
+
+source = competition
+
+source_competition_id
+
+source_catch_id
+
+➡️ žiadne kopírovanie, len referencia
+
+Finálne rozhodnutie (zafixuj si ho)
+
+✅ Manuálne pridanie = ÁNO
+❌ Automatický zápis = NIE
+✅ Označenie autorstva = MUST
+✅ Oddelené štatistiky = MUST
+
+Toto je riešenie, ktoré:
+
+rešpektuje realitu rybárskych tímov
+
+chráni dôveryhodnosť denníka
+
+škáluje sa do budúcna
