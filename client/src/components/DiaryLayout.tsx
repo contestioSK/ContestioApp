@@ -40,8 +40,7 @@ import {
   Sun,
   Moon,
   Package,
-  Wrench,
-  Crown
+  Wrench
 } from "lucide-react";
 import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 import contestioLogo from "@assets/contestio logo_1760283270014.png";
@@ -183,16 +182,7 @@ export default function DiaryLayout({ children, fullBleed = false }: DiaryLayout
     enabled: !!user?.id,
   });
 
-  // Check if user organizes any competitions
-  const { data: organizedCompetitions = [] } = useQuery<any[]>({
-    queryKey: ['/api/organizer/competitions'],
-    enabled: !!user?.id,
-    staleTime: 0,
-    refetchOnMount: 'always',
-  });
-
   const hasFriendRequests = (friendRequests || []).length > 0;
-  const isOrganizer = (organizedCompetitions || []).length > 0;
   
   // Handle FAB click - check limits before opening catch dialog
   const handleFabClick = () => {
@@ -539,34 +529,6 @@ export default function DiaryLayout({ children, fullBleed = false }: DiaryLayout
               );
             })}
 
-            {/* Moje súťaže - only for organizers */}
-            {isOrganizer && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={() => {
-                      setLocation("/organizer");
-                      setSidebarOpen(false);
-                      window.scrollTo(0, 0);
-                    }}
-                    className={`
-                      w-full flex items-center px-2 md:px-3 py-2 md:py-3 text-sm font-medium rounded-lg transition-all
-                      ${isActivePath("/organizer")
-                        ? 'bg-primary dark:bg-transparent text-primary-foreground dark:bg-gradient-to-r dark:from-blue-600/30 dark:to-purple-600/30 dark:text-white border border-primary/50 dark:border-blue-500/50 shadow-sm dark:shadow-lg dark:shadow-blue-500/20' 
-                        : 'text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent'
-                      }
-                    `}
-                    data-testid="nav-moje-sutaze"
-                  >
-                    <TacticalIconInline icon={Crown} variant={isActivePath("/organizer") ? "amber" : "slate"} size="md" className="mr-2 md:mr-3 flex-shrink-0" />
-                    <span className="font-medium text-xs md:text-sm">Moje súťaže</span>
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="right" className="bg-popover text-popover-foreground border shadow-md">
-                  <p>Správa mojich súťaží</p>
-                </TooltipContent>
-              </Tooltip>
-            )}
             </TooltipProvider>
           </nav>
 
