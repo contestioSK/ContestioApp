@@ -78,16 +78,20 @@ type CatchFormData = z.infer<typeof catchFormSchema>;
 
 // Fishing methods
 const fishingMethods = [
-  "Boilie",
-  "Kukurica",
-  "Pelety", 
-  "Dážďovka",
-  "Návnada",
-  "Spoon",
-  "Spinner",
+  // Kaprárina / Feeder / Plávaná
+  "Kukurica / Partikel",
+  "Pelety",
+  "Živá nástraha",
+  "Pečivo / Cesto",
+  "Wafters / Pop-up",
+  // Prívlač (Dravce)
+  "Gumená nástraha",
   "Wobler",
-  "Gumiak",
-  "Iné"
+  "Rotačka / Plandavka",
+  "Nástražná rybka",
+  // Ostatné
+  "Umelá muška",
+  "Iná nástraha"
 ];
 
 type PhotoObject = {
