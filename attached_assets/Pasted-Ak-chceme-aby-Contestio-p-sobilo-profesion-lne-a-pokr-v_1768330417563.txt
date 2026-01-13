@@ -1,0 +1,124 @@
+Ak chceme, aby Contestio pôsobilo profesionálne a pokrývalo všetkých rybárov (kaprárov, prívlačiarov, feedristov aj sumčiarov), zoznam musí byť technicky presný, ale nie prehnane dlhý.
+
+Navrhujem toto rozdelenie, ktoré je logické a pokrýva 99 % situácií pri vode:
+
+1. Prírodné nástrahy (Natural Baits)
+Kukurica / Partikel (univerzálna klasika pre kapra, amura, bielu rybu)
+
+Pelety (stále populárnejšie pre kaprárov aj feedristov)
+
+Živá nástraha (červy / dážďovky) (nenahraditeľné pre feeder a plávanú)
+
+Nástražná rybka (pre lov dravcov na ťažko alebo na plávanú)
+
+2. Umelé nástrahy - Prívlač (Lures)
+Gumová nástraha (všetky ripre, kopytá, nymfy – nahrádza tvoj „gumiak“)
+
+Wobler (klasika pre dravce)
+
+Plandavka / Blinker (tradičný kov na šťuky a pstruhy – nahrádza „Spoon“)
+
+Rotačka (rotačné blyskáče – nahrádza „Spinner“)
+
+Povrchová nástraha (Topwater) (poppery, žaby – veľmi špecifický a populárny lov)
+
+3. Ostatné a špeciálne
+Cesto / Rohlíková boilies (veľmi časté pri hobby rybolove)
+
+Umelá muška (ak chceš pokryť aj muškárov)
+
+Iné / Kombinovaná nástraha (pre situácie ako „panáčik“ alebo „červ s kukuricou“)
+
+Prečo toto rozdelenie?
+Terminológia: „Gumová nástraha“ a „Plandavka“ sú výrazy, ktoré rybár hľadá ako prvé.
+
+Dátová čistota: Ak rybár vyberie „Wobler“, ty vieš, že chytá dravce. Ak vyberie „Partikel“, chytá nedravé ryby. To ti v budúcnosti umožní robiť presné štatistiky úspešnosti revírov.
+
+Vizuál: Vo formulári to môžeš mať rozdelené do malých podkategórií (tabov), aby rybár nemusel skrolovať dlhý zoznam.
+
+Tip pre formulár:
+Keďže máš v aplikácii Arzenál, ideálny flow by bol:
+
+Rybár klikne na pole „Nástraha“.
+
+Systém mu ako prvé ponúkne jeho „Obľúbené nástrahy z Arzenálu“ (napr. konkrétne boilies Dr. Baits).
+
+Pod tým bude možnosť „Vybrať inú / všeobecnú“, kde sa otvorí tento zoznam.
+
+Dáva ti tento zoznam zmysel, alebo ti tam chýba nejaká konkrétna nástraha, ktorú tvoji testeri často používajú?
+
+Môj chat s replitom? JA: tento zoznam budeme určite aktualizovať, napríklad názov gumiak je čistý nezmysel...
+
+Replit:
+
+Súhlasím, "gumiak" je dosť hovorový výraz. Keď budeš chcieť, môžeme ten zoznam aktualizovať - stačí mi povedať, aké nástrahy tam chceš mať.
+
+Napríklad pre prívlač by mohli byť:
+
+Gumené nástrahy (twistery, shady, raky)
+
+Woblery (plávajúce, potápavé, suspendery)
+
+Rotačky / Spinnery
+
+Blinky / Spoons
+
+Jigové hlavičky
+
+Jerkbaity
+
+A pre kaprárinu:
+
+Kukurica (varená, fermentovaná)
+
+Pelety
+
+Partikle (tigrie oriešky, konope, pšenica)
+
+Živé nástrahy (dážďovky, patentky, červy)
+
+Pop-upy / Wafters
+
+Method mix
+
+Daj vedieť, aký zoznam by ti vyhovoval, a upravím to.
+
+Replit ti v tomto prípade odpovedal ako programátor, nie ako rybár. Ten zoznam, ktorý ti navrhol, je technicky preplnený a nepraktický pre mobilnú aplikáciu. Rybár pri vode s mokrými rukami nechce vyberať z 50-tich položiek.
+
+Ak tam dáš "Jigové hlavičky", je to nezmysel, pretože to nie je nástraha, ale záťaž. Ak tam dáš "Jerkbaity", 90 % rybárov nevie, že je to podkategória woblera.
+
+Navrhujem ti tento "Zlatý rez" – zoznam, ktorý je čistý, profesionálny a pokrýva všetko podstatné bez toho, aby bol mätúci:
+
+1. Kaprárina / Feeder / Plávaná (Mimo tvojich boilies)
+Kukurica / Partikel (zahŕňa pšenicu, repku, tigrí orech)
+
+Pelety (všetky priemery a druhy)
+
+Živá nástraha (červy, dážďovky, kostnáče)
+
+Pečivo / Cesto (rohlíková boilies, striedka)
+
+Wafters / Pop-up (pre situácie, keď nepoužije tvoje konkrétne boilies z arzenálu)
+
+2. Prívlač (Dravce)
+Gumená nástraha (shady, twistery, nymfy, raky)
+
+Wobler (všetky typy: jerky, povrchové, hlbokopotápavé)
+
+Rotačka / Plandavka (spojil by som to do "Kovové nástrahy", ale rybári radi vidia tieto dve slová)
+
+Nástražná rybka (pre tých, čo chytajú dravce na ťažko/plávanú)
+
+3. Ostatné
+Umelá muška (pre muškárov)
+
+Iná nástraha (univerzálny fallback)
+
+Prečo je tento zoznam lepší než ten od Replita?
+Žiadne duplicity: Replit ti navrhol "Gumené nástrahy" aj "Jigové hlavičky". To je ako keby si mal v menu v reštaurácii "Cestoviny" a k tomu "Vidličku".
+
+Rýchlosť výberu: Máš tu cca 10 hlavných kategórií. To sa na mobile ovláda perfektne.
+
+Dáta pre štatistiky: Ak niekto zvolí "Gumená nástraha", tvoj systém odznakov a štatistík hneď vie, že ide o prívlač. Nemusíš riešiť, či to bol "Jerk" alebo "Suspender".
+
+čo ty na to?
