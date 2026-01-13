@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DiaryLayout from "@/components/DiaryLayout";
 import type { DiaryCatch } from "@shared/schema";
 import { getFishTypeLabel } from "@/utils/fishTypeMapping";
@@ -49,10 +49,20 @@ export default function CatchDetail() {
   
   // Override settings for this specific share
   const [shareOverrides, setShareOverrides] = useState({
-    hideGps: userPrivacy.hideGps ?? true,
-    hideBait: userPrivacy.hideBait ?? true,
-    hideSpot: userPrivacy.hideSpot ?? false,
+    hideGps: true,
+    hideBait: true,
+    hideSpot: false,
   });
+  
+  // Sync shareOverrides when user preferences load or change
+  useEffect(() => {
+    const privacy = user?.preferences?.privacySettings;
+    setShareOverrides({
+      hideGps: privacy?.hideGps ?? true,
+      hideBait: privacy?.hideBait ?? true,
+      hideSpot: privacy?.hideSpot ?? false,
+    });
+  }, [user?.preferences?.privacySettings]);
 
   // Build share text based on privacy settings
   const buildShareText = (overrides: typeof shareOverrides, catch_: any) => {
@@ -68,6 +78,11 @@ export default function CatchDetail() {
     // Add spot if not hidden
     if (!overrides.hideSpot && catch_.spot) {
       text += `\n📍 ${catch_.spot}`;
+    }
+    
+    // Add GPS if not hidden and coordinates exist
+    if (!overrides.hideGps && catch_.latitude && catch_.longitude) {
+      text += `\n🗺️ GPS: ${Number(catch_.latitude).toFixed(5)}, ${Number(catch_.longitude).toFixed(5)}`;
     }
     
     // Add bait if not hidden
@@ -302,13 +317,16 @@ export default function CatchDetail() {
                 >
                   <Lock className="w-3 h-3" />
                   <span>
-                    {shareOverrides.hideGps && shareOverrides.hideBait 
-                      ? "GPS a návnada skryté" 
-                      : shareOverrides.hideGps 
-                        ? "GPS skrytá" 
-                        : shareOverrides.hideBait 
-                          ? "Návnada skrytá" 
-                          : "Všetko viditeľné"}
+                    {(() => {
+                      const hiddenItems = [];
+                      if (shareOverrides.hideGps) hiddenItems.push("GPS");
+                      if (shareOverrides.hideBait) hiddenItems.push("návnada");
+                      if (shareOverrides.hideSpot) hiddenItems.push("revír");
+                      
+                      if (hiddenItems.length === 0) return "Všetko viditeľné";
+                      if (hiddenItems.length === 3) return "Všetko skryté";
+                      return `${hiddenItems.join(", ")} skryté`;
+                    })()}
                   </span>
                   <Settings2 className="w-3 h-3" />
                 </button>
