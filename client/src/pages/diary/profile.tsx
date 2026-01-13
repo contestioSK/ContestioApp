@@ -489,6 +489,35 @@ export default function Profile() {
     },
   });
 
+  // Update privacy settings for sharing
+  const updatePrivacySettingsMutation = useMutation({
+    mutationFn: async (privacyUpdate: { hideGps?: boolean; hideBait?: boolean; hideSpot?: boolean }) => {
+      const currentPrivacy = user?.preferences?.privacySettings || {};
+      return await apiRequest("PUT", "/api/user/preferences", {
+        ...user?.preferences,
+        privacySettings: {
+          ...currentPrivacy,
+          ...privacyUpdate,
+        },
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      toast({
+        title: "Súkromie aktualizované",
+        description: "Vaše nastavenia zdieľania boli uložené.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Chyba",
+        description: "Nepodarilo sa uložiť nastavenia súkromia.",
+        variant: "destructive",
+      });
+      console.error("Update privacy settings error:", error);
+    },
+  });
+
   // Show skeleton while loading
   if (!user) {
     return <ProfileSkeleton />;
@@ -1172,6 +1201,67 @@ export default function Profile() {
                   disabled={toggleHistoricalCatchesMutation.isPending}
                   data-testid="switch-historical-catches"
                 />
+              </div>
+
+              <Separator />
+
+              {/* Privacy Settings Section */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Lock className="w-4 h-4 text-blue-500" />
+                  <span className="font-medium">Súkromie pri zdieľaní</span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Tieto nastavenia sa aplikujú automaticky pri každom zdieľaní úlovkov.
+                </p>
+
+                {/* Hide GPS */}
+                <div className="flex items-center justify-between py-2">
+                  <div className="space-y-1">
+                    <span className="text-sm font-medium">Skryť GPS polohu</span>
+                    <p className="text-xs text-muted-foreground">
+                      Presné súradnice nebudú viditeľné pri zdieľaní
+                    </p>
+                  </div>
+                  <Switch
+                    checked={user?.preferences?.privacySettings?.hideGps ?? true}
+                    onCheckedChange={(checked) => updatePrivacySettingsMutation.mutate({ hideGps: checked })}
+                    disabled={updatePrivacySettingsMutation.isPending}
+                    data-testid="switch-hide-gps"
+                  />
+                </div>
+
+                {/* Hide Bait */}
+                <div className="flex items-center justify-between py-2">
+                  <div className="space-y-1">
+                    <span className="text-sm font-medium">Skryť návnadu</span>
+                    <p className="text-xs text-muted-foreground">
+                      Použitá návnada nebude viditeľná pri zdieľaní
+                    </p>
+                  </div>
+                  <Switch
+                    checked={user?.preferences?.privacySettings?.hideBait ?? true}
+                    onCheckedChange={(checked) => updatePrivacySettingsMutation.mutate({ hideBait: checked })}
+                    disabled={updatePrivacySettingsMutation.isPending}
+                    data-testid="switch-hide-bait"
+                  />
+                </div>
+
+                {/* Hide Spot */}
+                <div className="flex items-center justify-between py-2">
+                  <div className="space-y-1">
+                    <span className="text-sm font-medium">Skryť revír</span>
+                    <p className="text-xs text-muted-foreground">
+                      Názov revíru nebude viditeľný pri zdieľaní
+                    </p>
+                  </div>
+                  <Switch
+                    checked={user?.preferences?.privacySettings?.hideSpot ?? false}
+                    onCheckedChange={(checked) => updatePrivacySettingsMutation.mutate({ hideSpot: checked })}
+                    disabled={updatePrivacySettingsMutation.isPending}
+                    data-testid="switch-hide-spot"
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>

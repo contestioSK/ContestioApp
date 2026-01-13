@@ -2,13 +2,16 @@ import { useParams, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
-import { Fish, Weight, Ruler, MapPin, Target, Calendar as CalendarIcon, ArrowLeft, Thermometer, Wind, Droplets, Gauge, Share2, Copy, Check } from "lucide-react";
+import { Fish, Weight, Ruler, MapPin, Target, Calendar as CalendarIcon, ArrowLeft, Thermometer, Wind, Droplets, Gauge, Share2, Copy, Check, Settings2, Lock } from "lucide-react";
 import { TacticalIconInline } from "@/components/ui/tactical-icon";
 import { SiFacebook } from "react-icons/si";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 import DiaryLayout from "@/components/DiaryLayout";
 import type { DiaryCatch } from "@shared/schema";
@@ -32,7 +35,49 @@ export default function CatchDetail() {
   const { id } = useParams<{ id: string }>();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [copied, setCopied] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
+  
+  // Privacy settings - defaults to hidden for GPS and bait
+  const defaultPrivacy = {
+    hideGps: true,
+    hideBait: true,
+    hideSpot: false,
+  };
+  const userPrivacy = user?.preferences?.privacySettings || defaultPrivacy;
+  
+  // Override settings for this specific share
+  const [shareOverrides, setShareOverrides] = useState({
+    hideGps: userPrivacy.hideGps ?? true,
+    hideBait: userPrivacy.hideBait ?? true,
+    hideSpot: userPrivacy.hideSpot ?? false,
+  });
+
+  // Build share text based on privacy settings
+  const buildShareText = (overrides: typeof shareOverrides, catch_: any) => {
+    let text = `🎣 ${getFishTypeLabel(catch_.fishType)}`;
+    
+    if (catch_.weight) {
+      text += ` - ${catch_.weight} kg`;
+    }
+    if (catch_.lengthCm) {
+      text += ` / ${catch_.lengthCm} cm`;
+    }
+    
+    // Add spot if not hidden
+    if (!overrides.hideSpot && catch_.spot) {
+      text += `\n📍 ${catch_.spot}`;
+    }
+    
+    // Add bait if not hidden
+    if (!overrides.hideBait && catch_.bait) {
+      text += `\n🎯 Návnada: ${catch_.bait}`;
+    }
+    
+    text += `\n\nZdieľané cez Contestio`;
+    return text;
+  };
 
   const { data: catch_, isLoading } = useQuery<DiaryCatch>({
     queryKey: [`/api/diary/catches/${id}`],
@@ -248,6 +293,27 @@ export default function CatchDetail() {
 
             {/* Share Section */}
             <div className="pt-4 border-t border-slate-700">
+              {/* Privacy indicator */}
+              <div className="text-center mb-3">
+                <button
+                  onClick={() => setShowShareDialog(true)}
+                  className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  data-testid="button-privacy-settings"
+                >
+                  <Lock className="w-3 h-3" />
+                  <span>
+                    {shareOverrides.hideGps && shareOverrides.hideBait 
+                      ? "GPS a návnada skryté" 
+                      : shareOverrides.hideGps 
+                        ? "GPS skrytá" 
+                        : shareOverrides.hideBait 
+                          ? "Návnada skrytá" 
+                          : "Všetko viditeľné"}
+                  </span>
+                  <Settings2 className="w-3 h-3" />
+                </button>
+              </div>
+              
               <div className="flex flex-wrap items-center justify-center gap-3">
                 {/* Native Share (Mobile) */}
                 {typeof navigator !== 'undefined' && 'share' in navigator && (
@@ -255,7 +321,7 @@ export default function CatchDetail() {
                     variant="outline"
                     className="gap-2"
                     onClick={async () => {
-                      const shareText = `🎣 ${getFishTypeLabel(catch_.fishType)} - ${catch_.weight ? `${catch_.weight} kg` : ''} ${catch_.lengthCm ? `/ ${catch_.lengthCm} cm` : ''}\n\nZdieľané cez Contestio`;
+                      const shareText = buildShareText(shareOverrides, catch_);
                       
                       try {
                         await navigator.share({
@@ -329,6 +395,101 @@ export default function CatchDetail() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Share Privacy Override Dialog */}
+      <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Lock className="w-5 h-5" />
+              Súkromie pri zdieľaní
+            </DialogTitle>
+            <DialogDescription>
+              Uprav čo sa zobrazí pri zdieľaní tohto úlovku. Tieto nastavenia platia len pre toto jedno zdieľanie.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            {/* Hide GPS */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <div className="text-sm font-medium">Skryť GPS polohu</div>
+                <div className="text-xs text-muted-foreground">
+                  Presné súradnice nebudú viditeľné
+                </div>
+              </div>
+              <Switch
+                checked={shareOverrides.hideGps}
+                onCheckedChange={(checked) => 
+                  setShareOverrides(prev => ({ ...prev, hideGps: checked }))
+                }
+                data-testid="switch-override-gps"
+              />
+            </div>
+            
+            {/* Hide Bait */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <div className="text-sm font-medium">Skryť návnadu</div>
+                <div className="text-xs text-muted-foreground">
+                  Použitá návnada nebude viditeľná
+                </div>
+              </div>
+              <Switch
+                checked={shareOverrides.hideBait}
+                onCheckedChange={(checked) => 
+                  setShareOverrides(prev => ({ ...prev, hideBait: checked }))
+                }
+                data-testid="switch-override-bait"
+              />
+            </div>
+            
+            {/* Hide Spot */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <div className="text-sm font-medium">Skryť revír</div>
+                <div className="text-xs text-muted-foreground">
+                  Názov revíru nebude viditeľný
+                </div>
+              </div>
+              <Switch
+                checked={shareOverrides.hideSpot}
+                onCheckedChange={(checked) => 
+                  setShareOverrides(prev => ({ ...prev, hideSpot: checked }))
+                }
+                data-testid="switch-override-spot"
+              />
+            </div>
+            
+            {/* Preview */}
+            <div className="mt-4 p-3 bg-muted rounded-lg">
+              <div className="text-xs text-muted-foreground mb-2">Náhľad zdieľaného textu:</div>
+              <div className="text-sm whitespace-pre-wrap">
+                {buildShareText(shareOverrides, catch_)}
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                // Reset to user defaults
+                setShareOverrides({
+                  hideGps: userPrivacy.hideGps ?? true,
+                  hideBait: userPrivacy.hideBait ?? true,
+                  hideSpot: userPrivacy.hideSpot ?? false,
+                });
+              }}
+            >
+              Obnoviť predvolené
+            </Button>
+            <Button onClick={() => setShowShareDialog(false)}>
+              Hotovo
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DiaryLayout>
   );
 }
