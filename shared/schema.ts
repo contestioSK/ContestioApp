@@ -61,6 +61,12 @@ export const users = pgTable("users", {
     visualPreference?: "lists" | "charts";
     onboardingCompleted?: boolean;
     allowHistoricalCatches?: boolean;
+    // Privacy settings for sharing catches
+    privacySettings?: {
+      hideGps?: boolean;      // Hide GPS coordinates when sharing
+      hideBait?: boolean;     // Hide bait/lure information when sharing  
+      hideSpot?: boolean;     // Hide fishing spot name when sharing
+    };
   }>(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
