@@ -1,0 +1,160 @@
+Krátka odpoveď
+
+👉 Áno, užívateľ MUSÍ mať možnosť skryť GPS / návnadu / revír pri zdieľaní.
+Ale nie komplikovane a nie na 5 miestach.
+
+Tvrdá realita rybárskeho sveta (ktorú treba rešpektovať)
+
+GPS a revír sú citlivé dáta
+
+veľa rybárov ich nikdy nezverejní
+
+Návnada = know-how
+
+toto je „recept“, nie meta údaj
+
+Ak im:
+
+niečo zverejníš automaticky
+
+alebo im to nejasne vysvetlíš
+
+👉 appku prestanú používať
+(nebudú kričať, len zmiznú)
+
+ZÁSADNÉ ROZDELENIE: kde sa zdieľa?
+
+Musíme si ujasniť, že zdieľanie nie je jedna vec.
+
+1️⃣ Interné zdieľanie v Contestio
+
+súťaže
+
+battle medzi kamošmi
+
+leaderboardy
+
+👉 tu je jasný kontext
+užívateľ vie, že ide o hru / súťaž
+
+2️⃣ Verejné zdieľanie
+
+verejný profil
+
+sociálne siete
+
+screenshoty, exporty
+
+👉 tu stráca kontrolu, preto MUSÍ mať nastavenia
+
+🔴 ZLÝ PRÍSTUP (nerob to)
+
+prepínače pri každom úlovku
+
+checkboxy typu:
+
+☐ skryť GPS
+
+☐ skryť návnadu
+
+☐ skryť revír
+
+➡️ UX peklo, nikto to nebude nastavovať
+
+✅ SPRÁVNY PRÍSTUP (odporúčam)
+🧠 1. Globálne nastavenie súkromia (DEFAULTY)
+
+Profil → Súkromie & zdieľanie
+
+Pri zdieľaní mojich úlovkov:
+
+☑ Skryť presnú GPS polohu
+☑ Skryť použitú návnadu
+☐ Skryť názov revíru
+
+
+funguje pre celý účet
+
+je to raz a hotovo
+
+rybár má pocit kontroly
+
+➡️ Toto musí existovať ako základ.
+
+🧠 2. Override pri zdieľaní (len ak chce)
+
+Keď klikne „Zdieľať úlovok“:
+
+🔒 Tento úlovok sa zdieľa podľa tvojich nastavení súkromia
+(GPS a návnada budú skryté)
+
+A malý link:
+
+„Zmeniť pre toto zdieľanie“
+
+Po kliknutí:
+
+jednoduchý modal
+
+max 2–3 prepínače
+
+NEPOVINNÉ
+
+➡️ Power user si upraví
+➡️ Bežný user to ignoruje
+
+🎣 Príklady správania (správne)
+Príklad A – hobby rybár
+
+zapisuje si úlovky kompletne
+
+zdieľa len fotku + váhu
+
+GPS a návnada vždy skryté
+
+👉 spokojný, cíti sa bezpečne
+
+Príklad B – influencer / tester
+
+chce ukazovať návnadu
+
+GPS nechce
+
+👉 v nastaveniach:
+
+☑ návnada
+
+☑ skryť GPS
+
+Príklad C – súťaž
+
+zdieľanie ide cez pravidlá súťaže
+
+rozhoduje organizátor
+
+nie osobné nastavenia
+
+👉 úplne oddelený svet (správne)
+
+❗ Dôležitá architektonická poznámka
+
+Nikdy nemaž dáta.
+Len:
+
+nezobrazuj
+
+alebo anonymizuj (napr. „Východné Slovensko“ namiesto GPS)
+
+Dáta patria:
+
+užívateľovi
+
+appke (pre analýzu, AI, štatistiky)
+
+Nie verejnosti.
+
+🔥 Moja jednoznačná odpoveď replitu (môžeš ju použiť)
+
+Áno, potrebujeme to.
+Navrhujem globálne nastavenie súkromia pre zdieľanie (GPS, návnada, revír), ktoré sa aplikuje automaticky pri každom zdieľaní, s možnosťou jednorazového override pri konkrétnom zdieľaní.
+Nechcem prepínače pri každom úlovku – to by bolo UX peklo.
