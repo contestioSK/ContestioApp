@@ -1,0 +1,222 @@
+Cieľ
+
+Implementovať globálny Top Navigation Shell pre aplikáciu Contestio, ktorý nahradí potrebu mať všetko v ľavom menu a vyrieši orientáciu medzi rolami (User / Referee / Organizer), vyhľadávanie a notifikácie.
+
+Top bar musí fungovať konzistentne na desktope aj mobile, rešpektovať dark mode dizajn Contestia a byť pripravený na ďalší rast aplikácie.
+
+1️⃣ Architektúra
+Nový layout komponent:
+
+Vytvor TopNavigationShell.tsx, ktorý bude obalovať všetky autentifikované stránky aplikácie.
+
+<TopNavigationShell>
+  <Sidebar />
+  <MainContent />
+</TopNavigationShell>
+
+
+TopNavigationShell obsahuje:
+
+TopBar (horný panel)
+
+Sidebar (ľavé menu – existujúce, mierne zjednodušené)
+
+Outlet pre obsah
+
+2️⃣ TopBar – Desktop verzia
+Rozloženie (zľava → doprava)
+🔹 A. Brand + Kontext
+
+Logo / wordmark: CONTESTIO
+
+Vedľa loga zobraz aktuálny režim používateľa:
+
+„Denník“
+
+„Rozhodca – {názov súťaže}“
+
+„Organizátor“
+
+Režim je čítaný z global app state (auth/context).
+
+🔹 B. Globálne vyhľadávanie
+
+Jedno centrálne vyhľadávacie pole:
+
+Placeholder:
+
+„Hľadať úlovok, revír, súťaž, tím…“
+
+Technické správanie:
+
+debounce input
+
+jeden endpoint (napr. /api/search?q=)
+
+výsledky rozdelené do sekcií:
+
+Úlovky
+
+Revíry
+
+Súťaže
+
+Tímy
+
+Zatiaľ stačí mock / basic implementácia (MVP).
+
+🔹 C. Pravá časť – Akcie
+🔔 Notifikácie
+
+Ikona zvončeka
+
+Badge s počtom neprečítaných notifikácií
+
+Dropdown so zoznamom (pozvánky, zmeny stavu súťaže, systémové info)
+
+🔁 Prepínač režimu (iba ak má viac rolí)
+
+Zobraziť iba vtedy, ak má používateľ viac ako jednu aktívnu rolu.
+
+Button / pill:
+
+„Režim: Denník ▾“
+
+Po kliknutí:
+
+Denník
+
+Rozhodca – {súťaž}
+
+Organizátor
+
+Prepnutie:
+
+uložiť do session / contextu
+
+presmerovať na príslušný dashboard
+
+👤 Profil
+
+Avatar + meno
+
+Dropdown:
+
+Profil
+
+Nastavenia
+
+Odhlásiť sa
+
+Zobraziť aj stav:
+
+Premium / Free
+
+3️⃣ Mobile verzia TopBar
+Rozloženie:
+[ ☰ ]  Contestio        [ 🔍 ] [ 🔔 ]
+
+
+☰ otvorí sidebar ako drawer
+
+🔍 otvorí fullscreen search
+
+🔔 otvorí notifikácie
+
+Prepínač režimu:
+
+v profile
+
+alebo ako prvá položka v mobile menu
+
+4️⃣ Sidebar – úpravy
+Z ľavého menu ODSTRÁNIŤ:
+
+Vyhľadávanie
+
+Prepínanie rolí
+
+Notifikácie
+
+Sidebar ponechať čisto navigačný:
+Denník:
+
+Prehľad
+
+Úlovky
+
+Revíry
+
+Kalendár
+
+Analýza:
+
+Štatistiky
+
+Reporty
+
+Súťaže:
+
+História pretekov (iba ako účastník)
+
+5️⃣ UX & Dizajn pravidlá
+
+Dark mode default
+
+Výška top baru: 56–64px
+
+Jemný glass / blur efekt (ako hero sekcie)
+
+Oranžová farba:
+
+len pre CTA
+
+notifikácie
+
+aktívny režim
+
+Žiadne vizuálne preťaženie.
+
+6️⃣ Stavové správanie
+
+Ak je súťaž ukončená:
+
+Referee režim = read-only
+
+Organizátor má prístup aj po ukončení súťaže
+
+Po refreshi stránky:
+
+režim sa obnoví zo session
+
+7️⃣ MVP rozsah (dôležité)
+
+Teraz implementuj:
+
+TopNavigationShell
+
+Desktop + mobile top bar
+
+Prepínač režimu
+
+Základné vyhľadávanie (mock)
+
+Notifikácie (mock)
+
+Nepotrebujeme:
+
+plnú search logiku
+
+real-time notifikácie
+
+advanced permissions
+
+Očakávaný výsledok
+
+Contestio bude mať moderný, SaaS-level layout, ktorý:
+
+rieši chaos rolí
+
+zlepšuje orientáciu
+
+pripravuje pôdu pre škálovanie (organizátori, B2B, premium)
