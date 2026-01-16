@@ -231,3 +231,42 @@ Kompletný komunikačný modul pre súťaže s 3 tabmi:
    - WebSocket event: `support_message`
 
 Odhadovaný čas: 2-3 hodiny
+
+## Top Navigation Shell (Priority: High)
+Globálny navigačný systém pre celú aplikáciu:
+
+1. **TopNavigationShell.tsx** - wrapper pre všetky autentifikované stránky
+2. **TopBar komponenty**:
+   - Logo + aktuálny režim (Denník/Rozhodca/Organizátor)
+   - Globálne vyhľadávanie (MVP: navigačný search alebo disabled)
+   - Notifikačné centrum (všetky typy notifikácií)
+   - Prepínač režimov (ak má user viac rolí)
+   - Profile dropdown (avatar, premium status, odhlásiť)
+3. **Mobile verzia**: hamburger menu + fullscreen search + notifikácie
+4. **Sidebar**: zjednodušený na čisto navigačný (bez search/notifikácií/role switching)
+
+### Design pravidlá:
+- Dark mode default
+- Výška: 56-64px
+- Glass/blur efekt
+- Oranžová len pre CTA, notifikácie, aktívny režim
+
+## Expanded Notification System (Priority: Medium)
+Rozšírenie notifikačného systému pre TopBar:
+
+### Existujúce notifikácie (zachovať):
+- Battle pozvánky (WebSocket + Toast)
+- Catch notifications pre rozhodcov
+- Leaderboard/biggest fish changes
+- Official announcements
+
+### Nové notifikácie (TODO - user pripraví komplexný zoznam):
+- **Diary**: osobný rekord, míľniky, týždenné súhrny
+- **Battles**: začiatok/koniec, súper pridal úlovok, zmena poradia
+- **Competitions**: pripomienky, status changes, výsledky
+- **Premium**: expirácia, obnova, zlyhanie platby
+
+### Technické požiadavky:
+- TopBar notifikačné centrum zobrazuje VŠETKY notifikácie (bez filtrovania)
+- Využiť existujúci WebSocket systém
+- Email notifikácie pre dôležité udalosti (scheduler)
