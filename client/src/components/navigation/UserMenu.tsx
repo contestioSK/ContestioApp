@@ -22,10 +22,25 @@ type PremiumStatus = {
 
 export default function UserMenu() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [, setLocation] = useLocation();
+
+  // Track online/offline status
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   const { data: premiumStatus } = useQuery<PremiumStatus>({
     queryKey: ["/api/auth/premium-status"],
@@ -103,6 +118,16 @@ export default function UserMenu() {
                 <p className="text-sm font-medium truncate">{getUserDisplayName()}</p>
                 <p className="text-xs text-muted-foreground truncate">{user.email}</p>
               </div>
+            </div>
+            {/* Online/Offline Status */}
+            <div className="flex items-center gap-2 mt-3 px-1">
+              <div className={cn(
+                "h-2 w-2 rounded-full",
+                isOnline ? "bg-green-500" : "bg-red-500"
+              )} />
+              <span className="text-xs text-muted-foreground">
+                {isOnline ? "Pripojený" : "Odpojený"}
+              </span>
             </div>
             {isPremium && (
               <Badge 
