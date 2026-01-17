@@ -1,0 +1,109 @@
+Prečo je aktuálny stav zlý (stručne, aby si vedel, čo opravujeme)
+
+Replit to spravil zle, lebo:
+
+stále je to card / banner, nie akcia
+
+mieša denník + battle do jedného vizuálneho bloku (UX chaos)
+
+tlačidlá síce narástli, ale nie sú dominantné
+
+hierarchia je: text → tlačidlo (má byť opačne)
+
+Ty chceš:
+
+„Otvorím denník → VIEM, čo mám urobiť do 0.5 sekundy“
+
+✅ FINÁLNY REPLIT PROMPT
+
+(skopíruj bez úprav)
+
+🔧 Replit prompt: Diary Action Strip (FINAL)
+Cieľ:
+Prepracovať hornú časť stránky „Môj rybársky denník“ na action-first layout.
+Denník je nástroj pri vode – primárne slúži na okamžitú akciu, nie čítanie.
+
+Zásadné pravidlo:
+❌ ŽIADNE informačné karty
+❌ ŽIADNE vysvetľujúce texty
+❌ ŽIADNE miešanie Fishing Battle do denníka
+✅ IBA čistá akcia
+
+--------------------------------------------------
+
+1️⃣ ODSTRÁNIŤ:
+- celý box „Čo ideš dnes robiť?“
+- všetky popisné texty pod nadpisom
+- Fishing Battle box z hornej časti denníka
+
+--------------------------------------------------
+
+2️⃣ PRIDAŤ: „Action Strip“ hneď POD nadpis „Môj rybársky denník“
+
+Layout:
+- horizontálny pás
+- bez card obalu
+- bez tieňov
+- bez gradientov navyše
+- rovnaký background ako zvyšok denníka
+
+V Action Stripe budú PRESNE 2 tlačidlá:
+
+--------------------------------------------------
+
+3️⃣ Primárne tlačidlá (rovnocenné)
+
+A) „+ Zapísať úlovok“
+- PRIMARY
+- rovnaká zelená ako používa Contestio teraz (žiadna nová farba)
+- výška min. 56px
+- veľké písmo
+- silná vizuálna dominancia
+
+B) „▶ Začať rybačku“
+- SECONDARY (ale ROVNAKO VEĽKÉ)
+- modro/tyrkysová z aktuálneho design systému Contestio
+- rovnaká výška, padding, radius ako tlačidlo A
+
+❗ Tlačidlá MUSIA:
+- byť vedľa seba
+- mať rovnakú váhu
+- byť najvýraznejší prvok na celej stránke
+
+--------------------------------------------------
+
+4️⃣ UX pravidlá:
+- Používateľ musí pochopiť akciu bez čítania
+- Akcia má prednosť pred štatistikami
+- Toto je „pracovná plocha“, nie dashboard
+
+--------------------------------------------------
+
+5️⃣ Poradie obsahu po úprave:
+1. Nadpis „Môj rybársky denník“
+2. Action Strip (2 veľké CTA)
+3. Sezónne štatistiky
+4. Fishing Battle sekcia
+5. Zvyšok obsahu
+
+--------------------------------------------------
+
+6️⃣ Dizajnové obmedzenia:
+- Zachovať EXISTUJÚCU farebnosť Contestio
+- Nepoužívať farby zo žiadnych mockupov ani experimentov
+- Žiadne nové gradienty
+- Žiadne marketingové komponenty
+
+Prečo tento prompt už nemôže dopadnúť zle
+
+presne definuje čo odstrániť
+
+presne definuje čo pridať
+
+presne definuje hierarchiu
+
+presne definuje farebné obmedzenia
+
+nenecháva priestor na „UX kreativitu“
+
+Toto už nie je návrh – to je špecifikácia.
