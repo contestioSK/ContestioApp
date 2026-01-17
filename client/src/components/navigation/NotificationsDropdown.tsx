@@ -8,6 +8,7 @@ import { formatDistanceToNow } from "date-fns";
 import { sk } from "date-fns/locale";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { cn } from "@/lib/utils";
+import { useVisibilityAwarePolling, POLLING_INTERVALS, STALE_TIMES } from "@/hooks/usePolling";
 
 interface BattleInvitation {
   id: string;
@@ -32,11 +33,13 @@ export default function NotificationsDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  
+  const pollingInterval = useVisibilityAwarePolling(POLLING_INTERVALS.NOTIFICATIONS);
 
   const { data: invitations = [], isLoading } = useQuery<BattleInvitation[]>({
     queryKey: ['/api/diary/battles/invitations'],
-    refetchInterval: 30_000,
-    staleTime: 10_000,
+    refetchInterval: pollingInterval,
+    staleTime: STALE_TIMES.LIVE,
   });
 
   const pendingInvitations = invitations.filter(inv => inv.status === 'pending');

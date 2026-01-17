@@ -31,6 +31,7 @@ import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon"
 import type { Competition, Team, Catch } from "@shared/schema";
 import { useFavoriteCompetitions, useToggleFavoriteCompetition } from "@/hooks/useFavorites";
 import { QRShareDialog } from "@/components/QRShareDialog";
+import { useVisibilityAwarePolling, POLLING_INTERVALS, STALE_TIMES } from "@/hooks/usePolling";
 
 // Team registration form schema
 const teamRegistrationSchema = z.object({
@@ -143,14 +144,21 @@ export default function CompetitionDetail() {
     enabled: isAuthenticated && !!id,
   });
 
+  const isLive = competition?.status === 'live';
+  const livePollingInterval = useVisibilityAwarePolling(POLLING_INTERVALS.COMPETITION_LIVE);
+
   const { data: teams, isLoading: teamsLoading } = useQuery<(Team & { members?: any[] })[]>({
     queryKey: ["/api/competitions", id, "teams"],
     enabled: isAuthenticated && !!id,
+    refetchInterval: isLive ? livePollingInterval : false,
+    staleTime: isLive ? STALE_TIMES.LIVE : STALE_TIMES.STATIC,
   });
 
   const { data: catches, isLoading: catchesLoading } = useQuery<(Catch & { team?: Team; referee?: any })[]>({
     queryKey: ["/api/competitions", id, "catches"],
     enabled: isAuthenticated && !!id,
+    refetchInterval: isLive ? livePollingInterval : false,
+    staleTime: isLive ? STALE_TIMES.LIVE : STALE_TIMES.STATIC,
   });
 
   // WebSocket for real-time updates

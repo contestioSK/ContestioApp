@@ -18,6 +18,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import type { Competition, Team, Referee, Catch } from "@shared/schema";
 import { formatSectorPlace } from "@/lib/utils";
+import { useVisibilityAwarePolling, POLLING_INTERVALS, STALE_TIMES } from "@/hooks/usePolling";
 
 // Dynamic schema based on competition's minimum weight (in grams for referee input)
 const createCatchSubmissionSchema = (minWeightGrams: number = 2000) => z.object({
@@ -805,6 +806,8 @@ export default function RefereeInterface() {
   // Current assignment based on selected competition
   const refereeAssignment = activeAssignments.find(a => a.competitionId === selectedCompetition);
 
+  const refereePollingInterval = useVisibilityAwarePolling(POLLING_INTERVALS.REFEREE_LIVE);
+
   const { data: selectedCompetitionDetails } = useQuery<Competition>({
     queryKey: ["/api/competitions", selectedCompetition],
     enabled: !!selectedCompetition,
@@ -813,11 +816,15 @@ export default function RefereeInterface() {
   const { data: teams } = useQuery<Team[]>({
     queryKey: ["/api/competitions", selectedCompetition, "teams"],
     enabled: !!selectedCompetition,
+    refetchInterval: refereePollingInterval,
+    staleTime: STALE_TIMES.REAL_TIME,
   });
 
   const { data: recentCatches } = useQuery<(Catch & { team: Team })[]>({
     queryKey: ["/api/competitions", selectedCompetition, "catches"],
     enabled: !!selectedCompetition,
+    refetchInterval: refereePollingInterval,
+    staleTime: STALE_TIMES.REAL_TIME,
   });
 
   // Auto-select assigned competition (referee is assigned by organizer)
