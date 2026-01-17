@@ -54,6 +54,7 @@ import { promises as fsPromises } from "fs";
 import { ImageService, type ProcessedImageResult } from "./image-service";
 import QRCode from "qrcode";
 import Stripe from "stripe";
+import { cache, CacheKeys, CacheTTL } from "./cache";
 
 // Initialize Stripe
 const stripe = process.env.STRIPE_SECRET_KEY 
@@ -2763,6 +2764,9 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
 
       await storage.resetCompetitionCatches(req.params.id);
       
+      // Invalidate cache after catches reset
+      cache.invalidateCompetition(req.params.id);
+      
       // Broadcast catches reset
       broadcast({ 
         type: 'catches_reset', 
@@ -3626,9 +3630,18 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
   });
 
   // Catch routes
+  // Catches list - CACHED for performance (3s TTL - referee needs faster updates)
   app.get('/api/competitions/:id/catches', checkResultBlocking, async (req, res) => {
     try {
-      const catches = await storage.getCatchesByCompetition(req.params.id);
+      const competitionId = req.params.id;
+      const cacheKey = CacheKeys.catches(competitionId);
+      
+      const catches = await cache.getOrFetch(
+        cacheKey,
+        CacheTTL.CATCHES_LIST,
+        () => storage.getCatchesByCompetition(competitionId)
+      );
+      
       res.json(catches);
     } catch (error) {
       console.error("Error fetching catches:", error);
@@ -3702,6 +3715,9 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       
       const newCatch = await storage.createCatch(catchData);
       
+      // Invalidate leaderboard cache for this competition
+      cache.invalidateCompetition(competition.id);
+      
       // Update team stats
       await storage.updateTeamStats(catchData.teamId);
       
@@ -3736,10 +3752,19 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
-  // Leaderboard routes
+  // Leaderboard routes - CACHED for performance (5s TTL)
+  // One DB calculation serves thousands of viewers
   app.get('/api/competitions/:id/leaderboard', checkResultBlocking, async (req, res) => {
     try {
-      const leaderboard = await storage.getLeaderboard(req.params.id);
+      const competitionId = req.params.id;
+      const cacheKey = CacheKeys.leaderboard(competitionId);
+      
+      const leaderboard = await cache.getOrFetch(
+        cacheKey,
+        CacheTTL.LEADERBOARD,
+        () => storage.getLeaderboard(competitionId)
+      );
+      
       res.json(leaderboard);
     } catch (error) {
       console.error("Error fetching leaderboard:", error);
@@ -3747,11 +3772,18 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
-  // Sector statistics route
+  // Sector statistics route - CACHED for performance (5s TTL)
   app.get('/api/competitions/:id/sectors/:sector/statistics', checkResultBlocking, async (req, res) => {
     try {
       const { id: competitionId, sector } = req.params;
-      const statistics = await storage.getSectorStatistics(competitionId, sector);
+      const cacheKey = CacheKeys.sectorStats(competitionId, sector);
+      
+      const statistics = await cache.getOrFetch(
+        cacheKey,
+        CacheTTL.SECTOR_STATS,
+        () => storage.getSectorStatistics(competitionId, sector)
+      );
+      
       res.json(statistics);
     } catch (error) {
       console.error("Error fetching sector statistics:", error);
@@ -3759,7 +3791,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
-  // Sector leaderboards route
+  // Sector leaderboards route - CACHED for performance (5s TTL)
   app.get('/api/competitions/:id/sectors/leaderboards', isAuthenticated, checkResultBlocking, async (req, res) => {
     try {
       const { id: competitionId } = req.params;
@@ -3777,7 +3809,14 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       });
 
       const { limit } = limitSchema.parse(req.query);
-      const leaderboards = await storage.getSectorLeaderboards(competitionId, limit);
+      const cacheKey = CacheKeys.sectorLeaderboards(competitionId, limit);
+      
+      const leaderboards = await cache.getOrFetch(
+        cacheKey,
+        CacheTTL.LEADERBOARD,
+        () => storage.getSectorLeaderboards(competitionId, limit)
+      );
+      
       res.json(leaderboards);
     } catch (error) {
       console.error("Error fetching sector leaderboards:", error);
@@ -4160,6 +4199,10 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       }
 
       await storage.resetCompetitionCatches(req.params.id);
+      
+      // Invalidate cache after catches reset
+      cache.invalidateCompetition(req.params.id);
+      
       res.json({ message: "Competition catches reset successfully" });
     } catch (error) {
       console.error("Error resetting catches:", error);
@@ -5660,6 +5703,9 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
             console.error("Error creating catch:", error);
           }
         }
+        
+        // Invalidate cache once after all catches imported
+        cache.invalidateCompetition(competitionId);
 
         res.json({
           message: `Successfully seeded ${results.inserted} catches`,
