@@ -1,0 +1,173 @@
+STRUČNÝ VERDIKT
+
+Áno – ide to správnym smerom.
+Ale: ešte to nie je hotové na „pokoj v duši“. Ste na 80–85 % správne, chýbajú posledné produktovo-architektonické poistky, nie výkon.
+
+To, čo Replit spravil, je technicky správne, ale teraz je kritický kontrolný bod, kde sa rozhoduje, či z toho bude stabilný systém, alebo „funguje, kým nepríde chaos“.
+
+🧠 ČO REPLIT UROBIL DOBRE (a to je dôležité uznať)
+1️⃣ Leaderboard cache – správny základ
+
+✔️ Snapshot + cache
+✔️ TTL
+✔️ Invalidácia po write operáciách
+✔️ Diváci už neťahajú DB priamo
+
+➡️ Toto je absolútne kľúčové a je to splnené.
+
+Bez toho by Contestio neprežilo ani 200 ľudí.
+Toto je najväčší míľnik zatiaľ.
+
+2️⃣ Odhalený pôvodný problém
+
+„každý tím má samostatný DB query“
+
+Toto je presne ten typ chyby, ktorý:
+
+vzniká prirodzene
+
+zabije appku pri scale
+
+a väčšina juniorov ho ani nevidí
+
+➡️ Replit ho identifikoval a odstránil. Bod pre neho.
+
+3️⃣ Cache aj pre catches endpointy
+
+✔️ Nie len leaderboard
+✔️ Invalidácia pri create / delete / verify
+
+➡️ Toto je známka, že už rozmýšľa systémovo, nie len „zalepujem jeden endpoint“.
+
+🔴 KDE EŠTE MUSÍTE ZASTAVIŤ A SKONTROLOVAŤ
+
+Teraz prichádza tá nepohodlná, ale kritická časť.
+
+❗ PROBLÉM #1: Cache invalidácia ≠ produktová konzistencia
+
+Replit sám napísal:
+
+„Architekt našiel problémy s invalidáciou cache“
+
+Toto je červená vlajka, nie tragédia.
+
+Prečo?
+
+Cache invalidácia je:
+
+najčastejší zdroj bugov
+
+najťažšia časť systému
+
+miesto, kde vznikajú „duchy“ (stare dáta, race conditions)
+
+Čo teraz MUSÍTE spraviť:
+
+Nie viac kódu – jasné pravidlá.
+
+👉 Potrebujete JEDEN zdroj pravdy:
+
+„Ktoré udalosti invalidujú ktorý cache kľúč“
+
+Bez toho:
+
+budete opravovať bugy donekonečna
+
+QA nebude vedieť reprodukovať chyby
+
+🔧 Moja tvrdá požiadavka (produktová)
+
+Nech Replit explicitne vypíše tabuľku, napr.:
+
+Akcia	Invaliduje
+createCatch	leaderboard, catches
+verifyCatch	leaderboard
+deleteCatch	leaderboard, catches
+updateWeight	leaderboard
+endCompetition	leaderboard, WS
+
+👉 Bez tejto tabuľky je systém krehký.
+
+❗ PROBLÉM #2: WebSockety „pre všetkých“ sú stále riziko
+
+Replit síce píše:
+
+„hlavný problém je vyriešený cez cache“
+
+Áno – výkonovo.
+
+Ale architektonicky:
+
+WS pre všetkých = otvorené dvere k chaosu
+
+cache ťa nezachráni pred 300 otvorenými socketmi
+
+Môj verdikt:
+
+WebSocket musí byť roľovo obmedzený.
+Nie kvôli výkonu dnes, ale kvôli budúcej udržateľnosti.
+
+👉 Minimálne:
+
+referee
+
+organizer
+
+Divák:
+
+polling + cache
+
+nikdy WS
+
+Toto nie je „nice to have“. Toto je disciplinované riešenie.
+
+🟠 PROBLÉM #3: Chýba „ochranná UX logika“
+
+Teraz máte technické riešenie.
+Ale ešte chýba UX poistka:
+
+Príklady:
+
+divák nemá dôvod refreshovať manuálne
+
+polling sa má zastaviť keď je tab hidden
+
+leaderboard sa nemá refreshovať keď sa nič nemení
+
+Toto nie je infra problém.
+To je UX + performance hybrid.
+
+🧭 ČO BY SOM UROBIL JA TERAZ (presné poradie)
+✅ Krok 1 (povinný)
+
+Nech Replit:
+
+dopíše cache invalidation map
+
+a potvrdí ju
+
+✅ Krok 2
+
+obmedziť WebSockety len na referee / organizer
+
+alebo ich aspoň explicitne zdokumentovať ako dočasné
+
+✅ Krok 3
+
+jemné UX optimalizácie pollingu (tab hidden, idle)
+
+A potom STOP.
+Žiadne ďalšie optimalizácie.
+
+🟢 ZÁVEREČNÝ VERDIKT (úprimný)
+
+Contestio je momentálne technicky zdravý projekt, ktorý:
+
+už prežil prvú veľkú krízu (cache)
+
+má správne rozhodnutia
+
+ale je v bode, kde musí začať byť disciplinovaný
+
+Toto už nie je hra.
+Toto je produkt.

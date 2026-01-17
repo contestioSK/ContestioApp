@@ -49,8 +49,13 @@ export function useWebSocket(onMessage?: (data: WebSocketMessage) => void) {
           }
           
           if (data.type === 'auth_error') {
-            console.error('[WS] Authentication failed:', data.message);
+            console.log('[WS] Authentication failed:', data.message);
             setIsSocketAuthenticated(false);
+            // If server says to use polling instead (role not allowed), don't reconnect
+            if (data.usePolling) {
+              console.log('[WS] User role not allowed for WebSocket - using polling instead');
+              reconnectAttempts.current = maxReconnectAttempts; // Prevent reconnection attempts
+            }
             return;
           }
           
