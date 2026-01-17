@@ -126,7 +126,7 @@ export default function UserMenu() {
                 isOnline ? "bg-green-500" : "bg-red-500"
               )} />
               <span className="text-xs text-muted-foreground">
-                {isOnline ? "Pripojený" : "Odpojený"}
+                {isOnline ? "Online" : "Offline"}
               </span>
             </div>
             {isPremium && (
