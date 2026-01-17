@@ -34,27 +34,6 @@ export default function TopBar() {
     }
   };
 
-  const getModeLabel = () => {
-    switch (activeMode) {
-      case 'referee':
-        return 'Rozhodca';
-      case 'organizer':
-        return 'Organizátor';
-      default:
-        return 'Denník';
-    }
-  };
-
-  const getModeColor = () => {
-    switch (activeMode) {
-      case 'referee':
-      case 'organizer':
-        return 'text-orange-500';
-      default:
-        return 'text-cyan-500';
-    }
-  };
-
   if (!user) return null;
 
   return (
@@ -85,9 +64,6 @@ export default function TopBar() {
                 alt="Contestio" 
                 className="h-8 md:h-9" 
               />
-              <span className={`hidden md:inline-block text-sm font-medium ${getModeColor()}`}>
-                {getModeLabel()}
-              </span>
             </button>
           </div>
 
