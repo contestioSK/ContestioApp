@@ -233,7 +233,7 @@ export default function DiarySearch({ className = "", isMobile = false, onClose 
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onFocus={() => debouncedQuery.length >= 2 && setIsOpen(true)}
-        className="pl-10 bg-muted/50 border-border/50 focus:border-primary/50 h-10 text-foreground placeholder:text-muted-foreground"
+        className="pl-10 bg-muted border-border focus:border-primary h-10 text-foreground placeholder:text-muted-foreground"
         data-testid="topbar-search"
       />
       
