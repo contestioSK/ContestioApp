@@ -62,16 +62,29 @@ In-memory cache for high-frequency read endpoints (`server/cache.ts`):
 - `/api/competitions/:id/sectors/:sector/statistics` - 5s TTL
 - `/api/competitions/:id/sectors/leaderboards` - 5s TTL
 
-**Cache Invalidation:**
-- Automatic after catch creation (referee submits catch)
-- Automatic after catch reset/deletion (organizer clears catches)
-- Automatic after bulk catch import
-- Uses `cache.invalidateCompetition(competitionId)` to clear all related cache
+**Cache Invalidation Map:**
+| Akcia | Invaliduje |
+|-------|-----------|
+| `createCatch` | leaderboard, catches, sectorStats, sectorLeaderboards |
+| `resetCatches` / `deleteCatches` | leaderboard, catches, sectorStats, sectorLeaderboards |
+| `bulkImport` | leaderboard, catches, sectorStats, sectorLeaderboards |
+
+Note: `verifyCatch` and `updateWeight` endpoints don't exist - catches are verified automatically at creation.
 
 **Benefits:**
 - One DB calculation serves thousands of viewers
 - Prevents database overload during live competitions
 - 5s delay is acceptable for spectators (not real-time critical)
+
+### WebSocket Architecture (January 2025)
+**Role-based Access:**
+- `referee`, `organizer`, `admin` → WebSocket connection allowed
+- `user` (viewers) → WebSocket denied, use polling + cache instead
+
+**Rationale:**
+- Max 10-20 active WebSocket connections (referees/organizers only)
+- Viewers (potentially thousands) use visibility-aware polling with server-side cache
+- Prevents connection overload and simplifies debugging
 
 ## File Management
 - **Upload Handling**: Multer-based file upload with size (5MB limit) and type restrictions (JPEG, PNG, GIF).
