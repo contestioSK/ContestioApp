@@ -64,6 +64,7 @@ In-memory cache for high-frequency read endpoints (`server/cache.ts`):
 
 **Cache Invalidation:**
 - Automatic after catch creation (referee submits catch)
+- Automatic after catch reset/deletion (organizer clears catches)
 - Automatic after bulk catch import
 - Uses `cache.invalidateCompetition(competitionId)` to clear all related cache
 
