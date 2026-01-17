@@ -4,12 +4,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useUserMode } from "@/contexts/UserModeContext";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Menu, Search, X } from "lucide-react";
+import { Menu, Search } from "lucide-react";
 import NotificationsDropdown from "./NotificationsDropdown";
 import RoleSwitcher from "./RoleSwitcher";
 import UserMenu from "./UserMenu";
 import MobileMenu from "./MobileMenu";
+import DiarySearch from "./DiarySearch";
 import contestioLogo from "@assets/contestio logo_1760283270014.png";
 import contestioLogoDark from "@assets/contestio_logo_black_1766308180088.png";
 
@@ -20,7 +20,6 @@ export default function TopBar() {
   const [, setLocation] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
 
   const handleLogoClick = () => {
     switch (activeMode) {
@@ -94,17 +93,7 @@ export default function TopBar() {
 
           {/* Center Section - Global Search (Desktop only) */}
           <div className="hidden md:flex flex-1 max-w-md mx-8">
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Hľadať súťaže, revíry..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-muted/50 border-border/50 focus:border-primary/50 h-10"
-                data-testid="topbar-search"
-              />
-            </div>
+            <DiarySearch className="w-full" />
           </div>
 
           {/* Right Section - Actions */}
@@ -144,29 +133,7 @@ export default function TopBar() {
 
       {/* Mobile Search Overlay */}
       {isMobileSearchOpen && (
-        <div className="fixed inset-0 z-50 bg-background">
-          <div className="flex items-center gap-2 p-4 border-b border-border">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsMobileSearchOpen(false)}
-            >
-              <X className="h-5 w-5" />
-            </Button>
-            <Input
-              type="text"
-              placeholder="Hľadať súťaže, revíry..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1"
-              autoFocus
-              data-testid="mobile-search-input"
-            />
-          </div>
-          <div className="p-4 text-center text-muted-foreground">
-            <p className="text-sm">Vyhľadávanie bude dostupné čoskoro</p>
-          </div>
-        </div>
+        <DiarySearch isMobile onClose={() => setIsMobileSearchOpen(false)} />
       )}
     </>
   );
