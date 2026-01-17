@@ -53,6 +53,25 @@ Preferred communication style: Simple, everyday language.
 - **Data Synchronization**: TanStack Query integration.
 - **Polling Strategy**: Visibility-aware polling using `useVisibilityAwarePolling` hook, pausing when the tab is hidden or offline. Polling intervals vary from 5s (Referee Live) to 60s (Organizer), with static data having a 5-minute stale time.
 
+### Server-side Cache (January 2025)
+In-memory cache for high-frequency read endpoints (`server/cache.ts`):
+
+**Cached Endpoints:**
+- `/api/competitions/:id/leaderboard` - 5s TTL
+- `/api/competitions/:id/catches` - 3s TTL (referees need faster updates)
+- `/api/competitions/:id/sectors/:sector/statistics` - 5s TTL
+- `/api/competitions/:id/sectors/leaderboards` - 5s TTL
+
+**Cache Invalidation:**
+- Automatic after catch creation (referee submits catch)
+- Automatic after bulk catch import
+- Uses `cache.invalidateCompetition(competitionId)` to clear all related cache
+
+**Benefits:**
+- One DB calculation serves thousands of viewers
+- Prevents database overload during live competitions
+- 5s delay is acceptable for spectators (not real-time critical)
+
 ## File Management
 - **Upload Handling**: Multer-based file upload with size (5MB limit) and type restrictions (JPEG, PNG, GIF).
 - **Storage Strategy**: Local file system storage for original files.
