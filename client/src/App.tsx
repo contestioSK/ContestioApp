@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { UserModeProvider } from "@/contexts/UserModeContext";
+import TopNavigationShell from "@/components/navigation/TopNavigationShell";
 import NotFound from "@/pages/not-found";
 import RoleSelection from "@/pages/role-selection";
 import Landing from "@/pages/landing";
@@ -301,6 +302,20 @@ function Router() {
   );
 }
 
+function AuthenticatedContent() {
+  const { user } = useAuth();
+  
+  if (!user) {
+    return <Router />;
+  }
+  
+  return (
+    <TopNavigationShell>
+      <Router />
+    </TopNavigationShell>
+  );
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -308,7 +323,7 @@ function App() {
         <UserModeProvider>
           <TooltipProvider>
             <Toaster />
-            <Router />
+            <AuthenticatedContent />
           </TooltipProvider>
         </UserModeProvider>
       </ThemeProvider>
