@@ -1,0 +1,204 @@
+Cieľ
+
+Implementovať globálny Top Navigation Shell pre aplikáciu Contestio (desktop + mobile), ktorý bude slúžiť ako hlavná orientačná, notifikačná a rolová navigácia naprieč celou aplikáciou.
+
+Top bar musí fungovať konzistentne pre:
+
+bežného používateľa (rybár / denník)
+
+rozhodcu (referee)
+
+organizátora súťaží
+
+1️⃣ Základná architektúra
+Komponenty
+
+Vytvor tieto komponenty:
+
+TopNavigationShell.tsx – globálny wrapper
+
+TopBar.tsx – horný panel
+
+NotificationsDropdown.tsx
+
+RoleSwitcher.tsx
+
+UserMenu.tsx
+
+TopNavigationShell musí:
+
+obaliť všetky autentifikované stránky
+
+zostať fixný (sticky) hore
+
+nemať vplyv na existujúci routing
+
+2️⃣ Desktop Top Bar – rozloženie
+Layout (zľava → doprava):
+[ Contestio Logo ]   [ Global Search ]           [ 🔔 ] [ Role Switcher ] [ Avatar ]
+
+Logo
+
+klik = návrat na dashboard podľa aktuálnej roly
+
+user → /diary
+
+referee → /referee
+
+organizer → /organizer
+
+NIE návrat na landing page
+
+Global Search (MVP)
+
+viditeľné iba na desktop
+
+placeholder:
+
+„Hľadať súťaže, revíry…“
+
+scope MVP:
+
+súťaže
+
+revíry
+
+implementuj ako controlled input (UI only, logika môže byť stub)
+
+🔔 Notifikácie (kritické)
+
+zvonček s badge (počet neprečítaných)
+
+klik otvorí dropdown
+
+dropdown obsahuje:
+
+posledných max. 10 notifikácií
+
+typ (competition / referee / system)
+
+timestamp
+
+klik na notifikáciu:
+
+označí ju ako prečítanú
+
+presmeruje na relevantnú stránku
+
+po návrate zo Stripe (?payment=success, ?subscription=success) musí:
+
+invalidovať cache
+
+zobraziť success toast
+
+odstrániť query parametre z URL
+
+Role Switcher
+
+Zobraziť iba ak má používateľ viac než jednu aktívnu rolu.
+
+Možné roly:
+
+User (Denník)
+
+Referee (iba ak existuje aktívna súťaž)
+
+Organizer
+
+Správanie:
+
+klik = okamžité prepnutie režimu
+
+uložiť zvolenú rolu do session/contextu
+
+UI sa prepne bez logoutu
+
+Vizuálne:
+
+User → modro-zelené akcenty
+
+Referee / Organizer → oranžové akcenty
+
+User Menu (Avatar)
+
+Dropdown obsahuje:
+
+Profil
+
+Nastavenia
+
+Stav Premium
+
+Odhlásenie
+
+Žiadne duplicity navigácie.
+
+3️⃣ Mobile Top Bar (MVP)
+Layout
+[ ☰ ]   Contestio           [ 🔔 ] [ 👤 ]
+
+
+☰ otvorí mobile menu (drawer alebo bottom sheet)
+
+🔔 notifikácie musia fungovať rovnako ako na desktope
+
+search:
+
+ako položka v mobile menu (nie v top bare)
+
+4️⃣ Interakcia s existujúcim ľavým menu
+Z ľavého menu ODSTRÁNIŤ:
+
+prepínanie rolí
+
+„Moje súťaže“ v rybárskom denníku
+
+duplicitné dashboard odkazy
+
+Ľavé menu ponechať:
+
+len sekčný obsah podľa aktuálnej roly
+
+5️⃣ Stavové pravidlá & bezpečnosť
+
+Ak súťaž skončí:
+
+referee stratí write prístup
+
+UI prepne do read-only režimu
+
+Organizer má prístup k súťaži aj po skončení
+
+Notifikácie a role sa musia prepínať bez reloadu aplikácie
+
+6️⃣ Design & UX pravidlá
+
+Dark mode only
+
+Top bar má jemný glassmorphism (blur, nie heavy)
+
+Bez hrubých čiar
+
+Jasná vizuálna hierarchia
+
+Optimalizované pre použitie na slnku (kontrast!)
+
+7️⃣ Out of scope (teraz nerobiť)
+
+pokročilé filtrovanie v searchi
+
+real-time socket notifikácie (polling stačí)
+
+personalizované micro-copy
+
+Výsledok
+
+Po implementácii:
+
+používateľ má jasnú orientáciu
+
+vie okamžite prepínať roly
+
+notifikácie fungujú spoľahlivo
+
+top bar nahrádza chaos v bočnej navigácii
