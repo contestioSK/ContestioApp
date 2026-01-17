@@ -115,7 +115,7 @@ export default function DiarySearch({ className = "", isMobile = false, onClose 
               placeholder="Hľadať v mojom denníku..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 text-foreground placeholder:text-muted-foreground"
               autoFocus
             />
           </div>
@@ -233,7 +233,7 @@ export default function DiarySearch({ className = "", isMobile = false, onClose 
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onFocus={() => debouncedQuery.length >= 2 && setIsOpen(true)}
-        className="pl-10 bg-muted/50 border-border/50 focus:border-primary/50 h-10"
+        className="pl-10 bg-muted/50 border-border/50 focus:border-primary/50 h-10 text-foreground placeholder:text-muted-foreground"
         data-testid="topbar-search"
       />
       
