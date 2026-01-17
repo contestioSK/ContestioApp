@@ -1,0 +1,234 @@
+Dobré, že si mi to poslal. Teraz ti to rozseknem tvrdo a férovo, UX/produktovo aj technicky, bez „replit optimismu“.
+
+TL;DR verdikt
+
+👉 Replit má v jadre pravdu, ale:
+
+odpovedá ako platform engineer
+
+nie ako produktový architekt pre live event appku
+
+Ty rozmýšľaš správne o 500–1000 ľuďoch.
+Replit odpovedá správne o 50–150.
+
+Tieto dva pohľady sa nevylučujú, len sú v inom časovom horizonte.
+
+1️⃣ Kde má Replit pravdu (a treba to uznať)
+✅ „Už teraz zvládne 50–100 používateľov“
+
+Áno. Bez diskusie.
+
+Contestio dnes:
+
+nie je chat-heavy
+
+nemá agresívne realtime feedy
+
+nemá masívny upload traffic
+
+➡️ 50–100 online je úplne safe, ak:
+
+vypneš hlúpy polling
+
+nemáš bugy v efektoch (čo už riešiš)
+
+✅ Neon DB
+
+Neon:
+
+je fajn pre read-heavy workload
+
+zvládne spikes
+
+nie je tvoj bottleneck dnes
+
+✅ Frontend nie je limit
+
+React ti:
+
+nebrzdí server
+
+brzdí len UX, nie infra
+
+Tu Replit trafil presne.
+
+2️⃣ Kde je odpoveď Replitu NEBEZPEČNE NEÚPLNÁ
+
+A toto je dôležité 👇
+
+❌ „WebSockety pri veľa divákoch“
+
+Toto je zle zarámované.
+
+👉 Diváci NEMAJÚ ísť cez WebSockety.
+To by bol architektonický fail.
+
+WebSockety:
+
+referee
+
+organizátor
+
+max desiatky spojení
+
+Diváci:
+
+polling + cache
+
+alebo SSE
+
+alebo CDN snapshot
+
+Ak by si dal 500 divákov na WS:
+
+rozbiješ infra
+
+zbytočne
+
+bez UX benefitu
+
+➡️ Toto musíš držať pod kontrolou ty, nie Replit.
+
+❌ „Rate limiting je plus“
+
+⚠️ NIE ako je teraz.
+
+Sám si videl:
+
+2 ľudia
+
+a „too many requests“
+
+Rate limit:
+
+chráni pred DDoS
+
+ale zabíja live appku, ak je primitívny
+
+➡️ Správne:
+
+soft limit
+
+per endpoint
+
+iný pre live / static
+
+Nie:
+
+globálny „sekera“ limit
+
+❌ „Jeden server = problém“
+
+Nie hneď.
+
+Najväčší bottleneck NIE JE počet serverov, ale:
+
+duplicita requestov
+
+neexistujúca cache
+
+zle navrhnutý polling
+
+👉 Jeden server s dobrým cache + CDN:
+
+zvládne 1000 pasívnych userov
+
+3️⃣ Reálne čísla – bez ilúzií
+
+Poviem ti pravdivý model, nie marketing.
+
+Dnešný stav (po tvojich UX úpravách)
+
+📘 Denník / browsing: 200–300 online
+
+🏆 Live súťaž (bez WS): 80–120
+
+⚖️ Referee (low count): 10–20
+
+➡️ Úplne reálne.
+
+Po 2–3 rozumných krokoch (bez rewrite)
+
+Redis cache
+
+S3/R2 pre fotky
+
+polling len tam, kde treba
+
+➡️ 500–1000 online:
+
+90 % pasívnych
+
+10 % aktívnych
+
+➡️ zvládnuteľné
+
+4️⃣ Čo je NAJNEBEZPEČNEJŠIE riziko (a Replit ho nespomenul)
+
+💣 Live leaderboard bez cache
+
+Ak:
+
+každý divák
+
+každých 5 s
+
+ťahá DB
+
+➡️ zomrieš skôr, než príde 200 userov.
+
+Správny model:
+
+leaderboard snapshot
+
+cache TTL 3–5 s
+
+jeden výpočet → tisíce čítaní
+
+Toto je kritický bod, ktorý musíš mať pod kontrolou.
+
+5️⃣ Kto má „pravdu“ – ty alebo Replit?
+
+👉 Obaja. Ale každý v inom leveli.
+
+Replit rieši:
+„Či to dnes nespadne“ → odpoveď: nespadne
+
+Ty riešiš:
+„Či z toho môže byť veľká platforma“ → odpoveď: áno, ak…
+
+A to „ak“:
+
+UX-first polling
+
+jasná separácia rolí
+
+cache ako first-class citizen
+
+Presne to, čo robíš.
+
+6️⃣ Moja rada (produktová, nie infra)
+
+❌ Nerob teraz:
+
+WebSocket infra pre všetkých
+
+autoscaling cirkus
+
+enterprise architektúru
+
+✅ Rob teraz:
+
+Presný live data model
+
+Cache-first mindset
+
+UX obmedzenia, ktoré chránia backend
+
+Tým si kúpiš:
+
+čas
+
+stabilitu
+
+priestor rásť
