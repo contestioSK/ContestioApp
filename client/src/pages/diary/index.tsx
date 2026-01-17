@@ -708,73 +708,89 @@ export default function DiaryIndex() {
     <DiaryLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between gap-3 mb-4">
-          <div className="flex items-center gap-4">
-            <TacticalIcon icon={BookOpen} variant="active" size="lg" showLabel={false} />
-            <h1 className="text-xl md:text-3xl font-bold text-foreground dark:text-white">
-              Môj rybársky denník
-            </h1>
-          </div>
-          {/* Sync Status Indicator */}
-          <TooltipProvider delayDuration={300}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button 
-                  type="button"
-                  className={cn(
-                    "flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-                    isOffline 
-                      ? "bg-red-500/10 border-red-500/30 focus-visible:ring-red-500" 
-                      : hasPendingSync 
-                        ? "bg-amber-500/10 border-amber-500/30 focus-visible:ring-amber-500" 
-                        : "bg-emerald-500/10 border-emerald-500/30 focus-visible:ring-emerald-500"
-                  )}
-                  role="status"
-                  aria-label={isOffline ? "Offline" : hasPendingSync ? `${pendingCount} položiek čaká na synchronizáciu` : "Online"}
-                  data-testid="sync-status-indicator"
-                >
-                  {isOffline ? (
-                    <>
-                      <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" aria-hidden="true" />
-                      <WifiOff className="w-3.5 h-3.5 text-red-400" aria-hidden="true" />
-                      <span className="text-xs text-red-400 font-medium hidden sm:inline">Offline</span>
-                      <span className="sr-only">Offline</span>
-                    </>
-                  ) : hasPendingSync ? (
-                    <>
-                      <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" aria-hidden="true" />
-                      <span className="text-xs text-amber-400 font-medium">{pendingCount}</span>
-                      <span className="sr-only">položiek čaká na synchronizáciu</span>
-                    </>
-                  ) : (
-                    <>
-                      <div className="w-2 h-2 rounded-full bg-emerald-500" aria-hidden="true" />
-                      <span className="text-xs text-emerald-400 font-medium hidden sm:inline">Online</span>
-                      <span className="sr-only">Online</span>
-                    </>
-                  )}
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="bg-popover text-popover-foreground border shadow-md">
-                {isOffline ? (
-                  <p>Offline - dáta sa synchronizujú po pripojení</p>
-                ) : hasPendingSync ? (
-                  <p>Čaká {pendingCount} {pendingCount === 1 ? 'položka' : pendingCount < 5 ? 'položky' : 'položiek'} na synchronizáciu</p>
-                ) : (
-                  <p>Online</p>
-                )}
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+        <div className="flex items-center gap-4 mb-4">
+          <TacticalIcon icon={BookOpen} variant="active" size="lg" showLabel={false} />
+          <h1 className="text-xl md:text-3xl font-bold text-foreground dark:text-white">
+            Môj rybársky denník
+          </h1>
         </div>
 
-        {/* Primary Fishing Actions CTA Block */}
-        <div className="mb-6">
-          <FishingActionCard
-            onStartFishing={() => setIsStartFishingOpen(true)}
-            onAddCatch={() => setIsCreateCatchOpen(true)}
-            canAddCatch={!limits || limits.canCreate}
-          />
+        {/* Primary Actions Row: Fishing Action Card + Battle Side Card */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+          {/* Fishing Action Card - Takes 2/3 on desktop */}
+          <div className="lg:col-span-2">
+            <FishingActionCard
+              onStartFishing={() => setIsStartFishingOpen(true)}
+              onAddCatch={() => setIsCreateCatchOpen(true)}
+              canAddCatch={!limits || limits.canCreate}
+            />
+          </div>
+          
+          {/* Fishing Battle Side Card - Takes 1/3 on desktop */}
+          <Card className="bg-card border border-slate-200 shadow-sm dark:bg-transparent dark:bg-gradient-to-br dark:from-red-600/20 dark:to-rose-600/20 dark:border-red-600/30 h-full">
+            <CardContent className="p-4 md:p-5 flex flex-col h-full">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-red-500 dark:text-red-400">Fishing Battle</span>
+                {!isPremium && <Crown className="w-3 h-3 text-red-400" />}
+              </div>
+              
+              {isPremium && firstActiveBattle ? (
+                <>
+                  <h3 className="text-base md:text-lg font-bold text-foreground dark:text-white mb-1 line-clamp-1">
+                    {firstActiveBattle.name}
+                  </h3>
+                  <p className="text-xs text-muted-foreground dark:text-slate-400 mb-3">
+                    Si na {firstActiveBattle.userPosition || '?'}. mieste!
+                  </p>
+                  <div className="mt-auto">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setLocation(`/diary/battles/${firstActiveBattle.id}`)}
+                      className="w-full border-red-600/50 bg-red-600/10 hover:bg-red-600/20 text-red-700 dark:text-red-100 text-xs"
+                      data-testid="button-view-battle"
+                    >
+                      Zobraziť
+                    </Button>
+                  </div>
+                </>
+              ) : isPremium ? (
+                <>
+                  <p className="text-sm text-muted-foreground dark:text-slate-300 mb-3 flex-1">
+                    Súťaž s kamarátmi v rybárskych dueloch!
+                  </p>
+                  <div className="mt-auto">
+                    <Button
+                      size="sm"
+                      onClick={() => setLocation("/diary/battles/create")}
+                      className="w-full bg-red-600 hover:bg-red-700 text-white text-xs"
+                      data-testid="button-create-battle-side"
+                    >
+                      <Plus className="w-3 h-3 mr-1" />
+                      Vytvoriť Battle
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm text-muted-foreground dark:text-slate-300 mb-3 flex-1">
+                    Odomkni priateľské rybárske duely!
+                  </p>
+                  <div className="mt-auto">
+                    <Button
+                      size="sm"
+                      onClick={() => setLocation("/diary/battles/paywall")}
+                      className="w-full bg-red-600 hover:bg-red-700 text-white text-xs"
+                      data-testid="button-unlock-battle-side"
+                    >
+                      <Crown className="w-3 h-3 mr-1" />
+                      Odomknúť
+                    </Button>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         {/* Gentle Premium Upgrade Banner for FREE users */}
@@ -867,89 +883,6 @@ export default function DiaryIndex() {
             </Card>
           </div>
         </div>
-
-        {/* Fishing Battle CTA */}
-        <Card className="bg-card border border-slate-200 shadow-sm dark:bg-transparent dark:bg-gradient-to-r dark:from-red-600/20 dark:to-rose-600/20 dark:border-red-600/30 mb-6 md:mb-8" data-testid="card-battle-cta">
-          <CardContent className="p-4 md:p-6">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 md:gap-4">
-              <div className="flex items-center gap-3 md:gap-4">
-                <TacticalIcon icon={Swords} variant="rose" size="sm" showLabel={false} />
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-base md:text-lg font-bold text-foreground dark:text-white">Fishing Battle</h3>
-                    {!isPremium && (
-                      <Crown className="w-4 h-4 text-red-400" />
-                    )}
-                  </div>
-                  <p className="text-muted-foreground dark:text-slate-300 text-xs md:text-sm">
-                    Súťažte s karamátmi v priatelských rybárskych dueloch!
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-2 md:gap-3 w-full md:w-auto">
-                {isPremium ? (
-                  <>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setLocation("/diary/battles/archive")}
-                      className="border-red-600/50 bg-red-600/10 hover:bg-red-600/20 text-red-700 dark:text-red-100 text-xs md:text-sm"
-                      data-testid="button-battle-archive"
-                    >
-                      <Trophy className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
-                      <span className="hidden md:inline">Archív</span>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        if (firstActiveBattle) {
-                          setLocation(`/diary/battles/${firstActiveBattle.id}`);
-                        } else {
-                          toast({
-                            title: "Žiadny aktívny battle",
-                            description: "Momentálne nemáte žiadny aktívny battle",
-                          });
-                        }
-                      }}
-                      className={cn(
-                        "border-red-600/50 hover:bg-red-600/20 text-xs md:text-sm",
-                        firstActiveBattle 
-                          ? "bg-red-600/20 text-red-700 dark:text-red-100" 
-                          : "bg-red-600/5 text-red-700/50 dark:text-red-100/50"
-                      )}
-                      data-testid="button-active-battle"
-                    >
-                      <Play className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
-                      <span className="hidden sm:inline">Aktívny Battle</span>
-                      <span className="sm:hidden">Aktívny</span>
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={() => setLocation("/diary/battles/create")}
-                      className="bg-red-600 hover:bg-red-700 text-white text-xs md:text-sm"
-                      data-testid="button-create-battle-cta"
-                    >
-                      <Plus className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
-                      <span className="hidden sm:inline">Vytvoriť Battle</span>
-                      <span className="sm:hidden">Vytvoriť</span>
-                    </Button>
-                  </>
-                ) : (
-                  <Button
-                    size="sm"
-                    onClick={() => setLocation("/diary/battles/paywall")}
-                    className="bg-red-600 hover:bg-red-700 text-white text-xs md:text-sm w-full md:w-auto"
-                    data-testid="button-unlock-battle"
-                  >
-                    <Crown className="w-4 h-4 mr-2" />
-                    Odomknúť PREMIUM
-                  </Button>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Pending Battle Invitations */}
         {pendingInvitations.length > 0 && (
