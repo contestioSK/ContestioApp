@@ -23,6 +23,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import DiaryLayout from "@/components/DiaryLayout";
 import CatchFormDialog from "@/components/diary/CatchFormDialog";
+import FishingActionCard from "@/components/diary/FishingActionCard";
 import { LocationSearchField } from "@/components/LocationSearchField";
 import { TacticalIcon } from "@/components/ui/tactical-icon";
 import { BookOpen } from "lucide-react";
@@ -714,26 +715,13 @@ export default function DiaryIndex() {
           </h1>
         </div>
 
-        {/* Action Strip - Clean, action-first */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-6">
-          <Button
-            onClick={() => setIsCreateCatchOpen(true)}
-            disabled={limits && !limits.canCreate}
-            className="flex-1 h-14 text-base font-semibold bg-emerald-600 hover:bg-emerald-700 text-white"
-            data-testid="action-add-catch"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            Zapísať úlovok
-          </Button>
-          <Button
-            onClick={() => setIsStartFishingOpen(true)}
-            variant="outline"
-            className="flex-1 h-14 text-base font-semibold border-cyan-600 bg-cyan-600/10 hover:bg-cyan-600/20 text-cyan-700 dark:text-cyan-300 dark:border-cyan-500"
-            data-testid="action-start-fishing"
-          >
-            <Play className="w-5 h-5 mr-2" />
-            Začať rybačku
-          </Button>
+        {/* Primary Fishing Actions */}
+        <div className="mb-6">
+          <FishingActionCard
+            onStartFishing={() => setIsStartFishingOpen(true)}
+            onAddCatch={() => setIsCreateCatchOpen(true)}
+            canAddCatch={!limits || limits.canCreate}
+          />
         </div>
 
         {/* Gentle Premium Upgrade Banner for FREE users */}
