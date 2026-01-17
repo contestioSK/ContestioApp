@@ -1,0 +1,164 @@
+🎯 Základný princíp pre Contestio
+
+Contestio má tri úplne rozdielne typy dát:
+
+Kritické / časovo citlivé (súťaže, rozhodca)
+
+Stredne dôležité (notifikácie, stavy)
+
+Low-priority / osobné (denník, štatistiky)
+
+Každý z nich musí mať iný polling interval.
+
+1️⃣ Notifikácie (MVP – POVINNÉ)
+⏱️ Polling: 30 sekúnd
+refetchInterval: 30_000
+
+Prečo:
+
+rybár nepotrebuje notifikáciu do 1 sekundy
+
+ale 2–5 minút je už pomalé a pôsobí lacno
+
+30 s je:
+
+UX-safe
+
+server-safe
+
+úplne MVP-friendly
+
+Optimalizácia:
+
+polling iba keď je user aktívny
+
+stopnúť polling keď:
+
+tab je neaktívny
+
+user je offline
+
+👉 Toto je dnes štandard (Notion, Linear, GitHub)
+
+2️⃣ Súťaže – referee / live preteky
+⏱️ Polling: 5–10 sekúnd
+refetchInterval: 5_000
+
+Prečo:
+
+referee potrebuje:
+
+aktuálne poradie
+
+potvrdenia vážení
+
+ale:
+
+stále to NIE je e-sport
+
+stále nepotrebuje websockety v MVP
+
+UX poznámka:
+
+5 s pôsobí „živé“
+
+10 s pôsobí „stabilné“
+
+nad 15 s už rybár stráca dôveru
+
+👉 Ja by som dal 5 s iba pre referee view, ostatné 10 s.
+
+3️⃣ Dashboard / organizátor / prehľady
+⏱️ Polling: 60–120 sekúnd
+refetchInterval: 60_000
+
+Prečo:
+
+organizátor:
+
+nerobí rozhodnutia každú sekundu
+
+skôr sleduje stav
+
+šetríš:
+
+API
+
+Stripe webhooks
+
+databázu
+
+4️⃣ Rybársky denník (osobné dáta)
+⏱️ Polling: VÔBEC NIE
+
+❌ žiadny polling
+
+Použiť:
+
+refetch iba po akcii:
+
+pridaný úlovok
+
+edit
+
+delete
+
+alebo manual refresh
+
+Prečo:
+
+sú to jeho vlastné dáta
+
+nič sa tam „samo“ nemení
+
+polling by bol čistý nezmysel
+
+5️⃣ Globálne pravidlá (VEĽMI DÔLEŽITÉ)
+✅ Použi staleTime
+staleTime: 10_000
+
+
+Zabráni:
+
+zbytočným refetchom
+
+flickerom v UI
+
+✅ Disable polling keď:
+
+tab nie je aktívny
+
+user je offline
+
+aplikácia je v backgrounde
+
+React Query to zvláda out of the box.
+
+🔥 Odporúčaný finálny setup (MVP)
+Typ dát	Polling
+Notifikácie	30 s
+Referee – live súťaž	5 s
+Súťaž pre divákov	10 s
+Organizátor dashboard	60 s
+Rybársky denník	žiadny
+⚠️ Čo určite nerob:
+
+❌ globálny polling 5 s
+
+❌ polling na denník
+
+❌ websockety v MVP (zabije čas aj nervy)
+
+❌ polling bez ohľadu na active tab
+
+Verdikt UX / produktovo
+
+Toto nastavenie:
+
+pôsobí profesionálne
+
+je škálovateľné
+
+nezabije server
+
+a hlavne: rybár má pocit, že appka „žije“
