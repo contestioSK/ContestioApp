@@ -1,0 +1,133 @@
+„Primary Fishing Actions CTA Block“
+🎯 Cieľ
+
+Vytvoriť jedno centrálne miesto v rybárskom denníku, kde má rybár obe hlavné akcie rovnocenné a okamžite dostupné:
+
+Začať rybačku (session / výprava)
+
+Pridať úlovok (jednorazový záznam)
+
+Bez hľadania, bez hierarchie chaosu, bez duplikácií v hlavičke.
+
+📐 UX KONCEPT (kľúčové rozhodnutie)
+
+👉 Denník má 2 primárne akcie, nie jednu
+a obe musia mať rovnakú vizuálnu váhu.
+
+Nie:
+
+„Začať rybačku“ hore
+
+„Pridať úlovok“ inde
+
+Ale:
+
+Jedna karta = dve rovnocenné CTA
+
+🧩 Komponent: „Fishing Action Card“
+📍 Umiestnenie
+
+Hneď pod nadpisom „Môj rybársky denník“
+
+Nad štatistikami
+
+Súčasť hlavného content gridu
+
+🧱 Layout karty
+Desktop
+
+Jedna veľká horizontálna karta
+
+Vnútri 2 rovnaké tlačidlá vedľa seba (50 % / 50 %)
+
+Mobile
+
+Rovnaká karta
+
+CTA tlačidlá pod sebou, full-width
+
+📝 Obsah karty (finálne texty)
+Headline:
+
+Čo ideš dnes robiť?
+
+Subtext:
+
+Začni rybačku alebo si rýchlo zapíš úlovok.
+Contestio sa postará o zvyšok.
+
+🔘 CTA tlačidlá (rovnocenné!)
+CTA 1 – Začať rybačku
+
+Text: ▶ Začať rybačku
+
+Štýl:
+
+Primary
+
+Modro–zelený akcent (session / proces)
+
+Akcia:
+
+Spustí existujúci flow „Začať rybačku“
+
+Otvorí session režim
+
+CTA 2 – Pridať úlovok
+
+Text: ＋ Pridať úlovok
+
+Štýl:
+
+Primary (rovnaká vizuálna váha)
+
+Jemne kontrastný (napr. tyrkys / zelená)
+
+Akcia:
+
+Otvorí existujúci „create catch“ flow
+
+⚖️ UX pravidlá (kritické)
+
+❌ Žiadne tretie „Add catch“ CTA v hornom paneli
+
+❌ Žiadne floating FAB v denníku
+
+✅ Toto je jediné miesto, kde sa rozhoduje „čo idem robiť“
+
+Horný panel:
+
+bez akčných tlačidiel
+
+len search, notifikácie, profil
+
+🧠 Mentálny model rybára (pre Replit)
+
+Začať rybačku = „idem chytať, budem tu dlhšie“
+
+Pridať úlovok = „mám rybu, rýchlo zapísať“
+
+Rybár si vyberie režim, nie funkciu.
+
+✅ Akceptačné kritériá
+
+ Obidve CTA sú rovnako veľké a vizuálne dominantné
+
+ Na mobile sú obe CTA viditeľné bez scrollu
+
+ Neexistuje iné primárne CTA v denníku
+
+ Použité sú existujúce flow (žiadne backend zmeny)
+
+🧠 Prečo je toto extrémne dôležité
+
+Týmto:
+
+zrušíš chaos „kde mám kliknúť“
+
+odstrániš konflikt medzi session logikou a quick logikou
+
+dostaneš sa na úroveň aplikácií, ktoré chápu správanie v teréne, nie za počítačom
+
+Toto nie je kozmetika.
+Toto je základná architektúra denníka.
