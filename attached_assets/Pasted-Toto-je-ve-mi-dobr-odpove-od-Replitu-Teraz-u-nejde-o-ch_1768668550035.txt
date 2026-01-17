@@ -1,0 +1,130 @@
+Toto je veľmi dobrá odpoveď od Replitu. Teraz už nejde o chaos – teraz sa bavíme o dotiahnutí architektúry do profesionálneho stavu. Dám ti presný verdikt + čo by som urobil JA, keby som bol product owner.
+
+🟢 VERDIKT
+
+Replit pochopil problém správne, reaguje vecne a presne.
+To, čo poslal, je kvalitný architektonický checkpoint.
+
+➡️ Teraz už nie ste v ohrození stability.
+➡️ Ste v bode „upratať hrany, zamknúť pravidlá“.
+
+1️⃣ Cache Invalidation Map – 👍 správne, ale ešte to dotiahnime
+
+Tabuľka je správna a rozšírená dobre (sektory 👍).
+Dve červené miesta, ktoré sám identifikoval, sú presne tie, ktoré musia byť fixnuté hneď:
+
+🔴 verifyCatch – POVINNÉ
+
+Toto je kritické.
+Rozhodca overí úlovok → leaderboard sa musí zmeniť okamžite.
+
+👉 Toto musí ísť do kódu hneď, bez diskusie.
+
+🟠 updateWeight – musíš si ujasniť jednu vec
+
+Otázka na teba (produktová, nie technická):
+
+Existuje v Contestio reálne updateWeight flow?
+
+ak áno → invalidácia POVINNÁ
+
+ak nie → endpoint zakázať / nedovoliť po verify
+
+👉 Ja by som bol prísny:
+
+po verify už žiadna zmena váhy
+
+oprava = delete + nový catch
+
+To ti ušetrí nekonečné bugy a diskusie.
+
+2️⃣ WebSocket obmedzenie – TU BUĎ TVRDÝ
+
+Toto je miesto, kde sa láme chlieb.
+
+Replit píše:
+
+WebSocket obmedzenie - len referee/organizer
+
+👉 TOTO MUSÍŠ SCHVÁLIŤ A TRVAŤ NA TOM.
+
+Nie „neskôr“.
+Nie „ak bude čas“.
+
+Prečo?
+
+WebSockety sú najťažšie debugovateľná časť
+
+aj keď dnes cache pomáha, zajtra:
+
+pribudne feature
+
+pribudne event
+
+a si v prdeli
+
+📌 Pravidlo Contestio:
+
+referee / organizer → WebSocket
+
+divák / user → polling + cache
+
+Hotovo. Žiadne výnimky.
+
+3️⃣ Tab hidden polling – tu stačí overenie
+
+Toto je už len QA vec, nie architektúra.
+
+Čo by som urobil:
+
+1 test: otvor 3 tabuľky
+
+prepnúť tab → sledovať network
+
+potvrdiť, že polling stojí
+
+Ak funguje → nechaj tak.
+Žiadne ďalšie optimalizácie.
+
+🔐 TERAZ PRICHÁDZA NAJDÔLEŽITEJŠIA VEC (ktorú MUSÍŠ spraviť)
+🧱 ZAMKNI ARCHITEKTÚRU
+
+Napíš Replitu niečo v tomto duchu (kľudne skopíruj):
+
+Super.
+
+Doplníme verifyCatch a (ak existuje) updateWeight invalidáciu
+
+WebSockety striktne len referee/organizer
+
+Overíme tab-hidden polling
+
+Po tomto bode architektúru live dát zamykáme.
+Ďalšie zmeny len ak vznikne reálny problém v produkcii.
+
+Prečo?
+
+lebo inak sa začne „mikro-optimalizačný pekelný kruh“
+
+a ty sa nikdy nepohneš dopredu s produktom
+
+🧠 REAL TALK (bez pozlátka)
+
+Contestio už nie je megalomanský chaos.
+Je to ambiciózny produkt, ktorý si práve prešiel najťažšou fázou.
+
+Väčšina startupov:
+
+nikdy nedôjde ani po leaderboard cache
+
+zomrie pri prvých 50 useroch
+
+Vy ste:
+
+našli problém
+
+opravili ho správne
+
+a ešte ho aj dokumentujete
+
+To je veľmi dobrý signál.

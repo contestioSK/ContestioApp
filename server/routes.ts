@@ -165,14 +165,19 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
   
   // Store active WebSocket connections with user information
+  // WebSocket is ONLY for referee/organizer roles - viewers use polling + cache
   interface ClientConnection {
     ws: WebSocket;
     userId?: string;
+    userRole?: string;
     sessionId?: string;
     connectedAt: Date;
   }
   
   const clients = new Map<WebSocket, ClientConnection>();
+  
+  // Roles allowed to use WebSocket (viewers use polling + cache instead)
+  const WS_ALLOWED_ROLES = ['referee', 'organizer', 'admin'];
   
   wss.on('connection', async (ws, req) => {
     // Initialize connection
@@ -202,15 +207,31 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
           // Authenticate user from session
           const userSession = await storage.getUserFromSession(sessionId);
           if (userSession) {
+            // Check if user has allowed role for WebSocket
+            const userRole = userSession.role || 'user';
+            if (!WS_ALLOWED_ROLES.includes(userRole)) {
+              console.log(`[WS] User ${userSession.email} (role: ${userRole}) not allowed - using polling instead`);
+              ws.send(JSON.stringify({
+                type: 'auth_error',
+                message: 'WebSocket not available for viewers - use polling',
+                usePolling: true
+              }));
+              ws.close(1000, 'Role not allowed');
+              clients.delete(ws);
+              return;
+            }
+            
             connection.userId = userSession.id;
+            connection.userRole = userRole;
             connection.sessionId = sessionId;
-            console.log(`[WS] User ${userSession.email} authenticated automatically on WebSocket`);
+            console.log(`[WS] User ${userSession.email} (role: ${userRole}) authenticated on WebSocket`);
             
             // Send authentication success
             ws.send(JSON.stringify({
               type: 'auth_success',
               userId: userSession.id,
-              email: userSession.email
+              email: userSession.email,
+              role: userRole
             }));
           } else {
             console.log(`[WS] Authentication failed for sessionId: ${sessionId}`);
