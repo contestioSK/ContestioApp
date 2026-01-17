@@ -23,6 +23,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import DiaryLayout from "@/components/DiaryLayout";
 import CatchFormDialog from "@/components/diary/CatchFormDialog";
+import FishingActionCard from "@/components/diary/FishingActionCard";
 import { LocationSearchField } from "@/components/LocationSearchField";
 import { TacticalIcon } from "@/components/ui/tactical-icon";
 import { BookOpen } from "lucide-react";
@@ -707,87 +708,73 @@ export default function DiaryIndex() {
     <DiaryLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6 md:mb-8">
+        <div className="flex items-center justify-between gap-3 mb-4">
           <div className="flex items-center gap-4">
             <TacticalIcon icon={BookOpen} variant="active" size="lg" showLabel={false} />
             <h1 className="text-xl md:text-3xl font-bold text-foreground dark:text-white">
               Môj rybársky denník
             </h1>
           </div>
-          <div className="flex gap-2 w-full sm:w-auto items-center">
-            {/* Sync Status Indicator */}
-            <TooltipProvider delayDuration={300}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button 
-                    type="button"
-                    className={cn(
-                      "flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-                      isOffline 
-                        ? "bg-red-500/10 border-red-500/30 focus-visible:ring-red-500" 
-                        : hasPendingSync 
-                          ? "bg-amber-500/10 border-amber-500/30 focus-visible:ring-amber-500" 
-                          : "bg-emerald-500/10 border-emerald-500/30 focus-visible:ring-emerald-500"
-                    )}
-                    role="status"
-                    aria-label={isOffline ? "Offline" : hasPendingSync ? `${pendingCount} položiek čaká na synchronizáciu` : "Online"}
-                    data-testid="sync-status-indicator"
-                  >
-                    {isOffline ? (
-                      <>
-                        <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" aria-hidden="true" />
-                        <WifiOff className="w-3.5 h-3.5 text-red-400" aria-hidden="true" />
-                        <span className="text-xs text-red-400 font-medium hidden sm:inline">Offline</span>
-                        <span className="sr-only">Offline</span>
-                      </>
-                    ) : hasPendingSync ? (
-                      <>
-                        <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" aria-hidden="true" />
-                        <span className="text-xs text-amber-400 font-medium">{pendingCount}</span>
-                        <span className="sr-only">položiek čaká na synchronizáciu</span>
-                      </>
-                    ) : (
-                      <>
-                        <div className="w-2 h-2 rounded-full bg-emerald-500" aria-hidden="true" />
-                        <span className="text-xs text-emerald-400 font-medium hidden sm:inline">Online</span>
-                        <span className="sr-only">Online</span>
-                      </>
-                    )}
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="bg-popover text-popover-foreground border shadow-md">
-                  {isOffline ? (
-                    <p>Offline - dáta sa synchronizujú po pripojení</p>
-                  ) : hasPendingSync ? (
-                    <p>Čaká {pendingCount} {pendingCount === 1 ? 'položka' : pendingCount < 5 ? 'položky' : 'položiek'} na synchronizáciu</p>
-                  ) : (
-                    <p>Online</p>
+          {/* Sync Status Indicator */}
+          <TooltipProvider delayDuration={300}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button 
+                  type="button"
+                  className={cn(
+                    "flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                    isOffline 
+                      ? "bg-red-500/10 border-red-500/30 focus-visible:ring-red-500" 
+                      : hasPendingSync 
+                        ? "bg-amber-500/10 border-amber-500/30 focus-visible:ring-amber-500" 
+                        : "bg-emerald-500/10 border-emerald-500/30 focus-visible:ring-emerald-500"
                   )}
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+                  role="status"
+                  aria-label={isOffline ? "Offline" : hasPendingSync ? `${pendingCount} položiek čaká na synchronizáciu` : "Online"}
+                  data-testid="sync-status-indicator"
+                >
+                  {isOffline ? (
+                    <>
+                      <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" aria-hidden="true" />
+                      <WifiOff className="w-3.5 h-3.5 text-red-400" aria-hidden="true" />
+                      <span className="text-xs text-red-400 font-medium hidden sm:inline">Offline</span>
+                      <span className="sr-only">Offline</span>
+                    </>
+                  ) : hasPendingSync ? (
+                    <>
+                      <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" aria-hidden="true" />
+                      <span className="text-xs text-amber-400 font-medium">{pendingCount}</span>
+                      <span className="sr-only">položiek čaká na synchronizáciu</span>
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-2 h-2 rounded-full bg-emerald-500" aria-hidden="true" />
+                      <span className="text-xs text-emerald-400 font-medium hidden sm:inline">Online</span>
+                      <span className="sr-only">Online</span>
+                    </>
+                  )}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="bg-popover text-popover-foreground border shadow-md">
+                {isOffline ? (
+                  <p>Offline - dáta sa synchronizujú po pripojení</p>
+                ) : hasPendingSync ? (
+                  <p>Čaká {pendingCount} {pendingCount === 1 ? 'položka' : pendingCount < 5 ? 'položky' : 'položiek'} na synchronizáciu</p>
+                ) : (
+                  <p>Online</p>
+                )}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
 
-            <Button 
-              variant="outline"
-              size="sm"
-              onClick={() => setIsStartFishingOpen(true)}
-              className="border-cyan-600 dark:border-cyan-500/50 bg-cyan-50 dark:bg-cyan-500/10 hover:bg-cyan-100 dark:hover:bg-cyan-500/20 text-cyan-700 dark:text-cyan-100 hover:text-cyan-800 dark:hover:text-white transition-all flex-1 sm:flex-none"
-              data-testid="button-start-fishing"
-            >
-              <Play className="w-4 h-4 mr-2" />
-              Začať rybačku
-            </Button>
-            <Button 
-              onClick={() => setIsCreateCatchOpen(true)}
-              disabled={limits && !limits.canCreate}
-              size="sm"
-              className="bg-emerald-600/90 hover:bg-emerald-600 text-white border border-emerald-500/50 transition-all flex-1 sm:flex-none"
-              data-testid="button-add-catch"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Pridať Úlovok
-            </Button>
-          </div>
+        {/* Primary Fishing Actions CTA Block */}
+        <div className="mb-6">
+          <FishingActionCard
+            onStartFishing={() => setIsStartFishingOpen(true)}
+            onAddCatch={() => setIsCreateCatchOpen(true)}
+            canAddCatch={!limits || limits.canCreate}
+          />
         </div>
 
         {/* Gentle Premium Upgrade Banner for FREE users */}

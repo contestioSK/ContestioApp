@@ -46,6 +46,7 @@ type CatchLimits = {
 };
 
 const HIDE_FAB_ROUTES = [
+  '/diary',
   '/diary/battles',
   '/organizer',
   '/competition',
