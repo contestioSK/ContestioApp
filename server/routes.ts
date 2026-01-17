@@ -6939,6 +6939,98 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
+  // Diary Search endpoint - searches user's personal diary data only
+  app.get('/api/diary/search', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id || req.user?.claims?.sub;
+      
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const { q } = req.query;
+      
+      if (!q || typeof q !== 'string' || q.trim().length < 2) {
+        return res.json({ catches: [], trips: [], areas: [] });
+      }
+      
+      const query = q.trim().toLowerCase();
+      
+      // Get all user's catches
+      const allCatches = await storage.getAllUserCatches(userId);
+      
+      // Get all user's trips
+      const allTrips = await storage.getDiaryTrips(userId);
+      
+      // Search in catches (fish type, bait, spot, notes)
+      const matchedCatches = allCatches.filter(c => {
+        const fishType = (c.fishType || '').toLowerCase();
+        const bait = (c.bait || '').toLowerCase();
+        const spot = (c.spot || '').toLowerCase();
+        const notes = (c.notes || '').toLowerCase();
+        return fishType.includes(query) || bait.includes(query) || 
+               spot.includes(query) || notes.includes(query);
+      }).slice(0, 5); // Limit to 5 results
+      
+      // Search in trips (name, location, notes)
+      const matchedTrips = allTrips.filter(t => {
+        const name = (t.name || '').toLowerCase();
+        const location = (t.location || '').toLowerCase();
+        const notes = (t.notes || '').toLowerCase();
+        return name.includes(query) || location.includes(query) || notes.includes(query);
+      }).slice(0, 5); // Limit to 5 results
+      
+      // Extract unique fishing areas from user's catches (spots/locations they've used)
+      const areaSet = new Map<string, { name: string; count: number }>();
+      allCatches.forEach(c => {
+        if (c.spot && c.spot.toLowerCase().includes(query)) {
+          const key = c.spot.toLowerCase();
+          const existing = areaSet.get(key);
+          if (existing) {
+            existing.count++;
+          } else {
+            areaSet.set(key, { name: c.spot, count: 1 });
+          }
+        }
+      });
+      allTrips.forEach(t => {
+        if (t.location && t.location.toLowerCase().includes(query)) {
+          const key = t.location.toLowerCase();
+          const existing = areaSet.get(key);
+          if (existing) {
+            existing.count++;
+          } else {
+            areaSet.set(key, { name: t.location, count: 1 });
+          }
+        }
+      });
+      
+      const matchedAreas = Array.from(areaSet.values())
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
+      
+      res.json({
+        catches: matchedCatches.map(c => ({
+          id: c.id,
+          fishType: c.fishType,
+          weight: c.weight,
+          spot: c.spot,
+          capturedAt: c.capturedAt,
+        })),
+        trips: matchedTrips.map(t => ({
+          id: t.id,
+          name: t.name,
+          location: t.location,
+          startDate: t.startDate,
+        })),
+        areas: matchedAreas,
+      });
+    } catch (error) {
+      console.error("Error searching diary:", error);
+      res.status(500).json({ message: "Failed to search diary" });
+    }
+  });
+
   // Diary Catches endpoints
   // NOTE: Order matters! Specific routes (like /all) must come before param routes (like /:id)
   
