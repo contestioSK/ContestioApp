@@ -90,7 +90,7 @@ export default function UserMenu() {
 
       {isOpen && (
         <div 
-          className="absolute right-0 mt-2 w-64 rounded-xl border border-border/50 bg-card/95 backdrop-blur-xl shadow-2xl overflow-hidden"
+          className="absolute right-0 mt-2 w-64 rounded-xl border border-border bg-popover shadow-2xl overflow-hidden z-50"
           data-testid="user-menu-dropdown"
         >
           {/* User Info Header */}

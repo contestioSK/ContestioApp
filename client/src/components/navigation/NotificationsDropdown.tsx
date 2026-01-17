@@ -154,9 +154,9 @@ export default function NotificationsDropdown() {
       {isOpen && (
         <div 
           className={cn(
-            "absolute right-0 mt-2 w-80 md:w-96 rounded-xl border border-border/50 shadow-2xl",
-            "bg-card/95 backdrop-blur-xl",
-            "max-h-[80vh] overflow-hidden"
+            "absolute right-0 mt-2 w-80 md:w-96 rounded-xl border border-border shadow-2xl",
+            "bg-popover",
+            "max-h-[80vh] overflow-hidden z-50"
           )}
           data-testid="notifications-dropdown"
         >
