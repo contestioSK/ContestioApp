@@ -484,6 +484,28 @@ export default function DiaryIndex() {
     return catchDate >= seasonStart;
   });
 
+  // Calculate year-to-date comparison with same period last year
+  const today = new Date();
+  const lastYear = currentYear - 1;
+  
+  // Same period last year: Jan 1 to same day/month last year
+  const lastYearStart = new Date(`${lastYear}-01-01`);
+  const lastYearSameDate = new Date(lastYear, today.getMonth(), today.getDate(), 23, 59, 59);
+  
+  const lastYearSamePeriodCatches = nonHistoricalCatches.filter((catch_: any) => {
+    if (!catch_.capturedAt) return false;
+    const catchDate = new Date(catch_.capturedAt);
+    return catchDate >= lastYearStart && catchDate <= lastYearSameDate;
+  });
+
+  // Calculate percentage change (only if we have last year data to compare)
+  const lastYearCount = lastYearSamePeriodCatches.length;
+  const currentCount = seasonCatches.length;
+  // Only show trend if we have data from last year to compare
+  const trendPercentage = lastYearCount > 0 
+    ? Math.round(((currentCount - lastYearCount) / lastYearCount) * 100)
+    : null; // null = no comparison data available
+
   // Apply filters to ALL catches (table shows all, not just season)
   const allCatchesList = Array.isArray(allCatches) ? allCatches : [];
   const filteredCatches = allCatchesList.filter((catch_: any) => {
@@ -696,6 +718,7 @@ export default function DiaryIndex() {
             totalCatches={diaryStats.totalCatches}
             maxWeight={diaryStats.biggestFish}
             daysAtWater={diaryStats.daysAtWater}
+            trendPercentage={trendPercentage}
           />
         </div>
 
