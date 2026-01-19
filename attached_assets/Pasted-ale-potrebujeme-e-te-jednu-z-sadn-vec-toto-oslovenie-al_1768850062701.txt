@@ -1,0 +1,128 @@
+ale potrebujeme ešte jednu zásadnú vec, toto oslovenie ale nie je možné použiť pri prvom prihlásení
+
+Presne tak. A toto je zásadná UX pasca, do ktorej padá 80 % aplikácií. Dobre, že to riešiš teraz.
+
+Poďme si to nastaviť čisto, logicky a systémovo.
+
+Problém, ktorý presne pomenúvaš
+
+„Vitaj späť, Denis“ JE NESPRÁVNE pri prvom prihlásení, pretože:
+
+užívateľ sa nikam nevracia
+
+nemá ešte mentálny model aplikácie
+
+pôsobí to falošne a lacno („aha, klamú ma“)
+
+To okamžite znižuje dôveru. A rybár je na tieto veci citlivý.
+
+Správne riešenie: stavový greeting (nie jeden text)
+
+Musíš to riešiť stavovo, nie jedným headline.
+
+Rozlišujeme 3 stavy používateľa
+🟢 STAV 1: Prvé prihlásenie (First session ever)
+
+👉 ŽIADNE „Vitaj späť“
+
+H1:
+
+Vitaj v Contestio 👋
+
+alebo (ešte lepšie pre rybára):
+Vitaj pri vode 👋
+
+Subtext:
+
+Tvoj osobný rybársky denník a prehľad úlovkov na jednom mieste.
+
+Prečo:
+
+nastavuje kontext
+
+vysvetľuje hodnotu
+
+neklame
+
+⚠️ Dôležité:
+Toto sa zobrazí len raz (alebo kým nepridá prvý úlovok).
+
+🟢 STAV 2: Prvé dni používania (nový používateľ)
+
+Po prvom úlovku, ale povedzme do 3–5 dní:
+
+H1:
+
+Vitaj, Denis 👋
+
+Subtext:
+
+Pripravený zapísať ďalší úlovok?
+
+➡️ ešte stále nepoužívaš „späť“, lebo návratový návyk ešte nevznikol.
+
+🟢 STAV 3: Návratový používateľ (toto chceš!)
+
+Podmienka:
+
+aspoň 1 úlovok
+
+aspoň 1 návrat (nová session / nový deň)
+
+H1:
+
+Vitaj späť, Denis 👋
+
+Subtext (kontextový, ale pokojne statický):
+
+Máš rozrobenú sezónu 2026. Poď pokračovať.
+
+Toto je presne moment, kde ten text funguje emočne.
+
+Jednoduchá logika (bez AI, bez komplikácií)
+
+Technicky to vieš spraviť úplne triviálne:
+
+if (isFirstLogin) {
+  headline = "Vitaj v Contestio 👋"
+} else if (totalCatches === 0) {
+  headline = "Vitaj, Denis 👋"
+} else {
+  headline = "Vitaj späť, Denis 👋"
+}
+
+
+Hotovo.
+Žiadna veda. Len zdravý rozum.
+
+UX princíp, ktorý tu dodržiavaš (a robíš to správne)
+
+👉 Neoslovuj správaním, ktoré ešte nenastalo.
+
+To je rovnaké, ako keby si povedal:
+
+„Tešíme sa, že nás odporučíš“ → ešte predtým, než appku použil
+
+„Pokračuj v sezóne“ → keď ešte nič nezačal
+
+Toto robí rozdiel medzi:
+
+hobby appkou
+
+a produktom, ktorému ľudia veria
+
+Verdikt
+
+✅ Máš pravdu
+✅ „Vitaj späť“ nesmie byť pri prvom prihlásení
+✅ Stavový greeting je správne riešenie
+✅ Je to MVP-friendly, lacné a extrémne účinné
+
+Ak chceš, ďalší krok môžeme spraviť:
+
+presné texty pre každý stav (SK / CZ / EN)
+
+alebo rozhodnúť, po koľkých dňoch sa má „späť“ aktivovať, aby to nebolo príliš skoro
+
+Ale teraz:
+👉 toto rozhodnutie je UX-ovo veľmi zrelé.
