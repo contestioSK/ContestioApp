@@ -679,12 +679,23 @@ export default function DiaryIndex() {
           </h1>
         </div>
 
-        {/* Primary Action Card */}
-        <div className="mb-6">
-          <FishingActionCard
-            onStartFishing={() => setIsStartFishingOpen(true)}
-            onAddCatch={() => setIsCreateCatchOpen(true)}
-            canAddCatch={!limits || limits.canCreate}
+        {/* Primary Actions Row: Action Card (2/3) + Season Overview (1/3) */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+          {/* Fishing Action Card - Takes 2/3 on desktop */}
+          <div className="lg:col-span-2">
+            <FishingActionCard
+              onStartFishing={() => setIsStartFishingOpen(true)}
+              onAddCatch={() => setIsCreateCatchOpen(true)}
+              canAddCatch={!limits || limits.canCreate}
+            />
+          </div>
+          
+          {/* Season Overview Card - Takes 1/3 on desktop */}
+          <SeasonOverviewCard
+            year={currentYear}
+            totalCatches={diaryStats.totalCatches}
+            maxWeight={diaryStats.biggestFish}
+            daysAtWater={diaryStats.daysAtWater}
           />
         </div>
 
@@ -702,16 +713,6 @@ export default function DiaryIndex() {
             </div>
           </Link>
         )}
-
-        {/* Season Overview Card */}
-        <div className="mb-8">
-          <SeasonOverviewCard
-            year={currentYear}
-            totalCatches={diaryStats.totalCatches}
-            maxWeight={diaryStats.biggestFish}
-            daysAtWater={diaryStats.daysAtWater}
-          />
-        </div>
 
         {/* Pending Battle Invitations */}
         {pendingInvitations.length > 0 && (

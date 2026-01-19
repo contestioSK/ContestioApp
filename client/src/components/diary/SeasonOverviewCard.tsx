@@ -15,7 +15,7 @@ export default function SeasonOverviewCard({
   daysAtWater 
 }: SeasonOverviewCardProps) {
   return (
-    <Card className="bg-card border border-slate-200 shadow-sm dark:bg-slate-800/50 dark:border-slate-700/50" data-testid="card-season-overview">
+    <Card className="bg-card border border-slate-200 shadow-sm dark:bg-slate-800/50 dark:border-slate-700/50 h-full" data-testid="card-season-overview">
       <CardContent className="p-5 md:p-6">
         <h2 className="text-sm font-medium text-muted-foreground dark:text-slate-400 mb-4">
           Sezóna {year}
