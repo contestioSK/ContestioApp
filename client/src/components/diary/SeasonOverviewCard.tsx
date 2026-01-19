@@ -21,7 +21,7 @@ export default function SeasonOverviewCard({
   
   return (
     <Card 
-      className="h-full border border-slate-200 dark:border-white/10 bg-white dark:bg-gradient-to-b dark:from-[#1e293b] dark:to-[#0f172a] rounded-[32px] overflow-hidden hover:border-emerald-500/30 transition-all shadow-lg dark:shadow-2xl dark:shadow-black/40 relative group" 
+      className="h-full border border-slate-200 dark:border-white/10 bg-white dark:bg-gradient-to-b dark:from-[#1e293b] dark:to-[#0f172a] overflow-hidden hover:border-emerald-500/30 transition-all shadow-lg dark:shadow-2xl dark:shadow-black/40 relative group" 
       data-testid="card-season-overview"
     >
       {/* Decorative background (Chart line) - dark mode only */}
