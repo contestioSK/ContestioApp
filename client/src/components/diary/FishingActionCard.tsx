@@ -36,12 +36,12 @@ export default function FishingActionCard({
             <span className="hidden sm:inline">Contestio sa postará o zvyšok.</span>
           </p>
           
-          {/* CTA Buttons - at bottom, prominent */}
-          <div className="grid grid-cols-2 gap-3 mt-auto">
+          {/* CTA Buttons - at bottom, prominent - stacked on mobile, side by side on sm+ */}
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-auto">
             <Button
               onClick={onStartFishing}
               size="lg"
-              className="h-12 md:h-14 text-sm md:text-base bg-cyan-600 hover:bg-cyan-700 text-white font-bold shadow-lg hover:shadow-xl transition-all border border-cyan-500/50"
+              className="h-11 sm:h-12 md:h-14 text-sm md:text-base flex-1 bg-cyan-600 hover:bg-cyan-700 text-white font-bold shadow-lg hover:shadow-xl transition-all border border-cyan-500/50"
               data-testid="cta-start-fishing"
             >
               <Play className="w-4 h-4 md:w-5 md:h-5 mr-2" />
@@ -52,7 +52,7 @@ export default function FishingActionCard({
               disabled={!canAddCatch}
               variant="outline"
               size="lg"
-              className="h-12 md:h-14 text-sm md:text-base border-2 border-slate-400/80 bg-white/95 hover:bg-white text-slate-700 font-bold shadow-md hover:shadow-lg transition-all dark:border-slate-400 dark:bg-slate-700/90 dark:hover:bg-slate-700 dark:text-white"
+              className="h-11 sm:h-12 md:h-14 text-sm md:text-base flex-1 border-2 border-slate-400/80 bg-white/95 hover:bg-white text-slate-700 font-bold shadow-md hover:shadow-lg transition-all dark:border-slate-400 dark:bg-slate-700/90 dark:hover:bg-slate-700 dark:text-white"
               data-testid="cta-add-catch"
             >
               <Plus className="w-4 h-4 md:w-5 md:h-5 mr-2" />

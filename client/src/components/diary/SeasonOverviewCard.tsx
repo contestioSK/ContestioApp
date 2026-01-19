@@ -33,9 +33,9 @@ export default function SeasonOverviewCard({
       </svg>
       <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/0 dark:bg-emerald-500/10 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
 
-      <CardContent className="p-5 md:p-6 flex flex-col justify-between h-full min-h-[280px]">
+      <CardContent className="p-4 md:p-6 flex flex-col justify-between h-full min-h-[200px] md:min-h-[280px]">
         <div>
-          <div className="flex justify-between items-start mb-6">
+          <div className="flex justify-between items-start mb-4 md:mb-6">
             {/* Badge */}
             <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full">
               <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
@@ -52,10 +52,10 @@ export default function SeasonOverviewCard({
           </div>
 
           <div className="relative">
-            <span className="text-5xl md:text-6xl font-black text-slate-800 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-white dark:via-emerald-100 dark:to-emerald-400 tracking-tighter drop-shadow-sm" data-testid="text-season-total">
+            <span className="text-4xl md:text-6xl font-black text-slate-800 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-white dark:via-emerald-100 dark:to-emerald-400 tracking-tighter drop-shadow-sm" data-testid="text-season-total">
               {totalCatches}
             </span>
-            <span className="block text-sm text-slate-500 dark:text-slate-400 font-medium mt-1 ml-1 flex items-center gap-2">
+            <span className="block text-xs md:text-sm text-slate-500 dark:text-slate-400 font-medium mt-1 ml-1 flex items-center gap-2">
               Úlovkov celkom 
               {showTrend && (
                 <span className={`text-xs px-1.5 py-0.5 rounded flex items-center gap-0.5 ${
@@ -72,30 +72,30 @@ export default function SeasonOverviewCard({
         </div>
         
         {/* Mini Stats Grid */}
-        <div className="grid grid-cols-2 gap-3 mt-6 relative z-10">
+        <div className="grid grid-cols-2 gap-2 md:gap-3 mt-4 md:mt-6 relative z-10">
           {biggestCatchId ? (
             <Link href={`/diary/catches/${biggestCatchId}`}>
-              <div className="bg-slate-50 dark:bg-[#0B1120]/60 dark:backdrop-blur-sm border border-slate-200 dark:border-white/5 rounded-2xl p-3 hover:bg-slate-100 dark:hover:bg-[#0B1120]/80 transition-colors cursor-pointer hover:border-emerald-500/30 dark:hover:border-emerald-500/30">
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 uppercase font-bold tracking-wider">Naj Ryba</p>
+              <div className="bg-slate-50 dark:bg-[#0B1120]/60 dark:backdrop-blur-sm border border-slate-200 dark:border-white/5 rounded-xl md:rounded-2xl p-2 md:p-3 hover:bg-slate-100 dark:hover:bg-[#0B1120]/80 transition-colors cursor-pointer hover:border-emerald-500/30 dark:hover:border-emerald-500/30">
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-0.5 md:mb-1 uppercase font-bold tracking-wider">Naj Ryba</p>
                 <div className="flex items-baseline gap-1">
-                  <span className="font-bold text-slate-800 dark:text-white text-lg" data-testid="text-season-max-weight">{maxWeight.toFixed(1)}</span>
+                  <span className="font-bold text-slate-800 dark:text-white text-base md:text-lg" data-testid="text-season-max-weight">{maxWeight.toFixed(1)}</span>
                   <span className="text-xs text-slate-400 dark:text-slate-500">kg</span>
                 </div>
               </div>
             </Link>
           ) : (
-            <div className="bg-slate-50 dark:bg-[#0B1120]/60 dark:backdrop-blur-sm border border-slate-200 dark:border-white/5 rounded-2xl p-3">
-              <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 uppercase font-bold tracking-wider">Naj Ryba</p>
+            <div className="bg-slate-50 dark:bg-[#0B1120]/60 dark:backdrop-blur-sm border border-slate-200 dark:border-white/5 rounded-xl md:rounded-2xl p-2 md:p-3">
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-0.5 md:mb-1 uppercase font-bold tracking-wider">Naj Ryba</p>
               <div className="flex items-baseline gap-1">
-                <span className="font-bold text-slate-800 dark:text-white text-lg" data-testid="text-season-max-weight">{maxWeight.toFixed(1)}</span>
+                <span className="font-bold text-slate-800 dark:text-white text-base md:text-lg" data-testid="text-season-max-weight">{maxWeight.toFixed(1)}</span>
                 <span className="text-xs text-slate-400 dark:text-slate-500">kg</span>
               </div>
             </div>
           )}
-          <div className="bg-slate-50 dark:bg-[#0B1120]/60 dark:backdrop-blur-sm border border-slate-200 dark:border-white/5 rounded-2xl p-3 hover:bg-slate-100 dark:hover:bg-[#0B1120]/80 transition-colors">
-            <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 uppercase font-bold tracking-wider">Dni pri vode</p>
+          <div className="bg-slate-50 dark:bg-[#0B1120]/60 dark:backdrop-blur-sm border border-slate-200 dark:border-white/5 rounded-xl md:rounded-2xl p-2 md:p-3 hover:bg-slate-100 dark:hover:bg-[#0B1120]/80 transition-colors">
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-0.5 md:mb-1 uppercase font-bold tracking-wider">Dni pri vode</p>
             <div className="flex items-baseline gap-1">
-              <span className="font-bold text-slate-800 dark:text-white text-lg" data-testid="text-season-days">{daysAtWater}</span>
+              <span className="font-bold text-slate-800 dark:text-white text-base md:text-lg" data-testid="text-season-days">{daysAtWater}</span>
               <span className="text-xs text-slate-400 dark:text-slate-500">dní</span>
             </div>
           </div>
