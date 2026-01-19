@@ -1,0 +1,118 @@
+ÚPRAVA DASHBOARDU RYBÁRSKEHO DENNÍKA (MVP)
+Cieľ
+
+Zjednodušiť a sprehľadniť dashboard rybárskeho denníka odstránením nadbytočných kariet a ich nahradením jednou kompaktnou sezónnou kartou.
+
+1️⃣ Zachovať BEZ ZMIEN
+
+Kartu „Čo ideš dnes robiť?“
+
+vizuál: ponechať presne v aktuálnom stave
+
+layout: nezväčšovať, nezmenšovať
+
+texty: nemení sa nič
+
+CTA:
+
+„Začať rybačku“
+
+„Pridať úlovok“
+
+farebnosť: ponechať aktuálny Contestio štýl (dark + teal/green)
+
+⚠️ Táto karta je primárny akčný vstup – nedotýkať sa jej.
+
+2️⃣ ODSTRÁNIŤ (ÚPLNE)
+
+Kartu „Fishing Battle“ z dashboardu denníka
+
+odstrániť celý komponent
+
+žiadna náhrada v tejto pozícii
+
+logika Fishing Battle zostáva dostupná iba:
+
+v ľavom menu
+
+na dedikovanej stránke
+
+❌ Fishing Battle nepatrí na dashboard denníka.
+
+3️⃣ ODSTRÁNIŤ (ÚPLNE)
+
+Spodné štatistické bloky:
+
+❌ „Sezóna 2026“ – 4 samostatné karty (Úlovky, Najväčšia ryba, Dni pri vode, Váhový priemer)
+
+❌ „Moja dnešná štatistika“ – celý blok so 4 kartami
+
+Tieto informácie:
+
+sú redundantné
+
+zvyšujú vizuálny chaos
+
+nepatria na hlavný dashboard
+
+4️⃣ PRIDAŤ – NOVÁ KARTA „SEZÓNNY PREHĽAD“
+
+Namiesto Fishing Battle karty pridať jednu kompaktnú sezónnu kartu.
+
+Obsah karty:
+
+Nadpis: Sezóna 2026
+
+Hlavná hodnota:
+
+veľké číslo: 124
+
+popis: „úlovkov celkom“
+
+Doplnkové metriky (v jednej línii alebo mriežke):
+
+„Max váha“ → 18.2 kg
+
+„Dni pri vode“ → 32
+
+UX / UI pravidlá:
+
+jedna karta = jeden prehľad
+
+žiadne CTA tlačidlo
+
+maximálne jeden jemný ikonový prvok (trend / štatistika)
+
+žiadne animácie navyše
+
+Dizajn:
+
+tmavý Contestio štýl
+
+žiadna červená (rezervovaná pre Battle)
+
+konzistentné zaoblenie ako ostatné karty
+
+vizuálne pokojná, informačná karta
+
+5️⃣ Výsledná štruktúra dashboardu (zhora nadol)
+
+Nadpis: Môj rybársky denník
+
+Karta: Čo ideš dnes robiť? (nezmenená)
+
+Karta: Sezóna 2026 – sezónny prehľad (nová)
+
+Sekcia: Moje posledné úlovky (tabuľka + filtre)
+
+6️⃣ DÔLEŽITÉ OBMEDZENIA
+
+❌ nepridávať online/offline stav
+
+❌ nepridávať AI asistenta
+
+❌ nepridávať nové CTA
+
+❌ nemení sa routing ani backend logika
+
+ide striktne o UI/UX refaktor dashboardu

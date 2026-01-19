@@ -24,6 +24,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import DiaryLayout from "@/components/DiaryLayout";
 import CatchFormDialog from "@/components/diary/CatchFormDialog";
 import FishingActionCard from "@/components/diary/FishingActionCard";
+import SeasonOverviewCard from "@/components/diary/SeasonOverviewCard";
 import { LocationSearchField } from "@/components/LocationSearchField";
 import { TacticalIcon } from "@/components/ui/tactical-icon";
 import { BookOpen } from "lucide-react";
@@ -424,14 +425,6 @@ export default function DiaryIndex() {
 
   const pendingInvitations = invitations.filter(inv => inv.status === 'pending');
 
-  // Fetch active battles
-  const { data: activeBattles = [] } = useQuery<any[]>({
-    queryKey: ['/api/diary/battles/active'],
-    enabled: !!user && isPremium
-  });
-
-  const firstActiveBattle = activeBattles[0];
-
   // Accept invitation mutation
   const acceptInvitationMutation = useMutation({
     mutationFn: async (invitationId: string) => {
@@ -580,35 +573,6 @@ export default function DiaryIndex() {
     })()
   };
 
-  // Calculate today's statistics
-  const todayStats = (() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const todayEnd = new Date(today);
-    todayEnd.setHours(23, 59, 59, 999);
-    
-    const todayCatches = seasonCatches.filter((catch_: any) => {
-      const catchDate = new Date(catch_.capturedAt);
-      return catchDate >= today && catchDate <= todayEnd;
-    });
-    
-    const totalCount = todayCatches.length;
-    const totalWeight = todayCatches.reduce((sum: number, catch_: any) => {
-      const weight = parseFloat(catch_.weight || '0');
-      return sum + (isNaN(weight) ? 0 : weight);
-    }, 0);
-    const biggestToday = todayCatches.length > 0
-      ? Math.max(...todayCatches.map((c: any) => parseFloat(c.weight || '0') || 0))
-      : 0;
-    const averageWeight = totalCount > 0 ? totalWeight / totalCount : 0;
-    
-    return {
-      count: totalCount,
-      totalWeight,
-      biggestFish: biggestToday,
-      averageWeight
-    };
-  })();
 
   // Quick start fishing form
   const quickStartForm = useForm<QuickStartFormData>({
@@ -715,83 +679,13 @@ export default function DiaryIndex() {
           </h1>
         </div>
 
-        {/* Primary Actions Row: Fishing Action Card + Battle Side Card */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-          {/* Fishing Action Card - Takes 2/3 on desktop */}
-          <div className="lg:col-span-2">
-            <FishingActionCard
-              onStartFishing={() => setIsStartFishingOpen(true)}
-              onAddCatch={() => setIsCreateCatchOpen(true)}
-              canAddCatch={!limits || limits.canCreate}
-            />
-          </div>
-          
-          {/* Fishing Battle Side Card - Takes 1/3 on desktop */}
-          <Card className="bg-card border border-slate-200 shadow-sm dark:bg-transparent dark:bg-gradient-to-br dark:from-red-600/20 dark:to-rose-600/20 dark:border-red-600/30 h-full">
-            <CardContent className="p-4 md:p-5 flex flex-col h-full">
-              <div className="flex items-center gap-2 mb-2">
-                <Swords className="w-4 h-4 text-red-500 dark:text-red-400" />
-                <span className="text-xs font-bold uppercase tracking-wider text-red-500 dark:text-red-400">Fishing Battle</span>
-                {!isPremium && <Crown className="w-3 h-3 text-red-400" />}
-              </div>
-              
-              {isPremium && firstActiveBattle ? (
-                <>
-                  <h3 className="text-base md:text-lg font-bold text-foreground dark:text-white mb-1 line-clamp-1">
-                    {firstActiveBattle.name}
-                  </h3>
-                  <p className="text-xs text-muted-foreground dark:text-slate-400 mb-3">
-                    Si na {firstActiveBattle.userPosition || '?'}. mieste!
-                  </p>
-                  <div className="mt-auto">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setLocation(`/diary/battles/${firstActiveBattle.id}`)}
-                      className="w-full border-red-600/50 bg-red-600/10 hover:bg-red-600/20 text-red-700 dark:text-red-100 text-xs"
-                      data-testid="button-view-battle"
-                    >
-                      Zobraziť
-                    </Button>
-                  </div>
-                </>
-              ) : isPremium ? (
-                <>
-                  <p className="text-sm text-muted-foreground dark:text-slate-300 mb-3 flex-1">
-                    Súťaž s kamarátmi v rybárskych dueloch!
-                  </p>
-                  <div className="mt-auto">
-                    <Button
-                      size="sm"
-                      onClick={() => setLocation("/diary/battles/create")}
-                      className="w-full bg-red-600 hover:bg-red-700 text-white text-xs"
-                      data-testid="button-create-battle-side"
-                    >
-                      <Plus className="w-3 h-3 mr-1" />
-                      Vytvoriť Battle
-                    </Button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <p className="text-sm text-muted-foreground dark:text-slate-300 mb-3 flex-1">
-                    Odomkni priateľské rybárske duely!
-                  </p>
-                  <div className="mt-auto">
-                    <Button
-                      size="sm"
-                      onClick={() => setLocation("/diary/battles/paywall")}
-                      className="w-full bg-red-600 hover:bg-red-700 text-white text-xs"
-                      data-testid="button-unlock-battle-side"
-                    >
-                      <Crown className="w-3 h-3 mr-1" />
-                      Odomknúť
-                    </Button>
-                  </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
+        {/* Primary Action Card */}
+        <div className="mb-6">
+          <FishingActionCard
+            onStartFishing={() => setIsStartFishingOpen(true)}
+            onAddCatch={() => setIsCreateCatchOpen(true)}
+            canAddCatch={!limits || limits.canCreate}
+          />
         </div>
 
         {/* Gentle Premium Upgrade Banner for FREE users */}
@@ -809,80 +703,14 @@ export default function DiaryIndex() {
           </Link>
         )}
 
-        {/* Season Statistics */}
+        {/* Season Overview Card */}
         <div className="mb-8">
-          <h2 className="text-sm font-medium text-muted-foreground dark:text-slate-400 mb-3">Sezóna {currentYear}</h2>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-            <Link href="/diary/catches" data-testid="link-all-catches">
-              <Card className="bg-card border border-slate-200 shadow-sm dark:bg-transparent dark:bg-gradient-to-br dark:from-blue-600/20 dark:to-cyan-600/20 dark:border-blue-500/30 cursor-pointer transition-all duration-200 hover:shadow-lg dark:hover:from-blue-600/30 dark:hover:to-cyan-600/30 dark:hover:border-blue-400/50 dark:hover:shadow-blue-500/20 h-full" data-testid="card-season-catches">
-                <CardContent className="p-4 md:p-6">
-                  <div className="flex items-center gap-3 md:gap-4">
-                    <TacticalIcon icon={Fish} variant="cyan" size="sm" showLabel={false} />
-                    <div className="flex-1">
-                      <div className="text-xs md:text-sm text-muted-foreground dark:text-slate-300 mb-1">Úlovky</div>
-                      <div className="text-xl md:text-2xl font-bold text-teal-700 dark:text-white" data-testid="text-total-catches">{diaryStats.totalCatches}</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-            
-            {diaryStats.biggestCatchId ? (
-              <Link href={`/diary/catches/${diaryStats.biggestCatchId}`} data-testid="link-biggest-fish">
-                <Card className="bg-card border border-slate-200 shadow-sm dark:bg-transparent dark:bg-gradient-to-br dark:from-emerald-600/20 dark:to-green-600/20 dark:border-emerald-500/30 cursor-pointer transition-all duration-200 hover:shadow-lg dark:hover:from-emerald-600/30 dark:hover:to-green-600/30 dark:hover:border-emerald-400/50 dark:hover:shadow-emerald-500/20 h-full" data-testid="card-biggest-fish">
-                  <CardContent className="p-4 md:p-6">
-                    <div className="flex items-center gap-3 md:gap-4">
-                      <TacticalIcon icon={Trophy} variant="amber" size="sm" showLabel={false} />
-                      <div className="flex-1">
-                        <div className="text-xs md:text-sm text-muted-foreground dark:text-slate-300 mb-1">Najväčšia ryba</div>
-                        <div className="text-xl md:text-2xl font-bold text-amber-700 dark:text-white" data-testid="text-biggest-fish">
-                          {diaryStats.biggestFish > 0 ? `${diaryStats.biggestFish.toFixed(1)} kg` : '0 kg'}
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ) : (
-              <Card className="bg-card border border-slate-200 shadow-sm dark:bg-transparent dark:bg-gradient-to-br dark:from-emerald-600/20 dark:to-green-600/20 dark:border-emerald-500/30 hover:shadow-lg h-full" data-testid="card-biggest-fish">
-                <CardContent className="p-4 md:p-6">
-                  <div className="flex items-center gap-3 md:gap-4">
-                    <TacticalIcon icon={Trophy} variant="amber" size="sm" showLabel={false} />
-                    <div className="flex-1">
-                      <div className="text-xs md:text-sm text-muted-foreground dark:text-slate-300 mb-1">Najväčšia ryba</div>
-                      <div className="text-xl md:text-2xl font-bold text-amber-700 dark:text-white" data-testid="text-biggest-fish">
-                        {diaryStats.biggestFish > 0 ? `${diaryStats.biggestFish.toFixed(1)} kg` : '0 kg'}
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-            
-            <Card className="bg-card border border-slate-200 shadow-sm dark:bg-transparent dark:bg-gradient-to-br dark:from-purple-600/20 dark:to-pink-600/20 dark:border-purple-500/30 hover:shadow-lg h-full" data-testid="card-days-at-water">
-              <CardContent className="p-4 md:p-6">
-                <div className="flex items-center gap-3 md:gap-4">
-                  <TacticalIcon icon={CalendarDays} variant="indigo" size="sm" showLabel={false} />
-                  <div className="flex-1">
-                    <div className="text-xs md:text-sm text-muted-foreground dark:text-slate-300 mb-1">Dni pri vode</div>
-                    <div className="text-xl md:text-2xl font-bold text-slate-700 dark:text-white" data-testid="text-days-at-water">{diaryStats.daysAtWater}</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-card border border-slate-200 shadow-sm dark:bg-transparent dark:bg-gradient-to-br dark:from-amber-600/20 dark:to-orange-600/20 dark:border-amber-500/30 hover:shadow-lg h-full" data-testid="card-season-average">
-              <CardContent className="p-4 md:p-6">
-                <div className="flex items-center gap-3 md:gap-4">
-                  <TacticalIcon icon={Target} variant="purple" size="sm" showLabel={false} />
-                  <div className="flex-1">
-                    <div className="text-xs md:text-sm text-muted-foreground dark:text-slate-300 mb-1">Váhový priemer</div>
-                    <div className="text-xl md:text-2xl font-bold text-violet-700 dark:text-white" data-testid="text-season-average">{diaryStats.averageWeight.toFixed(2)} kg</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <SeasonOverviewCard
+            year={currentYear}
+            totalCatches={diaryStats.totalCatches}
+            maxWeight={diaryStats.biggestFish}
+            daysAtWater={diaryStats.daysAtWater}
+          />
         </div>
 
         {/* Pending Battle Invitations */}
@@ -974,60 +802,6 @@ export default function DiaryIndex() {
             </CardContent>
           </Card>
         )}
-
-        {/* Today's Statistics Panel */}
-        <div className="mb-6">
-          <h2 className="text-sm font-medium text-muted-foreground dark:text-slate-400 mb-3">Moja dnešná štatistika</h2>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <Card className="bg-card border border-slate-200 shadow-sm dark:bg-transparent dark:bg-gradient-to-br dark:from-blue-600/20 dark:to-cyan-600/20 dark:border-blue-500/30 hover:shadow-lg transition-all" data-testid="card-today-count">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <TacticalIcon icon={Fish} variant="cyan" size="sm" showLabel={false} />
-                  <div>
-                    <div className="text-xs text-muted-foreground dark:text-slate-400">Úlovky</div>
-                    <div className="text-xl font-bold text-teal-700 dark:text-white" data-testid="text-today-count">{todayStats.count} ks</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-card border border-slate-200 shadow-sm dark:bg-transparent dark:bg-gradient-to-br dark:from-emerald-600/20 dark:to-green-600/20 dark:border-emerald-500/30 hover:shadow-lg transition-all" data-testid="card-today-biggest">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <TacticalIcon icon={Trophy} variant="amber" size="sm" showLabel={false} />
-                  <div>
-                    <div className="text-xs text-muted-foreground dark:text-slate-400">Najväčšia ryba</div>
-                    <div className="text-xl font-bold text-amber-700 dark:text-white" data-testid="text-today-biggest">{todayStats.biggestFish.toFixed(1)} kg</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-card border border-slate-200 shadow-sm dark:bg-transparent dark:bg-gradient-to-br dark:from-purple-600/20 dark:to-pink-600/20 dark:border-purple-500/30 hover:shadow-lg transition-all" data-testid="card-today-weight">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <TacticalIcon icon={Weight} variant="indigo" size="sm" showLabel={false} />
-                  <div>
-                    <div className="text-xs text-muted-foreground dark:text-slate-400">Celková váha</div>
-                    <div className="text-xl font-bold text-slate-700 dark:text-white" data-testid="text-today-weight">{todayStats.totalWeight.toFixed(1)} kg</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-card border border-slate-200 shadow-sm dark:bg-transparent dark:bg-gradient-to-br dark:from-amber-600/20 dark:to-orange-600/20 dark:border-amber-500/30 hover:shadow-lg transition-all" data-testid="card-today-average">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <TacticalIcon icon={Target} variant="purple" size="sm" showLabel={false} />
-                  <div>
-                    <div className="text-xs text-muted-foreground dark:text-slate-400">Váhový priemer</div>
-                    <div className="text-xl font-bold text-violet-700 dark:text-white" data-testid="text-today-average">{todayStats.averageWeight.toFixed(2)} kg</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
 
         {/* Recent Catches Section */}
         <h2 className="text-sm font-medium text-slate-400 mb-3">Moje posledné úlovky</h2>
