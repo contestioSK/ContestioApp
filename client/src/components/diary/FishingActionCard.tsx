@@ -20,24 +20,23 @@ export default function FishingActionCard({
       <div className="absolute inset-0 bg-gradient-to-b from-white/30 via-transparent to-transparent dark:from-white/5 pointer-events-none" />
       
       <CardContent className="relative p-4 md:p-6 flex flex-col h-full min-h-[140px] md:min-h-[200px]">
-        {/* Large Fish Icon - smaller on mobile, hero size on desktop */}
-        <div className="absolute -left-6 md:-left-2 top-1/3 md:top-1/2 -translate-y-1/2 pointer-events-none">
-          <Fish className="w-20 h-20 md:w-48 md:h-48 text-cyan-600/50 dark:text-cyan-400/40" strokeWidth={1} />
+        {/* Fish Icon - top-right decorative on mobile, left hero on desktop */}
+        <div className="absolute -right-4 -top-4 md:-left-2 md:right-auto md:top-1/2 md:-translate-y-1/2 pointer-events-none">
+          <Fish className="w-20 h-20 md:w-48 md:h-48 text-cyan-600/25 md:text-cyan-600/50 dark:text-cyan-400/20 md:dark:text-cyan-400/40" strokeWidth={1} />
         </div>
         
-        {/* Text content - shifted right on mobile for fish, more on desktop */}
-        <div className="relative z-10 ml-12 md:ml-40 mb-2 md:mb-0 md:flex-1">
-          <h2 className="text-base md:text-2xl font-bold text-slate-800 dark:text-white mb-0 md:mb-2">
+        {/* Text content - no margin on mobile (fish is top-right), shifted on desktop */}
+        <div className="relative z-10 md:ml-40 mb-2 md:mb-0 md:flex-1">
+          <h2 className="text-base md:text-2xl font-bold text-slate-800 dark:text-white mb-1 md:mb-2">
             Čo ideš dnes robiť?
           </h2>
-          <p className="text-xs md:text-base text-slate-700 dark:text-slate-300 mb-2 md:mb-4 leading-relaxed hidden md:block">
+          <p className="text-xs md:text-base text-slate-700 dark:text-slate-300 mb-2 md:mb-4 leading-relaxed">
             Začni rybačku alebo si rýchlo zapíš úlovok.
-            <br />
-            <span className="hidden sm:inline">Contestio sa postará o zvyšok.</span>
+            <span className="hidden md:inline"><br />Contestio sa postará o zvyšok.</span>
           </p>
         </div>
         
-        {/* CTA Buttons - full width of card, outside the fish margin */}
+        {/* CTA Buttons - full width of card */}
         <div className="relative z-10 grid grid-cols-2 gap-2 md:gap-3 mt-auto md:ml-40">
           <Button
             onClick={onStartFishing}
