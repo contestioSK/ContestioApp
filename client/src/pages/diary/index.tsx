@@ -719,6 +719,7 @@ export default function DiaryIndex() {
             maxWeight={diaryStats.biggestFish}
             daysAtWater={diaryStats.daysAtWater}
             trendPercentage={trendPercentage}
+            biggestCatchId={diaryStats.biggestCatchId}
           />
         </div>
 
