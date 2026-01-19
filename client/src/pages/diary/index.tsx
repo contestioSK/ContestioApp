@@ -476,11 +476,11 @@ export default function DiaryIndex() {
     ? allCatches.filter((catch_: any) => !catch_.isHistorical) 
     : [];
 
-  // Filter catches for current season (January 15 of current year onwards)
+  // Filter catches for current season (January 1 of current year onwards)
   const seasonCatches = nonHistoricalCatches.filter((catch_: any) => {
     if (!catch_.capturedAt) return false;
     const catchDate = new Date(catch_.capturedAt);
-    const seasonStart = new Date(`${currentYear}-01-15`);
+    const seasonStart = new Date(`${currentYear}-01-01`);
     return catchDate >= seasonStart;
   });
 
