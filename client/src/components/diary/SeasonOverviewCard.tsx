@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { Link } from "wouter";
 
 interface SeasonOverviewCardProps {
   year: number;
@@ -7,6 +8,7 @@ interface SeasonOverviewCardProps {
   maxWeight: number;
   daysAtWater: number;
   trendPercentage: number | null;
+  biggestCatchId: string | null;
 }
 
 export default function SeasonOverviewCard({ 
@@ -14,7 +16,8 @@ export default function SeasonOverviewCard({
   totalCatches, 
   maxWeight,
   daysAtWater,
-  trendPercentage
+  trendPercentage,
+  biggestCatchId
 }: SeasonOverviewCardProps) {
   const isPositive = trendPercentage !== null && trendPercentage >= 0;
   const showTrend = trendPercentage !== null && trendPercentage !== 0;
@@ -70,13 +73,25 @@ export default function SeasonOverviewCard({
         
         {/* Mini Stats Grid */}
         <div className="grid grid-cols-2 gap-3 mt-6 relative z-10">
-          <div className="bg-slate-50 dark:bg-[#0B1120]/60 dark:backdrop-blur-sm border border-slate-200 dark:border-white/5 rounded-2xl p-3 hover:bg-slate-100 dark:hover:bg-[#0B1120]/80 transition-colors">
-            <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 uppercase font-bold tracking-wider">Max Váha</p>
-            <div className="flex items-baseline gap-1">
-              <span className="font-bold text-slate-800 dark:text-white text-lg" data-testid="text-season-max-weight">{maxWeight.toFixed(1)}</span>
-              <span className="text-xs text-slate-400 dark:text-slate-500">kg</span>
+          {biggestCatchId ? (
+            <Link href={`/diary/catches/${biggestCatchId}`}>
+              <div className="bg-slate-50 dark:bg-[#0B1120]/60 dark:backdrop-blur-sm border border-slate-200 dark:border-white/5 rounded-2xl p-3 hover:bg-slate-100 dark:hover:bg-[#0B1120]/80 transition-colors cursor-pointer hover:border-emerald-500/30 dark:hover:border-emerald-500/30">
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 uppercase font-bold tracking-wider">Naj Ryba</p>
+                <div className="flex items-baseline gap-1">
+                  <span className="font-bold text-slate-800 dark:text-white text-lg" data-testid="text-season-max-weight">{maxWeight.toFixed(1)}</span>
+                  <span className="text-xs text-slate-400 dark:text-slate-500">kg</span>
+                </div>
+              </div>
+            </Link>
+          ) : (
+            <div className="bg-slate-50 dark:bg-[#0B1120]/60 dark:backdrop-blur-sm border border-slate-200 dark:border-white/5 rounded-2xl p-3">
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 uppercase font-bold tracking-wider">Naj Ryba</p>
+              <div className="flex items-baseline gap-1">
+                <span className="font-bold text-slate-800 dark:text-white text-lg" data-testid="text-season-max-weight">{maxWeight.toFixed(1)}</span>
+                <span className="text-xs text-slate-400 dark:text-slate-500">kg</span>
+              </div>
             </div>
-          </div>
+          )}
           <div className="bg-slate-50 dark:bg-[#0B1120]/60 dark:backdrop-blur-sm border border-slate-200 dark:border-white/5 rounded-2xl p-3 hover:bg-slate-100 dark:hover:bg-[#0B1120]/80 transition-colors">
             <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 uppercase font-bold tracking-wider">Dni pri vode</p>
             <div className="flex items-baseline gap-1">
