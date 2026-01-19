@@ -21,8 +21,8 @@ export default function FishingActionCard({
       
       <CardContent className="relative p-4 md:p-6 flex flex-col h-full min-h-[140px] md:min-h-[200px]">
         {/* Fish Icon - top-right decorative on mobile, left hero on desktop */}
-        <div className="absolute -right-4 -top-4 md:-left-2 md:right-auto md:top-1/2 md:-translate-y-1/2 pointer-events-none">
-          <Fish className="w-20 h-20 md:w-48 md:h-48 text-cyan-600/25 md:text-cyan-600/50 dark:text-cyan-400/20 md:dark:text-cyan-400/40" strokeWidth={1} />
+        <div className="absolute right-2 top-2 md:-left-2 md:right-auto md:top-1/2 md:-translate-y-1/2 pointer-events-none">
+          <Fish className="w-16 h-16 md:w-48 md:h-48 text-cyan-600/25 md:text-cyan-600/50 dark:text-cyan-400/20 md:dark:text-cyan-400/40" strokeWidth={1} />
         </div>
         
         {/* Text content - no margin on mobile (fish is top-right), shifted on desktop */}
