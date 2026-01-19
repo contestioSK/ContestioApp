@@ -35,7 +35,7 @@ export default function SeasonOverviewCard({
 
       <CardContent className="p-4 md:p-6 flex flex-col justify-between h-full min-h-[200px] md:min-h-[280px]">
         <div>
-          <div className="flex justify-between items-start mb-4 md:mb-6">
+          <div className="flex justify-between items-start mb-2 md:mb-6">
             {/* Badge */}
             <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full">
               <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
@@ -52,22 +52,25 @@ export default function SeasonOverviewCard({
           </div>
 
           <div className="relative">
-            <span className="text-4xl md:text-6xl font-black text-slate-800 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-white dark:via-emerald-100 dark:to-emerald-400 tracking-tighter drop-shadow-sm" data-testid="text-season-total">
-              {totalCatches}
-            </span>
-            <span className="block text-xs md:text-sm text-slate-500 dark:text-slate-400 font-medium mt-1 ml-1 flex items-center gap-2">
-              Úlovkov celkom 
-              {showTrend && (
-                <span className={`text-xs px-1.5 py-0.5 rounded flex items-center gap-0.5 ${
-                  isPositive 
-                    ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10' 
-                    : 'text-rose-600 dark:text-rose-400 bg-rose-500/10'
-                }`}>
-                  {isPositive ? <ArrowUpRight size={10} /> : <ArrowDownRight size={10} />}
-                  {isPositive ? '+' : ''}{trendPercentage}%
-                </span>
-              )}
-            </span>
+            {/* Mobile: number + label on same line, Desktop: stacked */}
+            <div className="flex items-baseline gap-2 md:block">
+              <span className="text-4xl md:text-6xl font-black text-slate-800 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-white dark:via-emerald-100 dark:to-emerald-400 tracking-tighter drop-shadow-sm" data-testid="text-season-total">
+                {totalCatches}
+              </span>
+              <span className="text-xs md:text-sm text-slate-500 dark:text-slate-400 font-medium md:block md:mt-1 md:ml-1 flex items-center gap-2">
+                Úlovkov celkom 
+                {showTrend && (
+                  <span className={`text-xs px-1.5 py-0.5 rounded flex items-center gap-0.5 ${
+                    isPositive 
+                      ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10' 
+                      : 'text-rose-600 dark:text-rose-400 bg-rose-500/10'
+                  }`}>
+                    {isPositive ? <ArrowUpRight size={10} /> : <ArrowDownRight size={10} />}
+                    {isPositive ? '+' : ''}{trendPercentage}%
+                  </span>
+                )}
+              </span>
+            </div>
           </div>
         </div>
         

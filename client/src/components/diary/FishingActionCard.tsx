@@ -19,46 +19,46 @@ export default function FishingActionCard({
       <div className="absolute inset-0 bg-gradient-to-r from-cyan-300/40 via-cyan-200/20 to-transparent dark:from-cyan-600/30 dark:via-cyan-700/15 dark:to-transparent pointer-events-none" />
       <div className="absolute inset-0 bg-gradient-to-b from-white/30 via-transparent to-transparent dark:from-white/5 pointer-events-none" />
       
-      <CardContent className="relative p-5 md:p-6 flex flex-col h-full min-h-[180px] md:min-h-[200px]">
-        {/* Large Fish Icon - hero size, positioned left with bleed */}
-        <div className="absolute -left-4 md:-left-2 top-1/2 -translate-y-1/2 pointer-events-none">
-          <Fish className="w-36 h-36 md:w-48 md:h-48 text-cyan-600/50 dark:text-cyan-400/40" strokeWidth={1} />
+      <CardContent className="relative p-4 md:p-6 flex flex-col h-full min-h-[140px] md:min-h-[200px]">
+        {/* Large Fish Icon - smaller on mobile, hero size on desktop */}
+        <div className="absolute -left-6 md:-left-2 top-1/3 md:top-1/2 -translate-y-1/2 pointer-events-none">
+          <Fish className="w-20 h-20 md:w-48 md:h-48 text-cyan-600/50 dark:text-cyan-400/40" strokeWidth={1} />
         </div>
         
-        {/* Content - shifted right to accommodate fish */}
-        <div className="relative z-10 ml-28 md:ml-40 flex flex-col h-full">
-          <h2 className="text-xl md:text-2xl font-bold text-slate-800 dark:text-white mb-2">
+        {/* Text content - shifted right on mobile for fish, more on desktop */}
+        <div className="relative z-10 ml-12 md:ml-40 mb-2 md:mb-0 md:flex-1">
+          <h2 className="text-base md:text-2xl font-bold text-slate-800 dark:text-white mb-0 md:mb-2">
             Čo ideš dnes robiť?
           </h2>
-          <p className="text-sm md:text-base text-slate-700 dark:text-slate-300 mb-4 leading-relaxed">
+          <p className="text-xs md:text-base text-slate-700 dark:text-slate-300 mb-2 md:mb-4 leading-relaxed hidden md:block">
             Začni rybačku alebo si rýchlo zapíš úlovok.
             <br />
             <span className="hidden sm:inline">Contestio sa postará o zvyšok.</span>
           </p>
-          
-          {/* CTA Buttons - at bottom, prominent - stacked on mobile, side by side on sm+ */}
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-auto">
-            <Button
-              onClick={onStartFishing}
-              size="lg"
-              className="h-11 sm:h-12 md:h-14 text-sm md:text-base flex-1 bg-cyan-600 hover:bg-cyan-700 text-white font-bold shadow-lg hover:shadow-xl transition-all border border-cyan-500/50"
-              data-testid="cta-start-fishing"
-            >
-              <Play className="w-4 h-4 md:w-5 md:h-5 mr-2" />
-              Začať rybačku
-            </Button>
-            <Button
-              onClick={onAddCatch}
-              disabled={!canAddCatch}
-              variant="outline"
-              size="lg"
-              className="h-11 sm:h-12 md:h-14 text-sm md:text-base flex-1 border-2 border-slate-400/80 bg-white/95 hover:bg-white text-slate-700 font-bold shadow-md hover:shadow-lg transition-all dark:border-slate-400 dark:bg-slate-700/90 dark:hover:bg-slate-700 dark:text-white"
-              data-testid="cta-add-catch"
-            >
-              <Plus className="w-4 h-4 md:w-5 md:h-5 mr-2" />
-              Pridať úlovok
-            </Button>
-          </div>
+        </div>
+        
+        {/* CTA Buttons - full width of card, outside the fish margin */}
+        <div className="relative z-10 grid grid-cols-2 gap-2 md:gap-3 mt-auto md:ml-40">
+          <Button
+            onClick={onStartFishing}
+            size="lg"
+            className="h-10 md:h-14 text-xs md:text-base bg-cyan-600 hover:bg-cyan-700 text-white font-bold shadow-lg hover:shadow-xl transition-all border border-cyan-500/50"
+            data-testid="cta-start-fishing"
+          >
+            <Play className="w-3.5 h-3.5 md:w-5 md:h-5 mr-1.5 md:mr-2" />
+            Začať rybačku
+          </Button>
+          <Button
+            onClick={onAddCatch}
+            disabled={!canAddCatch}
+            variant="outline"
+            size="lg"
+            className="h-10 md:h-14 text-xs md:text-base border-2 border-slate-400/80 bg-white/95 hover:bg-white text-slate-700 font-bold shadow-md hover:shadow-lg transition-all dark:border-slate-400 dark:bg-slate-700/90 dark:hover:bg-slate-700 dark:text-white"
+            data-testid="cta-add-catch"
+          >
+            <Plus className="w-3.5 h-3.5 md:w-5 md:h-5 mr-1.5 md:mr-2" />
+            Pridať úlovok
+          </Button>
         </div>
       </CardContent>
     </Card>
