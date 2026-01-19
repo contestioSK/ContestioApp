@@ -693,12 +693,29 @@ export default function DiaryIndex() {
   return (
     <DiaryLayout>
       <div className="space-y-6">
-        {/* Header */}
+        {/* Header with personalized greeting */}
         <div className="flex items-center gap-4 mb-4">
           <TacticalIcon icon={BookOpen} variant="active" size="lg" showLabel={false} />
-          <h1 className="text-xl md:text-3xl font-bold text-foreground dark:text-white">
-            Môj rybársky denník
-          </h1>
+          <div>
+            <h1 className="text-xl md:text-3xl font-bold text-foreground dark:text-white">
+              {(() => {
+                const onboardingCompleted = user?.preferences?.onboardingCompleted;
+                const hasCatches = diaryStats.totalCatches > 0;
+                const displayName = user?.firstName || user?.lastName || '';
+                
+                if (!onboardingCompleted) {
+                  return "Vitaj v Contestio 👋";
+                } else if (!hasCatches) {
+                  return "Vitaj vo vodách Contestia 🎣";
+                } else {
+                  return displayName ? `Vitaj späť, ${displayName} 👋` : "Vitaj späť 👋";
+                }
+              })()}
+            </h1>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Tvoj rybársky denník • Sezóna {currentYear}
+            </p>
+          </div>
         </div>
 
         {/* Primary Actions Row: Action Card (2/3) + Season Overview (1/3) */}
