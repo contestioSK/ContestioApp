@@ -36,8 +36,16 @@ import {
   Gauge,
   Trophy,
   Star,
-  Lock
+  Lock,
+  ChevronDown,
+  ImagePlus,
+  Fish,
+  Scale,
+  CloudRain,
+  Plus
 } from "lucide-react";
+
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 import { PremiumUpsellModal } from "@/components/PremiumUpsellModal";
 import { BadgeCelebrationModal } from "@/components/diary/BadgeCelebrationModal";
@@ -121,6 +129,8 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
   const [isLoadingWeather, setIsLoadingWeather] = useState(false);
   const [weatherDataLoaded, setWeatherDataLoaded] = useState(false);
   const [showGpsPremiumModal, setShowGpsPremiumModal] = useState(false);
+  const [isEditingDateTime, setIsEditingDateTime] = useState(false);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   // Offline functionality
   const { 
@@ -603,6 +613,8 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
     setSelectedPhotos([]);
     setExistingPhotos([]);
     setWeatherDataLoaded(false);
+    setIsEditingDateTime(false);
+    setIsDetailsOpen(false);
     form.reset();
     onClose();
   };
@@ -619,235 +631,179 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
     }
   };
 
+  // Helper function to format date/time display
+  const formatDateTimeDisplay = (date: Date) => {
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const isYesterday = date.toDateString() === yesterday.toDateString();
+    
+    const timeStr = format(date, "HH:mm");
+    
+    if (isToday) {
+      return `Dnes, ${timeStr}`;
+    } else if (isYesterday) {
+      return `Včera, ${timeStr}`;
+    } else {
+      return format(date, "d. M. yyyy, HH:mm", { locale: sk });
+    }
+  };
+
   return (
     <>
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto p-0">
+        {/* Compact Gradient Header */}
+        <div className="relative bg-gradient-to-br from-cyan-600 to-blue-700 p-5 pt-6 pb-5">
+          <button 
+            type="button"
+            onClick={handleClose}
+            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+          >
+            <X size={18} className="text-white" />
+          </button>
+          <h2 className="text-xl font-black text-white tracking-tight">
             {editingCatch ? "Upraviť úlovok" : "Nový úlovok"}
-          </DialogTitle>
-          <DialogDescription>
-            {editingCatch 
-              ? "Aktualizujte detaily vášeho úlovku."
-              : "Pridajte nový úlovok do vášeho rybárskeho denníka."
-            }
-          </DialogDescription>
+          </h2>
+          <p className="text-cyan-100 text-xs mt-1 font-medium">
+            Stačí fotka, ryba a váha. Hotovo.
+          </p>
           {!editingCatch && activeBattle && (
-            <div className="mt-3">
-              <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
-                <Trophy className="w-3 h-3 mr-1" />
-                Pridáva sa do aktívneho battle: {activeBattle.name}
-              </Badge>
-            </div>
+            <Badge variant="secondary" className="mt-2 bg-white/10 text-white border-white/20">
+              <Trophy className="w-3 h-3 mr-1" />
+              Battle: {activeBattle.name}
+            </Badge>
           )}
-        </DialogHeader>
+        </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-            {/* Basic Information */}
-            <div className="space-y-4">
-              {/* Photo Upload */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <FormLabel>Fotky úlovku (voliteľné)</FormLabel>
-                  {!isPremium && (
-                    <Badge variant="outline" className="text-xs">
-                      FREE: max 1 fotka
-                    </Badge>
-                  )}
-                  {isPremium && (
-                    <Badge variant="secondary" className="text-xs">
-                      PREMIUM: neobmedzené fotky
-                    </Badge>
-                  )}
-                </div>
-                
-                {/* Existing photos (when editing) */}
-                {existingPhotos.length > 0 && (
-                  <div className="mb-3">
-                    <p className="text-xs text-muted-foreground mb-2">Existujúce fotky:</p>
-                    <div className="flex flex-wrap gap-2">
-                      {existingPhotos.map((photo, index) => (
-                        <div key={photo.id} className="relative group">
-                          <img
-                            src={photo.url || photo.originalUrl}
-                            alt={`Existujúca fotka ${index + 1}`}
-                            className="w-20 h-20 object-cover rounded-lg border"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setExistingPhotos(prev => prev.filter((_, i) => i !== index));
-                            }}
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                            data-testid={`button-remove-photo-${index}`}
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {/* Upload new photos if under limit */}
-                {(existingPhotos.length + selectedPhotos.length) < maxPhotos && (
-                  <>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      multiple={isPremium}
-                      onChange={(e) => {
-                        const files = Array.from(e.target.files || []);
-                        const totalPhotos = existingPhotos.length + selectedPhotos.length + files.length;
-                        const remainingSlots = maxPhotos - existingPhotos.length - selectedPhotos.length;
-                        
-                        if (totalPhotos > maxPhotos) {
-                          toast({
-                            title: "Príliš veľa fotiek",
-                            description: `Môžete mať celkovo maximálne ${maxPhotos} ${maxPhotos === 1 ? 'fotku' : 'fotiek'}. Môžete pridať ešte ${remainingSlots}.`,
-                            variant: "destructive",
-                          });
-                          e.target.value = '';
-                          return;
-                        }
-                        setSelectedPhotos([...selectedPhotos, ...files]);
-                        e.target.value = ''; // Reset input to allow same file again
-                      }}
-                      data-testid="input-photos"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      {isPremium 
-                        ? `Môžete vybrať viacero fotiek naraz (Ctrl+klik alebo Cmd+klik)`
-                        : `FREE verzia: ${existingPhotos.length > 0 ? 'Limit fotiek dosiahnutý' : '1 fotka na úlovok'}`
-                      }
-                    </p>
-                  </>
-                )}
-                
-                {selectedPhotos.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {selectedPhotos.map((photo, index) => (
-                      <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                        <Camera className="w-3 h-3" />
-                        {photo.name}
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="p-6 space-y-6">
+            
+            {/* 1. PHOTO UPLOAD - HERO SECTION */}
+            <div className="space-y-3">
+              {/* Existing photos (when editing) */}
+              {existingPhotos.length > 0 && (
+                <div className="mb-3">
+                  <p className="text-xs text-muted-foreground mb-2">Existujúce fotky:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {existingPhotos.map((photo, index) => (
+                      <div key={photo.id} className="relative group">
+                        <img
+                          src={photo.url || photo.originalUrl}
+                          alt={`Existujúca fotka ${index + 1}`}
+                          className="w-20 h-20 object-cover rounded-lg border"
+                        />
                         <button
                           type="button"
                           onClick={() => {
-                            setSelectedPhotos(prev => prev.filter((_, i) => i !== index));
+                            setExistingPhotos(prev => prev.filter((_, i) => i !== index));
                           }}
-                          className="ml-1 hover:text-red-500"
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          data-testid={`button-remove-photo-${index}`}
                         >
                           <X className="w-3 h-3" />
                         </button>
-                      </Badge>
+                      </div>
                     ))}
                   </div>
-                )}
-                {isOffline && (
-                  <p className="text-xs text-muted-foreground">
-                    {selectedPhotos.length > 0 
-                      ? `${selectedPhotos.length} ${selectedPhotos.length === 1 ? 'fotka' : 'fotky'} sa uložia lokálne a odošlú po obnovení pripojenia`
-                      : 'Fotky sa uložia lokálne a odošlú po obnovení pripojenia'}
-                  </p>
-                )}
-              </div>
+                </div>
+              )}
+              
+              {/* Upload new photos - HERO dropzone */}
+              {(existingPhotos.length + selectedPhotos.length) < maxPhotos && (
+                <div className="relative group h-48 rounded-xl border-2 border-dashed border-cyan-500/40 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-400/60 transition-all flex flex-col items-center justify-center cursor-pointer overflow-hidden">
+                  {/* Badge */}
+                  <div className="absolute top-3 right-3 bg-cyan-950/50 dark:bg-cyan-900/60 text-cyan-400 text-[9px] font-bold px-2 py-1 rounded-md border border-cyan-500/20 uppercase tracking-wider">
+                    Najdôležitejší krok
+                  </div>
+                  
+                  {/* Premium badge */}
+                  {isPremium && (
+                    <div className="absolute top-3 left-3 bg-yellow-500/20 text-yellow-500 text-[9px] font-bold px-2 py-1 rounded-md border border-yellow-500/20 uppercase tracking-wider">
+                      ∞ fotiek
+                    </div>
+                  )}
 
-              {/* Date and Time - Split into two inputs */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="capturedAt"
-                  render={({ field }) => {
-                    const currentValue = field.value instanceof Date && !isNaN(field.value.getTime()) 
-                      ? field.value 
-                      : new Date();
-                    
-                    const dateValue = format(currentValue, "yyyy-MM-dd");
-                    
-                    const handleDateChange = (newDate: string) => {
-                      if (!newDate) return;
-                      const baseDate = field.value instanceof Date && !isNaN(field.value.getTime()) 
-                        ? new Date(field.value) 
-                        : new Date();
-                      const [year, month, day] = newDate.split('-').map(Number);
-                      baseDate.setFullYear(year);
-                      baseDate.setMonth(month - 1);
-                      baseDate.setDate(day);
-                      field.onChange(baseDate);
-                    };
-                    
-                    return (
-                      <FormItem>
-                        <FormLabel>Dátum</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="date"
-                            value={dateValue}
-                            onChange={(e) => handleDateChange(e.target.value)}
-                            data-testid="input-capture-date"
-                            max={format(new Date(), "yyyy-MM-dd")}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    );
-                  }}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="capturedAt"
-                  render={({ field }) => {
-                    const currentValue = field.value instanceof Date && !isNaN(field.value.getTime()) 
-                      ? field.value 
-                      : new Date();
-                    
-                    const timeValue = format(currentValue, "HH:mm");
-                    
-                    const handleTimeChange = (newTime: string) => {
-                      if (!newTime) return;
-                      const baseDate = field.value instanceof Date && !isNaN(field.value.getTime()) 
-                        ? new Date(field.value) 
-                        : new Date();
-                      const [hours, minutes] = newTime.split(':').map(Number);
-                      baseDate.setHours(hours);
-                      baseDate.setMinutes(minutes);
-                      field.onChange(baseDate);
-                    };
-                    
-                    return (
-                      <FormItem>
-                        <FormLabel>Čas</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="time"
-                            value={timeValue}
-                            onChange={(e) => handleTimeChange(e.target.value)}
-                            data-testid="input-capture-time"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    );
-                  }}
-                />
-              </div>
+                  <div className="w-12 h-12 rounded-full bg-cyan-500/10 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                    <ImagePlus className="text-cyan-500" size={24} />
+                  </div>
+                  <span className="text-sm font-bold uppercase tracking-widest text-cyan-600 dark:text-cyan-400 group-hover:text-cyan-500 transition-colors">
+                    Pridať fotku ryby
+                  </span>
+                  <span className="text-xs text-muted-foreground mt-1">Rýchlo, kým je na podložke</span>
+                  <input 
+                    type="file" 
+                    accept="image/*"
+                    multiple={isPremium}
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                    onChange={(e) => {
+                      const files = Array.from(e.target.files || []);
+                      const totalPhotos = existingPhotos.length + selectedPhotos.length + files.length;
+                      const remainingSlots = maxPhotos - existingPhotos.length - selectedPhotos.length;
+                      
+                      if (totalPhotos > maxPhotos) {
+                        toast({
+                          title: "Príliš veľa fotiek",
+                          description: `Môžete mať celkovo maximálne ${maxPhotos} ${maxPhotos === 1 ? 'fotku' : 'fotiek'}. Môžete pridať ešte ${remainingSlots}.`,
+                          variant: "destructive",
+                        });
+                        e.target.value = '';
+                        return;
+                      }
+                      setSelectedPhotos([...selectedPhotos, ...files]);
+                      e.target.value = '';
+                    }}
+                    data-testid="input-photos"
+                  />
+                </div>
+              )}
+              
+              {/* Selected photos preview */}
+              {selectedPhotos.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {selectedPhotos.map((photo, index) => (
+                    <Badge key={index} variant="secondary" className="flex items-center gap-1 bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20">
+                      <Camera className="w-3 h-3" />
+                      {photo.name.length > 15 ? photo.name.substring(0, 15) + '...' : photo.name}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedPhotos(prev => prev.filter((_, i) => i !== index));
+                        }}
+                        className="ml-1 hover:text-red-500"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
+              
+              {isOffline && selectedPhotos.length > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  Fotky sa uložia lokálne a odošlú po obnovení pripojenia
+                </p>
+              )}
             </div>
 
-            {/* Fish Details */}
-            <div className="space-y-4">
+            {/* 2. CORE STATS - Fish Type + Weight */}
+            <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="fishType"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Druh ryby</FormLabel>
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">
+                      Druh ryby
+                    </FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger data-testid="select-fish-type">
-                          <SelectValue placeholder="Vyberte druh ryby" />
+                        <SelectTrigger data-testid="select-fish-type" className="font-semibold">
+                          <div className="flex items-center gap-2">
+                            <Fish className="w-4 h-4 text-muted-foreground" />
+                            <SelectValue placeholder="Vyberte" />
+                          </div>
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -879,37 +835,157 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
                 )}
               />
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="weight"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Váha (kg)</FormLabel>
-                      <FormControl>
+              <FormField
+                control={form.control}
+                name="weight"
+                render={({ field }) => (
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">
+                      Váha (kg)
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative">
                         <Input 
                           type="text" 
-                          placeholder="napr. 5.2" 
+                          placeholder="7.5" 
                           data-testid="input-weight"
+                          className="font-bold text-lg pr-10"
                           {...field} 
                         />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        <Scale className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
+            {/* 3. PASSIVE DATE/TIME DISPLAY */}
+            <FormField
+              control={form.control}
+              name="capturedAt"
+              render={({ field }) => {
+                const currentValue = field.value instanceof Date && !isNaN(field.value.getTime()) 
+                  ? field.value 
+                  : new Date();
+
+                if (!isEditingDateTime) {
+                  return (
+                    <div 
+                      className="flex items-center gap-2 py-2 px-3 rounded-lg bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors"
+                      onClick={() => setIsEditingDateTime(true)}
+                    >
+                      <CalendarIcon className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">
+                        {formatDateTimeDisplay(currentValue)}
+                      </span>
+                      <span className="text-xs text-cyan-600 dark:text-cyan-400 font-medium ml-auto">
+                        upraviť
+                      </span>
+                    </div>
+                  );
+                }
+
+                const dateValue = format(currentValue, "yyyy-MM-dd");
+                const timeValue = format(currentValue, "HH:mm");
+                
+                const handleDateChange = (newDate: string) => {
+                  if (!newDate) return;
+                  const baseDate = new Date(currentValue);
+                  const [year, month, day] = newDate.split('-').map(Number);
+                  baseDate.setFullYear(year);
+                  baseDate.setMonth(month - 1);
+                  baseDate.setDate(day);
+                  field.onChange(baseDate);
+                };
+                
+                const handleTimeChange = (newTime: string) => {
+                  if (!newTime) return;
+                  const baseDate = new Date(currentValue);
+                  const [hours, minutes] = newTime.split(':').map(Number);
+                  baseDate.setHours(hours);
+                  baseDate.setMinutes(minutes);
+                  field.onChange(baseDate);
+                };
+                
+                return (
+                  <div className="space-y-2 p-3 rounded-lg bg-muted/30 border border-border/50">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-muted-foreground">Dátum a čas úlovku</span>
+                      <button 
+                        type="button" 
+                        onClick={() => setIsEditingDateTime(false)}
+                        className="text-xs text-cyan-600 dark:text-cyan-400 font-medium hover:underline"
+                      >
+                        hotovo
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            type="date"
+                            value={dateValue}
+                            onChange={(e) => handleDateChange(e.target.value)}
+                            data-testid="input-capture-date"
+                            max={format(new Date(), "yyyy-MM-dd")}
+                            className="text-sm"
+                          />
+                        </FormControl>
+                      </FormItem>
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            type="time"
+                            value={timeValue}
+                            onChange={(e) => handleTimeChange(e.target.value)}
+                            data-testid="input-capture-time"
+                            className="text-sm"
+                          />
+                        </FormControl>
+                      </FormItem>
+                    </div>
+                    <FormMessage />
+                  </div>
+                );
+              }}
+            />
+
+            {/* 4. COLLAPSIBLE DETAILS */}
+            <Collapsible open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+              <CollapsibleTrigger asChild>
+                <button 
+                  type="button"
+                  className="w-full flex items-center justify-between py-3 border-t border-border/50 text-left group"
+                >
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground group-hover:text-foreground transition-colors">
+                    Ak chceš, doplň detaily
+                  </span>
+                  <ChevronDown 
+                    size={16} 
+                    className={cn(
+                      "text-muted-foreground transition-transform duration-200",
+                      isDetailsOpen && "rotate-180"
+                    )} 
+                  />
+                </button>
+              </CollapsibleTrigger>
+              
+              <CollapsibleContent className="space-y-4 pt-2">
+                {/* Length */}
                 <FormField
                   control={form.control}
                   name="lengthCm"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Dĺžka (cm)</FormLabel>
+                    <FormItem className="space-y-1">
+                      <FormLabel className="text-[10px] font-bold text-muted-foreground ml-1">Dĺžka (cm)</FormLabel>
                       <FormControl>
                         <Input 
                           type="number" 
                           placeholder="napr. 65" 
                           data-testid="input-length"
+                          className="bg-muted/30 border-border/50"
                           {...field}
                           value={field.value ?? ''}
                           onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
@@ -919,163 +995,152 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
                     </FormItem>
                   )}
                 />
-              </div>
 
-              <FormField
-                control={form.control}
-                name="bait"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nástraha</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                {/* Bait */}
+                <FormField
+                  control={form.control}
+                  name="bait"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1">
+                      <FormLabel className="text-[10px] font-bold text-muted-foreground ml-1">Nástraha</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-bait" className="bg-muted/30 border-border/50">
+                            <SelectValue placeholder="Vyberte nástrahu" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="none">Neuvedené</SelectItem>
+                          
+                          {favoriteBaits.length > 0 && (
+                            <>
+                              {favoriteBaits.map((bait) => {
+                                const label = `${bait.manufacturer.name} - ${bait.productLine.name} - ${bait.flavor.name}${bait.diameter ? ` (${bait.diameter})` : ''}`;
+                                return (
+                                  <SelectItem 
+                                    key={`fav-${bait.id}`} 
+                                    value={label}
+                                    data-testid={`select-favorite-bait-${bait.id}`}
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
+                                      <span>{label}</span>
+                                    </div>
+                                  </SelectItem>
+                                );
+                              })}
+                              <SelectSeparator />
+                            </>
+                          )}
+                          
+                          {fishingMethods.map((method) => (
+                            <SelectItem key={method} value={method}>
+                              {method}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Spot / Revír */}
+                <FormField
+                  control={form.control}
+                  name="spot"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1">
+                      <FormLabel className="text-[10px] font-bold text-muted-foreground ml-1">Revír</FormLabel>
+                      <FishingAreaSelect value={field.value} onChange={field.onChange} />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Notes */}
+                <FormField
+                  control={form.control}
+                  name="notes"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1">
+                      <FormLabel className="text-[10px] font-bold text-muted-foreground ml-1">Poznámky</FormLabel>
                       <FormControl>
-                        <SelectTrigger data-testid="select-bait">
-                          <SelectValue placeholder="Vyberte nástrahu" />
-                        </SelectTrigger>
+                        <Textarea 
+                          placeholder="Montáž, teplota vody, hĺbka, postrehy…"
+                          className="resize-none bg-muted/30 border-border/50 min-h-[60px]"
+                          rows={2}
+                          data-testid="textarea-notes"
+                          {...field}
+                        />
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value="none">Neuvedené</SelectItem>
-                        
-                        {/* Favorite baits from arsenal */}
-                        {favoriteBaits.length > 0 && (
-                          <>
-                            {favoriteBaits.map((bait) => {
-                              const label = `${bait.manufacturer.name} - ${bait.productLine.name} - ${bait.flavor.name}${bait.diameter ? ` (${bait.diameter})` : ''}`;
-                              return (
-                                <SelectItem 
-                                  key={`fav-${bait.id}`} 
-                                  value={label}
-                                  data-testid={`select-favorite-bait-${bait.id}`}
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
-                                    <span>{label}</span>
-                                  </div>
-                                </SelectItem>
-                              );
-                            })}
-                            <SelectSeparator />
-                          </>
-                        )}
-                        
-                        {/* Classic fishing methods */}
-                        {fishingMethods.map((method) => (
-                          <SelectItem key={method} value={method}>
-                            {method}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CollapsibleContent>
+            </Collapsible>
 
-              <FormField
-                control={form.control}
-                name="spot"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Revír (Rybársky revír)</FormLabel>
-                    <FishingAreaSelect value={field.value} onChange={field.onChange} />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="notes"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Poznámky</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Dodatočné poznámky k úlovku..."
-                        className="resize-none"
-                        rows={3}
-                        data-testid="textarea-notes"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {/* Premium Data Section */}
-            <div className="space-y-4 pt-4 border-t border-border">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold">Prémiové Dáta</h2>
-                <span className="bg-yellow-400 text-black text-xs font-bold px-2 py-1 rounded">
-                  PREMIUM
-                </span>
+            {/* 5. PREMIUM DATA - Subdued Row */}
+            <div className="flex items-center justify-between py-3 px-4 rounded-xl border border-border/30 bg-muted/20">
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold uppercase text-muted-foreground">Počasie pri zábere</span>
+                <div className="flex gap-3 mt-1 opacity-60">
+                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                    <MapPin size={10} /> GPS
+                  </div>
+                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                    <CloudRain size={10} /> Počasie
+                  </div>
+                </div>
               </div>
-
-              {/* Intelligent Button - Premium gated */}
+              
               <Button
                 type="button"
-                size="lg"
+                variant="outline"
+                size="sm"
                 onClick={isPremium ? getLocationAndWeather : () => setShowGpsPremiumModal(true)}
                 disabled={isPremium && (isLoadingWeather || weatherDataLoaded)}
-                className={`w-full ${
-                  !isPremium
-                    ? 'bg-gray-500 hover:bg-gray-600'
-                    : weatherDataLoaded 
-                      ? 'bg-green-600 hover:bg-green-700' 
-                      : 'bg-[#3b82f6] hover:bg-[#2563eb]'
-                }`}
+                className="text-[10px] font-bold h-8 px-3"
                 data-testid="button-get-location-weather"
               >
-                {!isPremium ? (
-                  <>
-                    <Lock className="mr-2 h-5 w-5" />
-                    Získať Polohu a Počasie
-                  </>
-                ) : isLoadingWeather ? (
-                  <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Načítavam dáta...
-                  </>
+                {isLoadingWeather ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
                 ) : weatherDataLoaded ? (
-                  <>
-                    <MapPin className="mr-2 h-5 w-5" />
-                    Dáta o polohe a počasí načítané ✔
-                  </>
+                  "Načítané ✔"
+                ) : isPremium ? (
+                  "Načítať"
                 ) : (
                   <>
-                    <MapPin className="mr-2 h-5 w-5" />
-                    Získať Polohu a Počasie
+                    <Lock className="h-3 w-3 mr-1" />
+                    Premium
                   </>
                 )}
               </Button>
-
-              {/* Descriptive Text */}
-              <p className="text-sm text-muted-foreground text-center">
-                {isPremium 
-                  ? "Automaticky získa GPS súradnice a načíta kompletnú predpoveď počasia z API pre čas úlovku."
-                  : "Táto funkcia je dostupná len pre Premium používateľov."
-                }
-              </p>
             </div>
 
-            <div className="flex gap-3 pt-4">
+            {/* 6. CTA BUTTONS */}
+            <div className="flex gap-3 pt-2">
               <Button 
                 type="button" 
                 variant="outline" 
                 onClick={handleClose}
-                className="flex-1"
+                className="flex-1 font-bold text-xs uppercase tracking-wide"
               >
                 Zrušiť
               </Button>
               <Button 
                 type="submit" 
-                className="flex-1"
+                className="flex-[2] bg-cyan-600 hover:bg-cyan-500 font-bold text-xs uppercase tracking-wide"
                 disabled={createCatchMutation.isPending || updateCatchMutation.isPending}
                 data-testid="button-submit-catch"
               >
-                {editingCatch ? "Uložiť zmeny" : "Pridať úlovok"}
+                {createCatchMutation.isPending || updateCatchMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : (
+                  <Plus size={16} strokeWidth={3} className="mr-2" />
+                )}
+                {editingCatch ? "Uložiť zmeny" : "Zapísať úlovok"}
               </Button>
             </div>
           </form>
