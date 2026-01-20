@@ -1,0 +1,160 @@
+import React, { useState } from 'react';
+import { 
+  X, ChevronDown, MapPin, 
+  CloudRain, ImagePlus, Plus, Fish, Scale
+} from 'lucide-react';
+
+export default function NewCatchModal() {
+  const [showDetails, setShowDetails] = useState(false);
+  const [fishType, setFishType] = useState('kapor');
+
+  return (
+    <div className="min-h-screen bg-[#0B1120] flex items-center justify-center p-4 font-sans text-slate-200">
+      {/* Backdrop */}
+      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-0"></div>
+
+      {/* Main Dialog */}
+      <div className="relative z-10 w-full max-w-lg bg-[#111a2e] border border-white/10 rounded-[24px] shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        
+        {/* 1. COMPACT HEADER - No waves, tighter padding */}
+        <div className="relative bg-gradient-to-br from-cyan-600 to-blue-700 p-5 pt-6 pb-5 flex flex-col justify-end overflow-hidden">
+          
+          <div className="absolute top-4 right-4 z-10">
+             <button className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors backdrop-blur-md">
+                <X size={18} className="text-white" />
+             </button>
+          </div>
+          <div className="relative z-10">
+             <h2 className="text-xl font-black text-white tracking-tight uppercase shadow-sm">Nový úlovok</h2>
+             <p className="text-cyan-100 text-xs mt-1 font-medium text-shadow-sm">
+                Stačí fotka, ryba a váha. Hotovo.
+             </p>
+          </div>
+        </div>
+
+        <div className="p-6 space-y-6 bg-[#111a2e]">
+          
+          {/* 2. PHOTO UPLOAD - The Hero (Carp Angler Copy) */}
+          <div className="relative group h-48 rounded-xl border-2 border-dashed border-cyan-500/30 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-400/50 transition-all flex flex-col items-center justify-center cursor-pointer overflow-hidden">
+             
+             <div className="absolute top-3 right-3 bg-cyan-950/50 text-cyan-400 text-[9px] font-bold px-2 py-1 rounded-md border border-cyan-500/20 uppercase tracking-wider backdrop-blur-sm">
+                Najdôležitejší krok
+             </div>
+
+             <div className="w-12 h-12 rounded-full bg-cyan-500/10 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(6,182,212,0.15)]">
+                <ImagePlus className="text-cyan-400" size={24} />
+             </div>
+             <span className="text-sm font-bold uppercase tracking-widest text-cyan-100/90 group-hover:text-white transition-colors">Pridať fotku ryby</span>
+             <span className="text-xs text-slate-500 mt-1">Rýchlo, kým je na podložke</span>
+             <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" />
+          </div>
+
+          {/* 3. CORE STATS - Icons size 16 */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-1">Druh ryby</label>
+              <div className="relative">
+                <select 
+                  value={fishType}
+                  onChange={(e) => setFishType(e.target.value)}
+                  className="w-full bg-slate-900 border border-white/10 rounded-xl py-3 pl-3 pr-9 text-white appearance-none focus:outline-none focus:border-cyan-500/50 transition-all font-bold text-sm"
+                >
+                  <option value="kapor">Kapor rybničný</option>
+                  <option value="amur">Amur biely</option>
+                  <option value="stuka">Šťuka severná</option>
+                  <option value="zubac">Zubáč veľkoústy</option>
+                  <option value="sumec">Sumec západný</option>
+                </select>
+                {/* Small context icon */}
+                <Fish className="absolute right-8 top-1/2 -translate-y-1/2 text-slate-600 pointer-events-none" size={16} />
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" size={14} />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-1">Váha (kg)</label>
+              <div className="relative">
+                <input 
+                  type="number" 
+                  step="0.1" 
+                  placeholder="7.5" 
+                  className="w-full bg-slate-900 border border-white/10 rounded-xl py-3 pl-3 pr-9 text-white focus:outline-none focus:border-cyan-500/50 transition-all font-black text-lg placeholder:text-slate-700"
+                />
+                {/* Small context icon */}
+                <Scale className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 pointer-events-none" size={16} />
+              </div>
+            </div>
+          </div>
+
+          {/* 4. COLLAPSIBLE DETAILS (Carp Angler Copy) */}
+          <div className="pt-2 border-t border-white/5">
+             <button 
+               onClick={() => setShowDetails(!showDetails)}
+               className="w-full flex items-center justify-between py-2 text-left group"
+             >
+               <span className="text-xs font-bold uppercase tracking-wider text-slate-500 group-hover:text-slate-300 transition-colors">
+                 Ak chceš, doplň detaily
+               </span>
+               <ChevronDown size={16} className={`text-slate-600 transition-transform duration-200 ${showDetails ? 'rotate-180' : ''}`} />
+             </button>
+
+             {showDetails && (
+               <div className="mt-3 grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-1">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-500 ml-1">Dĺžka (cm)</label>
+                    <input type="number" className="w-full bg-slate-900/50 border border-white/5 rounded-lg p-2.5 text-white focus:outline-none focus:border-cyan-500/30 text-sm" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-500 ml-1">Nástraha</label>
+                    <input type="text" className="w-full bg-slate-900/50 border border-white/5 rounded-lg p-2.5 text-white focus:outline-none focus:border-cyan-500/30 text-sm" />
+                  </div>
+                  <div className="col-span-2 space-y-1">
+                    <label className="text-[10px] font-bold text-slate-500 ml-1">Revír</label>
+                    <input type="text" placeholder="Napr. Domaša" className="w-full bg-slate-900/50 border border-white/5 rounded-lg p-2.5 text-white focus:outline-none focus:border-cyan-500/30 text-sm" />
+                  </div>
+                  <div className="col-span-2 space-y-1">
+                    <label className="text-[10px] font-bold text-slate-500 ml-1">Poznámky</label>
+                    <textarea 
+                      placeholder="Montáž, teplota vody, hĺbka, postrehy…" 
+                      className="w-full bg-slate-900/50 border border-white/5 rounded-lg p-2.5 text-white focus:outline-none focus:border-cyan-500/30 text-sm min-h-[60px] resize-none" 
+                    />
+                  </div>
+               </div>
+             )}
+          </div>
+
+          {/* 5. PREMIUM DATA - (Carp Angler Copy) */}
+          <div className="flex items-center justify-between py-3 px-4 rounded-xl border border-white/5 bg-white/[0.02]">
+             <div className="flex flex-col">
+                <span className="text-[10px] font-bold uppercase text-slate-500">Počasie pri zábere</span>
+                <div className="flex gap-3 mt-1 opacity-50">
+                   <div className="flex items-center gap-1 text-[10px] text-slate-400">
+                      <MapPin size={10} /> GPS
+                   </div>
+                   <div className="flex items-center gap-1 text-[10px] text-slate-400">
+                      <CloudRain size={10} /> Počasie
+                   </div>
+                </div>
+             </div>
+             
+             <button className="text-[10px] font-bold text-slate-400 hover:text-white border border-white/10 px-3 py-1.5 rounded bg-transparent hover:bg-white/5 transition-all">
+                Načítať (Premium)
+             </button>
+          </div>
+
+          {/* 6. CTA (Carp Angler Copy) */}
+          <div className="flex gap-3 pt-2">
+             <button className="flex-1 py-3.5 px-4 rounded-xl border border-white/10 text-slate-400 font-bold hover:bg-white/5 transition-all text-xs uppercase tracking-wide">
+                Zrušiť
+             </button>
+             <button className="flex-[2] py-3.5 px-4 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold shadow-lg shadow-cyan-900/10 transition-all text-xs uppercase tracking-wide flex items-center justify-center gap-2">
+                <Plus size={16} strokeWidth={3} />
+                Zapísať úlovok
+             </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+}
