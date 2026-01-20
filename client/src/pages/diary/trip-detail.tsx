@@ -357,10 +357,13 @@ export default function TripDetail() {
           </CardHeader>
           <CardContent className="space-y-6">
             {totalCatches === 0 ? (
-              <div className="text-center py-8" data-testid="empty-catches">
-                <Fish className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                <p className="text-muted-foreground">
-                  Zatiaľ tu nie sú žiadne úlovky z tejto výpravy
+              <div className="text-center py-12 border-2 border-dashed border-border/50 rounded-[32px] bg-muted/20" data-testid="empty-catches">
+                <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Fish className="w-8 h-8 text-muted-foreground opacity-50" />
+                </div>
+                <h3 className="text-lg font-medium text-foreground mb-1">Voda zatiaľ mlčí...</h3>
+                <p className="text-muted-foreground text-sm max-w-xs mx-auto">
+                  Žiadne zapísané úlovky. Čakáme na jazdu!
                 </p>
               </div>
             ) : (
