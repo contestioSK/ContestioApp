@@ -666,7 +666,7 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
         </VisuallyHidden>
         
         {/* Compact Gradient Header */}
-        <div className="relative bg-gradient-to-br from-cyan-600 to-blue-700 p-5 pt-6 pb-5">
+        <div className="relative bg-gradient-to-br from-cyan-600 to-blue-700 p-5 pt-6 pb-5 rounded-t-lg">
           <button 
             type="button"
             onClick={handleClose}
