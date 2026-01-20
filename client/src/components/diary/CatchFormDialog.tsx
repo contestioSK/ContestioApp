@@ -10,6 +10,7 @@ import { sk } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -293,9 +294,14 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
         handleClose();
         onSuccess?.();
       } else {
+        // Check if this is the user's first catch (returned from API)
+        const isFirstCatch = data?.isFirstCatch;
+        
         toast({
-          title: "✅ Úlovok pridaný!",
-          description: "Váš úlovok bol úspešne pridaný do denníka.",
+          title: isFirstCatch ? "🎉 Prvý úlovok!" : "✅ Úlovok pridaný!",
+          description: isFirstCatch 
+            ? "Hotovo! Detaily môžeš kedykoľvek doplniť."
+            : "Váš úlovok bol úspešne pridaný do denníka.",
           variant: "success" as any,
         });
         handleClose();
@@ -654,6 +660,11 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
     <>
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto p-0">
+        {/* Accessibility: Hidden title for screen readers */}
+        <VisuallyHidden>
+          <DialogTitle>{editingCatch ? "Upraviť úlovok" : "Nový úlovok"}</DialogTitle>
+        </VisuallyHidden>
+        
         {/* Compact Gradient Header */}
         <div className="relative bg-gradient-to-br from-cyan-600 to-blue-700 p-5 pt-6 pb-5">
           <button 
