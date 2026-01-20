@@ -219,31 +219,29 @@ export default function TripDetail() {
   return (
     <DiaryLayout>
       <div className="space-y-6" data-testid="page-trip-detail">
-        {/* Hero Section - Back button and Trip Info */}
+        {/* Hero Section - Back button and Actions */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <Button
               variant="ghost"
               onClick={() => setLocation("/diary/trips")}
-              className="gap-2"
+              className="pl-0 gap-2 hover:bg-transparent hover:text-primary transition-colors"
               data-testid="button-back"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span className="hidden sm:inline">Späť na výpravy</span>
-              <span className="sm:hidden">Späť</span>
+              <span className="font-medium">Všetky výpravy</span>
             </Button>
 
             {/* Desktop: Full buttons */}
             <div className="hidden md:flex gap-2">
               {tripCatches.some(c => c.photos && c.photos.length > 0) && (
                 <Button
-                  variant="default"
-                  size="lg"
+                  variant="outline"
                   onClick={() => setLocation(`/diary/trips/${id}/gallery`)}
                   className="gap-2"
                   data-testid="button-gallery"
                 >
-                  <Grid3x3 className="w-5 h-5" />
+                  <Grid3x3 className="w-4 h-4" />
                   Galéria výpravy
                 </Button>
               )}
@@ -255,20 +253,19 @@ export default function TripDetail() {
                 className="gap-2"
                 data-testid="button-export-trip"
               >
-                <Download className="w-4 h-4" />
-                {isExporting ? "Exportujem..." : "Exportovať ako obrázok"}
+                <Share2 className="w-4 h-4" />
+                {isExporting ? "Generujem..." : "Zdieľať report"}
               </Button>
 
               {trip && !isPast(new Date(trip.endDate)) && !isToday(new Date(trip.endDate)) && (
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   onClick={() => setShowEndTripDialog(true)}
                   disabled={endTripMutation.isPending}
-                  className="gap-2 text-orange-600 hover:text-orange-700 border-orange-600 hover:border-orange-700"
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
                   data-testid="button-end-trip"
                 >
-                  <XCircle className="w-4 h-4" />
-                  {endTripMutation.isPending ? "Ukončujem..." : "Ukončiť výpravu"}
+                  {endTripMutation.isPending ? "Ukončujem..." : "Uzavrieť výpravu"}
                 </Button>
               )}
             </div>
@@ -276,8 +273,8 @@ export default function TripDetail() {
             {/* Mobile: Dropdown menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild className="md:hidden">
-                <Button variant="outline" size="icon" className="h-10 w-10" aria-label="Možnosti výpravy" data-testid="button-more-actions">
-                  <MoreHorizontal className="w-5 h-5" />
+                <Button variant="ghost" size="icon" className="h-10 w-10" aria-label="Možnosti výpravy" data-testid="button-more-actions">
+                  <MoreHorizontal className="w-6 h-6" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
@@ -289,7 +286,7 @@ export default function TripDetail() {
                 )}
                 <DropdownMenuItem onClick={handleExportTrip} disabled={isExporting} data-testid="menu-export">
                   <Share2 className="w-4 h-4 mr-2" />
-                  {isExporting ? "Exportujem..." : "Zdieľať výpravu"}
+                  {isExporting ? "Generujem..." : "Zdieľať report"}
                 </DropdownMenuItem>
                 {trip && !isPast(new Date(trip.endDate)) && !isToday(new Date(trip.endDate)) && (
                   <>
@@ -297,11 +294,11 @@ export default function TripDetail() {
                     <DropdownMenuItem 
                       onClick={() => setShowEndTripDialog(true)} 
                       disabled={endTripMutation.isPending}
-                      className="text-orange-600 focus:text-orange-600"
+                      className="text-destructive focus:text-destructive"
                       data-testid="menu-end-trip"
                     >
                       <XCircle className="w-4 h-4 mr-2" />
-                      {endTripMutation.isPending ? "Ukončujem..." : "Ukončiť výpravu"}
+                      {endTripMutation.isPending ? "Ukončujem..." : "Uzavrieť výpravu"}
                     </DropdownMenuItem>
                   </>
                 )}
@@ -309,94 +306,48 @@ export default function TripDetail() {
             </DropdownMenu>
           </div>
 
-          <div>
-            <div className="flex items-center gap-3 mb-2 flex-wrap">
-              <h1 className="text-2xl md:text-3xl font-bold text-foreground" data-testid="text-trip-name">
-                {trip.name}
-              </h1>
-              {(isPast(new Date(trip.endDate)) || isToday(new Date(trip.endDate))) && (
-                <Badge variant="secondary" className="text-xs">
-                  Ukončená
-                </Badge>
-              )}
-            </div>
-            <div className="flex flex-wrap gap-3 md:gap-4 text-sm md:text-base text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <TacticalIconInline icon={CalendarIcon} variant="indigo" />
-                <span data-testid="text-trip-dates">
-                  {format(new Date(trip.startDate), "d. MMM", { locale: sk })} - {format(new Date(trip.endDate), "d. MMM yyyy", { locale: sk })}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <TacticalIconInline icon={MapPin} variant="emerald" />
-                <span data-testid="text-trip-location">{trip.location}</span>
+          {/* Hero Card - Trip Title & Info */}
+          <div className="bg-gradient-to-br from-card to-card/80 dark:from-slate-800/60 dark:to-slate-900/60 rounded-3xl p-6 md:p-8 border border-border/50 dark:border-white/5 shadow-xl relative overflow-hidden group">
+            {/* Background blur decoration */}
+            <div className="absolute top-0 right-0 w-80 h-80 bg-primary/5 dark:bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none group-hover:bg-primary/10 dark:group-hover:bg-primary/15 transition-colors duration-700"></div>
+
+            <div className="relative z-10">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div>
+                  <div className="flex items-center gap-3 mb-3 flex-wrap">
+                    <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-foreground tracking-tight" data-testid="text-trip-name">
+                      {trip.name}
+                    </h1>
+                    {(isPast(new Date(trip.endDate)) || isToday(new Date(trip.endDate))) ? (
+                      <Badge variant="secondary" className="text-xs border border-border/50">
+                        Ukončená
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-xs border-primary/30 text-primary bg-primary/10">
+                        Aktívna
+                      </Badge>
+                    )}
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-3 text-sm md:text-base text-muted-foreground">
+                    <div className="flex items-center gap-2 bg-background/50 dark:bg-white/5 px-3 py-1.5 rounded-full border border-border/50 dark:border-white/5">
+                      <CalendarIcon className="w-4 h-4 text-primary" />
+                      <span data-testid="text-trip-dates">
+                        {format(new Date(trip.startDate), "d. MMM", { locale: sk })} - {format(new Date(trip.endDate), "d. MMM yyyy", { locale: sk })}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-background/50 dark:bg-white/5 px-3 py-1.5 rounded-full border border-border/50 dark:border-white/5">
+                      <MapPin className="w-4 h-4 text-emerald-500" />
+                      <span data-testid="text-trip-location">{trip.location}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Počet úlovkov</CardTitle>
-              <TacticalIconInline icon={Fish} variant="cyan" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold" data-testid="text-total-catches">{totalCatches}</div>
-              <p className="text-xs text-muted-foreground">
-                {totalCatches === 0 ? "Zatiaľ žiadne" : totalCatches === 1 ? "1 úlovok" : `${totalCatches} úlovkov`}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Celková váha</CardTitle>
-              <TacticalIconInline icon={Weight} variant="orange" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold" data-testid="text-total-weight">{totalWeight.toFixed(1)} kg</div>
-              <p className="text-xs text-muted-foreground">
-                Priemerná: {totalCatches > 0 ? (totalWeight / totalCatches).toFixed(1) : "0"} kg
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Najväčší úlovok</CardTitle>
-              <TacticalIconInline icon={Trophy} variant="amber" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold" data-testid="text-biggest-catch">
-                {biggestCatch ? `${parseFloat(biggestCatch.weight).toFixed(1)} kg` : "—"}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {biggestCatch ? getFishTypeLabel(biggestCatch.fishType) : "Žiadny úlovok"}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Notes Section */}
-        {trip.notes && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="w-5 h-5" />
-                Poznámky
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-foreground whitespace-pre-wrap" data-testid="text-trip-notes">
-                {trip.notes}
-              </p>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Catches Section */}
+        {/* Catches Section - NOW FIRST */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -634,6 +585,67 @@ export default function TripDetail() {
             )}
           </CardContent>
         </Card>
+
+        {/* Statistics Cards - NOW AFTER CATCHES */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Počet úlovkov</CardTitle>
+              <TacticalIconInline icon={Fish} variant="cyan" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold" data-testid="text-total-catches">{totalCatches}</div>
+              <p className="text-xs text-muted-foreground">
+                {totalCatches === 0 ? "Zatiaľ žiadne" : totalCatches === 1 ? "1 úlovok" : `${totalCatches} úlovkov`}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Celková váha</CardTitle>
+              <TacticalIconInline icon={Weight} variant="orange" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold" data-testid="text-total-weight">{totalWeight.toFixed(1)} kg</div>
+              <p className="text-xs text-muted-foreground">
+                Priemerná: {totalCatches > 0 ? (totalWeight / totalCatches).toFixed(1) : "0"} kg
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Najväčší úlovok</CardTitle>
+              <TacticalIconInline icon={Trophy} variant="amber" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold" data-testid="text-biggest-catch">
+                {biggestCatch ? `${parseFloat(biggestCatch.weight).toFixed(1)} kg` : "—"}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {biggestCatch ? getFishTypeLabel(biggestCatch.fishType) : "Žiadny úlovok"}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Notes Section */}
+        {trip.notes && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="w-5 h-5" />
+                Poznámky
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-foreground whitespace-pre-wrap" data-testid="text-trip-notes">
+                {trip.notes}
+              </p>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Detail Panel */}
         <Sheet open={!!selectedCatch} onOpenChange={(open) => !open && setSelectedCatch(null)}>
