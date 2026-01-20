@@ -1,0 +1,351 @@
+import React, { useState } from 'react';
+import { 
+  Plus, Calendar, MapPin, Clock, Trophy, 
+  Lock, Search, Filter, 
+  MoreHorizontal, Tent, Camera, Anchor,
+  ClipboardCheck, History, List, X, CheckCircle2,
+  ArrowDown, Compass, FishSymbol, AlertCircle
+} from 'lucide-react';
+
+// Simulácia dát (V reálnej aplikácii toto nahradíš API volaním)
+const trips = [
+  { 
+    id: '1', 
+    name: 'Víkendová Domaša', 
+    location: 'Domaša, Sektor A', 
+    startDate: new Date('2026-05-12'), 
+    endDate: new Date('2026-05-14'), 
+    coverImageUrl: 'https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?q=80&w=2070',
+    status: 'upcoming', // active, finished
+    catchCount: 0
+  },
+  { 
+    id: '2', 
+    name: 'Ranná prívlač', 
+    location: 'Váh, Piešťany', 
+    startDate: new Date('2026-04-10'), 
+    endDate: new Date('2026-04-10'), 
+    coverImageUrl: 'https://images.unsplash.com/photo-1516961642265-531546e84af2?q=80&w=2000',
+    status: 'finished',
+    catchCount: 4,
+    biggestFish: 'Zubáč 85cm'
+  },
+  { 
+    id: '3', 
+    name: 'Kaprárske preteky', 
+    location: 'Kráľová', 
+    startDate: new Date('2025-09-15'), 
+    endDate: new Date('2025-09-20'), 
+    coverImageUrl: null, // Fallback case
+    status: 'finished',
+    catchCount: 12,
+    biggestFish: 'Kapor 18kg',
+    locked: true // Freemium lock simulation
+  }
+];
+
+export default function DiaryTripsEnhanced() {
+  const [activeTab, setActiveTab] = useState<'active' | 'history'>('active');
+  const [isChecklistOpen, setIsChecklistOpen] = useState(false);
+
+  // Filtrovanie dát
+  const filteredTrips = trips.filter(t => 
+    activeTab === 'active' ? t.status === 'upcoming' : t.status === 'finished'
+  );
+
+  // Funkcia na scroll k zoznamu (rieši UX disconnect)
+  const scrollToHistory = () => {
+    setActiveTab('history');
+    setTimeout(() => {
+        const element = document.getElementById('trips-list-anchor');
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, 100);
+  };
+
+  return (
+    <div className="min-h-screen bg-[#0B1120] text-slate-200 font-sans pb-24 p-4 md:p-8 relative">
+      
+      {/* HEADER SECTION */}
+      <div className="mb-8">
+         <h1 className="text-3xl font-bold text-white tracking-tight mb-2">Moje Výpravy</h1>
+         <p className="text-slate-400">Plánuj, spravuj a uchovávaj svoje rybárske výpravy.</p>
+      </div>
+
+      {/* --- HERO GRID (2/3 + 1/3 Layout) --- */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 max-w-[1600px]">
+        
+        {/* 1. HLAVNÁ KARTA: Plánovač (2/3) */}
+        <div className="col-span-1 md:col-span-2 bg-gradient-to-br from-[#0891b2] to-[#0e7490] rounded-[32px] p-8 relative overflow-hidden flex flex-col justify-between min-h-[260px] shadow-2xl shadow-cyan-900/20 group border border-cyan-400/20">
+          
+          {/* Dekoratívne pozadie */}
+          <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+          <MapPin className="absolute -bottom-6 -right-6 w-48 h-48 text-white/5 rotate-12 group-hover:rotate-0 transition-transform duration-700" strokeWidth={1} />
+
+          <div className="relative z-10 max-w-lg">
+             <div className="inline-flex items-center gap-2 bg-[#0B1120]/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-medium text-cyan-50 mb-4 border border-white/10">
+              <Calendar size={12} />
+              <span>Výpravy</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-3 leading-tight">
+              Kam vyrazíš najbližšie?
+            </h2>
+            <p className="text-cyan-50 font-medium text-lg opacity-90">
+              Naplánuj novú výpravu alebo sa vráť k miestam, kde si už chytal.
+            </p>
+          </div>
+
+          {/* Dve hlavné tlačidlá */}
+          <div className="relative z-10 flex flex-wrap gap-4 mt-8">
+            <button className="bg-white text-cyan-900 font-bold px-6 py-3.5 rounded-full flex items-center gap-2 shadow-lg hover:shadow-xl hover:bg-slate-50 transition-all transform hover:-translate-y-1">
+              <Plus size={20} strokeWidth={2.5} />
+              <span>Nová výprava</span>
+            </button>
+
+            {/* Sekundárne tlačidlo s UX fixom (scroll) */}
+            <button 
+              onClick={scrollToHistory}
+              className="group/hist backdrop-blur-md border border-white/20 text-white font-medium px-6 py-3.5 rounded-full flex items-center gap-2 hover:bg-white/10 transition-all"
+            >
+              <History size={18} className="opacity-80" />
+              <span>História výprav</span>
+              <ArrowDown size={14} className="opacity-0 -translate-y-1 group-hover/hist:opacity-100 group-hover/hist:translate-y-0 transition-all text-cyan-200" />
+            </button>
+          </div>
+        </div>
+
+        {/* 2. VEDĽAJŠIA KARTA: Checklist (1/3) */}
+        <div className="col-span-1 bg-[#151e32]/60 backdrop-blur-md border border-blue-400/10 rounded-[32px] p-8 flex flex-col justify-between hover:border-blue-400/30 hover:bg-[#151e32]/80 transition-all shadow-lg shadow-black/20 group relative overflow-hidden min-h-[260px]">
+           
+           <div className="absolute top-0 right-0 p-6 opacity-50 group-hover:opacity-100 transition-opacity">
+              <div className="bg-emerald-500/10 p-3 rounded-2xl border border-emerald-500/20">
+                <ClipboardCheck className="text-emerald-400" size={24} />
+              </div>
+           </div>
+
+           <div>
+             <h3 className="text-2xl font-bold text-white mb-2 leading-tight pr-12">
+               Mám všetko zbalené?
+             </h3>
+             <p className="text-slate-400 text-sm leading-relaxed">
+               Rýchla kontrola výbavy pred odchodom k vode.<br/>
+               <span className="opacity-70 mt-1 block">Podberák, váha, náhradné baterky…</span>
+             </p>
+           </div>
+
+           <button 
+              onClick={() => setIsChecklistOpen(true)}
+              className="mt-6 w-full py-3 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-xl font-bold flex items-center justify-center gap-2 transition-all hover:shadow-[0_0_20px_rgba(16,185,129,0.1)] group-hover:translate-x-1"
+            >
+              <span>Skontrolovať výbavu</span>
+           </button>
+        </div>
+      </div>
+
+      {/* --- CONTENT SECTION --- */}
+      
+      <div id="trips-list-anchor" className="scroll-mt-6"></div>
+
+      {/* Search & Filter Bar */}
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+        <h3 className="text-xl font-bold text-white flex items-center gap-2">
+          <List size={20} className="text-cyan-500" />
+          {activeTab === 'active' ? 'Aktuálne a plánované výpravy' : 'Archív výprav'}
+        </h3>
+
+        <div className="flex gap-3 w-full md:w-auto">
+           <div className="relative flex-1 md:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
+            <input 
+              type="text" 
+              placeholder="Hľadať výpravu..." 
+              className="w-full bg-[#131b2e] border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-cyan-500/50 transition-all"
+            />
+          </div>
+          <button className="bg-[#131b2e] border border-white/10 p-2.5 rounded-xl text-slate-400 hover:text-white hover:border-white/30 transition-all">
+             <Filter size={20} />
+          </button>
+        </div>
+      </div>
+
+      {/* --- CONDITIONAL RENDERING: LIST vs EMPTY STATE --- */}
+      
+      {filteredTrips.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredTrips.map((trip) => (
+            <TripCard key={trip.id} trip={trip} />
+          ))}
+        </div>
+      ) : (
+        <EmptyState tab={activeTab} />
+      )}
+
+      {/* Mobile FAB */}
+      <button className="md:hidden fixed bottom-6 right-6 w-14 h-14 bg-cyan-500 text-white rounded-full shadow-2xl shadow-cyan-500/40 flex items-center justify-center z-50 hover:scale-105 transition-transform active:scale-95">
+        <Plus size={28} />
+      </button>
+
+      {/* Checklist Modal */}
+      {isChecklistOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsChecklistOpen(false)} />
+          <div className="relative w-full max-w-md bg-[#131b2e] border border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-white/10 flex justify-between items-center bg-[#1e293b]/50">
+              <div className="flex items-center gap-3">
+                <div className="bg-emerald-500/20 p-2 rounded-lg">
+                  <ClipboardCheck className="text-emerald-400" size={20} />
+                </div>
+                <h3 className="text-xl font-bold text-white">Kontrolný zoznam</h3>
+              </div>
+              <button onClick={() => setIsChecklistOpen(false)} className="text-slate-400 hover:text-white transition-colors">
+                <X size={24} />
+              </button>
+            </div>
+            <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
+              <p className="text-sm text-slate-400 mb-2">Základná výbava na každú výpravu:</p>
+              {['Rybársky lístok a povolenka', 'Podberák', 'Pean / Vyprošťovač', 'Podložka pod ryby', 'Náhradné oblečenie', 'Čelovka + baterky'].map((item, i) => (
+                <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 cursor-pointer group transition-colors">
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${i < 2 ? 'bg-emerald-500 border-emerald-500' : 'border-slate-500 group-hover:border-emerald-400'}`}>
+                    {i < 2 && <CheckCircle2 size={12} className="text-[#0B1120]" strokeWidth={4} />}
+                  </div>
+                  <span className={i < 2 ? 'text-slate-400 line-through' : 'text-slate-200'}>{item}</span>
+                </div>
+              ))}
+            </div>
+            <div className="p-4 border-t border-white/10 bg-[#1e293b]/30">
+               <button onClick={() => setIsChecklistOpen(false)} className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-colors">
+                 Hotovo, môžem vyraziť
+               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}
+
+// --- EMPTY STATE COMPONENT ---
+function EmptyState({ tab }: { tab: 'active' | 'history' }) {
+  const isHistory = tab === 'history';
+
+  return (
+    <div className="flex flex-col items-center justify-center py-20 px-4 text-center rounded-[32px] border-2 border-dashed border-white/5 bg-white/[0.02] animate-in fade-in duration-500">
+      <div className="w-24 h-24 bg-[#131b2e] rounded-full flex items-center justify-center mb-6 shadow-xl border border-white/5 relative group">
+        {/* Glow effect */}
+        <div className={`absolute inset-0 rounded-full blur-xl opacity-20 ${isHistory ? 'bg-purple-500' : 'bg-cyan-500'}`}></div>
+        
+        {isHistory ? (
+           <Trophy size={40} className="text-purple-400 relative z-10" />
+        ) : (
+           <Compass size={40} className="text-cyan-400 relative z-10" />
+        )}
+      </div>
+
+      <h3 className="text-2xl font-bold text-white mb-3">
+        {isHistory ? 'História zíva prázdnotou' : 'Žiadne naplánované výpravy'}
+      </h3>
+      
+      <p className="text-slate-400 max-w-sm mb-8 text-lg leading-relaxed">
+        {isHistory 
+          ? 'Tvoj denník je zatiaľ čistý. Všetky tvoje legendárne úlovky a spomienky sa uložia práve sem.' 
+          : 'Voda volá! Naplánuj si termín, vyber revír a my ti postrážime počasie.'}
+      </p>
+
+      {!isHistory && (
+        <button className="bg-cyan-500 hover:bg-cyan-400 text-white font-bold px-8 py-4 rounded-full shadow-lg shadow-cyan-900/20 transition-all transform hover:-translate-y-1 flex items-center gap-2">
+          <Plus size={20} strokeWidth={3} />
+          <span>Naplánovať prvú výpravu</span>
+        </button>
+      )}
+    </div>
+  );
+}
+
+// --- TRIP CARD COMPONENT ---
+function TripCard({ trip }: { trip: any }) {
+  if (trip.locked) {
+    return (
+      <div className="relative h-[280px] rounded-[32px] bg-[#131b2e] border border-white/5 overflow-hidden group cursor-pointer">
+        <div className="absolute inset-0 bg-black/60 z-10 flex flex-col items-center justify-center text-center p-6 backdrop-blur-[2px]">
+          <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center mb-4 text-white/50">
+            <Lock size={24} />
+          </div>
+          <h3 className="text-slate-300 font-bold text-lg mb-1">{trip.name}</h3>
+          <p className="text-slate-500 text-sm mb-4">Táto výprava je dostupná len v Premium verzii.</p>
+          <button className="bg-amber-500/10 text-amber-500 border border-amber-500/20 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-amber-500 hover:text-white transition-all">
+            Prejsť na Premium
+          </button>
+        </div>
+        {trip.coverImageUrl && (
+          <img src={trip.coverImageUrl} className="absolute inset-0 w-full h-full object-cover opacity-20 grayscale" alt="" />
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative h-[280px] rounded-[32px] overflow-hidden group cursor-pointer border border-white/10 shadow-2xl shadow-black/20">
+      <div className="absolute inset-0 bg-[#131b2e]">
+        {trip.coverImageUrl ? (
+          <img 
+            src={trip.coverImageUrl} 
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+            alt={trip.name} 
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-cyan-900 to-blue-900 opacity-50" />
+        )}
+      </div>
+      <div className="absolute inset-0 bg-gradient-to-t from-[#0B1120] via-[#0B1120]/60 to-transparent opacity-90 group-hover:opacity-80 transition-opacity" />
+
+      <div className="absolute inset-0 p-6 flex flex-col justify-between z-10">
+        <div className="flex justify-between items-start">
+          <div className={`
+            px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border backdrop-blur-md shadow-lg
+            ${trip.status === 'upcoming' 
+              ? 'bg-blue-500/20 border-blue-400/30 text-blue-200' 
+              : 'bg-emerald-500/20 border-emerald-400/30 text-emerald-200'}
+          `}>
+            {trip.status === 'upcoming' ? 'Naplánované' : 'Ukončené'}
+          </div>
+          <button className="w-8 h-8 rounded-full bg-black/20 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-white hover:text-black transition-all">
+            <MoreHorizontal size={16} />
+          </button>
+        </div>
+
+        <div>
+          <h3 className="text-2xl font-bold text-white mb-2 leading-tight group-hover:translate-x-1 transition-transform">
+            {trip.name}
+          </h3>
+          <div className="flex flex-col gap-2 mb-4">
+            <div className="flex items-center gap-2 text-slate-300 text-sm">
+              <MapPin size={14} className="text-cyan-400" />
+              {trip.location}
+            </div>
+            <div className="flex items-center gap-2 text-slate-400 text-xs">
+              <Calendar size={12} />
+              {trip.startDate.toLocaleDateString()} - {trip.endDate.toLocaleDateString()}
+            </div>
+          </div>
+
+          {(trip.catchCount > 0 || trip.biggestFish) && (
+            <div className="flex gap-3 pt-4 border-t border-white/10">
+              <div className="flex flex-col">
+                <span className="text-[10px] text-slate-500 uppercase font-bold">Úlovkov</span>
+                <span className="text-white font-bold">{trip.catchCount}</span>
+              </div>
+              {trip.biggestFish && (
+                 <div className="flex flex-col">
+                   <span className="text-[10px] text-slate-500 uppercase font-bold">Top Ryba</span>
+                   <span className="text-amber-400 font-bold">{trip.biggestFish}</span>
+                 </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
