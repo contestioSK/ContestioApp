@@ -659,7 +659,7 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
   return (
     <>
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto p-0">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto p-0 [&>button]:hidden">
         {/* Accessibility: Hidden title for screen readers */}
         <VisuallyHidden>
           <DialogTitle>{editingCatch ? "Upraviť úlovok" : "Nový úlovok"}</DialogTitle>
