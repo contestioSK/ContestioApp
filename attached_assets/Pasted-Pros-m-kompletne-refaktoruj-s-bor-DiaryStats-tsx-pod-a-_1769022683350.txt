@@ -1,0 +1,335 @@
+Prosím, kompletne refaktoruj súbor `DiaryStats.tsx` podľa nového konceptu "Contestio Stats 1.0".
+
+Opúšťame starý dashboard s tabmi a prechádzame na jednotný "Magazín/HUD" layout, ktorý sa zameriava na storytelling a čisté dáta.
+
+Kľúčové požiadavky na implementáciu:
+
+1. Layout a Štruktúra (Responsive):
+   - Mobile: Všetko v jednom vertikálnom stĺpci.
+   - Desktop (md+): Grid layout (12 stĺpcov).
+     - Ľavý hlavný stĺpec (8 cols): Sezónny prehľad, Hero Catch (veľká fotka), Mesačný trend.
+     - Pravý bočný stĺpec (4 cols): Hodinový insight, Top druhy, Míľniky, Premium CTA.
+
+2. Vizuálna Identita (CRITICAL):
+   - Aplikuj farebnú paletu Contestia na nový layout.
+   - Nahraď hardcoded HEX farby (napr. pozadia kariet, texty) za existujúce Tailwind triedy alebo CSS premenné používané v projekte (napr. `bg-background`, `bg-card`, `text-primary`, `border-border`), aby to ladilo so zvyškom aplikácie.
+   - Zachovaj "Dark Mode" estetiku a taktický vzhľad HUDu.
+
+3. UI/UX Zmeny:
+   - Odstráň VŠETKY taby, filtre a komplexné nastavenia.
+   - Implementuj kartu "Hero Catch", ktorá sa zobrazí len ak má úlovok fotku.
+   - Vytvor ľahký CSS stĺpcový graf (TrendChart) namiesto externej knižnice.
+   - Pridaj "Premium Teaser" (rozmazaný obsah) pre sekciu Hodinový Insight.
+
+4. Kód:
+   - Použi priložený kód ako základnú štruktúru komponentov a logiky.
+
+Tu je referenčný kód nového dizajnu, ktorý treba implementovať a nastylovať podľa brandingu:
+
+import React from "react";
+import { useLocation } from "wouter";
+import { 
+  Lock,
+  ChevronRight,
+  Clock,
+  Calendar,
+  ArrowUpRight,
+  Info
+} from "lucide-react";
+
+// --- MOCK DATA (REÁLNE DÁTA, ŽIADNE FANTASY) ---
+
+const seasonStats = {
+  totalCatches: 127,
+  biggestWeight: 18.4,
+  totalTrips: 42,
+  avgPerTrip: 3.0
+};
+
+// Hero Moment - Zobrazí sa LEN ak existuje fotka
+const heroCatch = {
+  hasPhoto: true, 
+  photo: "https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?q=80&w=1200&auto=format&fit=crop",
+  weight: 18.4,
+  species: "Kapor",
+  location: "Zemplínska Šírava",
+  date: "Apríl 2026"
+};
+
+// Mesačný progres - Len trend
+const monthlyTrend = [
+    { label: "Jan", val: 0 },
+    { label: "Feb", val: 2 },
+    { label: "Mar", val: 8 },
+    { label: "Apr", val: 12 },
+    { label: "Máj", val: 24 },
+    { label: "Jún", val: 18 },
+    { label: "Júl", val: 32 }, 
+    { label: "Aug", val: 22 },
+    { label: "Sep", val: 15 },
+    { label: "Okt", val: 4 },
+    { label: "Nov", val: 0 },
+    { label: "Dec", val: 0 },
+];
+
+// Hodinový Insight - Free dáta
+const hourlyTopWindows = [
+  "17:00 – 19:00",
+  "05:00 – 06:00",
+  "22:00 – 23:00"
+];
+
+// Top Druhy - Max 3
+const topSpecies = [
+  { name: "Kapor", count: 42 },
+  { name: "Amur", count: 9 },
+  { name: "Lieň", count: 4 }
+];
+
+// Míľniky - Civilné
+const milestones = [
+  { time: "Včera", title: "Nový osobný rekord (18.4 kg)" },
+  { time: "Pred 3 dňami", title: "5 rýb za výpravu" },
+  { time: "Minulý mesiac", title: "Najlepšia výprava sezóny" }
+];
+
+const isPremium = false; 
+
+// --- COMPONENTS ---
+
+// 3. Mesačný graf (Bez osí, čistý trend)
+const TrendChart = ({ data }: { data: {label: string, val: number}[] }) => {
+    const max = Math.max(...data.map(d => d.val));
+    return (
+        <div className="mt-6">
+            <div className="flex items-end justify-between h-24 gap-1">
+                {data.map((d, i) => (
+                    <div key={i} className="flex flex-col items-center flex-1 h-full justify-end group">
+                         <div 
+                            className={`w-full max-w-[12px] rounded-full transition-all duration-500 ${d.val > 0 ? 'bg-cyan-500' : 'bg-white/5'}`}
+                            style={{ height: d.val > 0 ? `${(d.val / max) * 100}%` : '4px' }}
+                         />
+                    </div>
+                ))}
+            </div>
+            {/* Osi mesiacov - Minimalistické */}
+            <div className="flex justify-between mt-3 px-1">
+                {data.filter((_, i) => i % 3 === 0).map((d, i) => (
+                    <span key={i} className="text-[10px] text-slate-500 font-mono uppercase">{d.label}</span>
+                ))}
+            </div>
+        </div>
+    )
+}
+
+// --- MAIN LAYOUT ---
+
+export default function DiaryStats() {
+  const [, setLocation] = useLocation();
+  const MIN_DATA_THRESHOLD = 10;
+  const hasEnoughData = seasonStats.totalCatches >= MIN_DATA_THRESHOLD;
+
+  return (
+    <div className="min-h-screen bg-[#050B14] text-slate-200 font-sans pb-24 selection:bg-cyan-500/30">
+      
+      {/* 0. HLAVIČKA - Centered on mobile, Left on Desktop */}
+      <header className="px-6 pt-10 pb-6 max-w-5xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-4">
+         <div>
+             <h1 className="text-3xl font-bold text-white tracking-tight">Sezóna v číslach</h1>
+             <p className="text-slate-500 text-sm mt-1">Tvoje ryby premenené na prehľad.</p>
+         </div>
+         <div className="hidden md:block text-xs text-slate-600 font-mono">
+             POSLEDNÁ AKTUALIZÁCIA: DNES 08:42
+         </div>
+      </header>
+
+      {/* GRID LAYOUT: 1 Col Mobile -> 12 Cols Desktop */}
+      <main className="max-w-5xl mx-auto px-4 grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 pb-12">
+         
+         {/* --- ĽAVÝ STĹPEC (Hlavný Príbeh) - 8/12 --- */}
+         <div className="md:col-span-8 space-y-8">
+
+             {/* 1. SEZÓNNY PREHĽAD (2x2 Mobile, 4x1 Desktop) */}
+             <section className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                 <div className="bg-[#111a2e] border border-white/5 p-5 rounded-2xl flex flex-col justify-between h-32 hover:border-white/10 transition-colors">
+                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Ulovil si</span>
+                     <span className="text-4xl font-bold text-white tracking-tighter">{seasonStats.totalCatches}</span>
+                 </div>
+                 
+                 <div className="bg-[#111a2e] border border-white/5 p-5 rounded-2xl flex flex-col justify-between h-32 hover:border-white/10 transition-colors">
+                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Najväčšia ryba</span>
+                     <div>
+                        <span className="text-4xl font-bold text-white tracking-tighter">{seasonStats.biggestWeight}</span>
+                        <span className="text-sm text-slate-500 ml-1">kg</span>
+                     </div>
+                 </div>
+
+                 <div className="bg-[#111a2e] border border-white/5 p-5 rounded-2xl flex flex-col justify-between h-32 hover:border-white/10 transition-colors">
+                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Výpravy</span>
+                     <span className="text-4xl font-bold text-white tracking-tighter">{seasonStats.totalTrips}</span>
+                 </div>
+
+                 <div className="bg-[#111a2e] border border-white/5 p-5 rounded-2xl flex flex-col justify-between h-32 hover:border-white/10 transition-colors">
+                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Priemer / Lov</span>
+                     <span className="text-4xl font-bold text-white tracking-tighter">{seasonStats.avgPerTrip}</span>
+                 </div>
+             </section>
+
+             {/* 2. HERO MOMENT */}
+             {heroCatch.hasPhoto && (
+                 <section className="relative aspect-[4/5] md:aspect-[21/9] rounded-3xl overflow-hidden border border-white/10 shadow-2xl group">
+                     <img src={heroCatch.photo} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                     <div className="absolute inset-0 bg-gradient-to-t from-[#050B14] via-transparent to-transparent opacity-90"></div>
+                     <div className="absolute inset-0 bg-gradient-to-r from-[#050B14]/80 via-transparent to-transparent opacity-60"></div>
+                     
+                     <div className="absolute top-6 right-6">
+                         <div className="bg-amber-500/90 backdrop-blur-sm text-black text-xs font-black px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg shadow-amber-500/20">
+                            <ArrowUpRight size={12} strokeWidth={3} /> TOP ÚLOVOK
+                         </div>
+                     </div>
+
+                     <div className="absolute bottom-0 left-0 w-full p-6 md:p-10">
+                         <div className="flex flex-col gap-1 max-w-lg">
+                             <p className="text-slate-300 text-sm font-medium mb-2 flex items-center gap-2">
+                                <Calendar size={14} /> {heroCatch.date} · {heroCatch.location}
+                             </p>
+                             <h2 className="text-6xl md:text-7xl font-black text-white tracking-tighter leading-none mb-2">
+                                {heroCatch.weight}<span className="text-3xl text-slate-400 font-bold ml-1">kg</span>
+                             </h2>
+                             <p className="text-amber-500 font-bold text-xl uppercase tracking-wide">{heroCatch.species}</p>
+                         </div>
+                     </div>
+                 </section>
+             )}
+
+             {/* 3. MESAČNÝ PROGRES */}
+             <section className="bg-[#111a2e] border border-white/5 rounded-3xl p-6 md:p-8">
+                 <div className="flex justify-between items-center mb-1">
+                    <h3 className="text-lg font-bold text-white">Ako sa ti darilo počas sezóny</h3>
+                    {/* Desktop Only Badge */}
+                    <span className="hidden md:inline-flex items-center gap-1 text-emerald-400 text-xs font-bold bg-emerald-500/10 px-2 py-1 rounded">
+                        <ArrowUpRight size={12} /> Rastúci trend
+                    </span>
+                 </div>
+                 <TrendChart data={monthlyTrend} />
+                 <div className="mt-6 pt-4 border-t border-white/5 flex items-center gap-2 text-xs text-slate-500 justify-center">
+                    <Info size={12} />
+                    Trend ukazuje, že chytáš viac ako na začiatku.
+                 </div>
+             </section>
+
+         </div>
+
+         {/* --- PRAVÝ STĹPEC (Detaily & Kontext) - 4/12 --- */}
+         <div className="md:col-span-4 space-y-6">
+
+             {/* 4. HODINOVÝ INSIGHT */}
+             <section className="bg-[#111a2e] border border-white/5 rounded-3xl p-6 relative overflow-hidden">
+                 <h3 className="text-lg font-bold text-white mb-4">Kedy sa ti darí najviac</h3>
+                 
+                 {hasEnoughData ? (
+                    <>
+                        <div className="mb-6">
+                            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-4">Najčastejšie zábery</span>
+                            <ul className="space-y-3">
+                                {hourlyTopWindows.map((time, i) => (
+                                    <li key={i} className="flex items-center gap-3 text-white font-medium p-2 rounded-lg hover:bg-white/5 transition-colors">
+                                        <Clock size={16} className="text-cyan-500" />
+                                        {time}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        <div className="text-xs text-slate-500 mt-2 border-t border-white/5 pt-4">
+                            Založené na tvojich {seasonStats.totalCatches} úlovkoch.
+                        </div>
+
+                        {!isPremium && (
+                            <div className="mt-6 p-4 rounded-xl bg-white/5 border border-white/5 relative group cursor-pointer hover:border-cyan-500/30 transition-colors" onClick={() => setLocation('/pricing')}>
+                                <div className="absolute inset-0 backdrop-blur-[2px] bg-[#111a2e]/60 z-10 flex items-center justify-center rounded-xl"></div>
+                                <div className="flex items-end gap-1 h-12 opacity-30">
+                                    {[40, 60, 30, 80, 50, 90, 20].map((h, i) => (
+                                        <div key={i} className="flex-1 bg-cyan-500 rounded-t-sm" style={{ height: `${h}%` }}></div>
+                                    ))}
+                                </div>
+                                <div className="absolute inset-0 z-20 flex items-center justify-center gap-2 text-xs font-bold text-cyan-400 text-center px-2">
+                                    <Lock size={12} />
+                                    Detailná hodinová analýza
+                                </div>
+                            </div>
+                        )}
+                    </>
+                 ) : (
+                    <div className="py-8 text-center">
+                        <div className="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <Info size={20} className="text-slate-400" />
+                        </div>
+                        <p className="text-slate-300 font-medium mb-1">Zbierame dáta</p>
+                        <p className="text-xs text-slate-500">
+                            Potrebujeme aspoň 10 úlovkov pre presnú analýzu.
+                        </p>
+                    </div>
+                 )}
+             </section>
+
+             {/* 5. TOP SPECIES */}
+             <section className="bg-[#111a2e] border border-white/5 rounded-3xl overflow-hidden">
+                 <div className="p-6 pb-2">
+                    <h3 className="text-lg font-bold text-white">Top Druhy</h3>
+                 </div>
+                 {topSpecies.map((fish, index) => (
+                     <div key={index} className="flex items-center justify-between px-6 py-4 border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors">
+                         <div className="flex items-center gap-4">
+                             <span className="text-slate-600 font-mono font-bold w-4 text-sm">{index + 1}.</span>
+                             <span className="text-white font-bold">{fish.name}</span>
+                         </div>
+                         <div className="text-slate-400 text-sm font-mono">
+                             {fish.count}
+                         </div>
+                     </div>
+                 ))}
+             </section>
+
+             {/* 6. MÍĽNIKY (TIMELINE) */}
+             <section>
+                 <h3 className="text-lg font-bold text-white mb-4 px-1">Tvoje míľniky</h3>
+                 <div className="relative pl-4 space-y-6 before:absolute before:left-[7px] before:top-2 before:bottom-2 before:w-[2px] before:bg-white/5">
+                     {milestones.map((event, i) => (
+                         <div key={i} className="relative pl-8 group">
+                             <div className="absolute left-0 top-1.5 w-4 h-4 rounded-full bg-[#050B14] border-2 border-slate-600 group-hover:border-cyan-500 transition-colors"></div>
+                             
+                             <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mb-1">{event.time}</span>
+                             <h4 className="text-sm font-bold text-white leading-tight">
+                                 {event.title}
+                             </h4>
+                         </div>
+                     ))}
+                 </div>
+             </section>
+
+             {/* 7. PREMIUM CTA (Desktop Sidebar Version) */}
+             {!isPremium && (
+                 <section className="p-6 rounded-2xl bg-gradient-to-br from-white to-slate-200 text-center relative overflow-hidden group">
+                     <div className="relative z-10">
+                         <h3 className="text-black font-black text-lg mb-1">Chceš vidieť viac?</h3>
+                         <p className="text-slate-600 text-xs mb-4">
+                             Odomkni porovnanie revírov a sezónne trendy.
+                         </p>
+                         <button 
+                            onClick={() => setLocation('/pricing')}
+                            className="w-full bg-[#050B14] text-white font-bold py-3 rounded-xl hover:bg-slate-800 transition-colors text-sm flex items-center justify-center gap-2"
+                         >
+                             Získať Premium <ChevronRight size={14} />
+                         </button>
+                     </div>
+                 </section>
+             )}
+
+         </div>
+
+      </main>
+    </div>
+  );
+}
+
