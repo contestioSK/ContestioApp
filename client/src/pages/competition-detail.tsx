@@ -38,7 +38,7 @@ const StatusBadge = ({ status }: { status: string }) => {
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
           <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
         </span>
-        <span className="text-xs font-black uppercase tracking-widest">PRETEK PREBIEHA</span>
+        <span className="text-xs font-black uppercase tracking-widest">IDE SA NAPLNO</span>
       </div>
     );
   }
@@ -504,7 +504,7 @@ export default function CompetitionDetail() {
                 <StatusBadge status={competition.status} />
                 {competition.endDate && competition.status === 'live' && (
                   <span className="text-xs text-muted-foreground font-mono flex items-center gap-1">
-                    <Clock size={12} /> Do konca zostáva {getRemainingTime(competition.endDate)}
+                    <Clock size={12} /> Do konca zostávajú {getRemainingTime(competition.endDate)} lovu
                   </span>
                 )}
               </div>
@@ -726,28 +726,28 @@ export default function CompetitionDetail() {
               <div className="flex items-center gap-3 px-2">
                 <div className="p-1.5 bg-cyan-500/10 rounded-lg text-cyan-500"><Fish size={16} /></div>
                 <div>
-                  <div className="text-[10px] text-muted-foreground uppercase font-bold">Ulovili spolu</div>
+                  <div className="text-[10px] text-muted-foreground uppercase font-bold">Spolu chytených</div>
                   <div className="text-lg font-black text-foreground leading-none">{liveStats.totalFish} <span className="text-xs font-normal text-muted-foreground">ks</span></div>
                 </div>
               </div>
               <div className="flex items-center gap-3 px-2 md:border-l border-border">
                 <div className="p-1.5 bg-emerald-500/10 rounded-lg text-emerald-500"><Activity size={16} /></div>
                 <div>
-                  <div className="text-[10px] text-muted-foreground uppercase font-bold">Váha úlovkov</div>
+                  <div className="text-[10px] text-muted-foreground uppercase font-bold">Celková váha</div>
                   <div className="text-lg font-black text-foreground leading-none">{liveStats.totalWeight.toFixed(1)} <span className="text-xs font-normal text-muted-foreground">kg</span></div>
                 </div>
               </div>
               <div className="flex items-center gap-3 px-2 md:border-l border-border">
                 <div className="p-1.5 bg-amber-500/10 rounded-lg text-amber-500"><Trophy size={16} /></div>
                 <div>
-                  <div className="text-[10px] text-muted-foreground uppercase font-bold">Najväčšia ryba</div>
+                  <div className="text-[10px] text-muted-foreground uppercase font-bold">TOP ryba preteku</div>
                   <div className="text-lg font-black text-foreground leading-none">{liveStats.biggestFish.toFixed(1)} <span className="text-xs font-normal text-muted-foreground">kg</span></div>
                 </div>
               </div>
               <div className="flex items-center gap-3 px-2 md:border-l border-border">
                 <div className="p-1.5 bg-purple-500/10 rounded-lg text-purple-500"><TrendingUp size={16} /></div>
                 <div>
-                  <div className="text-[10px] text-muted-foreground uppercase font-bold">Priemerná váha</div>
+                  <div className="text-[10px] text-muted-foreground uppercase font-bold">Priemer na rybu</div>
                   <div className="text-lg font-black text-foreground leading-none">{liveStats.avgWeight.toFixed(1)} <span className="text-xs font-normal text-muted-foreground">kg</span></div>
                 </div>
               </div>
@@ -825,7 +825,7 @@ export default function CompetitionDetail() {
                 <div className="p-5 border-b border-border flex justify-between items-center bg-muted/30">
                   <h3 className="font-bold text-foreground flex items-center gap-2">
                     <Trophy size={16} className="text-muted-foreground" />
-                    Priebežné poradie tímov
+                    Aktuálne poradie tímov
                   </h3>
                 </div>
                 <div className="overflow-x-auto">
@@ -836,7 +836,7 @@ export default function CompetitionDetail() {
                         <th className="px-6 py-4">Tím</th>
                         <th className="px-6 py-4 text-center">Sektor</th>
                         <th className="px-6 py-4 text-right">Ryby</th>
-                        <th className="px-6 py-4 text-right">Váha spolu (kg)</th>
+                        <th className="px-6 py-4 text-right">Celková váha (kg)</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
@@ -854,7 +854,7 @@ export default function CompetitionDetail() {
                       {sortedLeaderboard.length === 0 && (
                         <tr>
                           <td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">
-                            Zatiaľ žiadne výsledky
+                            Zatiaľ sa ešte nič nezapísalo
                           </td>
                         </tr>
                       )}
@@ -888,7 +888,7 @@ export default function CompetitionDetail() {
                 <div className="relative z-10">
                   <div className="flex items-center gap-2 mb-3 text-amber-500">
                     <Mic size={14} className="animate-pulse" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest">Komentár z dát</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest">Čo hovoria čísla</span>
                   </div>
                   <p className="text-foreground font-bold text-lg leading-tight mb-6">
                     "{getCommentary('short')}"
@@ -898,7 +898,7 @@ export default function CompetitionDetail() {
                     className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-blue-900/20 transition-all flex items-center justify-center gap-2"
                   >
                     <PieChart size={16} />
-                    Pozrieť, kde a kedy berú ryby
+                    Kde a kedy berú
                   </button>
                 </div>
               </div>
@@ -906,7 +906,7 @@ export default function CompetitionDetail() {
               {/* LIVE FEED */}
               <div className="bg-card border border-border rounded-3xl overflow-hidden flex flex-col max-h-[600px]">
                 <div className="p-4 border-b border-border bg-muted/30 flex items-center justify-between sticky top-0 z-10">
-                  <h3 className="font-bold text-foreground text-sm uppercase tracking-wider">Čo sa deje pri vode</h3>
+                  <h3 className="font-bold text-foreground text-sm uppercase tracking-wider">Dianie pri vode</h3>
                   <span className="flex items-center gap-1.5 text-[10px] text-emerald-500 font-bold uppercase bg-emerald-500/10 px-2 py-1 rounded-full">
                     Online
                   </span>
@@ -939,7 +939,7 @@ export default function CompetitionDetail() {
                   ))}
                   {liveFeed.length === 0 && (
                     <div className="text-center text-muted-foreground py-8">
-                      Zatiaľ žiadne úlovky
+                      Zatiaľ sa ešte nič nechytilo
                     </div>
                   )}
                 </div>
@@ -982,9 +982,9 @@ export default function CompetitionDetail() {
               <div>
                 <h2 className="text-xl md:text-2xl font-black text-foreground flex items-center gap-3">
                   <PieChart className="text-blue-500" />
-                  Ako ryby berú počas preteku
+                  Ako ryby berú
                 </h2>
-                <p className="text-muted-foreground text-sm mt-1">Zábery a úlovky bez omáčky</p>
+                <p className="text-muted-foreground text-sm mt-1">Len fakty, žiadne reči</p>
               </div>
               
               {/* TABS SWITCHER */}
@@ -1005,7 +1005,7 @@ export default function CompetitionDetail() {
                   onClick={() => setStatsTab('analytics')}
                   className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${statsTab === 'analytics' ? 'bg-blue-600 text-white shadow-lg' : 'text-muted-foreground hover:text-foreground'}`}
                 >
-                  <BarChart3 size={14} /> Analytika
+                  <BarChart3 size={14} /> Tvrdé dáta
                 </button>
               </div>
 
@@ -1040,7 +1040,7 @@ export default function CompetitionDetail() {
                     <div className="bg-card p-6 rounded-3xl border border-border">
                       <h3 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2">
                         <MapPin size={18} className="text-emerald-500" />
-                        Kde sa teraz oplatí loviť
+                        Kde to momentálne chodí
                       </h3>
                       <HorizontalBarChart data={sectorStats} />
                       {sectorStats.length > 0 && (
@@ -1053,7 +1053,7 @@ export default function CompetitionDetail() {
                     <div className="bg-card p-6 rounded-3xl border border-border">
                       <h3 className="text-lg font-bold text-foreground mb-2 flex items-center gap-2">
                         <Clock size={18} className="text-amber-500" />
-                        Kedy prichádzajú zábery
+                        Kedy ryby berú
                       </h3>
                       <p className="text-xs text-muted-foreground mb-6">Časy, kedy sa ryby najčastejšie hlásia</p>
                       <VerticalBarChart data={hourlyActivity} />
@@ -1070,7 +1070,7 @@ export default function CompetitionDetail() {
                       <div className="text-2xl font-black text-foreground">{liveStats.totalFish}</div>
                     </div>
                     <div className="bg-card p-4 rounded-2xl text-center border border-border">
-                      <div className="text-[10px] text-muted-foreground uppercase font-bold mb-1 tracking-wider">Najväčšia ryba</div>
+                      <div className="text-[10px] text-muted-foreground uppercase font-bold mb-1 tracking-wider">TOP ryba preteku</div>
                       <div className="text-2xl font-black text-foreground">{liveStats.biggestFish.toFixed(1)} kg</div>
                     </div>
                     <div className="bg-card p-4 rounded-2xl text-center border border-border">
@@ -1178,7 +1178,7 @@ export default function CompetitionDetail() {
                     userTeam.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
                     'bg-red-500/20 text-red-400'
                   }`}>
-                    {userTeam.status === 'approved' ? 'Schválený' : 
+                    {userTeam.status === 'approved' ? 'Tím je v hre' : 
                      userTeam.status === 'pending' ? 'Čaká na schválenie' : 'Zamietnutý'}
                   </span>
                   {userTeam.sector && (
