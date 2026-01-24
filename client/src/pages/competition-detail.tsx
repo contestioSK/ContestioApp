@@ -724,8 +724,8 @@ export default function CompetitionDetail() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
             <div className="bg-card border border-border rounded-2xl p-4 flex flex-col items-center text-center">
               <div className="p-2 bg-cyan-500/10 rounded-xl text-cyan-500 mb-2"><Fish size={20} /></div>
-              <div className="text-2xl md:text-3xl font-black text-foreground">{liveStats.totalFish}</div>
-              <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Ryby</div>
+              <div className="text-2xl md:text-3xl font-black text-foreground">{liveStats.totalFish} <span className="text-sm font-normal text-muted-foreground">ks</span></div>
+              <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Úlovky spolu</div>
             </div>
             <div className="bg-card border border-border rounded-2xl p-4 flex flex-col items-center text-center">
               <div className="p-2 bg-emerald-500/10 rounded-xl text-emerald-500 mb-2"><Activity size={20} /></div>
@@ -735,12 +735,12 @@ export default function CompetitionDetail() {
             <div className="bg-card border border-border rounded-2xl p-4 flex flex-col items-center text-center">
               <div className="p-2 bg-amber-500/10 rounded-xl text-amber-500 mb-2"><Trophy size={20} /></div>
               <div className="text-2xl md:text-3xl font-black text-foreground">{liveStats.biggestFish.toFixed(1)} <span className="text-sm font-normal text-muted-foreground">kg</span></div>
-              <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">TOP ryba</div>
+              <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Najväčšia ryba</div>
             </div>
             <div className="bg-card border border-border rounded-2xl p-4 flex flex-col items-center text-center">
               <div className="p-2 bg-purple-500/10 rounded-xl text-purple-500 mb-2"><TrendingUp size={20} /></div>
               <div className="text-2xl md:text-3xl font-black text-foreground">{liveStats.avgWeight.toFixed(1)} <span className="text-sm font-normal text-muted-foreground">kg</span></div>
-              <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Priemer</div>
+              <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Priemerná váha</div>
             </div>
           </div>
         </div>
