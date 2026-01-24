@@ -1040,7 +1040,7 @@ export default function CompetitionDetail() {
                     <div className="bg-card p-6 rounded-3xl border border-border">
                       <h3 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2">
                         <MapPin size={18} className="text-emerald-500" />
-                        Kde to momentálne chodí
+                        Kde ryby berú najviac
                       </h3>
                       <HorizontalBarChart data={sectorStats} />
                       {sectorStats.length > 0 && (
