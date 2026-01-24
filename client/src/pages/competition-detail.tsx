@@ -596,8 +596,8 @@ export default function CompetitionDetail() {
             </button>
           </div>
 
-          {/* MOBILE: Clean Header Content (status → name → meta) */}
-          <div className="md:hidden space-y-2 mb-3">
+          {/* MOBILE: Identity Section (status → name → meta) - ends with border */}
+          <div className="md:hidden space-y-2 pb-3 border-b border-border">
             <div className="flex items-center gap-3">
               <StatusBadge status={competition.status} />
               {competition.endDate && competition.status === 'live' && (
@@ -621,28 +621,6 @@ export default function CompetitionDetail() {
             <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
               <span className="flex items-center gap-1"><MapPin size={12} className="text-cyan-500" /> {competition.location}</span>
               <span className="flex items-center gap-1"><Users size={12} className="text-emerald-500" /> {teams?.filter(t => t.status === 'approved').length || 0} tímov</span>
-            </div>
-
-            {/* Mobile CTA Buttons */}
-            <div className="flex gap-3 mt-2">
-              {userTeam && (
-                <button 
-                  onClick={() => setShowMyTeamOverlay(true)}
-                  className="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-bold shadow-lg shadow-blue-900/20 flex items-center justify-center gap-2 transition-all"
-                >
-                  <Users size={18} />
-                  <span>Môj tím</span>
-                </button>
-              )}
-              {isRegistration && !userTeam && (
-                <button 
-                  onClick={() => setIsRegistrationDialogOpen(true)}
-                  className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl font-bold shadow-lg shadow-emerald-900/20 flex items-center justify-center gap-2 transition-all"
-                >
-                  <UserPlus size={18} />
-                  <span>Registrovať tím</span>
-                </button>
-              )}
             </div>
           </div>
 
@@ -741,6 +719,32 @@ export default function CompetitionDetail() {
           </div>
         </div>
       </header>
+
+      {/* MOBILE CTA - Samostatná sekcia mimo header */}
+      {(userTeam || (isRegistration && !userTeam)) && (
+        <div className="md:hidden max-w-7xl mx-auto px-4 py-3">
+          <div className="flex gap-3">
+            {userTeam && (
+              <button 
+                onClick={() => setShowMyTeamOverlay(true)}
+                className="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-2.5 rounded-xl font-bold shadow-lg shadow-blue-900/20 flex items-center justify-center gap-2 transition-all"
+              >
+                <Users size={18} />
+                <span>Môj tím</span>
+              </button>
+            )}
+            {isRegistration && !userTeam && (
+              <button 
+                onClick={() => setIsRegistrationDialogOpen(true)}
+                className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl font-bold shadow-lg shadow-emerald-900/20 flex items-center justify-center gap-2 transition-all"
+              >
+                <UserPlus size={18} />
+                <span>Registrovať tím</span>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Registration Dialog - rendered outside header for mobile access */}
       <Dialog open={isRegistrationDialogOpen} onOpenChange={setIsRegistrationDialogOpen}>
