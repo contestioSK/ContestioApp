@@ -20,8 +20,15 @@ import {
   Trophy, Users, MapPin, Clock, Fish, TrendingUp, Activity, 
   ChevronRight, Target, Crown, Share2, AlertCircle, Timer, 
   BarChart3, X, PieChart, ChevronDown, ChevronUp, Mic, 
-  Heart, QrCode, ChevronLeft, LayoutList, UserPlus, Trash2, FileText
+  Heart, QrCode, ChevronLeft, LayoutList, UserPlus, Trash2, FileText,
+  MoreVertical, Link2
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import StatsDashboard from "@/components/stats-dashboard";
 import TeamOverviewContent from "@/components/TeamOverviewContent";
 import type { Competition, Team, Catch } from "@shared/schema";
@@ -575,9 +582,56 @@ export default function CompetitionDetail() {
                     }
                   />
                 )}
-                <button className="bg-card/50 hover:bg-card text-muted-foreground hover:text-foreground p-3 rounded-xl border border-border transition-colors" title="Zdieľať">
+                {/* Desktop: Share button */}
+                <button 
+                  className="hidden md:flex bg-card/50 hover:bg-card text-muted-foreground hover:text-foreground p-3 rounded-xl border border-border transition-colors" 
+                  title="Zdieľať"
+                  onClick={() => {
+                    if (navigator.share) {
+                      navigator.share({ title: competition.name, url: window.location.href });
+                    } else {
+                      navigator.clipboard.writeText(window.location.href);
+                      toast({ title: "Odkaz skopírovaný", description: "Odkaz na súťaž bol skopírovaný do schránky" });
+                    }
+                  }}
+                >
                   <Share2 size={20} />
                 </button>
+
+                {/* Mobile: Overflow menu */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="md:hidden bg-card/50 hover:bg-card text-muted-foreground hover:text-foreground p-3 rounded-xl border border-border transition-colors" title="Viac akcií">
+                      <MoreVertical size={20} />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem 
+                      onClick={() => {
+                        if (navigator.share) {
+                          navigator.share({ title: competition.name, url: window.location.href });
+                        } else {
+                          navigator.clipboard.writeText(window.location.href);
+                          toast({ title: "Odkaz skopírovaný", description: "Odkaz na súťaž bol skopírovaný do schránky" });
+                        }
+                      }}
+                      className="gap-2"
+                    >
+                      <Share2 size={16} />
+                      Zdieľať súťaž
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => {
+                        navigator.clipboard.writeText(window.location.href);
+                        toast({ title: "Odkaz skopírovaný", description: "Odkaz na súťaž bol skopírovaný do schránky" });
+                      }}
+                      className="gap-2"
+                    >
+                      <Link2 size={16} />
+                      Kopírovať odkaz
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
 
               {/* My Team Button - show when user has a team */}
