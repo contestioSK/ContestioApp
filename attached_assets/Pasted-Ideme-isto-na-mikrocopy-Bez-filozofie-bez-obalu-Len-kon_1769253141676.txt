@@ -1,0 +1,273 @@
+Ideme čisto na mikrocopy.
+Bez filozofie, bez obalu. Len konkrétne výmeny textov, ktoré spravia rozdiel.
+
+Nižšie máš „BEFORE → AFTER“, presne tam, kde to bolí.
+
+1. Header & statusy
+Status badge
+
+BEFORE:
+
+PRETEK PREBIEHA
+
+AFTER (lepšie, rybárskejšie):
+
+PRETEK JE ROZBEHNUTÝ
+
+alebo (ak chceš viac emócie):
+
+IDE SA NAPLNO
+
+Čas do konca
+
+BEFORE:
+
+Do konca zostáva 3 dni
+
+AFTER:
+
+Do konca zostávajú 3 dni lovu
+
+➡️ slovo lovu robí rozdiel.
+
+2. Sticky stats bar (extrémne dôležité)
+Ulovili spolu
+
+BEFORE:
+
+Ulovili spolu
+
+AFTER (odporúčam):
+
+Spolu chytených
+
+Váha úlovkov
+
+BEFORE:
+
+Váha úlovkov
+
+AFTER:
+
+Celková váha
+
+Najväčšia ryba
+
+BEFORE:
+
+Najväčšia ryba
+
+AFTER (vyber 1):
+
+Najťažšia ryba
+
+TOP ryba preteku
+
+Priemerná váha
+
+BEFORE:
+
+Priemerná váha
+
+AFTER:
+
+Priemer na rybu
+
+Rybár okamžite chápe, čo to znamená.
+
+3. Leaderboard (kritické miesto)
+Nadpis tabuľky
+
+BEFORE:
+
+Priebežné poradie tímov
+
+AFTER (odporúčam):
+
+Aktuálne poradie tímov
+
+alebo viac emócie:
+
+Kto je hore
+
+Stĺpce
+
+BEFORE:
+
+Váha spolu (kg)
+
+AFTER:
+
+Celková váha (kg)
+
+Malý rozdiel, ale „spolu“ je zbytočné.
+
+Empty state
+
+BEFORE:
+
+Zatiaľ žiadne výsledky
+
+AFTER:
+
+Zatiaľ sa ešte nič nezapísalo
+
+4. Komentátor z dát (tvoje zlato 🥇)
+Teaser label
+
+BEFORE:
+
+Komentár z dát
+
+AFTER (lepšie):
+
+Čo hovoria čísla
+
+alebo:
+
+Pohľad z dát
+
+CTA button
+
+BEFORE:
+
+Pozrieť, kde a kedy berú ryby
+
+AFTER (kratšie, údernejšie):
+
+Kde a kedy berú
+
+Short commentary – štýl
+
+BEFORE (príklad):
+
+Ryby sa ozývajú hlavne večer a v noci.
+
+AFTER:
+
+Najviac sa to láme večer a po zotmení.
+
+👉 slovesá sú kľúč.
+
+5. Live feed
+Nadpis
+
+BEFORE:
+
+Čo sa deje pri vode
+
+AFTER:
+
+Dianie pri vode
+
+alebo drsnejšie:
+
+Pri vode to žije
+
+Big fish hláška
+
+BEFORE:
+
+Padla veľká ryba!
+
+AFTER (nechaj, je výborná)
+🔥 toto je presne správne
+
+Empty feed
+
+BEFORE:
+
+Zatiaľ žiadne úlovky
+
+AFTER:
+
+Zatiaľ sa ešte nič nechytilo
+
+6. Stats modal – titulky
+Modal title
+
+BEFORE:
+
+Ako ryby berú počas preteku
+
+AFTER (lepšie):
+
+Ako ryby berú
+
+Kratšie = silnejšie.
+
+Podtitul
+
+BEFORE:
+
+Zábery a úlovky bez omáčky
+
+AFTER:
+
+Len fakty, žiadne reči
+
+Tab: Analytika
+
+BEFORE:
+
+Analytika
+
+AFTER (odporúčam):
+
+Tvrdé dáta
+
+alebo:
+
+Detailné čísla
+
+Sekcia „Kde sa teraz oplatí loviť“
+
+BEFORE:
+
+Kde sa teraz oplatí loviť
+
+AFTER:
+
+Kde to momentálne chodí
+
+Sekcia „Kedy prichádzajú zábery“
+
+BEFORE:
+
+Kedy prichádzajú zábery
+
+AFTER:
+
+Kedy ryby berú
+
+7. My Team modal (emocionálne miesto)
+Statusy
+
+BEFORE:
+
+Schválený
+
+AFTER:
+
+Tím je v hre
+
+Chýbajúci mikrocopy (ODPORÚČAM PRIDAŤ)
+
+Pod názov tímu:
+
+Momentálne 7. miesto
+Na bedňu strácate 12,4 kg
+
+Toto je návykové.
+
+Zhrnutie bez obalu
+
+Tvoj copy je funkčný, ale miestami ešte nie rybársky dosť
+
+Najviac sa to láme v:
+
+nadpisoch
+
+krátkych štítkoch
+
+CTA tlačidlách
