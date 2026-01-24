@@ -14,7 +14,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { isUnauthorizedError } from "@/lib/authUtils";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { 
@@ -297,19 +296,6 @@ export default function CompetitionDetail() {
       queryClient.invalidateQueries({ queryKey: ["/api/competitions", id, "sectors", "leaderboards"] });
     }
   });
-
-  useEffect(() => {
-    if (error && isUnauthorizedError(error)) {
-      toast({
-        title: "Neautorizovaný",
-        description: "Ste odhlásený. Prihlasujem znovu...",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        navigate("/auth/login");
-      }, 500);
-    }
-  }, [error, toast, navigate]);
 
   // --- useMemo AGGREGATIONS ---
 
