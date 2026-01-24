@@ -138,6 +138,7 @@ export interface IStorage {
   // Competition operations
   getCompetitions(): Promise<Competition[]>;
   getCompetition(id: string): Promise<Competition | undefined>;
+  getExpiredLiveCompetitions(): Promise<Competition[]>;
   createCompetition(competition: InsertCompetition): Promise<Competition>;
   updateCompetition(id: string, competition: Partial<InsertCompetition> & { approvedAt?: Date | null; reminderSentAt?: Date | null; dayBeforeReminderSentAt?: Date | null }): Promise<Competition>;
   updateCompetitionStatus(id: string, status: string): Promise<void>;
@@ -991,6 +992,20 @@ export class DatabaseStorage implements IStorage {
   async getCompetition(id: string): Promise<Competition | undefined> {
     const [competition] = await db.select().from(competitions).where(eq(competitions.id, id));
     return competition;
+  }
+
+  async getExpiredLiveCompetitions(): Promise<Competition[]> {
+    const now = new Date();
+    
+    return await db
+      .select()
+      .from(competitions)
+      .where(
+        and(
+          eq(competitions.status, "live"),
+          sql`${competitions.endDate} < ${now}`
+        )
+      );
   }
 
   async createCompetition(competition: InsertCompetition): Promise<Competition> {
