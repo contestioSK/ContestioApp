@@ -1,0 +1,132 @@
+VERDIKT (bez obchádzania)
+✅ VŠETKY ÚLOVKY SÚŤAŽE = MODAL / BOTTOM SHEET
+❌ NIE samostatná stránka
+
+A platí to teraz aj do budúcna, pokiaľ sa Contestio neposunie do úplne inej ligy.
+
+PREČO MODAL VYHRÁVA (v kontexte Contestio)
+1️⃣ Súťaž ≠ denník
+
+denník = osobná história → samostatné stránky sú OK
+
+súťaž = live kontext, návrat späť je dôležitejší než URL
+
+Rybár:
+
+„Chcem sa pozrieť, čo padlo“
+nie
+„Chcem opustiť pretek a ísť na inú stránku“
+
+2️⃣ UX kontinuita
+
+Ty už máš:
+
+modal so štatistikami
+
+modal s pravidlami
+
+modal s mojím tímom
+
+modal s najväčšou rybou (plánovaný)
+
+➡️ Úlovky sú presne ten istý typ obsahu
+
+Samostatná stránka by bola nekonzistentná výnimka.
+
+3️⃣ Mobil-first (kritický bod)
+
+Na mobile:
+
+stránka = nový kontext, späť, scroll od začiatku
+
+modal = palec dole, zavrieš, si tam kde si bol
+
+Contestio:
+
+„funguje rýchlo pri vode“
+
+Stránka to porušuje.
+
+4️⃣ Reálne správanie rybárov
+
+Buďme úprimní:
+
+95 % ľudí nebude zdieľať URL so zoznamom úlovkov
+
+chcú:
+
+pozrieť
+
+porovnať
+
+zavrieť
+
+Zdieľateľnosť je falošný argument v tomto štádiu produktu.
+
+🧠 FINÁLNA ARCHITEKTÚRA (ZAPIŠ SI JU)
+1️⃣ Karta „Najväčšia ryba“
+
+klik → modal s detailom konkrétneho úlovku
+
+štýl: identický ako v denníku
+
+CTA v modale:
+
+„Pozrieť všetky úlovky preteku“
+
+2️⃣ Live feed – hlavička
+
+Vpravo hore:
+
+„Všetky úlovky“
+
+klik → modal so zoznamom všetkých úlovkov
+
+zoradené:
+
+najnovšie hore
+
+každý úlovok:
+
+klikateľný → detail úlovku (ten istý modal)
+
+➡️ jeden shared pattern, žiadne nové typy UI
+
+3️⃣ Jeden modal, tri režimy (dôležité!)
+
+Technicky aj UX:
+
+mode = list → všetky úlovky
+
+mode = detail → konkrétna ryba
+
+source = biggest / feed / list
+
+ŽIADNE:
+
+nové komponenty
+
+nové layouty
+
+nové vizuálne štýly
+
+❗️ČO REPLITU EXPLICITNE POVEDAŤ (presná formulácia)
+
+Toto mu môžeš doslova skopírovať:
+
+Rozhodnutie:
+– všetky úlovky súťaže sa zobrazujú v modale, nie na samostatnej stránke
+– použije sa rovnaký štýl karty úlovku ako v denníku
+– karta „Najväčšia ryba“ otvorí detail konkrétneho úlovku v tom istom modale
+– v live feed sekcii bude tlačidlo „Všetky úlovky“, ktoré otvorí zoznam v modale
+– nepoužívaj nové layouty ani nové komponenty
+
+🧨 ČO URČITE NEROBIŤ
+
+❌ stránka /competition/:id/catches
+
+❌ iný dizajn ako denník
+
+❌ detail ryby bez fotky hore
+
+❌ nový „špeciálny“ modal len pre súťaž
