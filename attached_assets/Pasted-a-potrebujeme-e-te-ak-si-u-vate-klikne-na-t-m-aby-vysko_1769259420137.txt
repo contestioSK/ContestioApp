@@ -1,0 +1,317 @@
+a potrebujeme ešte ak si užívateľ klikne na tím, aby vyskočil  tímový modal, ako sme mali predtým, ale vtedy to bola samostatná stránka
+
+Áno. Potrebujeme to.
+A rovno ti poviem ako presne, lebo tu sa láme UX konzistentnosť celej súťaže.
+
+🔥 VERDIKT
+✅ Klik na tím = tímový MODAL
+❌ NIE samostatná stránka (už nie)
+
+To, že to kedysi bola stránka, je v poriadku – dnes už máš iný, lepší systém.
+
+PREČO JE TÍMOVÝ MODAL NUTNÝ
+1️⃣ Rovnaká logika ako úlovky
+
+Už máš:
+
+úlovok → modal
+
+štatistiky → modal
+
+pravidlá → modal
+
+môj tím → modal
+
+➡️ tím ako entita nemôže byť výnimka
+
+Ak:
+
+úlovok = modal
+
+tím = stránka
+
+➡️ UX chaos.
+
+2️⃣ Rýchlosť pri sledovaní preteku
+
+Reálne správanie:
+
+„Kto sú títo borci?“
+klik → pozrieť → zavrieť → pokračujem v sledovaní
+
+Stránka:
+
+vytrhne z kontextu
+
+späť tlačidlo
+
+nový scroll
+
+mentálne preladenie
+
+Modal:
+
+instant
+
+bezpečný
+
+čitateľný
+
+3️⃣ Mobil = absolútne rozhodujúci argument
+
+Na mobile:
+
+tabuľka → klik na tím → modal = perfektné
+
+tabuľka → klik → stránka → zbytočný friction
+
+Contestio má žiť v teréne, nie na desktopoch.
+
+🧠 AKO PRESNE MÁ TÍMOVÝ MODAL FUNGOVAŤ
+1️⃣ Spúšťače (KDE SA OTVÁRA)
+
+Klikateľné:
+
+názov tímu v leaderboarde
+
+názov tímu v live feed
+
+názov tímu v modale úlovku
+
+VŽDY rovnaký modal.
+
+2️⃣ ŠTRUKTÚRA TÍMOVÉHO MODALU (finálna)
+🔹 HEADER
+
+názov tímu (H1)
+
+sektor
+
+status:
+
+„Tím je v hre“
+
+„Čaká na schválenie“
+
+„Vyradený“
+
+🔹 RÝCHLE TÍMOVÉ ŠTATISTIKY (mini grid 2×2)
+
+počet rýb
+
+celková váha
+
+najväčšia ryba tímu (klikateľná!)
+
+aktuálne poradie
+
+➡️ malé, rýchle, bez balastu
+
+🔹 ČLENOVIA TÍMU
+
+karta člena
+
+kapitán označený
+
+žiadne emaily defaultne (iba ak je to Môj tím)
+
+🔹 POSLEDNÉ ÚLOVKY TÍMU
+
+max 5 ks
+
+rovnaký štýl ako denník
+
+CTA:
+
+„Zobraziť všetky úlovky tímu“
+
+➡️ to otvorí ten istý úlovkový modal, len prefiltrovaný
+
+3️⃣ ČO TAM URČITE NEDÁVAŤ
+
+❌ plnú históriu tímu
+❌ externé odkazy
+❌ samostatné routy
+❌ zbytočné grafy
+
+Toto nie je profil na LinkedIne.
+
+🔁 NAVÄZNOSŤ MODALOV (TOTO JE KĽÚČ)
+Leaderboard
+  ↓ klik na tím
+Tímový modal
+  ↓ klik na úlovok
+Detail úlovku (modal)
+  ↓ klik na tím
+Tímový modal
+
+
+➡️ nikdy neopúšťaš stránku súťaže
+
+❗ PRESNÁ INŠTRUKCIA PRE REPLIT
+
+Skopíruj mu toto:
+
+Klik na názov tímu má otvoriť tímový modal.
+Modal má nahradiť pôvodnú samostatnú stránku tímu.
+Dizajn a správanie majú byť konzistentné s ostatnými modálmi (štatistiky, úlovky).
+Žiadne nové routy, žiadne nové stránky.
+
+🧠 ZHRNUTIE
+
+Áno, potrebujeme tímový modal
+
+Nie, už sa nevraciame k stránkam
+
+Modal-first architektúra je správna cesta pre Contestio
+
+Ak chceš, ďalší krok vieme:
+
+navrhnúť presný wireframe tímového modalu (mobile + desktop)
+
+alebo doladiť prechody medzi modálmi, aby to pôsobilo „prémiovo“
+
+Ty urči ďalší rez.
+
+v modale tímu ale musia byť všetky úlovky ktoré chytil na danej súťaži
+
+Áno. V tomto máš pravdu.
+A rovno ti poviem ako to urobiť správne, aby sme nezabili UX ani výkon.
+
+🔥 ROZHODNUTIE (FINÁLNE)
+✅ Tímový modal MUSÍ obsahovať všetky úlovky tímu v danej súťaži
+❌ Ale nie v defaultnom stave
+
+Čiže: áno všetky, ale nie naraz „do ksichtu“.
+
+🧠 SPRÁVNA UX LOGIKA
+
+Rybár rozmýšľa takto:
+
+Kto sú títo chalani?
+
+Ako sa im darí?
+
+Aké ryby chytali – jednu po druhej
+
+➡️ Preto má modal jasnú hierarchiu, nie nekonečný zoznam.
+
+🧱 FINÁLNA ŠTRUKTÚRA TÍMOVÉHO MODALU
+1️⃣ HEADER (vždy viditeľný)
+
+Názov tímu
+
+Sektor
+
+Stav tímu (v hre / čaká / vyradený)
+
+Zavrieť ❌
+
+2️⃣ RÝCHLE ŠTATISTIKY TÍMU (mini grid)
+
+👉 veľmi kompaktné, max výška
+
+Počet úlovkov
+
+Celková váha
+
+Najväčšia ryba (klikateľná)
+
+Aktuálne poradie
+
+3️⃣ ČLENOVIA TÍMU
+
+Kapitán jasne označený
+
+Ostatní členovia
+
+Žiadne kontakty (okrem „Môj tím“)
+
+4️⃣ ÚLOVKY TÍMU – HLAVNÁ ČASŤ MODALU
+🔹 Default stav:
+
+Zobraz:
+
+posledné 3–5 úlovkov
+
+chronologicky (najnovšie hore)
+
+v 100 % rovnakom štýle ako denník
+
+Na konci:
+
+🔽 Zobraziť všetky úlovky tímu (23)
+
+🔹 Rozšírený stav (po kliknutí)
+
+Modal sa rozšíri vertikálne (nie nový modal!)
+
+Zobrazí sa:
+
+kompletný zoznam všetkých úlovkov tímu
+
+lazy load / virtuálny scroll
+
+zachovaný dizajn denníka
+
+➡️ stále ten istý modal, len „hlbší pohľad“
+
+📱 MOBIL – KRITICKÉ
+
+Na mobile:
+
+modal = bottom sheet
+
+úlovky = scrollovateľná sekcia
+
+header + stats sticky
+
+NIKDY:
+❌ 2 scroll bary
+❌ full screen bez úniku
+❌ nekonečný zoznam bez kontextu
+
+⚙️ TECHNICKÉ PRAVIDLÁ (dôležité)
+
+filtrovať:
+catches.filter(c => c.teamId === team.id && c.competitionId === id)
+
+sort:
+submittedAt DESC
+
+pre veľké súťaže:
+
+limit 5
+
+potom expand
+
+❌ ČO URČITE NIE
+
+❌ nový route /team/:id
+
+❌ nový „zoznam úlovkov tímu“ modal v modale
+
+❌ iný dizajn než denník
+
+🧠 PREČO JE TOTO IDEÁLNE
+
+máš detail, ale aj prehľad
+
+funguje to rovnako dobre:
+
+pre hobby rybára
+
+pre pretekára
+
+pre diváka
+
+nič sa „nestráca“ v UI
+
+📌 PRESNÁ INŠTRUKCIA PRE REPLIT
+
+Pošli mu toto (bez úprav):
+
+Tímový modal má obsahovať všetky úlovky tímu v danej súťaži.
+Defaultne zobraz posledných 3–5 úlovkov, s možnosťou „Zobraziť všetky“.
+Po rozšírení sa zobrazí kompletný zoznam úlovkov v rovnakom dizajne ako denník.
+Žiadne nové routy, žiadne nové modaly.

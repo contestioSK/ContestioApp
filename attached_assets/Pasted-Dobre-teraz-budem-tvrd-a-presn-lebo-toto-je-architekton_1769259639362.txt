@@ -1,0 +1,156 @@
+Dobre, teraz budem tvrdý a presný, lebo toto je architektonicky citlivý moment a ak sa to urobí zle, budeš to o 2 mesiace prerábať.
+
+🔴 VERDIKT NA NÁVRH Z REPLITU
+
+👉 Koncepčne správne. Technicky ale vidím 2 riziká, ktoré MUSIAŠ ustrážiť.
+
+Zoberiem to bod po bode.
+
+✅ ČO JE DOBRE (a schvaľujem)
+✔️ Modal namiesto stránky
+
+Správne.
+Pre kontext súťaže nemá používateľ nikdy opustiť competition-detail.
+
+Tím je:
+
+entita v rámci súťaže
+
+nie samostatný „svet“
+
+Modal je presne správny mentálny model.
+
+✔️ Klikateľné názvy tímov všade
+
+Leaderboard
+Live feed
+Detail úlovku
+
+➡️ 100 % správne
+Tím je centrálna entita – musí byť všade dostupný.
+
+✔️ Štruktúra tímového modalu
+
+Header
+Quick stats 2×2
+Členovia
+Úlovky (3–5 → rozšírenie)
+
+➡️ Toto je UX textbook.
+Tu nie je čo vytknúť.
+
+⚠️ KRITICKÉ BODY – TOTO SI MUSÍŠ OBRÁNIŤ
+❗ 1. MIEŠANIE STAREJ STRÁNKY A NOVÉHO MODALU
+
+Replit píše:
+
+„Stará stránka team-detail.tsx zostane pre iné časti appky“
+
+👉 Toto je POTENCIÁLNA PASCA.
+
+PROBLÉM:
+
+Ak:
+
+modal používa iné komponenty
+
+iné pomenovania
+
+iné štruktúry dát
+
+➡️ vznikne UX schizofrénia:
+
+tím vyzerá inak v súťaži
+
+inak vo favorites
+
+inak inde
+
+✅ SPRÁVNE RIEŠENIE (TRVAJ NA TOM)
+
+Nie:
+❌ „necháme starú stránku a nový modal je nový“
+
+Ale:
+✅ shared komponenty
+
+KONKRÉTNE:
+
+vytvoriť TeamOverviewContent (čistý content bez routy)
+
+modal ho používa
+
+stará stránka ho používa tiež
+
+Rozdiel je len:
+
+wrapper (page vs modal)
+
+rozsah dát (v súťaži len competition catches)
+
+❗ 2. CLICK → MODAL → MODAL (vnorené modaly)
+
+Replit píše:
+
+„Z úlovku v tímovom modali sa dá kliknúť na detail úlovku, a späť“
+
+👉 TU MUSÍŠ DAŤ HRANICU.
+
+ZAKÁZANÉ:
+
+❌ modal → ďalší modal → ďalší modal
+
+To je UX peklo hlavne na mobile.
+
+✅ SPRÁVNE RIEŠENIE
+
+JEDEN aktívny modal
+
+prepína sa jeho obsah, nie že sa otvára nový
+
+Príklad:
+
+stav:
+
+activeView: 'team' | 'catch'
+selectedTeam
+selectedCatch
+
+
+„späť“ = návrat do tímu
+
+žiadne prekrytie
+
+🧠 UX PRAVIDLO, KTORÉ SI ZAPAMÄTAJ
+
+Modal ≠ stránka, ale nemôže sa správať ako strom stránok.
+
+Jeden kontext, jeden overlay, jedna úniková cesta.
+
+📌 ČO MU MÁŠ TERAZ NAPÍSAŤ (SKOPÍRUJ)
+
+Pošli Replitu presne toto:
+
+Súhlasím s tímovým modalom, ale prosím:
+
+NEMIEŠAJ dizajn ani logiku so starou stránkou – vytvor shared content komponent, ktorý použije modal aj page.
+
+Žiadne vnorené modaly – detail úlovku sa má otvoriť v tom istom modali prepnutím view.
+
+Tímový modal má zobrazovať len úlovky z danej súťaže.
+
+Chcem konzistentný UX bez duplicitných komponentov.
+
+🔥 ZÁVER (úprimne)
+
+Toto, čo teraz riešiš, je:
+
+rozdiel medzi peknou appkou
+
+a profesionálnym produktom
+
+Ak to ustojíš teraz:
+
+Contestio bude pôsobiť ako TOP pretekárska platforma
+
+nie ako „ďalší rybársky projekt“
