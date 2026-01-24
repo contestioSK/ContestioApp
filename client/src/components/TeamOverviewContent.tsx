@@ -58,7 +58,7 @@ export default function TeamOverviewContent({
   const statusInfo = getStatusLabel(team.status);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col flex-1 min-h-0">
       {/* HEADER */}
       <div className="p-6 border-b border-border bg-muted/30">
         <div className="flex items-start justify-between">
