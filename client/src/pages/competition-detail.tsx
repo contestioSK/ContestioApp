@@ -194,6 +194,8 @@ export default function CompetitionDetail() {
   const [showStatsOverlay, setShowStatsOverlay] = useState(false);
   const [showRulesOverlay, setShowRulesOverlay] = useState(false);
   const [showMyTeamOverlay, setShowMyTeamOverlay] = useState(false);
+  const [showCatchesOverlay, setShowCatchesOverlay] = useState(false);
+  const [selectedCatch, setSelectedCatch] = useState<(Catch & { team?: Team }) | null>(null);
   const [leaderboardExpanded, setLeaderboardExpanded] = useState(false);
   const [statsTab, setStatsTab] = useState<'overview' | 'sectors' | 'analytics'>('overview');
   
@@ -310,6 +312,15 @@ export default function CompetitionDetail() {
     return { totalFish, totalWeight, biggestFish, avgWeight };
   }, [catches]);
 
+  const biggestCatchObj = useMemo(() => {
+    if (!catches || catches.length === 0) return null;
+    return catches.reduce((max, c) => {
+      const weight = parseFloat(String(c.weight)) || 0;
+      const maxWeight = parseFloat(String(max?.weight)) || 0;
+      return weight > maxWeight ? c : max;
+    }, catches[0]);
+  }, [catches]);
+
   const sortedLeaderboard = useMemo(() => {
     if (!teams) return [];
     return teams
@@ -342,7 +353,14 @@ export default function CompetitionDetail() {
         fish: c.fishType || 'Ryba',
         time: c.submittedAt ? `Pred ${formatTimeAgo(c.submittedAt)}` : '',
         sector: c.team?.sector || '-',
+        catchObj: c,
       }));
+  }, [catches]);
+
+  const allCatchesSorted = useMemo(() => {
+    if (!catches) return [];
+    return [...catches]
+      .sort((a, b) => new Date(b.submittedAt || 0).getTime() - new Date(a.submittedAt || 0).getTime());
   }, [catches]);
 
   const sectorStats = useMemo(() => {
@@ -732,10 +750,14 @@ export default function CompetitionDetail() {
               <div className="text-2xl md:text-3xl font-black text-foreground">{liveStats.totalWeight.toFixed(1)} <span className="text-sm font-normal text-muted-foreground">kg</span></div>
               <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Celková váha</div>
             </div>
-            <div className="bg-card border border-border rounded-2xl p-4 flex flex-col items-center text-center">
+            <div 
+              className={`bg-card border border-border rounded-2xl p-4 flex flex-col items-center text-center ${biggestCatchObj ? 'cursor-pointer hover:bg-muted/50 hover:border-amber-500/30 transition-all' : ''}`}
+              onClick={() => biggestCatchObj && setSelectedCatch(biggestCatchObj)}
+            >
               <div className="p-2 bg-amber-500/10 rounded-xl text-amber-500 mb-2"><Trophy size={20} /></div>
               <div className="text-2xl md:text-3xl font-black text-foreground">{liveStats.biggestFish.toFixed(1)} <span className="text-sm font-normal text-muted-foreground">kg</span></div>
               <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Najväčšia ryba</div>
+              {biggestCatchObj && <div className="text-[9px] text-amber-500 mt-1">Klikni pre detail</div>}
             </div>
             <div className="bg-card border border-border rounded-2xl p-4 flex flex-col items-center text-center">
               <div className="p-2 bg-purple-500/10 rounded-xl text-purple-500 mb-2"><TrendingUp size={20} /></div>
@@ -944,13 +966,28 @@ export default function CompetitionDetail() {
               <div className="bg-card border border-border rounded-3xl overflow-hidden flex flex-col max-h-[600px]">
                 <div className="p-4 border-b border-border bg-muted/30 flex items-center justify-between sticky top-0 z-10">
                   <h3 className="font-bold text-foreground text-sm uppercase tracking-wider">Čo sa deje pri vode</h3>
-                  <span className="flex items-center gap-1.5 text-[10px] text-emerald-500 font-bold uppercase bg-emerald-500/10 px-2 py-1 rounded-full">
-                    Online
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => {
+                        setSelectedCatch(null);
+                        setShowCatchesOverlay(true);
+                      }}
+                      className="text-[10px] text-cyan-500 font-bold uppercase hover:underline"
+                    >
+                      Všetky úlovky
+                    </button>
+                    <span className="flex items-center gap-1.5 text-[10px] text-emerald-500 font-bold uppercase bg-emerald-500/10 px-2 py-1 rounded-full">
+                      Online
+                    </span>
+                  </div>
                 </div>
                 <div className="p-4 space-y-6 overflow-y-auto">
                   {liveFeed.map((item) => (
-                    <div key={item.id} className="relative pl-4">
+                    <div 
+                      key={item.id} 
+                      className="relative pl-4 cursor-pointer hover:bg-muted/20 -mx-2 px-2 py-1 rounded-lg transition-colors"
+                      onClick={() => setSelectedCatch(item.catchObj)}
+                    >
                       <div className="absolute left-0 top-3 bottom-[-24px] w-[2px] bg-border last:hidden"></div>
                       <div className={`absolute left-[-3px] top-3 w-2 h-2 rounded-full border border-card ${item.action === 'big_fish' ? 'bg-amber-500' : 'bg-cyan-500'}`}></div>
                       <div>
@@ -1282,6 +1319,158 @@ export default function CompetitionDetail() {
                 </div>
               </div>
 
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- CATCHES OVERLAY (MODAL) --- */}
+      {showCatchesOverlay && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowCatchesOverlay(false)} />
+          <div className="relative w-full max-w-2xl max-h-[90vh] bg-card border border-border rounded-3xl shadow-2xl flex flex-col overflow-hidden z-10">
+            
+            {/* Modal Header */}
+            <div className="p-6 border-b border-border flex items-center justify-between bg-muted/30">
+              <div>
+                <h2 className="text-xl font-black text-foreground flex items-center gap-3">
+                  <Fish className="text-cyan-500" />
+                  Všetky úlovky
+                </h2>
+                <p className="text-muted-foreground text-sm mt-1">{allCatchesSorted.length} úlovkov v preteku</p>
+              </div>
+              <button 
+                onClick={() => setShowCatchesOverlay(false)}
+                className="p-3 bg-muted/50 hover:bg-muted rounded-full transition-colors text-foreground"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Modal Content - Catches List */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {allCatchesSorted.map((c) => (
+                <div 
+                  key={c.id}
+                  className="bg-muted/30 border border-border rounded-xl p-4 cursor-pointer hover:bg-muted/50 transition-colors"
+                  onClick={() => {
+                    setShowCatchesOverlay(false);
+                    setSelectedCatch(c);
+                  }}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${parseFloat(String(c.weight)) >= 10 ? 'bg-amber-500/20 text-amber-500' : 'bg-cyan-500/20 text-cyan-500'}`}>
+                        {parseFloat(String(c.weight)) >= 10 ? <Crown size={18} /> : <Fish size={18} />}
+                      </div>
+                      <div>
+                        <div className="font-bold text-foreground">{c.team?.name || 'Neznámy tím'}</div>
+                        <div className="text-xs text-muted-foreground">{c.fishType || 'Ryba'} • Sektor {c.team?.sector || '-'}</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-xl font-black text-foreground">{parseFloat(String(c.weight)).toFixed(1)} kg</div>
+                      <div className="text-[10px] text-muted-foreground">
+                        {c.submittedAt ? formatDistanceToNow(new Date(c.submittedAt), { addSuffix: true, locale: sk }) : ''}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {allCatchesSorted.length === 0 && (
+                <div className="text-center py-12 text-muted-foreground">
+                  Zatiaľ bez úlovkov
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- CATCH DETAIL OVERLAY (MODAL) --- */}
+      {selectedCatch && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setSelectedCatch(null)} />
+          <div className="relative w-full max-w-md max-h-[90vh] bg-card border border-border rounded-3xl shadow-2xl flex flex-col overflow-hidden z-10">
+            
+            {/* Modal Header */}
+            <div className="p-6 border-b border-border flex items-center justify-between bg-muted/30">
+              <div>
+                <h2 className="text-xl font-black text-foreground flex items-center gap-3">
+                  {parseFloat(String(selectedCatch.weight)) >= 10 ? (
+                    <Crown className="text-amber-500" />
+                  ) : (
+                    <Fish className="text-cyan-500" />
+                  )}
+                  Detail úlovku
+                </h2>
+                <p className="text-muted-foreground text-sm mt-1">{selectedCatch.team?.name || 'Neznámy tím'}</p>
+              </div>
+              <button 
+                onClick={() => setSelectedCatch(null)}
+                className="p-3 bg-muted/50 hover:bg-muted rounded-full transition-colors text-foreground"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Modal Content - Catch Detail */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              {/* Weight - big highlight */}
+              <div className="text-center py-6 bg-muted/30 rounded-2xl border border-border">
+                <div className="text-5xl font-black text-foreground mb-1">{parseFloat(String(selectedCatch.weight)).toFixed(1)}</div>
+                <div className="text-lg text-muted-foreground">kilogramov</div>
+              </div>
+
+              {/* Info grid */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-cyan-500/10 rounded-lg text-cyan-500"><Fish size={18} /></div>
+                  <div>
+                    <div className="text-xs text-muted-foreground">Druh ryby</div>
+                    <div className="font-bold text-foreground">{selectedCatch.fishType || 'Neuvedené'}</div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-500"><Users size={18} /></div>
+                  <div>
+                    <div className="text-xs text-muted-foreground">Tím</div>
+                    <div className="font-bold text-foreground">{selectedCatch.team?.name || 'Neznámy tím'}</div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-purple-500/10 rounded-lg text-purple-500"><MapPin size={18} /></div>
+                  <div>
+                    <div className="text-xs text-muted-foreground">Sektor</div>
+                    <div className="font-bold text-foreground">{selectedCatch.team?.sector || '-'}</div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-amber-500/10 rounded-lg text-amber-500"><Clock size={18} /></div>
+                  <div>
+                    <div className="text-xs text-muted-foreground">Čas úlovku</div>
+                    <div className="font-bold text-foreground">
+                      {selectedCatch.submittedAt 
+                        ? formatDistanceToNow(new Date(selectedCatch.submittedAt), { addSuffix: true, locale: sk })
+                        : 'Neuvedené'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* CTA to view all catches */}
+              <button
+                onClick={() => {
+                  setSelectedCatch(null);
+                  setShowCatchesOverlay(true);
+                }}
+                className="w-full py-3 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl font-bold transition-colors"
+              >
+                Pozrieť všetky úlovky preteku
+              </button>
             </div>
           </div>
         </div>
