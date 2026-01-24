@@ -465,9 +465,9 @@ export default function CompetitionDetail() {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-foreground mb-4">Súťaž nebola nájdená</h1>
           <p className="text-muted-foreground mb-6">Súťaž, ktorú hľadáte, neexistuje.</p>
-          <Button onClick={() => navigate('/competitions')}>
+          <Button onClick={() => navigate('/')}>
             <ChevronLeft className="w-4 h-4 mr-2" />
-            Späť na zoznam
+            Späť na hlavnú stránku
           </Button>
         </div>
       </div>
@@ -491,10 +491,10 @@ export default function CompetitionDetail() {
           {/* Nav Row */}
           <div className="flex justify-between items-center mb-6">
             <button 
-              onClick={() => navigate('/competitions')} 
+              onClick={() => window.history.back()} 
               className="flex items-center gap-1 text-muted-foreground hover:text-foreground text-sm font-medium transition-colors"
             >
-              <ChevronLeft size={16} /> Späť na zoznam
+              <ChevronLeft size={16} /> Späť
             </button>
           </div>
 
