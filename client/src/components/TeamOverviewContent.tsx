@@ -134,30 +134,28 @@ export default function TeamOverviewContent({
           </div>
         </div>
 
-        {/* ČLENOVIA TÍMU */}
+        {/* ČLENOVIA TÍMU - 2x2 GRID */}
         <div>
           <h3 className="text-sm font-bold text-foreground uppercase tracking-wider mb-3">Členovia tímu</h3>
-          <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-2">
             {team.members?.map((member) => (
               <div 
                 key={member.id} 
-                className="bg-muted/30 border border-border rounded-xl p-3 flex items-center gap-3"
+                className="bg-muted/30 border border-border rounded-xl p-3 flex flex-col items-center text-center gap-2"
               >
-                <div className="w-10 h-10 bg-cyan-500/20 rounded-full flex items-center justify-center text-cyan-400 font-bold">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${member.role === 'captain' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-cyan-500/20 text-cyan-400'}`}>
                   {member.name?.charAt(0)?.toUpperCase() || '?'}
                 </div>
-                <div className="flex-1">
-                  <div className="font-bold text-foreground text-sm">{member.name}</div>
-                </div>
+                <div className="font-bold text-foreground text-sm truncate w-full">{member.name}</div>
                 {member.role === 'captain' && (
-                  <span className="px-2 py-1 bg-yellow-500/20 text-yellow-400 text-xs font-bold rounded-full">
+                  <span className="px-2 py-0.5 bg-yellow-500/20 text-yellow-400 text-[10px] font-bold rounded-full">
                     Kapitán
                   </span>
                 )}
               </div>
             ))}
             {(!team.members || team.members.length === 0) && (
-              <div className="text-center py-4 text-muted-foreground text-sm">
+              <div className="col-span-2 text-center py-4 text-muted-foreground text-sm">
                 Žiadni členovia
               </div>
             )}
@@ -213,12 +211,12 @@ export default function TeamOverviewContent({
                   {expanded ? (
                     <>
                       <ChevronUp size={16} />
-                      Skryť ({teamCatches.length - 5} ďalších)
+                      Skryť úlovky
                     </>
                   ) : (
                     <>
                       <ChevronDown size={16} />
-                      Zobraziť všetky ({teamCatches.length - 5} ďalších)
+                      Zobraziť všetky úlovky tímu ({teamCatches.length})
                     </>
                   )}
                 </button>
