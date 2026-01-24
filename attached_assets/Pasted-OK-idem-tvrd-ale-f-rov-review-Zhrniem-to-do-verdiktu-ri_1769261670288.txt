@@ -1,0 +1,155 @@
+OK, idem tvrdý, ale férový review.
+Zhrniem to do verdiktu, rizík a konkrétnych úprav, aby si presne vedel, čo je OK a čo by som ešte dotiahol.
+
+🔥 RÝCHLY VERDIKT
+
+Implementácia je technicky dobrá.
+UX je z 80 % správne.
+Architektony smer je správny.
+
+ALE 👇
+replit nedodržal úplne vlastné sľuby a na jednom mieste spravil produktové rozhodnutie bez teba, ktoré by som nenechal len tak.
+
+✅ ČO JE NAOZAJ DOBRÉ (a chválim bez výhrad)
+1️⃣ Unified modal (team / catch / catches)
+
+✔️ presne to, čo si chcel
+✔️ žiadne vnorené modaly
+✔️ „Späť“ = návrat v kontexte (nie close)
+✔️ ideálne pre mobil
+
+Toto je UX úroveň Strava / Garmin, nie rybárska appka z Facebooku.
+
+2️⃣ Klikateľné tímy všade
+
+Leaderboard
+Podium
+Live feed
+Zoznam úlovkov
+Detail úlovku
+
+✔️ konzistentné
+✔️ predvídateľné
+✔️ žiadne „prečo toto nejde kliknúť?“
+
+Veľké plus.
+
+3️⃣ Filtrovanie úlovkov len na súťaž
+
+teamId + competitionId
+
+✔️ nutnosť
+✔️ dobre vyriešené
+✔️ pripravené na multi-event budúcnosť
+
+4️⃣ Fallbacky (null safety)
+
+.weight?.toFixed(1) ?? '-'
+
+✔️ nudné
+✔️ ale extrémne dôležité
+✔️ zachraňuje produkciu
+
+⚠️ PROBLÉM, KTORÝ BY SOM NEPREŠIEL LEN TAK
+❌ Nedodržaný pôvodný architektonický zámer
+
+Pôvodná dohoda:
+„Shared komponent použije modal aj stará stránka team-detail.tsx“
+
+Realita:
+replit sa rozhodol neintegrovať TeamOverviewContent do team-detail.tsx.
+
+Prečo je to problém (z dlhodobého pohľadu):
+
+Máš dva rôzne vizuálne svety toho istého tímu
+
+Používateľ:
+
+v súťaži vidí „hero modal“
+
+inde vidí „grid stránku“
+
+To je UX nekonzistentnosť, aj keď je technicky obhájiteľná
+
+👉 Rozumiem jeho dôvodu
+👉 nesúhlasím s finálnym rozhodnutím bez tvojej validácie
+
+🎯 ČO BY SOM UROBIL JA (IDEÁLNY STAV)
+
+Nie hneď teraz, ale zapíš si to ako tech debt task:
+
+Variant A (najčistejší do budúcna)
+
+TeamOverviewContent
+
+používa sa:
+
+v modale (compact mode)
+
+na stránke (full mode)
+
+layout (grid / hero) riadi parent
+
+Variant B (ak nechceš teraz riešiť)
+
+nechaj to tak
+
+ale jasne si označ, že:
+
+modal = „quick look“
+
+stránka = „deep dive“
+
+➡️ v copy a navigácii to musí byť čitateľné
+
+⚠️ MENŠIE UX POZNÁMKY (od dizajnéra, nie programátora)
+1️⃣ Team modal – rýchle štatistiky
+
+Skontroluj:
+
+nie sú zbytočne vysoké na mobile
+
+či sa zmestia bez scrollu + bez hlavičky
+
+👉 ak nie, zmenšiť čísla, nie texty
+
+2️⃣ Expand / collapse úlovkov
+
+Default 5 je OK, ale:
+
+CTA text nech je:
+
+„Zobraziť všetky úlovky tímu (12)”
+
+nie len „Zobraziť viac“
+
+Rybár chce vedieť, koľko ho čaká.
+
+3️⃣ Klik z úlovku → späť
+
+Uisti sa, že:
+
+„Späť“ z detailu úlovku ide:
+
+do tímu
+
+nie do súťaže
+
+Toto je detail, ktorý zabíja UX, ak je zle.
+
+🧠 CELKOVÉ HODNOTENIE
+Oblasť	Hodnotenie
+Architektúra	🟢🟢🟢🟢⚪
+UX logika	🟢🟢🟢🟢⚪
+Konzistentnosť	🟢🟢🟢⚪⚪
+Produktové myslenie	🟢🟢🟢🟢⚪
+
+Toto je dobrá implementácia. Nie MVP-odfláknutá.
+
+ČO BY SOM RIEŠIL AKO ĎALŠIE (odporúčanie)
+
+UX polishing Team modalu (mobil first)
+
+Copy v team modale – rybársky jazyk
+
+„Zobraziť všetky úlovky súťaže“ – modal vs page (definitívne rozhodnutie)
