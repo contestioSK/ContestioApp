@@ -1,0 +1,145 @@
+VERDIKT UX DIZAJNÉRA
+
+Jedna karta pre celé pódium je pre mobile lepšia voľba než 3 samostatné karty.
+A nielen „kvôli výške“ – ale kvôli mentálnemu modelu používateľa.
+
+PREČO JE JEDNA KARTA LEPŠIA (HLAVNÉ DÔVODY)
+1️⃣ Pódium je JEDNA INFORMÁCIA, nie tri
+
+Rybár nechce:
+
+„tri pekné boxy“
+
+Rybár chce:
+
+kto vedie
+
+kto je druhý
+
+kto je tretí
+
+➡️ To je jeden mentálny blok.
+
+Tri karty = UI ukazuje komponenty.
+Jedna karta = UI ukazuje výsledok.
+
+2️⃣ Mobile scroll je krutý
+
+Na mobile platí:
+
+každý ďalší „screen height“ = strata pozornosti
+
+čím skôr sa dostane k tabuľke, tým lepšie
+
+Aktuálne:
+
+pódium ≈ 1,2–1,5 viewportu (na malých mobiloch)
+
+Jedna karta:
+
+pódium ≈ 0,6–0,8 viewportu
+
+➡️ o jeden celý swipe menej
+To je obrovský rozdiel.
+
+3️⃣ Jedna karta = lepšia vizuálna hierarchia
+
+V jednej karte vieš:
+
+jasne zvýrazniť víťaza
+
+druhé a tretie miesto dať sekundárne
+
+zachovať emóciu, ale bez cirkusu
+
+Tri karty:
+
+všetky „kričia“
+
+aj keď víťaz má zlatý border, stále je to vizuálny chaos
+
+AKO BY SOM TO NAVRHOL (KONKRÉTNE)
+🟦 JEDNA „PÓDIUM“ KARTA
+
+Header karty
+
+🏆 Pódium preteku
+
+
+Obsah (vertikálne, kompaktné)
+
+🥇 1. miesto
+Tím Kaporisti SK
+124.6 kg · 18 rýb · Sektor B
+────────────────────
+🥈 2. miesto
+Team Carp Hunter
+118.2 kg · 16 rýb
+────────────────────
+🥉 3. miesto
+Black River
+109.4 kg · 14 rýb
+
+
+👉 víťaz:
+
+väčší font
+
+výraznejšia farba
+
+prípadne mini badge „LÍDER PRETEKU“
+
+👉 2. a 3. miesto:
+
+menšie
+
+stále čitateľné
+
+bez zbytočnej grafiky
+
+ČO TÝM STRATÍŠ?
+
+Úprimne? Takmer nič.
+
+emócia zostane (ak dobre zvýrazníš 1. miesto)
+
+poradie je jasnejšie
+
+mobile UX sa citeľne zlepší
+
+Ak chceš:
+
+desktop môže mať stále „hero pódium“
+
+mobile môže mať kompaktnú kartu
+
+➡️ to je ideálne riešenie
+
+MÔJ ODPORÚČANÝ KOMPROMIS (NAJLEPŠIA PRAX)
+
+Desktop:
+→ súčasné 3-kartové pódium (je tam miesto, je to efektné)
+
+Mobile:
+→ jedna kompaktná pódium karta
+
+Technicky:
+
+hidden md:grid  // veľké pódium
+md:hidden      // kompaktné pódium
+
+
+UX-ovo:
+
+win
+
+bez hádok
+
+bez kompromisov
+
+ZÁVER (TVRDÝ, ALE FÉROVÝ)
+
+Áno, tvoj nápad je správny.
+Dokonca by som povedal:
+
+Pre mobile je jedna pódium karta lepší UX štandard než tri samostatné boxy.
