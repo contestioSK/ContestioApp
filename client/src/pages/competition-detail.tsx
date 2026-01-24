@@ -51,9 +51,18 @@ const StatusBadge = ({ status }: { status: string }) => {
       </div>
     );
   }
+  if (status === 'ended' || status === 'completed' || status === 'finished') {
+    return (
+      <div className="flex items-center gap-2 bg-muted/50 border border-border text-muted-foreground px-3 py-1 rounded-full">
+        <div className="w-2 h-2 bg-muted-foreground rounded-full" />
+        <span className="text-xs font-black uppercase tracking-widest">UKONČENÉ</span>
+      </div>
+    );
+  }
+  // Fallback for unknown statuses (draft, cancelled, etc.)
   return (
     <div className="flex items-center gap-2 bg-muted/50 border border-border text-muted-foreground px-3 py-1 rounded-full">
-      <span className="text-xs font-black uppercase tracking-widest">UKONČENÉ</span>
+      <span className="text-xs font-black uppercase tracking-widest">{status?.toUpperCase() || 'NEZNÁMY'}</span>
     </div>
   );
 };
