@@ -1,0 +1,59 @@
+Kontext: Potrebujem kompletne prerobiť UI/Frontend stránky CompetitionDetail (alebo súboru, ktorý zobrazuje detail súťaže) na nový dizajn "Live Match Center".
+
+Kritické obmedzenia (NEPORUŠIŤ):
+
+Zachovaj logiku: Nemeň existujúce načítavanie dát, výpočty ani backend hooky (napr. useCompetition, useLeaderboard, výpočty bodov/váhy). Všetka matematika je už hotová a správna.
+
+Zachovaj state: Nemeň existujúci manažment načítavania (loading) a chybových stavov (errors).
+
+Mapovanie dát: Musíš namapovať moje existujúce reálne premenné na nové UI komponenty. Nenahrádzaj moje živé dáta statickými mock dátami z referenčného kódu, pokiaľ dáta v mojom kóde existujú.
+
+Úloha: Refaktoruj return (...) (JSX) časť komponentu tak, aby implementovala nový "Match Center" layout podľa priloženej referencie.
+
+Špecifikácia dizajnu (Vzhľad "Match Center"):
+
+Layout: Použi tmavý režim (bg-[#050B14]) s 12-stĺpcovým grid layoutom na desktope (8 stĺpcov pre Leaderboard, 4 stĺpce pre Info/Feed).
+
+Hlavička (Header): Implementuj "Atmosférickú hlavičku" s rozmazaným obrázkom na pozadí a novým Status Badge ("PRETEK PREBIEHA").
+
+Sticky Stats Bar: Implementuj sticky lištu hore, ktorá ukazuje súčty (Spolu rýb, Váha, Najväčšia ryba, Priemer).
+
+Podium: Nahraď štandardný zoznam vizuálnym Pódiom (stupienky pre 1., 2. a 3. miesto) umiestneným nad tabuľkou.
+
+Leaderboard: Zachovaj tabuľku, ale naštyluj ju do nového tmavého vzhľadu.
+
+Pravý stĺpec:
+
+Karta Komentátora: Implementuj novú kartu "Komentár z dát" s ikonou mikrofónu a podmienkovým textom.
+
+Live Feed: Implementuj vertikálny timeline feed udalostí.
+
+Tlačidlá: Použi veľké tlačidlá pre Mapu a Pravidlá.
+
+Stats Modal: Implementuj "Taktický Overlay" (modal okno), ktoré sa otvorí po kliknutí na kartu Komentátora.
+
+Texty a Jazyk (KRITICKÉ):
+
+Použi presné slovenské texty z priloženého referenčného kódu.
+
+Nepoužívaj generické výrazy ako "Analytics" alebo "Statistics". Použi špecifické frázy:
+
+"Ako to teraz stojí" (namiesto Leaderboard/Poradie)
+
+"Čo sa deje pri vode" (namiesto Live Feed)
+
+"Ako ryby berú počas preteku" (namiesto Stats)
+
+"Komentár z dát"
+
+"INFO Z PRETEKU" (namiesto System msg)
+
+Knižnice:
+
+Použi lucide-react pre ikony.
+
+Použi Tailwind CSS pre stylovanie.
+
+Pre Modal/Dialog použi existujúce riešenie v projekte alebo custom riešenie z referencie.
+
+Akcia: Prosím, prepíš render metódu môjho komponentu podľa tohto nového dizajnu a namapuj moje existujúce dáta (stats, leaderboard, feed, competition) na tieto nové UI elementy.
