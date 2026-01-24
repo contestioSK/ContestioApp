@@ -1,0 +1,306 @@
+a nebolo by lepšie to dať do jednej karty kde budú všetky 3 pódiové umiestnenia? tým pádom aj na mobile by sme mali namiesto 3 kariet jednu, ale menšiu
+
+Krátka odpoveď: áno, je to lepšie riešenie.
+Dlhá odpoveď (kritická, UX-pravdivá 👇):
+
+🎯 VERDIKT UX DIZAJNÉRA
+
+Jedna karta pre celé pódium je pre mobile lepšia voľba než 3 samostatné karty.
+A nielen „kvôli výške“ – ale kvôli mentálnemu modelu používateľa.
+
+PREČO JE JEDNA KARTA LEPŠIA (HLAVNÉ DÔVODY)
+1️⃣ Pódium je JEDNA INFORMÁCIA, nie tri
+
+Rybár nechce:
+
+„tri pekné boxy“
+
+Rybár chce:
+
+kto vedie
+
+kto je druhý
+
+kto je tretí
+
+➡️ To je jeden mentálny blok.
+
+Tri karty = UI ukazuje komponenty.
+Jedna karta = UI ukazuje výsledok.
+
+2️⃣ Mobile scroll je krutý
+
+Na mobile platí:
+
+každý ďalší „screen height“ = strata pozornosti
+
+čím skôr sa dostane k tabuľke, tým lepšie
+
+Aktuálne:
+
+pódium ≈ 1,2–1,5 viewportu (na malých mobiloch)
+
+Jedna karta:
+
+pódium ≈ 0,6–0,8 viewportu
+
+➡️ o jeden celý swipe menej
+To je obrovský rozdiel.
+
+3️⃣ Jedna karta = lepšia vizuálna hierarchia
+
+V jednej karte vieš:
+
+jasne zvýrazniť víťaza
+
+druhé a tretie miesto dať sekundárne
+
+zachovať emóciu, ale bez cirkusu
+
+Tri karty:
+
+všetky „kričia“
+
+aj keď víťaz má zlatý border, stále je to vizuálny chaos
+
+AKO BY SOM TO NAVRHOL (KONKRÉTNE)
+🟦 JEDNA „PÓDIUM“ KARTA
+
+Header karty
+
+🏆 Pódium preteku
+
+
+Obsah (vertikálne, kompaktné)
+
+🥇 1. miesto
+Tím Kaporisti SK
+124.6 kg · 18 rýb · Sektor B
+────────────────────
+🥈 2. miesto
+Team Carp Hunter
+118.2 kg · 16 rýb
+────────────────────
+🥉 3. miesto
+Black River
+109.4 kg · 14 rýb
+
+
+👉 víťaz:
+
+väčší font
+
+výraznejšia farba
+
+prípadne mini badge „LÍDER PRETEKU“
+
+👉 2. a 3. miesto:
+
+menšie
+
+stále čitateľné
+
+bez zbytočnej grafiky
+
+ČO TÝM STRATÍŠ?
+
+Úprimne? Takmer nič.
+
+emócia zostane (ak dobre zvýrazníš 1. miesto)
+
+poradie je jasnejšie
+
+mobile UX sa citeľne zlepší
+
+Ak chceš:
+
+desktop môže mať stále „hero pódium“
+
+mobile môže mať kompaktnú kartu
+
+➡️ to je ideálne riešenie
+
+MÔJ ODPORÚČANÝ KOMPROMIS (NAJLEPŠIA PRAX)
+
+Desktop:
+→ súčasné 3-kartové pódium (je tam miesto, je to efektné)
+
+Mobile:
+→ jedna kompaktná pódium karta
+
+Technicky:
+
+hidden md:grid  // veľké pódium
+md:hidden      // kompaktné pódium
+
+
+UX-ovo:
+
+win
+
+bez hádok
+
+bez kompromisov
+
+ZÁVER (TVRDÝ, ALE FÉROVÝ)
+
+Áno, tvoj nápad je správny.
+Dokonca by som povedal:
+
+Pre mobile je jedna pódium karta lepší UX štandard než tri samostatné boxy.
+
+Ak chceš, ďalší krok viem:
+
+navrhnúť presný mobile wireframe tej jednej karty
+
+alebo rovno prepísať JSX pre mobile variant
+
+Ty rozhodni, kam ideme ďalej.
+
+ja by som ich nedal pod seba ale vedľa seba
+
+OK. To je rozumné rozhodnutie, ale má to jedno zásadné UX pravidlo, ktoré nesmieš porušiť. Poďme na to tvrdo a konkrétne.
+
+🎯 VERDIKT
+
+Vedľa seba = áno, ale iba v JEDNEJ karte a v PRESNE definovanej hierarchii.
+Ak ich dáš vedľa seba bez hierarchie → rozbiješ čitateľnosť.
+
+AKO TO UROBIŤ SPRÁVNE (MOBILE-FIRST)
+🟦 Jedna karta → 3 stĺpce vedľa seba
+┌────────────────────────────┐
+│ 🏆 Pódium preteku          │
+│                            │
+│  🥈        🥇        🥉     │
+│  2.        1.        3.     │
+│  Team B    Team A    Team C │
+│  118.2kg   124.6kg   109.4kg│
+│  16 rýb    18 rýb    14 rýb │
+└────────────────────────────┘
+
+
+👉 Kľúčové UX pravidlá:
+
+1️⃣ Víťaz MUSÍ byť v strede
+
+stred = prirodzený fokus palca aj oka
+
+psychológia: „stred = najdôležitejšie“
+
+❌ Zle: 1–2–3 zľava doprava
+✅ Správne: 2 – 1 – 3
+
+2️⃣ Víťaz MUSÍ byť vizuálne vyšší
+
+Aj keď sú „vedľa seba“, musí:
+
+mať väčší font
+
+viac priestoru hore
+
+výraznejšiu farbu
+
+🥈         🥇         🥉
+118kg    124kg      109kg
+
+
+Ale:
+
+🥇 väčší font
+
+🥇 badge / crown
+
+🥇 mierne „vysunutý“ hore
+
+➡️ simuluješ reálne pódium
+
+3️⃣ Texty MUSIA byť brutálne krátke
+
+Na mobile nie je miesto na kecy.
+
+Používaj:
+
+názov tímu (max 1 riadok, ellipsis)
+
+váha
+
+počet rýb
+
+❌ „Lovia v sektore B“
+❌ „Celková váha tímu“
+
+✅
+
+124.6 kg
+
+18 rýb
+
+Sektor B (len ak fakt treba)
+
+4️⃣ Jedna karta = jeden kontext
+
+To je extrémne dôležité.
+
+❌ Tri samostatné karty:
+
+každá si žije vlastný život
+
+rozbíja flow
+
+✅ Jedna karta:
+
+pódium je jedna udalosť
+
+rybár to prečíta za 1 sekundu
+
+AKO BY SOM TO UROBIL V KÓDE (KONCEPTUÁLNE)
+Layout:
+
+grid grid-cols-3
+
+stredný stĺpec má:
+
+väčší padding-top
+
+väčší font
+
+crown icon
+
+Mobile only:
+<div className="md:hidden bg-card rounded-2xl p-4">
+  <div className="text-xs font-bold uppercase mb-3">
+    🏆 Pódium preteku
+  </div>
+
+  <div className="grid grid-cols-3 items-end gap-2">
+    {/* 2nd */}
+    {/* 1st */}
+    {/* 3rd */}
+  </div>
+</div>
+
+
+Desktop:
+
+nechaj to čo máš teraz (je to efektné)
+
+NA ČO SI DAŤ POZOR (ČASTÉ CHYBY)
+
+❌ rovnaká výška všetkých troch stĺpcov
+❌ rovnaká typografia
+❌ príliš dlhé názvy tímov
+❌ snaha dať tam „všetko“
+
+ZÁVER (ÚPLNE ÚPRIMNE)
+
+Tvoje riešenie:
+
+„vedľa seba v jednej karte“
+
+je:
+
+lepšie než 3 karty
+
+lepšie než vertikálne pod sebou
+
+perfektné pre mobile, AK dodržíš hierarchiu
