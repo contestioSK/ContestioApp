@@ -597,7 +597,7 @@ export default function CompetitionDetail() {
           </div>
 
           {/* MOBILE: Clean Header Content (status → name → meta) */}
-          <div className="md:hidden space-y-3 mb-6">
+          <div className="md:hidden space-y-2 mb-3">
             <div className="flex items-center gap-3">
               <StatusBadge status={competition.status} />
               {competition.endDate && competition.status === 'live' && (
@@ -624,7 +624,7 @@ export default function CompetitionDetail() {
             </div>
 
             {/* Mobile CTA Buttons */}
-            <div className="flex gap-3 mt-4">
+            <div className="flex gap-3 mt-2">
               {userTeam && (
                 <button 
                   onClick={() => setShowMyTeamOverlay(true)}
@@ -882,38 +882,38 @@ export default function CompetitionDetail() {
 
       {/* 2. STATS CARDS GRID (2x2 mobile, 4 cols desktop) */}
       {!isRegistration && (
-        <div className="max-w-7xl mx-auto px-4 md:px-6 py-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-            <div className="bg-card border border-border rounded-2xl p-4 flex flex-col items-center text-center">
-              <div className="p-2 bg-cyan-500/10 rounded-xl text-cyan-500 mb-2"><Fish size={20} /></div>
-              <div className="text-2xl md:text-3xl font-black text-foreground">{liveStats.totalFish} <span className="text-sm font-normal text-muted-foreground">ks</span></div>
-              <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Úlovky spolu</div>
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
+            <div className="bg-card border border-border rounded-xl md:rounded-2xl p-2.5 md:p-4 flex flex-col items-center text-center">
+              <div className="p-1.5 md:p-2 bg-cyan-500/10 rounded-lg md:rounded-xl text-cyan-500 mb-1.5 md:mb-2"><Fish size={16} className="md:hidden" /><Fish size={20} className="hidden md:block" /></div>
+              <div className="text-lg md:text-3xl font-black text-foreground">{liveStats.totalFish} <span className="text-xs md:text-sm font-normal text-muted-foreground">ks</span></div>
+              <div className="text-[9px] md:text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Úlovky spolu</div>
             </div>
-            <div className="bg-card border border-border rounded-2xl p-4 flex flex-col items-center text-center">
-              <div className="p-2 bg-emerald-500/10 rounded-xl text-emerald-500 mb-2"><Activity size={20} /></div>
-              <div className="text-2xl md:text-3xl font-black text-foreground">{liveStats.totalWeight.toFixed(1)} <span className="text-sm font-normal text-muted-foreground">kg</span></div>
-              <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Celková váha</div>
+            <div className="bg-card border border-border rounded-xl md:rounded-2xl p-2.5 md:p-4 flex flex-col items-center text-center">
+              <div className="p-1.5 md:p-2 bg-emerald-500/10 rounded-lg md:rounded-xl text-emerald-500 mb-1.5 md:mb-2"><Activity size={16} className="md:hidden" /><Activity size={20} className="hidden md:block" /></div>
+              <div className="text-lg md:text-3xl font-black text-foreground">{liveStats.totalWeight.toFixed(1)} <span className="text-xs md:text-sm font-normal text-muted-foreground">kg</span></div>
+              <div className="text-[9px] md:text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Celková váha</div>
             </div>
             <div 
-              className={`bg-card border border-border rounded-2xl p-4 flex flex-col items-center text-center ${biggestCatchObj ? 'cursor-pointer hover:bg-muted/50 hover:border-amber-500/30 transition-all' : ''}`}
+              className={`bg-card border border-border rounded-xl md:rounded-2xl p-2.5 md:p-4 flex flex-col items-center text-center ${biggestCatchObj ? 'cursor-pointer hover:bg-muted/50 hover:border-amber-500/30 transition-all' : ''}`}
               onClick={() => biggestCatchObj && setEntityModal({ view: 'catch', team: null, catch_: biggestCatchObj, previousView: null })}
             >
-              <div className="p-2 bg-amber-500/10 rounded-xl text-amber-500 mb-2"><Trophy size={20} /></div>
-              <div className="text-2xl md:text-3xl font-black text-foreground">{liveStats.biggestFish.toFixed(1)} <span className="text-sm font-normal text-muted-foreground">kg</span></div>
-              <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Najväčšia ryba</div>
-              {biggestCatchObj && <div className="text-[9px] text-amber-500 mt-1">Klikni pre detail</div>}
+              <div className="p-1.5 md:p-2 bg-amber-500/10 rounded-lg md:rounded-xl text-amber-500 mb-1.5 md:mb-2"><Trophy size={16} className="md:hidden" /><Trophy size={20} className="hidden md:block" /></div>
+              <div className="text-lg md:text-3xl font-black text-foreground">{liveStats.biggestFish.toFixed(1)} <span className="text-xs md:text-sm font-normal text-muted-foreground">kg</span></div>
+              <div className="text-[9px] md:text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Najväčšia ryba</div>
+              {biggestCatchObj && <div className="text-[8px] md:text-[9px] text-amber-500 mt-0.5 md:mt-1">Klikni pre detail</div>}
             </div>
-            <div className="bg-card border border-border rounded-2xl p-4 flex flex-col items-center text-center">
-              <div className="p-2 bg-purple-500/10 rounded-xl text-purple-500 mb-2"><TrendingUp size={20} /></div>
-              <div className="text-2xl md:text-3xl font-black text-foreground">{liveStats.avgWeight.toFixed(1)} <span className="text-sm font-normal text-muted-foreground">kg</span></div>
-              <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Priemerná váha</div>
+            <div className="bg-card border border-border rounded-xl md:rounded-2xl p-2.5 md:p-4 flex flex-col items-center text-center">
+              <div className="p-1.5 md:p-2 bg-purple-500/10 rounded-lg md:rounded-xl text-purple-500 mb-1.5 md:mb-2"><TrendingUp size={16} className="md:hidden" /><TrendingUp size={20} className="hidden md:block" /></div>
+              <div className="text-lg md:text-3xl font-black text-foreground">{liveStats.avgWeight.toFixed(1)} <span className="text-xs md:text-sm font-normal text-muted-foreground">kg</span></div>
+              <div className="text-[9px] md:text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Priemerná váha</div>
             </div>
           </div>
         </div>
       )}
 
       {/* 3. MAIN CONTENT GRID */}
-      <main className="max-w-7xl mx-auto px-4 md:px-6 py-8">
+      <main className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-8">
         {isRegistration ? (
           /* REGISTRATION MODE */
           <div className="max-w-3xl mx-auto text-center space-y-8">
