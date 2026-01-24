@@ -1053,7 +1053,7 @@ export default function CompetitionDetail() {
                     <div className="bg-card p-6 rounded-3xl border border-border">
                       <h3 className="text-lg font-bold text-foreground mb-2 flex items-center gap-2">
                         <Clock size={18} className="text-amber-500" />
-                        Kedy ryby berú
+                        Kedy ryby berú najviac
                       </h3>
                       <p className="text-xs text-muted-foreground mb-6">Časy, kedy sa ryby najčastejšie hlásia</p>
                       <VerticalBarChart data={hourlyActivity} />
