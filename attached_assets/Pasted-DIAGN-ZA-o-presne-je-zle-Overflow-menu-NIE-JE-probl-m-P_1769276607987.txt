@@ -1,0 +1,161 @@
+DIAGNÓZA (čo presne je zle)
+
+👉 Overflow menu (⋯) NIE JE problém.
+👉 Problém je, že header nemá jasnú hierarchiu a mobilný „top bar“ neexistuje.
+
+Konkrétne vidím 3 fatálne UX chyby:
+
+1️⃣ ⋯ JE NA ZLOM MIESTE (pláva bez kontextu)
+
+Na screenshote:
+
+„Späť“ je hore
+
+status badge je pod tým
+
+názov súťaže
+
+meta info
+
+až potom niekde osamotené ⋯
+
+➡️ To je UX chaos.
+
+Overflow menu musí patriť do navigačného pásu, nie byť:
+
+pod názvom
+
+pod statusom
+
+medzi obsahom
+
+Teraz pôsobí ako:
+
+„neviem kam patrím, tak som tu“
+
+2️⃣ HEADER NEMÁ „TOP BAR“ (kritická architektonická chyba)
+
+Správny mobile header má vždy tento pattern:
+
+[ ← Späť ]                    [ ⋯ ]
+
+
+U teba:
+
+späť je hore
+
+⋯ je dole
+
+medzi nimi je 4× iný obsah
+
+➡️ Preto máš opticky viac riadkov, než by si mal, aj keby tam nebolo žiadne tlačidlo.
+
+3️⃣ STATUS + NÁZOV + META SÚ ZLE ZOSKUPENÉ
+
+Momentálne máš:
+
+status badge ako samostatný blok
+
+názov ako ďalší blok
+
+meta info ako tretí blok
+
+To je OK obsahovo, ale zlé pozične, lebo medzi nimi sa snažíš pchať akcie.
+
+✅ SPRÁVNE RIEŠENIE (mobile-first, bez kompromisov)
+🔥 NOVÁ ŠTRUKTÚRA HEADERA (presne takto)
+🔹 1. RIADOK – NAVIGAČNÝ PÁS (FIX)
+← Späť                               ⋯
+
+
+iba tieto 2 veci
+
+nič iné
+
+vždy v jednom riadku
+
+žiadny wrap, žiadne margin-bottom experimenty
+
+➡️ tu patrí ⋯, nikde inde
+
+🔹 2. RIADOK – STATUS
+● PRETEK UKONČENÝ
+
+
+full-width
+
+pokojne pod navigáciou
+
+vizuálne oddelené
+
+🔹 3. RIADOK – NÁZOV SÚŤAŽE
+Green Pearl Cup
+
+
+dominantný
+
+čistý
+
+bez tlačidiel v okolí
+
+🔹 4. RIADOK – META INFO
+📍 Zemplínska Šírava   👥 Na štarte: 7 tímov
+
+🔹 5. RIADOK – CTA (AK EXISTUJE)
+
+Registrovať tím
+
+Môj tím
+
+➡️ nikdy nie v top bare
+
+📐 AKO BUDE HEADER VYZERAŤ PO OPRAVE
+← Späť                             ⋯
+[ PRETEK UKONČENÝ ]
+
+Green Pearl Cup
+
+📍 Zemplínska Šírava   👥 7 tímov
+
+
+👇 a až POTOM:
+
+štatistiky
+
+karty
+
+pódium
+
+🛠 KONKRÉTNY TECHNICKÝ DÔVOD, PREČO SA TI ROBÍ RIADOK NAVYŠE
+
+Bez toho, aby som videl JSX, je jasné, že:
+
+⋯ je v inom wrapperi
+
+wrapper má:
+
+flex-col
+
+alebo w-full
+
+alebo mt-*
+
+nie je súčasťou rovnakého flex-row ako „Späť“
+
+➡️ Preto ho layout odsunie pod obsah, nie vedľa.
+
+🎯 VERDIKT (tvrdý, ale presný)
+
+UX smer máš správny ✔
+
+rozhodnutie s overflow menu bolo správne ✔
+
+implementácia je zatiaľ len polovičná ❌
+
+👉 Kým:
+
+nevytvoríš jednoznačný mobile top bar
+
+a nedáš tam ⋯ do rovnakého riadku ako späť
+
+…ten problém nikdy nezmizne, len sa bude presúvať.
