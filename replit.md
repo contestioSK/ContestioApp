@@ -138,3 +138,22 @@ Note: `verifyCatch` and `updateWeight` endpoints don't exist - catches are verif
 
 ## QR Code Generation
 - **qrcode**: Library for generating QR codes.
+
+# Tech Debt Notes
+
+## TeamOverviewContent - Variant A (January 2025)
+**Status**: Planned future improvement
+
+Currently `TeamOverviewContent.tsx` is a shared component used only in competition-detail.tsx modals. The standalone team-detail.tsx page has its own layout (multi-column grid).
+
+**Future improvement (Variant A)**:
+- Refactor `TeamOverviewContent` to support two modes:
+  - `compact` mode: for modals (current behavior)
+  - `full` mode: for standalone page (expanded layout with all details)
+- Parent controls layout via prop, component remains "dumb"
+- Benefits: Single source of truth for team visualization, consistent UX
+
+**Current workaround (Variant B)**:
+- Modal = "quick look" (TeamOverviewContent)
+- Page = "deep dive" (team-detail.tsx with full grid)
+- Navigation and copy should make this distinction clear to users
