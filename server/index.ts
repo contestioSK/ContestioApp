@@ -503,6 +503,39 @@ async function startDayBeforeCompetitionScheduler() {
   log('[SCHEDULER] Day-before competition scheduler started (60min intervals)');
 }
 
+// Competition auto-finish scheduler - automatically ends competitions when end_date passes
+async function startCompetitionAutoFinishScheduler() {
+  const SCHEDULER_INTERVAL = 5 * 60 * 1000; // Check every 5 minutes
+  
+  async function checkAndFinishExpiredCompetitions() {
+    try {
+      const expiredCompetitions = await storage.getExpiredLiveCompetitions();
+      
+      if (expiredCompetitions.length > 0) {
+        log(`[SCHEDULER] Found ${expiredCompetitions.length} expired competitions to finish`);
+        
+        for (const competition of expiredCompetitions) {
+          try {
+            await storage.updateCompetitionStatus(competition.id, 'finished');
+            log(`[SCHEDULER] Competition "${competition.name}" (${competition.id}) auto-finished`);
+          } catch (err) {
+            console.error(`[SCHEDULER] Error finishing competition ${competition.id}:`, err);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('[SCHEDULER] Error checking expired competitions:', error);
+    }
+  }
+  
+  // Run immediately on startup
+  await checkAndFinishExpiredCompetitions();
+  
+  // Then run every 5 minutes
+  setInterval(checkAndFinishExpiredCompetitions, SCHEDULER_INTERVAL);
+  log('[SCHEDULER] Competition auto-finish scheduler started (5min intervals)');
+}
+
 // Photo processing cleanup scheduler - fixes stuck photos
 async function startPhotoCleanupScheduler() {
   const SCHEDULER_INTERVAL = 5 * 60 * 1000; // Check every 5 minutes
@@ -660,6 +693,7 @@ async function startPhotoCleanupScheduler() {
   startRefereeCleanupScheduler();
   startCompetitionReminderScheduler();
   startDayBeforeCompetitionScheduler();
+  startCompetitionAutoFinishScheduler();
   startPhotoCleanupScheduler();
 
   server.listen({
