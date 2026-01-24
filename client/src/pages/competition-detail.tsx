@@ -185,6 +185,7 @@ export default function CompetitionDetail() {
   const { isAuthenticated, isLoading: authLoading, user } = useAuth();
   const [showStatsOverlay, setShowStatsOverlay] = useState(false);
   const [showRulesOverlay, setShowRulesOverlay] = useState(false);
+  const [showMyTeamOverlay, setShowMyTeamOverlay] = useState(false);
   const [leaderboardExpanded, setLeaderboardExpanded] = useState(false);
   const [statsTab, setStatsTab] = useState<'overview' | 'sectors' | 'analytics'>('overview');
   
@@ -276,6 +277,7 @@ export default function CompetitionDetail() {
   });
 
   const isLive = competition?.status === 'live';
+  const isEnded = competition?.status === 'ended';
   const livePollingInterval = useVisibilityAwarePolling(POLLING_INTERVALS.COMPETITION_LIVE);
 
   const { data: teams, isLoading: teamsLoading } = useQuery<(Team & { members?: any[] })[]>({
@@ -445,6 +447,14 @@ export default function CompetitionDetail() {
   const visibleLeaderboard = leaderboardExpanded ? sortedLeaderboard : sortedLeaderboard.slice(0, 10);
   const uniqueSectors = Array.from(new Set(sortedLeaderboard.map(t => t.sector).filter(s => s !== '-')));
 
+  // Find user's team in this competition
+  const userTeam = useMemo(() => {
+    if (!teams || !user?.id) return null;
+    return teams.find(team => 
+      team.members?.some(member => member.userId === user.id)
+    ) || null;
+  }, [teams, user?.id]);
+
   // --- LOADING STATE ---
 
   if (authLoading || competitionLoading) {
@@ -564,7 +574,19 @@ export default function CompetitionDetail() {
                 </button>
               </div>
 
-              {isRegistration ? (
+              {/* My Team Button - show when user has a team */}
+              {userTeam && (
+                <button 
+                  onClick={() => setShowMyTeamOverlay(true)}
+                  className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-blue-900/20 flex items-center gap-2 transition-all hover:scale-105"
+                >
+                  <Users size={20} />
+                  <span>Môj tím</span>
+                </button>
+              )}
+
+              {/* Registration Button - show only during registration when user doesn't have a team */}
+              {isRegistration && !userTeam ? (
                 <Dialog open={isRegistrationDialogOpen} onOpenChange={setIsRegistrationDialogOpen}>
                   <DialogTrigger asChild>
                     <button className="bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-emerald-900/20 flex items-center gap-2 transition-all hover:scale-105">
@@ -707,12 +729,7 @@ export default function CompetitionDetail() {
                     </Form>
                   </DialogContent>
                 </Dialog>
-              ) : (
-                <button className="bg-cyan-600 hover:bg-cyan-500 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-cyan-900/20 flex items-center gap-2 transition-all">
-                  <Target size={20} />
-                  <span>Môj Tím</span>
-                </button>
-              )}
+              ) : null}
             </div>
           </div>
         </div>
@@ -1150,6 +1167,101 @@ export default function CompetitionDetail() {
                   <p className="text-lg">Pre túto súťaž nie sú zadefinované žiadne pravidlá.</p>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- MY TEAM OVERLAY (MODAL) --- */}
+      {showMyTeamOverlay && userTeam && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8">
+          <div 
+            className="absolute inset-0 bg-background/95 backdrop-blur-sm"
+            onClick={() => setShowMyTeamOverlay(false)}
+          ></div>
+
+          <div className="relative z-10 bg-card border border-border w-full max-w-2xl max-h-[90vh] rounded-[32px] overflow-hidden flex flex-col shadow-2xl">
+            
+            {/* Modal Header */}
+            <div className="p-6 md:p-8 border-b border-border flex items-center justify-between bg-muted/30">
+              <div>
+                <h2 className="text-xl md:text-2xl font-black text-foreground flex items-center gap-3">
+                  <Users className="text-blue-500" />
+                  {userTeam.name}
+                </h2>
+                <div className="flex items-center gap-3 mt-2">
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                    userTeam.status === 'approved' ? 'bg-emerald-500/20 text-emerald-400' :
+                    userTeam.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
+                    'bg-red-500/20 text-red-400'
+                  }`}>
+                    {userTeam.status === 'approved' ? 'Schválený' : 
+                     userTeam.status === 'pending' ? 'Čaká na schválenie' : 'Zamietnutý'}
+                  </span>
+                  {userTeam.sector && (
+                    <span className="text-muted-foreground text-sm">Sektor {userTeam.sector}</span>
+                  )}
+                </div>
+              </div>
+
+              <button 
+                onClick={() => setShowMyTeamOverlay(false)}
+                className="p-3 bg-muted/50 hover:bg-muted rounded-full transition-colors text-foreground"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-background space-y-6">
+              
+              {/* Team Stats */}
+              {userTeam.status === 'approved' && (isLive || isEnded) && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-card border border-border rounded-2xl p-4 text-center">
+                    <div className="text-2xl font-black text-foreground">{userTeam.fishCount || 0}</div>
+                    <div className="text-xs text-muted-foreground">Úlovkov</div>
+                  </div>
+                  <div className="bg-card border border-border rounded-2xl p-4 text-center">
+                    <div className="text-2xl font-black text-foreground">{parseFloat(String(userTeam.totalWeight || 0)).toFixed(2)} kg</div>
+                    <div className="text-xs text-muted-foreground">Celková váha</div>
+                  </div>
+                </div>
+              )}
+
+              {/* Team Members */}
+              <div>
+                <h3 className="text-foreground font-bold text-lg mb-4 flex items-center gap-2">
+                  <Users size={18} className="text-blue-500" />
+                  Členovia tímu
+                </h3>
+                <div className="space-y-3">
+                  {userTeam.members?.map((member) => (
+                    <div key={member.id} className="bg-muted/30 border border-border rounded-xl p-4 flex items-center gap-4">
+                      <div className="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center text-blue-400 font-bold">
+                        {member.name?.charAt(0)?.toUpperCase() || '?'}
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-bold text-foreground">{member.name}</div>
+                        {member.email && (
+                          <div className="text-sm text-muted-foreground">{member.email}</div>
+                        )}
+                      </div>
+                      {member.role === 'captain' && (
+                        <span className="px-2 py-1 bg-yellow-500/20 text-yellow-400 text-xs font-bold rounded-full">
+                          Kapitán
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                  {(!userTeam.members || userTeam.members.length === 0) && (
+                    <div className="text-center py-6 text-muted-foreground">
+                      Žiadni členovia tímu
+                    </div>
+                  )}
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
