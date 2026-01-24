@@ -518,8 +518,76 @@ export default function CompetitionDetail() {
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background"></div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6 pt-6 pb-6">
-          {/* Nav Row */}
-          <div className="flex justify-between items-center mb-6">
+          {/* MOBILE: Nav Row with Back + Overflow */}
+          <div className="md:hidden flex justify-between items-center mb-4">
+            <button 
+              onClick={() => window.history.back()} 
+              className="flex items-center gap-1 text-muted-foreground hover:text-foreground text-sm font-medium transition-colors"
+            >
+              <ChevronLeft size={16} /> Späť
+            </button>
+            
+            {/* Mobile Overflow Menu */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="p-2 text-muted-foreground hover:text-foreground transition-colors" title="Viac akcií">
+                  <MoreVertical size={20} />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52">
+                {isAuthenticated && (
+                  <DropdownMenuItem 
+                    onClick={handleToggleFavorite}
+                    disabled={isAdding || isRemoving}
+                    className="gap-2"
+                  >
+                    <Heart size={16} className={isFavorite ? 'fill-current text-red-500' : ''} />
+                    {isFavorite ? 'Odstrániť z obľúbených' : 'Pridať k obľúbeným'}
+                  </DropdownMenuItem>
+                )}
+                {isRegistration && (
+                  <QRShareDialog 
+                    type="competition" 
+                    id={id || ""} 
+                    name={competition.name}
+                    trigger={
+                      <button className="flex w-full items-center gap-2 px-2 py-1.5 text-sm rounded-sm hover:bg-accent cursor-default">
+                        <QrCode size={16} />
+                        QR kód registrácie
+                      </button>
+                    }
+                  />
+                )}
+                <DropdownMenuItem 
+                  onClick={() => {
+                    if (navigator.share) {
+                      navigator.share({ title: competition.name, url: window.location.href });
+                    } else {
+                      navigator.clipboard.writeText(window.location.href);
+                      toast({ title: "Odkaz skopírovaný", description: "Odkaz na súťaž bol skopírovaný do schránky" });
+                    }
+                  }}
+                  className="gap-2"
+                >
+                  <Share2 size={16} />
+                  Zdieľať súťaž
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => {
+                    navigator.clipboard.writeText(window.location.href);
+                    toast({ title: "Odkaz skopírovaný", description: "Odkaz na súťaž bol skopírovaný do schránky" });
+                  }}
+                  className="gap-2"
+                >
+                  <Link2 size={16} />
+                  Kopírovať odkaz
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          {/* DESKTOP: Nav Row */}
+          <div className="hidden md:flex justify-between items-center mb-6">
             <button 
               onClick={() => window.history.back()} 
               className="flex items-center gap-1 text-muted-foreground hover:text-foreground text-sm font-medium transition-colors"
@@ -528,7 +596,58 @@ export default function CompetitionDetail() {
             </button>
           </div>
 
-          <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
+          {/* MOBILE: Clean Header Content (status → name → meta) */}
+          <div className="md:hidden space-y-3 mb-6">
+            <div className="flex items-center gap-3">
+              <StatusBadge status={competition.status} />
+              {competition.endDate && competition.status === 'live' && (
+                <span className="text-xs text-muted-foreground font-mono flex items-center gap-1">
+                  <Clock size={12} /> {getRemainingTime(competition.endDate)}
+                </span>
+              )}
+            </div>
+            
+            <div className="flex items-center gap-3">
+              {competition.imageUrl && (
+                <div className="w-10 h-10 bg-background/50 rounded-full p-1.5 backdrop-blur-sm border border-border shrink-0">
+                  <img src={competition.imageUrl} alt="Logo" className="w-full h-full object-contain opacity-90" />
+                </div>
+              )}
+              <h1 className="text-2xl font-black text-foreground tracking-tight leading-none">
+                {competition.name}
+              </h1>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1"><MapPin size={12} className="text-cyan-500" /> {competition.location}</span>
+              <span className="flex items-center gap-1"><Users size={12} className="text-emerald-500" /> {teams?.filter(t => t.status === 'approved').length || 0} tímov</span>
+            </div>
+
+            {/* Mobile CTA Buttons */}
+            <div className="flex gap-3 mt-4">
+              {userTeam && (
+                <button 
+                  onClick={() => setShowMyTeamOverlay(true)}
+                  className="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-bold shadow-lg shadow-blue-900/20 flex items-center justify-center gap-2 transition-all"
+                >
+                  <Users size={18} />
+                  <span>Môj tím</span>
+                </button>
+              )}
+              {isRegistration && !userTeam && (
+                <button 
+                  onClick={() => setIsRegistrationDialogOpen(true)}
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl font-bold shadow-lg shadow-emerald-900/20 flex items-center justify-center gap-2 transition-all"
+                >
+                  <UserPlus size={18} />
+                  <span>Registrovať tím</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* DESKTOP: Header Content */}
+          <div className="hidden md:flex md:flex-row md:items-start justify-between gap-6">
             <div>
               <div className="flex items-center gap-3 mb-3">
                 <StatusBadge status={competition.status} />
@@ -540,13 +659,12 @@ export default function CompetitionDetail() {
               </div>
               
               <div className="flex items-center gap-4 mb-2">
-                {/* Logo Integration */}
                 {competition.imageUrl && (
-                  <div className="w-12 h-12 md:w-16 md:h-16 bg-background/50 rounded-full p-2 backdrop-blur-sm border border-border shrink-0">
+                  <div className="w-16 h-16 bg-background/50 rounded-full p-2 backdrop-blur-sm border border-border shrink-0">
                     <img src={competition.imageUrl} alt="Logo" className="w-full h-full object-contain opacity-90" />
                   </div>
                 )}
-                <h1 className="text-3xl md:text-5xl font-black text-foreground tracking-tight leading-none">
+                <h1 className="text-5xl font-black text-foreground tracking-tight leading-none">
                   {competition.name}
                 </h1>
               </div>
@@ -557,8 +675,8 @@ export default function CompetitionDetail() {
               </div>
             </div>
 
+            {/* Desktop Action Buttons */}
             <div className="flex gap-3">
-              {/* Action Buttons Group */}
               <div className="flex gap-2 mr-2">
                 {isAuthenticated && (
                   <button 
@@ -582,9 +700,8 @@ export default function CompetitionDetail() {
                     }
                   />
                 )}
-                {/* Desktop: Share button */}
                 <button 
-                  className="hidden md:flex bg-card/50 hover:bg-card text-muted-foreground hover:text-foreground p-3 rounded-xl border border-border transition-colors" 
+                  className="bg-card/50 hover:bg-card text-muted-foreground hover:text-foreground p-3 rounded-xl border border-border transition-colors" 
                   title="Zdieľať"
                   onClick={() => {
                     if (navigator.share) {
@@ -597,41 +714,6 @@ export default function CompetitionDetail() {
                 >
                   <Share2 size={20} />
                 </button>
-
-                {/* Mobile: Overflow menu */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="md:hidden bg-card/50 hover:bg-card text-muted-foreground hover:text-foreground p-3 rounded-xl border border-border transition-colors" title="Viac akcií">
-                      <MoreVertical size={20} />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem 
-                      onClick={() => {
-                        if (navigator.share) {
-                          navigator.share({ title: competition.name, url: window.location.href });
-                        } else {
-                          navigator.clipboard.writeText(window.location.href);
-                          toast({ title: "Odkaz skopírovaný", description: "Odkaz na súťaž bol skopírovaný do schránky" });
-                        }
-                      }}
-                      className="gap-2"
-                    >
-                      <Share2 size={16} />
-                      Zdieľať súťaž
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => {
-                        navigator.clipboard.writeText(window.location.href);
-                        toast({ title: "Odkaz skopírovaný", description: "Odkaz na súťaž bol skopírovaný do schránky" });
-                      }}
-                      className="gap-2"
-                    >
-                      <Link2 size={16} />
-                      Kopírovať odkaz
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
               </div>
 
               {/* My Team Button - show when user has a team */}
@@ -646,98 +728,106 @@ export default function CompetitionDetail() {
               )}
 
               {/* Registration Button - show only during registration when user doesn't have a team */}
-              {isRegistration && !userTeam ? (
-                <Dialog open={isRegistrationDialogOpen} onOpenChange={setIsRegistrationDialogOpen}>
-                  <DialogTrigger asChild>
-                    <button className="bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-emerald-900/20 flex items-center gap-2 transition-all hover:scale-105">
-                      <Users size={20} />
-                      <span>Registrovať tím</span>
-                    </button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
-                      <DialogTitle>Registrácia tímu</DialogTitle>
-                    </DialogHeader>
+              {isRegistration && !userTeam && (
+                <button 
+                  onClick={() => setIsRegistrationDialogOpen(true)}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-emerald-900/20 flex items-center gap-2 transition-all hover:scale-105"
+                >
+                  <UserPlus size={20} />
+                  <span>Registrovať tím</span>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Registration Dialog - rendered outside header for mobile access */}
+      <Dialog open={isRegistrationDialogOpen} onOpenChange={setIsRegistrationDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Registrácia tímu</DialogTitle>
+          </DialogHeader>
+          
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmitRegistration)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Názov tímu</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Zadajte názov vášho tímu" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Popis tímu (voliteľné)</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Krátky popis vášho tímu" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <FormLabel>Členovia tímu</FormLabel>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={addMember}
+                    disabled={form.watch("members").length >= 6}
+                  >
+                    <UserPlus className="w-4 h-4 mr-2" />
+                    Pridať člena
+                  </Button>
+                </div>
+
+                {form.watch("members").map((member, index) => (
+                  <div key={index} className="space-y-4 p-4 border border-border rounded-lg mb-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-medium">
+                        {index === 0 ? "Kapitán tímu" : `Člen ${index + 1}`}
+                      </h4>
+                      {index > 0 && (
+                        <Button type="button" variant="ghost" size="sm" onClick={() => removeMember(index)}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
                     
-                    <Form {...form}>
-                      <form onSubmit={form.handleSubmit(onSubmitRegistration)} className="space-y-6">
-                        <FormField
-                          control={form.control}
-                          name="name"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Názov tímu</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Zadajte názov vášho tímu" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="description"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Popis tímu (voliteľné)</FormLabel>
-                              <FormControl>
-                                <Textarea placeholder="Krátky popis vášho tímu" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <div>
-                          <div className="flex items-center justify-between mb-4">
-                            <FormLabel>Členovia tímu</FormLabel>
-                            <Button 
-                              type="button" 
-                              variant="outline" 
-                              size="sm" 
-                              onClick={addMember}
-                              disabled={form.watch("members").length >= 6}
-                            >
-                              <UserPlus className="w-4 h-4 mr-2" />
-                              Pridať člena
-                            </Button>
-                          </div>
-
-                          {form.watch("members").map((member, index) => (
-                            <div key={index} className="space-y-4 p-4 border border-border rounded-lg mb-4">
-                              <div className="flex items-center justify-between">
-                                <h4 className="font-medium">
-                                  {index === 0 ? "Kapitán tímu" : `Člen ${index + 1}`}
-                                </h4>
-                                {index > 0 && (
-                                  <Button type="button" variant="ghost" size="sm" onClick={() => removeMember(index)}>
-                                    <Trash2 className="w-4 h-4" />
-                                  </Button>
-                                )}
-                              </div>
-                              
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <FormField
-                                  control={form.control}
-                                  name={`members.${index}.name`}
-                                  render={({ field }) => (
-                                    <FormItem>
-                                      <FormLabel>Celé meno</FormLabel>
-                                      <FormControl>
-                                        <Input placeholder="Meno člena" {...field} />
-                                      </FormControl>
-                                      <FormMessage />
-                                    </FormItem>
-                                  )}
-                                />
-                                
-                                <FormField
-                                  control={form.control}
-                                  name={`members.${index}.email`}
-                                  render={({ field }) => (
-                                    <FormItem>
-                                      <FormLabel>Email (voliteľné)</FormLabel>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name={`members.${index}.name`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Celé meno</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Meno člena" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name={`members.${index}.email`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Email (voliteľné)</FormLabel>
                                       <FormControl>
                                         <Input type="email" placeholder="clen@email.com" {...field} />
                                       </FormControl>
@@ -777,23 +867,18 @@ export default function CompetitionDetail() {
                           </div>
                         </div>
 
-                        <div className="flex justify-end space-x-2">
-                          <Button type="button" variant="outline" onClick={() => setIsRegistrationDialogOpen(false)}>
-                            Zrušiť
-                          </Button>
-                          <Button type="submit" disabled={registerTeamMutation.isPending}>
-                            {registerTeamMutation.isPending ? "Registrujem..." : "Registrovať tím"}
-                          </Button>
-                        </div>
-                      </form>
-                    </Form>
-                  </DialogContent>
-                </Dialog>
-              ) : null}
-            </div>
-          </div>
-        </div>
-      </header>
+              <div className="flex justify-end space-x-2">
+                <Button type="button" variant="outline" onClick={() => setIsRegistrationDialogOpen(false)}>
+                  Zrušiť
+                </Button>
+                <Button type="submit" disabled={registerTeamMutation.isPending}>
+                  {registerTeamMutation.isPending ? "Registrujem..." : "Registrovať tím"}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
 
       {/* 2. STATS CARDS GRID (2x2 mobile, 4 cols desktop) */}
       {!isRegistration && (
