@@ -780,11 +780,55 @@ export default function CompetitionDetail() {
             {/* --- LEFT COLUMN: LEADERBOARD & PODIUM (8/12) --- */}
             <div className="lg:col-span-8 space-y-8">
               
-              {/* PODIUM */}
+              {/* PODIUM - MOBILE COMPACT (jedna karta, 3 stĺpce: 2-1-3) */}
               {sortedLeaderboard.length >= 3 && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                <div className="md:hidden bg-card border border-border rounded-2xl p-4">
+                  <div className="text-xs font-bold uppercase text-muted-foreground mb-4 flex items-center gap-2">
+                    <Trophy size={14} className="text-amber-500" />
+                    Pódium preteku
+                  </div>
+                  <div className="grid grid-cols-3 items-end gap-2">
+                    {/* 2nd Place - left */}
+                    <div className="flex flex-col items-center">
+                      <div className="w-8 h-8 bg-muted-foreground rounded-full flex items-center justify-center font-bold text-background text-sm mb-2">2</div>
+                      <div className="text-center w-full">
+                        <div className="font-bold text-foreground text-xs truncate px-1">{sortedLeaderboard[1]?.name}</div>
+                        <div className="text-lg font-black text-muted-foreground">{sortedLeaderboard[1]?.weight.toFixed(1)}</div>
+                        <div className="text-[10px] text-muted-foreground">{sortedLeaderboard[1]?.fish} rýb</div>
+                      </div>
+                    </div>
+
+                    {/* Winner - center, taller */}
+                    <div className="flex flex-col items-center -mt-4">
+                      <div className="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center mb-2 shadow-lg shadow-amber-500/30">
+                        <Crown size={18} className="text-black" />
+                      </div>
+                      <span className="text-[8px] font-black uppercase tracking-wider text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full mb-1">LÍDER</span>
+                      <div className="text-center w-full">
+                        <div className="font-bold text-amber-500 text-sm truncate px-1">{sortedLeaderboard[0]?.name}</div>
+                        <div className="text-2xl font-black text-foreground">{sortedLeaderboard[0]?.weight.toFixed(1)}</div>
+                        <div className="text-xs text-muted-foreground">{sortedLeaderboard[0]?.fish} rýb</div>
+                      </div>
+                    </div>
+
+                    {/* 3rd Place - right */}
+                    <div className="flex flex-col items-center">
+                      <div className="w-8 h-8 bg-orange-800 rounded-full flex items-center justify-center font-bold text-white text-sm mb-2">3</div>
+                      <div className="text-center w-full">
+                        <div className="font-bold text-foreground text-xs truncate px-1">{sortedLeaderboard[2]?.name}</div>
+                        <div className="text-lg font-black text-orange-200/60">{sortedLeaderboard[2]?.weight.toFixed(1)}</div>
+                        <div className="text-[10px] text-muted-foreground">{sortedLeaderboard[2]?.fish} rýb</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* PODIUM - DESKTOP (3 karty) */}
+              {sortedLeaderboard.length >= 3 && (
+                <div className="hidden md:grid md:grid-cols-3 gap-4 items-end">
                   {/* 2nd Place */}
-                  <div className="order-2 md:order-1 bg-card border border-border rounded-2xl p-4 flex flex-col items-center justify-end h-40 md:h-48 relative mt-4 md:mt-0">
+                  <div className="bg-card border border-border rounded-2xl p-4 flex flex-col items-center justify-end h-48 relative">
                     <div className="absolute -top-4 w-10 h-10 bg-muted-foreground rounded-full flex items-center justify-center font-bold text-background border-4 border-background shadow-lg">2</div>
                     <div className="text-center w-full">
                       <div className="font-bold text-foreground mb-1 truncate px-2">{sortedLeaderboard[1]?.name}</div>
@@ -794,7 +838,7 @@ export default function CompetitionDetail() {
                   </div>
 
                   {/* Winner */}
-                  <div className="order-1 md:order-2 bg-gradient-to-b from-card to-background border border-amber-500/30 rounded-2xl p-4 flex flex-col items-center justify-end h-48 md:h-56 relative shadow-[0_0_30px_rgba(245,158,11,0.1)] z-10">
+                  <div className="bg-gradient-to-b from-card to-background border border-amber-500/30 rounded-2xl p-4 flex flex-col items-center justify-end h-56 relative shadow-[0_0_30px_rgba(245,158,11,0.1)] z-10">
                     <div className="absolute -top-6 w-14 h-14 bg-amber-500 rounded-full flex items-center justify-center font-black text-black text-xl border-4 border-background shadow-lg shadow-amber-500/20">
                       <Crown size={24} />
                     </div>
@@ -812,7 +856,7 @@ export default function CompetitionDetail() {
                   </div>
 
                   {/* 3rd Place */}
-                  <div className="order-3 md:order-3 bg-card border border-border rounded-2xl p-4 flex flex-col items-center justify-end h-40 md:h-48 relative mt-4 md:mt-0">
+                  <div className="bg-card border border-border rounded-2xl p-4 flex flex-col items-center justify-end h-48 relative">
                     <div className="absolute -top-4 w-10 h-10 bg-orange-800 rounded-full flex items-center justify-center font-bold text-white border-4 border-background shadow-lg">3</div>
                     <div className="text-center w-full">
                       <div className="font-bold text-foreground mb-1 truncate px-2">{sortedLeaderboard[2]?.name}</div>
