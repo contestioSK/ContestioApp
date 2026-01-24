@@ -559,16 +559,18 @@ export default function CompetitionDetail() {
                     <Heart size={20} className={isFavorite ? 'fill-current' : ''} />
                   </button>
                 )}
-                <QRShareDialog 
-                  type="competition" 
-                  id={id || ""} 
-                  name={competition.name}
-                  trigger={
-                    <button className="bg-card/50 hover:bg-card text-muted-foreground hover:text-foreground p-3 rounded-xl border border-border transition-colors" title="Zobraziť QR kód">
-                      <QrCode size={20} />
-                    </button>
-                  }
-                />
+                {isRegistration && (
+                  <QRShareDialog 
+                    type="competition" 
+                    id={id || ""} 
+                    name={competition.name}
+                    trigger={
+                      <button className="bg-card/50 hover:bg-card text-muted-foreground hover:text-foreground p-3 rounded-xl border border-border transition-colors" title="Zobraziť QR kód">
+                        <QrCode size={20} />
+                      </button>
+                    }
+                  />
+                )}
                 <button className="bg-card/50 hover:bg-card text-muted-foreground hover:text-foreground p-3 rounded-xl border border-border transition-colors" title="Zdieľať">
                   <Share2 size={20} />
                 </button>
