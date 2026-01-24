@@ -1,0 +1,145 @@
+a ešte jedna vec, hore máme pás so základnými štatistikami, nedáme to radšej na 4 samostatné karty a na mobilnom zobrazení to bude 2x2? 
+
+Krátka odpoveď: áno, je to lepšie.
+Dlhá odpoveď: ale len ak to urobíš správne, inak si pohoršíš.
+
+Ideme fakticky.
+
+🎯 VERDIKT
+
+👉 4 samostatné karty > jeden horizontálny pás,
+hlavne na mobile.
+
+Tvoj aktuálny „sticky bar“ je:
+
+OK na desktop
+
+utrpenie na mobile (scroll, šírka, sústredenie)
+
+PREČO JE 2×2 GRID LEPŠÍ (MOBILE UX)
+🧠 Ako rybár číta mobil:
+
+palec = zhora nadol
+
+oči = skenujú bloky, nie pásy
+
+2×2 = okamžitá orientácia
+
+Sticky pás:
+
+kradne vertikálny priestor
+
+nič nepridáva po prvých 2 sekundách
+
+na mobile pôsobí „technicky“, nie rybársky
+
+AKO TO NAVRHNÚŤ SPRÁVNE
+🟦 Mobile (default)
+┌───────────┐ ┌───────────┐
+│ 🐟 Ryby   │ │ ⚖️ Váha   │
+│ 124 ks   │ │ 318.4 kg │
+└───────────┘ └───────────┘
+
+┌───────────┐ ┌───────────┐
+│ 🏆 TOP    │ │ 📊 Priem. │
+│ 21.4 kg  │ │ 2.6 kg   │
+└───────────┘ └───────────┘
+
+
+Presne 2×2. Žiadne výmysly.
+
+🖥️ Desktop
+
+Tu máš dve možnosti (vyber 1):
+
+A) 4 karty v jednom riadku (odporúčam)
+
+čisté
+
+moderné
+
+konzistentné s mobile
+
+B) Ponechať sticky bar (len desktop)
+
+ALE: už bez horizontálneho scrollu
+
+musí byť kompaktnejší
+
+👉 Ja by som šiel A) a sticky pás úplne zabil.
+
+COPY – MUSÍ BYŤ STRUČNÉ
+
+❌ „Počet ulovených rýb“
+❌ „Priemer na rybu“
+
+✅
+
+Ryby
+
+Celková váha
+
+TOP ryba
+
+Priemer
+
+Doplňujúce jednotky až pod číslom.
+
+KĽÚČOVÉ UX PRAVIDLÁ (NEPORUŠIŤ)
+1️⃣ Ikona + číslo + krátky label
+
+nič viac
+
+nič menej
+
+2️⃣ Všetky 4 karty MUSIA MAŤ:
+
+rovnakú výšku
+
+rovnakú typografiu
+
+rovnaký rytmus
+
+3️⃣ ŽIADNY sticky behavior na mobile
+
+fakt nie
+
+zabíja content
+
+AKO BY SOM TO ROZDELIL V KÓDE
+Mobile-first:
+<div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+  <StatCard icon={Fish} label="Ryby" value={`${totalFish} ks`} />
+  <StatCard icon={Activity} label="Celková váha" value={`${totalWeight} kg`} />
+  <StatCard icon={Trophy} label="TOP ryba" value={`${biggestFish} kg`} />
+  <StatCard icon={TrendingUp} label="Priemer" value={`${avgWeight} kg`} />
+</div>
+
+
+Na desktope:
+
+žiadne scrollovanie
+
+žiadny sticky
+
+normálny obsahový blok
+
+ČO BY SOM URČITE NESPRAVIL
+
+❌ nechať sticky bar aj na mobile
+❌ robiť 1×4 stĺpec na mobile
+❌ miešať „dôležité“ a „info“ do jednej karty
+❌ dávať tam trendy, percentá, šípky
+
+ZÁVER (TVRDÝ, ALE SPRAVODLIVÝ)
+
+Tvoj nápad:
+
+„4 samostatné karty, 2×2 na mobile“
+
+je UX posun o level vyššie.
+Z tejto obrazovky robí:
+
+menej „dashboard“
+
+viac „prehľad pri vode“
