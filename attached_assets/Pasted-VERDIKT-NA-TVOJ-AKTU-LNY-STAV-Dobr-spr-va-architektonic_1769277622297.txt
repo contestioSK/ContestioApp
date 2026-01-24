@@ -1,0 +1,145 @@
+VERDIKT NA TVOJ AKTUÁLNY STAV
+
+Dobrá správa:
+➡️ architektonicky si to POSUNUL SPRÁVNYM SMEROM
+➡️ overflow menu + md:hidden / md:flex je správne rozhodnutie
+
+Zlá správa:
+➡️ stále máš DUPLIKOVANÝ NAVIGAČNÝ PÁS
+➡️ preto sa ti na mobile stále správa header „nafúknuto“
+
+❌ HLAVNÝ PROBLÉM (konkrétne z kódu)
+
+Máš DVA samostatné navigačné riadky:
+
+1️⃣ Mobile nav row
+<div className="md:hidden flex justify-between items-center mb-4">
+  ← Späť        ⋯
+</div>
+
+2️⃣ Desktop nav row
+<div className="hidden md:flex justify-between items-center mb-6">
+  ← Späť
+</div>
+
+
+👉 To je OK samo o sebe
+❌ ALE: ďalší obsah headera nie je na mobile jasne oddelený ako „content-only“
+
+🚨 SKUTOČNÁ CHYBA (tá, čo robí riadok navyše)
+
+TOTO je vinník:
+
+<div className="md:hidden space-y-2 mb-3">
+
+
+V tomto bloku máš:
+
+StatusBadge
+
+Countdown
+
+Logo + názov
+
+Meta info
+
+CTA buttons
+
+➡️ A všetko je stále v tom istom vizuálnom „header flow“, takže:
+
+nav row má mb-4
+
+content má mb-3
+
+CTA má vlastný mt-2
+
+📌 Výsledok:
+header pôsobí ako 5 riadkov, aj keď logicky by mali byť 3 zóny.
+
+✅ SPRÁVNY FIX (MINIMÁLNY, ALE ROZHODUJÚCI)
+1️⃣ ZAVEĎ JASNÉ ZÓNY (len pre mobile)
+🔹 Zóna A – NAV BAR (hotové, nemeníme)
+md:hidden
+← Späť        ⋯
+
+🔹 Zóna B – IDENTITA SÚŤAŽE
+
+👉 tu MUSÍ skončiť všetko „neklikateľné“
+
+Status, názov, meta info
+bez CTA, bez tlačidiel
+
+<div className="md:hidden space-y-2 pb-3 border-b border-border">
+
+
+⚠️ dôležité:
+
+zruš mb-3
+
+použi pb-3 + border-b
+
+tým header „uzavrieš“
+
+🔹 Zóna C – CTA (samostatná sekcia, NIE header)
+
+Toto už nie je header, ale content:
+
+<div className="md:hidden px-4 mt-3">
+  CTA buttons
+</div>
+
+
+➡️ tým pádom:
+
+header má jasný koniec
+
+CTA sa správa ako obsah
+
+vizuálne zmizne pocit „extra riadku“
+
+🧠 PREČO TI TO TERAZ STÁLE NESADÍ (UX vysvetlenie)
+
+Používateľ na mobile číta:
+
+navigáciu
+
+názov / stav
+
+očakáva hneď obsah
+
+Ty mu ale dáš:
+
+navigáciu
+
+názov
+
+meta
+
+CTA
+
+až potom obsah
+
+➡️ mozog to číta ako „stále som v headeri“
+➡️ preto máš pocit, že je „zbytočne vysoký“
+
+🧪 MIKRO-OPTIMALIZÁCIE (odporúčané)
+
+Ak chceš ešte UX polish:
+
+StatusBadge:
+
+zváž text-[10px] namiesto text-xs
+
+názov:
+
+text-2xl je OK, nechoď vyššie
+
+meta info:
+
+max 1 riadok, wrap je OK
+
+✅ ZHRNUTIE JEDNOU VETOU
+
+👉 Overflow menu máš správne.
+👉 Problém je, že CTA ešte stále považuješ za súčasť headera.
+👉 Oddel CTA od identity headera a problém okamžite zmizne.
