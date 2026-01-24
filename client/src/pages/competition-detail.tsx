@@ -1071,26 +1071,26 @@ export default function CompetitionDetail() {
                     Aktuálne poradie tímov
                   </h3>
                 </div>
-                <div className="overflow-x-auto">
+                <div className="md:overflow-x-auto">
                   <table className="w-full text-sm text-left">
                     <thead className="text-xs text-muted-foreground uppercase bg-muted/20 font-bold tracking-wider">
                       <tr>
-                        <th className="px-6 py-4 w-16">#</th>
-                        <th className="px-6 py-4">Tím</th>
-                        <th className="px-6 py-4 text-center">Sektor</th>
-                        <th className="px-6 py-4 text-right">Ryby</th>
-                        <th className="px-6 py-4 text-right">Celková váha (kg)</th>
+                        <th className="px-3 md:px-6 py-3 md:py-4 w-10 md:w-16">#</th>
+                        <th className="px-3 md:px-6 py-3 md:py-4">Tím</th>
+                        <th className="hidden md:table-cell px-6 py-4 text-center">Sektor</th>
+                        <th className="hidden md:table-cell px-6 py-4 text-right">Ryby</th>
+                        <th className="px-3 md:px-6 py-3 md:py-4 text-right">kg</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
                       {visibleLeaderboard.map((team, index) => (
                         <tr key={team.id} className={`hover:bg-muted/30 transition-colors ${index < 3 ? 'bg-muted/10' : ''}`}>
-                          <td className={`px-6 py-4 font-mono font-bold ${index === 0 ? 'text-amber-500' : index === 1 ? 'text-muted-foreground' : index === 2 ? 'text-orange-400' : 'text-muted-foreground'}`}>
+                          <td className={`px-3 md:px-6 py-3 md:py-4 font-mono font-bold ${index === 0 ? 'text-amber-500' : index === 1 ? 'text-muted-foreground' : index === 2 ? 'text-orange-400' : 'text-muted-foreground'}`}>
                             {team.rank}.
                           </td>
-                          <td className="px-6 py-4">
+                          <td className="px-3 md:px-6 py-3 md:py-4">
                             <button
-                              className="font-bold text-foreground hover:text-cyan-500 transition-colors text-left"
+                              className="font-bold text-foreground hover:text-cyan-500 transition-colors text-left text-sm md:text-base"
                               onClick={() => {
                                 const fullTeam = teams?.find(t => t.id === team.id);
                                 if (fullTeam) {
@@ -1101,14 +1101,14 @@ export default function CompetitionDetail() {
                               {team.name}
                             </button>
                           </td>
-                          <td className="px-6 py-4 text-center text-muted-foreground">{team.sector}</td>
-                          <td className="px-6 py-4 text-right text-muted-foreground font-mono">{team.fish}</td>
-                          <td className="px-6 py-4 text-right font-black text-foreground text-base">{team.weight.toFixed(1)}</td>
+                          <td className="hidden md:table-cell px-6 py-4 text-center text-muted-foreground">{team.sector}</td>
+                          <td className="hidden md:table-cell px-6 py-4 text-right text-muted-foreground font-mono">{team.fish}</td>
+                          <td className="px-3 md:px-6 py-3 md:py-4 text-right font-black text-foreground text-base">{team.weight.toFixed(1)}</td>
                         </tr>
                       ))}
                       {sortedLeaderboard.length === 0 && (
                         <tr>
-                          <td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">
+                          <td colSpan={5} className="px-3 md:px-6 py-8 text-center text-muted-foreground">
                             Zatiaľ nebol zaznamenaný žiadny úlovok
                           </td>
                         </tr>
