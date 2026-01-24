@@ -718,39 +718,29 @@ export default function CompetitionDetail() {
         </div>
       </header>
 
-      {/* 2. STICKY STATS BAR */}
+      {/* 2. STATS CARDS GRID (2x2 mobile, 4 cols desktop) */}
       {!isRegistration && (
-        <div className="border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-40">
-          <div className="max-w-7xl mx-auto px-4 py-3 overflow-x-auto">
-            <div className="flex gap-6 min-w-max md:w-full md:grid md:grid-cols-4 md:gap-0">
-              <div className="flex items-center gap-3 px-2">
-                <div className="p-1.5 bg-cyan-500/10 rounded-lg text-cyan-500"><Fish size={16} /></div>
-                <div>
-                  <div className="text-[10px] text-muted-foreground uppercase font-bold">Počet ulovených rýb</div>
-                  <div className="text-lg font-black text-foreground leading-none">{liveStats.totalFish} <span className="text-xs font-normal text-muted-foreground">ks</span></div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 px-2 md:border-l border-border">
-                <div className="p-1.5 bg-emerald-500/10 rounded-lg text-emerald-500"><Activity size={16} /></div>
-                <div>
-                  <div className="text-[10px] text-muted-foreground uppercase font-bold">Celková váha</div>
-                  <div className="text-lg font-black text-foreground leading-none">{liveStats.totalWeight.toFixed(1)} <span className="text-xs font-normal text-muted-foreground">kg</span></div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 px-2 md:border-l border-border">
-                <div className="p-1.5 bg-amber-500/10 rounded-lg text-amber-500"><Trophy size={16} /></div>
-                <div>
-                  <div className="text-[10px] text-muted-foreground uppercase font-bold">TOP ryba preteku</div>
-                  <div className="text-lg font-black text-foreground leading-none">{liveStats.biggestFish.toFixed(1)} <span className="text-xs font-normal text-muted-foreground">kg</span></div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 px-2 md:border-l border-border">
-                <div className="p-1.5 bg-purple-500/10 rounded-lg text-purple-500"><TrendingUp size={16} /></div>
-                <div>
-                  <div className="text-[10px] text-muted-foreground uppercase font-bold">Priemer na rybu</div>
-                  <div className="text-lg font-black text-foreground leading-none">{liveStats.avgWeight.toFixed(1)} <span className="text-xs font-normal text-muted-foreground">kg</span></div>
-                </div>
-              </div>
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+            <div className="bg-card border border-border rounded-2xl p-4 flex flex-col items-center text-center">
+              <div className="p-2 bg-cyan-500/10 rounded-xl text-cyan-500 mb-2"><Fish size={20} /></div>
+              <div className="text-2xl md:text-3xl font-black text-foreground">{liveStats.totalFish}</div>
+              <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Ryby</div>
+            </div>
+            <div className="bg-card border border-border rounded-2xl p-4 flex flex-col items-center text-center">
+              <div className="p-2 bg-emerald-500/10 rounded-xl text-emerald-500 mb-2"><Activity size={20} /></div>
+              <div className="text-2xl md:text-3xl font-black text-foreground">{liveStats.totalWeight.toFixed(1)} <span className="text-sm font-normal text-muted-foreground">kg</span></div>
+              <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Celková váha</div>
+            </div>
+            <div className="bg-card border border-border rounded-2xl p-4 flex flex-col items-center text-center">
+              <div className="p-2 bg-amber-500/10 rounded-xl text-amber-500 mb-2"><Trophy size={20} /></div>
+              <div className="text-2xl md:text-3xl font-black text-foreground">{liveStats.biggestFish.toFixed(1)} <span className="text-sm font-normal text-muted-foreground">kg</span></div>
+              <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">TOP ryba</div>
+            </div>
+            <div className="bg-card border border-border rounded-2xl p-4 flex flex-col items-center text-center">
+              <div className="p-2 bg-purple-500/10 rounded-xl text-purple-500 mb-2"><TrendingUp size={20} /></div>
+              <div className="text-2xl md:text-3xl font-black text-foreground">{liveStats.avgWeight.toFixed(1)} <span className="text-sm font-normal text-muted-foreground">kg</span></div>
+              <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Priemer</div>
             </div>
           </div>
         </div>
