@@ -23,6 +23,7 @@ import {
   Heart, QrCode, ChevronLeft, LayoutList, UserPlus, Trash2, FileText
 } from "lucide-react";
 import StatsDashboard from "@/components/stats-dashboard";
+import TeamOverviewContent from "@/components/TeamOverviewContent";
 import type { Competition, Team, Catch } from "@shared/schema";
 import { useFavoriteCompetitions, useToggleFavoriteCompetition } from "@/hooks/useFavorites";
 import { QRShareDialog } from "@/components/QRShareDialog";
@@ -194,8 +195,12 @@ export default function CompetitionDetail() {
   const [showStatsOverlay, setShowStatsOverlay] = useState(false);
   const [showRulesOverlay, setShowRulesOverlay] = useState(false);
   const [showMyTeamOverlay, setShowMyTeamOverlay] = useState(false);
-  const [showCatchesOverlay, setShowCatchesOverlay] = useState(false);
-  const [selectedCatch, setSelectedCatch] = useState<(Catch & { team?: Team }) | null>(null);
+  const [entityModal, setEntityModal] = useState<{
+    view: 'team' | 'catch' | 'catches-list' | null;
+    team: (Team & { members?: any[] }) | null;
+    catch_: (Catch & { team?: Team }) | null;
+    previousView?: 'team' | 'catch' | 'catches-list' | null;
+  }>({ view: null, team: null, catch_: null, previousView: null });
   const [leaderboardExpanded, setLeaderboardExpanded] = useState(false);
   const [statsTab, setStatsTab] = useState<'overview' | 'sectors' | 'analytics'>('overview');
   
@@ -752,7 +757,7 @@ export default function CompetitionDetail() {
             </div>
             <div 
               className={`bg-card border border-border rounded-2xl p-4 flex flex-col items-center text-center ${biggestCatchObj ? 'cursor-pointer hover:bg-muted/50 hover:border-amber-500/30 transition-all' : ''}`}
-              onClick={() => biggestCatchObj && setSelectedCatch(biggestCatchObj)}
+              onClick={() => biggestCatchObj && setEntityModal({ view: 'catch', team: null, catch_: biggestCatchObj, previousView: null })}
             >
               <div className="p-2 bg-amber-500/10 rounded-xl text-amber-500 mb-2"><Trophy size={20} /></div>
               <div className="text-2xl md:text-3xl font-black text-foreground">{liveStats.biggestFish.toFixed(1)} <span className="text-sm font-normal text-muted-foreground">kg</span></div>
@@ -804,9 +809,15 @@ export default function CompetitionDetail() {
                     <div className="flex flex-col items-center">
                       <div className="w-8 h-8 bg-muted-foreground rounded-full flex items-center justify-center font-bold text-background text-sm mb-2">2</div>
                       <div className="text-center w-full">
-                        <div className="font-bold text-foreground text-xs truncate px-1">{sortedLeaderboard[1]?.name}</div>
-                        <div className="text-lg font-black text-muted-foreground">{sortedLeaderboard[1]?.weight.toFixed(1)}</div>
-                        <div className="text-[10px] text-muted-foreground">{sortedLeaderboard[1]?.fish} rýb</div>
+                        <button
+                          className="font-bold text-foreground text-xs truncate px-1 hover:text-cyan-500 transition-colors"
+                          onClick={() => {
+                            const fullTeam = teams?.find(t => t.id === sortedLeaderboard[1]?.id);
+                            if (fullTeam) setEntityModal({ view: 'team', team: fullTeam, catch_: null, previousView: null });
+                          }}
+                        >{sortedLeaderboard[1]?.name}</button>
+                        <div className="text-lg font-black text-muted-foreground">{sortedLeaderboard[1]?.weight?.toFixed(1) ?? '-'}</div>
+                        <div className="text-[10px] text-muted-foreground">{sortedLeaderboard[1]?.fish ?? 0} rýb</div>
                       </div>
                     </div>
 
@@ -817,9 +828,15 @@ export default function CompetitionDetail() {
                       </div>
                       <span className="text-[8px] font-black uppercase tracking-wider text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full mb-1">LÍDER</span>
                       <div className="text-center w-full">
-                        <div className="font-bold text-amber-500 text-sm truncate px-1">{sortedLeaderboard[0]?.name}</div>
-                        <div className="text-2xl font-black text-foreground">{sortedLeaderboard[0]?.weight.toFixed(1)}</div>
-                        <div className="text-xs text-muted-foreground">{sortedLeaderboard[0]?.fish} rýb</div>
+                        <button
+                          className="font-bold text-amber-500 text-sm truncate px-1 hover:underline"
+                          onClick={() => {
+                            const fullTeam = teams?.find(t => t.id === sortedLeaderboard[0]?.id);
+                            if (fullTeam) setEntityModal({ view: 'team', team: fullTeam, catch_: null, previousView: null });
+                          }}
+                        >{sortedLeaderboard[0]?.name}</button>
+                        <div className="text-2xl font-black text-foreground">{sortedLeaderboard[0]?.weight?.toFixed(1) ?? '-'}</div>
+                        <div className="text-xs text-muted-foreground">{sortedLeaderboard[0]?.fish ?? 0} rýb</div>
                       </div>
                     </div>
 
@@ -827,9 +844,15 @@ export default function CompetitionDetail() {
                     <div className="flex flex-col items-center">
                       <div className="w-8 h-8 bg-orange-800 rounded-full flex items-center justify-center font-bold text-white text-sm mb-2">3</div>
                       <div className="text-center w-full">
-                        <div className="font-bold text-foreground text-xs truncate px-1">{sortedLeaderboard[2]?.name}</div>
-                        <div className="text-lg font-black text-orange-200/60">{sortedLeaderboard[2]?.weight.toFixed(1)}</div>
-                        <div className="text-[10px] text-muted-foreground">{sortedLeaderboard[2]?.fish} rýb</div>
+                        <button
+                          className="font-bold text-foreground text-xs truncate px-1 hover:text-cyan-500 transition-colors"
+                          onClick={() => {
+                            const fullTeam = teams?.find(t => t.id === sortedLeaderboard[2]?.id);
+                            if (fullTeam) setEntityModal({ view: 'team', team: fullTeam, catch_: null, previousView: null });
+                          }}
+                        >{sortedLeaderboard[2]?.name}</button>
+                        <div className="text-lg font-black text-orange-200/60">{sortedLeaderboard[2]?.weight?.toFixed(1) ?? '-'}</div>
+                        <div className="text-[10px] text-muted-foreground">{sortedLeaderboard[2]?.fish ?? 0} rýb</div>
                       </div>
                     </div>
                   </div>
@@ -843,9 +866,15 @@ export default function CompetitionDetail() {
                   <div className="bg-card border border-border rounded-2xl p-4 flex flex-col items-center justify-end h-48 relative">
                     <div className="absolute -top-4 w-10 h-10 bg-muted-foreground rounded-full flex items-center justify-center font-bold text-background border-4 border-background shadow-lg">2</div>
                     <div className="text-center w-full">
-                      <div className="font-bold text-foreground mb-1 truncate px-2">{sortedLeaderboard[1]?.name}</div>
-                      <div className="text-2xl font-black text-muted-foreground">{sortedLeaderboard[1]?.weight.toFixed(1)}</div>
-                      <div className="text-xs text-muted-foreground font-mono">{sortedLeaderboard[1]?.fish} rýb</div>
+                      <button
+                        className="font-bold text-foreground mb-1 truncate px-2 hover:text-cyan-500 transition-colors"
+                        onClick={() => {
+                          const fullTeam = teams?.find(t => t.id === sortedLeaderboard[1]?.id);
+                          if (fullTeam) setEntityModal({ view: 'team', team: fullTeam, catch_: null, previousView: null });
+                        }}
+                      >{sortedLeaderboard[1]?.name}</button>
+                      <div className="text-2xl font-black text-muted-foreground">{sortedLeaderboard[1]?.weight?.toFixed(1) ?? '-'}</div>
+                      <div className="text-xs text-muted-foreground font-mono">{sortedLeaderboard[1]?.fish ?? 0} rýb</div>
                     </div>
                   </div>
 
@@ -858,9 +887,15 @@ export default function CompetitionDetail() {
                       <span className="text-[10px] font-black uppercase tracking-widest text-amber-500 bg-amber-500/10 px-2 py-1 rounded-full">LÍDER PRETEKU</span>
                     </div>
                     <div className="text-center w-full mb-2">
-                      <div className="font-bold text-amber-500 mb-1 text-lg px-2 truncate">{sortedLeaderboard[0]?.name}</div>
-                      <div className="text-4xl font-black text-foreground">{sortedLeaderboard[0]?.weight.toFixed(1)}</div>
-                      <div className="text-sm text-muted-foreground font-mono">{sortedLeaderboard[0]?.fish} rýb</div>
+                      <button
+                        className="font-bold text-amber-500 mb-1 text-lg px-2 truncate hover:underline"
+                        onClick={() => {
+                          const fullTeam = teams?.find(t => t.id === sortedLeaderboard[0]?.id);
+                          if (fullTeam) setEntityModal({ view: 'team', team: fullTeam, catch_: null, previousView: null });
+                        }}
+                      >{sortedLeaderboard[0]?.name}</button>
+                      <div className="text-4xl font-black text-foreground">{sortedLeaderboard[0]?.weight?.toFixed(1) ?? '-'}</div>
+                      <div className="text-sm text-muted-foreground font-mono">{sortedLeaderboard[0]?.fish ?? 0} rýb</div>
                     </div>
                     <div className="w-full bg-muted/50 rounded-lg py-1 text-center text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
                       Lovia v sektore {sortedLeaderboard[0]?.sector}
@@ -871,9 +906,15 @@ export default function CompetitionDetail() {
                   <div className="bg-card border border-border rounded-2xl p-4 flex flex-col items-center justify-end h-48 relative">
                     <div className="absolute -top-4 w-10 h-10 bg-orange-800 rounded-full flex items-center justify-center font-bold text-white border-4 border-background shadow-lg">3</div>
                     <div className="text-center w-full">
-                      <div className="font-bold text-foreground mb-1 truncate px-2">{sortedLeaderboard[2]?.name}</div>
-                      <div className="text-2xl font-black text-orange-200/60">{sortedLeaderboard[2]?.weight.toFixed(1)}</div>
-                      <div className="text-xs text-muted-foreground font-mono">{sortedLeaderboard[2]?.fish} rýb</div>
+                      <button
+                        className="font-bold text-foreground mb-1 truncate px-2 hover:text-cyan-500 transition-colors"
+                        onClick={() => {
+                          const fullTeam = teams?.find(t => t.id === sortedLeaderboard[2]?.id);
+                          if (fullTeam) setEntityModal({ view: 'team', team: fullTeam, catch_: null, previousView: null });
+                        }}
+                      >{sortedLeaderboard[2]?.name}</button>
+                      <div className="text-2xl font-black text-orange-200/60">{sortedLeaderboard[2]?.weight?.toFixed(1) ?? '-'}</div>
+                      <div className="text-xs text-muted-foreground font-mono">{sortedLeaderboard[2]?.fish ?? 0} rýb</div>
                     </div>
                   </div>
                 </div>
@@ -904,7 +945,19 @@ export default function CompetitionDetail() {
                           <td className={`px-6 py-4 font-mono font-bold ${index === 0 ? 'text-amber-500' : index === 1 ? 'text-muted-foreground' : index === 2 ? 'text-orange-400' : 'text-muted-foreground'}`}>
                             {team.rank}.
                           </td>
-                          <td className="px-6 py-4 font-bold text-foreground">{team.name}</td>
+                          <td className="px-6 py-4">
+                            <button
+                              className="font-bold text-foreground hover:text-cyan-500 transition-colors text-left"
+                              onClick={() => {
+                                const fullTeam = teams?.find(t => t.id === team.id);
+                                if (fullTeam) {
+                                  setEntityModal({ view: 'team', team: fullTeam, catch_: null, previousView: null });
+                                }
+                              }}
+                            >
+                              {team.name}
+                            </button>
+                          </td>
                           <td className="px-6 py-4 text-center text-muted-foreground">{team.sector}</td>
                           <td className="px-6 py-4 text-right text-muted-foreground font-mono">{team.fish}</td>
                           <td className="px-6 py-4 text-right font-black text-foreground text-base">{team.weight.toFixed(1)}</td>
@@ -968,10 +1021,7 @@ export default function CompetitionDetail() {
                   <h3 className="font-bold text-foreground text-sm uppercase tracking-wider">Čo sa deje pri vode</h3>
                   <div className="flex items-center gap-2">
                     <button 
-                      onClick={() => {
-                        setSelectedCatch(null);
-                        setShowCatchesOverlay(true);
-                      }}
+                      onClick={() => setEntityModal({ view: 'catches-list', team: null, catch_: null, previousView: null })}
                       className="text-[10px] text-cyan-500 font-bold uppercase hover:underline"
                     >
                       Všetky úlovky
@@ -986,13 +1036,24 @@ export default function CompetitionDetail() {
                     <div 
                       key={item.id} 
                       className="relative pl-4 cursor-pointer hover:bg-muted/20 -mx-2 px-2 py-1 rounded-lg transition-colors"
-                      onClick={() => setSelectedCatch(item.catchObj)}
+                      onClick={() => setEntityModal({ view: 'catch', team: null, catch_: item.catchObj, previousView: null })}
                     >
                       <div className="absolute left-0 top-3 bottom-[-24px] w-[2px] bg-border last:hidden"></div>
                       <div className={`absolute left-[-3px] top-3 w-2 h-2 rounded-full border border-card ${item.action === 'big_fish' ? 'bg-amber-500' : 'bg-cyan-500'}`}></div>
                       <div>
                         <div className="flex justify-between items-start mb-1">
-                          <span className="text-xs font-bold text-foreground truncate max-w-[140px]">{item.team}</span>
+                          <button 
+                            className="text-xs font-bold text-foreground truncate max-w-[140px] hover:text-cyan-500 transition-colors text-left"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const fullTeam = teams?.find(t => t.id === item.catchObj.teamId);
+                              if (fullTeam) {
+                                setEntityModal({ view: 'team', team: fullTeam, catch_: null, previousView: null });
+                              }
+                            }}
+                          >
+                            {item.team}
+                          </button>
                           <span className="text-[10px] text-muted-foreground font-mono">{item.time}</span>
                         </div>
                         <div className="flex items-center gap-2 bg-muted/30 p-2 rounded-lg border border-border">
@@ -1324,154 +1385,190 @@ export default function CompetitionDetail() {
         </div>
       )}
 
-      {/* --- CATCHES OVERLAY (MODAL) --- */}
-      {showCatchesOverlay && (
+      {/* --- UNIFIED ENTITY MODAL --- */}
+      {entityModal.view && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8">
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowCatchesOverlay(false)} />
+          <div 
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm" 
+            onClick={() => setEntityModal({ view: null, team: null, catch_: null, previousView: null })} 
+          />
           <div className="relative w-full max-w-2xl max-h-[90vh] bg-card border border-border rounded-3xl shadow-2xl flex flex-col overflow-hidden z-10">
             
-            {/* Modal Header */}
-            <div className="p-6 border-b border-border flex items-center justify-between bg-muted/30">
-              <div>
-                <h2 className="text-xl font-black text-foreground flex items-center gap-3">
-                  <Fish className="text-cyan-500" />
-                  Všetky úlovky
-                </h2>
-                <p className="text-muted-foreground text-sm mt-1">{allCatchesSorted.length} úlovkov v preteku</p>
-              </div>
-              <button 
-                onClick={() => setShowCatchesOverlay(false)}
-                className="p-3 bg-muted/50 hover:bg-muted rounded-full transition-colors text-foreground"
-              >
-                <X size={24} />
-              </button>
-            </div>
-
-            {/* Modal Content - Catches List */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
-              {allCatchesSorted.map((c) => (
-                <div 
-                  key={c.id}
-                  className="bg-muted/30 border border-border rounded-xl p-4 cursor-pointer hover:bg-muted/50 transition-colors"
-                  onClick={() => {
-                    setShowCatchesOverlay(false);
-                    setSelectedCatch(c);
-                  }}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${parseFloat(String(c.weight)) >= 10 ? 'bg-amber-500/20 text-amber-500' : 'bg-cyan-500/20 text-cyan-500'}`}>
-                        {parseFloat(String(c.weight)) >= 10 ? <Crown size={18} /> : <Fish size={18} />}
-                      </div>
-                      <div>
-                        <div className="font-bold text-foreground">{c.team?.name || 'Neznámy tím'}</div>
-                        <div className="text-xs text-muted-foreground">{c.fishType || 'Ryba'} • Sektor {c.team?.sector || '-'}</div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-xl font-black text-foreground">{parseFloat(String(c.weight)).toFixed(1)} kg</div>
-                      <div className="text-[10px] text-muted-foreground">
-                        {c.submittedAt ? formatDistanceToNow(new Date(c.submittedAt), { addSuffix: true, locale: sk }) : ''}
-                      </div>
-                    </div>
+            {/* CATCHES LIST VIEW */}
+            {entityModal.view === 'catches-list' && (
+              <>
+                <div className="p-6 border-b border-border flex items-center justify-between bg-muted/30">
+                  <div>
+                    <h2 className="text-xl font-black text-foreground flex items-center gap-3">
+                      <Fish className="text-cyan-500" />
+                      Všetky úlovky
+                    </h2>
+                    <p className="text-muted-foreground text-sm mt-1">{allCatchesSorted.length} úlovkov v preteku</p>
                   </div>
+                  <button 
+                    onClick={() => setEntityModal({ view: null, team: null, catch_: null, previousView: null })}
+                    className="p-3 bg-muted/50 hover:bg-muted rounded-full transition-colors text-foreground"
+                  >
+                    <X size={24} />
+                  </button>
                 </div>
-              ))}
-              {allCatchesSorted.length === 0 && (
-                <div className="text-center py-12 text-muted-foreground">
-                  Zatiaľ bez úlovkov
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* --- CATCH DETAIL OVERLAY (MODAL) --- */}
-      {selectedCatch && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8">
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setSelectedCatch(null)} />
-          <div className="relative w-full max-w-md max-h-[90vh] bg-card border border-border rounded-3xl shadow-2xl flex flex-col overflow-hidden z-10">
-            
-            {/* Modal Header */}
-            <div className="p-6 border-b border-border flex items-center justify-between bg-muted/30">
-              <div>
-                <h2 className="text-xl font-black text-foreground flex items-center gap-3">
-                  {parseFloat(String(selectedCatch.weight)) >= 10 ? (
-                    <Crown className="text-amber-500" />
-                  ) : (
-                    <Fish className="text-cyan-500" />
+                <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                  {allCatchesSorted.map((c) => (
+                    <div 
+                      key={c.id}
+                      className="bg-muted/30 border border-border rounded-xl p-4 cursor-pointer hover:bg-muted/50 transition-colors"
+                      onClick={() => setEntityModal({ view: 'catch', team: null, catch_: c, previousView: 'catches-list' })}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${parseFloat(String(c.weight)) >= 10 ? 'bg-amber-500/20 text-amber-500' : 'bg-cyan-500/20 text-cyan-500'}`}>
+                            {parseFloat(String(c.weight)) >= 10 ? <Crown size={18} /> : <Fish size={18} />}
+                          </div>
+                          <div>
+                            <button
+                              className="font-bold text-foreground hover:text-cyan-500 transition-colors text-left"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const teamObj = teams?.find(t => t.id === c.teamId);
+                                if (teamObj) {
+                                  setEntityModal({ view: 'team', team: teamObj, catch_: null, previousView: 'catches-list' });
+                                }
+                              }}
+                            >
+                              {c.team?.name || 'Neznámy tím'}
+                            </button>
+                            <div className="text-xs text-muted-foreground">{c.fishType || 'Ryba'} • Sektor {c.team?.sector || '-'}</div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xl font-black text-foreground">{parseFloat(String(c.weight)).toFixed(1)} kg</div>
+                          <div className="text-[10px] text-muted-foreground">
+                            {c.submittedAt ? formatDistanceToNow(new Date(c.submittedAt), { addSuffix: true, locale: sk }) : ''}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {allCatchesSorted.length === 0 && (
+                    <div className="text-center py-12 text-muted-foreground">
+                      Zatiaľ bez úlovkov
+                    </div>
                   )}
-                  Detail úlovku
-                </h2>
-                <p className="text-muted-foreground text-sm mt-1">{selectedCatch.team?.name || 'Neznámy tím'}</p>
-              </div>
-              <button 
-                onClick={() => setSelectedCatch(null)}
-                className="p-3 bg-muted/50 hover:bg-muted rounded-full transition-colors text-foreground"
-              >
-                <X size={24} />
-              </button>
-            </div>
-
-            {/* Modal Content - Catch Detail */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
-              {/* Weight - big highlight */}
-              <div className="text-center py-6 bg-muted/30 rounded-2xl border border-border">
-                <div className="text-5xl font-black text-foreground mb-1">{parseFloat(String(selectedCatch.weight)).toFixed(1)}</div>
-                <div className="text-lg text-muted-foreground">kilogramov</div>
-              </div>
-
-              {/* Info grid */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-cyan-500/10 rounded-lg text-cyan-500"><Fish size={18} /></div>
-                  <div>
-                    <div className="text-xs text-muted-foreground">Druh ryby</div>
-                    <div className="font-bold text-foreground">{selectedCatch.fishType || 'Neuvedené'}</div>
-                  </div>
                 </div>
+              </>
+            )}
 
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-500"><Users size={18} /></div>
-                  <div>
-                    <div className="text-xs text-muted-foreground">Tím</div>
-                    <div className="font-bold text-foreground">{selectedCatch.team?.name || 'Neznámy tím'}</div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-purple-500/10 rounded-lg text-purple-500"><MapPin size={18} /></div>
-                  <div>
-                    <div className="text-xs text-muted-foreground">Sektor</div>
-                    <div className="font-bold text-foreground">{selectedCatch.team?.sector || '-'}</div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-amber-500/10 rounded-lg text-amber-500"><Clock size={18} /></div>
-                  <div>
-                    <div className="text-xs text-muted-foreground">Čas úlovku</div>
-                    <div className="font-bold text-foreground">
-                      {selectedCatch.submittedAt 
-                        ? formatDistanceToNow(new Date(selectedCatch.submittedAt), { addSuffix: true, locale: sk })
-                        : 'Neuvedené'}
+            {/* CATCH DETAIL VIEW */}
+            {entityModal.view === 'catch' && entityModal.catch_ && (
+              <>
+                <div className="p-6 border-b border-border flex items-center justify-between bg-muted/30">
+                  <div className="flex items-center gap-3">
+                    {entityModal.previousView && (
+                      <button 
+                        onClick={() => setEntityModal({ 
+                          view: entityModal.previousView!, 
+                          team: entityModal.team, 
+                          catch_: null, 
+                          previousView: null 
+                        })}
+                        className="p-2 bg-muted/50 hover:bg-muted rounded-full transition-colors text-foreground"
+                      >
+                        <ChevronLeft size={20} />
+                      </button>
+                    )}
+                    <div>
+                      <h2 className="text-xl font-black text-foreground flex items-center gap-3">
+                        {parseFloat(String(entityModal.catch_.weight)) >= 10 ? (
+                          <Crown className="text-amber-500" />
+                        ) : (
+                          <Fish className="text-cyan-500" />
+                        )}
+                        Detail úlovku
+                      </h2>
+                      <p className="text-muted-foreground text-sm mt-1">{entityModal.catch_.team?.name || 'Neznámy tím'}</p>
                     </div>
                   </div>
+                  <button 
+                    onClick={() => setEntityModal({ view: null, team: null, catch_: null, previousView: null })}
+                    className="p-3 bg-muted/50 hover:bg-muted rounded-full transition-colors text-foreground"
+                  >
+                    <X size={24} />
+                  </button>
                 </div>
-              </div>
+                <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                  <div className="text-center py-6 bg-muted/30 rounded-2xl border border-border">
+                    <div className="text-5xl font-black text-foreground mb-1">{parseFloat(String(entityModal.catch_.weight)).toFixed(1)}</div>
+                    <div className="text-lg text-muted-foreground">kilogramov</div>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-cyan-500/10 rounded-lg text-cyan-500"><Fish size={18} /></div>
+                      <div>
+                        <div className="text-xs text-muted-foreground">Druh ryby</div>
+                        <div className="font-bold text-foreground">{entityModal.catch_.fishType || 'Neuvedené'}</div>
+                      </div>
+                    </div>
+                    <div 
+                      className="flex items-center gap-3 cursor-pointer hover:bg-muted/30 -mx-2 px-2 py-1 rounded-lg transition-colors"
+                      onClick={() => {
+                        const teamObj = teams?.find(t => t.id === entityModal.catch_?.teamId);
+                        if (teamObj) {
+                          setEntityModal({ view: 'team', team: teamObj, catch_: null, previousView: 'catch' });
+                        }
+                      }}
+                    >
+                      <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-500"><Users size={18} /></div>
+                      <div className="flex-1">
+                        <div className="text-xs text-muted-foreground">Tím</div>
+                        <div className="font-bold text-foreground">{entityModal.catch_.team?.name || 'Neznámy tím'}</div>
+                      </div>
+                      <ChevronRight size={16} className="text-muted-foreground" />
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-purple-500/10 rounded-lg text-purple-500"><MapPin size={18} /></div>
+                      <div>
+                        <div className="text-xs text-muted-foreground">Sektor</div>
+                        <div className="font-bold text-foreground">{entityModal.catch_.team?.sector || '-'}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-amber-500/10 rounded-lg text-amber-500"><Clock size={18} /></div>
+                      <div>
+                        <div className="text-xs text-muted-foreground">Čas úlovku</div>
+                        <div className="font-bold text-foreground">
+                          {entityModal.catch_.submittedAt 
+                            ? formatDistanceToNow(new Date(entityModal.catch_.submittedAt), { addSuffix: true, locale: sk })
+                            : 'Neuvedené'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setEntityModal({ view: 'catches-list', team: null, catch_: null, previousView: null })}
+                    className="w-full py-3 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl font-bold transition-colors"
+                  >
+                    Pozrieť všetky úlovky preteku
+                  </button>
+                </div>
+              </>
+            )}
 
-              {/* CTA to view all catches */}
-              <button
-                onClick={() => {
-                  setSelectedCatch(null);
-                  setShowCatchesOverlay(true);
+            {/* TEAM VIEW */}
+            {entityModal.view === 'team' && entityModal.team && (
+              <TeamOverviewContent
+                team={entityModal.team}
+                catches={catches || []}
+                rank={sortedLeaderboard.find(t => t.id === entityModal.team?.id)?.rank}
+                onCatchClick={(c) => setEntityModal({ view: 'catch', team: entityModal.team, catch_: { ...c, team: entityModal.team! }, previousView: 'team' })}
+                onClose={() => {
+                  if (entityModal.previousView) {
+                    setEntityModal({ view: entityModal.previousView, team: null, catch_: null, previousView: null });
+                  } else {
+                    setEntityModal({ view: null, team: null, catch_: null, previousView: null });
+                  }
                 }}
-                className="w-full py-3 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl font-bold transition-colors"
-              >
-                Pozrieť všetky úlovky preteku
-              </button>
-            </div>
+              />
+            )}
           </div>
         </div>
       )}
