@@ -1,0 +1,51 @@
+Umiestnenie v kóde / UI	Súčasný názov	Finálny názov
+StatusBadge – live	IDE SA NAPLNO	PRETEK PREBIEHA
+StatusBadge – registration	REGISTRÁCIA	REGISTRÁCIA OTVORENÁ
+StatusBadge – ended	UKONČENÉ	PRETEK UKONČENÝ
+Header – čas do konca	Do konca zostávajú {time} lovu	Do konca lovu  zostáva {time} 
+Header – tímy	Na štarte {X} tímov	Na štarte: {X} tímov
+Button – späť	Späť	Späť
+Button – registrácia	Registrovať Tím	Registrovať tím
+Button – môj tím	Môj tím	Môj tím
+Button – zdieľať	Zdieľať	Zdieľať
+Button – QR	Zobraziť QR kód	Registrácia cez QR kód
+Sticky stat – ryby	Spolu chytených	Počet ulovených rýb
+Sticky stat – váha	Celková váha	Celková váha
+Sticky stat – top ryba	TOP ryba preteku	TOP ryba preteku
+Sticky stat – priemer	Priemer na rybu	Priemer na rybu
+Podium – label	(žiadny)	LÍDER PRETEKU
+Leaderboard – nadpis	Aktuálne poradie tímov	Aktuálne poradie tímov
+Leaderboard – empty	Zatiaľ sa ešte nič nezapísalo	Zatiaľ nebol zaznamenaný žiadny úlovok
+Leaderboard – expand	Celá Tabuľka ({X} tímov)	Zobraziť celé poradie (X tímov)
+Leaderboard – collapse	Menej	Zbaliť tabuľku
+Commentator – label	Čo hovoria čísla	Správy od vody
+Commentator – CTA	Kde a kedy berú	Kde a kedy berú
+Live feed – nadpis	Dianie pri vode	Čo sa deje pri vode
+Live feed – big fish	Padla veľká ryba!	Padla veľká ryba!
+Live feed – empty	Zatiaľ sa ešte nič nechytilo	Zatiaľ bez úlovkov
+Map button – title	Kde kto loví	Rozmiestnenie tímov
+Map button – helper	Mapa sektorov	Mapa sektorov
+Rules button – title	Pravidlá	Pravidlá preteku
+Rules modal – title	Pravidlá súťaže	Pravidlá preteku
+Stats modal – HLAVNÝ NADPIS	Ako ryby berú	Ako ryby berú počas preteku
+Stats modal – subtitle	Len fakty, žiadne reči	Dáta priamo z vody
+Stats tab	Prehľad	Prehľad
+Stats tab	Sektory	Sektory
+Stats tab	Tvrdé dáta	Detailné štatistiky
+Stats – section title	Kde ryby berú najviac	Kde ryby berú najviac
+Stats – section title	Kedy ryby berú najviac	Kedy ryby berú najviac
+Stats – tile	Priemerná veľkosť úlovku	Priemerná váha úlovku
+Stats – tile	Celkový počet úlovkov	Počet úlovkov
+Stats – tile	TOP ryba preteku	TOP ryba preteku
+Stats – tile	Celková váha	Celková váha
+Sector tab – title	Detailné poradie v sektoroch	Poradie v sektoroch
+Sector tab – empty	Žiadne sektory nie sú definované	Sektory ešte nie sú rozdelené
+Registration modal – title	Registrovať tím pre {name}	Registrácia tímu
+Registration info	Registrácia čaká na schválenie	Registrácia čaká na schválenie organizátorom
+My team modal – approved	Schválený / Tím je v hre	Tím je v hre
+My team modal – pending	Čaká na schválenie	Čaká na schválenie
+My team modal – rejected	Zamietnutý	Registrácia zamietnutá
+My team – stats	Úlovkov	Úlovkov
+My team – stats	Celková váha	Celková váha
+My team – members	Členovia tímu	Členovia tímu
+Member badge	Kapitán	Kapitán
