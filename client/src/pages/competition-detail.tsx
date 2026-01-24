@@ -546,7 +546,7 @@ export default function CompetitionDetail() {
                     id={id || ""} 
                     name={competition.name}
                     trigger={
-                      <button className="bg-card/50 hover:bg-card text-muted-foreground hover:text-foreground p-3 rounded-xl border border-border transition-colors" title="Zobraziť QR kód">
+                      <button className="bg-card/50 hover:bg-card text-muted-foreground hover:text-foreground p-3 rounded-xl border border-border transition-colors" title="Registrácia cez QR kód">
                         <QrCode size={20} />
                       </button>
                     }
