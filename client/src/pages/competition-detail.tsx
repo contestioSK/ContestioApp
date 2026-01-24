@@ -266,23 +266,9 @@ export default function CompetitionDetail() {
     registerTeamMutation.mutate(data);
   };
 
-  // Redirect if not authenticated
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      toast({
-        title: "Neautorizovaný",
-        description: "Ste odhlásený. Prihlasujem znovu...",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        navigate("/auth/login");
-      }, 500);
-    }
-  }, [isAuthenticated, authLoading, toast, navigate]);
-
   const { data: competition, isLoading: competitionLoading, error } = useQuery<Competition>({
     queryKey: ["/api/competitions", id],
-    enabled: isAuthenticated && !!id,
+    enabled: !!id,
   });
 
   const isLive = competition?.status === 'live';
@@ -291,14 +277,14 @@ export default function CompetitionDetail() {
 
   const { data: teams, isLoading: teamsLoading } = useQuery<(Team & { members?: any[] })[]>({
     queryKey: ["/api/competitions", id, "teams"],
-    enabled: isAuthenticated && !!id,
+    enabled: !!id,
     refetchInterval: isLive ? livePollingInterval : false,
     staleTime: isLive ? STALE_TIMES.LIVE : STALE_TIMES.STATIC,
   });
 
   const { data: catches, isLoading: catchesLoading } = useQuery<(Catch & { team?: Team; referee?: any })[]>({
     queryKey: ["/api/competitions", id, "catches"],
-    enabled: isAuthenticated && !!id,
+    enabled: !!id,
     refetchInterval: isLive ? livePollingInterval : false,
     staleTime: isLive ? STALE_TIMES.LIVE : STALE_TIMES.STATIC,
   });
