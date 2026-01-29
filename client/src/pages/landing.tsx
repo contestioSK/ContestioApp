@@ -1,18 +1,24 @@
 import { Button } from "@/components/ui/button";
-import { Trophy, BookOpen, Menu, X, ChevronRight, MapPin, Fish } from "lucide-react";
+import { Menu, X, ChevronRight, ArrowRight } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+
 import contestioLogo from "@assets/contestio logo_1760283270014.png";
+import starsBackground from "@assets/figma/stars_background.png";
+import gradientOrb1 from "@assets/figma/gradient_orb1.png";
+import gradientOrb2 from "@assets/figma/gradient_orb2.png";
+import categoryActive from "@assets/figma/category_active.png";
+import categoryUpcoming from "@assets/figma/category_upcoming.png";
+import categoryLive from "@assets/figma/category_live.png";
+import categoryFinished from "@assets/figma/category_finished.png";
+import featureCentrum from "@assets/figma/feature_centrum.png";
+import featureDennik from "@assets/figma/feature_dennik.png";
 
 interface Competition {
   id: string;
   name: string;
-  description: string;
-  location: string;
   status: 'registration' | 'live' | 'finished';
-  startDate: string;
-  endDate: string;
 }
 
 export default function Landing() {
@@ -30,444 +36,398 @@ export default function Landing() {
     { href: "/organizer/create", label: "Vytvoriť súťaž" },
   ];
 
-  const liveCount = competitions.filter(c => c.status === 'live').length;
-  const activeCount = competitions.filter(c => c.status === 'registration').length;
-  const finishedCount = competitions.filter(c => c.status === 'finished').length;
+  const liveCount = competitions.filter(c => c.status === 'live').length || 1;
+  const activeCount = competitions.filter(c => c.status === 'registration').length || 1;
+  const finishedCount = competitions.filter(c => c.status === 'finished').length || 1;
 
   return (
-    <div className="min-h-screen bg-[#08101a]">
+    <div className="bg-[#08101a] min-h-screen relative overflow-x-hidden">
       
-      {/* Hero Section */}
-      <section className="relative min-h-screen overflow-hidden">
-        
-        {/* Background Effects */}
-        <div className="absolute inset-0">
-          <div className="absolute top-[-180px] left-[13%] w-[948px] h-[571px] bg-gradient-radial from-cyan-500/20 via-cyan-500/5 to-transparent rounded-full blur-3xl" />
-          <div className="absolute top-[298px] left-[27%] w-[948px] h-[304px] bg-gradient-radial from-emerald-500/15 via-emerald-500/5 to-transparent rounded-full blur-2xl" />
-          <div className="absolute top-0 left-0 right-0 h-[800px] bg-[url('https://images.unsplash.com/photo-1504309092620-4d0ec726efa4?w=1920')] bg-cover bg-center opacity-20 mix-blend-screen" />
-        </div>
+      {/* Background Effects */}
+      <div className="absolute top-[-181px] left-[calc(8.33%+72px)] w-[948px] h-[571px] pointer-events-none">
+        <img src={gradientOrb1} alt="" className="w-full h-full object-contain opacity-60" />
+      </div>
+      <div className="absolute top-[298px] left-[calc(25%+25px)] w-[948px] h-[304px] pointer-events-none">
+        <img src={gradientOrb2} alt="" className="w-full h-full object-contain opacity-60" />
+      </div>
+      <div className="absolute top-[-17px] left-[-191px] w-[1834px] h-[1200px] mix-blend-screen pointer-events-none">
+        <img src={starsBackground} alt="" className="w-full h-full object-cover" />
+      </div>
 
-        {/* Navigation */}
-        <nav className="relative z-50 pt-6 px-4 md:px-8 lg:px-20">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            
-            {/* Logo */}
-            <Link href="/">
-              <img src={contestioLogo} alt="Contestio" className="h-8 md:h-9" />
+      {/* Navigation */}
+      <nav className="relative z-50 px-4 md:px-20 pt-[45px]">
+        <div className="max-w-[1440px] mx-auto flex items-center justify-between">
+          
+          {/* Logo */}
+          <Link href="/">
+            <img src={contestioLogo} alt="Contestio" className="h-[37px] w-auto" />
+          </Link>
+
+          {/* Desktop Nav Pill */}
+          <div className="hidden lg:flex items-center gap-9 px-[168px] py-[29px] h-[54px] rounded-full border border-white/8 bg-gradient-to-r from-[#08101a] via-[#0e2331] to-[#08121c] backdrop-blur-[12px] shadow-[0px_25px_50px_-12px_rgba(0,0,0,0.5)]">
+            {navItems.map((item) => (
+              <Link key={item.href} href={item.href}>
+                <span className="text-white text-base font-normal leading-4 cursor-pointer hover:opacity-80 transition-opacity whitespace-nowrap" style={{ fontFamily: "'ABeeZee', sans-serif" }}>
+                  {item.label}
+                </span>
+              </Link>
+            ))}
+          </div>
+          
+          {/* CTA Buttons */}
+          <div className="hidden lg:flex items-center gap-3">
+            <Link href="/auth/login">
+              <div className="bg-[#fb923c] px-[10px] py-[17px] rounded-[28px] w-[165px] flex items-center justify-center cursor-pointer hover:bg-[#f97316] transition-colors">
+                <span className="text-[#08101b] text-base font-normal text-center" style={{ fontFamily: "'ABeeZee', sans-serif" }}>
+                  Prihlásiť sa
+                </span>
+              </div>
             </Link>
-
-            {/* Desktop Nav */}
-            <div className="hidden lg:flex items-center gap-8">
-              <div className="flex items-center gap-1 px-6 py-3 rounded-full border border-white/10 bg-gradient-to-r from-[#08101a] via-[#0e2331] to-[#08121c] backdrop-blur-xl">
-                {navItems.map((item) => (
-                  <Link key={item.href} href={item.href}>
-                    <span className="px-4 py-2 text-sm text-white/80 hover:text-white transition-colors cursor-pointer">
-                      {item.label}
-                    </span>
-                  </Link>
-                ))}
+            <Link href="/auth/register">
+              <div className="backdrop-blur-[12px] border border-white/8 px-[168px] py-[29px] h-[50px] rounded-full w-[165px] flex items-center justify-center cursor-pointer hover:bg-white/5 transition-colors">
+                <span className="text-white text-base font-normal text-center whitespace-nowrap" style={{ fontFamily: "'ABeeZee', sans-serif" }}>
+                  Zaregistrovať sa
+                </span>
               </div>
-              
-              <div className="flex items-center gap-3">
-                <Button asChild className="bg-orange-400 hover:bg-orange-500 text-[#08101b] font-medium px-6 rounded-full">
-                  <Link href="/auth/login">Prihlásiť sa</Link>
-                </Button>
-                <Button asChild variant="outline" className="border-white/10 text-white hover:bg-white/10 rounded-full backdrop-blur-xl">
-                  <Link href="/auth/register">Zaregistrovať sa</Link>
-                </Button>
-              </div>
-            </div>
-
-            {/* Mobile Menu Button */}
-            <button 
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden text-white p-2"
-            >
-              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
+            </Link>
           </div>
 
-          {/* Mobile Menu */}
-          {isMobileMenuOpen && (
-            <div className="lg:hidden mt-4 p-6 rounded-2xl bg-[#0e1a26]/95 backdrop-blur-xl border border-white/10">
-              <div className="space-y-3">
-                {navItems.map((item) => (
-                  <Link key={item.href} href={item.href}>
-                    <div 
-                      className="px-4 py-3 text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      {item.label}
-                    </div>
-                  </Link>
-                ))}
-                <div className="pt-4 border-t border-white/10 space-y-2">
-                  <Button asChild className="w-full bg-orange-400 hover:bg-orange-500 text-[#08101b] font-medium rounded-full">
-                    <Link href="/auth/login">Prihlásiť sa</Link>
-                  </Button>
-                  <Button asChild variant="outline" className="w-full border-white/10 text-white hover:bg-white/10 rounded-full">
-                    <Link href="/auth/register">Zaregistrovať sa</Link>
-                  </Button>
-                </div>
+          {/* Mobile Menu Button */}
+          <button 
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="lg:hidden text-white p-2"
+          >
+            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
+
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <div className="lg:hidden mt-4 p-6 rounded-2xl bg-[#0e1a26]/95 backdrop-blur-xl border border-white/10">
+            <div className="space-y-3">
+              {navItems.map((item) => (
+                <Link key={item.href} href={item.href}>
+                  <div 
+                    className="px-4 py-3 text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    {item.label}
+                  </div>
+                </Link>
+              ))}
+              <div className="pt-4 border-t border-white/10 space-y-2">
+                <Link href="/auth/login">
+                  <div className="w-full bg-[#fb923c] text-[#08101b] font-medium py-3 rounded-full text-center cursor-pointer">
+                    Prihlásiť sa
+                  </div>
+                </Link>
+                <Link href="/auth/register">
+                  <div className="w-full border border-white/10 text-white py-3 rounded-full text-center cursor-pointer">
+                    Zaregistrovať sa
+                  </div>
+                </Link>
               </div>
             </div>
-          )}
-        </nav>
+          </div>
+        )}
+      </nav>
 
-        {/* Hero Content */}
-        <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-8 lg:px-20 pt-16 md:pt-24 lg:pt-32">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-start">
+      {/* Hero Section */}
+      <section className="relative z-10 px-4 md:px-20 pt-[67px]">
+        <div className="max-w-[1440px] mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
             
             {/* Left Column - Text */}
-            <div className="max-w-xl">
-              <h1 className="font-medium tracking-tight">
-                <span className="block text-5xl md:text-6xl lg:text-[82px] leading-[1.1] text-white/60">Živý rybolov</span>
-                <span className="block text-5xl md:text-6xl lg:text-[82px] leading-[1.1] text-white">Súťaže</span>
-              </h1>
-              
-              <p className="mt-4 text-3xl md:text-4xl lg:text-[52px] leading-[1.1] text-white font-medium tracking-tight">
-                Skutočné výsledky. Jedna platforma.
-              </p>
-              
-              <p className="mt-6 text-lg md:text-xl text-white/70 leading-relaxed max-w-lg">
-                Zúčastnite sa turnajov v živom rybolove, sledujte svoj pokrok a zostaňte v spojení s rybárskou komunitou
-              </p>
-
-              {/* CTA Buttons */}
-              <div className="mt-8 flex flex-wrap gap-4">
-                <Button asChild className="bg-orange-400 hover:bg-orange-500 text-[#08101b] font-medium px-8 py-6 text-base rounded-full">
-                  <Link href="/competitions">Zapojte sa do súťaže</Link>
-                </Button>
-                <Button asChild variant="outline" className="border-white/10 text-white hover:bg-white/10 px-8 py-6 text-base rounded-full backdrop-blur-xl">
-                  <Link href="/categories/all">Preskúmajte súťaže</Link>
-                </Button>
+            <div className="flex flex-col gap-[37px] max-w-[791px]">
+              <div className="flex flex-col gap-[23px]" style={{ fontFamily: "'Manrope', sans-serif" }}>
+                <div className="flex flex-col gap-4 tracking-[-4.8px]">
+                  <div className="flex gap-5 items-center text-[52px] md:text-[82px] leading-[96px]">
+                    <span className="bg-gradient-to-b from-white via-white to-white/50 bg-clip-text text-transparent opacity-60">
+                      Živý rybolov
+                    </span>
+                    <span className="text-white">
+                      Súťaže
+                    </span>
+                  </div>
+                  <p className="text-[32px] md:text-[52px] leading-[96px] text-white font-medium">
+                    Skutočné výsledky. Jedna platforma.
+                  </p>
+                </div>
+                <p className="text-xl text-white leading-8 max-w-[728px] font-medium">
+                  Zúčastnite sa turnajov v živom rybolove, sledujte svoj pokrok a zostaňte v spojení s rybárskou komunitou
+                </p>
               </div>
 
-              {/* Stats */}
-              <div className="mt-12 flex gap-12">
-                <div>
-                  <p className="text-sm text-white/60 font-light">Počet aktívnych účtov</p>
-                  <p className="mt-2 text-2xl md:text-3xl text-white font-medium tracking-tight">1 200 rybárov</p>
-                </div>
-                <div>
-                  <p className="text-sm text-white/60 font-light">Usporiadané súťaže</p>
-                  <p className="mt-2 text-2xl md:text-3xl text-white font-medium tracking-tight">300+</p>
-                </div>
+              {/* CTA Buttons */}
+              <div className="flex flex-wrap gap-5">
+                <Link href="/competitions">
+                  <div className="bg-[#fb923c] px-[10px] py-[17px] rounded-[28px] w-[195px] flex items-center justify-center cursor-pointer hover:bg-[#f97316] transition-colors">
+                    <span className="text-[#08101b] text-base font-normal text-center" style={{ fontFamily: "'ABeeZee', sans-serif" }}>
+                      Zapojte sa do súťaže
+                    </span>
+                  </div>
+                </Link>
+                <Link href="/categories/all">
+                  <div className="backdrop-blur-[12px] border border-white/8 h-[50px] rounded-full w-[195px] flex items-center justify-center cursor-pointer hover:bg-white/5 transition-colors">
+                    <span className="text-white text-base font-normal text-center" style={{ fontFamily: "'ABeeZee', sans-serif" }}>
+                      Preskúmajte súťaže
+                    </span>
+                  </div>
+                </Link>
               </div>
             </div>
 
             {/* Right Column - Phone Mockup */}
             <div className="flex justify-center lg:justify-end">
               <div 
-                className="relative w-[280px] md:w-[330px] h-[560px] md:h-[660px] bg-[#09090b] rounded-[40px] md:rounded-[56px] border-[8px] md:border-[12px] border-[#27272a] shadow-2xl overflow-hidden"
-                style={{ transform: 'perspective(1000px) rotateY(-5deg) rotateX(2deg)' }}
+                className="relative w-[280px] md:w-[330px] h-[560px] md:h-[661px]"
+                style={{ transform: 'rotate(1.44deg) skewX(-22.42deg) scaleY(0.92)' }}
               >
-                {/* Phone Screen */}
-                <div className="absolute inset-0 bg-gradient-to-b from-[#18181b] to-black overflow-hidden rounded-[32px] md:rounded-[44px]">
-                  
-                  {/* Status Bar */}
-                  <div className="flex items-center justify-between px-6 py-3">
-                    <span className="text-white text-xs font-semibold">9:41</span>
-                    <div className="w-20 h-6 bg-black rounded-full" />
-                    <div className="flex gap-1">
-                      <div className="w-4 h-2 bg-white/60 rounded-sm" />
+                <div className="bg-[#09090b] border-[12px] border-[#27272a] rounded-[56px] w-full h-full overflow-hidden shadow-[30px_110px_163px_0px_rgba(0,0,0,0.92)]">
+                  <div className="absolute inset-[1px] bg-gradient-to-b from-[#18181b] to-black rounded-[44px] overflow-hidden">
+                    
+                    {/* Phone Header */}
+                    <div className="flex items-center justify-center pt-[60px]">
+                      <div className="w-2 h-2 bg-[#10b981] rounded-full shadow-[0px_0px_10px_0px_rgba(16,185,129,0.5)] mr-2" />
+                      <span className="text-white text-sm font-semibold tracking-[0.35px]" style={{ fontFamily: "'Inter', sans-serif" }}>
+                        Live Výsledky
+                      </span>
                     </div>
-                  </div>
 
-                  {/* App Header */}
-                  <div className="px-4 pt-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center">
-                        <Fish className="w-4 h-4 text-white" />
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-emerald-500 rounded-full shadow-lg shadow-emerald-500/50" />
-                        <span className="text-white font-semibold text-sm">Live Výsledky</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Competition Stats */}
-                  <div className="px-4 pt-8 pb-4">
-                    <p className="text-zinc-500 text-[10px] uppercase tracking-wider">Celková váha</p>
-                    <p className="text-white text-4xl md:text-5xl font-medium tracking-tight mt-1">619 kg</p>
-                    <div className="flex items-center gap-2 mt-2">
-                      <span className="px-2 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded text-emerald-500 text-xs font-semibold">29 úlovkov</span>
-                      <span className="text-zinc-500 text-xs">3 tímy</span>
-                    </div>
-                  </div>
-
-                  {/* Leaderboard */}
-                  <div className="bg-zinc-900/60 backdrop-blur-xl border-t border-white/5 rounded-t-3xl mt-4 pt-4 px-4 flex-1">
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-zinc-500 text-[10px] uppercase tracking-wider font-bold">Rebríček tímov</span>
-                      <div className="flex gap-1">
-                        <div className="w-1 h-1 bg-zinc-600 rounded-full" />
-                        <div className="w-1 h-1 bg-zinc-700 rounded-full" />
+                    {/* Total Volume */}
+                    <div className="text-center mt-8">
+                      <p className="text-[#71717a] text-[10px] uppercase tracking-[1px]" style={{ fontFamily: "'Inter', sans-serif" }}>
+                        Total Volume
+                      </p>
+                      <p className="text-white text-[48px] font-medium tracking-[-2.4px] mt-1" style={{ fontFamily: "'Geist', sans-serif" }}>
+                        $8,245.32
+                      </p>
+                      <div className="flex items-center justify-center gap-2 mt-2">
+                        <span className="bg-[rgba(16,185,129,0.1)] border border-[rgba(16,185,129,0.2)] rounded px-2 py-1 text-[#10b981] text-[10px] font-semibold">
+                          +12.4%
+                        </span>
+                        <span className="text-[#71717a] text-xs">this week</span>
                       </div>
                     </div>
 
-                    {/* Team Cards */}
-                    <div className="space-y-3">
-                      {[
-                        { name: 'Tím Alfa', catches: 12, weight: '245 kg' },
-                        { name: 'Rybári SK', catches: 9, weight: '198 kg' },
-                        { name: 'Kapráři CZ', catches: 8, weight: '176 kg' },
-                      ].map((team, i) => (
-                        <div 
-                          key={i}
-                          className="p-3 rounded-xl"
-                          style={{ background: 'linear-gradient(169deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%)' }}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <span className="text-white text-sm font-semibold">{team.name}</span>
-                              <span className="text-white/40 text-sm ml-2">{team.catches} úlovkov</span>
-                            </div>
-                            <ChevronRight className="w-4 h-4 text-white/40" />
-                          </div>
-                          <div className="flex items-center gap-2 mt-1">
-                            <div className="w-1 h-1 bg-emerald-500 rounded-full" />
-                            <span className="text-emerald-500 text-xs font-medium">{team.weight}</span>
-                          </div>
+                    {/* Active Nodes Section */}
+                    <div className="absolute bottom-0 left-0 right-0 bg-[rgba(24,24,27,0.6)] backdrop-blur-[6px] border-t border-white/5 rounded-t-[32px] pt-4 px-6 pb-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <span className="text-[#71717a] text-[10px] uppercase tracking-[0.5px] font-bold" style={{ fontFamily: "'Inter', sans-serif" }}>
+                          Active Nodes
+                        </span>
+                        <div className="flex gap-1">
+                          <div className="w-1 h-1 bg-[#52525b] rounded-full" />
+                          <div className="w-1 h-1 bg-[#3f3f46] rounded-full" />
                         </div>
-                      ))}
+                      </div>
+
+                      {/* Team Cards */}
+                      <div className="space-y-3">
+                        {[
+                          { name: 'Tím Alfa', catches: '12 úlovkov', weight: '245 kg' },
+                          { name: 'Rybári SK', catches: '9 úlovkov', weight: '198 kg' },
+                          { name: 'Kapráři CZ', catches: '9 úlovkov', weight: '8 úlovkov' },
+                        ].map((team, i) => (
+                          <div 
+                            key={i}
+                            className="p-3 rounded-xl h-[56px]"
+                            style={{ background: 'linear-gradient(169deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%)' }}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <span className="text-white text-xs font-semibold" style={{ fontFamily: "'Inter', sans-serif" }}>
+                                  {team.name}
+                                </span>
+                                <span className="text-white/40 text-xs ml-1">{team.catches}</span>
+                              </div>
+                              <ChevronRight className="w-4 h-4 text-white/40" />
+                            </div>
+                            <div className="flex items-center gap-2 mt-1">
+                              <div className="w-1 h-1 bg-[#10b981] rounded-full" />
+                              <span className="text-[#10b981] text-[10px] font-medium">{team.weight}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Gradient fade to next section */}
-        <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-[#08101a] to-transparent" />
-      </section>
-
-      {/* Features Section */}
-      <section id="features" className="relative py-24 md:py-32 px-4 md:px-8 lg:px-20">
-        <div className="max-w-7xl mx-auto">
-          
-          {/* Section Header */}
-          <div className="text-center mb-20">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-medium text-white leading-tight">
-              Viac Než Len Aplikácia.<br />
-              <span className="text-white/50">Tvoj Partner Pri Vode.</span>
-            </h2>
-            <p className="mt-6 text-lg text-white/60 max-w-2xl mx-auto">
-              Spojili sme silu živých súťaží s inteligentným osobným denníkom. Všetko na jednom mieste.
-            </p>
-          </div>
-
-          {/* Feature Block 1: Centrum Súťaží */}
-          <div className="relative rounded-3xl overflow-hidden mb-8" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%)' }}>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-8 md:p-12">
-              <div className="flex flex-col justify-center">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/20 flex items-center justify-center mb-6">
-                  <Trophy className="w-6 h-6 text-blue-400" />
-                </div>
-                <h3 className="text-2xl md:text-3xl font-medium text-white mb-4">
-                  Centrum Súťaží
-                </h3>
-                <p className="text-white/60 leading-relaxed mb-6">
-                  Sleduj live výsledky, registruj tímy a spravuj súťaže v reálnom čase. Organizátori majú plnú kontrolu nad registráciami, rozhodcami a živými rebríčkami. Diváci môžu sledovať napínavé momenty priamo na zariadení.
-                </p>
-                <Button asChild className="w-fit bg-white/10 hover:bg-white/20 text-white border border-white/10 rounded-full">
-                  <Link href="/auth/register">Zaregistrovať sa</Link>
-                </Button>
-              </div>
-              <div className="relative h-64 md:h-80 lg:h-auto rounded-2xl overflow-hidden bg-gradient-to-br from-blue-900/30 to-cyan-900/30">
-                <img 
-                  src="https://images.unsplash.com/photo-1544552866-d3ed42536cfd?w=800" 
-                  alt="Rybárska súťaž" 
-                  className="w-full h-full object-cover opacity-60"
-                />
-              </div>
+          {/* Stats */}
+          <div className="flex gap-4 mt-8 text-white">
+            <div className="flex flex-col gap-4 w-[196px]">
+              <p className="text-base font-light leading-8" style={{ fontFamily: "'Manrope', sans-serif" }}>
+                Počet aktívnych účtov
+              </p>
+              <p className="text-[32px] font-medium tracking-[-2px] leading-[96px]" style={{ fontFamily: "'Manrope', sans-serif" }}>
+                1 200 rybárov
+              </p>
+            </div>
+            <div className="flex flex-col gap-4 w-[196px]">
+              <p className="text-base font-light leading-8" style={{ fontFamily: "'Manrope', sans-serif" }}>
+                Usporiadané súťaže
+              </p>
+              <p className="text-[32px] font-medium tracking-[-2px] leading-[96px]" style={{ fontFamily: "'Manrope', sans-serif" }}>
+                300+
+              </p>
             </div>
           </div>
-
-          {/* Feature Block 2: Inteligentný Denník */}
-          <div className="relative rounded-3xl overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%)' }}>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-8 md:p-12">
-              <div className="relative h-64 md:h-80 lg:h-auto rounded-2xl overflow-hidden bg-gradient-to-br from-emerald-900/30 to-teal-900/30 order-2 lg:order-1">
-                <img 
-                  src="https://images.unsplash.com/photo-1504309092620-4d0ec726efa4?w=800" 
-                  alt="Rybársky denník" 
-                  className="w-full h-full object-cover opacity-60"
-                />
-                {/* Floating UI Cards */}
-                <div className="absolute top-4 left-4 p-3 rounded-xl bg-white/10 backdrop-blur-xl border border-white/10">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                      <MapPin className="w-4 h-4 text-emerald-400" />
-                    </div>
-                    <div>
-                      <p className="text-white text-xs font-medium">GPS Lokalita</p>
-                      <p className="text-white/50 text-[10px]">49.2121°N, 16.6366°E</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="flex flex-col justify-center order-1 lg:order-2">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/20 flex items-center justify-center mb-6">
-                  <BookOpen className="w-6 h-6 text-emerald-400" />
-                </div>
-                <h3 className="text-2xl md:text-3xl font-medium text-white mb-4">
-                  Inteligentný Denník
-                </h3>
-                <p className="text-white/60 leading-relaxed mb-6">
-                  Vytvor si osobný rybársky denník s GPS lokalitami, fotkami úlovkov a pokročilými štatistikami. Sleduj svoj progres, súťaž s priateľmi v Fishing Battle a využívaj predpoveď počasia pre maximálny úspech.
-                </p>
-                <Button asChild className="w-fit bg-white/10 hover:bg-white/20 text-white border border-white/10 rounded-full">
-                  <Link href="/diary">Preskúmať denník</Link>
-                </Button>
-              </div>
-            </div>
-          </div>
-
         </div>
       </section>
+
+      {/* Gradient Fade */}
+      <div className="absolute top-[938px] left-0 right-0 h-[203px] bg-gradient-to-b from-transparent to-[#08101a] pointer-events-none" />
 
       {/* Categories Section */}
-      <section className="relative py-24 md:py-32 px-4 md:px-8 lg:px-20">
-        <div className="max-w-7xl mx-auto">
+      <section className="relative z-10 px-4 md:px-16 pt-[100px]">
+        <div className="max-w-[1440px] mx-auto">
           
           {/* Section Header */}
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-medium text-white mb-4">
+          <div className="text-center mb-12">
+            <h2 className="text-[42px] md:text-[52px] font-medium text-white tracking-[-2px] mb-4" style={{ fontFamily: "'Manrope', sans-serif" }}>
               Kategórie súťaží
             </h2>
-            <p className="text-lg text-white/60">
+            <p className="text-white/80 text-lg max-w-2xl mx-auto">
               Vyberte si kategóriu súťaží, ktorá vás zaujíma a preskúmajte dostupné súťaže
             </p>
           </div>
 
-          {/* Category Cards */}
+          {/* Category Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             
-            {/* Active */}
-            <Link href="/categories/registration">
-              <div className="group relative rounded-2xl overflow-hidden bg-[#111827] border border-white/10 hover:border-orange-400/50 transition-all duration-300 cursor-pointer">
-                <div className="h-48 overflow-hidden">
-                  <img 
-                    src="https://images.unsplash.com/photo-1504309092620-4d0ec726efa4?w=400" 
-                    alt="Aktívne súťaže"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                </div>
-                <div className="p-5">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-lg font-medium text-white">🔥 Aktívne</span>
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-orange-400/20 flex items-center justify-center text-[10px] text-orange-400 font-bold">
-                        {activeCount > 0 ? String(activeCount).padStart(2, '0') : '01'}
-                      </div>
-                      <span className="text-white/50 text-sm">súťaží</span>
-                    </div>
-                  </div>
-                  <p className="text-sm text-white/50 mb-4">Prihláste sa do aktuálnych súťaží s otvorenou registráciou</p>
-                  <Button variant="outline" className="w-full border-orange-400/50 text-orange-400 hover:bg-orange-400/10 rounded-full">
-                    Preskúmať všetky
-                  </Button>
-                </div>
-              </div>
-            </Link>
+            {/* Active Category */}
+            <CategoryCard
+              emoji="🔥"
+              label="Aktívne"
+              count={activeCount}
+              image={categoryActive}
+              title="Registrácia prebieha"
+              description="Prihláste sa do aktuálnych súťaží s otvorenou registráciou"
+              href="/categories/registration"
+              progressColor="#fb923c"
+              progressWidth={65}
+            />
 
-            {/* Upcoming */}
-            <Link href="/categories/upcoming">
-              <div className="group relative rounded-2xl overflow-hidden bg-[#111827] border border-white/10 hover:border-blue-400/50 transition-all duration-300 cursor-pointer">
-                <div className="h-48 overflow-hidden">
-                  <img 
-                    src="https://images.unsplash.com/photo-1544552866-d3ed42536cfd?w=400" 
-                    alt="Nadchádzajúce súťaže"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                </div>
-                <div className="p-5">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-lg font-medium text-white">📅 Nadchádzajúce</span>
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-blue-400/20 flex items-center justify-center text-[10px] text-blue-400 font-bold">
-                        01
-                      </div>
-                      <span className="text-white/50 text-sm">súťaží</span>
-                    </div>
-                  </div>
-                  <p className="text-sm text-white/50 mb-4">Nadchádzajúce súťaže s ukončenou registráciou</p>
-                  <Button variant="outline" className="w-full border-blue-400/50 text-blue-400 hover:bg-blue-400/10 rounded-full">
-                    Preskúmať všetky
-                  </Button>
-                </div>
-              </div>
-            </Link>
+            {/* Upcoming Category */}
+            <CategoryCard
+              emoji="📅"
+              label="Budúce"
+              count={1}
+              image={categoryUpcoming}
+              title="Nadchádzajúce súťaže"
+              description="Nadchádzajúce súťaže s ukončenou registráciou"
+              href="/categories/upcoming"
+              progressColor="#60a5fa"
+              progressWidth={45}
+            />
 
-            {/* Live */}
-            <Link href="/categories/live">
-              <div className="group relative rounded-2xl overflow-hidden bg-[#111827] border border-white/10 hover:border-red-400/50 transition-all duration-300 cursor-pointer">
-                <div className="h-48 overflow-hidden">
-                  <img 
-                    src="https://images.unsplash.com/photo-1532015917327-4575aed32e63?w=400" 
-                    alt="Live súťaže"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                </div>
-                <div className="p-5">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-lg font-medium text-white">🔴 Live</span>
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-red-400/20 flex items-center justify-center text-[10px] text-red-400 font-bold">
-                        {liveCount > 0 ? String(liveCount).padStart(2, '0') : '01'}
-                      </div>
-                      <span className="text-white/50 text-sm">súťaží</span>
-                    </div>
-                  </div>
-                  <p className="text-sm text-white/50 mb-4">Sledujte živé súťaže a aktuálne výsledky v reálnom čase</p>
-                  <Button variant="outline" className="w-full border-red-400/50 text-red-400 hover:bg-red-400/10 rounded-full">
-                    Preskúmať všetky
-                  </Button>
-                </div>
-              </div>
-            </Link>
+            {/* Live Category */}
+            <CategoryCard
+              emoji="🔴"
+              label="Live"
+              count={liveCount}
+              image={categoryLive}
+              title="Prebiehajúce preteky"
+              description="Sledujte živé súťaže a aktuálne výsledky v reálnom čase"
+              href="/categories/live"
+              progressColor="#c084fc"
+              progressWidth={75}
+            />
 
-            {/* Finished */}
-            <Link href="/categories/finished">
-              <div className="group relative rounded-2xl overflow-hidden bg-[#111827] border border-white/10 hover:border-amber-400/50 transition-all duration-300 cursor-pointer">
-                <div className="h-48 overflow-hidden">
-                  <img 
-                    src="https://images.unsplash.com/photo-1498654896293-37aacf113fd9?w=400" 
-                    alt="Ukončené súťaže"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                </div>
-                <div className="p-5">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-lg font-medium text-white">🏆 Ukončené</span>
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-amber-400/20 flex items-center justify-center text-[10px] text-amber-400 font-bold">
-                        {finishedCount > 0 ? String(finishedCount).padStart(2, '0') : '01'}
-                      </div>
-                      <span className="text-white/50 text-sm">súťaží</span>
-                    </div>
-                  </div>
-                  <p className="text-sm text-white/50 mb-4">Prihláste sa do aktuálnych súťaží s otvorenou registráciou</p>
-                  <Button variant="outline" className="w-full border-amber-400/50 text-amber-400 hover:bg-amber-400/10 rounded-full">
-                    Preskúmať všetky
-                  </Button>
-                </div>
+            {/* Finished Category */}
+            <CategoryCard
+              emoji="🏆"
+              label="Ukončené"
+              count={finishedCount}
+              image={categoryFinished}
+              title="Ukončené preteky"
+              description="Prihláste sa do aktuálnych súťaží s otvorenou registráciou"
+              href="/categories/finished"
+              progressColor="#fb923c"
+              progressWidth={55}
+            />
+
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section id="features" className="relative z-10 px-4 md:px-16 py-[120px]">
+        <div className="max-w-[1440px] mx-auto">
+          
+          {/* Section Header */}
+          <div className="text-center mb-16">
+            <h2 className="text-[42px] md:text-[52px] font-medium text-white tracking-[-2px] leading-tight" style={{ fontFamily: "'Manrope', sans-serif" }}>
+              Viac Než Len Aplikácia.<span className="text-white/50">Tvoj</span><br />
+              <span className="text-white/50">Partner Pri Vode.</span>
+            </h2>
+            <p className="text-white/60 text-lg max-w-2xl mx-auto mt-6">
+              Spojili sme silu živých súťaží s inteligentným osobným denníkom. Všetko na jednom mieste.
+            </p>
+          </div>
+
+          {/* Feature Cards */}
+          <div className="space-y-8">
+            
+            {/* Centrum Súťaží */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+              <div className="rounded-[26px] overflow-hidden h-[400px] lg:h-[500px]">
+                <img src={featureCentrum} alt="Centrum Súťaží" className="w-full h-full object-cover" />
               </div>
-            </Link>
+              <div className="flex flex-col gap-6 p-8">
+                <h3 className="text-[28px] md:text-[32px] font-semibold text-white tracking-[-0.9px]" style={{ fontFamily: "'Manrope', sans-serif" }}>
+                  Centrum Súťaží
+                </h3>
+                <p className="text-white/80 text-lg leading-relaxed">
+                  Sleduj live výsledky, registruj tímy a spravuj súťaže v reálnom čase. Organizátori majú plnú kontrolu nad registráciami, rozhodcami a živými rebríčkami. Diváci môžu sledovať napínavé momenty priamo na zariadení.
+                </p>
+                <Link href="/auth/register">
+                  <div className="bg-[#fb923c] px-[10px] py-[17px] rounded-[28px] w-fit min-w-[165px] flex items-center justify-center cursor-pointer hover:bg-[#f97316] transition-colors">
+                    <span className="text-[#08101b] text-base font-normal text-center" style={{ fontFamily: "'ABeeZee', sans-serif" }}>
+                      Zaregistrovať sa
+                    </span>
+                  </div>
+                </Link>
+              </div>
+            </div>
+
+            {/* Inteligentný Denník */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+              <div className="flex flex-col gap-6 p-8 order-2 lg:order-1">
+                <h3 className="text-[28px] md:text-[32px] font-semibold text-white tracking-[-0.9px]" style={{ fontFamily: "'Manrope', sans-serif" }}>
+                  Inteligentný Denník
+                </h3>
+                <p className="text-white/80 text-lg leading-relaxed">
+                  Vytvor si osobný rybársky denník s GPS lokalitami, fotkami úlovkov a pokročilými štatistikami. Sleduj svoj progres, súťaž s priateľmi v Fishing Battle a využívaj predpoveď počasia pre maximálny úspech.
+                </p>
+                <Link href="/diary">
+                  <div className="bg-[#fb923c] px-[10px] py-[17px] rounded-[28px] w-fit min-w-[165px] flex items-center justify-center cursor-pointer hover:bg-[#f97316] transition-colors">
+                    <span className="text-[#08101b] text-base font-normal text-center" style={{ fontFamily: "'ABeeZee', sans-serif" }}>
+                      Preskúmať denník
+                    </span>
+                  </div>
+                </Link>
+              </div>
+              <div className="rounded-[26px] overflow-hidden h-[400px] lg:h-[500px] order-1 lg:order-2">
+                <img src={featureDennik} alt="Inteligentný Denník" className="w-full h-full object-cover" />
+              </div>
+            </div>
 
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="relative border-t border-white/10 py-16 px-4 md:px-8 lg:px-20">
-        <div className="max-w-7xl mx-auto">
+      <footer className="relative z-10 px-4 md:px-16 py-16 border-t border-white/10">
+        <div className="max-w-[1440px] mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
             
-            {/* Logo & Description */}
-            <div className="lg:col-span-1">
+            {/* Logo */}
+            <div>
               <img src={contestioLogo} alt="Contestio" className="h-8 mb-4" />
               <p className="text-white/50 text-sm leading-relaxed">
                 Moderná platforma pre rybárske súťaže a osobný denník.
@@ -476,7 +436,7 @@ export default function Landing() {
 
             {/* Product */}
             <div>
-              <h4 className="text-white font-medium mb-4">Produkt</h4>
+              <h4 className="text-white font-semibold mb-4">Product</h4>
               <ul className="space-y-3">
                 <li><Link href="/pricing"><span className="text-white/50 hover:text-white text-sm cursor-pointer transition-colors">Cenník</span></Link></li>
                 <li><Link href="/#features"><span className="text-white/50 hover:text-white text-sm cursor-pointer transition-colors">Funkcie</span></Link></li>
@@ -485,9 +445,9 @@ export default function Landing() {
               </ul>
             </div>
 
-            {/* Company */}
+            {/* Firma */}
             <div>
-              <h4 className="text-white font-medium mb-4">Firma</h4>
+              <h4 className="text-white font-semibold mb-4">Firma</h4>
               <ul className="space-y-3">
                 <li><Link href="/about-us"><span className="text-white/50 hover:text-white text-sm cursor-pointer transition-colors">O nás</span></Link></li>
                 <li><Link href="/contact"><span className="text-white/50 hover:text-white text-sm cursor-pointer transition-colors">Kontakt</span></Link></li>
@@ -498,11 +458,11 @@ export default function Landing() {
 
             {/* Social */}
             <div>
-              <h4 className="text-white font-medium mb-4">Sociálne siete</h4>
+              <h4 className="text-white font-semibold mb-4">Social</h4>
               <ul className="space-y-3">
-                <li><a href="#" className="text-white/50 hover:text-white text-sm flex items-center gap-2 transition-colors">Instagram</a></li>
-                <li><a href="#" className="text-white/50 hover:text-white text-sm flex items-center gap-2 transition-colors">LinkedIn</a></li>
-                <li><a href="#" className="text-white/50 hover:text-white text-sm flex items-center gap-2 transition-colors">YouTube</a></li>
+                <li><a href="#" className="text-white/50 hover:text-white text-sm transition-colors">Instagram</a></li>
+                <li><a href="#" className="text-white/50 hover:text-white text-sm transition-colors">LinkedIn</a></li>
+                <li><a href="#" className="text-white/50 hover:text-white text-sm transition-colors">YouTube</a></li>
               </ul>
             </div>
           </div>
@@ -527,5 +487,86 @@ export default function Landing() {
       </footer>
 
     </div>
+  );
+}
+
+// Category Card Component
+interface CategoryCardProps {
+  emoji: string;
+  label: string;
+  count: number;
+  image: string;
+  title: string;
+  description: string;
+  href: string;
+  progressColor: string;
+  progressWidth: number;
+}
+
+function CategoryCard({ emoji, label, count, image, title, description, href, progressColor, progressWidth }: CategoryCardProps) {
+  return (
+    <Link href={href}>
+      <div 
+        className="rounded-[26px] overflow-hidden h-[502px] cursor-pointer hover:scale-[1.02] transition-transform"
+        style={{ background: 'linear-gradient(105deg, rgba(255,255,255,0.128) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0.064) 100%)' }}
+      >
+        {/* Image Container */}
+        <div className="relative h-[231px] mx-5 mt-[27px] rounded-[20px] overflow-hidden">
+          <img src={image} alt={title} className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-black/60" />
+          
+          {/* Badge and Count */}
+          <div className="absolute top-[24px] left-[15px] right-[15px] flex items-end justify-between">
+            <div className="flex flex-col gap-[125px]">
+              <span className="text-white text-sm" style={{ fontFamily: "'ABeeZee', sans-serif" }}>
+                {emoji} {label}
+              </span>
+              <div className="flex items-center gap-1.5">
+                <div className="relative w-[25px] h-[25px]">
+                  <div className="absolute inset-0 rounded-full border border-white/30" />
+                  <span className="absolute inset-0 flex items-center justify-center text-white text-xs">
+                    {String(count).padStart(2, '0')}
+                  </span>
+                </div>
+                <span className="text-white text-base" style={{ fontFamily: "'ABeeZee', sans-serif" }}>
+                  súťaží
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 border border-white rounded-[46px] px-2 py-1.5">
+              <span className="text-white text-base" style={{ fontFamily: "'ABeeZee', sans-serif" }}>
+                Zobraziť
+              </span>
+              <ArrowRight className="w-5 h-5 text-white" />
+            </div>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="px-5 pt-6 pb-4">
+          <h3 className="text-white text-[22px] font-semibold tracking-[-0.9px] mb-2" style={{ fontFamily: "'Manrope', sans-serif" }}>
+            {title}
+          </h3>
+          <p className="text-white text-base leading-[29px] mb-6 h-[58px]" style={{ fontFamily: "'ABeeZee', sans-serif" }}>
+            {description}
+          </p>
+          
+          {/* CTA Button */}
+          <div className="bg-[#fb923c] px-[10px] py-[17px] rounded-[28px] w-full flex items-center justify-center mb-4">
+            <span className="text-[#08101b] text-base font-normal text-center" style={{ fontFamily: "'ABeeZee', sans-serif" }}>
+              Preskúmať všetky
+            </span>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="relative h-[5px] bg-[rgba(16,185,129,0.12)] rounded-[40px]">
+            <div 
+              className="absolute h-full rounded-[40px]"
+              style={{ width: `${progressWidth}%`, backgroundColor: progressColor }}
+            />
+          </div>
+        </div>
+      </div>
+    </Link>
   );
 }
