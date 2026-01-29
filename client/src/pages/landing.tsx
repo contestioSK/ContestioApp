@@ -1,10 +1,9 @@
-import { Button } from "@/components/ui/button";
-import { Menu, X, ChevronRight, ArrowRight } from "lucide-react";
+import { Menu, X, ChevronRight } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
-import contestioLogo from "@assets/contestio logo_1760283270014.png";
+import contestioLogo from "@assets/figma/logo.png";
 import starsBackground from "@assets/figma/stars_background.png";
 import gradientOrb1 from "@assets/figma/gradient_orb1.png";
 import gradientOrb2 from "@assets/figma/gradient_orb2.png";
@@ -14,6 +13,8 @@ import categoryLive from "@assets/figma/category_live.png";
 import categoryFinished from "@assets/figma/category_finished.png";
 import featureCentrum from "@assets/figma/feature_centrum.png";
 import featureDennik from "@assets/figma/feature_dennik.png";
+import arrowIcon from "@assets/figma/arrow_icon.png";
+import countCircle from "@assets/figma/count_circle.png";
 
 interface Competition {
   id: string;
@@ -523,7 +524,7 @@ function CategoryCard({ emoji, label, count, image, title, description, href, pr
               </span>
               <div className="flex items-center gap-1.5">
                 <div className="relative w-[25px] h-[25px]">
-                  <div className="absolute inset-0 rounded-full border border-white/30" />
+                  <img src={countCircle} alt="" className="absolute inset-0 w-full h-full" />
                   <span className="absolute inset-0 flex items-center justify-center text-white text-xs">
                     {String(count).padStart(2, '0')}
                   </span>
@@ -537,7 +538,7 @@ function CategoryCard({ emoji, label, count, image, title, description, href, pr
               <span className="text-white text-base" style={{ fontFamily: "'ABeeZee', sans-serif" }}>
                 Zobraziť
               </span>
-              <ArrowRight className="w-5 h-5 text-white" />
+              <img src={arrowIcon} alt="" className="w-5 h-5" />
             </div>
           </div>
         </div>
