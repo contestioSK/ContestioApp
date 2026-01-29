@@ -78,11 +78,11 @@ export default function Landing() {
   return (
     <div className="bg-[#08101a] min-h-screen relative overflow-x-hidden">
       
-      {/* Background Effects - Gradient Orbs */}
-      <div className="absolute top-[-181px] left-[calc(8.33%+72px)] w-[948px] h-[571px] pointer-events-none opacity-60">
+      {/* Background Effects - Gradient Orbs (exact Figma positioning) */}
+      <div className="absolute pointer-events-none" style={{ top: '-181.42px', left: '192.2px', width: '948.31px', height: '571.27px' }}>
         <GradientOrb1 />
       </div>
-      <div className="absolute top-[298px] left-[calc(25%+25px)] w-[948px] h-[304px] pointer-events-none opacity-60">
+      <div className="absolute pointer-events-none" style={{ top: '297.88px', left: '385.27px', width: '948.31px', height: '303.95px' }}>
         <GradientOrb2 />
       </div>
       <div className="absolute top-[-17px] left-[-191px] w-[1834px] h-[1200px] mix-blend-screen pointer-events-none">
