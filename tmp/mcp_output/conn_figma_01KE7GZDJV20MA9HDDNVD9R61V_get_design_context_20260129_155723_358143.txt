@@ -1,0 +1,958 @@
+<mcp_external_output>
+
+### Content Block 1 (Text)
+const imgImage = "https://www.figma.com/api/mcp/asset/da070611-4ee6-4a00-a1db-a5522aacf360";
+const imgImage1 = "https://www.figma.com/api/mcp/asset/679da42c-5a56-4b33-b382-9a162b9fc602";
+const imgRectangle14 = "https://www.figma.com/api/mcp/asset/dcbb9daf-42a1-4d0b-a081-c8400463b143";
+const imgRectangle15 = "https://www.figma.com/api/mcp/asset/6fe34ed4-0f68-4d47-988a-c94ac5ff6ec2";
+const imgRectangle6 = "https://www.figma.com/api/mcp/asset/dd3de80a-ca1b-4451-a79a-542a4cf4970f";
+const imgRectangle8 = "https://www.figma.com/api/mcp/asset/aa8825d2-d4fe-4931-8a31-846d1a8f98a7";
+const imgRectangle10 = "https://www.figma.com/api/mcp/asset/7e9d1ce1-5fcd-44d3-8c29-bdc94ea1a69d";
+const imgRectangle12 = "https://www.figma.com/api/mcp/asset/f7d14dfa-81f4-4ff4-9105-ea73b01f44e7";
+const imgEllipse4 = "https://www.figma.com/api/mcp/asset/51fea532-20b1-4878-bedb-f5c8852c3020";
+const imgEllipse1 = "https://www.figma.com/api/mcp/asset/f1332228-c943-4145-a71d-387d86917943";
+const imgSvg = "https://www.figma.com/api/mcp/asset/97091e82-5125-4219-b00e-7871a8861519";
+const imgGradient = "https://www.figma.com/api/mcp/asset/509f8206-645f-4a38-b22b-8538a7322d9a";
+const imgSvg1 = "https://www.figma.com/api/mcp/asset/c8e4fbc1-7dac-4e00-925b-1014dc338e51";
+const imgSvg2 = "https://www.figma.com/api/mcp/asset/85ee01a3-b46f-4023-92be-3b5710dc203f";
+const imgSvg3 = "https://www.figma.com/api/mcp/asset/ea5f304b-5d17-4d95-b98a-9408d4e32e8a";
+const imgSvg4 = "https://www.figma.com/api/mcp/asset/d672c964-65e0-4b09-97e9-6c3231134b24";
+const imgGradient1 = "https://www.figma.com/api/mcp/asset/79604ffe-0801-4bfd-b2ad-95cad84669c9";
+const imgSvg5 = "https://www.figma.com/api/mcp/asset/fb86101b-624a-4c53-95b0-6ba7be5464a1";
+const imgImg = "https://www.figma.com/api/mcp/asset/abcb44a7-3cd8-4326-913c-ae5c512ea4c7";
+const imgGradient2 = "https://www.figma.com/api/mcp/asset/3fb04a67-cebd-44f3-8687-af30d342b747";
+const imgSvg6 = "https://www.figma.com/api/mcp/asset/d3f4f629-3053-4a2a-80fd-0fb89ffb33ed";
+const imgSvg7 = "https://www.figma.com/api/mcp/asset/f7fe0edd-2e0b-49f8-a284-d9cf3042f8ca";
+const imgGradient3 = "https://www.figma.com/api/mcp/asset/fe279503-a15f-4a25-b3ae-7fa70ebd85e1";
+const imgGradient4 = "https://www.figma.com/api/mcp/asset/4d329dbd-466b-4512-bd15-0f03acfcec57";
+const imgSvg8 = "https://www.figma.com/api/mcp/asset/8318f8ba-9f67-4996-be8d-2d3545c12545";
+const imgGradient5 = "https://www.figma.com/api/mcp/asset/83420e9b-9f03-4932-9924-8df6ce560cc3";
+const imgSvg9 = "https://www.figma.com/api/mcp/asset/77ee9ed2-cee4-4744-8553-a6fef2d5c748";
+const imgSvg10 = "https://www.figma.com/api/mcp/asset/7671cdc0-18db-4dae-a7e6-d69d921a091f";
+const imgGradient6 = "https://www.figma.com/api/mcp/asset/e9dc1541-a9c1-4dec-824a-774b83de8645";
+const imgSvg11 = "https://www.figma.com/api/mcp/asset/801ad4d3-2b19-439c-b073-f8d614770e99";
+const imgGradient7 = "https://www.figma.com/api/mcp/asset/778ce412-fa17-418e-98a5-bbcb9ee5bca4";
+const imgSvg12 = "https://www.figma.com/api/mcp/asset/2b08f5a9-383d-4abe-926e-5d8d56062b1b";
+const imgGradient8 = "https://www.figma.com/api/mcp/asset/6851e8e0-0f03-44a1-b040-4f6d0a7715b6";
+const imgSvg13 = "https://www.figma.com/api/mcp/asset/a8c62bba-a673-4bb3-b0ee-ff5375060d2a";
+const imgGradient9 = "https://www.figma.com/api/mcp/asset/9f80730e-7ae3-4eee-9554-7c73266b8399";
+const imgSvg14 = "https://www.figma.com/api/mcp/asset/385535f5-fa4f-4a8c-9cad-3ea76214fe38";
+const imgSvg15 = "https://www.figma.com/api/mcp/asset/5cfc11fe-6c0a-4671-91cb-e5ddd3d3f37c";
+const imgGradient10 = "https://www.figma.com/api/mcp/asset/dd154310-f40c-41db-873e-23d86d7dc796";
+const imgSvg16 = "https://www.figma.com/api/mcp/asset/292a64ef-0e20-4338-82ff-18274c899728";
+const imgGradient11 = "https://www.figma.com/api/mcp/asset/93ec5d3e-ad11-4635-93c8-aef2c0976a9d";
+const imgSvg17 = "https://www.figma.com/api/mcp/asset/677438db-2e42-446c-a3ce-4fc643f605a5";
+const imgSvg18 = "https://www.figma.com/api/mcp/asset/b29b1265-df77-4674-8930-1623a92a2848";
+const imgGradient12 = "https://www.figma.com/api/mcp/asset/b4a00171-ddc3-44de-9b7f-f90459d96fb8";
+const imgSvg19 = "https://www.figma.com/api/mcp/asset/0c1e01a7-ccfe-4a1c-bf35-a8fb823be9c9";
+const imgImg1 = "https://www.figma.com/api/mcp/asset/0f532155-98b2-47ac-975a-d080217aad91";
+const imgImg2 = "https://www.figma.com/api/mcp/asset/e9cc3e24-b706-4c74-bda8-8804abfe1be3";
+const imgImg3 = "https://www.figma.com/api/mcp/asset/bed924b0-b8ec-4937-ad0c-f5cd898b4d50";
+const imgImg4 = "https://www.figma.com/api/mcp/asset/62f13dc4-1fe3-4c79-ab28-81536b59e278";
+const imgImg5 = "https://www.figma.com/api/mcp/asset/12db4747-3dbd-4c39-86fb-32e5e7ea1dbc";
+const imgEllipse2 = "https://www.figma.com/api/mcp/asset/05528330-7dac-4864-b867-dd606314d4b9";
+const imgGroup3 = "https://www.figma.com/api/mcp/asset/86d06b95-1d19-4442-9721-56fea6b403bb";
+
+export default function Homepage() {
+  return (
+    <div className="bg-[#08101a] relative size-full" data-name="homepage" data-node-id="2003:2">
+      <div className="absolute h-[303.946px] left-[calc(25%+25.27px)] top-[297.88px] w-[948.312px]" data-node-id="2003:3">
+        <div className="absolute inset-[-136.47%_-43.74%]">
+          <img alt="" className="block max-w-none size-full" src={imgEllipse4} />
+        </div>
+      </div>
+      <div className="absolute h-[1200px] left-[-191px] mix-blend-screen top-[-17px] w-[1834px]" data-name="image" data-node-id="2003:4">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <img alt="" className="absolute left-0 max-w-none size-full top-0" src={imgImage} />
+        </div>
+      </div>
+      <div className="absolute bg-gradient-to-b border-[rgba(255,255,255,0.1)] border-solid border-t from-[rgba(255,255,255,0.02)] inset-[2.97%_calc(75%-44.88px)_78.24%_calc(8.33%+48.88px)] to-[rgba(255,255,255,0)]" data-name="Background+HorizontalBorder+Shadow" data-node-id="2003:5" />
+      <div className="absolute bg-gradient-to-b border-[rgba(255,255,255,0.1)] border-solid border-t from-[rgba(255,255,255,0.02)] inset-[0.08%_calc(91.67%-47.88px)_78.24%_-67.12px] to-[rgba(255,255,255,0)]" data-name="Background+HorizontalBorder+Shadow" data-node-id="2003:6" />
+      <div className="absolute bg-gradient-to-b border-[rgba(255,255,255,0.1)] border-solid border-t from-[rgba(255,255,255,0.02)] inset-[2.97%_88.12px_78.24%_calc(75%+36.88px)] to-[rgba(255,255,255,0)]" data-name="Background+HorizontalBorder+Shadow" data-node-id="2003:7" />
+      <div className="absolute bg-gradient-to-b border-[rgba(255,255,255,0.1)] border-solid border-t from-[rgba(255,255,255,0.02)] inset-[0.08%_-148.88px_78.24%_calc(91.67%+32.88px)] to-[rgba(255,255,255,0)]" data-name="Background+HorizontalBorder+Shadow" data-node-id="2003:8" />
+      <div className="absolute h-[571.272px] left-[calc(8.33%+72.2px)] top-[-181.42px] w-[948.312px]" data-node-id="2003:9">
+        <div className="absolute inset-[-72.61%_-43.74%]">
+          <img alt="" className="block max-w-none size-full" src={imgEllipse1} />
+        </div>
+      </div>
+      <div className="-translate-x-1/2 -translate-y-1/2 absolute backdrop-blur-[12px] bg-gradient-to-r border border-[rgba(255,255,255,0.08)] border-solid content-stretch flex font-['ABeeZee:Regular',sans-serif] from-[#08101a] gap-[36px] h-[54px] items-center justify-center leading-[0] left-[calc(45.83%+21.5px)] not-italic overflow-clip px-[168px] py-[29px] rounded-[9999px] shadow-[0px_25px_50px_-12px_rgba(0,0,0,0.5)] text-[16px] text-center text-white to-[#08121c] top-[calc(50%-1821px)] via-[#0e2331] via-[37.981%] w-[585px]" data-name="Nav" data-node-id="2003:10">
+        <div className="flex flex-col h-[12px] justify-center relative shrink-0 w-[65.734px]" data-node-id="2003:11">
+          <p className="leading-[16px] whitespace-pre-wrap">O nás</p>
+        </div>
+        <div className="flex flex-col h-[12px] justify-center relative shrink-0 w-[43.701px]" data-node-id="2003:12">
+          <p className="leading-[16px] whitespace-pre-wrap">FAQ</p>
+        </div>
+        <div className="flex flex-col h-[12px] justify-center relative shrink-0 w-[91.812px]" data-node-id="2003:13">
+          <p className="leading-[16px] whitespace-pre-wrap">Cenník</p>
+        </div>
+        <div className="flex flex-col h-[12px] justify-center relative shrink-0 w-[78.31px]" data-node-id="2003:14">
+          <p className="leading-[16px] whitespace-pre-wrap">Kontakt</p>
+        </div>
+        <div className="flex flex-col h-[12px] justify-center relative shrink-0 w-[114.495px]" data-node-id="2003:15">
+          <p className="leading-[16px] whitespace-pre-wrap">Vytvoriť súťaž</p>
+        </div>
+      </div>
+      <div className="absolute bg-[#fb923c] content-stretch flex items-center justify-center left-[calc(66.67%+49px)] px-[10px] py-[17px] rounded-[28px] top-[45px] w-[165px]" data-node-id="2003:16">
+        <p className="font-['ABeeZee:Regular',sans-serif] leading-[16px] not-italic relative shrink-0 text-[#08101b] text-[16px] text-center" data-node-id="2003:17">
+          Prihlásiť sa
+        </p>
+      </div>
+      <div className="absolute backdrop-blur-[12px] border border-[rgba(255,255,255,0.08)] border-solid content-stretch flex h-[50px] items-center justify-center left-[calc(83.33%-5px)] px-[168px] py-[29px] rounded-[9999px] top-[45px] w-[165px]" data-node-id="2003:18">
+        <p className="font-['ABeeZee:Regular',sans-serif] leading-[16px] not-italic relative shrink-0 text-[16px] text-center text-white" data-node-id="2003:19">
+          Zaregistrovať sa
+        </p>
+      </div>
+      <div className="absolute h-[37.047px] left-[93.2px] top-[51.48px] w-[218.65px]" data-name="image 1" data-node-id="2003:20">
+        <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgImage1} />
+      </div>
+      <div className="absolute content-stretch flex flex-col gap-[37px] items-start left-[80px] top-[212.43px] w-[790.897px]" data-node-id="2003:21">
+        <div className="content-stretch flex flex-col font-['Manrope:Medium',sans-serif] font-medium gap-[23px] items-start relative shrink-0 w-full" data-node-id="2003:22">
+          <div className="content-stretch flex flex-col gap-[16px] items-start relative shrink-0 tracking-[-4.8px] w-full" data-node-id="2003:23">
+            <div className="content-stretch flex gap-[20px] items-center leading-[0] relative shrink-0 text-[82px] w-[672px]" data-node-id="2003:24">
+              <div className="bg-clip-text bg-gradient-to-b flex flex-col from-white h-[131px] justify-center opacity-60 relative shrink-0 to-[rgba(255,255,255,0.5)] via-1/2 via-white w-[408.71px]" data-node-id="2003:25" style={{ WebkitTextFillColor: "transparent" }}>
+                <p className="leading-[96px] whitespace-pre-wrap">Živý rybolov</p>
+              </div>
+              <div className="flex flex-col h-[131px] justify-center relative shrink-0 text-white w-[309.787px]" data-node-id="2003:26">
+                <p className="leading-[96px] whitespace-pre-wrap">Súťaže</p>
+              </div>
+            </div>
+            <p className="h-[45.921px] leading-[96px] relative shrink-0 text-[52px] text-white w-full whitespace-pre-wrap" data-node-id="2003:27">
+              Skutočné výsledky. Jedna platforma.
+            </p>
+          </div>
+          <p className="h-[63px] leading-[32px] relative shrink-0 text-[20px] text-white w-[727.663px] whitespace-pre-wrap" data-node-id="2003:28">
+            Zúčastnite sa turnajov v živom rybolove, sledujte svoj pokrok a zostaňte v spojení s rybárskou komunitou
+          </p>
+        </div>
+        <div className="grid-cols-[max-content] grid-rows-[max-content] inline-grid items-[start] justify-items-[start] leading-[0] relative shrink-0" data-node-id="2003:29">
+          <div className="bg-[#fb923c] col-1 content-stretch flex items-center justify-center ml-0 mt-0 px-[10px] py-[17px] relative rounded-[28px] row-1 w-[195px]" data-node-id="2003:30">
+            <p className="font-['ABeeZee:Regular',sans-serif] leading-[16px] not-italic relative shrink-0 text-[#08101b] text-[16px] text-center" data-node-id="2003:31">
+              Zapojte sa do súťaže
+            </p>
+          </div>
+          <div className="backdrop-blur-[12px] border border-[rgba(255,255,255,0.08)] border-solid col-1 content-stretch flex h-[50px] items-center justify-center ml-[217.8px] mt-0 px-[168px] py-[29px] relative rounded-[9999px] row-1 w-[195px]" data-node-id="2003:32">
+            <p className="font-['ABeeZee:Regular',sans-serif] leading-[16px] not-italic relative shrink-0 text-[16px] text-center text-white" data-node-id="2003:33">
+              Preskúmajte súťaže
+            </p>
+          </div>
+        </div>
+      </div>
+      <div className="absolute content-stretch flex gap-[16px] items-center left-[78.55px] text-white top-[623.3px] whitespace-pre-wrap" data-node-id="2003:34">
+        <div className="content-stretch flex flex-col gap-[16px] items-start relative shrink-0 w-[196.45px]" data-node-id="2003:35">
+          <p className="font-['Manrope:Light',sans-serif] font-light h-[13px] leading-[32px] relative shrink-0 text-[16px] w-full" data-node-id="2003:36">
+            Počet aktívnych pčtov
+          </p>
+          <p className="font-['Manrope:Medium',sans-serif] font-medium h-[24.845px] leading-[96px] relative shrink-0 text-[32px] tracking-[-2px] w-full" data-node-id="2003:37">
+            1 200 rybárov
+          </p>
+        </div>
+        <div className="content-stretch flex flex-col gap-[16px] items-start relative shrink-0 w-[196.45px]" data-node-id="2003:38">
+          <p className="font-['Manrope:Light',sans-serif] font-light h-[13px] leading-[32px] relative shrink-0 text-[16px] w-full" data-node-id="2003:39">
+            Usporiadané súťaže
+          </p>
+          <p className="font-['Manrope:Medium',sans-serif] font-medium h-[24.845px] leading-[96px] relative shrink-0 text-[32px] tracking-[-2px] w-full" data-node-id="2003:40">
+            300+
+          </p>
+        </div>
+      </div>
+      <div className="absolute bg-gradient-to-b from-[rgba(8,16,26,0)] h-[202.878px] left-[-20.31px] to-[#08101a] top-[1838px] w-[1440px]" data-node-id="2003:41" />
+      <div className="absolute flex h-[612.655px] items-center justify-center left-[calc(50%+46.69px)] top-[157.92px] w-[597.628px]">
+        <div className="flex-none rotate-[1.44deg] scale-y-92 skew-x-[-22.42deg]">
+          <div className="bg-[#09090b] border-12 border-[#27272a] border-solid h-[660.848px] overflow-clip relative rounded-[55.947px] shadow-[30px_110px_163.245px_0px_rgba(0,0,0,0.92)] w-[330.424px]" data-name="Background+Border+Shadow" data-node-id="2003:42">
+            <div className="absolute bg-gradient-to-b from-[#18181b] inset-[1px_0.3px_1.04px_1px] to-black" data-name="Background" data-node-id="2003:43">
+              <div className="-translate-x-1/2 -translate-y-1/2 absolute flex flex-col font-['Inter:Semi_Bold',sans-serif] font-semibold h-[14.986px] justify-center leading-[0] left-[calc(50%-3.58px)] not-italic text-[#71717a] text-[9.991px] text-center top-[274.65px] tracking-[0.9991px] uppercase w-[89.973px]" data-node-id="2003:44">
+                <p className="leading-[14.986px] whitespace-pre-wrap">Total Volume</p>
+              </div>
+              <div className="-translate-x-1/2 -translate-y-1/2 absolute flex flex-col font-['Geist:Medium',sans-serif] font-medium h-[47.954px] justify-center leading-[0] left-[calc(50%-2.6px)] text-[47.954px] text-center text-white top-[314.11px] tracking-[-2.3977px] w-[212.142px]" data-node-id="2003:45">
+                <p className="leading-[47.954px] whitespace-pre-wrap">$8,245.32</p>
+              </div>
+              <div className="-translate-x-1/2 -translate-y-1/2 absolute bg-[rgba(16,185,129,0.1)] border-[0.999px] border-[rgba(16,185,129,0.2)] border-solid h-[20.98px] left-[calc(50%-34.01px)] rounded-[3.996px] top-[calc(50%+28.6px)] w-[65.028px]" data-name="Overlay+Border" data-node-id="2003:46">
+                <div className="-translate-y-1/2 absolute left-[5.99px] size-[9.991px] top-1/2" data-name="SVG" data-node-id="2003:47">
+                  <img alt="" className="block max-w-none size-full" src={imgSvg} />
+                </div>
+                <div className="-translate-x-1/2 -translate-y-1/2 absolute flex flex-col font-['Inter:Semi_Bold',sans-serif] font-semibold h-[11.989px] justify-center leading-[0] left-[calc(50%+7.15px)] not-italic text-[#10b981] text-[9.991px] text-center top-[calc(50%-0.5px)] w-[37.367px]" data-node-id="2003:50">
+                  <p className="leading-[14.986px] whitespace-pre-wrap">+12.4%</p>
+                </div>
+              </div>
+              <div className="-translate-x-1/2 -translate-y-1/2 absolute flex flex-col font-['Inter:Medium',sans-serif] font-medium h-[15.985px] justify-center leading-[0] left-[calc(50%+31.94px)] not-italic text-[#71717a] text-[11.989px] text-center top-[356.57px] w-[54.875px]" data-node-id="2003:51">
+                <p className="leading-[15.985px] whitespace-pre-wrap">this week</p>
+              </div>
+              <div className="absolute backdrop-blur-[5.994px] bg-[rgba(24,24,27,0.6)] border-[rgba(255,255,255,0.05)] border-solid border-t-[0.999px] inset-[379.7px_1.3px_-153.03px_-1.3px] rounded-tl-[31.97px] rounded-tr-[31.97px]" data-name="Overlay+HorizontalBorder+OverlayBlur" data-node-id="2003:52">
+                <div className="-translate-y-1/2 absolute flex flex-col font-['Inter:Bold',sans-serif] font-bold h-[14.986px] justify-center leading-[0] left-[23.98px] not-italic text-[#71717a] text-[9.991px] top-[31.47px] tracking-[0.4995px] uppercase w-[80.778px]" data-node-id="2003:53">
+                  <p className="leading-[14.986px] whitespace-pre-wrap">Active Nodes</p>
+                </div>
+                <div className="absolute bg-[#52525b] left-[291.72px] rounded-[9989.521px] size-[3.996px] top-[29.47px]" data-name="Background" data-node-id="2003:54" />
+                <div className="absolute bg-[#3f3f46] left-[299.72px] rounded-[9989.521px] size-[3.996px] top-[29.47px]" data-name="Background" data-node-id="2003:55" />
+                <div className="absolute h-[55.947px] left-[23.98px] right-[23.98px] rounded-[11.989px] top-[54.95px]" data-name="Background" data-node-id="2003:56" style={{ backgroundImage: "linear-gradient(168.74621877185058deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)" }}>
+                  <div className="absolute inset-0 mask-alpha mask-intersect mask-no-clip mask-no-repeat mask-position-[0%_0%] mask-size-[100%_100%] rounded-[11.989px]" data-name="Gradient" data-node-id="2003:59" style={{ backgroundImage: "linear-gradient(135.14633869891233deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)", maskImage: `url('${imgGradient}')` }} />
+                  <div className="-translate-y-1/2 absolute flex flex-col font-['Inter:Semi_Bold',sans-serif] font-semibold h-[15.985px] justify-center leading-[0] left-[14.26px] not-italic text-[11.989px] text-white top-[20.32px] w-[131.332px]" data-node-id="2003:60">
+                    <p className="whitespace-pre-wrap">
+                      <span className="leading-[15.985px]">{` Tím Alfa `}</span>
+                      <span className="font-['Inter:Regular',sans-serif] font-normal leading-[15.985px] not-italic text-[rgba(255,255,255,0.41)]">12 úlovkov</span>
+                    </p>
+                  </div>
+                  <div className="-translate-y-1/2 absolute bg-[#10b981] left-[19.75px] rounded-[9989.521px] size-[3.996px] top-[calc(50%+8.76px)]" data-name="Background" data-node-id="2003:61" />
+                  <div className="-translate-y-1/2 absolute flex flex-col font-['Inter:Medium',sans-serif] font-medium h-[14.986px] justify-center leading-[0] left-[27.75px] not-italic text-[#10b981] text-[9.991px] top-[calc(50%+8.76px)] w-[36.335px]" data-node-id="2003:62">
+                    <p className="leading-[14.986px] whitespace-pre-wrap">245 kg</p>
+                  </div>
+                  <div className="-translate-y-1/2 absolute left-[253.76px] size-[13.987px] top-1/2" data-name="SVG" data-node-id="2003:63">
+                    <img alt="" className="block max-w-none size-full" src={imgSvg1} />
+                  </div>
+                </div>
+                <div className="absolute h-[55.947px] left-[25.61px] right-[22.34px] rounded-[11.989px] top-[120.87px]" data-name="Background" data-node-id="2003:65" style={{ backgroundImage: "linear-gradient(168.74621877185058deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)" }}>
+                  <div className="absolute inset-0 mask-alpha mask-intersect mask-no-clip mask-no-repeat mask-position-[0%_0%] mask-size-[100%_100%] rounded-[11.989px]" data-name="Gradient" data-node-id="2003:68" style={{ backgroundImage: "linear-gradient(135.14633869891233deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)", maskImage: `url('${imgGradient}')` }} />
+                  <div className="-translate-y-1/2 absolute flex flex-col font-['Inter:Semi_Bold',sans-serif] font-semibold h-[15.985px] justify-center leading-[0] left-[14.26px] not-italic text-[11.989px] text-white top-[20.32px] w-[131.332px]" data-node-id="2003:69">
+                    <p className="whitespace-pre-wrap">
+                      <span className="leading-[15.985px]">{`Rybári SK `}</span>
+                      <span className="font-['Inter:Regular',sans-serif] font-normal leading-[15.985px] not-italic text-[rgba(255,255,255,0.41)]">9 úlovkov</span>
+                    </p>
+                  </div>
+                  <div className="-translate-y-1/2 absolute bg-[#10b981] left-[19.75px] rounded-[9989.521px] size-[3.996px] top-[calc(50%+8.76px)]" data-name="Background" data-node-id="2003:70" />
+                  <div className="-translate-y-1/2 absolute flex flex-col font-['Inter:Medium',sans-serif] font-medium h-[14.986px] justify-center leading-[0] left-[27.75px] not-italic text-[#10b981] text-[9.991px] top-[calc(50%+8.76px)] w-[36.335px]" data-node-id="2003:71">
+                    <p className="leading-[14.986px] whitespace-pre-wrap">198 kg</p>
+                  </div>
+                  <div className="-translate-y-1/2 absolute left-[253.76px] size-[13.987px] top-1/2" data-name="SVG" data-node-id="2003:72">
+                    <img alt="" className="block max-w-none size-full" src={imgSvg2} />
+                  </div>
+                </div>
+                <div className="absolute h-[55.947px] left-[24.52px] right-[23.43px] rounded-[11.989px] top-[189.38px]" data-name="Background" data-node-id="2003:74" style={{ backgroundImage: "linear-gradient(168.74621877185058deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)" }}>
+                  <div className="absolute inset-0 mask-alpha mask-intersect mask-no-clip mask-no-repeat mask-position-[0%_0%] mask-size-[100%_100%] rounded-[11.989px]" data-name="Gradient" data-node-id="2003:77" style={{ backgroundImage: "linear-gradient(135.14633869891233deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)", maskImage: `url('${imgGradient}')` }} />
+                  <div className="-translate-y-1/2 absolute flex flex-col font-['Inter:Semi_Bold',sans-serif] font-semibold h-[15.985px] justify-center leading-[0] left-[14.26px] not-italic text-[11.989px] text-white top-[20.32px] w-[131.332px]" data-node-id="2003:78">
+                    <p className="whitespace-pre-wrap">
+                      <span className="leading-[15.985px]">{`Kapráři CZ `}</span>
+                      <span className="font-['Inter:Regular',sans-serif] font-normal leading-[15.985px] not-italic text-[rgba(255,255,255,0.41)]">9 úlovkov</span>
+                    </p>
+                  </div>
+                  <div className="-translate-y-1/2 absolute bg-[#10b981] left-[19.75px] rounded-[9989.521px] size-[3.996px] top-[calc(50%+8.76px)]" data-name="Background" data-node-id="2003:79" />
+                  <div className="-translate-y-1/2 absolute flex flex-col font-['Inter:Medium',sans-serif] font-medium h-[14.986px] justify-center leading-[0] left-[27.75px] not-italic text-[#10b981] text-[9.991px] top-[calc(50%+8.76px)] w-[58.19px]" data-node-id="2003:80">
+                    <p className="leading-[14.986px] whitespace-pre-wrap">8 úlovkov</p>
+                  </div>
+                  <div className="-translate-y-1/2 absolute left-[253.76px] size-[13.987px] top-1/2" data-name="SVG" data-node-id="2003:81">
+                    <img alt="" className="block max-w-none size-full" src={imgSvg3} />
+                  </div>
+                </div>
+              </div>
+              <div className="-translate-y-1/2 absolute bg-[#10b981] left-[112.05px] rounded-[9989.521px] shadow-[0px_0px_9.991px_0px_rgba(16,185,129,0.5)] size-[7.992px] top-[calc(50%-248.05px)]" data-name="Background+Shadow" data-node-id="2003:83" />
+              <div className="-translate-x-1/2 -translate-y-1/2 absolute flex flex-col font-['Inter:Semi_Bold',sans-serif] font-semibold h-[19.981px] justify-center leading-[0] left-[172px] not-italic text-[13.987px] text-center text-white top-[79.92px] tracking-[0.3497px] w-[121.622px]" data-node-id="2003:84">
+                <p className="leading-[19.981px] whitespace-pre-wrap">Live Výsledky</p>
+              </div>
+              <div className="-translate-y-1/2 absolute backdrop-blur-[1.998px] left-[23.98px] rounded-[9989.521px] size-[31.97px] top-[calc(50%-248.05px)]" data-name="Button" data-node-id="2003:85" style={{ backgroundImage: "linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)" }}>
+                <div className="-translate-x-1/2 -translate-y-1/2 absolute left-1/2 size-[15.985px] top-1/2" data-name="SVG" data-node-id="2003:86">
+                  <img alt="" className="block max-w-none size-full" src={imgSvg4} />
+                </div>
+                <div className="absolute inset-0 mask-alpha mask-intersect mask-no-clip mask-no-repeat mask-position-[0%_0%] mask-size-[100%_100%] rounded-[9989.521px]" data-name="Gradient" data-node-id="2003:91" style={{ backgroundImage: "linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)", maskImage: `url('${imgGradient1}')` }} />
+              </div>
+              <div className="-translate-y-1/2 absolute backdrop-blur-[1.998px] left-[271.73px] rounded-[9989.521px] size-[31.97px] top-[calc(50%-248.05px)]" data-name="Button" data-node-id="2003:92" style={{ backgroundImage: "linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)" }}>
+                <div className="-translate-x-1/2 -translate-y-1/2 absolute left-1/2 size-[15.985px] top-1/2" data-name="SVG" data-node-id="2003:93">
+                  <img alt="" className="block max-w-none size-full" src={imgSvg5} />
+                </div>
+                <div className="absolute inset-0 mask-alpha mask-intersect mask-no-clip mask-no-repeat mask-position-[0%_0%] mask-size-[100%_100%] rounded-[9989.521px]" data-name="Gradient" data-node-id="2003:99" style={{ backgroundImage: "linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)", maskImage: `url('${imgGradient1}')` }} />
+              </div>
+              <div className="absolute flex h-[143.748px] items-center justify-center left-[27.26px] top-[113.58px] w-[272.11px]">
+                <div className="flex-none rotate-[0.12deg]">
+                  <div className="h-[143.179px] relative rounded-[20.056px] w-[271.81px]" data-node-id="2003:100">
+                    <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[20.056px] size-full" src={imgRectangle14} />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="-translate-y-1/2 absolute flex flex-col font-['Inter:Semi_Bold',sans-serif] font-semibold h-[14.986px] justify-center leading-[0] left-[32.97px] not-italic text-[9.991px] text-[rgba(255,255,255,0.9)] top-[24.48px] tracking-[0.2498px] w-[21.592px]" data-node-id="2003:101">
+              <p className="leading-[14.986px] whitespace-pre-wrap">9:41</p>
+            </div>
+            <div className="-translate-y-1/2 absolute left-[286.73px] size-[9.991px] top-[calc(50%-304.51px)]" data-name="Img" data-node-id="2003:102">
+              <img alt="" className="block max-w-none size-full" src={imgImg} />
+            </div>
+            <div className="-translate-x-1/2 absolute bg-black h-[31.97px] left-[calc(50%-0.37px)] rounded-[9989.521px] top-[12.99px] w-[109.896px]" data-name="Background" data-node-id="2003:105">
+              <div className="-translate-y-1/2 absolute bg-[rgba(239,68,68,0.8)] left-[11.99px] opacity-0 rounded-[9989.521px] shadow-[0px_0px_4.995px_0px_rgba(239,68,68,0.5)] size-[3.996px] top-1/2" data-name="Overlay+Shadow" data-node-id="2003:106" />
+              <div className="absolute backdrop-blur-[5.994px] bg-[rgba(24,24,27,0.8)] border-[0.999px] border-[rgba(255,255,255,0.05)] border-solid left-[46.95px] rounded-[9989.521px] size-[15.985px] top-[7.99px]" data-name="Overlay+Border+OverlayBlur" data-node-id="2003:107" />
+              <div className="-translate-y-1/2 absolute bg-[rgba(34,197,94,0.8)] left-[93.91px] opacity-0 rounded-[9989.521px] shadow-[0px_0px_4.995px_0px_rgba(34,197,94,0.5)] size-[3.996px] top-1/2" data-name="Overlay+Shadow" data-node-id="2003:108" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="absolute h-[571.272px] left-[calc(33.33%+102.09px)] top-[3093.47px] w-[948.312px]" data-node-id="2003:109">
+        <div className="absolute inset-[-72.61%_-43.74%]">
+          <img alt="" className="block max-w-none size-full" src={imgEllipse1} />
+        </div>
+      </div>
+      <div className="absolute h-[571.272px] left-[-805px] top-[2345.18px] w-[948.312px]" data-node-id="2003:110">
+        <div className="absolute inset-[-72.61%_-43.74%]">
+          <img alt="" className="block max-w-none size-full" src={imgEllipse1} />
+        </div>
+      </div>
+      <div className="absolute inset-[64.77%_98.02px_28.1%_77.98px] opacity-40" data-name="Gradient" data-node-id="2003:111" style={{ backgroundImage: "linear-gradient(12.039584309437501deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0) 50%, rgba(59, 130, 246, 0) 100%)" }} />
+      <div className="absolute contents left-[77.98px] top-[1886.23px]" data-node-id="2003:221">
+        <div className="absolute content-stretch flex flex-col gap-[45px] items-center left-[77.98px] top-[1886.23px] w-[1264px]" data-node-id="2003:222">
+          <div className="content-stretch flex flex-col font-['Manrope:Medium',sans-serif] font-medium gap-[35px] items-center relative shrink-0 text-center text-white w-[888.792px] whitespace-pre-wrap" data-node-id="2003:223">
+            <p className="h-[140.2px] leading-[0] relative shrink-0 text-[72px] tracking-[-3.6px] w-full" data-node-id="2003:224">
+              <span className="leading-[72px]">Viac Než Len Aplikácia.</span>
+              <span className="bg-clip-text bg-gradient-to-r from-[#e4e4e7] leading-[72px] to-[#71717a]" style={{ WebkitTextFillColor: "transparent" }}>
+                Tvoj Partner Pri Vode.
+              </span>
+            </p>
+            <p className="h-[47.955px] leading-[32px] relative shrink-0 text-[20px] w-[714.641px]" data-node-id="2003:225">
+              Spojili sme silu živých súťaží s inteligentným osobným denníkom. Všetko na jednom mieste.
+            </p>
+          </div>
+          <div className="content-stretch flex flex-col gap-[10px] h-[564.75px] items-start px-[61px] py-[102px] relative shrink-0 w-full" data-node-id="2003:226">
+            <div className="absolute inset-0 mask-alpha mask-intersect mask-no-clip mask-no-repeat mask-position-[0%_0%] mask-size-[100%_100%] rounded-[40px]" data-name="Gradient" data-node-id="2003:229" style={{ backgroundImage: "linear-gradient(135.00000101268589deg, rgba(255, 255, 255, 0.128) 0%, rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, 0.064) 100%)", maskImage: `url('${imgGradient2}')` }} />
+            <div className="content-stretch flex flex-col gap-[13px] items-start relative shrink-0 w-[472.23px]" data-node-id="2003:230">
+              <div className="content-stretch flex flex-col gap-[12px] h-[273px] items-start relative shrink-0 w-full" data-node-id="2003:231">
+                <div className="content-stretch flex flex-col gap-[27px] items-start relative shrink-0 w-[362.014px]" data-node-id="2003:232">
+                  <div className="border border-[rgba(255,255,255,0.1)] border-solid relative rounded-[16px] shrink-0 size-[48px]" data-name="Background+Border" data-node-id="2003:233" style={{ backgroundImage: "linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)" }}>
+                    <div className="-translate-x-1/2 -translate-y-1/2 absolute left-1/2 size-[24px] top-1/2" data-name="SVG" data-node-id="2003:234">
+                      <img alt="" className="block max-w-none size-full" src={imgSvg6} />
+                    </div>
+                  </div>
+                  <p className="font-['Manrope:SemiBold',sans-serif] font-semibold h-[39px] leading-[40px] relative shrink-0 text-[36px] text-white tracking-[-0.9px] w-full whitespace-pre-wrap" data-node-id="2003:237">
+                    Centrum Súťaží
+                  </p>
+                </div>
+                <p className="font-['ABeeZee:Regular',sans-serif] h-[117px] leading-[29.25px] not-italic relative shrink-0 text-[#9ca3af] text-[18px] w-full whitespace-pre-wrap" data-node-id="2003:238">
+                  Sleduj live výsledky, registruj tímy a spravuj súťaže v reálnom čase. Organizátori majú plnú kontrolu nad registráciami, rozhodcami a živými rebríčkami. Diváci môžu sledovať napínavé momenty priamo na zariadení.
+                </p>
+              </div>
+              <div className="bg-[#fb923c] content-stretch flex items-center justify-center px-[10px] py-[17px] relative rounded-[28px] shrink-0 w-[165px]" data-node-id="2003:239">
+                <p className="font-['ABeeZee:Regular',sans-serif] leading-[16px] not-italic relative shrink-0 text-[#08101b] text-[16px] text-center" data-node-id="2003:240">
+                  Zaregistrovať sa
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="content-stretch flex flex-col gap-[10px] h-[564.75px] items-start justify-center px-[61px] py-[102px] relative shrink-0 w-full" data-node-id="2003:241">
+            <div className="absolute inset-0 mask-alpha mask-intersect mask-no-clip mask-no-repeat mask-position-[0%_0%] mask-size-[100%_100%] rounded-[40px]" data-name="Gradient" data-node-id="2003:244" style={{ backgroundImage: "linear-gradient(135.00000101268589deg, rgba(255, 255, 255, 0.128) 0%, rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, 0.064) 100%)", maskImage: `url('${imgGradient2}')` }} />
+            <div className="absolute content-stretch flex flex-col gap-[13px] items-start left-[690.8px] top-[102px] w-[472.23px]" data-node-id="2003:245">
+              <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0 w-full" data-node-id="2003:246">
+                <div className="content-stretch flex flex-col gap-[27px] items-start relative shrink-0 w-[362.014px]" data-node-id="2003:247">
+                  <div className="border border-[rgba(255,255,255,0.1)] border-solid relative rounded-[16px] shrink-0 size-[48px]" data-name="Background+Border" data-node-id="2003:248" style={{ backgroundImage: "linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)" }}>
+                    <div className="-translate-x-1/2 -translate-y-1/2 absolute left-1/2 size-[24px] top-1/2" data-name="SVG" data-node-id="2003:249">
+                      <img alt="" className="block max-w-none size-full" src={imgSvg6} />
+                    </div>
+                  </div>
+                  <p className="font-['Manrope:SemiBold',sans-serif] font-semibold h-[39px] leading-[40px] relative shrink-0 text-[36px] text-white tracking-[-0.9px] w-full whitespace-pre-wrap" data-node-id="2003:252">
+                    Inteligentný Denník
+                  </p>
+                </div>
+                <div className="font-['ABeeZee:Regular',sans-serif] h-[117px] leading-[29.25px] not-italic relative shrink-0 text-[#9ca3af] text-[18px] w-full whitespace-pre-wrap" data-node-id="2003:253">
+                  <p className="mb-0">Vytvor si osobný rybársky denník s GPS lokalitami, fotkami úlovkov a pokročilými štatistikami. Sleduj svoj progres, súťaž s priateľmi v Fishing Battle a využívaj predpoveď počasia pre maximálny úspech.</p>
+                  <p>&nbsp;</p>
+                </div>
+              </div>
+              <div className="bg-[#fb923c] content-stretch flex items-center justify-center px-[10px] py-[17px] relative rounded-[28px] shrink-0 w-[165px]" data-node-id="2003:254">
+                <p className="font-['ABeeZee:Regular',sans-serif] leading-[16px] not-italic relative shrink-0 text-[#08101b] text-[16px] text-center" data-node-id="2003:255">
+                  Preskúmať denník
+                </p>
+              </div>
+            </div>
+            <div className="-translate-y-1/2 absolute contents left-[54.43px] right-[906.87px] top-[calc(50%-4.25px)]" data-node-id="2003:256">
+              <div className="-translate-y-1/2 absolute backdrop-blur-[9.459px] h-[182.094px] left-[54.43px] overflow-clip right-[906.87px] rounded-[18.919px] shadow-[0px_19.707px_39.414px_-9.459px_rgba(0,0,0,0.25)] top-[calc(50%-157.77px)]" data-name="Background+Shadow+OverlayBlur" data-node-id="2003:257" style={{ backgroundImage: "linear-gradient(148.970460365752deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)" }}>
+                <div className="-translate-y-1/2 absolute left-[15.77px] overflow-clip rounded-[7882.076px] shadow-[0px_7.883px_11.824px_-2.365px_rgba(249,115,22,0.2),0px_3.153px_4.73px_-3.153px_rgba(249,115,22,0.2)] size-[37.838px] top-[calc(50%-56.36px)]" data-name="Background+Shadow" data-node-id="2003:258" style={{ backgroundImage: "linear-gradient(135deg, rgb(249, 115, 22) 0%, rgb(234, 88, 12) 100%)" }}>
+                  <div className="absolute bg-black inset-[1.58px] rounded-[7882.076px]" data-name="Background" data-node-id="2003:259">
+                    <div className="-translate-x-1/2 -translate-y-1/2 absolute left-1/2 size-[15.766px] top-1/2" data-name="SVG" data-node-id="2003:260">
+                      <img alt="" className="block max-w-none size-full" src={imgSvg7} />
+                    </div>
+                  </div>
+                </div>
+                <div className="-translate-y-1/2 absolute flex flex-col font-['Manrope:SemiBold',sans-serif] font-semibold h-[22.072px] justify-center leading-[0] left-[66.22px] text-[14.189px] text-white top-[28.38px] tracking-[-0.3547px] w-[90.143px]" data-node-id="2003:264">
+                  <p className="leading-[22.072px] whitespace-pre-wrap">Atlas Network</p>
+                </div>
+                <div className="-translate-y-1/2 absolute flex flex-col font-['Segoe_UI_Symbol:Regular',sans-serif] h-[12.613px] justify-center leading-[0] left-[66.22px] not-italic text-[#a1a1aa] text-[9.459px] top-[45.72px] w-[88.398px]" data-node-id="2003:265">
+                  <p className="leading-[12.613px] whitespace-pre-wrap">Production · US-East</p>
+                </div>
+                <div className="absolute bg-[#10b981] left-[280.63px] rounded-[7882.076px] shadow-[0px_0px_6.306px_0px_rgba(16,185,129,0.6)] size-[6.306px] top-[31.53px]" data-name="Background+Shadow" data-node-id="2003:266" />
+                <div className="absolute inset-0 mask-alpha mask-intersect mask-no-clip mask-no-repeat mask-position-[0%_0%] mask-size-[100%_100%] rounded-[18.919px]" data-name="Gradient" data-node-id="2003:269" style={{ backgroundImage: "linear-gradient(134.99999820354878deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, 0.05) 100%)", maskImage: `url('${imgGradient3}')` }} />
+                <div className="absolute inset-[72.52px_200.75px_59.91px_15.77px] rounded-[12.613px]" data-name="Background" data-node-id="2003:270" style={{ backgroundImage: "linear-gradient(150.04785934542502deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)" }}>
+                  <div className="-translate-y-1/2 absolute flex flex-col font-['Segoe_UI_Symbol:Regular',sans-serif] h-[11.824px] justify-center leading-[0] left-[9.46px] not-italic text-[#71717a] text-[7.883px] top-[15.37px] tracking-[0.3941px] uppercase w-[32.02px]" data-node-id="2003:271">
+                    <p className="leading-[11.824px] whitespace-pre-wrap">Uptime</p>
+                  </div>
+                  <div className="-translate-y-1/2 absolute flex flex-col font-['Geist:SemiBold',sans-serif] font-semibold h-[15.766px] justify-center leading-[0] left-[9.46px] text-[11.036px] text-white top-[32.32px] w-[40.309px]" data-node-id="2003:272">
+                    <p className="leading-[15.766px] whitespace-pre-wrap">99.99%</p>
+                  </div>
+                  <div className="absolute inset-0 mask-alpha mask-intersect mask-no-clip mask-no-repeat mask-position-[0%_0%] mask-size-[100%_100%] rounded-[12.613px]" data-name="Gradient" data-node-id="2003:275" style={{ backgroundImage: "linear-gradient(135.00000160456673deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)", maskImage: `url('${imgGradient4}')` }} />
+                </div>
+                <div className="absolute inset-[72.52px_108.26px_59.91px_108.26px] rounded-[12.613px]" data-name="Background" data-node-id="2003:276" style={{ backgroundImage: "linear-gradient(150.04785934542502deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)" }}>
+                  <div className="-translate-y-1/2 absolute flex flex-col font-['Segoe_UI_Symbol:Regular',sans-serif] h-[11.824px] justify-center leading-[0] left-[9.46px] not-italic text-[#71717a] text-[7.883px] top-[15.37px] tracking-[0.3941px] uppercase w-[38.122px]" data-node-id="2003:277">
+                    <p className="leading-[11.824px] whitespace-pre-wrap">Latency</p>
+                  </div>
+                  <div className="-translate-y-1/2 absolute flex flex-col font-['Geist:SemiBold',sans-serif] font-semibold h-[15.766px] justify-center leading-[0] left-[9.46px] text-[11.036px] text-white top-[32.32px] w-[27.673px]" data-node-id="2003:278">
+                    <p className="leading-[15.766px] whitespace-pre-wrap">14ms</p>
+                  </div>
+                  <div className="absolute inset-0 mask-alpha mask-intersect mask-no-clip mask-no-repeat mask-position-[0%_0%] mask-size-[100%_100%] rounded-[12.613px]" data-name="Gradient" data-node-id="2003:281" style={{ backgroundImage: "linear-gradient(135.00000160456673deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)", maskImage: `url('${imgGradient4}')` }} />
+                </div>
+                <div className="absolute inset-[72.52px_15.77px_59.91px_200.74px] rounded-[12.613px]" data-name="Background" data-node-id="2003:282" style={{ backgroundImage: "linear-gradient(150.04785934542502deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)" }}>
+                  <div className="-translate-y-1/2 absolute flex flex-col font-['Segoe_UI_Symbol:Regular',sans-serif] h-[11.824px] justify-center leading-[0] left-[9.46px] not-italic text-[#71717a] text-[7.883px] top-[15.37px] tracking-[0.3941px] uppercase w-[23.988px]" data-node-id="2003:283">
+                    <p className="leading-[11.824px] whitespace-pre-wrap">Reqs</p>
+                  </div>
+                  <div className="-translate-y-1/2 absolute flex flex-col font-['Geist:SemiBold',sans-serif] font-semibold h-[15.766px] justify-center leading-[0] left-[9.46px] text-[11.036px] text-white top-[32.32px] w-[26.867px]" data-node-id="2003:284">
+                    <p className="leading-[15.766px] whitespace-pre-wrap">2.4M</p>
+                  </div>
+                  <div className="absolute inset-0 mask-alpha mask-intersect mask-no-clip mask-no-repeat mask-position-[0%_0%] mask-size-[100%_100%] rounded-[12.613px]" data-name="Gradient" data-node-id="2003:287" style={{ backgroundImage: "linear-gradient(135.00000160456673deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)", maskImage: `url('${imgGradient4}')` }} />
+                </div>
+                <div className="absolute h-[28.378px] left-[15.77px] right-[15.77px] rounded-[7882.076px] top-[137.95px]" data-name="Button" data-node-id="2003:288" style={{ backgroundImage: "linear-gradient(174.0256765188352deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)" }}>
+                  <div className="-translate-x-1/2 -translate-y-1/2 absolute flex flex-col font-['Inter:Medium',sans-serif] font-medium h-[12.613px] justify-center leading-[0] left-[calc(50%-7.76px)] not-italic text-[9.459px] text-center text-white top-[14.19px] w-[67.084px]" data-node-id="2003:289">
+                    <p className="leading-[12.613px] whitespace-pre-wrap">View Analytics</p>
+                  </div>
+                  <div className="-translate-x-1/2 -translate-y-1/2 absolute left-[calc(50%+36.56px)] size-[9.459px] top-1/2" data-name="SVG" data-node-id="2003:290">
+                    <img alt="" className="block max-w-none size-full" src={imgSvg8} />
+                  </div>
+                  <div className="absolute inset-0 mask-alpha mask-intersect mask-no-clip mask-no-repeat mask-position-[0%_0%] mask-size-[100%_100%] rounded-[7882.076px]" data-name="Gradient" data-node-id="2003:295" style={{ backgroundImage: "linear-gradient(134.9999988500727deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)", maskImage: `url('${imgGradient5}')` }} />
+                </div>
+              </div>
+              <div className="-translate-y-1/2 absolute backdrop-blur-[9.459px] h-[137.556px] left-[54.43px] overflow-clip right-[906.87px] rounded-[18.919px] shadow-[0px_15.766px_19.707px_-3.941px_rgba(0,0,0,0.1),0px_6.306px_7.883px_-4.73px_rgba(0,0,0,0.1)] top-[calc(50%+17.82px)]" data-name="Background+Shadow+OverlayBlur" data-node-id="2003:296" style={{ backgroundImage: "linear-gradient(155.56166662216293deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)" }}>
+                <div className="-translate-y-1/2 absolute flex flex-col font-['Segoe_UI_Symbol:Regular',sans-serif] h-[28.97px] justify-center leading-[17.934px] left-[15.77px] not-italic text-[#a1a1aa] text-[10.957px] top-[33.4px] w-[264.699px] whitespace-pre-wrap" data-node-id="2003:297">
+                  <p className="mb-0">Enterprise-grade infrastructure with automated scaling</p>
+                  <p>and zero-knowledge security proofs built-in.</p>
+                </div>
+                <div className="absolute bg-[rgba(9,9,11,0.5)] border-[0.788px] border-[rgba(255,255,255,0.05)] border-solid h-[26.802px] left-[15.77px] right-[154.5px] rounded-[9.459px] top-[94.99px]" data-name="Button" data-node-id="2003:298">
+                  <div className="-translate-x-1/2 -translate-y-1/2 absolute flex flex-col font-['Segoe_UI_Symbol:Regular',sans-serif] h-[12.613px] justify-center leading-[0] left-[calc(50%-24.16px)] not-italic text-[#d4d4d8] text-[9.144px] text-center top-[12.61px] w-[63.615px]" data-node-id="2003:299">
+                    <p className="leading-[12.613px] whitespace-pre-wrap">Documentation</p>
+                  </div>
+                  <div className="-translate-y-1/2 absolute left-[111.94px] size-[9.459px] top-1/2" data-name="SVG" data-node-id="2003:300">
+                    <img alt="" className="block max-w-none size-full" src={imgSvg9} />
+                  </div>
+                </div>
+                <div className="absolute bg-[rgba(9,9,11,0.5)] border-[0.788px] border-[rgba(255,255,255,0.05)] border-solid h-[26.802px] left-[154.5px] right-[15.77px] rounded-[9.459px] top-[94.99px]" data-name="Button" data-node-id="2003:303">
+                  <div className="-translate-x-1/2 -translate-y-1/2 absolute flex flex-col font-['Segoe_UI_Symbol:Regular',sans-serif] h-[12.613px] justify-center leading-[0] left-[calc(50%-33.82px)] not-italic text-[#d4d4d8] text-[9.459px] text-center top-[12.61px] w-[44.302px]" data-node-id="2003:304">
+                    <p className="leading-[12.613px] whitespace-pre-wrap">API Status</p>
+                  </div>
+                  <div className="-translate-y-1/2 absolute left-[111.94px] size-[9.459px] top-1/2" data-name="SVG" data-node-id="2003:305">
+                    <img alt="" className="block max-w-none size-full" src={imgSvg10} />
+                  </div>
+                </div>
+                <div className="absolute inset-0 mask-alpha mask-intersect mask-no-clip mask-no-repeat mask-position-[0%_0%] mask-size-[100%_100%] rounded-[18.919px]" data-name="Gradient" data-node-id="2003:310" style={{ backgroundImage: "linear-gradient(135.0000011040397deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, 0.05) 100%)", maskImage: `url('${imgGradient6}')` }} />
+                <div className="absolute bottom-[55.18px] left-[15.77px] rounded-[7882.076px] top-[64.25px] w-[71.868px]" data-name="Background" data-node-id="2003:311" style={{ backgroundImage: "linear-gradient(165.8410876652291deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)" }}>
+                  <div className="-translate-y-1/2 absolute left-[7.88px] size-[7.883px] top-1/2" data-name="SVG" data-node-id="2003:312">
+                    <img alt="" className="block max-w-none size-full" src={imgSvg11} />
+                  </div>
+                  <div className="absolute inset-0 mask-alpha mask-intersect mask-no-clip mask-no-repeat mask-position-[0%_0%] mask-size-[100%_100%] rounded-[7882.076px]" data-name="Gradient" data-node-id="2003:316" style={{ backgroundImage: "linear-gradient(134.99999537493574deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)", maskImage: `url('${imgGradient7}')` }} />
+                  <div className="-translate-y-1/2 absolute flex flex-col font-['Inter:Medium',sans-serif] font-medium h-[9.459px] justify-center leading-[0] left-[20.5px] not-italic text-[#d4d4d8] text-[7.883px] top-[calc(50%-0.39px)] w-[43.781px]" data-node-id="2003:317">
+                    <p className="leading-[11.824px] whitespace-pre-wrap">zk-SNARKs</p>
+                  </div>
+                </div>
+                <div className="absolute bottom-[55.18px] left-[93.94px] rounded-[7882.076px] top-[64.25px] w-[69.692px]" data-name="Background" data-node-id="2003:318" style={{ backgroundImage: "linear-gradient(165.41764831640077deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)" }}>
+                  <div className="-translate-y-1/2 absolute left-[7.88px] size-[7.883px] top-1/2" data-name="SVG" data-node-id="2003:319">
+                    <img alt="" className="block max-w-none size-full" src={imgSvg12} />
+                  </div>
+                  <div className="absolute inset-0 mask-alpha mask-intersect mask-no-clip mask-no-repeat mask-position-[0%_0%] mask-size-[100%_100%] rounded-[7882.076px]" data-name="Gradient" data-node-id="2003:323" style={{ backgroundImage: "linear-gradient(134.9999977231803deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)", maskImage: `url('${imgGradient8}')` }} />
+                  <div className="-translate-y-1/2 absolute flex flex-col font-['Inter:Medium',sans-serif] font-medium h-[9.459px] justify-center leading-[0] left-[20.5px] not-italic text-[#d4d4d8] text-[7.883px] top-[calc(50%-0.39px)] w-[41.598px]" data-node-id="2003:324">
+                    <p className="leading-[11.824px] whitespace-pre-wrap">Auto-scale</p>
+                  </div>
+                </div>
+                <div className="absolute bottom-[55.18px] left-[169.94px] rounded-[7882.076px] top-[64.25px] w-[70.623px]" data-name="Background" data-node-id="2003:325" style={{ backgroundImage: "linear-gradient(165.60168090679554deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)" }}>
+                  <div className="-translate-y-1/2 absolute left-[7.88px] size-[7.883px] top-1/2" data-name="SVG" data-node-id="2003:326">
+                    <img alt="" className="block max-w-none size-full" src={imgSvg13} />
+                  </div>
+                  <div className="absolute inset-0 mask-alpha mask-intersect mask-no-clip mask-no-repeat mask-position-[0%_0%] mask-size-[100%_100%] rounded-[7882.076px]" data-name="Gradient" data-node-id="2003:332" style={{ backgroundImage: "linear-gradient(134.99999918057313deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)", maskImage: `url('${imgGradient9}')` }} />
+                  <div className="-translate-y-1/2 absolute flex flex-col font-['Inter:Medium',sans-serif] font-medium h-[9.459px] justify-center leading-[0] left-[20.5px] not-italic text-[#d4d4d8] text-[7.883px] top-[calc(50%-0.39px)] w-[42.531px]" data-node-id="2003:333">
+                    <p className="leading-[11.824px] whitespace-pre-wrap">CLI Access</p>
+                  </div>
+                </div>
+              </div>
+              <div className="-translate-y-1/2 absolute backdrop-blur-[9.459px] h-[137.95px] left-[54.43px] overflow-clip right-[906.87px] rounded-[18.919px] shadow-[0px_15.766px_19.707px_-3.941px_rgba(0,0,0,0.1),0px_6.306px_7.883px_-4.73px_rgba(0,0,0,0.1)] top-[calc(50%+171.34px)]" data-name="Background+Shadow+OverlayBlur" data-node-id="2003:334" style={{ backgroundImage: "linear-gradient(155.49986116595662deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)" }}>
+                <div className="-translate-y-1/2 absolute flex flex-col font-['Segoe_UI_Symbol:Regular',sans-serif] h-[11.824px] justify-center leading-[0] left-[12.61px] not-italic text-[#71717a] text-[7.883px] top-[18.52px] tracking-[0.7883px] uppercase w-[48.905px]" data-node-id="2003:335">
+                  <p className="leading-[11.824px] whitespace-pre-wrap">Live Logs</p>
+                </div>
+                <div className="-translate-y-1/2 absolute bg-[#f97316] left-[67.67px] rounded-[7882.076px] size-[4.73px] top-[calc(50%-50.45px)]" data-name="Background" data-node-id="2003:336" />
+                <div className="-translate-y-1/2 absolute h-[11.824px] left-[263.04px] top-[calc(50%-50.45px)] w-[27.046px]" data-name="Button" data-node-id="2003:337">
+                  <div className="-translate-x-1/2 -translate-y-1/2 absolute flex flex-col font-['Segoe_UI_Symbol:Regular',sans-serif] h-[7.883px] justify-center leading-[0] left-[calc(50%+0.08px)] not-italic text-[#a1a1aa] text-[7.883px] text-center top-[calc(50%-0.39px)] w-[27.204px]" data-node-id="2003:338">
+                    <p className="decoration-[#3f3f46] decoration-solid leading-[11.824px] underline whitespace-pre-wrap">View all</p>
+                  </div>
+                </div>
+                <div className="absolute bg-[rgba(9,9,11,0.5)] border-[0.788px] border-[rgba(255,255,255,0.05)] border-solid h-[42.567px] left-[12.61px] right-[12.61px] rounded-[9.459px] top-[33.9px]" data-name="Overlay+Border" data-node-id="2003:339">
+                  <div className="-translate-y-1/2 absolute bg-[rgba(59,130,246,0.1)] border-[0.788px] border-[rgba(59,130,246,0.2)] border-solid left-[7.88px] rounded-[6.306px] size-[25.225px] top-1/2" data-name="Overlay+Border" data-node-id="2003:340">
+                    <div className="-translate-x-1/2 -translate-y-1/2 absolute left-1/2 size-[11.036px] top-1/2" data-name="SVG" data-node-id="2003:341">
+                      <img alt="" className="block max-w-none size-full" src={imgSvg14} />
+                    </div>
+                  </div>
+                  <div className="absolute h-[12.613px] left-[42.57px] overflow-clip right-[138.72px] top-[8.28px]" data-name="Container" data-node-id="2003:346">
+                    <div className="-translate-y-1/2 absolute flex flex-col font-['Geist:Medium',sans-serif] font-medium h-[12.613px] justify-center leading-[0] left-0 text-[#e4e4e7] text-[9.459px] top-[6.31px] w-[83.293px]" data-node-id="2003:347">
+                      <p className="leading-[12.613px] whitespace-pre-wrap">Contract Deployed</p>
+                    </div>
+                  </div>
+                  <div className="-translate-y-1/2 absolute flex flex-col font-['Consolas:Regular',sans-serif] h-[11.824px] justify-center leading-[0] left-[42.57px] not-italic text-[#71717a] text-[7.883px] top-[26.8px] w-[94.776px]" data-node-id="2003:348">
+                    <p className="leading-[11.824px] whitespace-pre-wrap">0x82...92a1 · 2m ago</p>
+                  </div>
+                </div>
+                <div className="absolute bg-[rgba(9,9,11,0.5)] border-[0.788px] border-[rgba(255,255,255,0.05)] border-solid h-[42.567px] left-[12.61px] right-[12.61px] rounded-[9.459px] top-[82.77px]" data-name="Overlay+Border" data-node-id="2003:349">
+                  <div className="-translate-y-1/2 absolute bg-[rgba(168,85,247,0.1)] border-[0.788px] border-[rgba(168,85,247,0.2)] border-solid left-[7.88px] rounded-[6.306px] size-[25.225px] top-1/2" data-name="Overlay+Border" data-node-id="2003:350">
+                    <div className="-translate-x-1/2 -translate-y-1/2 absolute left-1/2 size-[11.036px] top-1/2" data-name="SVG" data-node-id="2003:351">
+                      <img alt="" className="block max-w-none size-full" src={imgSvg15} />
+                    </div>
+                  </div>
+                  <div className="absolute h-[12.613px] left-[42.57px] overflow-clip right-[150.44px] top-[8.28px]" data-name="Container" data-node-id="2003:355">
+                    <div className="-translate-y-1/2 absolute flex flex-col font-['Geist:Medium',sans-serif] font-medium h-[12.613px] justify-center leading-[0] left-0 text-[#e4e4e7] text-[9.459px] top-[6.31px] w-[83.182px]" data-node-id="2003:356">
+                      <p className="leading-[12.613px] whitespace-pre-wrap">New Block Synced</p>
+                    </div>
+                  </div>
+                  <div className="-translate-y-1/2 absolute flex flex-col font-['Consolas:Regular',sans-serif] h-[11.824px] justify-center leading-[0] left-[42.57px] not-italic text-[#71717a] text-[7.883px] top-[26.8px] w-[80.587px]" data-node-id="2003:357">
+                    <p className="leading-[11.824px] whitespace-pre-wrap">#18293492 · 120ms</p>
+                  </div>
+                </div>
+                <div className="absolute inset-0 mask-alpha mask-intersect mask-no-clip mask-no-repeat mask-position-[0%_0%] mask-size-[100%_100%] rounded-[18.919px]" data-name="Gradient" data-node-id="2003:360" style={{ backgroundImage: "linear-gradient(134.99999877288872deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, 0.05) 100%)", maskImage: `url('${imgGradient10}')` }} />
+              </div>
+            </div>
+            <div className="absolute flex h-[492.157px] items-center justify-center left-[342.85px] top-[33.22px] w-[303.542px]">
+              <div className="flex-none rotate-[-9.58deg]">
+                <div className="bg-[#09090b] border-[#27272a] border-[0.697px] border-solid h-[460.27px] overflow-clip relative rounded-[39.053px] shadow-[0px_0px_0px_0.697px_rgba(255,255,255,0.1),0px_3.975px_5.997px_0px_rgba(0,0,0,0.07),0px_9.554px_7.601px_0px_rgba(0,0,0,0.1),0px_17.923px_14.296px_0px_rgba(0,0,0,0.12),0px_31.94px_25.524px_0px_rgba(0,0,0,0.14),0px_59.835px_47.77px_0px_rgba(0,0,0,0.18),0px_142.963px_113.952px_0px_rgba(0,0,0,0.25)] w-[230.135px]" data-name="Background+Border+Shadow" data-node-id="2003:361">
+                  <div className="absolute bg-gradient-to-b from-[#18181b] inset-0 to-black" data-name="Background" data-node-id="2003:362">
+                    <div className="-translate-x-1/2 -translate-y-1/2 absolute flex flex-col font-['Inter:Semi_Bold',sans-serif] font-semibold h-[10.461px] justify-center leading-[0] left-[calc(50%+0.13px)] not-italic text-[#71717a] text-[6.974px] text-center top-[94.5px] tracking-[0.6974px] uppercase w-[62.805px]" data-node-id="2003:363">
+                      <p className="leading-[10.461px] whitespace-pre-wrap">Total Volume</p>
+                    </div>
+                    <div className="-translate-x-1/2 -translate-y-1/2 absolute flex flex-col font-['Geist:Medium',sans-serif] font-medium h-[33.474px] justify-center leading-[0] left-[calc(50%+0.81px)] text-[33.474px] text-center text-white top-[122.04px] tracking-[-1.6737px] w-[148.084px]" data-node-id="2003:364">
+                      <p className="leading-[33.474px] whitespace-pre-wrap">$8,245.32</p>
+                    </div>
+                    <div className="-translate-x-1/2 -translate-y-1/2 absolute bg-[rgba(16,185,129,0.1)] border-[0.697px] border-[rgba(16,185,129,0.2)] border-solid h-[14.645px] left-[calc(50%-21.11px)] rounded-[2.79px] top-[calc(50%-77.76px)] w-[45.392px]" data-name="Overlay+Border" data-node-id="2003:365">
+                      <div className="-translate-y-1/2 absolute left-[4.18px] size-[6.974px] top-1/2" data-name="SVG" data-node-id="2003:366">
+                        <img alt="" className="block max-w-none size-full" src={imgSvg16} />
+                      </div>
+                      <div className="-translate-x-1/2 -translate-y-1/2 absolute flex flex-col font-['Inter:Semi_Bold',sans-serif] font-semibold h-[8.369px] justify-center leading-[0] left-[calc(50%+4.99px)] not-italic text-[#10b981] text-[6.974px] text-center top-[calc(50%-0.35px)] w-[26.084px]" data-node-id="2003:369">
+                        <p className="leading-[10.461px] whitespace-pre-wrap">+12.4%</p>
+                      </div>
+                    </div>
+                    <div className="-translate-x-1/2 -translate-y-1/2 absolute flex flex-col font-['Inter:Medium',sans-serif] font-medium h-[11.158px] justify-center leading-[0] left-[calc(50%+24.92px)] not-italic text-[#71717a] text-[8.369px] text-center top-[151.68px] w-[38.305px]" data-node-id="2003:370">
+                      <p className="leading-[11.158px] whitespace-pre-wrap">this week</p>
+                    </div>
+                    <div className="absolute backdrop-blur-[4.184px] bg-[rgba(24,24,27,0.6)] border-[rgba(255,255,255,0.05)] border-solid border-t-[0.697px] inset-[173.61px_-1.48px_-15.38px_1.48px] rounded-tl-[22.316px] rounded-tr-[22.316px]" data-name="Overlay+HorizontalBorder+OverlayBlur" data-node-id="2003:371">
+                      <div className="-translate-y-1/2 absolute flex flex-col font-['Inter:Bold',sans-serif] font-bold h-[10.461px] justify-center leading-[0] left-[16.74px] not-italic text-[#71717a] text-[6.974px] top-[21.97px] tracking-[0.3487px] uppercase w-[56.386px]" data-node-id="2003:372">
+                        <p className="leading-[10.461px] whitespace-pre-wrap">Active Nodes</p>
+                      </div>
+                      <div className="absolute bg-[#52525b] left-[203.63px] rounded-[6973.095px] size-[2.79px] top-[20.57px]" data-name="Background" data-node-id="2003:373" />
+                      <div className="absolute bg-[#3f3f46] left-[209.21px] rounded-[6973.095px] size-[2.79px] top-[20.57px]" data-name="Background" data-node-id="2003:374" />
+                      <div className="absolute h-[39.053px] left-[16.74px] right-[16.74px] rounded-[8.369px] top-[38.36px]" data-name="Background" data-node-id="2003:375" style={{ backgroundImage: "linear-gradient(168.69006731072523deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)" }}>
+                        <div className="absolute inset-0 mask-alpha mask-intersect mask-no-clip mask-no-repeat mask-position-[0%_0%] mask-size-[100%_100%] rounded-[8.369px]" data-name="Gradient" data-node-id="2003:378" style={{ backgroundImage: "linear-gradient(135.0000009771308deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)", maskImage: `url('${imgGradient11}')` }} />
+                        <div className="-translate-y-1/2 absolute flex flex-col font-['Inter:Semi_Bold',sans-serif] font-semibold h-[11.158px] justify-center leading-[0] left-[9.95px] not-italic text-[8.369px] text-white top-[14.18px] w-[91.675px]" data-node-id="2003:379">
+                          <p className="whitespace-pre-wrap">
+                            <span className="leading-[11.158px]">{` Tím Alfa `}</span>
+                            <span className="font-['Inter:Regular',sans-serif] font-normal leading-[11.158px] not-italic text-[rgba(255,255,255,0.41)]">12 úlovkov</span>
+                          </p>
+                        </div>
+                        <div className="-translate-y-1/2 absolute bg-[#10b981] left-[13.79px] rounded-[6973.095px] size-[2.79px] top-[calc(50%+6.11px)]" data-name="Background" data-node-id="2003:380" />
+                        <div className="-translate-y-1/2 absolute flex flex-col font-['Inter:Medium',sans-serif] font-medium h-[10.461px] justify-center leading-[0] left-[19.37px] not-italic text-[#10b981] text-[6.974px] top-[calc(50%+6.11px)] w-[25.363px]" data-node-id="2003:381">
+                          <p className="leading-[10.461px] whitespace-pre-wrap">245 kg</p>
+                        </div>
+                        <div className="-translate-y-1/2 absolute left-[177.13px] size-[9.763px] top-1/2" data-name="SVG" data-node-id="2003:382">
+                          <img alt="" className="block max-w-none size-full" src={imgSvg17} />
+                        </div>
+                      </div>
+                      <div className="absolute h-[39.053px] left-[17.88px] right-[15.6px] rounded-[8.369px] top-[84.37px]" data-name="Background" data-node-id="2003:384" style={{ backgroundImage: "linear-gradient(168.69006731072523deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)" }}>
+                        <div className="absolute inset-0 mask-alpha mask-intersect mask-no-clip mask-no-repeat mask-position-[0%_0%] mask-size-[100%_100%] rounded-[8.369px]" data-name="Gradient" data-node-id="2003:387" style={{ backgroundImage: "linear-gradient(135.0000009771308deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)", maskImage: `url('${imgGradient11}')` }} />
+                        <div className="-translate-y-1/2 absolute flex flex-col font-['Inter:Semi_Bold',sans-serif] font-semibold h-[11.158px] justify-center leading-[0] left-[9.95px] not-italic text-[8.369px] text-white top-[14.18px] w-[91.675px]" data-node-id="2003:388">
+                          <p className="whitespace-pre-wrap">
+                            <span className="leading-[11.158px]">{`Rybári SK `}</span>
+                            <span className="font-['Inter:Regular',sans-serif] font-normal leading-[11.158px] not-italic text-[rgba(255,255,255,0.41)]">9 úlovkov</span>
+                          </p>
+                        </div>
+                        <div className="-translate-y-1/2 absolute bg-[#10b981] left-[13.79px] rounded-[6973.095px] size-[2.79px] top-[calc(50%+6.11px)]" data-name="Background" data-node-id="2003:389" />
+                        <div className="-translate-y-1/2 absolute flex flex-col font-['Inter:Medium',sans-serif] font-medium h-[10.461px] justify-center leading-[0] left-[19.37px] not-italic text-[#10b981] text-[6.974px] top-[calc(50%+6.11px)] w-[25.363px]" data-node-id="2003:390">
+                          <p className="leading-[10.461px] whitespace-pre-wrap">198 kg</p>
+                        </div>
+                        <div className="-translate-y-1/2 absolute left-[177.13px] size-[9.763px] top-1/2" data-name="SVG" data-node-id="2003:391">
+                          <img alt="" className="block max-w-none size-full" src={imgSvg17} />
+                        </div>
+                      </div>
+                      <div className="absolute h-[39.053px] left-[17.12px] right-[16.36px] rounded-[8.369px] top-[132.19px]" data-name="Background" data-node-id="2003:393" style={{ backgroundImage: "linear-gradient(168.69006731072523deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)" }}>
+                        <div className="absolute inset-0 mask-alpha mask-intersect mask-no-clip mask-no-repeat mask-position-[0%_0%] mask-size-[100%_100%] rounded-[8.369px]" data-name="Gradient" data-node-id="2003:396" style={{ backgroundImage: "linear-gradient(135.0000009771308deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)", maskImage: `url('${imgGradient11}')` }} />
+                        <div className="-translate-y-1/2 absolute flex flex-col font-['Inter:Semi_Bold',sans-serif] font-semibold h-[11.158px] justify-center leading-[0] left-[9.95px] not-italic text-[8.369px] text-white top-[14.18px] w-[91.675px]" data-node-id="2003:397">
+                          <p className="whitespace-pre-wrap">
+                            <span className="leading-[11.158px]">{`Kapráři CZ `}</span>
+                            <span className="font-['Inter:Regular',sans-serif] font-normal leading-[11.158px] not-italic text-[rgba(255,255,255,0.41)]">9 úlovkov</span>
+                          </p>
+                        </div>
+                        <div className="-translate-y-1/2 absolute bg-[#10b981] left-[13.79px] rounded-[6973.095px] size-[2.79px] top-[calc(50%+6.11px)]" data-name="Background" data-node-id="2003:398" />
+                        <div className="-translate-y-1/2 absolute flex flex-col font-['Inter:Medium',sans-serif] font-medium h-[10.461px] justify-center leading-[0] left-[19.37px] not-italic text-[#10b981] text-[6.974px] top-[calc(50%+6.11px)] w-[40.619px]" data-node-id="2003:399">
+                          <p className="leading-[10.461px] whitespace-pre-wrap">8 úlovkov</p>
+                        </div>
+                        <div className="-translate-y-1/2 absolute left-[177.13px] size-[9.763px] top-1/2" data-name="SVG" data-node-id="2003:400">
+                          <img alt="" className="block max-w-none size-full" src={imgSvg17} />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="-translate-y-1/2 absolute bg-[#10b981] left-[78.22px] rounded-[6973.095px] shadow-[0px_0px_6.974px_0px_rgba(16,185,129,0.5)] size-[5.579px] top-[calc(50%-173.65px)]" data-name="Background+Shadow" data-node-id="2003:402" />
+                    <div className="-translate-x-1/2 -translate-y-1/2 absolute flex flex-col font-['Inter:Semi_Bold',sans-serif] font-semibold h-[13.948px] justify-center leading-[0] left-[120.06px] not-italic text-[9.763px] text-center text-white top-[55.79px] tracking-[0.2441px] w-[84.897px]" data-node-id="2003:403">
+                      <p className="leading-[13.948px] whitespace-pre-wrap">Live Výsledky</p>
+                    </div>
+                    <div className="-translate-y-1/2 absolute backdrop-blur-[1.395px] left-[16.74px] rounded-[6973.095px] size-[22.316px] top-[calc(50%-173.65px)]" data-name="Button" data-node-id="2003:404" style={{ backgroundImage: "linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)" }}>
+                      <div className="-translate-x-1/2 -translate-y-1/2 absolute left-1/2 size-[11.158px] top-1/2" data-name="SVG" data-node-id="2003:405">
+                        <img alt="" className="block max-w-none size-full" src={imgSvg18} />
+                      </div>
+                      <div className="absolute inset-0 mask-alpha mask-intersect mask-no-clip mask-no-repeat mask-position-[0%_0%] mask-size-[100%_100%] rounded-[6973.095px]" data-name="Gradient" data-node-id="2003:410" style={{ backgroundImage: "linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)", maskImage: `url('${imgGradient12}')` }} />
+                    </div>
+                    <div className="-translate-y-1/2 absolute backdrop-blur-[1.395px] left-[189.68px] rounded-[6973.095px] size-[22.316px] top-[calc(50%-173.65px)]" data-name="Button" data-node-id="2003:411" style={{ backgroundImage: "linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)" }}>
+                      <div className="-translate-x-1/2 -translate-y-1/2 absolute left-1/2 size-[11.158px] top-1/2" data-name="SVG" data-node-id="2003:412">
+                        <img alt="" className="block max-w-none size-full" src={imgSvg19} />
+                      </div>
+                      <div className="absolute inset-0 mask-alpha mask-intersect mask-no-clip mask-no-repeat mask-position-[0%_0%] mask-size-[100%_100%] rounded-[6973.095px]" data-name="Gradient" data-node-id="2003:418" style={{ backgroundImage: "linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)", maskImage: `url('${imgGradient12}')` }} />
+                    </div>
+                  </div>
+                  <div className="-translate-y-1/2 absolute flex flex-col font-['Inter:Semi_Bold',sans-serif] font-semibold h-[10.461px] justify-center leading-[0] left-[22.32px] not-italic text-[6.974px] text-[rgba(255,255,255,0.9)] top-[16.39px] tracking-[0.1743px] w-[15.072px]" data-node-id="2003:419">
+                    <p className="leading-[10.461px] whitespace-pre-wrap">9:41</p>
+                  </div>
+                  <div className="-translate-y-1/2 absolute left-[199.45px] size-[6.974px] top-[calc(50%-213.05px)]" data-name="Img" data-node-id="2003:420">
+                    <img alt="" className="block max-w-none size-full" src={imgImg1} />
+                  </div>
+                  <div className="-translate-x-1/2 absolute bg-black h-[22.316px] left-1/2 rounded-[6973.095px] top-[8.37px] w-[76.712px]" data-name="Background" data-node-id="2003:423">
+                    <div className="-translate-y-1/2 absolute bg-[rgba(239,68,68,0.8)] left-[8.37px] opacity-0 rounded-[6973.095px] shadow-[0px_0px_3.487px_0px_rgba(239,68,68,0.5)] size-[2.79px] top-1/2" data-name="Overlay+Shadow" data-node-id="2003:424" />
+                    <div className="absolute backdrop-blur-[4.184px] bg-[rgba(24,24,27,0.8)] border-[0.697px] border-[rgba(255,255,255,0.05)] border-solid left-[32.78px] rounded-[6973.095px] size-[11.158px] top-[5.58px]" data-name="Overlay+Border+OverlayBlur" data-node-id="2003:425" />
+                    <div className="-translate-y-1/2 absolute bg-[rgba(34,197,94,0.8)] left-[65.55px] opacity-0 rounded-[6973.095px] shadow-[0px_0px_3.487px_0px_rgba(34,197,94,0.5)] size-[2.79px] top-1/2" data-name="Overlay+Shadow" data-node-id="2003:426" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="absolute backdrop-blur-[2px] bg-[rgba(24,24,27,0.3)] border-[rgba(255,255,255,0.05)] border-solid border-t h-[486px] left-[-240px] right-[-240px] top-[3327.77px]" data-name="Footer" data-node-id="2003:427">
+        <div className="absolute h-[357px] left-[320px] right-[320px] top-[96px]" data-name="Container" data-node-id="2003:428">
+          <p className="absolute font-['Manrope:Medium',sans-serif] font-medium h-[24px] leading-[24px] left-[564px] text-[20px] text-white top-0 w-[91.662px] whitespace-pre-wrap" data-node-id="2003:429">
+            Produkt
+          </p>
+          <div className="absolute font-['ABeeZee:Regular',sans-serif] h-[136px] leading-[34px] left-[563.69px] not-italic text-[16px] text-white top-[39px] w-[183.938px] whitespace-pre-wrap" data-node-id="2003:430">
+            <p className="mb-0">Cenník</p>
+            <p className="mb-0">Funkcie</p>
+            <p className="mb-0">Živé súťaže</p>
+            <p>Rybársky denník</p>
+          </div>
+          <p className="absolute font-['Manrope:Medium',sans-serif] font-medium h-[24px] leading-[24px] left-[853.4px] text-[20px] text-white top-0 w-[81.562px] whitespace-pre-wrap" data-node-id="2003:431">
+            Firma
+          </p>
+          <div className="absolute font-['ABeeZee:Regular',sans-serif] h-[124.001px] leading-[34px] left-[853.4px] not-italic text-[16px] text-white top-[36px] w-[164.958px] whitespace-pre-wrap" data-node-id="2003:432">
+            <p className="mb-0">O nás</p>
+            <p className="mb-0">Kontakt</p>
+            <p className="mb-0">FAQ</p>
+            <p className="mb-0">Vytvoriť súťaž</p>
+            <p>&nbsp;</p>
+          </div>
+          <p className="absolute font-['Manrope:Medium',sans-serif] font-medium h-[24px] leading-[24px] left-[1128.82px] text-[20px] text-white top-0 w-[60.655px] whitespace-pre-wrap" data-node-id="2003:433">
+            Social
+          </p>
+          <div className="absolute h-[20px] left-[1131.18px] right-[-55.18px] top-[46px]" data-name="Link" data-node-id="2003:434">
+            <div className="-translate-y-1/2 absolute left-0 size-[14px] top-1/2" data-name="Img" data-node-id="2003:435">
+              <div className="absolute inset-[-0.01%_0_0_0]">
+                <img alt="" className="block max-w-none size-full" src={imgImg2} />
+              </div>
+            </div>
+            <div className="-translate-y-1/2 absolute flex flex-col font-['Segoe_UI_Symbol:Regular',sans-serif] h-[14px] justify-center leading-[0] left-[26px] not-italic text-[#a1a1aa] text-[14px] top-1/2 w-[62.12px]" data-node-id="2003:437">
+              <p className="leading-[20px] whitespace-pre-wrap">Instagram</p>
+            </div>
+          </div>
+          <div className="absolute h-[20px] left-[1131.18px] right-[-55.18px] top-[92px]" data-name="Link" data-node-id="2003:438">
+            <div className="-translate-y-1/2 absolute left-0 size-[14px] top-[calc(50%-10px)]" data-name="Img" data-node-id="2003:439">
+              <img alt="" className="block max-w-none size-full" src={imgImg3} />
+            </div>
+            <div className="-translate-y-1/2 absolute flex flex-col font-['Segoe_UI_Symbol:Regular',sans-serif] h-[14px] justify-center leading-[0] left-[26px] not-italic text-[#a1a1aa] text-[14px] top-[calc(50%-10px)] w-[52.75px]" data-node-id="2003:441">
+              <p className="leading-[20px] whitespace-pre-wrap">LinkedIn</p>
+            </div>
+          </div>
+          <div className="absolute h-[20px] left-[1131.18px] right-[-55.18px] top-[118px]" data-name="Link" data-node-id="2003:442">
+            <div className="-translate-y-1/2 absolute left-0 size-[14px] top-1/2" data-name="Img" data-node-id="2003:443">
+              <img alt="" className="block max-w-none size-full" src={imgImg4} />
+            </div>
+            <div className="-translate-y-1/2 absolute flex flex-col font-['Segoe_UI_Symbol:Regular',sans-serif] h-[14px] justify-center leading-[0] left-[26px] not-italic text-[#a1a1aa] text-[13.9px] top-1/2 w-[54.58px]" data-node-id="2003:445">
+              <p className="leading-[20px] whitespace-pre-wrap">YouTube</p>
+            </div>
+          </div>
+          <div className="absolute border-[rgba(255,255,255,0.05)] border-solid border-t h-[57px] left-[24px] right-[24px] top-[240px]" data-name="HorizontalBorder" data-node-id="2003:446">
+            <div className="-translate-y-1/2 absolute flex flex-col font-['ABeeZee:Regular',sans-serif] h-[16px] justify-center leading-[0] left-[-30.7px] not-italic text-[11.6px] text-white top-[44px] w-[190.074px]" data-node-id="2003:447">
+              <p className="leading-[16px] whitespace-pre-wrap">Copyright © C.NTESTIO</p>
+            </div>
+            <div className="-translate-y-1/2 absolute h-[16px] left-[980.67px] top-[calc(50%+16px)] w-[89.95px]" data-name="Link" data-node-id="2003:448">
+              <div className="-translate-y-1/2 absolute flex flex-col font-['ABeeZee:Regular',sans-serif] h-[12px] justify-center leading-[0] left-[-21.51px] not-italic text-[12px] text-white top-[8px] w-[133.161px]" data-node-id="2003:449">
+                <p className="leading-[16px] whitespace-pre-wrap">Terms of Service</p>
+              </div>
+            </div>
+            <div className="-translate-y-1/2 absolute h-[24px] left-[1110.63px] top-[calc(50%+16px)] w-[121.38px]" data-name="Button" data-node-id="2003:450">
+              <div className="-translate-x-1/2 -translate-y-1/2 absolute flex flex-col font-['ABeeZee:Regular',sans-serif] h-[12px] justify-center leading-[0] left-[calc(50%-17.9px)] not-italic text-[12px] text-center text-white top-1/2 tracking-[0.6px] uppercase w-[126.411px]" data-node-id="2003:451">
+                <p className="leading-[16px] whitespace-pre-wrap">späť hore</p>
+              </div>
+              <div className="-translate-y-1/2 absolute border border-[#27272a] border-solid left-[97.37px] rounded-[4px] size-[24px] top-1/2" data-name="Border" data-node-id="2003:452">
+                <div className="-translate-x-1/2 -translate-y-1/2 absolute left-1/2 size-[12px] top-1/2" data-name="Img" data-node-id="2003:453">
+                  <img alt="" className="block max-w-none size-full" src={imgImg5} />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="absolute h-[37.047px] left-[24px] top-[1.95px] w-[218.65px]" data-name="image 1" data-node-id="2003:456">
+            <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgImage1} />
+          </div>
+        </div>
+      </div>
+      <div className="absolute bg-[rgba(9,9,11,0.3)] border-[rgba(255,255,255,0.05)] border-l border-solid inset-[2167.18px_98.02px_1050.07px_calc(41.67%+109.98px)] overflow-clip" data-name="Overlay+VerticalBorder" data-node-id="2003:457">
+        <div className="absolute bg-[#3f3f46] left-[32px] opacity-20 rounded-[9999px] size-[12px] top-[32px]" data-name="Background" data-node-id="2003:458" />
+        <div className="absolute bg-[#3f3f46] left-[50px] opacity-20 rounded-[9999px] size-[12px] top-[32px]" data-name="Background" data-node-id="2003:459" />
+        <div className="absolute bg-[#3f3f46] left-[68px] opacity-20 rounded-[9999px] size-[12px] top-[32px]" data-name="Background" data-node-id="2003:460" />
+        <div className="absolute h-[399.041px] left-[83.94px] rounded-[25px] top-[70.79px] w-[462.111px]" data-node-id="2003:461">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-[25px]">
+            <img alt="" className="absolute h-[327.97%] left-[-44.35%] max-w-none top-[-190.04%] w-[188.69%]" src={imgRectangle15} />
+          </div>
+        </div>
+      </div>
+      <div className="absolute contents left-[66px] top-[929px]" data-node-id="2003:112">
+        <div className="absolute content-stretch flex flex-col font-['Manrope:Medium',sans-serif] font-medium items-center left-[calc(8.33%+126.11px)] text-center text-white top-[929px] w-[923.781px] whitespace-pre-wrap" data-node-id="2003:113">
+          <p className="h-[97px] leading-[72px] relative shrink-0 text-[72px] tracking-[-3.6px] w-full" data-node-id="2003:114">
+            Kategórie súťaží
+          </p>
+          <p className="h-[31px] leading-[32px] relative shrink-0 text-[20px] w-full" data-node-id="2003:115">
+            Vyberte si kategóriu súťaží, ktorá vás zaujíma a preskúmajte dostupné súťaže
+          </p>
+        </div>
+        <div className="absolute contents left-[66px] top-[1085.55px]" data-node-id="2003:116">
+          <div className="absolute contents left-[66px] top-[1085.55px]" data-node-id="2003:117">
+            <div className="absolute h-[501.566px] left-[66px] rounded-[26px] top-[1085.55px] w-[305px]" data-node-id="2003:118" style={{ backgroundImage: "linear-gradient(105.20002551858296deg, rgba(255, 255, 255, 0.128) 0%, rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, 0.064) 100%)" }} />
+            <div className="absolute h-[231.393px] left-[87.52px] rounded-[20px] top-[1112.28px] w-[265.244px]" data-node-id="2003:119">
+              <div aria-hidden="true" className="absolute inset-0 pointer-events-none rounded-[20px]">
+                <img alt="" className="absolute max-w-none object-cover rounded-[20px] size-full" src={imgRectangle6} />
+                <div className="absolute bg-[rgba(0,0,0,0.6)] inset-0 rounded-[20px]" />
+              </div>
+            </div>
+            <div className="absolute content-stretch flex flex-col gap-[18px] items-center left-[93.84px] top-[1366.2px] w-[254.158px]" data-node-id="2003:120">
+              <div className="content-stretch flex flex-col gap-[23px] items-start relative shrink-0 w-full" data-node-id="2003:121">
+                <div className="content-stretch flex flex-col items-start relative shrink-0 text-white w-[235.23px] whitespace-pre-wrap" data-node-id="2003:122">
+                  <p className="font-['Manrope:SemiBold',sans-serif] font-semibold h-[39px] leading-[40px] relative shrink-0 text-[22px] tracking-[-0.9px] w-full" data-node-id="2003:123">
+                    Registrácia prebieha
+                  </p>
+                  <div className="font-['ABeeZee:Regular',sans-serif] h-[58px] leading-[29.25px] not-italic relative shrink-0 text-[16px] w-full" data-node-id="2003:124">
+                    <p className="mb-0">Prihláste sa do aktuálnych súťaží s otvorenou registráciou</p>
+                    <p>&nbsp;</p>
+                  </div>
+                </div>
+                <div className="bg-[#fb923c] content-stretch flex items-center justify-center px-[10px] py-[17px] relative rounded-[28px] shrink-0 w-full" data-node-id="2003:125">
+                  <p className="font-['ABeeZee:Regular',sans-serif] leading-[16px] not-italic relative shrink-0 text-[#08101b] text-[16px] text-center" data-node-id="2003:126">
+                    Preskúmať všetky
+                  </p>
+                </div>
+              </div>
+              <div className="grid-cols-[max-content] grid-rows-[max-content] inline-grid items-[start] justify-items-[start] leading-[0] relative shrink-0" data-node-id="2003:127">
+                <div className="bg-[rgba(16,185,129,0.12)] col-1 h-[5.216px] ml-0 mt-0 rounded-[40px] row-1 w-[231.49px]" data-node-id="2003:128" />
+                <div className="bg-[#10b981] col-1 h-[5.216px] ml-0 mt-0 rounded-[40px] row-1 w-[150.418px]" data-node-id="2003:129" />
+              </div>
+            </div>
+            <div className="absolute content-stretch flex gap-[29px] items-end left-[100.88px] top-[1135.95px]" data-node-id="2003:130">
+              <div className="content-stretch flex flex-col gap-[125px] items-start relative shrink-0 w-[90.755px]" data-node-id="2003:131">
+                <p className="font-['ABeeZee:Regular',sans-serif] h-[28px] leading-[29.25px] not-italic relative shrink-0 text-[14px] text-white w-full whitespace-pre-wrap" data-node-id="2003:132">
+                  🔥 Aktívne
+                </p>
+                <div className="content-stretch flex gap-[6px] items-center relative shrink-0" data-node-id="2003:133">
+                  <div className="grid-cols-[max-content] grid-rows-[max-content] inline-grid items-[start] justify-items-[start] leading-[0] relative shrink-0" data-node-id="2003:134">
+                    <div className="col-1 ml-0 mt-0 relative row-1 size-[25.146px]" data-node-id="2003:135">
+                      <img alt="" className="block max-w-none size-full" src={imgEllipse2} />
+                    </div>
+                    <p className="col-1 font-['ABeeZee:Regular',sans-serif] leading-[29.25px] ml-[6.07px] mt-[8.07px] not-italic relative row-1 text-[12px] text-white" data-node-id="2003:136">
+                      01
+                    </p>
+                  </div>
+                  <p className="font-['ABeeZee:Regular',sans-serif] h-[14px] leading-[29.25px] not-italic relative shrink-0 text-[16px] text-white w-[51.549px] whitespace-pre-wrap" data-node-id="2003:137">
+                    súťaží
+                  </p>
+                </div>
+              </div>
+              <div className="border border-solid border-white content-stretch flex gap-[6px] items-center px-[8px] py-[5px] relative rounded-[46px] shrink-0" data-node-id="2003:138">
+                <p className="font-['ABeeZee:Regular',sans-serif] h-[14px] leading-[29.25px] not-italic relative shrink-0 text-[16px] text-white w-[63.748px] whitespace-pre-wrap" data-node-id="2003:139">
+                  Zobraziť
+                </p>
+                <div className="relative shrink-0 size-[25.146px]" data-node-id="2003:140">
+                  <img alt="" className="block max-w-none size-full" src={imgGroup3} />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="absolute contents left-[calc(25%+33px)] top-[1085.55px]" data-node-id="2003:143">
+            <div className="absolute h-[501.566px] left-[calc(25%+33px)] rounded-[26px] top-[1085.55px] w-[305px]" data-node-id="2003:144" style={{ backgroundImage: "linear-gradient(105.20002551858296deg, rgba(255, 255, 255, 0.128) 0%, rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, 0.064) 100%)" }} />
+            <div className="absolute h-[231.393px] left-[calc(25%+54.52px)] rounded-[20px] top-[1112.28px] w-[265.244px]" data-node-id="2003:145">
+              <div aria-hidden="true" className="absolute inset-0 pointer-events-none rounded-[20px]">
+                <img alt="" className="absolute max-w-none object-cover rounded-[20px] size-full" src={imgRectangle8} />
+                <div className="absolute bg-[rgba(0,0,0,0.6)] inset-0 rounded-[20px]" />
+              </div>
+            </div>
+            <div className="absolute content-stretch flex flex-col gap-[18px] items-center left-[calc(25%+60.84px)] top-[1366.2px] w-[254.158px]" data-node-id="2003:146">
+              <div className="content-stretch flex flex-col gap-[23px] items-start relative shrink-0 w-full" data-node-id="2003:147">
+                <div className="content-stretch flex flex-col items-start relative shrink-0 text-white w-[235.23px] whitespace-pre-wrap" data-node-id="2003:148">
+                  <p className="font-['Manrope:SemiBold',sans-serif] font-semibold h-[39px] leading-[40px] relative shrink-0 text-[22px] tracking-[-0.9px] w-full" data-node-id="2003:149">
+                    Budúce preteky
+                  </p>
+                  <div className="font-['ABeeZee:Regular',sans-serif] h-[58px] leading-[29.25px] not-italic relative shrink-0 text-[16px] w-full" data-node-id="2003:150">
+                    <p className="mb-0">Nadchádzajúce súťaže s ukončenou registráciou</p>
+                    <p>&nbsp;</p>
+                  </div>
+                </div>
+                <div className="bg-[#fb923c] content-stretch flex items-center justify-center px-[10px] py-[17px] relative rounded-[28px] shrink-0 w-full" data-node-id="2003:151">
+                  <p className="font-['ABeeZee:Regular',sans-serif] leading-[16px] not-italic relative shrink-0 text-[#08101b] text-[16px] text-center" data-node-id="2003:152">
+                    Preskúmať všetky
+                  </p>
+                </div>
+              </div>
+              <div className="grid-cols-[max-content] grid-rows-[max-content] inline-grid items-[start] justify-items-[start] leading-[0] relative shrink-0" data-node-id="2003:153">
+                <div className="bg-[rgba(16,185,129,0.12)] col-1 h-[5.216px] ml-0 mt-0 rounded-[40px] row-1 w-[231.49px]" data-node-id="2003:154" />
+                <div className="bg-[#60a5fa] col-1 h-[5.216px] ml-0 mt-0 rounded-[40px] row-1 w-[150.418px]" data-node-id="2003:155" />
+              </div>
+            </div>
+            <div className="absolute content-stretch flex gap-[29px] items-end left-[calc(25%+67.88px)] top-[1135.95px]" data-node-id="2003:156">
+              <div className="content-stretch flex flex-col gap-[125px] items-start relative shrink-0 w-[90.755px]" data-node-id="2003:157">
+                <p className="font-['ABeeZee:Regular',sans-serif] h-[28px] leading-[29.25px] not-italic relative shrink-0 text-[14px] text-white w-[173.194px] whitespace-pre-wrap" data-node-id="2003:158">
+                  📅 Nadchádzajúce
+                </p>
+                <div className="content-stretch flex gap-[6px] items-center relative shrink-0" data-node-id="2003:159">
+                  <div className="grid-cols-[max-content] grid-rows-[max-content] inline-grid items-[start] justify-items-[start] leading-[0] relative shrink-0" data-node-id="2003:160">
+                    <div className="col-1 ml-0 mt-0 relative row-1 size-[25.146px]" data-node-id="2003:161">
+                      <img alt="" className="block max-w-none size-full" src={imgEllipse2} />
+                    </div>
+                    <p className="col-1 font-['ABeeZee:Regular',sans-serif] leading-[29.25px] ml-[6.07px] mt-[8.07px] not-italic relative row-1 text-[12px] text-white" data-node-id="2003:162">
+                      01
+                    </p>
+                  </div>
+                  <p className="font-['ABeeZee:Regular',sans-serif] h-[14px] leading-[29.25px] not-italic relative shrink-0 text-[16px] text-white w-[51.549px] whitespace-pre-wrap" data-node-id="2003:163">
+                    súťaží
+                  </p>
+                </div>
+              </div>
+              <div className="border border-solid border-white content-stretch flex gap-[6px] items-center px-[8px] py-[5px] relative rounded-[46px] shrink-0" data-node-id="2003:164">
+                <p className="font-['ABeeZee:Regular',sans-serif] h-[14px] leading-[29.25px] not-italic relative shrink-0 text-[16px] text-white w-[63.748px] whitespace-pre-wrap" data-node-id="2003:165">
+                  Zobraziť
+                </p>
+                <div className="relative shrink-0 size-[25.146px]" data-node-id="2003:166">
+                  <img alt="" className="block max-w-none size-full" src={imgGroup3} />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="absolute contents left-1/2 top-[1085.55px]" data-node-id="2003:169">
+            <div className="absolute h-[501.566px] left-1/2 rounded-[26px] top-[1085.55px] w-[305px]" data-node-id="2003:170" style={{ backgroundImage: "linear-gradient(105.20002551858296deg, rgba(255, 255, 255, 0.128) 0%, rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, 0.064) 100%)" }} />
+            <div className="absolute h-[231.393px] left-[calc(50%+21.52px)] rounded-[20px] top-[1112.28px] w-[265.244px]" data-node-id="2003:171">
+              <div aria-hidden="true" className="absolute inset-0 pointer-events-none rounded-[20px]">
+                <img alt="" className="absolute max-w-none object-cover rounded-[20px] size-full" src={imgRectangle10} />
+                <div className="absolute bg-[rgba(0,0,0,0.6)] inset-0 rounded-[20px]" />
+              </div>
+            </div>
+            <div className="absolute content-stretch flex flex-col gap-[18px] items-center left-[calc(50%+27.84px)] top-[1366.2px] w-[254.158px]" data-node-id="2003:172">
+              <div className="content-stretch flex flex-col gap-[23px] items-start relative shrink-0 w-full" data-node-id="2003:173">
+                <div className="content-stretch flex flex-col items-start relative shrink-0 text-white w-[235.23px] whitespace-pre-wrap" data-node-id="2003:174">
+                  <p className="font-['Manrope:SemiBold',sans-serif] font-semibold h-[39px] leading-[40px] relative shrink-0 text-[22px] tracking-[-0.9px] w-full" data-node-id="2003:175">
+                    Prebiehajúce preteky
+                  </p>
+                  <p className="font-['ABeeZee:Regular',sans-serif] h-[58px] leading-[29.25px] not-italic relative shrink-0 text-[16px] w-full" data-node-id="2003:176">
+                    Sledujte živé súťaže a aktuálne výsledky v reálnom čase
+                  </p>
+                </div>
+                <div className="bg-[#fb923c] content-stretch flex items-center justify-center px-[10px] py-[17px] relative rounded-[28px] shrink-0 w-full" data-node-id="2003:177">
+                  <p className="font-['ABeeZee:Regular',sans-serif] leading-[16px] not-italic relative shrink-0 text-[#08101b] text-[16px] text-center" data-node-id="2003:178">
+                    Preskúmať všetky
+                  </p>
+                </div>
+              </div>
+              <div className="grid-cols-[max-content] grid-rows-[max-content] inline-grid items-[start] justify-items-[start] leading-[0] relative shrink-0" data-node-id="2003:179">
+                <div className="bg-[rgba(16,185,129,0.12)] col-1 h-[5.216px] ml-0 mt-0 rounded-[40px] row-1 w-[231.49px]" data-node-id="2003:180" />
+                <div className="bg-[#c084fc] col-1 h-[5.216px] ml-0 mt-0 rounded-[40px] row-1 w-[150.418px]" data-node-id="2003:181" />
+              </div>
+            </div>
+            <div className="absolute content-stretch flex gap-[29px] items-end left-[calc(50%+34.88px)] top-[1135.95px]" data-node-id="2003:182">
+              <div className="content-stretch flex flex-col gap-[125px] items-start relative shrink-0 w-[90.755px]" data-node-id="2003:183">
+                <p className="font-['ABeeZee:Regular',sans-serif] h-[28px] leading-[29.25px] not-italic relative shrink-0 text-[14px] text-white w-full whitespace-pre-wrap" data-node-id="2003:184">
+                  🔴 Live
+                </p>
+                <div className="content-stretch flex gap-[6px] items-center relative shrink-0" data-node-id="2003:185">
+                  <div className="grid-cols-[max-content] grid-rows-[max-content] inline-grid items-[start] justify-items-[start] leading-[0] relative shrink-0" data-node-id="2003:186">
+                    <div className="col-1 ml-0 mt-0 relative row-1 size-[25.146px]" data-node-id="2003:187">
+                      <img alt="" className="block max-w-none size-full" src={imgEllipse2} />
+                    </div>
+                    <p className="col-1 font-['ABeeZee:Regular',sans-serif] leading-[29.25px] ml-[6.07px] mt-[8.07px] not-italic relative row-1 text-[12px] text-white" data-node-id="2003:188">
+                      01
+                    </p>
+                  </div>
+                  <p className="font-['ABeeZee:Regular',sans-serif] h-[14px] leading-[29.25px] not-italic relative shrink-0 text-[16px] text-white w-[51.549px] whitespace-pre-wrap" data-node-id="2003:189">
+                    súťaží
+                  </p>
+                </div>
+              </div>
+              <div className="border border-solid border-white content-stretch flex gap-[6px] items-center px-[8px] py-[5px] relative rounded-[46px] shrink-0" data-node-id="2003:190">
+                <p className="font-['ABeeZee:Regular',sans-serif] h-[14px] leading-[29.25px] not-italic relative shrink-0 text-[16px] text-white w-[63.748px] whitespace-pre-wrap" data-node-id="2003:191">
+                  Zobraziť
+                </p>
+                <div className="relative shrink-0 size-[25.146px]" data-node-id="2003:192">
+                  <img alt="" className="block max-w-none size-full" src={imgGroup3} />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="absolute contents left-[calc(75%-33px)] top-[1085.55px]" data-node-id="2003:195">
+            <div className="absolute h-[501.566px] left-[calc(75%-33px)] rounded-[26px] top-[1085.55px] w-[305px]" data-node-id="2003:196" style={{ backgroundImage: "linear-gradient(105.20002551858296deg, rgba(255, 255, 255, 0.128) 0%, rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, 0.064) 100%)" }} />
+            <div className="absolute h-[231.393px] left-[calc(75%-11.48px)] rounded-[20px] top-[1112.28px] w-[265.244px]" data-node-id="2003:197">
+              <div aria-hidden="true" className="absolute inset-0 pointer-events-none rounded-[20px]">
+                <img alt="" className="absolute max-w-none object-cover rounded-[20px] size-full" src={imgRectangle12} />
+                <div className="absolute bg-[rgba(0,0,0,0.6)] inset-0 rounded-[20px]" />
+              </div>
+            </div>
+            <div className="absolute content-stretch flex flex-col gap-[18px] items-center left-[calc(75%-5.16px)] top-[1366.2px] w-[254.158px]" data-node-id="2003:198">
+              <div className="content-stretch flex flex-col gap-[23px] items-start relative shrink-0 w-full" data-node-id="2003:199">
+                <div className="content-stretch flex flex-col items-start relative shrink-0 text-white w-[235.23px] whitespace-pre-wrap" data-node-id="2003:200">
+                  <p className="font-['Manrope:SemiBold',sans-serif] font-semibold h-[39px] leading-[40px] relative shrink-0 text-[22px] tracking-[-0.9px] w-full" data-node-id="2003:201">
+                    Ukončené preteky
+                  </p>
+                  <div className="font-['ABeeZee:Regular',sans-serif] h-[58px] leading-[29.25px] not-italic relative shrink-0 text-[16px] w-full" data-node-id="2003:202">
+                    <p className="mb-0">Prihláste sa do aktuálnych súťaží s otvorenou registráciou</p>
+                    <p>&nbsp;</p>
+                  </div>
+                </div>
+                <div className="bg-[#fb923c] content-stretch flex items-center justify-center px-[10px] py-[17px] relative rounded-[28px] shrink-0 w-full" data-node-id="2003:203">
+                  <p className="font-['ABeeZee:Regular',sans-serif] leading-[16px] not-italic relative shrink-0 text-[#08101b] text-[16px] text-center" data-node-id="2003:204">
+                    Preskúmať všetky
+                  </p>
+                </div>
+              </div>
+              <div className="grid-cols-[max-content] grid-rows-[max-content] inline-grid items-[start] justify-items-[start] leading-[0] relative shrink-0" data-node-id="2003:205">
+                <div className="bg-[rgba(16,185,129,0.12)] col-1 h-[5.216px] ml-0 mt-0 rounded-[40px] row-1 w-[231.49px]" data-node-id="2003:206" />
+                <div className="bg-[#fb923c] col-1 h-[5.216px] ml-0 mt-0 rounded-[40px] row-1 w-[150.418px]" data-node-id="2003:207" />
+              </div>
+            </div>
+            <div className="absolute content-stretch flex gap-[29px] items-end left-[calc(75%+1.88px)] top-[1135.95px]" data-node-id="2003:208">
+              <div className="content-stretch flex flex-col gap-[125px] items-start relative shrink-0 w-[90.755px]" data-node-id="2003:209">
+                <p className="font-['ABeeZee:Regular',sans-serif] h-[28px] leading-[29.25px] not-italic relative shrink-0 text-[14px] text-white w-full whitespace-pre-wrap" data-node-id="2003:210">
+                  🏆 Ukončené
+                </p>
+                <div className="content-stretch flex gap-[6px] items-center relative shrink-0" data-node-id="2003:211">
+                  <div className="grid-cols-[max-content] grid-rows-[max-content] inline-grid items-[start] justify-items-[start] leading-[0] relative shrink-0" data-node-id="2003:212">
+                    <div className="col-1 ml-0 mt-0 relative row-1 size-[25.146px]" data-node-id="2003:213">
+                      <img alt="" className="block max-w-none size-full" src={imgEllipse2} />
+                    </div>
+                    <p className="col-1 font-['ABeeZee:Regular',sans-serif] leading-[29.25px] ml-[6.07px] mt-[8.07px] not-italic relative row-1 text-[12px] text-white" data-node-id="2003:214">
+                      01
+                    </p>
+                  </div>
+                  <p className="font-['ABeeZee:Regular',sans-serif] h-[14px] leading-[29.25px] not-italic relative shrink-0 text-[16px] text-white w-[51.549px] whitespace-pre-wrap" data-node-id="2003:215">
+                    súťaží
+                  </p>
+                </div>
+              </div>
+              <div className="border border-solid border-white content-stretch flex gap-[6px] items-center px-[8px] py-[5px] relative rounded-[46px] shrink-0" data-node-id="2003:216">
+                <p className="font-['ABeeZee:Regular',sans-serif] h-[14px] leading-[29.25px] not-italic relative shrink-0 text-[16px] text-white w-[63.748px] whitespace-pre-wrap" data-node-id="2003:217">
+                  Zobraziť
+                </p>
+                <div className="relative shrink-0 size-[25.146px]" data-node-id="2003:218">
+                  <img alt="" className="block max-w-none size-full" src={imgGroup3} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+### Content Block 2 (Text)
+SUPER CRITICAL: The generated React+Tailwind code MUST be converted to match the target project's technology stack and styling system.
+1. Analyze the target codebase to identify: technology stack, styling approach, component patterns, and design tokens
+2. Convert React syntax to the target framework/library
+3. Transform all Tailwind classes to the target styling system while preserving exact visual design
+4. Follow the project's existing patterns and conventions
+DO NOT install any Tailwind as a dependency unless the user instructs you to do so.
+
+
+### Content Block 3 (Text)
+Node ids have been added to the code as data attributes, e.g. `data-node-id="1:2"`.
+
+### Content Block 4 (Text)
+Images and SVGs will be stored as constants, e.g. const image = 'https://www.figma.com/api/mcp/asset/550e8400-e29b-41d4-a716-446655440000'. These constants will be used in the code as the source for the image, ex: <img src={image} />. Image assets are stored on a remote server for 7 days and can be fetched using the provided URLs until they expire.
+
+### Content Block 5 (Text)
+IMPORTANT: After you call this tool, you MUST call get_screenshot to get a screenshot of the node for context.
+
+</mcp_external_output>
