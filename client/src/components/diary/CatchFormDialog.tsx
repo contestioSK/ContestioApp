@@ -9,25 +9,53 @@ import { format } from "date-fns";
 import { sk } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectSeparator } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  SelectSeparator,
+} from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { showErrorToast } from "@/lib/errorUtils";
 import { useConfetti } from "@/hooks/useConfetti";
 import { FishingAreaSelect } from "@/components/FishingAreaSelect";
-import { getPersonalizedFishTypeOptions, getAllFishTypeKeys, fishPrioritiesByStyle } from "@/utils/fishTypeMapping";
+import {
+  getPersonalizedFishTypeOptions,
+  getAllFishTypeKeys,
+  fishPrioritiesByStyle,
+} from "@/utils/fishTypeMapping";
 
-import { 
-  Calendar as CalendarIcon, 
-  MapPin, 
+import {
+  Calendar as CalendarIcon,
+  MapPin,
   Camera,
   X,
   Loader2,
@@ -43,10 +71,14 @@ import {
   Fish,
   Scale,
   CloudRain,
-  Plus
+  Plus,
 } from "lucide-react";
 
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 import { PremiumUpsellModal } from "@/components/PremiumUpsellModal";
 import { BadgeCelebrationModal } from "@/components/diary/BadgeCelebrationModal";
@@ -61,14 +93,20 @@ const allFishTypes = getAllFishTypeKeys();
 // Catch form validation schema
 const catchFormSchema = z.object({
   capturedAt: z.date({ required_error: "Čas chytenia je povinný" }),
-  weight: z.string().min(1, "Váha je povinná").transform((val) => {
-    const weight = parseFloat(val);
-    if (isNaN(weight) || weight < 0) {
-      throw new Error("Neplatná váha");
-    }
-    return weight.toString();
-  }),
-  lengthCm: z.coerce.number().positive("Dĺžka musí byť kladné číslo").optional(),
+  weight: z
+    .string()
+    .min(1, "Váha je povinná")
+    .transform((val) => {
+      const weight = parseFloat(val);
+      if (isNaN(weight) || weight < 0) {
+        throw new Error("Neplatná váha");
+      }
+      return weight.toString();
+    }),
+  lengthCm: z.coerce
+    .number()
+    .positive("Dĺžka musí byť kladné číslo")
+    .optional(),
   fishType: z.string().min(1, "Typ ryby je povinný"),
   bait: z.string().optional(),
   notes: z.string().optional(),
@@ -100,15 +138,15 @@ const fishingMethods = [
   "Nástražná rybka",
   // Ostatné
   "Umelá muška",
-  "Iná nástraha"
+  "Iná nástraha",
 ];
 
 type PhotoObject = {
   id: string;
   url: string;
-  status: 'processing' | 'ready' | 'failed';
+  status: "processing" | "ready" | "failed";
   originalUrl?: string;
-  variants?: Array<{width: number; format: string; url: string;}>;
+  variants?: Array<{ width: number; format: string; url: string }>;
   placeholder?: string;
   error?: string;
 };
@@ -121,7 +159,13 @@ interface CatchFormDialogProps {
   battleId?: string; // Optional: if opened from a battle page
 }
 
-export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSuccess, battleId }: CatchFormDialogProps) {
+export default function CatchFormDialog({
+  isOpen,
+  onClose,
+  editingCatch,
+  onSuccess,
+  battleId,
+}: CatchFormDialogProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const { fireworks, celebrateGoalCompletion } = useConfetti();
@@ -134,60 +178,73 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   // Offline functionality
-  const { 
-    isOffline, 
-    saveCatchDraft
-  } = useDiaryOffline();
+  const { isOffline, saveCatchDraft } = useDiaryOffline();
 
   // Fetch user's trips for the trip selector
   const { data: trips = [] } = useQuery<DiaryTrip[]>({
     queryKey: ["/api/diary/trips"],
-    enabled: !!user
+    enabled: !!user,
   });
 
   // Fetch active battles to auto-assign catches to ongoing battles
   const { data: activeBattles = [] } = useQuery<any[]>({
     queryKey: ["/api/diary/battles/active"],
-    enabled: !!user && isOpen
+    enabled: !!user && isOpen,
   });
 
   // Check premium status for photo limits
   const { data: premiumStatus } = useQuery<{ isPremium: boolean }>({
     queryKey: ["/api/auth/premium-status"],
-    enabled: !!user?.id
+    enabled: !!user?.id,
   });
 
   const isPremium = premiumStatus?.isPremium || false;
   const maxPhotos = isPremium ? 99 : 1; // Premium: unlimited (99), Free: 1
 
   // Fetch favorite baits from arsenal
-  const { data: favoriteBaits = [] } = useQuery<Array<{
-    id: number;
-    diameter: string | null;
-    manufacturer: { id: number; name: string; };
-    productLine: { id: number; name: string; };
-    flavor: { id: number; name: string; };
-  }>>({
+  const { data: favoriteBaits = [] } = useQuery<
+    Array<{
+      id: number;
+      diameter: string | null;
+      manufacturer: { id: number; name: string };
+      productLine: { id: number; name: string };
+      flavor: { id: number; name: string };
+    }>
+  >({
     queryKey: ["/api/diary/arsenal/baits/favorites"],
-    enabled: !!user && isOpen
+    enabled: !!user && isOpen,
   });
 
   // Find active battle (either from battleId prop or first active battle)
-  const activeBattle = battleId 
-    ? activeBattles.find(b => b.id === battleId)
+  const activeBattle = battleId
+    ? activeBattles.find((b) => b.id === battleId)
     : activeBattles[0]; // Use first active battle if any
 
   // State for tripId (will be auto-set if active battle exists)
-  const [selectedTripId, setSelectedTripId] = useState<string | undefined>(undefined);
-  
+  const [selectedTripId, setSelectedTripId] = useState<string | undefined>(
+    undefined,
+  );
+
   // State for badge celebration modal
-  const [badgeQueue, setBadgeQueue] = useState<Array<{ badgeType: string; badgeName: string; tier: BadgeTier; icon: string }>>([]);
-  const [currentBadge, setCurrentBadge] = useState<{ badgeType: string; badgeName: string; tier: BadgeTier; icon: string } | null>(null);
+  const [badgeQueue, setBadgeQueue] = useState<
+    Array<{
+      badgeType: string;
+      badgeName: string;
+      tier: BadgeTier;
+      icon: string;
+    }>
+  >([]);
+  const [currentBadge, setCurrentBadge] = useState<{
+    badgeType: string;
+    badgeName: string;
+    tier: BadgeTier;
+    icon: string;
+  } | null>(null);
 
   // Get personalized fish options based on user's fishing style preference
   const userFishingStyle = (user as any)?.preferences?.fishingStyle || null;
   const fishOptions = getPersonalizedFishTypeOptions(userFishingStyle);
-  const hasPriorityFish = 'priorityOptions' in fishOptions;
+  const hasPriorityFish = "priorityOptions" in fishOptions;
 
   // Get default fish type based on user's fishing style
   const getDefaultFishType = () => {
@@ -206,8 +263,8 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
       bait: "",
       notes: "",
       spot: "",
-      verified: false
-    }
+      verified: false,
+    },
   });
 
   // Auto-set tripId when active battle exists
@@ -222,15 +279,15 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
     if (editingCatch) {
       setExistingPhotos(editingCatch.photos || []);
       setSelectedTripId(editingCatch.tripId || undefined);
-      
+
       // Parse date safely
       let capturedDate = new Date();
       try {
         capturedDate = new Date(editingCatch.capturedAt);
       } catch (e) {
-        console.error('Error parsing capturedAt:', e);
+        console.error("Error parsing capturedAt:", e);
       }
-      
+
       form.reset({
         capturedAt: capturedDate,
         weight: editingCatch.weight || "",
@@ -240,12 +297,24 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
         notes: editingCatch.notes || "",
         spot: editingCatch.spot || "",
         verified: editingCatch.verified || false,
-        waterTemp: editingCatch.waterTemp ? Number(editingCatch.waterTemp) : undefined,
-        airTemp: editingCatch.airTemp ? Number(editingCatch.airTemp) : undefined,
-        windSpeed: editingCatch.windSpeed ? Number(editingCatch.windSpeed) : undefined,
-        airPressure: editingCatch.airPressure ? Number(editingCatch.airPressure) : undefined,
-        latitude: editingCatch.latitude ? Number(editingCatch.latitude) : undefined,
-        longitude: editingCatch.longitude ? Number(editingCatch.longitude) : undefined,
+        waterTemp: editingCatch.waterTemp
+          ? Number(editingCatch.waterTemp)
+          : undefined,
+        airTemp: editingCatch.airTemp
+          ? Number(editingCatch.airTemp)
+          : undefined,
+        windSpeed: editingCatch.windSpeed
+          ? Number(editingCatch.windSpeed)
+          : undefined,
+        airPressure: editingCatch.airPressure
+          ? Number(editingCatch.airPressure)
+          : undefined,
+        latitude: editingCatch.latitude
+          ? Number(editingCatch.latitude)
+          : undefined,
+        longitude: editingCatch.longitude
+          ? Number(editingCatch.longitude)
+          : undefined,
       });
     } else {
       setExistingPhotos([]);
@@ -257,7 +326,7 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
         bait: "",
         notes: "",
         spot: "",
-        verified: false
+        verified: false,
       });
     }
   }, [editingCatch, form, activeBattle]);
@@ -272,34 +341,41 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
       queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
       queryClient.invalidateQueries({ queryKey: ["/api/diary/catch-limits"] });
       queryClient.invalidateQueries({ queryKey: ["/api/diary/badges"] });
-      
+
       // Check for new badges and show celebration modal
       const newBadges = data?.newBadges || [];
       if (newBadges.length > 0) {
         // Queue all badges for celebration
-        const badgesToShow = newBadges.map((badge: { badgeType: string; badgeName: string; tier: string; icon: string }) => ({
-          badgeType: badge.badgeType,
-          badgeName: badge.badgeName,
-          tier: badge.tier as BadgeTier,
-          icon: badge.icon
-        }));
-        
+        const badgesToShow = newBadges.map(
+          (badge: {
+            badgeType: string;
+            badgeName: string;
+            tier: string;
+            icon: string;
+          }) => ({
+            badgeType: badge.badgeType,
+            badgeName: badge.badgeName,
+            tier: badge.tier as BadgeTier,
+            icon: badge.icon,
+          }),
+        );
+
         // Show first badge immediately, queue the rest
         setCurrentBadge(badgesToShow[0]);
         if (badgesToShow.length > 1) {
           setBadgeQueue(badgesToShow.slice(1));
         }
-        
+
         // Close form dialog but keep badge modal open
         handleClose();
         onSuccess?.();
       } else {
         // Check if this is the user's first catch (returned from API)
         const isFirstCatch = data?.isFirstCatch;
-        
+
         toast({
           title: isFirstCatch ? "🎉 Prvý úlovok!" : "✅ Úlovok pridaný!",
-          description: isFirstCatch 
+          description: isFirstCatch
             ? "Hotovo! Detaily môžeš kedykoľvek doplniť."
             : "Váš úlovok bol úspešne pridaný do denníka.",
           variant: "success" as any,
@@ -309,14 +385,18 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
       }
     },
     onError: (error: Error) => {
-      showErrorToast(toast, error, 'catch');
-    }
+      showErrorToast(toast, error, "catch");
+    },
   });
 
   // Update catch mutation
   const updateCatchMutation = useMutation({
     mutationFn: async (data: CatchFormData) => {
-      const response = await apiRequest("PUT", `/api/diary/catches/${editingCatch!.id}`, data);
+      const response = await apiRequest(
+        "PUT",
+        `/api/diary/catches/${editingCatch!.id}`,
+        data,
+      );
       return response.json();
     },
     onSuccess: () => {
@@ -330,8 +410,8 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
       onSuccess?.();
     },
     onError: (error: Error) => {
-      showErrorToast(toast, error, 'update');
-    }
+      showErrorToast(toast, error, "update");
+    },
   });
 
   const handleSubmit = async (data: CatchFormData) => {
@@ -343,32 +423,38 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
       tripId: selectedTripId, // Include tripId from active battle or selected trip
       battleId: activeBattle?.id, // Include battleId for participant permission checks
       angler: {
-        name: user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : "",
-        userId: user?.id || ''
+        name: user?.firstName
+          ? `${user.firstName} ${user.lastName || ""}`.trim()
+          : "",
+        userId: user?.id || "",
       },
-      bait: data.bait === "none" ? undefined : data.bait
+      bait: data.bait === "none" ? undefined : data.bait,
     };
 
     if (isOffline) {
       // Save as draft when offline (with photos if available)
       try {
-        const type = editingCatch ? 'update' : 'create';
+        const type = editingCatch ? "update" : "create";
         const originalId = editingCatch?.id;
-        const catchDataWithPhoto = selectedPhotos.length > 0 ? { ...processedData, photo: selectedPhotos[0] } : processedData;
-        
+        const catchDataWithPhoto =
+          selectedPhotos.length > 0
+            ? { ...processedData, photo: selectedPhotos[0] }
+            : processedData;
+
         await saveCatchDraft(catchDataWithPhoto, type, originalId);
-        
+
         handleClose();
-        
+
         toast({
           title: "📤 Uložené offline",
-          description: selectedPhotos.length > 0
-            ? "Úlovok s fotkou sa odošle automaticky po obnovení pripojenia"
-            : "Úlovok sa odošle automaticky po obnovení pripojenia",
+          description:
+            selectedPhotos.length > 0
+              ? "Úlovok s fotkou sa odošle automaticky po obnovení pripojenia"
+              : "Úlovok sa odošle automaticky po obnovení pripojenia",
           variant: "default",
         });
       } catch (error) {
-        console.error('Failed to save catch draft:', error);
+        console.error("Failed to save catch draft:", error);
         toast({
           title: "❌ Chyba",
           description: "Nepodarilo sa uložiť úlovok offline",
@@ -377,32 +463,32 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
       }
     } else {
       // Online mode - instant save with background photo upload
-      
+
       if (editingCatch) {
         // EDITING MODE: Use old flow with photo upload first
         let newPhotos: Array<PhotoObject> = [];
-        
+
         if (selectedPhotos.length > 0) {
           try {
             const formData = new FormData();
-            selectedPhotos.forEach(photo => {
-              formData.append('photos', photo);
+            selectedPhotos.forEach((photo) => {
+              formData.append("photos", photo);
             });
-            
-            const uploadResponse = await fetch('/api/diary/photos/upload', {
-              method: 'POST',
+
+            const uploadResponse = await fetch("/api/diary/photos/upload", {
+              method: "POST",
               body: formData,
-              credentials: 'include'
+              credentials: "include",
             });
-            
+
             if (!uploadResponse.ok) {
-              throw new Error('Failed to upload photos');
+              throw new Error("Failed to upload photos");
             }
-            
+
             const uploadResult = await uploadResponse.json();
             newPhotos = uploadResult.photos || [];
           } catch (error) {
-            console.error('Photo upload error:', error);
+            console.error("Photo upload error:", error);
             toast({
               title: "❌ Chyba pri nahrávaní fotiek",
               description: "Úlovok bude aktualizovaný bez nových fotiek",
@@ -412,22 +498,24 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
         }
 
         const allPhotos = [...existingPhotos, ...newPhotos];
-        const finalData = allPhotos.length > 0 
-          ? { ...processedData, photos: allPhotos }
-          : processedData;
-        
+        const finalData =
+          allPhotos.length > 0
+            ? { ...processedData, photos: allPhotos }
+            : processedData;
+
         updateCatchMutation.mutate(finalData);
       } else {
         // NEW CATCH MODE: Instant save with background photo upload
-        
+
         // 1. Save catch IMMEDIATELY without photos
-        const immediateData = existingPhotos.length > 0 
-          ? { ...processedData, photos: existingPhotos }
-          : processedData;
-        
+        const immediateData =
+          existingPhotos.length > 0
+            ? { ...processedData, photos: existingPhotos }
+            : processedData;
+
         // Store photos to upload for background processing
         const photosToUpload = [...selectedPhotos];
-        
+
         // 2. Create catch with immediate success callback
         createCatchMutation.mutate(immediateData, {
           onSuccess: async (newCatch: any) => {
@@ -435,14 +523,14 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
             if (photosToUpload.length > 0) {
               toast({
                 title: "✅ Úlovok uložený!",
-                description: `${photosToUpload.length} ${photosToUpload.length === 1 ? 'fotka sa nahráva' : 'fotky sa nahrávajú'} na pozadí...`,
+                description: `${photosToUpload.length} ${photosToUpload.length === 1 ? "fotka sa nahráva" : "fotky sa nahrávajú"} na pozadí...`,
                 variant: "success" as any,
               });
-              
+
               // Background photo upload (async, non-blocking)
               uploadPhotosInBackground(newCatch.id, photosToUpload);
             }
-          }
+          },
         });
       }
     }
@@ -452,55 +540,58 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
   const uploadPhotosInBackground = async (catchId: string, photos: File[]) => {
     try {
       // Import resize utility
-      const { resizeImages } = await import('@/utils/imageResize');
-      
+      const { resizeImages } = await import("@/utils/imageResize");
+
       // Resize images to 2048px max (reduces upload time significantly)
-      const resizedPhotos = await resizeImages(photos, { 
-        maxWidth: 2048, 
-        maxHeight: 2048, 
-        quality: 0.85 
+      const resizedPhotos = await resizeImages(photos, {
+        maxWidth: 2048,
+        maxHeight: 2048,
+        quality: 0.85,
       });
-      
+
       // Upload resized photos in parallel
       const formData = new FormData();
-      resizedPhotos.forEach(photo => {
-        formData.append('photos', photo);
+      resizedPhotos.forEach((photo) => {
+        formData.append("photos", photo);
       });
-      
-      const uploadResponse = await fetch('/api/diary/photos/upload', {
-        method: 'POST',
+
+      const uploadResponse = await fetch("/api/diary/photos/upload", {
+        method: "POST",
         body: formData,
-        credentials: 'include'
+        credentials: "include",
       });
-      
+
       if (!uploadResponse.ok) {
-        throw new Error('Failed to upload photos');
+        throw new Error("Failed to upload photos");
       }
-      
+
       const uploadResult = await uploadResponse.json();
       const uploadedPhotos = uploadResult.photos || [];
-      
+
       // Add photos to catch via PATCH endpoint
-      const patchResponse = await fetch(`/api/diary/catches/${catchId}/photos`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ photos: uploadedPhotos }),
-        credentials: 'include'
-      });
-      
+      const patchResponse = await fetch(
+        `/api/diary/catches/${catchId}/photos`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ photos: uploadedPhotos }),
+          credentials: "include",
+        },
+      );
+
       if (!patchResponse.ok) {
-        throw new Error('Failed to attach photos to catch');
+        throw new Error("Failed to attach photos to catch");
       }
-      
+
       // Refresh catch list to show uploaded photos
       queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
-      
+
       toast({
         title: "Fotky nahrané!",
         description: "Fotky sa optimalizujú na pozadí a onedlho sa zobrazia.",
       });
     } catch (error) {
-      console.error('Background photo upload error:', error);
+      console.error("Background photo upload error:", error);
       toast({
         title: "Chyba pri nahrávaní fotiek",
         description: "Úlovok je uložený, ale fotky sa nepodarilo nahrať",
@@ -524,7 +615,8 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
     if (!datetime) {
       toast({
         title: "Chýbajúci dátum",
-        description: "Prosím, zadajte dátum a čas úlovku pred načítaním počasia.",
+        description:
+          "Prosím, zadajte dátum a čas úlovku pred načítaním počasia.",
         variant: "destructive",
       });
       return;
@@ -537,7 +629,7 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
       async (position) => {
         const lat = position.coords.latitude;
         const lon = position.coords.longitude;
-        
+
         // Update form with GPS coordinates (stored in background)
         form.setValue("latitude", lat);
         form.setValue("longitude", lon);
@@ -546,23 +638,32 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
         try {
           const response = await fetch(
             `/api/weather?lat=${lat}&lon=${lon}&datetime=${datetime.toISOString()}`,
-            { credentials: 'include' }
+            { credentials: "include" },
           );
 
           if (!response.ok) {
-            throw new Error('Failed to fetch weather data');
+            throw new Error("Failed to fetch weather data");
           }
 
           const weatherData = await response.json();
 
           // Update form with weather data (stored in background)
-          if (weatherData.temperature !== null && weatherData.temperature !== undefined) {
+          if (
+            weatherData.temperature !== null &&
+            weatherData.temperature !== undefined
+          ) {
             form.setValue("airTemp", weatherData.temperature);
           }
-          if (weatherData.windSpeed !== null && weatherData.windSpeed !== undefined) {
+          if (
+            weatherData.windSpeed !== null &&
+            weatherData.windSpeed !== undefined
+          ) {
             form.setValue("windSpeed", weatherData.windSpeed);
           }
-          if (weatherData.pressure !== null && weatherData.pressure !== undefined) {
+          if (
+            weatherData.pressure !== null &&
+            weatherData.pressure !== undefined
+          ) {
             form.setValue("airPressure", weatherData.pressure);
           }
 
@@ -574,24 +675,26 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
             description: `GPS poloha a počasie boli automaticky uložené pre váš úlovok.`,
           });
         } catch (error) {
-          console.error('Weather fetch error:', error);
+          console.error("Weather fetch error:", error);
           setIsLoadingWeather(false);
-          
+
           toast({
             title: "Chyba pri načítaní počasia",
-            description: "GPS poloha bola uložená, ale nepodarilo sa načítať počasie.",
+            description:
+              "GPS poloha bola uložená, ale nepodarilo sa načítať počasie.",
             variant: "destructive",
           });
         }
       },
       (error) => {
         setIsLoadingWeather(false);
-        
+
         let errorMessage = "Nepodarilo sa získať GPS polohu.";
-        
+
         switch (error.code) {
           case error.PERMISSION_DENIED:
-            errorMessage = "Povolenie na prístup k polohe bolo zamietnuté. Prosím povoľte prístup v nastaveniach prehliadača.";
+            errorMessage =
+              "Povolenie na prístup k polohe bolo zamietnuté. Prosím povoľte prístup v nastaveniach prehliadača.";
             break;
           case error.POSITION_UNAVAILABLE:
             errorMessage = "Informácie o polohe nie sú dostupné.";
@@ -600,7 +703,7 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
             errorMessage = "Požiadavka na získanie polohy vypršala.";
             break;
         }
-        
+
         toast({
           title: "Chyba GPS",
           description: errorMessage,
@@ -610,8 +713,8 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
       {
         enableHighAccuracy: true,
         timeout: 30000,
-        maximumAge: 300000
-      }
+        maximumAge: 300000,
+      },
     );
   };
 
@@ -644,9 +747,9 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
     const yesterday = new Date(now);
     yesterday.setDate(yesterday.getDate() - 1);
     const isYesterday = date.toDateString() === yesterday.toDateString();
-    
+
     const timeStr = format(date, "HH:mm");
-    
+
     if (isToday) {
       return `Dnes, ${timeStr}`;
     } else if (isYesterday) {
@@ -658,397 +761,253 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
 
   return (
     <>
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto p-0 [&>button]:hidden">
-        {/* Accessibility: Hidden title for screen readers */}
-        <VisuallyHidden>
-          <DialogTitle>{editingCatch ? "Upraviť úlovok" : "Nový úlovok"}</DialogTitle>
-        </VisuallyHidden>
-        
-        {/* Compact Gradient Header */}
-        <div className="relative bg-gradient-to-br from-cyan-600 to-blue-700 p-5 pt-6 pb-5 rounded-lg">
-          <button 
-            type="button"
-            onClick={handleClose}
-            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
-          >
-            <X size={18} className="text-white" />
-          </button>
-          <h2 className="text-xl font-black text-white tracking-tight">
-            {editingCatch ? "Upraviť úlovok" : "Nový úlovok"}
-          </h2>
-          <p className="text-cyan-100 text-xs mt-1 font-medium">
-            Stačí fotka, ryba a váha. Hotovo.
-          </p>
-          {!editingCatch && activeBattle && (
-            <Badge variant="secondary" className="mt-2 bg-white/10 text-white border-white/20">
-              <Trophy className="w-3 h-3 mr-1" />
-              Battle: {activeBattle.name}
-            </Badge>
-          )}
-        </div>
+      <Dialog open={isOpen} onOpenChange={handleClose}>
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto p-0 [&>button]:hidden">
+          {/* Accessibility: Hidden title for screen readers */}
+          <VisuallyHidden>
+            <DialogTitle>
+              {editingCatch ? "Upraviť úlovok" : "Nový úlovok"}
+            </DialogTitle>
+          </VisuallyHidden>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="p-6 space-y-6">
-            
-            {/* 1. PHOTO UPLOAD - HERO SECTION */}
-            <div className="space-y-3">
-              {/* Existing photos (when editing) */}
-              {existingPhotos.length > 0 && (
-                <div className="mb-3">
-                  <p className="text-xs text-muted-foreground mb-2">Existujúce fotky:</p>
+          {/* Compact Gradient Header */}
+          <div className="relative bg-gradient-to-br from-cyan-600 to-blue-700 p-5 pt-6 pb-5 rounded-lg">
+            <button
+              type="button"
+              onClick={handleClose}
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+            >
+              <X size={18} className="text-white" />
+            </button>
+            <h2 className="text-xl font-black text-white tracking-tight">
+              {editingCatch ? "Upraviť úlovok" : "Nový úlovok"}
+            </h2>
+            <p className="text-cyan-100 text-xs mt-1 font-medium">
+              Stačí fotka, ryba a váha. Hotovo.
+            </p>
+            {!editingCatch && activeBattle && (
+              <Badge
+                variant="secondary"
+                className="mt-2 bg-white/10 text-white border-white/20"
+              >
+                <Trophy className="w-3 h-3 mr-1" />
+                Battle: {activeBattle.name}
+              </Badge>
+            )}
+          </div>
+
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(handleSubmit)}
+              className="p-6 space-y-6"
+            >
+              {/* 1. PHOTO UPLOAD - HERO SECTION */}
+              <div className="space-y-3">
+                {/* Existing photos (when editing) */}
+                {existingPhotos.length > 0 && (
+                  <div className="mb-3">
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Existujúce fotky:
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {existingPhotos.map((photo, index) => (
+                        <div key={photo.id} className="relative group">
+                          <img
+                            src={photo.url || photo.originalUrl}
+                            alt={`Existujúca fotka ${index + 1}`}
+                            className="w-20 h-20 object-cover rounded-lg border"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setExistingPhotos((prev) =>
+                                prev.filter((_, i) => i !== index),
+                              );
+                            }}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                            data-testid={`button-remove-photo-${index}`}
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Upload new photos - HERO dropzone */}
+                {existingPhotos.length + selectedPhotos.length < maxPhotos && (
+                  <div className="relative group h-48 rounded-xl border-2 border-dashed border-cyan-500/40 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-400/60 transition-all flex flex-col items-center justify-center cursor-pointer overflow-hidden">
+                    {/* Badge */}
+                    <div className="absolute top-3 right-3 bg-cyan-950/50 dark:bg-cyan-900/60 text-cyan-400 text-[9px] font-bold px-2 py-1 rounded-md border border-cyan-500/20 uppercase tracking-wider">
+                      Najdôležitejší krok
+                    </div>
+
+                    {/* Premium badge */}
+                    {isPremium && (
+                      <div className="absolute top-3 left-3 bg-yellow-500/20 text-yellow-500 text-[9px] font-bold px-2 py-1 rounded-md border border-yellow-500/20 uppercase tracking-wider">
+                        ∞ fotiek
+                      </div>
+                    )}
+
+                    <div className="w-12 h-12 rounded-full bg-cyan-500/10 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                      <ImagePlus className="text-cyan-500" size={24} />
+                    </div>
+                    <span className="text-sm font-bold uppercase tracking-widest text-cyan-600 dark:text-cyan-400 group-hover:text-cyan-500 transition-colors">
+                      Pridať fotku ryby
+                    </span>
+                    <span className="text-xs text-muted-foreground mt-1">
+                      Rýchlo, kým je na podložke
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple={isPremium}
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                      onChange={(e) => {
+                        const files = Array.from(e.target.files || []);
+                        const totalPhotos =
+                          existingPhotos.length +
+                          selectedPhotos.length +
+                          files.length;
+                        const remainingSlots =
+                          maxPhotos -
+                          existingPhotos.length -
+                          selectedPhotos.length;
+
+                        if (totalPhotos > maxPhotos) {
+                          toast({
+                            title: "Príliš veľa fotiek",
+                            description: `Môžete mať celkovo maximálne ${maxPhotos} ${maxPhotos === 1 ? "fotku" : "fotiek"}. Môžete pridať ešte ${remainingSlots}.`,
+                            variant: "destructive",
+                          });
+                          e.target.value = "";
+                          return;
+                        }
+                        setSelectedPhotos([...selectedPhotos, ...files]);
+                        e.target.value = "";
+                      }}
+                      data-testid="input-photos"
+                    />
+                  </div>
+                )}
+
+                {/* Selected photos preview */}
+                {selectedPhotos.length > 0 && (
                   <div className="flex flex-wrap gap-2">
-                    {existingPhotos.map((photo, index) => (
-                      <div key={photo.id} className="relative group">
-                        <img
-                          src={photo.url || photo.originalUrl}
-                          alt={`Existujúca fotka ${index + 1}`}
-                          className="w-20 h-20 object-cover rounded-lg border"
-                        />
+                    {selectedPhotos.map((photo, index) => (
+                      <Badge
+                        key={index}
+                        variant="secondary"
+                        className="flex items-center gap-1 bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20"
+                      >
+                        <Camera className="w-3 h-3" />
+                        {photo.name.length > 15
+                          ? photo.name.substring(0, 15) + "..."
+                          : photo.name}
                         <button
                           type="button"
                           onClick={() => {
-                            setExistingPhotos(prev => prev.filter((_, i) => i !== index));
+                            setSelectedPhotos((prev) =>
+                              prev.filter((_, i) => i !== index),
+                            );
                           }}
-                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                          data-testid={`button-remove-photo-${index}`}
+                          className="ml-1 hover:text-red-500"
                         >
                           <X className="w-3 h-3" />
                         </button>
-                      </div>
+                      </Badge>
                     ))}
                   </div>
-                </div>
-              )}
-              
-              {/* Upload new photos - HERO dropzone */}
-              {(existingPhotos.length + selectedPhotos.length) < maxPhotos && (
-                <div className="relative group h-48 rounded-xl border-2 border-dashed border-cyan-500/40 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-400/60 transition-all flex flex-col items-center justify-center cursor-pointer overflow-hidden">
-                  {/* Badge */}
-                  <div className="absolute top-3 right-3 bg-cyan-950/50 dark:bg-cyan-900/60 text-cyan-400 text-[9px] font-bold px-2 py-1 rounded-md border border-cyan-500/20 uppercase tracking-wider">
-                    Najdôležitejší krok
-                  </div>
-                  
-                  {/* Premium badge */}
-                  {isPremium && (
-                    <div className="absolute top-3 left-3 bg-yellow-500/20 text-yellow-500 text-[9px] font-bold px-2 py-1 rounded-md border border-yellow-500/20 uppercase tracking-wider">
-                      ∞ fotiek
-                    </div>
-                  )}
-
-                  <div className="w-12 h-12 rounded-full bg-cyan-500/10 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                    <ImagePlus className="text-cyan-500" size={24} />
-                  </div>
-                  <span className="text-sm font-bold uppercase tracking-widest text-cyan-600 dark:text-cyan-400 group-hover:text-cyan-500 transition-colors">
-                    Pridať fotku ryby
-                  </span>
-                  <span className="text-xs text-muted-foreground mt-1">Rýchlo, kým je na podložke</span>
-                  <input 
-                    type="file" 
-                    accept="image/*"
-                    multiple={isPremium}
-                    className="absolute inset-0 opacity-0 cursor-pointer"
-                    onChange={(e) => {
-                      const files = Array.from(e.target.files || []);
-                      const totalPhotos = existingPhotos.length + selectedPhotos.length + files.length;
-                      const remainingSlots = maxPhotos - existingPhotos.length - selectedPhotos.length;
-                      
-                      if (totalPhotos > maxPhotos) {
-                        toast({
-                          title: "Príliš veľa fotiek",
-                          description: `Môžete mať celkovo maximálne ${maxPhotos} ${maxPhotos === 1 ? 'fotku' : 'fotiek'}. Môžete pridať ešte ${remainingSlots}.`,
-                          variant: "destructive",
-                        });
-                        e.target.value = '';
-                        return;
-                      }
-                      setSelectedPhotos([...selectedPhotos, ...files]);
-                      e.target.value = '';
-                    }}
-                    data-testid="input-photos"
-                  />
-                </div>
-              )}
-              
-              {/* Selected photos preview */}
-              {selectedPhotos.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {selectedPhotos.map((photo, index) => (
-                    <Badge key={index} variant="secondary" className="flex items-center gap-1 bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20">
-                      <Camera className="w-3 h-3" />
-                      {photo.name.length > 15 ? photo.name.substring(0, 15) + '...' : photo.name}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedPhotos(prev => prev.filter((_, i) => i !== index));
-                        }}
-                        className="ml-1 hover:text-red-500"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </Badge>
-                  ))}
-                </div>
-              )}
-              
-              {isOffline && selectedPhotos.length > 0 && (
-                <p className="text-xs text-muted-foreground">
-                  Fotky sa uložia lokálne a odošlú po obnovení pripojenia
-                </p>
-              )}
-            </div>
-
-            {/* 2. CORE STATS - Fish Type + Weight */}
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="fishType"
-                render={({ field }) => (
-                  <FormItem className="space-y-1.5">
-                    <FormLabel className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">
-                      Druh ryby
-                    </FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger data-testid="select-fish-type" className="font-semibold">
-                          <div className="flex items-center gap-2">
-                            <Fish className="w-4 h-4 text-muted-foreground" />
-                            <SelectValue placeholder="Vyberte" />
-                          </div>
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {hasPriorityFish ? (
-                          <>
-                            {(fishOptions as { priorityOptions: { value: string; label: string }[]; otherOptions: { value: string; label: string }[] }).priorityOptions.map((option) => (
-                              <SelectItem key={option.value} value={option.value}>
-                                ⭐ {option.label}
-                              </SelectItem>
-                            ))}
-                            <SelectSeparator />
-                            {(fishOptions as { priorityOptions: { value: string; label: string }[]; otherOptions: { value: string; label: string }[] }).otherOptions.map((option) => (
-                              <SelectItem key={option.value} value={option.value}>
-                                {option.label}
-                              </SelectItem>
-                            ))}
-                          </>
-                        ) : (
-                          (fishOptions as { value: string; label: string }[]).map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
-                              {option.label}
-                            </SelectItem>
-                          ))
-                        )}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
                 )}
-              />
 
-              <FormField
-                control={form.control}
-                name="weight"
-                render={({ field }) => (
-                  <FormItem className="space-y-1.5">
-                    <FormLabel className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">
-                      Váha (kg)
-                    </FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input 
-                          type="text" 
-                          placeholder="7.5" 
-                          data-testid="input-weight"
-                          className="font-bold text-lg pr-10"
-                          {...field} 
-                        />
-                        <Scale className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+                {isOffline && selectedPhotos.length > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    Fotky sa uložia lokálne a odošlú po obnovení pripojenia
+                  </p>
                 )}
-              />
-            </div>
+              </div>
 
-            {/* 3. PASSIVE DATE/TIME DISPLAY */}
-            <FormField
-              control={form.control}
-              name="capturedAt"
-              render={({ field }) => {
-                const currentValue = field.value instanceof Date && !isNaN(field.value.getTime()) 
-                  ? field.value 
-                  : new Date();
-
-                if (!isEditingDateTime) {
-                  return (
-                    <div 
-                      className="flex items-center gap-2 py-2 px-3 rounded-lg bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors"
-                      onClick={() => setIsEditingDateTime(true)}
-                    >
-                      <CalendarIcon className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">
-                        {formatDateTimeDisplay(currentValue)}
-                      </span>
-                      <span className="text-xs text-cyan-600 dark:text-cyan-400 font-medium ml-auto">
-                        upraviť
-                      </span>
-                    </div>
-                  );
-                }
-
-                const dateValue = format(currentValue, "yyyy-MM-dd");
-                const timeValue = format(currentValue, "HH:mm");
-                
-                const handleDateChange = (newDate: string) => {
-                  if (!newDate) return;
-                  const baseDate = new Date(currentValue);
-                  const [year, month, day] = newDate.split('-').map(Number);
-                  baseDate.setFullYear(year);
-                  baseDate.setMonth(month - 1);
-                  baseDate.setDate(day);
-                  field.onChange(baseDate);
-                };
-                
-                const handleTimeChange = (newTime: string) => {
-                  if (!newTime) return;
-                  const baseDate = new Date(currentValue);
-                  const [hours, minutes] = newTime.split(':').map(Number);
-                  baseDate.setHours(hours);
-                  baseDate.setMinutes(minutes);
-                  field.onChange(baseDate);
-                };
-                
-                return (
-                  <div className="space-y-2 p-3 rounded-lg bg-muted/30 border border-border/50">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-muted-foreground">Dátum a čas úlovku</span>
-                      <button 
-                        type="button" 
-                        onClick={() => setIsEditingDateTime(false)}
-                        className="text-xs text-cyan-600 dark:text-cyan-400 font-medium hover:underline"
-                      >
-                        hotovo
-                      </button>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <FormItem>
-                        <FormControl>
-                          <Input
-                            type="date"
-                            value={dateValue}
-                            onChange={(e) => handleDateChange(e.target.value)}
-                            data-testid="input-capture-date"
-                            max={format(new Date(), "yyyy-MM-dd")}
-                            className="text-sm"
-                          />
-                        </FormControl>
-                      </FormItem>
-                      <FormItem>
-                        <FormControl>
-                          <Input
-                            type="time"
-                            value={timeValue}
-                            onChange={(e) => handleTimeChange(e.target.value)}
-                            data-testid="input-capture-time"
-                            className="text-sm"
-                          />
-                        </FormControl>
-                      </FormItem>
-                    </div>
-                    <FormMessage />
-                  </div>
-                );
-              }}
-            />
-
-            {/* 4. COLLAPSIBLE DETAILS */}
-            <Collapsible open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-              <CollapsibleTrigger asChild>
-                <button 
-                  type="button"
-                  className="w-full flex items-center justify-between py-3 border-t border-border/50 text-left group"
-                >
-                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground group-hover:text-foreground transition-colors">
-                    Ak chceš, doplň detaily
-                  </span>
-                  <ChevronDown 
-                    size={16} 
-                    className={cn(
-                      "text-muted-foreground transition-transform duration-200",
-                      isDetailsOpen && "rotate-180"
-                    )} 
-                  />
-                </button>
-              </CollapsibleTrigger>
-              
-              <CollapsibleContent className="space-y-4 pt-2">
-                {/* Length */}
+              {/* 2. CORE STATS - Fish Type + Weight */}
+              <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="lengthCm"
+                  name="fishType"
                   render={({ field }) => (
-                    <FormItem className="space-y-1">
-                      <FormLabel className="text-[10px] font-bold text-muted-foreground ml-1">Dĺžka (cm)</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          placeholder="napr. 65" 
-                          data-testid="input-length"
-                          className="bg-muted/30 border-border/50"
-                          {...field}
-                          value={field.value ?? ''}
-                          onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Bait */}
-                <FormField
-                  control={form.control}
-                  name="bait"
-                  render={({ field }) => (
-                    <FormItem className="space-y-1">
-                      <FormLabel className="text-[10px] font-bold text-muted-foreground ml-1">Nástraha</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">
+                        Druh ryby
+                      </FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
                         <FormControl>
-                          <SelectTrigger data-testid="select-bait" className="bg-muted/30 border-border/50">
-                            <SelectValue placeholder="Vyberte nástrahu" />
+                          <SelectTrigger
+                            data-testid="select-fish-type"
+                            className="font-semibold"
+                          >
+                            <div className="flex items-center gap-2">
+                              <Fish className="w-4 h-4 text-muted-foreground" />
+                              <SelectValue placeholder="Vyberte" />
+                            </div>
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="none">Neuvedené</SelectItem>
-                          
-                          {favoriteBaits.length > 0 && (
+                          {hasPriorityFish ? (
                             <>
-                              {favoriteBaits.map((bait) => {
-                                const label = `${bait.manufacturer.name} - ${bait.productLine.name} - ${bait.flavor.name}${bait.diameter ? ` (${bait.diameter})` : ''}`;
-                                return (
-                                  <SelectItem 
-                                    key={`fav-${bait.id}`} 
-                                    value={label}
-                                    data-testid={`select-favorite-bait-${bait.id}`}
-                                  >
-                                    <div className="flex items-center gap-2">
-                                      <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
-                                      <span>{label}</span>
-                                    </div>
-                                  </SelectItem>
-                                );
-                              })}
+                              {(
+                                fishOptions as {
+                                  priorityOptions: {
+                                    value: string;
+                                    label: string;
+                                  }[];
+                                  otherOptions: {
+                                    value: string;
+                                    label: string;
+                                  }[];
+                                }
+                              ).priorityOptions.map((option) => (
+                                <SelectItem
+                                  key={option.value}
+                                  value={option.value}
+                                >
+                                  ⭐ {option.label}
+                                </SelectItem>
+                              ))}
                               <SelectSeparator />
+                              {(
+                                fishOptions as {
+                                  priorityOptions: {
+                                    value: string;
+                                    label: string;
+                                  }[];
+                                  otherOptions: {
+                                    value: string;
+                                    label: string;
+                                  }[];
+                                }
+                              ).otherOptions.map((option) => (
+                                <SelectItem
+                                  key={option.value}
+                                  value={option.value}
+                                >
+                                  {option.label}
+                                </SelectItem>
+                              ))}
                             </>
+                          ) : (
+                            (
+                              fishOptions as { value: string; label: string }[]
+                            ).map((option) => (
+                              <SelectItem
+                                key={option.value}
+                                value={option.value}
+                              >
+                                {option.label}
+                              </SelectItem>
+                            ))
                           )}
-                          
-                          {fishingMethods.map((method) => (
-                            <SelectItem key={method} value={method}>
-                              {method}
-                            </SelectItem>
-                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -1056,121 +1015,369 @@ export default function CatchFormDialog({ isOpen, onClose, editingCatch, onSucce
                   )}
                 />
 
-                {/* Spot / Revír */}
                 <FormField
                   control={form.control}
-                  name="spot"
+                  name="weight"
                   render={({ field }) => (
-                    <FormItem className="space-y-1">
-                      <FormLabel className="text-[10px] font-bold text-muted-foreground ml-1">Revír</FormLabel>
-                      <FishingAreaSelect value={field.value} onChange={field.onChange} />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Notes */}
-                <FormField
-                  control={form.control}
-                  name="notes"
-                  render={({ field }) => (
-                    <FormItem className="space-y-1">
-                      <FormLabel className="text-[10px] font-bold text-muted-foreground ml-1">Poznámky</FormLabel>
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">
+                        Váha (kg)
+                      </FormLabel>
                       <FormControl>
-                        <Textarea 
-                          placeholder="Montáž, teplota vody, hĺbka, postrehy…"
-                          className="resize-none bg-muted/30 border-border/50 min-h-[60px]"
-                          rows={2}
-                          data-testid="textarea-notes"
-                          {...field}
-                        />
+                        <div className="relative">
+                          <Input
+                            type="text"
+                            placeholder="7.5"
+                            data-testid="input-weight"
+                            className="font-bold text-lg pr-10"
+                            {...field}
+                          />
+                          <Scale className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-              </CollapsibleContent>
-            </Collapsible>
+              </div>
 
-            {/* 5. PREMIUM DATA - Subdued Row */}
-            <div className="flex items-center justify-between py-3 px-4 rounded-xl border border-border/30 bg-muted/20">
-              <div className="flex flex-col">
-                <span className="text-[10px] font-bold uppercase text-muted-foreground">Počasie pri zábere</span>
-                <div className="flex gap-3 mt-1 opacity-60">
-                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                    <MapPin size={10} /> GPS
-                  </div>
-                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                    <CloudRain size={10} /> Počasie
+              {/* 3. PASSIVE DATE/TIME DISPLAY */}
+              <FormField
+                control={form.control}
+                name="capturedAt"
+                render={({ field }) => {
+                  const currentValue =
+                    field.value instanceof Date && !isNaN(field.value.getTime())
+                      ? field.value
+                      : new Date();
+
+                  if (!isEditingDateTime) {
+                    return (
+                      <div
+                        className="flex items-center gap-2 py-2 px-3 rounded-lg bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors"
+                        onClick={() => setIsEditingDateTime(true)}
+                      >
+                        <CalendarIcon className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">
+                          {formatDateTimeDisplay(currentValue)}
+                        </span>
+                        <span className="text-xs text-cyan-600 dark:text-cyan-400 font-medium ml-auto">
+                          upraviť
+                        </span>
+                      </div>
+                    );
+                  }
+
+                  const dateValue = format(currentValue, "yyyy-MM-dd");
+                  const timeValue = format(currentValue, "HH:mm");
+
+                  const handleDateChange = (newDate: string) => {
+                    if (!newDate) return;
+                    const baseDate = new Date(currentValue);
+                    const [year, month, day] = newDate.split("-").map(Number);
+                    baseDate.setFullYear(year);
+                    baseDate.setMonth(month - 1);
+                    baseDate.setDate(day);
+                    field.onChange(baseDate);
+                  };
+
+                  const handleTimeChange = (newTime: string) => {
+                    if (!newTime) return;
+                    const baseDate = new Date(currentValue);
+                    const [hours, minutes] = newTime.split(":").map(Number);
+                    baseDate.setHours(hours);
+                    baseDate.setMinutes(minutes);
+                    field.onChange(baseDate);
+                  };
+
+                  return (
+                    <div className="space-y-2 p-3 rounded-lg bg-muted/30 border border-border/50">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-muted-foreground">
+                          Dátum a čas úlovku
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setIsEditingDateTime(false)}
+                          className="text-xs text-cyan-600 dark:text-cyan-400 font-medium hover:underline"
+                        >
+                          hotovo
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <FormItem>
+                          <FormControl>
+                            <Input
+                              type="date"
+                              value={dateValue}
+                              onChange={(e) => handleDateChange(e.target.value)}
+                              data-testid="input-capture-date"
+                              max={format(new Date(), "yyyy-MM-dd")}
+                              className="text-sm"
+                            />
+                          </FormControl>
+                        </FormItem>
+                        <FormItem>
+                          <FormControl>
+                            <Input
+                              type="time"
+                              value={timeValue}
+                              onChange={(e) => handleTimeChange(e.target.value)}
+                              data-testid="input-capture-time"
+                              className="text-sm"
+                            />
+                          </FormControl>
+                        </FormItem>
+                      </div>
+                      <FormMessage />
+                    </div>
+                  );
+                }}
+              />
+
+              {/* 4. COLLAPSIBLE DETAILS */}
+              <Collapsible open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+                <CollapsibleTrigger asChild>
+                  <button
+                    type="button"
+                    className="w-full flex items-center justify-between py-3 border-t border-border/50 text-left group"
+                  >
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground group-hover:text-foreground transition-colors">
+                      Ak chceš, doplň detaily
+                    </span>
+                    <ChevronDown
+                      size={16}
+                      className={cn(
+                        "text-muted-foreground transition-transform duration-200",
+                        isDetailsOpen && "rotate-180",
+                      )}
+                    />
+                  </button>
+                </CollapsibleTrigger>
+
+                <CollapsibleContent className="space-y-4 pt-2">
+                  {/* Length */}
+                  <FormField
+                    control={form.control}
+                    name="lengthCm"
+                    render={({ field }) => (
+                      <FormItem className="space-y-1">
+                        <FormLabel className="text-[10px] font-bold text-muted-foreground ml-1">
+                          Dĺžka (cm)
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="napr. 65"
+                            data-testid="input-length"
+                            className="bg-muted/30 border-border/50"
+                            {...field}
+                            value={field.value ?? ""}
+                            onChange={(e) =>
+                              field.onChange(
+                                e.target.value
+                                  ? parseFloat(e.target.value)
+                                  : undefined,
+                              )
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Bait */}
+                  <FormField
+                    control={form.control}
+                    name="bait"
+                    render={({ field }) => (
+                      <FormItem className="space-y-1">
+                        <FormLabel className="text-[10px] font-bold text-muted-foreground ml-1">
+                          Nástraha
+                        </FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger
+                              data-testid="select-bait"
+                              className="bg-muted/30 border-border/50"
+                            >
+                              <SelectValue placeholder="Vyberte nástrahu" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="none">Neuvedené</SelectItem>
+
+                            {favoriteBaits.length > 0 && (
+                              <>
+                                {favoriteBaits.map((bait) => {
+                                  const label = `${bait.manufacturer.name} - ${bait.productLine.name} - ${bait.flavor.name}${bait.diameter ? ` (${bait.diameter})` : ""}`;
+                                  return (
+                                    <SelectItem
+                                      key={`fav-${bait.id}`}
+                                      value={label}
+                                      data-testid={`select-favorite-bait-${bait.id}`}
+                                    >
+                                      <div className="flex items-center gap-2">
+                                        <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
+                                        <span>{label}</span>
+                                      </div>
+                                    </SelectItem>
+                                  );
+                                })}
+                                <SelectSeparator />
+                              </>
+                            )}
+
+                            {fishingMethods.map((method) => (
+                              <SelectItem key={method} value={method}>
+                                {method}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Spot / Revír */}
+                  <FormField
+                    control={form.control}
+                    name="spot"
+                    render={({ field }) => (
+                      <FormItem className="space-y-1">
+                        <FormLabel className="text-[10px] font-bold text-muted-foreground ml-1">
+                          Revír
+                        </FormLabel>
+                        <FishingAreaSelect
+                          value={field.value}
+                          onChange={field.onChange}
+                        />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Notes */}
+                  <FormField
+                    control={form.control}
+                    name="notes"
+                    render={({ field }) => (
+                      <FormItem className="space-y-1">
+                        <FormLabel className="text-[10px] font-bold text-muted-foreground ml-1">
+                          Poznámky
+                        </FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Montáž, teplota vody, hĺbka, postrehy…"
+                            className="resize-none bg-muted/30 border-border/50 min-h-[60px]"
+                            rows={2}
+                            data-testid="textarea-notes"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CollapsibleContent>
+              </Collapsible>
+
+              {/* 5. PREMIUM DATA - Subdued Row */}
+              <div className="flex items-center justify-between py-3 px-4 rounded-xl border border-border/30 bg-muted/20">
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold uppercase text-muted-foreground">
+                    Počasie pri zábere
+                  </span>
+                  <div className="flex gap-3 mt-1 opacity-60">
+                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                      <MapPin size={10} /> GPS
+                    </div>
+                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                      <CloudRain size={10} /> Počasie
+                    </div>
                   </div>
                 </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={
+                    isPremium
+                      ? getLocationAndWeather
+                      : () => setShowGpsPremiumModal(true)
+                  }
+                  disabled={
+                    isPremium && (isLoadingWeather || weatherDataLoaded)
+                  }
+                  className="text-[10px] font-bold h-8 px-3"
+                  data-testid="button-get-location-weather"
+                >
+                  {isLoadingWeather ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : weatherDataLoaded ? (
+                    "Načítané ✔"
+                  ) : isPremium ? (
+                    "Načítať"
+                  ) : (
+                    <>
+                      <Lock className="h-3 w-3 mr-1" />
+                      Premium
+                    </>
+                  )}
+                </Button>
               </div>
-              
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={isPremium ? getLocationAndWeather : () => setShowGpsPremiumModal(true)}
-                disabled={isPremium && (isLoadingWeather || weatherDataLoaded)}
-                className="text-[10px] font-bold h-8 px-3"
-                data-testid="button-get-location-weather"
-              >
-                {isLoadingWeather ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                ) : weatherDataLoaded ? (
-                  "Načítané ✔"
-                ) : isPremium ? (
-                  "Načítať"
-                ) : (
-                  <>
-                    <Lock className="h-3 w-3 mr-1" />
-                    Premium
-                  </>
-                )}
-              </Button>
-            </div>
 
-            {/* 6. CTA BUTTONS */}
-            <div className="flex gap-3 pt-2">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={handleClose}
-                className="flex-1 font-bold text-xs uppercase tracking-wide"
-              >
-                Zrušiť
-              </Button>
-              <Button 
-                type="submit" 
-                className="flex-[2] bg-cyan-600 hover:bg-cyan-500 font-bold text-xs uppercase tracking-wide"
-                disabled={createCatchMutation.isPending || updateCatchMutation.isPending}
-                data-testid="button-submit-catch"
-              >
-                {createCatchMutation.isPending || updateCatchMutation.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : (
-                  <Plus size={16} strokeWidth={3} className="mr-2" />
-                )}
-                {editingCatch ? "Uložiť zmeny" : "Zapísať úlovok"}
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </DialogContent>
+              {/* 6. CTA BUTTONS */}
+              <div className="flex gap-3 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleClose}
+                  className="flex-1 font-bold text-xs uppercase tracking-wide"
+                >
+                  Zrušiť
+                </Button>
+                <Button
+                  type="submit"
+                  className="flex-[2] bg-cyan-600 hover:bg-cyan-500 font-bold text-xs uppercase tracking-wide"
+                  disabled={
+                    createCatchMutation.isPending ||
+                    updateCatchMutation.isPending
+                  }
+                  data-testid="button-submit-catch"
+                >
+                  {createCatchMutation.isPending ||
+                  updateCatchMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <Plus size={16} strokeWidth={3} className="mr-2" />
+                  )}
+                  {editingCatch ? "Uložiť zmeny" : "Zapísať úlovok"}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
 
-      {/* GPS Premium Upsell Modal */}
-      <PremiumUpsellModal
-        isOpen={showGpsPremiumModal}
-        onClose={() => setShowGpsPremiumModal(false)}
-        trigger="gps"
+        {/* GPS Premium Upsell Modal */}
+        <PremiumUpsellModal
+          isOpen={showGpsPremiumModal}
+          onClose={() => setShowGpsPremiumModal(false)}
+          trigger="gps"
+        />
+      </Dialog>
+
+      {/* Badge Celebration Modal - Outside Dialog so it persists after form closes */}
+      <BadgeCelebrationModal
+        badge={currentBadge}
+        onClose={handleBadgeModalClose}
       />
-    </Dialog>
-
-    {/* Badge Celebration Modal - Outside Dialog so it persists after form closes */}
-    <BadgeCelebrationModal
-      badge={currentBadge}
-      onClose={handleBadgeModalClose}
-    />
     </>
   );
 }
