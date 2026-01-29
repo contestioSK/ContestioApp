@@ -14,39 +14,25 @@ import featureDennik from "@assets/figma/feature_dennik.png";
 
 function GradientOrb1() {
   return (
-    <svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style={{ display: 'block' }} viewBox="0 0 1777.91 1400.87" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <filter id="filter0_f_0_80" x="0" y="0" width="1777.91" height="1400.87" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
-          <feFlood floodOpacity="0" result="BackgroundImageFix"/>
-          <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
-          <feGaussianBlur stdDeviation="207.4" result="effect1_foregroundBlur_0_80"/>
-        </filter>
-      </defs>
-      <g filter="url(#filter0_f_0_80)">
-        <ellipse cx="888.956" cy="700.436" rx="474.156" ry="285.636" fill="#102A38"/>
-      </g>
-    </svg>
+    <div 
+      className="w-full h-full rounded-[50%]"
+      style={{ 
+        backgroundColor: '#102A38',
+        filter: 'blur(207px)',
+      }}
+    />
   );
 }
 
 function GradientOrb2() {
   return (
-    <svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style={{ display: 'block' }} viewBox="0 0 1777.91 1133.55" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <filter id="filter0_f_0_70" x="0" y="0" width="1777.91" height="1133.55" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
-          <feFlood floodOpacity="0" result="BackgroundImageFix"/>
-          <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
-          <feGaussianBlur stdDeviation="207.4" result="effect1_foregroundBlur_0_70"/>
-        </filter>
-        <linearGradient id="paint0_linear_0_70" x1="414.8" y1="566.773" x2="1363.11" y2="566.773" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#19ADFF"/>
-          <stop offset="1" stopColor="#2E769E"/>
-        </linearGradient>
-      </defs>
-      <g filter="url(#filter0_f_0_70)">
-        <ellipse cx="888.956" cy="566.773" rx="474.156" ry="151.973" fill="url(#paint0_linear_0_70)"/>
-      </g>
-    </svg>
+    <div 
+      className="w-full h-full rounded-[50%]"
+      style={{ 
+        background: 'linear-gradient(90deg, #19ADFF 0%, #2E769E 100%)',
+        filter: 'blur(207px)',
+      }}
+    />
   );
 }
 
