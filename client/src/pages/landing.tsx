@@ -1,20 +1,54 @@
-import { Menu, X, ChevronRight } from "lucide-react";
+import { Menu, X, ChevronRight, ArrowRight } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import contestioLogo from "@assets/figma/logo.png";
 import starsBackground from "@assets/figma/stars_background.png";
-import gradientOrb1 from "@assets/figma/gradient_orb1.png";
-import gradientOrb2 from "@assets/figma/gradient_orb2.png";
 import categoryActive from "@assets/figma/category_active.png";
 import categoryUpcoming from "@assets/figma/category_upcoming.png";
 import categoryLive from "@assets/figma/category_live.png";
 import categoryFinished from "@assets/figma/category_finished.png";
 import featureCentrum from "@assets/figma/feature_centrum.png";
 import featureDennik from "@assets/figma/feature_dennik.png";
-import arrowIcon from "@assets/figma/arrow_icon.png";
-import countCircle from "@assets/figma/count_circle.png";
+
+function GradientOrb1() {
+  return (
+    <svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style={{ display: 'block' }} viewBox="0 0 1777.91 1400.87" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="filter0_f_0_80" x="0" y="0" width="1777.91" height="1400.87" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+          <feFlood floodOpacity="0" result="BackgroundImageFix"/>
+          <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+          <feGaussianBlur stdDeviation="207.4" result="effect1_foregroundBlur_0_80"/>
+        </filter>
+      </defs>
+      <g filter="url(#filter0_f_0_80)">
+        <ellipse cx="888.956" cy="700.436" rx="474.156" ry="285.636" fill="#102A38"/>
+      </g>
+    </svg>
+  );
+}
+
+function GradientOrb2() {
+  return (
+    <svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style={{ display: 'block' }} viewBox="0 0 1777.91 1133.55" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="filter0_f_0_70" x="0" y="0" width="1777.91" height="1133.55" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+          <feFlood floodOpacity="0" result="BackgroundImageFix"/>
+          <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+          <feGaussianBlur stdDeviation="207.4" result="effect1_foregroundBlur_0_70"/>
+        </filter>
+        <linearGradient id="paint0_linear_0_70" x1="414.8" y1="566.773" x2="1363.11" y2="566.773" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#19ADFF"/>
+          <stop offset="1" stopColor="#2E769E"/>
+        </linearGradient>
+      </defs>
+      <g filter="url(#filter0_f_0_70)">
+        <ellipse cx="888.956" cy="566.773" rx="474.156" ry="151.973" fill="url(#paint0_linear_0_70)"/>
+      </g>
+    </svg>
+  );
+}
 
 interface Competition {
   id: string;
@@ -44,12 +78,12 @@ export default function Landing() {
   return (
     <div className="bg-[#08101a] min-h-screen relative overflow-x-hidden">
       
-      {/* Background Effects */}
-      <div className="absolute top-[-181px] left-[calc(8.33%+72px)] w-[948px] h-[571px] pointer-events-none">
-        <img src={gradientOrb1} alt="" className="w-full h-full object-contain opacity-60" />
+      {/* Background Effects - Gradient Orbs */}
+      <div className="absolute top-[-181px] left-[calc(8.33%+72px)] w-[948px] h-[571px] pointer-events-none opacity-60">
+        <GradientOrb1 />
       </div>
-      <div className="absolute top-[298px] left-[calc(25%+25px)] w-[948px] h-[304px] pointer-events-none">
-        <img src={gradientOrb2} alt="" className="w-full h-full object-contain opacity-60" />
+      <div className="absolute top-[298px] left-[calc(25%+25px)] w-[948px] h-[304px] pointer-events-none opacity-60">
+        <GradientOrb2 />
       </div>
       <div className="absolute top-[-17px] left-[-191px] w-[1834px] h-[1200px] mix-blend-screen pointer-events-none">
         <img src={starsBackground} alt="" className="w-full h-full object-cover" />
@@ -523,9 +557,8 @@ function CategoryCard({ emoji, label, count, image, title, description, href, pr
                 {emoji} {label}
               </span>
               <div className="flex items-center gap-1.5">
-                <div className="relative w-[25px] h-[25px]">
-                  <img src={countCircle} alt="" className="absolute inset-0 w-full h-full" />
-                  <span className="absolute inset-0 flex items-center justify-center text-white text-xs">
+                <div className="relative w-[25px] h-[25px] rounded-full border border-white/30 flex items-center justify-center">
+                  <span className="text-white text-xs font-medium">
                     {String(count).padStart(2, '0')}
                   </span>
                 </div>
@@ -538,7 +571,7 @@ function CategoryCard({ emoji, label, count, image, title, description, href, pr
               <span className="text-white text-base" style={{ fontFamily: "'ABeeZee', sans-serif" }}>
                 Zobraziť
               </span>
-              <img src={arrowIcon} alt="" className="w-5 h-5" />
+              <ArrowRight className="w-5 h-5 text-white" />
             </div>
           </div>
         </div>
