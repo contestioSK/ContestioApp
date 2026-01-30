@@ -5,7 +5,7 @@ export default function RegistrationOpenPage() {
     <CategoryPage
       category="registration-open"
       title="Registrácia prebieha"
-      description="Prihláste sa do aktuálnych súťaží s otvorenou registráciou a neprepasnite príležitosť súťažiť"
+      description="Prihlás sa do aktuálnych súťaží s otvorenou registráciou a neprepasni príležitosť súťažiť"
     />
   );
 }

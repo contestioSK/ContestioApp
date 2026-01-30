@@ -49,7 +49,7 @@ export default function NotificationsDropdown() {
       queryClient.invalidateQueries({ queryKey: ['/api/diary/battles/invitations'] });
       toast({
         title: "🎣 Nová výzva!",
-        description: `${message.inviterName} vás pozval do battle: ${message.battleName}`,
+        description: `${message.inviterName} ťa pozval do battle: ${message.battleName}`,
       });
     }
   });
@@ -199,7 +199,7 @@ export default function NotificationsDropdown() {
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Pozval vás do: <span className="font-medium text-foreground">{invitation.battle?.name || 'Battle'}</span>
+                        Pozval ťa do: <span className="font-medium text-foreground">{invitation.battle?.name || 'Battle'}</span>
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">
                         {formatDistanceToNow(new Date(invitation.createdAt), { addSuffix: true, locale: sk })}

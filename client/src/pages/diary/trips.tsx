@@ -599,7 +599,7 @@ export default function DiaryTrips() {
                           {field.value ? (
                             format(field.value, "PPP", { locale: sk })
                           ) : (
-                            <span>Vyberte dátum</span>
+                            <span>Vyber dátum</span>
                           )}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>
@@ -637,7 +637,7 @@ export default function DiaryTrips() {
                           {field.value ? (
                             format(field.value, "PPP", { locale: sk })
                           ) : (
-                            <span>Vyberte dátum</span>
+                            <span>Vyber dátum</span>
                           )}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>
@@ -709,7 +709,7 @@ export default function DiaryTrips() {
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger data-testid="select-trip-visibility">
-                      <SelectValue placeholder="Vyberte viditeľnosť" />
+                      <SelectValue placeholder="Vyber viditeľnosť" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -928,8 +928,8 @@ export default function DiaryTrips() {
                   </DrawerTitle>
                   <DrawerDescription>
                     {editingTrip 
-                      ? "Aktualizujte detaily výpravy."
-                      : "Vytvorte novú rybársku výpravu."
+                      ? "Aktualizuj detaily výpravy."
+                      : "Vytvor novú rybársku výpravu."
                     }
                   </DrawerDescription>
                 </DrawerHeader>
@@ -947,8 +947,8 @@ export default function DiaryTrips() {
                   </DialogTitle>
                   <DialogDescription>
                     {editingTrip 
-                      ? "Aktualizujte detaily vašej rybárskej výpravy."
-                      : "Vytvorte novú rybársku výpravu a začnite zapisovať úlovky."
+                      ? "Aktualizuj detaily svojej rybárskej výpravy."
+                      : "Vytvor novú rybársku výpravu a začni zapisovať úlovky."
                     }
                   </DialogDescription>
                 </DialogHeader>
@@ -962,9 +962,9 @@ export default function DiaryTrips() {
             <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                Dosiahli ste limit {limits.limit} výprav v rámci bezplatného plánu ({limits.currentCount}/{limits.limit}). 
+                Dosiahol si limit {limits.limit} výprav v rámci bezplatného plánu ({limits.currentCount}/{limits.limit}). 
                 <Button variant="link" className="p-0 h-auto ml-1" onClick={() => setLocation('/pricing')}>
-                  Prejdite na Premium
+                  Prejdi na Premium
                 </Button> pre neobmedzený počet výprav.
               </AlertDescription>
             </Alert>

@@ -12,7 +12,7 @@ export default function NotFound() {
           </div>
 
           <p className="mt-4 text-sm text-gray-600">
-            Zabudli ste pridať stránku do routera?
+            Zabudol si pridať stránku do routera?
           </p>
         </CardContent>
       </Card>

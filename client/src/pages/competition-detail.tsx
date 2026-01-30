@@ -246,7 +246,7 @@ export default function CompetitionDetail() {
     onSuccess: () => {
       toast({
         title: "Tím bol úspešne zaregistrovaný!",
-        description: "Registrácia vášho tímu čaká na schválenie organizátorom.",
+        description: "Registrácia tvojho tímu čaká na schválenie organizátorom.",
       });
       setIsRegistrationDialogOpen(false);
       form.reset();
@@ -762,7 +762,7 @@ export default function CompetitionDetail() {
                   <FormItem>
                     <FormLabel>Názov tímu</FormLabel>
                     <FormControl>
-                      <Input placeholder="Zadajte názov vášho tímu" {...field} />
+                      <Input placeholder="Napr. Rybári z Liptova" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -776,7 +776,7 @@ export default function CompetitionDetail() {
                   <FormItem>
                     <FormLabel>Popis tímu (voliteľné)</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="Krátky popis vášho tímu" {...field} />
+                      <Textarea placeholder="Krátky popis tímu" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

@@ -5274,7 +5274,7 @@ export default function AdminPanel() {
                           <CardContent className="p-8 text-center">
                             <Ticket className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
                             <h3 className="text-lg font-medium mb-2">Žiadne promo kódy</h3>
-                            <p className="text-muted-foreground mb-4">Vytvorte prvý promo kód pre vašich používateľov</p>
+                            <p className="text-muted-foreground mb-4">Vytvor prvý promo kód pre svojich používateľov</p>
                             <Button onClick={() => setIsCreatePromoDialogOpen(true)}>
                               <Plus className="w-4 h-4 mr-2" />
                               Vytvoriť promo kód
@@ -6272,7 +6272,7 @@ export default function AdminPanel() {
                           <DialogHeader>
                             <DialogTitle>Odstrániť rozhodcu</DialogTitle>
                             <DialogDescription>
-                              Ste si istí, že chcete odstrániť tohto rozhodcu zo súťaže? Táto akcia sa nedá vrátiť späť.
+                              Si si istý, že chceš odstrániť tohto rozhodcu zo súťaže? Táto akcia sa nedá vrátiť späť.
                             </DialogDescription>
                           </DialogHeader>
                           <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 rounded-lg">
@@ -6569,7 +6569,7 @@ export default function AdminPanel() {
                                     <FormItem>
                                       <FormLabel>Logo sponzora</FormLabel>
                                       <FormDescription>
-                                        Nahrajte obrázok vášho loga (maximálne 5MB). Podporujeme PNG, JPG a SVG súbory.
+                                        Nahraj obrázok loga (maximálne 5MB). Podporujeme PNG, JPG a SVG súbory.
                                       </FormDescription>
                                       <div className="space-y-3">
                                         {/* File upload */}
@@ -6674,7 +6674,7 @@ export default function AdminPanel() {
                             <DialogTitle>Odstránenie sponzora</DialogTitle>
                           </DialogHeader>
                           <p className="text-muted-foreground">
-                            Ste si istí, že chcete odstrániť tohto sponzora? Táto akcia sa nedá vrátiť späť.
+                            Si si istý, že chceš odstrániť tohto sponzora? Táto akcia sa nedá vrátiť späť.
                           </p>
                           <div className="flex justify-end space-x-2">
                             <Button

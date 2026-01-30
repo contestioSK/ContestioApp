@@ -39,11 +39,11 @@ export default function FAQ() {
       items: [
         {
           question: "Ako zaregistrujem súťaž?",
-          answer: "Registrácia súťaže je jednoduchá. Stačí kliknúť na 'Registrovať súťaž' v menu, vyplniť potrebné údaje ako názov súťaže, dátum, miesto konania, kontaktné údaje a vybrať si vhodný cenový balík. Po odoslaní formulára váš požiadavka prejde schvaľovacím procesom."
+          answer: "Registrácia súťaže je jednoduchá. Stačí kliknúť na 'Registrovať súťaž' v menu, vyplniť potrebné údaje ako názov súťaže, dátum, miesto konania, kontaktné údaje a vybrať si vhodný cenový balík. Po odoslaní formulára tvoja požiadavka prejde schvaľovacím procesom."
         },
         {
           question: "Koľko tímov môžem prihlásiť?",
-          answer: "Počet tímov závisí od vášho zvoleného balíka. Basic balík umožňuje maximálne 10 tímov, zatiaľ čo Pro, Premium a Enterprise balíky nemají obmedzenie počtu tímov. Môžete si kedykoľvek upgradovať na vyšší balík podľa potrieb vašej súťaže."
+          answer: "Počet tímov závisí od tvojho zvoleného balíka. Basic balík umožňuje maximálne 10 tímov, zatiaľ čo Pro, Premium a Enterprise balíky nemajú obmedzenie počtu tímov. Môžeš si kedykoľvek upgradovať na vyšší balík podľa potrieb tvojej súťaže."
         },
         {
           question: "Koľko rozhodcov môžem mať?",
@@ -51,7 +51,7 @@ export default function FAQ() {
         },
         {
           question: "Môžem pridávať sponzorov a ceny?",
-          answer: "Áno! Funkcia sponzorov je dostupná od Pro balíka vyššie. Môžete pridávať logá sponzorov, popis ich príspevkov a ceny ktoré poskytujú. Sponzori sa zobrazia na stránke súťaže a v prezentáciách výsledkov."
+          answer: "Áno! Funkcia sponzorov je dostupná od Pro balíka vyššie. Môžeš pridávať logá sponzorov, popis ich príspevkov a ceny ktoré poskytujú. Sponzori sa zobrazia na stránke súťaže a v prezentáciách výsledkov."
         },
         {
           question: "Ako funguje Enterprise balík?",
@@ -67,19 +67,19 @@ export default function FAQ() {
       items: [
         {
           question: "Ako sa prihlásim do súťaže?",
-          answer: "Prihlásenie prebieha cez našu aplikáciu alebo webovú stránku. Vyberte si súťaž, zaregistrujte svoj tím, vyplňte údaje všetkých členov a uhraďte registračný poplatok ak je požadovaný. Po schválení od organizátora budete oficiálne zaregistrovaní."
+          answer: "Prihlásenie prebieha cez našu aplikáciu alebo webovú stránku. Vyber si súťaž, zaregistruj svoj tím, vyplň údaje všetkých členov a uhraď registračný poplatok ak je požadovaný. Po schválení od organizátora budeš oficiálne zaregistrovaný."
         },
         {
           question: "Ako sa zaznamenáva úlovok?",
-          answer: "Úlovky zaznamenávajú rozhodcovia priamo cez mobilnú aplikáciu. Rozhodca otvorí váš tím v aplikácii, zadá váhu ryby, pridá fotografiu a potvrdí záznam. Údaje sa okamžite synchronizujú a zobrazia v live rebríčku."
+          answer: "Úlovky zaznamenávajú rozhodcovia priamo cez mobilnú aplikáciu. Rozhodca otvorí tvoj tím v aplikácii, zadá váhu ryby, pridá fotografiu a potvrdí záznam. Údaje sa okamžite synchronizujú a zobrazia v live rebríčku."
         },
         {
           question: "Ako môžem sledovať priebežné výsledky?",
-          answer: "Priebežné výsledky sú dostupné v reálnom čase na webovej stránke súťaže. Stačí otvoriť stránku súťaže v prehliadači a budete vidieť aktuálny rebríček, fotografie úlovkov a pokrok všetkých tímov. Výsledky sa aktualizujú automaticky."
+          answer: "Priebežné výsledky sú dostupné v reálnom čase na webovej stránke súťaže. Stačí otvoriť stránku súťaže v prehliadači a budeš vidieť aktuálny rebríček, fotografie úlovkov a pokrok všetkých tímov. Výsledky sa aktualizujú automaticky."
         },
         {
           question: "Sú výsledky dostupné po skončení súťaže?",
-          answer: "Áno, všetky výsledky zostávajú trvalo dostupné aj po skončení súťaže. Môžete si pozrieť finálne poradie, všetky úlovky s fotografiami, štatistiky a ďalšie podrobnosti. Organizátor môže výsledky tiež exportovať do PDF alebo Excel formátu."
+          answer: "Áno, všetky výsledky zostávajú trvalo dostupné aj po skončení súťaže. Môžeš si pozrieť finálne poradie, všetky úlovky s fotografiami, štatistiky a ďalšie podrobnosti. Organizátor môže výsledky tiež exportovať do PDF alebo Excel formátu."
         }
       ]
     },
@@ -159,7 +159,7 @@ export default function FAQ() {
         },
         {
           question: "Môžem integrovať výsledky na vlastný web?",
-          answer: "Áno! Enterprise balík obsahuje API prístup, ktorý umožňuje integráciu live výsledkov priamo na váš web alebo aplikáciu. Môžete zobrazovať rebríčky, štatistiky a ďalšie údaje v reálnom čase na vlastnej doméne s vaším designom."
+          answer: "Áno! Enterprise balík obsahuje API prístup, ktorý umožňuje integráciu live výsledkov priamo na tvoj web alebo aplikáciu. Môžeš zobrazovať rebríčky, štatistiky a ďalšie údaje v reálnom čase na vlastnej doméne s tvojím designom."
         }
       ]
     }
@@ -186,7 +186,7 @@ export default function FAQ() {
           // Category Selector
           <div>
             <p className="text-center text-muted-foreground mb-6">
-              Vyberte si oblasť, ktorá vás zaujíma
+              Vyber si oblasť, ktorá ťa zaujíma
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {faqSections.map((section, index) => (
@@ -306,10 +306,10 @@ export default function FAQ() {
         <Card className="mt-12 bg-muted/40">
           <CardContent className="p-6 md:p-8 text-center">
             <h3 className="text-xl font-bold text-foreground mb-3">
-              Nenašli ste odpoveď na svoju otázku?
+              Nenašiel si odpoveď na svoju otázku?
             </h3>
             <p className="text-sm text-muted-foreground mb-5 max-w-2xl mx-auto">
-              Naš tím je tu pre vás! Kontaktujte nás a radi vám pomôžeme s čímkoľvek potrebujete.
+              Náš tím je tu pre teba! Kontaktuj nás a radi ti pomôžeme s čímkoľvek potrebuješ.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <a

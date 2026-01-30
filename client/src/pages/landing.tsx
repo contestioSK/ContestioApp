@@ -341,7 +341,7 @@ export default function Landing() {
               Kategórie súťaží
             </h2>
             <p className="text-white/80 text-lg max-w-2xl mx-auto">
-              Vyberte si kategóriu súťaží, ktorá vás zaujíma a preskúmajte dostupné súťaže
+              Vyber si kategóriu súťaží, ktorá ťa zaujíma a preskúmaj dostupné súťaže
             </p>
           </div>
 
@@ -355,7 +355,7 @@ export default function Landing() {
               count={activeCount}
               image={categoryActive}
               title="Registrácia prebieha"
-              description="Prihláste sa do aktuálnych súťaží s otvorenou registráciou"
+              description="Prihlás sa do aktuálnych súťaží s otvorenou registráciou"
               href="/categories/registration"
               progressColor="#fb923c"
               progressWidth={65}
@@ -394,7 +394,7 @@ export default function Landing() {
               count={finishedCount}
               image={categoryFinished}
               title="Ukončené preteky"
-              description="Prihláste sa do aktuálnych súťaží s otvorenou registráciou"
+              description="Pozri si výsledky ukončených súťaží"
               href="/categories/finished"
               progressColor="#fb923c"
               progressWidth={55}

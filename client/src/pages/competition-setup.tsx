@@ -269,7 +269,7 @@ export default function CompetitionSetup() {
     if (isDemoMode) {
       toast({
         title: "Demo ukážka dokončená",
-        description: "Toto bola len ukážka wizardu. Pre registráciu skutočnej súťaže vyberte balík na stránke cenníka.",
+        description: "Toto bola len ukážka wizardu. Pre registráciu skutočnej súťaže vyber balík na stránke cenníka.",
       });
       setLocation("/pricing");
       return;
@@ -361,7 +361,7 @@ export default function CompetitionSetup() {
             </p>
           )}
           <p className="text-muted-foreground mt-2">
-            Nakonfigurujte detaily vašej súťaže krok za krokom.
+            Nakonfiguruj detaily svojej súťaže krok za krokom.
           </p>
           
           {/* Demo Mode Banner */}
@@ -494,7 +494,7 @@ export default function CompetitionSetup() {
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Vyberte typ" />
+                                <SelectValue placeholder="Vyber typ" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -580,7 +580,7 @@ export default function CompetitionSetup() {
                 {!canUseFeature(selectedPlan, 'sectors') ? (
                   <div className="p-6 bg-muted/30 rounded-lg text-center">
                     <p className="text-muted-foreground">
-                      Sektory nie sú dostupné vo vašom balíku. Upgradujte na Pro alebo vyšší.
+                      Sektory nie sú dostupné v tvojom balíku. Upgraduj na Pro alebo vyšší.
                     </p>
                   </div>
                 ) : (
@@ -699,13 +699,13 @@ export default function CompetitionSetup() {
                 {!canUseFeature(selectedPlan, 'sideCompetitions') ? (
                   <div className="p-6 bg-muted/30 rounded-lg text-center">
                     <p className="text-muted-foreground">
-                      Špeciálne súťaže nie sú dostupné vo vašom balíku. Upgradujte na Pro alebo vyšší.
+                      Špeciálne súťaže nie sú dostupné v tvojom balíku. Upgraduj na Pro alebo vyšší.
                     </p>
                   </div>
                 ) : (
                   <>
                     <p className="text-muted-foreground">
-                      Vyberte doplnkové súťaže, ktoré chcete zahrnúť:
+                      Vyber doplnkové súťaže, ktoré chceš zahrnúť:
                     </p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {SIDE_COMPETITIONS.map((comp) => (
@@ -737,11 +737,11 @@ export default function CompetitionSetup() {
                   <Gift className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                   <h4 className="font-medium mb-2">Správa sponzorov</h4>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Sponzorov a ich ceny budete môcť pridať po schválení súťaže.
+                    Sponzorov a ich ceny budeš môcť pridať po schválení súťaže.
                   </p>
                   {!canUseFeature(selectedPlan, 'sponsors') && (
                     <p className="text-xs text-orange-500">
-                      Sponzori nie sú dostupní vo vašom balíku. Upgradujte na Pro alebo vyšší.
+                      Sponzori nie sú dostupní v tvojom balíku. Upgraduj na Pro alebo vyšší.
                     </p>
                   )}
                 </div>
@@ -756,10 +756,10 @@ export default function CompetitionSetup() {
                   </div>
                   <h4 className="font-medium mb-2">Pridávanie rozhodcov</h4>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Rozhodcov budete môcť pridať po schválení súťaže administrátorom.
+                    Rozhodcov budeš môcť pridať po schválení súťaže administrátorom.
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Váš balík ({selectedPlan}) povoľuje maximálne {selectedPlan === 'basic' ? '2' : selectedPlan === 'pro' ? '5' : 'neobmedzený počet'} rozhodcov.
+                    Tvoj balík ({selectedPlan}) povoľuje maximálne {selectedPlan === 'basic' ? '2' : selectedPlan === 'pro' ? '5' : 'neobmedzený počet'} rozhodcov.
                   </p>
                 </div>
               </div>

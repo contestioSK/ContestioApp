@@ -318,7 +318,7 @@ export default function Profile() {
     onSuccess: () => {
       toast({
         title: "Úlovok pridaný do denníka",
-        description: "Úlovok bol úspešne importovaný do vášho rybárskeho denníka.",
+        description: "Úlovok importovaný do denníka.",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/me/competition-catches"] });
       setImportDialogOpen(false);
@@ -476,7 +476,7 @@ export default function Profile() {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
         title: "Nastavenie uložené",
-        description: "Vaše preferencie boli aktualizované.",
+        description: "Preferencie uložené.",
       });
     },
     onError: (error: Error) => {
@@ -505,7 +505,7 @@ export default function Profile() {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
         title: "Súkromie aktualizované",
-        description: "Vaše nastavenia zdieľania boli uložené.",
+        description: "Tvoje nastavenia zdieľania boli uložené.",
       });
     },
     onError: (error: Error) => {
@@ -700,7 +700,7 @@ export default function Profile() {
                 <CardDescription>
                   {isEditing 
                     ? "Upravte svoje osobné informácie"
-                    : "Vaše základné informácie"
+                    : "Tvoje základné informácie"
                   }
                 </CardDescription>
               </CardHeader>
@@ -723,7 +723,7 @@ export default function Profile() {
                           <FormLabel>Meno</FormLabel>
                           <FormControl>
                             <Input 
-                              placeholder="Vaše meno"
+                              placeholder="Tvoje meno"
                               data-testid="input-first-name"
                               disabled={!isEditing}
                               {...field}
@@ -744,7 +744,7 @@ export default function Profile() {
                           <FormLabel>Priezvisko</FormLabel>
                           <FormControl>
                             <Input 
-                              placeholder="Vaše priezvisko"
+                              placeholder="Tvoje priezvisko"
                               data-testid="input-last-name"
                               disabled={!isEditing}
                               {...field}
@@ -835,7 +835,7 @@ export default function Profile() {
                               />
                             </FormControl>
                             <FormDescription>
-                              Odkaz na váš Facebook profil
+                              Odkaz na tvoj Facebook profil
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
@@ -854,7 +854,7 @@ export default function Profile() {
                             </FormLabel>
                             <FormControl>
                               <Input 
-                                placeholder="https://instagram.com/vasprofil"
+                                placeholder="https://instagram.com/tvojprofil"
                                 data-testid="input-instagram"
                                 disabled={!isEditing}
                                 {...field}
@@ -862,7 +862,7 @@ export default function Profile() {
                               />
                             </FormControl>
                             <FormDescription>
-                              Odkaz na váš Instagram profil
+                              Odkaz na tvoj Instagram profil
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
@@ -908,7 +908,7 @@ export default function Profile() {
                 História pretekov
               </CardTitle>
               <CardDescription>
-                Súťaže, ktorých ste sa zúčastnili ako člen tímu
+                Súťaže, ktorých si sa zúčastnil ako člen tímu
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -1074,7 +1074,7 @@ export default function Profile() {
                 Moje úlovky zo súťaží
               </CardTitle>
               <CardDescription>
-                Úlovky z vašich tímov - môžete si ich pridať do osobného denníka
+                Úlovky z tvojich tímov - môžeš si ich pridať do osobného denníka
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -1098,7 +1098,7 @@ export default function Profile() {
                     Zatiaľ žiadne súťažné úlovky
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    Keď váš tím chytí úlovok na súťaži, objaví sa tu.
+                    Keď tvoj tím chytí úlovok na súťaži, objaví sa tu.
                   </p>
                 </div>
               ) : (
@@ -1285,7 +1285,7 @@ export default function Profile() {
                     <div className="text-left">
                       <CardTitle className="text-base">Technické detaily</CardTitle>
                       <CardDescription className="text-sm">
-                        Informácie o vašom účte
+                        Informácie o tvojom účte
                       </CardDescription>
                     </div>
                     <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform ${showTechDetails ? 'rotate-180' : ''}`} />

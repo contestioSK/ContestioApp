@@ -329,7 +329,7 @@ export default function BattleArchive() {
             </div>
             
             <p className="text-muted-foreground text-lg">
-              História všetkých vašich Fishing Battle súbojov a štatistiky
+              História všetkých tvojich Fishing Battle súbojov a štatistiky
             </p>
           </div>
 
@@ -393,7 +393,7 @@ export default function BattleArchive() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TacticalIconInline icon={BarChart3} variant="orange" size="md" />
-                Vaše štatistiky
+                Tvoje štatistiky
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -587,13 +587,13 @@ export default function BattleArchive() {
                   <h3 className="text-lg font-medium text-foreground mb-2">
                     {searchTerm || filterMode !== "all" || filterResult !== "all" 
                       ? "Žiadne súboje nevyhovujú filtrom"
-                      : "Zatiaľ ste neabsolvovali žiadne súboje"
+                      : "Zatiaľ si neabsolvoval žiadne súboje"
                     }
                   </h3>
                   <p className="text-muted-foreground mb-4">
                     {searchTerm || filterMode !== "all" || filterResult !== "all"
-                      ? "Skúste upraviť hľadacie kritériá alebo filtre."
-                      : "Vytvorte svoj prvý Fishing Battle a súťažte s kamarátmi!"
+                      ? "Skús upraviť hľadacie kritériá alebo filtre."
+                      : "Vytvor svoj prvý Fishing Battle a súťaž s kamarátmi!"
                     }
                   </p>
                   {!(searchTerm || filterMode !== "all" || filterResult !== "all") && (
@@ -666,7 +666,7 @@ export default function BattleArchive() {
                             <div className="text-lg font-bold text-foreground">
                               {battle.userScore} {getScoreUnit(battle.mode)}
                             </div>
-                            <div className="text-xs text-muted-foreground">Váš výsledok</div>
+                            <div className="text-xs text-muted-foreground">Tvoj výsledok</div>
                           </div>
                           <div className="text-center">
                             <div className="text-lg font-bold text-muted-foreground">

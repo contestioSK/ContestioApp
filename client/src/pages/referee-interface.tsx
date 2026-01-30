@@ -22,9 +22,9 @@ import { useVisibilityAwarePolling, POLLING_INTERVALS, STALE_TIMES } from "@/hoo
 
 // Dynamic schema based on competition's minimum weight (in grams for referee input)
 const createCatchSubmissionSchema = (minWeightGrams: number = 2000) => z.object({
-  teamId: z.string().min(1, "Prosím vyberte tím"),
+  teamId: z.string().min(1, "Prosím vyber tím"),
   weight: z.number().min(minWeightGrams, `Váha musí byť najmenej ${minWeightGrams} g`),
-  fishType: z.enum(["scaly", "mirror"], { required_error: "Prosím vyberte typ ryby" }),
+  fishType: z.enum(["scaly", "mirror"], { required_error: "Prosím vyber typ ryby" }),
   competitionId: z.string().min(1),
 });
 
@@ -297,7 +297,7 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
                           </Button>
                         ))}
                       </div>
-                      <div className="text-sm text-muted-foreground text-center font-medium">alebo vyberte zo všetkých:</div>
+                      <div className="text-sm text-muted-foreground text-center font-medium">alebo vyber zo všetkých:</div>
                     </div>
                   )}
                   
@@ -312,7 +312,7 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
                       });
                     }} value={field.value}>
                       <SelectTrigger data-testid="select-team" className="h-14 text-lg font-medium">
-                        <SelectValue placeholder="Vyberte tím" />
+                        <SelectValue placeholder="Vyber tím" />
                       </SelectTrigger>
                       <SelectContent>
                         {sectorTeams.map((team: Team) => (
@@ -876,7 +876,7 @@ export default function RefereeInterface() {
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="max-w-md w-full">
           <CardContent className="p-6 text-center">
-            <p className="text-lg font-medium mb-4">Pre prístup sa musíte prihlásiť</p>
+            <p className="text-lg font-medium mb-4">Pre prístup sa musíš prihlásiť</p>
             <Button onClick={() => window.location.href = "/api/login"}>
               Prihlásiť sa
             </Button>

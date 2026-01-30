@@ -233,7 +233,7 @@ export default function Pricing() {
       if (!user) {
         toast({
           title: "Prihlásenie potrebné",
-          description: "Pre predplatné Premium sa najprv prihláste",
+          description: "Pre predplatné Premium sa najprv prihlás",
         });
         navigate('/auth/login?redirect=/pricing?tab=diary');
         return;
@@ -267,7 +267,7 @@ export default function Pricing() {
             Cenník
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Vyberte si riešenie, ktoré najlepšie vyhovuje vašim potrebám
+            Vyber si riešenie, ktoré najlepšie vyhovuje tvojim potrebám
           </p>
           <div className="w-24 h-1 bg-gradient-to-r from-primary to-primary/60 mx-auto mt-6 rounded-full"></div>
         </div>
@@ -308,7 +308,7 @@ export default function Pricing() {
             <p className="mt-4 text-sm text-muted-foreground text-center transition-all duration-300">
               {activeTab === 'competitions' 
                 ? '🏆 Profesionálne riešenie pre organizátorov rybárskych súťaží'
-                : '📔 Váš osobný digitálny rybársky denník s Premium funkciami'
+                : '📔 Tvoj osobný digitálny rybársky denník s Premium funkciami'
               }
             </p>
           </div>
@@ -671,7 +671,7 @@ export default function Pricing() {
               Máte otázky o cenníkoch?
             </h3>
             <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-              Naš tím vám rád pomôže vybrať správne riešenie pre vaše potreby. 
+              Náš tím ti rád pomôže vybrať správne riešenie pre tvoje potreby. 
               Kontaktujte nás a prediskutujeme možnosti.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -710,7 +710,7 @@ export default function Pricing() {
             </div>
             <h4 className="font-semibold text-foreground mb-2">Podpora počas celého obdobia</h4>
             <p className="text-sm text-muted-foreground">
-              Náš tím je k dispozícii pre technickú podporu kedykoľvek to budete potrebovať.
+              Náš tím je k dispozícii pre technickú podporu kedykoľvek to budeš potrebovať.
             </p>
           </div>
           
@@ -720,7 +720,7 @@ export default function Pricing() {
             </div>
             <h4 className="font-semibold text-foreground mb-2">Flexibilné možnosti</h4>
             <p className="text-sm text-muted-foreground">
-              Vyberte si balík podľa veľkosti vašej súťaže alebo osobných potrieb.
+              Vyber si balík podľa veľkosti tvojej súťaže alebo osobných potrieb.
             </p>
           </div>
         </div>

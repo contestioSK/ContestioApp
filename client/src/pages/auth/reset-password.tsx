@@ -68,7 +68,7 @@ export default function ResetPasswordPage() {
       setResetStatus("success");
       toast({
         title: "Heslo zmenené!",
-        description: "Vaše heslo bolo úspešne zmenené. Môžete sa teraz prihlásiť.",
+        description: "Tvoje heslo bolo úspešne zmenené. Môžeš sa teraz prihlásiť.",
       });
     },
     onError: (error: Error) => {
@@ -139,7 +139,7 @@ export default function ResetPasswordPage() {
           </CardHeader>
           <CardContent className="text-center space-y-4">
             <p className="text-muted-foreground dark:text-gray-400">
-              Vaše heslo bolo úspešne zmenené. Môžete sa teraz prihlásiť s novým heslom.
+              Tvoje heslo bolo úspešne zmenené. Môžeš sa teraz prihlásiť s novým heslom.
             </p>
             <div className="pt-4">
               <Button asChild className="w-full" data-testid="button-go-to-login">
@@ -195,7 +195,7 @@ export default function ResetPasswordPage() {
           </div>
           <CardTitle className="text-2xl font-bold dark:text-white">Resetovať heslo</CardTitle>
           <CardDescription className="dark:text-gray-400">
-            Zadajte nové heslo pre váš účet
+            Zadaj nové heslo pre tvoj účet
           </CardDescription>
         </CardHeader>
         <CardContent>

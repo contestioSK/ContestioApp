@@ -49,7 +49,7 @@ export function NotificationCenter() {
       // Show toast notification
       toast({
         title: "🎣 Nová výzva!",
-        description: `${message.inviterName} vás pozval do battle: ${message.battleName}`,
+        description: `${message.inviterName} ťa pozval do battle: ${message.battleName}`,
       });
     }
   });
@@ -64,7 +64,7 @@ export function NotificationCenter() {
       queryClient.invalidateQueries({ queryKey: ['/api/diary/battles'] });
       toast({
         title: "Pozvánka prijatá",
-        description: "Úspešne ste sa pridali do battle",
+        description: "Úspešne si sa pridal do battle",
       });
     },
     onError: (error: any) => {
