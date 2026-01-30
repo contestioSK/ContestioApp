@@ -1,0 +1,272 @@
+import React from "react";
+import { 
+  LucideIcon, Target, Shield, Zap, Activity, Award, 
+  Home, BookOpen, User, Settings, Map, Navigation, 
+  Plus, Trash2, Edit3, Share2, Filter, Search, X, Check,
+  Fish, Scale, Ruler, Anchor,  
+  CloudRain, Sun, Wind, Thermometer, Droplets, Moon,
+  Trophy, Medal, Crown, Star, Lock, Unlock,
+  Camera, Image as ImageIcon, Save, LogOut, Bell
+} from "lucide-react";
+
+// --- UTILS ---
+const cn = (...classes: (string | undefined | null | false)[]) => classes.filter(Boolean).join(" ");
+
+// --- COLOR LOGIC REFACTOR (v1.3 Meaning over Theme) ---
+// SYSTEM VARIANTS (Používať pre UI prvky, navigáciu a akcie)
+// - neutral: Default stav pre objekty (Ryba, Mapa, Nastavenia)
+// - active: Aktívny tab, vybraný prvok
+// - action: Primárna akcia (CTA)
+// - danger: Destruktívna akcia alebo kritická chyba
+// - slate: Alternatívny neutrál (Disabled/Ghost)
+
+// SEMANTIC ACCENTS (Používať LEN pre Data Viz, Badges a Statusy)
+// - amber/orange/yellow: Warning, Gold Tier
+// - emerald/lime: Success, Safe status
+// - blue/cyan: Info, Processing
+// - rose/red: Error, High Alert
+
+export type TacticalIconVariant = 
+  | "neutral" | "active" | "action" | "danger" | "slate" // System
+  | "lime" | "blue" | "amber" | "purple" | "rose" | "cyan" | "emerald" | "orange" | "indigo" | "fuchsia"; // Semantic
+
+// --- GEOMETRY LOCK (v1.2) ---
+// rounded-lg (8px) pre prvky do 56px (sm, md)
+// rounded-xl (12px) pre prvky nad 56px (lg, xl)
+
+const sizeClasses = {
+  sm: {
+    container: "w-9 h-9",
+    icon: "w-4 h-4",
+    label: "text-[7px]",
+    radius: "rounded-lg", // 8px (Element)
+    stroke: 2
+  },
+  md: {
+    container: "w-12 h-12",
+    icon: "w-5 h-5",
+    label: "text-[8px]",
+    radius: "rounded-lg", // 8px (Element)
+    stroke: 1.75
+  },
+  lg: {
+    container: "w-16 h-16",
+    icon: "w-7 h-7",
+    label: "text-[9px]",
+    radius: "rounded-xl", // 12px (Container/Hero)
+    stroke: 1.5
+  },
+  xl: {
+    container: "w-24 h-24",
+    icon: "w-10 h-10",
+    label: "text-[10px]",
+    radius: "rounded-xl", // 12px (Container/Hero)
+    stroke: 1.25
+  }
+};
+
+const variantClasses: Record<TacticalIconVariant, string> = {
+  // SYSTEM
+  neutral: "text-slate-400 border-slate-700 bg-slate-800/50",
+  active: "text-cyan-400 border-cyan-500/30 bg-cyan-500/10 shadow-[0_0_15px_rgba(34,211,238,0.1)]",
+  action: "text-white border-slate-600 bg-slate-700 hover:border-slate-500 shadow-sm",
+  danger: "text-red-400 border-red-500/30 bg-red-500/10",
+  slate: "text-slate-500 border-slate-800 bg-slate-900/50",
+
+  // SEMANTIC (Data Only)
+  lime: "text-lime-400 border-lime-500/30 bg-lime-500/10",
+  blue: "text-blue-400 border-blue-500/30 bg-blue-500/10",
+  amber: "text-amber-400 border-amber-500/30 bg-amber-500/10",
+  purple: "text-purple-400 border-purple-500/30 bg-purple-500/10",
+  rose: "text-rose-400 border-rose-500/30 bg-rose-500/10",
+  cyan: "text-cyan-400 border-cyan-500/30 bg-cyan-500/10",
+  emerald: "text-emerald-400 border-emerald-500/30 bg-emerald-500/10",
+  orange: "text-[#F97316] border-[#F97316]/30 bg-[#F97316]/10", // Apex Orange
+  indigo: "text-indigo-400 border-indigo-500/30 bg-indigo-500/10",
+  fuchsia: "text-fuchsia-400 border-fuchsia-500/30 bg-fuchsia-500/10",
+};
+
+interface TacticalIconProps {
+  icon: LucideIcon;
+  label?: string;
+  variant?: TacticalIconVariant;
+  size?: "sm" | "md" | "lg" | "xl";
+  className?: string;
+  showLabel?: boolean;
+  withMarkers?: boolean;
+}
+
+export function TacticalIcon({ 
+  icon: Icon, 
+  label, 
+  variant = "neutral",
+  size = "md",
+  className,
+  showLabel = true,
+  withMarkers = true
+}: TacticalIconProps) {
+  const sizeConfig = sizeClasses[size];
+
+  return (
+    <div className={cn("flex flex-col items-center gap-2 group", className)}>
+      <div className={cn(
+        "relative flex items-center justify-center transition-all duration-300",
+        sizeConfig.container
+      )}>
+        {/* Container Shape (Strict Radius) */}
+        <div 
+          className={cn(
+            "absolute inset-0 border transition-all duration-300 group-hover:bg-opacity-20",
+            sizeConfig.radius,
+            variantClasses[variant]
+          )}
+        />
+        
+        {/* Technical Markers (Optional) */}
+        {withMarkers && (
+          <div className={cn(
+            "absolute inset-0 opacity-30 pointer-events-none transition-transform duration-500",
+            variant.includes("neutral") || variant === "slate" ? "text-slate-500" : "text-current"
+          )}>
+            <div className={cn("absolute left-1/2 -translate-x-1/2 w-0.5 h-1 bg-current", size === "sm" ? "top-0.5" : "top-1")} />
+            <div className={cn("absolute left-1/2 -translate-x-1/2 w-0.5 h-1 bg-current", size === "sm" ? "bottom-0.5" : "bottom-1")} />
+            <div className={cn("absolute top-1/2 -translate-y-1/2 h-0.5 w-1 bg-current", size === "sm" ? "left-0.5" : "left-1")} />
+            <div className={cn("absolute top-1/2 -translate-y-1/2 h-0.5 w-1 bg-current", size === "sm" ? "right-0.5" : "right-1")} />
+          </div>
+        )}
+
+        {/* Icon */}
+        <Icon 
+          className={cn(
+            "relative z-10 transition-transform duration-300 group-hover:scale-110",
+            (variant === "neutral" || variant === "slate") ? "text-slate-400 group-hover:text-slate-200" : "text-current",
+            sizeConfig.icon
+          )} 
+          strokeWidth={sizeConfig.stroke}
+        />
+      </div>
+      
+      {label && showLabel && (
+        <span className={cn(
+          "font-black uppercase tracking-[0.15em] transition-colors text-center leading-tight truncate w-full",
+          "text-slate-500 group-hover:text-slate-300",
+          sizeConfig.label
+        )}>
+          {label}
+        </span>
+      )}
+    </div>
+  );
+}
+
+// --- SHOWCASE SECTIONS ---
+
+const IconSection = ({ title, children }: { title: string, children: React.ReactNode }) => (
+  <div className="space-y-6">
+    <div className="flex items-center gap-3 border-b border-slate-800 pb-2">
+      <div className="w-1 h-4 bg-[#F97316] rounded-full" />
+      <h3 className="text-xs font-black uppercase tracking-[0.3em] text-slate-400">{title}</h3>
+    </div>
+    <div className="flex flex-wrap gap-8 items-start">
+      {children}
+    </div>
+  </div>
+);
+
+export default function App() {
+  return (
+    <div className="min-h-screen bg-[#0B1C2F] text-slate-300 p-8 md:p-16 font-sans selection:bg-orange-500/30">
+      
+      <header className="max-w-5xl mx-auto mb-16 space-y-4">
+        <h1 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter text-white">
+          Contestio Iconography
+        </h1>
+        <div className="flex flex-col gap-2 text-xs font-mono text-slate-500">
+          <div className="flex items-center gap-4">
+            <span className="px-2 py-1 bg-slate-900 border border-slate-800 rounded-lg text-[#F97316]">v1.4 Color Logic</span>
+            <span>•</span>
+            <span>Object = Neutral</span>
+            <span>•</span>
+            <span>Status = Colored</span>
+          </div>
+        </div>
+      </header>
+
+      <div className="max-w-5xl mx-auto space-y-16">
+        
+        {/* 1. CORE NAVIGATION */}
+        <IconSection title="Core Navigation (Menu & TabBar)">
+          <TacticalIcon icon={Home} label="Domov" variant="neutral" size="md" />
+          <TacticalIcon icon={BookOpen} label="Denník" variant="active" size="md" />
+          <TacticalIcon icon={Trophy} label="Profil" variant="neutral" size="md" />
+          <TacticalIcon icon={Map} label="Revíry" variant="neutral" size="md" />
+          <TacticalIcon icon={Settings} label="Config" variant="neutral" size="md" />
+        </IconSection>
+
+        {/* 2. FISHING METRICS (Inputs & Data) - NOW NEUTRAL */}
+        <IconSection title="Fishing Metrics & Inputs (Neutral Objects)">
+          <TacticalIcon icon={Fish} label="Druh" variant="neutral" size="md" />
+          <TacticalIcon icon={Scale} label="Váha" variant="neutral" size="md" />
+          <TacticalIcon icon={Ruler} label="Dĺžka" variant="neutral" size="md" />
+          <TacticalIcon icon={Anchor} label="Metóda" variant="neutral" size="md" />
+          <TacticalIcon icon={Map} label="GPS" variant="neutral" size="md" />
+          <TacticalIcon icon={Clock} label="Čas" variant="neutral" size="md" />
+        </IconSection>
+
+        {/* 3. CONDITIONS (Weather Module) - NOW NEUTRAL */}
+        <IconSection title="Atmospheric Conditions (Data Categories)">
+          <TacticalIcon icon={CloudRain} label="Dážď" variant="neutral" size="sm" />
+          <TacticalIcon icon={Sun} label="Jasno" variant="neutral" size="sm" />
+          <TacticalIcon icon={Wind} label="Vietor" variant="neutral" size="sm" />
+          <TacticalIcon icon={Thermometer} label="Teplota" variant="neutral" size="sm" />
+          <TacticalIcon icon={Droplets} label="Vlhkosť" variant="neutral" size="sm" />
+          <TacticalIcon icon={Moon} label="Fáza" variant="neutral" size="sm" />
+        </IconSection>
+
+        {/* 4. BADGES & ACHIEVEMENTS (Exception: Tiers) */}
+        <IconSection title="Badges & Prestige (Exception: Tiers Allowed)">
+          <TacticalIcon icon={Trophy} label="Master" variant="amber" size="lg" />
+          <TacticalIcon icon={Medal} label="Elite" variant="slate" size="lg" />
+          <TacticalIcon icon={Award} label="Pro" variant="orange" size="lg" />
+          <TacticalIcon icon={Crown} label="King" variant="active" size="lg" />
+          <TacticalIcon icon={Target} label="Sniper" variant="rose" size="lg" />
+        </IconSection>
+
+        {/* 5. SYSTEM ACTIONS (Buttons) */}
+        <IconSection title="System Actions & Controls (Functional)">
+          <TacticalIcon icon={Plus} label="Nový" variant="action" size="sm" />
+          <TacticalIcon icon={Edit3} label="Upraviť" variant="neutral" size="sm" />
+          <TacticalIcon icon={Share2} label="Zdieľať" variant="neutral" size="sm" />
+          <TacticalIcon icon={Trash2} label="Zmazať" variant="danger" size="sm" />
+          <TacticalIcon icon={Filter} label="Filter" variant="slate" size="sm" />
+          <TacticalIcon icon={Search} label="Hľadať" variant="slate" size="sm" />
+          <TacticalIcon icon={Check} label="Uložiť" variant="action" size="sm" />
+          <TacticalIcon icon={X} label="Zrušiť" variant="slate" size="sm" />
+        </IconSection>
+        
+        {/* 6. STATUS INDICATORS */}
+        <IconSection title="Status & Feedback (State Based)">
+           <TacticalIcon icon={Lock} label="Locked" variant="slate" size="sm" withMarkers={false} />
+           <TacticalIcon icon={Unlock} label="Open" variant="active" size="sm" withMarkers={false} />
+           <TacticalIcon icon={Zap} label="Live" variant="amber" size="sm" withMarkers={false} />
+           <TacticalIcon icon={Bell} label="Alert" variant="rose" size="sm" withMarkers={false} />
+        </IconSection>
+
+      </div>
+    </div>
+  );
+}
+
+// Helper pre Clock ikonu
+const Clock = ({ className, ...props }: any) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    width="24" height="24" viewBox="0 0 24 24" 
+    fill="none" stroke="currentColor" strokeWidth="2" 
+    strokeLinecap="round" strokeLinejoin="round" 
+    className={className} {...props}
+  >
+    <circle cx="12" cy="12" r="10"/>
+    <polyline points="12 6 12 12 16 14"/>
+  </svg>
+);
