@@ -1,0 +1,288 @@
+
+import React, { useState, useEffect } from "react";
+import { 
+  Shield, Ruler, Clock, AlertCircle, Waves, 
+  Target, Trophy, Zap, Search, ChevronRight, 
+  CheckCircle2, VolumeX, Eye, EyeOff, LayoutGrid, Settings,
+  Navigation, MousePointer2, Palette, Droplets, Contrast,
+  Sun, Moon, ExternalLink, Info, Activity, Flame
+} from "lucide-react";
+
+// --- CONTESTIO FINAL LOCKED v2.0 (Definitívny zdroj pravdy) ---
+// Táto verzia kombinuje asketizmus v1.2, taktický kontrast v1.3 a prémiovú hĺbku v1.4.
+
+const CONTESTIO_SYSTEM = {
+  version: "2.0",
+  id: "locked-v2",
+  name: "Contestio Obsidian Ember",
+  philosophy: "Profesionálny rybársky prístroj. Farba = Význam. UI = Ticho.",
+  dark: {
+    bg: "#0B1C2F",       // Hlboké Indigo
+    surface: "#0F172A",  // Slate-900
+    border: "#1E293B",   // Slate-800
+    text: "#F8FAFC",     // Off-white
+    accent: "#F97316",   // Apex Orange
+    secondary: "#64748B" // Cool Gray
+  },
+  light: {
+    bg: "#F8FAFC",       // Slate-50
+    surface: "#FFFFFF",  // Čistá biela
+    border: "#E2E8F0",   // Slate-200
+    text: "#0F172A",     // Slate-900
+    accent: "#C2410C",   // Tmavšia oranžová pre kontrast
+    secondary: "#64748B" // Cool Gray
+  },
+  palette: [
+    { name: "Deep Water", dark: "#0B1C2F", light: "#F8FAFC", role: "Primárne pozadie" },
+    { name: "Obsidian Surface", dark: "#0F172A", light: "#FFFFFF", role: "Vrstvy a karty" },
+    { name: "Apex Orange", dark: "#F97316", light: "#C2410C", role: "Interakcia a dáta" },
+    { name: "Tactical Gray", dark: "#1E293B", light: "#E2E8F0", role: "Bordery a separátory" }
+  ]
+};
+
+const cn = (...classes) => classes.filter(Boolean).join(" ");
+
+// --- ZJEDNOTENÉ KOMPONENTY ---
+
+const Signal = ({ variant = "info" }) => {
+  const isDanger = variant === "danger";
+  return (
+    <span className="relative flex h-2.5 w-2.5">
+      <span className={cn(
+        "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75",
+        isDanger ? "bg-red-500" : "bg-orange-500"
+      )}></span>
+      <span className={cn(
+        "relative inline-flex rounded-full h-2.5 w-2.5",
+        isDanger ? "bg-red-600" : "bg-orange-500"
+      )}></span>
+    </span>
+  );
+};
+
+const Section = ({ title, description, isLight, children }) => (
+  <section className={cn(
+    "space-y-8 border-b py-16 px-4 md:px-8",
+    isLight ? "border-slate-200" : "border-slate-800"
+  )}>
+    <div className="space-y-2 max-w-2xl">
+      <h2 className={cn(
+        "text-xl font-bold uppercase tracking-[0.2em]",
+        isLight ? "text-slate-900" : "text-white"
+      )}>{title}</h2>
+      <p className="text-slate-500 text-sm leading-relaxed">{description}</p>
+    </div>
+    {children}
+  </section>
+);
+
+export default function DesignLab() {
+  const [isLight, setIsLight] = useState(false);
+  const colors = isLight ? CONTESTIO_SYSTEM.light : CONTESTIO_SYSTEM.dark;
+
+  return (
+    <div 
+      className={cn(
+        "min-h-screen transition-all duration-500 font-sans",
+        isLight ? "text-slate-900" : "text-slate-300"
+      )} 
+      style={{ backgroundColor: colors.bg }}
+    >
+      {/* PREPÍNAČ TÉMY (Locked v2.0 Štýl) */}
+      <div className="fixed top-8 right-8 z-50">
+        <button 
+          onClick={() => setIsLight(!isLight)}
+          className={cn(
+            "p-3 rounded-2xl border transition-all shadow-xl flex items-center gap-3 font-black text-[10px] uppercase tracking-widest",
+            isLight ? "bg-white border-slate-200 text-slate-900" : "bg-slate-900 border-slate-800 text-white"
+          )}
+        >
+          {isLight ? <Moon size={16} /> : <Sun size={16} />}
+          {isLight ? "Nočný režim" : "Denný režim"}
+        </button>
+      </div>
+
+      {/* HERO HLAVIČKA */}
+      <header className="relative pt-32 pb-20 px-8 max-w-6xl mx-auto overflow-hidden">
+        <div className="absolute top-0 left-0 opacity-5 pointer-events-none">
+          <Waves size={400} strokeWidth={0.5} />
+        </div>
+        <div className="relative z-10 space-y-6">
+          <div className="flex items-center gap-4">
+             <div className="h-px w-16 bg-[#F97316]"></div>
+             <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#F97316]">Locked System v2.0</span>
+          </div>
+          <h1 className={cn(
+            "text-6xl md:text-9xl font-black italic tracking-tighter uppercase leading-[0.85]",
+            isLight ? "text-slate-950" : "text-white shadow-orange-500/20"
+          )}>
+            Contestio <br />
+            <span className="text-[#F97316]">Obsidian</span>
+          </h1>
+          <p className="text-slate-500 max-w-xl text-lg font-medium leading-relaxed">
+            Finálna vizuálna identita rybárskeho ekosystému. <br />
+            Kombinácia taktickej brutality a digitálnej elegancie.
+          </p>
+        </div>
+      </header>
+
+      <main className="max-w-6xl mx-auto pb-40">
+        
+        {/* 01. FAREBNÉ TOKENY */}
+        <Section 
+          title="01. Farebné Tokeny" 
+          description="Contestio nepoužíva farbu na dekoráciu. Každý odtieň je technickým parametrom. Zakázaná je čistá biela a akékoľvek 'mäkké' pastely."
+          isLight={isLight}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {CONTESTIO_SYSTEM.palette.map((color, i) => (
+              <div key={i} className={cn(
+                "p-6 rounded-[2.5rem] border transition-all",
+                isLight ? "bg-white border-slate-200" : "bg-slate-900/40 border-slate-800"
+              )}>
+                <div 
+                  className="h-24 w-full rounded-2xl mb-4 border border-black/5 shadow-inner transition-transform hover:scale-105"
+                  style={{ backgroundColor: isLight ? color.light : color.dark }}
+                />
+                <div className="space-y-1">
+                  <h4 className={cn("text-xs font-black uppercase tracking-widest", isLight ? "text-slate-900" : "text-white")}>{color.name}</h4>
+                  <p className="text-[10px] text-slate-500 italic mb-2">{color.role}</p>
+                  <code className="text-[10px] font-mono opacity-50 block">
+                    {isLight ? color.light : color.dark}
+                  </code>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Section>
+
+        {/* 02. TYPOGRAFIA */}
+        <Section 
+          title="02. Typografická Hierarchia" 
+          description="Logika 'Instrument-first'. H1 je jediná plocha pre Black váhu. Dáta musia byť čitateľné aj pri trasúcich sa rukách a zlom svetle."
+          isLight={isLight}
+        >
+          <div className={cn(
+            "p-8 md:p-12 rounded-[3rem] border space-y-12",
+            isLight ? "bg-slate-50 border-slate-200" : "bg-slate-900/20 border-slate-800"
+          )}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center border-b border-white/5 pb-12">
+               <div className="space-y-2">
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Hero Typography</p>
+                  <h3 className={cn("text-5xl font-black italic uppercase tracking-tighter", isLight ? "text-slate-900" : "text-white")}>
+                    Kapitán
+                  </h3>
+               </div>
+               <p className="text-xs text-slate-500 italic leading-relaxed">
+                 Váha 900 Black Italic. Používať len pre Hero nadpisy a mená v top rebríčkoch.
+               </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+               <div className="space-y-2">
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Data & Units</p>
+                  <h3 className="text-4xl font-medium text-[#F97316] tracking-tighter font-mono">
+                    124.52 kg
+                  </h3>
+               </div>
+               <p className="text-xs text-slate-500 italic leading-relaxed">
+                 Váha 500 Medium. Farba Apex Orange. Týmto dosiahneme čitateľnosť bez 'zliatia' písma na slnku.
+               </p>
+            </div>
+          </div>
+        </Section>
+
+        {/* 03. LOGIKA STAVOV */}
+        <Section 
+          title="03. Logika Stavov (Logika prístroja)" 
+          description="Navrhujeme pre terén. Akcia musí byť jasne viditeľná, ticho musí byť absolútne."
+          isLight={isLight}
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+             {/* AKTÍVNA KARTA */}
+             <div className={cn(
+               "p-10 rounded-[2.5rem] border-2 transition-all relative overflow-hidden",
+               isLight ? "bg-white border-[#F97316] shadow-2xl" : "bg-slate-900 border-[#F97316] shadow-2xl shadow-orange-500/10"
+             )}>
+                <div className="flex justify-between items-start mb-12">
+                   <div className="p-3 bg-orange-500/10 rounded-2xl text-[#F97316]">
+                      <Zap size={24} strokeWidth={2.5} />
+                   </div>
+                   <Signal variant="info" />
+                </div>
+                <div className="space-y-2">
+                   <h4 className={cn("text-2xl font-black italic uppercase tracking-tighter", isLight ? "text-slate-900" : "text-white")}>
+                      Aktívny Lov
+                   </h4>
+                   <p className="text-sm text-slate-500 font-medium">Snímanie dát zo sonaru prebieha v reálnom čase.</p>
+                </div>
+             </div>
+
+             {/* NEBEZPEČENSTVO / ALERT */}
+             <div className={cn(
+               "p-10 rounded-[2.5rem] border transition-all",
+               isLight ? "bg-red-50 border-red-200" : "bg-red-500/[0.03] border-red-500/30"
+             )}>
+                <div className="flex justify-between items-start mb-12">
+                   <div className="p-3 bg-red-500/10 rounded-2xl text-red-500">
+                      <AlertCircle size={24} strokeWidth={2.5} />
+                   </div>
+                   <Signal variant="danger" />
+                </div>
+                <div className="space-y-2">
+                   <h4 className={cn("text-2xl font-black italic uppercase tracking-tighter", isLight ? "text-red-600" : "text-red-500")}>
+                      Hájená Ryba
+                   </h4>
+                   <p className="text-sm text-slate-500 font-medium">Lov tohto druhu je v aktuálnom období zakázaný.</p>
+                </div>
+             </div>
+          </div>
+        </Section>
+
+        {/* 04. DOS & DON'TS */}
+        <Section 
+          title="04. Kritické Princípy" 
+          description="Nedodržanie týchto pravidiel degraduje Contestio na bežnú mobilnú aplikáciu."
+          isLight={isLight}
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+             <div className="space-y-6">
+                <div className="flex items-center gap-2 text-emerald-500 font-black uppercase text-[10px] tracking-widest">
+                  <CheckCircle2 size={16} /> Locked Rules
+                </div>
+                <ul className="space-y-4 text-xs font-bold text-slate-500 uppercase tracking-widest leading-loose">
+                  <li>• Používaj Off-white (#F8FAFC) pre všetok text v dark mode.</li>
+                  <li>• Hierarchiu rieš najprv bielym priestorom, až potom farbou.</li>
+                  <li>• Apex Orange patrí dátam a interakcii, nie ikonám.</li>
+                </ul>
+             </div>
+             <div className="space-y-6">
+                <div className="flex items-center gap-2 text-red-500 font-black uppercase text-[10px] tracking-widest">
+                  <EyeOff size={16} /> Forbidden Actions
+                </div>
+                <ul className="space-y-4 text-xs font-bold text-slate-500 uppercase tracking-widest leading-loose">
+                  <li>• Žiadne gradienty na tlačidlách a kartách.</li>
+                  <li>• Žiadne 'pastely' alebo 'candy' farby.</li>
+                  <li>• Nepoužívaj Black váhu (900) pre bežný text.</li>
+                </ul>
+             </div>
+          </div>
+        </Section>
+
+      </main>
+
+      <footer className={cn(
+        "max-w-6xl mx-auto py-20 px-8 border-t flex flex-col md:flex-row justify-between items-center gap-8 opacity-40",
+        isLight ? "border-slate-200" : "border-slate-800"
+      )}>
+        <div className="flex items-center gap-4">
+           <Activity size={20} className="text-[#F97316]" />
+           <span className="text-[10px] font-black uppercase tracking-[0.4em]">Contestio Obsidian v2.0</span>
+        </div>
+        <div className="flex gap-8 text-[10px] font-bold uppercase tracking-widest">
+           <span>Schválený terénny nástroj</span>
+           <span>Sezóna 2026</span>
+        </div>
+      </footer>
+    </div>
+  );
+}
