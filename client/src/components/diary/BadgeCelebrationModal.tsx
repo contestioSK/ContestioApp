@@ -226,7 +226,7 @@ export function BadgeCelebrationModal({ badge, onClose }: BadgeCelebrationModalP
         {/* HEADER */}
         <div className="mb-8 relative flex flex-col items-center">
           <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border mb-4 bg-slate-900/50 backdrop-blur-sm ${theme.border}`}>
-            <Medal className={`w-3 h-3 ${theme.text}`} />
+            <Medal className="w-4 h-4 text-muted-foreground" strokeWidth={1.75} />
             <span className="text-[10px] font-bold uppercase tracking-widest text-slate-300">
               {badgeName}
             </span>
@@ -303,11 +303,11 @@ export function BadgeCelebrationModal({ badge, onClose }: BadgeCelebrationModalP
             data-testid="badge-share-button"
           >
             {isSharing ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Loader2 className="w-4 h-4 animate-spin" strokeWidth={1.75} />
             ) : isTouchDevice ? (
-              <Share2 className="w-4 h-4" />
+              <Share2 className="w-4 h-4" strokeWidth={1.75} />
             ) : (
-              <Download className="w-4 h-4" />
+              <Download className="w-4 h-4" strokeWidth={1.75} />
             )}
             <span>{isSharing ? 'Pripravujem...' : 'Pochváľ sa a zdieľaj'}</span>
           </button>

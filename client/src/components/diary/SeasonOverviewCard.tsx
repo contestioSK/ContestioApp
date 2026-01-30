@@ -24,14 +24,9 @@ export default function SeasonOverviewCard({
   
   return (
     <Card 
-      className="h-full border border-slate-200 dark:border-white/10 bg-white dark:bg-gradient-to-b dark:from-[#1e293b] dark:to-[#0f172a] overflow-hidden hover:border-emerald-500/30 transition-all shadow-lg dark:shadow-2xl dark:shadow-black/40 relative group" 
+      className="h-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden hover:border-slate-300 dark:hover:border-slate-600 transition-all shadow-lg relative group rounded-xl" 
       data-testid="card-season-overview"
     >
-      {/* Decorative background (Chart line) - dark mode only */}
-      <svg className="absolute bottom-0 left-0 w-full h-32 opacity-0 dark:opacity-20 pointer-events-none text-emerald-500" viewBox="0 0 100 40" preserveAspectRatio="none">
-        <path d="M0 40 L0 30 Q10 25 20 32 T40 28 T60 20 T80 25 T100 10 L100 40 Z" fill="currentColor" />
-      </svg>
-      <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/0 dark:bg-emerald-500/10 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
 
       <CardContent className="p-4 md:p-6 flex flex-col justify-between h-full min-h-[200px] md:min-h-[280px]">
         <div>
@@ -42,11 +37,11 @@ export default function SeasonOverviewCard({
               <span className="text-emerald-600 dark:text-emerald-400 text-[10px] font-bold uppercase tracking-wider">Sezóna {year}</span>
             </div>
             {/* Trend icon */}
-            <div className="w-10 h-10 bg-slate-100 dark:bg-[#0B1120] rounded-xl flex items-center justify-center border border-slate-200 dark:border-white/5 shadow-inner">
+            <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center border border-slate-200 dark:border-slate-700">
               {isPositive ? (
-                <TrendingUp className="text-emerald-500 dark:text-emerald-400 group-hover:scale-110 transition-transform" size={20} />
+                <TrendingUp className="text-muted-foreground group-hover:scale-110 transition-transform h-5 w-5" strokeWidth={1.75} />
               ) : (
-                <TrendingDown className="text-rose-500 dark:text-rose-400 group-hover:scale-110 transition-transform" size={20} />
+                <TrendingDown className="text-muted-foreground group-hover:scale-110 transition-transform h-5 w-5" strokeWidth={1.75} />
               )}
             </div>
           </div>
@@ -54,13 +49,13 @@ export default function SeasonOverviewCard({
           <div className="relative">
             {/* Mobile: number + label on same line, Desktop: stacked */}
             <div className="flex items-baseline gap-2 md:block">
-              <span className="text-4xl md:text-6xl font-black text-slate-800 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-white dark:via-emerald-100 dark:to-emerald-400 tracking-tighter drop-shadow-sm" data-testid="text-season-total">
+              <span className="text-4xl md:text-6xl font-mono font-medium text-[#F97316] tracking-tighter" data-testid="text-season-total">
                 {totalCatches}
               </span>
               <span className="text-xs md:text-sm text-slate-500 dark:text-slate-400 font-medium md:block md:mt-1 md:ml-1 flex items-center gap-2">
                 Úlovkov celkom 
                 {showTrend && (
-                  <span className={`text-xs px-1.5 py-0.5 rounded flex items-center gap-0.5 ${
+                  <span className={`text-xs px-1.5 py-0.5 rounded-lg flex items-center gap-0.5 font-mono font-medium ${
                     isPositive 
                       ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10' 
                       : 'text-rose-600 dark:text-rose-400 bg-rose-500/10'
@@ -78,27 +73,27 @@ export default function SeasonOverviewCard({
         <div className="grid grid-cols-2 gap-2 md:gap-3 mt-4 md:mt-6 relative z-10">
           {biggestCatchId ? (
             <Link href={`/diary/catches/${biggestCatchId}`}>
-              <div className="bg-slate-50 dark:bg-[#0B1120]/60 dark:backdrop-blur-sm border border-slate-200 dark:border-white/5 rounded-xl md:rounded-2xl p-2 md:p-3 hover:bg-slate-100 dark:hover:bg-[#0B1120]/80 transition-colors cursor-pointer hover:border-emerald-500/30 dark:hover:border-emerald-500/30">
+              <div className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-2 md:p-3 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer">
                 <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-0.5 md:mb-1 uppercase font-bold tracking-wider">Naj Ryba</p>
                 <div className="flex items-baseline gap-1">
-                  <span className="font-bold text-slate-800 dark:text-white text-base md:text-lg" data-testid="text-season-max-weight">{maxWeight.toFixed(1)}</span>
+                  <span className="font-mono font-medium text-[#F97316] text-base md:text-lg" data-testid="text-season-max-weight">{maxWeight.toFixed(1)}</span>
                   <span className="text-xs text-slate-400 dark:text-slate-500">kg</span>
                 </div>
               </div>
             </Link>
           ) : (
-            <div className="bg-slate-50 dark:bg-[#0B1120]/60 dark:backdrop-blur-sm border border-slate-200 dark:border-white/5 rounded-xl md:rounded-2xl p-2 md:p-3">
+            <div className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-2 md:p-3">
               <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-0.5 md:mb-1 uppercase font-bold tracking-wider">Naj Ryba</p>
               <div className="flex items-baseline gap-1">
-                <span className="font-bold text-slate-800 dark:text-white text-base md:text-lg" data-testid="text-season-max-weight">{maxWeight.toFixed(1)}</span>
+                <span className="font-mono font-medium text-[#F97316] text-base md:text-lg" data-testid="text-season-max-weight">{maxWeight.toFixed(1)}</span>
                 <span className="text-xs text-slate-400 dark:text-slate-500">kg</span>
               </div>
             </div>
           )}
-          <div className="bg-slate-50 dark:bg-[#0B1120]/60 dark:backdrop-blur-sm border border-slate-200 dark:border-white/5 rounded-xl md:rounded-2xl p-2 md:p-3 hover:bg-slate-100 dark:hover:bg-[#0B1120]/80 transition-colors">
+          <div className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-2 md:p-3 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
             <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-0.5 md:mb-1 uppercase font-bold tracking-wider">Dni pri vode</p>
             <div className="flex items-baseline gap-1">
-              <span className="font-bold text-slate-800 dark:text-white text-base md:text-lg" data-testid="text-season-days">{daysAtWater}</span>
+              <span className="font-mono font-medium text-[#F97316] text-base md:text-lg" data-testid="text-season-days">{daysAtWater}</span>
               <span className="text-xs text-slate-400 dark:text-slate-500">dní</span>
             </div>
           </div>

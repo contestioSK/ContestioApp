@@ -209,9 +209,9 @@ export default function LiveLeaderboard({ teams, isLoading, competitionId }: Liv
                 <tbody>
                   {sortedTeams.slice(0, 10).map((team, index) => {
                     const getRankRowStyle = (rank: number) => {
-                      if (rank === 1) return "border-b border-border hover:bg-primary/10 bg-gradient-to-r from-primary/5 to-primary/10 transition-colors cursor-pointer group";
-                      if (rank === 2) return "border-b border-border hover:bg-secondary/10 bg-gradient-to-r from-secondary/5 to-secondary/10 transition-colors cursor-pointer group";
-                      if (rank === 3) return "border-b border-border hover:bg-accent/10 bg-gradient-to-r from-accent/5 to-accent/10 transition-colors cursor-pointer group";
+                      if (rank === 1) return "border-b border-border hover:bg-primary/10 bg-primary/5 transition-colors cursor-pointer group";
+                      if (rank === 2) return "border-b border-border hover:bg-secondary/10 bg-secondary/5 transition-colors cursor-pointer group";
+                      if (rank === 3) return "border-b border-border hover:bg-accent/10 bg-accent/5 transition-colors cursor-pointer group";
                       return "border-b border-border hover:bg-muted/20 transition-colors cursor-pointer group";
                     };
                     
@@ -249,7 +249,7 @@ export default function LiveLeaderboard({ teams, isLoading, competitionId }: Liv
                       {getSectorBadge(team)}
                     </td>
                     <td className="p-4 text-right">
-                      <div className="font-bold text-foreground" data-testid={`text-weight-${team.id}`}>
+                      <div className="font-mono font-medium text-[#F97316]" data-testid={`text-weight-${team.id}`}>
                         {parseFloat(team.totalWeight || '0').toFixed(2)} kg
                       </div>
                       {index === 0 && parseFloat(team.totalWeight || '0') > 0 && (
@@ -257,7 +257,7 @@ export default function LiveLeaderboard({ teams, isLoading, competitionId }: Liv
                       )}
                     </td>
                     <td className="p-4 text-right">
-                      <span className="font-medium text-foreground" data-testid={`text-fish-count-${team.id}`}>
+                      <span className="font-mono font-medium text-[#F97316]" data-testid={`text-fish-count-${team.id}`}>
                         {team.fishCount || 0}
                       </span>
                     </td>

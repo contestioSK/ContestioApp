@@ -209,7 +209,7 @@ export default function DiaryLayout({ children, fullBleed = false }: DiaryLayout
                         className={`
                           w-full flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-all
                           ${isActive 
-                            ? 'bg-primary dark:bg-transparent text-primary-foreground dark:bg-gradient-to-r dark:from-blue-600/30 dark:to-purple-600/30 dark:text-white border border-primary/50 dark:border-blue-500/50 shadow-sm dark:shadow-lg dark:shadow-blue-500/20' 
+                            ? 'bg-primary/10 dark:bg-blue-600/20 text-primary dark:text-blue-400 border border-primary/30 dark:border-blue-500/40' 
                             : 'text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent'
                           }
                         `}
@@ -255,7 +255,7 @@ export default function DiaryLayout({ children, fullBleed = false }: DiaryLayout
                         className={`
                           w-full flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-all
                           ${isActive 
-                            ? 'bg-primary dark:bg-transparent text-primary-foreground dark:bg-gradient-to-r dark:from-blue-600/30 dark:to-purple-600/30 dark:text-white border border-primary/50 dark:border-blue-500/50 shadow-sm dark:shadow-lg dark:shadow-blue-500/20' 
+                            ? 'bg-cyan-500/10 dark:bg-cyan-600/20 text-cyan-600 dark:text-cyan-400 border border-cyan-500/30 dark:border-cyan-500/40' 
                             : 'text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent'
                           }
                         `}
@@ -306,7 +306,7 @@ export default function DiaryLayout({ children, fullBleed = false }: DiaryLayout
                         className={`
                           w-full flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-all relative
                           ${isActive 
-                            ? 'bg-primary dark:bg-transparent text-primary-foreground dark:bg-gradient-to-r dark:from-blue-600/30 dark:to-purple-600/30 dark:text-white border border-primary/50 dark:border-blue-500/50 shadow-sm dark:shadow-lg dark:shadow-blue-500/20' 
+                            ? 'bg-amber-500/10 dark:bg-amber-600/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 dark:border-amber-500/40' 
                             : 'text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent'
                           }
                         `}
@@ -362,7 +362,7 @@ export default function DiaryLayout({ children, fullBleed = false }: DiaryLayout
                         className={`
                           w-full flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-all
                           ${isActive 
-                            ? 'bg-primary dark:bg-transparent text-primary-foreground dark:bg-gradient-to-r dark:from-blue-600/30 dark:to-purple-600/30 dark:text-white border border-primary/50 dark:border-blue-500/50 shadow-sm dark:shadow-lg dark:shadow-blue-500/20' 
+                            ? 'bg-orange-500/10 dark:bg-orange-600/20 text-orange-600 dark:text-orange-400 border border-orange-500/30 dark:border-orange-500/40' 
                             : 'text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent'
                           }
                         `}
@@ -409,7 +409,7 @@ export default function DiaryLayout({ children, fullBleed = false }: DiaryLayout
                           w-full flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-all
                           border-2
                           ${isActive 
-                            ? 'bg-emerald-600 dark:bg-transparent text-white dark:bg-gradient-to-r dark:from-emerald-600/40 dark:to-green-600/40 border-emerald-700 dark:border-emerald-500 shadow-sm dark:shadow-lg dark:shadow-emerald-500/30' 
+                            ? 'bg-emerald-600/20 dark:bg-emerald-600/25 text-emerald-700 dark:text-emerald-400 border-emerald-500 dark:border-emerald-500/50' 
                             : 'text-emerald-800 dark:text-sidebar-foreground bg-emerald-100 dark:bg-emerald-500/5 border-emerald-500 dark:border-emerald-500/30 hover:bg-emerald-200 dark:hover:bg-emerald-500/20 hover:border-emerald-600 dark:hover:border-emerald-500/50'
                           }
                         `}

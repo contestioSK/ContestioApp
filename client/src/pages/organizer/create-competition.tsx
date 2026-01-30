@@ -576,8 +576,8 @@ export default function CreateCompetition() {
                 {currentStep === 1 && (
                   <div className="space-y-6">
                     <div className="flex items-center gap-2 mb-4">
-                      <CreditCard className="w-5 h-5 text-orange-500" />
-                      <h2 className="text-lg font-semibold">Vyberte cenový balík</h2>
+                      <CreditCard className="w-5 h-5 text-muted-foreground" strokeWidth={1.75} />
+                      <h2 className="text-lg font-bold">Vyberte cenový balík</h2>
                     </div>
                     <p className="text-muted-foreground mb-6">
                       Výber balíka určuje limity a funkcie pre vašu súťaž. Platba bude až na konci.
@@ -609,7 +609,7 @@ export default function CreateCompetition() {
                               </div>
                               <div>
                                 <h3 className="font-bold text-foreground">{plan.name}</h3>
-                                <p className="text-2xl font-bold text-orange-500">{plan.price}€</p>
+                                <p className="text-2xl font-mono font-medium text-[#F97316]">{plan.price}€</p>
                               </div>
                             </div>
                             <p className="text-sm text-muted-foreground mb-3">{plan.description}</p>
@@ -647,8 +647,8 @@ export default function CreateCompetition() {
                 {currentStep === 2 && (
                   <div className="space-y-6">
                     <div className="flex items-center gap-2 mb-4">
-                      <Calendar className="w-5 h-5 text-orange-500" />
-                      <h2 className="text-lg font-semibold">Základné informácie</h2>
+                      <Calendar className="w-5 h-5 text-muted-foreground" strokeWidth={1.75} />
+                      <h2 className="text-lg font-bold">Základné informácie</h2>
                     </div>
 
                     <FormField
@@ -757,8 +757,8 @@ export default function CreateCompetition() {
                 {currentStep === 3 && (
                   <div className="space-y-6">
                     <div className="flex items-center gap-2 mb-4">
-                      <Settings className="w-5 h-5 text-orange-500" />
-                      <h2 className="text-lg font-semibold">Pravidlá a bodovanie</h2>
+                      <Settings className="w-5 h-5 text-muted-foreground" strokeWidth={1.75} />
+                      <h2 className="text-lg font-bold">Pravidlá a bodovanie</h2>
                     </div>
 
                     <FormField
@@ -965,8 +965,8 @@ export default function CreateCompetition() {
                 {currentStep === 4 && (
                   <div className="space-y-6">
                     <div className="flex items-center gap-2 mb-4">
-                      <MapPin className="w-5 h-5 text-orange-500" />
-                      <h2 className="text-lg font-semibold">Sektory a miesta</h2>
+                      <MapPin className="w-5 h-5 text-muted-foreground" strokeWidth={1.75} />
+                      <h2 className="text-lg font-bold">Sektory a miesta</h2>
                     </div>
 
                     {selectedPlan === 'basic' ? (
@@ -1079,8 +1079,8 @@ export default function CreateCompetition() {
                 {currentStep === 5 && (
                   <div className="space-y-6">
                     <div className="flex items-center gap-2 mb-4">
-                      <Trophy className="w-5 h-5 text-orange-500" />
-                      <h2 className="text-lg font-semibold">Špeciálne súťaže</h2>
+                      <Trophy className="w-5 h-5 text-muted-foreground" strokeWidth={1.75} />
+                      <h2 className="text-lg font-bold">Špeciálne súťaže</h2>
                     </div>
 
                     <p className="text-muted-foreground">
@@ -1104,7 +1104,7 @@ export default function CreateCompetition() {
                               type="checkbox"
                               checked={isChecked}
                               onChange={() => toggleSideCompetition(comp.id)}
-                              className="h-4 w-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+                              className="h-4 w-4 rounded border-gray-300 text-[#F97316] focus:ring-[#F97316]"
                             />
                             <span className="text-sm font-medium">{comp.label}</span>
                           </label>
@@ -1117,18 +1117,18 @@ export default function CreateCompetition() {
                 {currentStep === 6 && (
                   <div className="space-y-6">
                     <div className="flex items-center gap-2 mb-4">
-                      <Check className="w-5 h-5 text-green-500" />
-                      <h2 className="text-lg font-semibold">Súhrn súťaže</h2>
+                      <Check className="w-5 h-5 text-green-500" strokeWidth={1.75} />
+                      <h2 className="text-lg font-bold">Súhrn súťaže</h2>
                     </div>
 
                     <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4 mb-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <CreditCard className="w-5 h-5 text-orange-600" />
+                          <CreditCard className="w-5 h-5 text-muted-foreground" strokeWidth={1.75} />
                           <div>
                             <p className="text-sm text-orange-700 dark:text-orange-300">Vybraný balík</p>
                             <p className="font-bold text-orange-800 dark:text-orange-200">
-                              {PLANS.find(p => p.id === selectedPlan)?.name} - {PLANS.find(p => p.id === selectedPlan)?.price}€
+                              {PLANS.find(p => p.id === selectedPlan)?.name} - <span className="font-mono font-medium text-[#F97316]">{PLANS.find(p => p.id === selectedPlan)?.price}€</span>
                             </p>
                           </div>
                         </div>

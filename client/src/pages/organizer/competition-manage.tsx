@@ -59,7 +59,6 @@ import {
   ClipboardCheck,
   CreditCard
 } from "lucide-react";
-import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 import { PulsingDot } from "@/components/ui/pulsing-dot";
 import type { Competition, Team, Referee, Announcement } from "@shared/schema";
 import { format } from "date-fns";
@@ -389,9 +388,11 @@ export default function CompetitionManage() {
         <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-sm">
           <CardContent className="text-center py-12">
             <div className="flex justify-center mb-4">
-              <TacticalIcon icon={Trophy} variant="amber" size="lg" showLabel={false} />
+              <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                <Trophy className="w-6 h-6 text-muted-foreground" strokeWidth={1.75} />
+              </div>
             </div>
-            <h3 className="text-lg font-medium text-foreground mb-2">Súťaž nenájdená</h3>
+            <h3 className="text-lg font-bold text-foreground mb-2">Súťaž nenájdená</h3>
             <p className="text-muted-foreground mb-6">
               Táto súťaž neexistuje alebo k nej nemáte prístup.
             </p>
@@ -475,7 +476,7 @@ export default function CompetitionManage() {
                   <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
                     {competition.status === 'live' ? 'Do konca' : 'Do štartu'}
                   </p>
-                  <p className={`text-xl font-mono font-bold ${countdown.urgent ? 'text-orange-600 dark:text-orange-400' : 'text-foreground'}`}>
+                  <p className={`text-xl font-mono font-medium ${countdown.urgent ? 'text-[#F97316]' : 'text-[#F97316]'}`}>
                     {countdown.text}
                   </p>
                 </div>
@@ -486,12 +487,12 @@ export default function CompetitionManage() {
           <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-sm">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-cyan-100 dark:bg-cyan-900/30">
-                  <Fish className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+                <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800">
+                  <Fish className="w-5 h-5 text-muted-foreground" strokeWidth={1.75} />
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Úlovky dnes</p>
-                  <p className="text-xl font-bold text-foreground">0</p>
+                  <p className="text-xl font-mono font-medium text-[#F97316]">0</p>
                 </div>
               </div>
             </CardContent>
@@ -500,12 +501,12 @@ export default function CompetitionManage() {
           <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-sm">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-purple-100 dark:bg-purple-900/30">
-                  <Shield className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800">
+                  <Shield className="w-5 h-5 text-muted-foreground" strokeWidth={1.75} />
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Rozhodcovia</p>
-                  <p className="text-xl font-bold text-foreground">{refereesCount} aktívnych</p>
+                  <p className="text-xl font-mono font-medium text-[#F97316]">{refereesCount} <span className="text-foreground font-sans font-normal text-sm">aktívnych</span></p>
                 </div>
               </div>
             </CardContent>
@@ -514,12 +515,12 @@ export default function CompetitionManage() {
           <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-sm">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-amber-100 dark:bg-amber-900/30">
-                  <ClipboardCheck className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800">
+                  <ClipboardCheck className="w-5 h-5 text-muted-foreground" strokeWidth={1.75} />
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Čakajúce</p>
-                  <p className="text-xl font-bold text-foreground">0 potvrdení</p>
+                  <p className="text-xl font-mono font-medium text-[#F97316]">0 <span className="text-foreground font-sans font-normal text-sm">potvrdení</span></p>
                 </div>
               </div>
             </CardContent>
@@ -537,8 +538,8 @@ export default function CompetitionManage() {
               className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
             />
           ) : (
-            <div className="w-16 h-16 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
-              <TacticalIconInline icon={Trophy} variant="amber" size="lg" />
+            <div className="w-16 h-16 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center flex-shrink-0">
+              <Trophy className="w-6 h-6 text-muted-foreground" strokeWidth={1.75} />
             </div>
           )}
           <div>
@@ -548,11 +549,11 @@ export default function CompetitionManage() {
             </div>
             <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground flex-wrap">
               <div className="flex items-center">
-                <TacticalIconInline icon={MapPin} variant="emerald" size="sm" className="mr-1" />
+                <MapPin className="h-4 w-4 mr-1 text-muted-foreground" strokeWidth={1.75} />
                 {competition.location}
               </div>
               <div className="flex items-center">
-                <TacticalIconInline icon={Calendar} variant="indigo" size="sm" className="mr-1" />
+                <Calendar className="h-4 w-4 mr-1 text-muted-foreground" strokeWidth={1.75} />
                 {new Date(competition.startDate).toLocaleDateString('sk-SK')} - {new Date(competition.endDate).toLocaleDateString('sk-SK')}
               </div>
             </div>
@@ -586,7 +587,7 @@ export default function CompetitionManage() {
 
       {/* Payment Success Banner - shows after successful payment */}
       {(showPaymentSuccess || competition.paymentStatus === 'paid') && competition.status === 'ready' && (
-        <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200 dark:border-green-800 mb-6">
+        <Card className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 mb-6">
           <CardContent className="p-4">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
               <div className="flex items-center gap-3">
@@ -594,7 +595,7 @@ export default function CompetitionManage() {
                   <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-green-800 dark:text-green-200">
+                  <h3 className="font-bold text-green-800 dark:text-green-200">
                     Súťaž je zaplatená a pripravená
                   </h3>
                   <p className="text-sm text-green-700 dark:text-green-300">
@@ -629,8 +630,8 @@ export default function CompetitionManage() {
       {/* Unified Action Panel */}
       <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-sm mb-6">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <TacticalIconInline icon={BarChart3} variant="orange" size="sm" />
+          <CardTitle className="text-base font-bold flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 text-muted-foreground" strokeWidth={1.75} />
             Akcie
           </CardTitle>
         </CardHeader>
@@ -731,31 +732,31 @@ export default function CompetitionManage() {
       {/* Quick Stats Row */}
       <div className="grid gap-4 md:grid-cols-4 mb-6">
         <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
-          <TacticalIconInline icon={Users} variant="orange" size="md" />
+          <Users className="h-5 w-5 text-muted-foreground" strokeWidth={1.75} />
           <div>
             <p className="text-xs text-muted-foreground">Tímy</p>
-            <p className="text-lg font-bold text-foreground">{teamsCount}{competition.maxTeams ? `/${competition.maxTeams}` : ''}</p>
+            <p className="text-lg font-mono font-medium text-[#F97316]">{teamsCount}{competition.maxTeams ? `/${competition.maxTeams}` : ''}</p>
           </div>
         </div>
         <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
-          <TacticalIconInline icon={Fish} variant="cyan" size="md" />
+          <Fish className="h-5 w-5 text-muted-foreground" strokeWidth={1.75} />
           <div>
             <p className="text-xs text-muted-foreground">Celkom úlovkov</p>
-            <p className="text-lg font-bold text-foreground">0</p>
+            <p className="text-lg font-mono font-medium text-[#F97316]">0</p>
           </div>
         </div>
         <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
-          <TacticalIconInline icon={UserPlus} variant="purple" size="md" />
+          <UserPlus className="h-5 w-5 text-muted-foreground" strokeWidth={1.75} />
           <div>
             <p className="text-xs text-muted-foreground">Rozhodcovia</p>
-            <p className="text-lg font-bold text-foreground">{refereesCount}</p>
+            <p className="text-lg font-mono font-medium text-[#F97316]">{refereesCount}</p>
           </div>
         </div>
         <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
-          <TacticalIconInline icon={MessageSquare} variant="blue" size="md" />
+          <MessageSquare className="h-5 w-5 text-muted-foreground" strokeWidth={1.75} />
           <div>
             <p className="text-xs text-muted-foreground">Oznamy</p>
-            <p className="text-lg font-bold text-foreground">{announcements?.length || 0}</p>
+            <p className="text-lg font-mono font-medium text-[#F97316]">{announcements?.length || 0}</p>
           </div>
         </div>
       </div>
@@ -801,8 +802,8 @@ export default function CompetitionManage() {
                       onClick={() => setLocation(`/team/${team.id}`)}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-                          <TacticalIconInline icon={Users} variant="amber" size="md" />
+                        <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                          <Users className="h-5 w-5 text-muted-foreground" strokeWidth={1.75} />
                         </div>
                         <div>
                           <p className="font-medium text-foreground">{team.name}</p>
@@ -817,7 +818,9 @@ export default function CompetitionManage() {
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <TacticalIcon icon={Users} variant="slate" size="lg" showLabel={false} className="mx-auto mb-4" />
+                  <div className="w-12 h-12 mx-auto mb-4 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                    <Users className="w-6 h-6 text-muted-foreground" strokeWidth={1.75} />
+                  </div>
                   <p className="text-muted-foreground">Zatiaľ žiadne registrované tímy</p>
                 </div>
               )}
@@ -833,7 +836,9 @@ export default function CompetitionManage() {
             </CardHeader>
             <CardContent>
               <div className="text-center py-8">
-                <TacticalIcon icon={Fish} variant="cyan" size="lg" showLabel={false} className="mx-auto mb-4" />
+                <div className="w-12 h-12 mx-auto mb-4 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                  <Fish className="w-6 h-6 text-muted-foreground" strokeWidth={1.75} />
+                </div>
                 {competition.status === 'registration' ? (
                   <>
                     <p className="text-muted-foreground font-medium mb-1">Súťaž ešte nezačala</p>
@@ -880,8 +885,8 @@ export default function CompetitionManage() {
                       className="flex items-center justify-between p-3 rounded-lg border border-slate-200 dark:border-slate-700"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                          <TacticalIconInline icon={UserPlus} variant="purple" size="md" />
+                        <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                          <UserPlus className="h-5 w-5 text-muted-foreground" strokeWidth={1.75} />
                         </div>
                         <div>
                           <p className="font-medium text-foreground">{(referee as any).user?.email || 'Rozhodca'}</p>
@@ -904,10 +909,12 @@ export default function CompetitionManage() {
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <TacticalIcon icon={UserPlus} variant="purple" size="lg" showLabel={false} className="mx-auto mb-4" />
+                  <div className="w-12 h-12 mx-auto mb-4 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                    <UserPlus className="w-6 h-6 text-muted-foreground" strokeWidth={1.75} />
+                  </div>
                   <p className="text-muted-foreground mb-4">Zatiaľ žiadni rozhodcovia</p>
                   <Button size="sm" onClick={() => setShowAddRefereeDialog(true)}>
-                    <UserPlus className="w-4 h-4 mr-1" />
+                    <UserPlus className="w-4 h-4 mr-1" strokeWidth={1.75} />
                     Pridať prvého rozhodcu
                   </Button>
                 </div>
@@ -952,10 +959,12 @@ export default function CompetitionManage() {
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <TacticalIcon icon={MessageSquare} variant="blue" size="lg" showLabel={false} className="mx-auto mb-4" />
+                  <div className="w-12 h-12 mx-auto mb-4 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                    <MessageSquare className="w-6 h-6 text-muted-foreground" strokeWidth={1.75} />
+                  </div>
                   <p className="text-muted-foreground mb-4">Zatiaľ žiadne oznamy</p>
                   <Button size="sm" onClick={() => setShowAddAnnouncementDialog(true)}>
-                    <MessageSquare className="w-4 h-4 mr-1" />
+                    <MessageSquare className="w-4 h-4 mr-1" strokeWidth={1.75} />
                     Vytvoriť prvý oznam
                   </Button>
                 </div>
@@ -1049,8 +1058,8 @@ export default function CompetitionManage() {
               onClick={() => setLocation(`/organizer/competition/${competitionId}/checkout?plan=basic`)}
             >
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-semibold">Základný</h3>
-                <span className="text-2xl font-bold text-orange-500">9.99€</span>
+                <h3 className="text-lg font-bold">Základný</h3>
+                <span className="text-2xl font-mono font-medium text-[#F97316]">9.99€</span>
               </div>
               <p className="text-sm text-muted-foreground mb-2">Pre menšie súťaže do 10 tímov</p>
               <ul className="text-sm space-y-1">
@@ -1065,8 +1074,8 @@ export default function CompetitionManage() {
             >
               <Badge className="absolute -top-2 right-4 bg-orange-500">Najobľúbenejší</Badge>
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-semibold">Premium</h3>
-                <span className="text-2xl font-bold text-orange-500">24.99€</span>
+                <h3 className="text-lg font-bold">Premium</h3>
+                <span className="text-2xl font-mono font-medium text-[#F97316]">24.99€</span>
               </div>
               <p className="text-sm text-muted-foreground mb-2">Pre stredné súťaže do 30 tímov</p>
               <ul className="text-sm space-y-1">
@@ -1081,8 +1090,8 @@ export default function CompetitionManage() {
               onClick={() => setLocation(`/organizer/competition/${competitionId}/checkout?plan=enterprise`)}
             >
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-semibold">Enterprise</h3>
-                <span className="text-2xl font-bold text-orange-500">49.99€</span>
+                <h3 className="text-lg font-bold">Enterprise</h3>
+                <span className="text-2xl font-mono font-medium text-[#F97316]">49.99€</span>
               </div>
               <p className="text-sm text-muted-foreground mb-2">Pre veľké súťaže bez limitu</p>
               <ul className="text-sm space-y-1">

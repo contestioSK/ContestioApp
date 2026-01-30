@@ -100,9 +100,9 @@ export default function RoleSwitcher() {
         onClick={() => setIsOpen(!isOpen)}
         data-testid="role-switcher"
       >
-        <ActiveIcon className={cn("h-4 w-4", getModeColor(activeMode))} />
+        <ActiveIcon className={cn("h-4 w-4", getModeColor(activeMode))} strokeWidth={1.75} />
         <span className="hidden lg:inline">{getModeLabel(activeMode)}</span>
-        <ChevronDown className="h-3 w-3 text-muted-foreground" />
+        <ChevronDown className="h-3 w-3 text-muted-foreground" strokeWidth={1.75} />
       </Button>
 
       {isOpen && (
@@ -111,7 +111,7 @@ export default function RoleSwitcher() {
           data-testid="role-switcher-dropdown"
         >
           <div className="p-2">
-            <p className="px-2 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <p className="px-2 py-1.5 text-xs font-bold text-muted-foreground uppercase tracking-wider">
               Prepnúť režim
             </p>
 
@@ -123,12 +123,12 @@ export default function RoleSwitcher() {
                   "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
                   activeMode === 'user' 
                     ? "bg-cyan-500/10 text-cyan-500" 
-                    : "hover:bg-muted"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
               >
-                <BookOpen className="h-4 w-4" />
+                <BookOpen className="h-4 w-4" strokeWidth={1.75} />
                 <span className="flex-1 text-left text-sm">Rybársky denník</span>
-                {activeMode === 'user' && <Check className="h-4 w-4" />}
+                {activeMode === 'user' && <Check className="h-4 w-4" strokeWidth={1.75} />}
               </button>
             )}
 
@@ -136,7 +136,7 @@ export default function RoleSwitcher() {
             {availableRoles.includes('referee') && refereeCompetitions.length > 0 && (
               <>
                 <div className="my-2 h-px bg-border/50" />
-                <p className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
+                <p className="px-2 py-1.5 text-xs font-bold text-muted-foreground">
                   Rozhodca
                 </p>
                 {refereeCompetitions.map((competition) => (
@@ -147,17 +147,17 @@ export default function RoleSwitcher() {
                       "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
                       activeMode === 'referee'
                         ? "bg-orange-500/10 text-orange-500" 
-                        : "hover:bg-muted"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
                     )}
                   >
-                    <Shield className="h-4 w-4" />
+                    <Shield className="h-4 w-4" strokeWidth={1.75} />
                     <div className="flex-1 text-left">
                       <p className="text-sm truncate">{competition.name}</p>
                       <p className="text-xs text-muted-foreground">
                         Sektor: {competition.assignedSector}
                       </p>
                     </div>
-                    {activeMode === 'referee' && <Check className="h-4 w-4" />}
+                    {activeMode === 'referee' && <Check className="h-4 w-4" strokeWidth={1.75} />}
                   </button>
                 ))}
               </>
@@ -173,12 +173,12 @@ export default function RoleSwitcher() {
                     "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
                     activeMode === 'organizer'
                       ? "bg-orange-500/10 text-orange-500" 
-                      : "hover:bg-muted"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   )}
                 >
-                  <Building2 className="h-4 w-4" />
+                  <Building2 className="h-4 w-4" strokeWidth={1.75} />
                   <span className="flex-1 text-left text-sm">Organizátor</span>
-                  {activeMode === 'organizer' && <Check className="h-4 w-4" />}
+                  {activeMode === 'organizer' && <Check className="h-4 w-4" strokeWidth={1.75} />}
                 </button>
               </>
             )}

@@ -77,7 +77,7 @@ export default function OrganizerLayout({ children }: OrganizerLayoutProps) {
                   className={`
                     w-full justify-start px-3 py-3 h-auto text-sm font-medium rounded-lg transition-all
                     ${isActive 
-                      ? 'bg-primary dark:bg-transparent text-primary-foreground dark:bg-gradient-to-r dark:from-amber-600/30 dark:to-orange-600/30 dark:text-white border border-primary/50 dark:border-amber-500/50 shadow-sm dark:shadow-lg dark:shadow-amber-500/20' 
+                      ? 'bg-amber-500/10 dark:bg-amber-600/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 dark:border-amber-500/40' 
                       : 'text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent'
                     }
                   `}

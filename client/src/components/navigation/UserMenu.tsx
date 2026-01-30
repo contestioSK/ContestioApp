@@ -97,10 +97,10 @@ export default function UserMenu() {
         onClick={() => setIsOpen(!isOpen)}
         data-testid="user-menu"
       >
-        <div className="h-7 w-7 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white text-xs font-bold">
+        <div className="h-7 w-7 rounded-full bg-cyan-500 flex items-center justify-center text-white text-xs font-bold">
           {getUserInitials()}
         </div>
-        <ChevronDown className="h-3 w-3 text-muted-foreground hidden md:block" />
+        <ChevronDown className="h-3 w-3 text-muted-foreground hidden md:block" strokeWidth={1.75} />
       </Button>
 
       {isOpen && (
@@ -111,7 +111,7 @@ export default function UserMenu() {
           {/* User Info Header */}
           <div className="p-4 border-b border-border/50">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold">
+              <div className="h-10 w-10 rounded-full bg-cyan-500 flex items-center justify-center text-white font-bold">
                 {getUserInitials()}
               </div>
               <div className="flex-1 min-w-0">
@@ -131,9 +131,9 @@ export default function UserMenu() {
             </div>
             {isPremium && (
               <Badge 
-                className="mt-3 w-full justify-center bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0"
+                className="mt-3 w-full justify-center bg-amber-500 text-white border-0"
               >
-                <Crown className="h-3 w-3 mr-1" />
+                <Crown className="h-3 w-3 mr-1" strokeWidth={1.75} />
                 PREMIUM
               </Badge>
             )}
@@ -148,7 +148,7 @@ export default function UserMenu() {
               }}
               className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted transition-colors"
             >
-              <User className="h-4 w-4 text-muted-foreground" />
+              <User className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} />
               <span className="text-sm">Môj profil</span>
             </button>
 
@@ -159,7 +159,7 @@ export default function UserMenu() {
               }}
               className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted transition-colors"
             >
-              <Settings className="h-4 w-4 text-muted-foreground" />
+              <Settings className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} />
               <span className="text-sm">Nastavenia</span>
             </button>
 
@@ -168,9 +168,9 @@ export default function UserMenu() {
               className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted transition-colors"
             >
               {theme === 'dark' ? (
-                <Sun className="h-4 w-4 text-muted-foreground" />
+                <Sun className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} />
               ) : (
-                <Moon className="h-4 w-4 text-muted-foreground" />
+                <Moon className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} />
               )}
               <span className="text-sm">
                 {theme === 'dark' ? 'Svetlý režim' : 'Tmavý režim'}
@@ -185,7 +185,7 @@ export default function UserMenu() {
                 }}
                 className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted transition-colors"
               >
-                <Crown className="h-4 w-4 text-amber-500" />
+                <Crown className="h-4 w-4 text-amber-500" strokeWidth={1.75} />
                 <span className="text-sm text-amber-500 font-medium">Aktivovať Premium</span>
               </button>
             )}
@@ -196,7 +196,7 @@ export default function UserMenu() {
               onClick={handleLogout}
               className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-destructive/10 text-destructive transition-colors"
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="h-4 w-4" strokeWidth={1.75} />
               <span className="text-sm">Odhlásiť sa</span>
             </button>
           </div>

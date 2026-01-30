@@ -162,7 +162,7 @@ export function BattleVictoryModal({ stats, onClose }: BattleVictoryModalProps) 
         {/* Header Context */}
         <div className="mb-6 relative flex flex-col items-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-purple-500/30 bg-purple-500/10 mb-2">
-            <Trophy className="w-3 h-3 text-amber-400" />
+            <Trophy className="w-4 h-4 text-muted-foreground" strokeWidth={1.75} />
             <span className="text-[10px] font-bold uppercase tracking-widest text-purple-200">
               {stats.battleName}
             </span>
@@ -191,7 +191,7 @@ export function BattleVictoryModal({ stats, onClose }: BattleVictoryModalProps) 
         {/* Shareable Card */}
         <div 
           ref={shareCardRef}
-          className="relative mx-auto mb-6 p-5 rounded-2xl"
+          className="relative mx-auto mb-6 p-5 rounded-xl"
           style={{ backgroundColor: '#0f172a' }}
         >
           {/* Big Fish Showcase */}
@@ -235,20 +235,20 @@ export function BattleVictoryModal({ stats, onClose }: BattleVictoryModalProps) 
           {/* Stats Grid */}
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div className="bg-slate-800/60 border border-white/5 p-3 rounded-xl">
-              <div className="flex items-center justify-center gap-1.5 text-slate-500 text-[10px] font-black uppercase tracking-wider mb-1">
-                <Weight className="w-3 h-3" /> Celkovo
+              <div className="flex items-center justify-center gap-1.5 text-slate-500 text-[10px] font-bold uppercase tracking-wider mb-1">
+                <Weight className="w-4 h-4 text-muted-foreground" strokeWidth={1.75} /> Celkovo
               </div>
-              <div className="text-lg font-black text-white italic">
-                {stats.totalWeight.toFixed(1)} <span className="text-xs not-italic text-slate-600">kg</span>
+              <div className="text-lg font-mono font-medium text-[#F97316]">
+                {stats.totalWeight.toFixed(1)} <span className="text-xs font-sans text-slate-600">kg</span>
               </div>
             </div>
 
             <div className="bg-slate-800/60 border border-white/5 p-3 rounded-xl">
-              <div className="flex items-center justify-center gap-1.5 text-slate-500 text-[10px] font-black uppercase tracking-wider mb-1">
-                <Fish className="w-3 h-3" /> Počet
+              <div className="flex items-center justify-center gap-1.5 text-slate-500 text-[10px] font-bold uppercase tracking-wider mb-1">
+                <Fish className="w-4 h-4 text-muted-foreground" strokeWidth={1.75} /> Počet
               </div>
-              <div className="text-lg font-black text-white italic">
-                {stats.fishCount} <span className="text-xs not-italic text-slate-600">ks</span>
+              <div className="text-lg font-mono font-medium text-[#F97316]">
+                {stats.fishCount} <span className="text-xs font-sans text-slate-600">ks</span>
               </div>
             </div>
           </div>
@@ -269,18 +269,17 @@ export function BattleVictoryModal({ stats, onClose }: BattleVictoryModalProps) 
           <button 
             onClick={handleShare}
             disabled={isSharing}
-            className="relative w-full h-14 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl font-black uppercase tracking-widest text-sm shadow-[0_0_20px_rgba(245,158,11,0.4)] transition-all active:scale-95 flex items-center justify-center gap-2 group overflow-hidden disabled:opacity-50"
+            className="relative w-full h-14 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl font-bold uppercase tracking-widest text-sm shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
             data-testid="button-share-victory"
           >
-            <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 skew-x-12" />
             {isSharing ? (
-              <Loader2 className="w-5 h-5 animate-spin relative z-10" />
+              <Loader2 className="w-5 h-5 animate-spin" strokeWidth={1.75} />
             ) : isTouchDevice ? (
-              <Share2 className="w-5 h-5 relative z-10" />
+              <Share2 className="w-5 h-5" strokeWidth={1.75} />
             ) : (
-              <Download className="w-5 h-5 relative z-10" />
+              <Download className="w-5 h-5" strokeWidth={1.75} />
             )}
-            <span className="relative z-10">
+            <span>
               {isSharing ? 'Pripravujem...' : isTouchDevice ? 'Zdieľať víťazstvo' : 'Stiahnuť obrázok'}
             </span>
           </button>
