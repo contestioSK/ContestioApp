@@ -18,8 +18,8 @@ import { SimplePhotoSlider } from "@/components/diary/SimplePhotoSlider";
 export interface CatchDetailSheetProps {
   catchData: DiaryCatch | null;
   onClose: () => void;
-  onEdit: (catch_: DiaryCatch) => void;
-  onDelete: (catch_: DiaryCatch) => void;
+  onEdit?: (catch_: DiaryCatch) => void;
+  onDelete?: (catch_: DiaryCatch) => void;
   onOpenFullPage: (catchId: string) => void;
   onOpenLightbox: (photos: string[], index: number) => void;
 }
@@ -205,23 +205,27 @@ export function CatchDetailSheet({
                 <Maximize2 className="w-4 h-4 mr-2" />
                 Zobraziť celú stránku
               </Button>
-              <Button 
-                className="w-full bg-blue-600 hover:bg-blue-700 h-12 text-base font-semibold"
-                onClick={() => onEdit(catchData)}
-                data-testid="button-edit-catch"
-              >
-                <Edit2 className="w-4 h-4 mr-2" />
-                Upraviť
-              </Button>
-              <Button 
-                variant="outline"
-                className="w-full border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 h-11"
-                onClick={() => onDelete(catchData)}
-                data-testid="button-delete-catch"
-              >
-                <Trash2 className="w-4 h-4 mr-2" />
-                Zmazať
-              </Button>
+              {onEdit && (
+                <Button 
+                  className="w-full bg-blue-600 hover:bg-blue-700 h-12 text-base font-semibold"
+                  onClick={() => onEdit(catchData)}
+                  data-testid="button-edit-catch"
+                >
+                  <Edit2 className="w-4 h-4 mr-2" />
+                  Upraviť
+                </Button>
+              )}
+              {onDelete && (
+                <Button 
+                  variant="outline"
+                  className="w-full border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 h-11"
+                  onClick={() => onDelete(catchData)}
+                  data-testid="button-delete-catch"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Zmazať
+                </Button>
+              )}
             </div>
           </div>
         </div>
