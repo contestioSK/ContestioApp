@@ -754,7 +754,7 @@ export default function DiaryCatches() {
                   
                   <Card className="bg-card border border-border rounded-xl shadow-sm transition-all duration-200 hover:shadow-md hover:border-border/80" data-testid="card-total-average">
                     <CardContent className="p-4 md:p-6">
-                      <div className="flex items-start gap-3 md:gap-4">
+                      <div className="flex items-center gap-3 md:gap-4">
                         <TacticalIcon icon={Target} variant="purple" size="sm" showLabel={false} />
                         <div className="flex-1">
                           <div className="text-xs md:text-sm text-muted-foreground mb-1">Váhový priemer</div>
