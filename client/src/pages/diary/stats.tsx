@@ -209,7 +209,7 @@ export default function DiaryStats() {
                   alt={heroCatch.species}
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
                 />
-                <div className="absolute inset-0 bg-background/80"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
                 
                 <div className="absolute top-6 right-6">
                   <div className="bg-amber-500/90 backdrop-blur-sm text-black text-xs font-black px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg shadow-amber-500/20">
@@ -218,12 +218,12 @@ export default function DiaryStats() {
                 </div>
 
                 <div className="absolute bottom-0 left-0 w-full p-6 md:p-10">
-                  <div className="flex flex-col gap-1 max-w-lg">
-                    <p className="text-muted-foreground text-sm font-medium mb-2 flex items-center gap-2">
+                  <div className="flex flex-col gap-1 max-w-lg" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.5)' }}>
+                    <p className="text-white/80 text-sm font-medium mb-2 flex items-center gap-2">
                       <Calendar size={14} /> {heroCatch.date} · {heroCatch.location}
                     </p>
-                    <h2 className="text-6xl md:text-7xl font-black text-foreground tracking-tighter leading-none mb-2">
-                      {heroCatch.weight.toFixed(1)}<span className="text-3xl text-muted-foreground font-bold ml-1">kg</span>
+                    <h2 className="text-6xl md:text-7xl font-black text-white tracking-tighter leading-none mb-2">
+                      {heroCatch.weight.toFixed(1)}<span className="text-3xl text-white/70 font-bold ml-1">kg</span>
                     </h2>
                     <p className="text-amber-500 font-bold text-xl uppercase tracking-wide">{heroCatch.species}</p>
                   </div>
