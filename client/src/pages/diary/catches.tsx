@@ -369,9 +369,9 @@ export default function DiaryCatches() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('diaryViewMode');
-      return saved === 'grid' ? 'grid' : 'list';
+      return saved === 'list' ? 'list' : 'grid';
     }
-    return 'list';
+    return 'grid';
   });
 
   // Persist viewMode to localStorage
