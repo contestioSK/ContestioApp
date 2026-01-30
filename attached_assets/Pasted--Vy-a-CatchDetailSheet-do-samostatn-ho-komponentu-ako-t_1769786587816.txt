@@ -1,0 +1,180 @@
+„Vyňať CatchDetailSheet do samostatného komponentu – ako to myslíš?“
+
+🧠 ČO JE PROBLÉM TERAZ (fakticky, nie názorovo)
+
+Momentálne máš v DiaryIndex.tsx:
+
+list úlovkov
+
+filtre
+
+štatistiky
+
+premium logiku
+
+kompletný JSX a logiku detailu úlovku (sheet)
+
+lightbox
+
+delete dialog
+
+routing do full page
+
+👉 To znamená:
+
+jedna zmena v detaile úlovku = edit 1500+ riadkov
+
+znovupoužitie detailu (napr. full page) = copy-paste
+
+testovanie = bolesť
+
+To nemá nič spoločné s dizajnom, toto je čisto udržateľnosť kódu.
+
+✅ ČO PRESNE ZNAMENÁ „VYŇAŤ CatchDetailSheet“
+
+Nie prerábať.
+Nie zjednodušovať.
+Nie meniť UX.
+
+Len presunúť zodpovednosť.
+
+1️⃣ Vytvoríš nový komponent
+
+Súbor:
+
+/components/diary/CatchDetailSheet.tsx
+
+2️⃣ Do tohto komponentu presunieš 100 % tohto bloku
+
+Konkrétne CELÚ túto časť:
+
+<Sheet open={!!selectedCatch} onOpenChange={() => setSelectedCatch(null)}>
+  <SheetContent ...>
+    {selectedCatch && (
+      <div className="flex flex-col min-h-full">
+        ...
+      </div>
+    )}
+  </SheetContent>
+</Sheet>
+
+
+➡️ nič nemažeš
+➡️ nič neosekávaš
+➡️ len presúvaš
+
+3️⃣ Definuješ jasné props (kľúčový bod)
+
+V novom komponente:
+
+interface CatchDetailSheetProps {
+  catchData: DiaryCatch | null;
+  onClose: () => void;
+  onEdit: (catch_: DiaryCatch) => void;
+  onDelete: (catchId: string) => void;
+  onOpenFullPage: (catchId: string) => void;
+  onOpenLightbox: (photos: string[], index: number) => void;
+}
+
+
+A komponent:
+
+export function CatchDetailSheet({
+  catchData,
+  onClose,
+  onEdit,
+  onDelete,
+  onOpenFullPage,
+  onOpenLightbox,
+}: CatchDetailSheetProps) {
+  if (!catchData) return null;
+
+  return (
+    <Sheet open onOpenChange={onClose}>
+      <SheetContent ...>
+        {/* presne ten istý JSX, čo máš teraz */}
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+4️⃣ V DiaryIndex ostane LEN volanie
+
+Namiesto obrovského JSX:
+
+<CatchDetailSheet
+  catchData={selectedCatch}
+  onClose={() => setSelectedCatch(null)}
+  onEdit={(c) => openEditDialog(c)}
+  onDelete={(id) => openDeleteDialog(id)}
+  onOpenFullPage={(id) => {
+    setSelectedCatch(null);
+    setLocation(`/diary/catches/${id}`);
+  }}
+  onOpenLightbox={(photos, index) =>
+    setLightboxState({ photos, currentIndex: index })
+  }
+/>
+
+
+👉 DiaryIndex:
+
+nerieši layout detailu
+
+len koordinuje stav
+
+🎯 PREČO JE TOTO KRITICKY DÔLEŽITÉ (AJ KEĎ JE VŠETKO „HOTOVÉ“)
+1️⃣ Full page detail
+
+Keď budeš robiť /diary/catches/:id:
+
+80 % JSX znovu použiješ
+
+len iný wrapper (nie Sheet)
+
+Bez tohto kroku:
+
+budeš kopírovať
+
+a tie kópie sa časom rozídu
+
+2️⃣ Budúce zmeny
+
+Keď o 2 týždne povieš:
+
+„Pridajme ešte XY do detailu“
+
+👉 zmena na jednom mieste, nie v monštre
+
+3️⃣ Mentálny poriadok
+
+Teraz:
+
+detail úlovku je „schovaný“ v page
+
+Po refactore:
+
+detail úlovku = prvotriedny komponent
+
+jasná hranica zodpovednosti
+
+❗ DÔLEŽITÉ: ČO TÝM NEROBÍŠ
+
+❌ nemeníš dizajn
+❌ nemeníš UX
+❌ neosekávaš sheet
+❌ nepridávaš novú logiku
+
+👉 len upratuješ stôl, aby si na ňom mohol ďalej pracovať
+
+🟢 VERDIKT
+
+Tvoje rozhodnutie:
+
+sheet necháme bohatý ✔️
+
+dizajnový systém neskôr ✔️
+
+Moje odporúčanie:
+
+vyniať CatchDetailSheet je MUST, nie „pekne by bolo“
