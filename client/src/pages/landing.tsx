@@ -89,15 +89,15 @@ export default function Landing() {
       >
         <GradientOrb2 />
       </div>
-      {/* Stars background: Figma 1834x1200, scaled 1.4x = 2568x1680, centered */}
+      {/* Stars background: 95% width, aspect ratio preserved */}
       <div 
         className="absolute mix-blend-screen pointer-events-none"
         style={{
-          top: 'calc(-17px * min(1, 100vw / 1440px))',
+          top: '-17px',
           left: '50%',
           transform: 'translateX(-50%)',
-          width: 'calc(2568px * min(1, 100vw / 1440px))',
-          height: 'calc(1680px * min(1, 100vw / 1440px))'
+          width: '95%',
+          aspectRatio: '1834 / 1200'
         }}
       >
         <img src={starsBackground} alt="" className="w-full h-full object-cover" />
