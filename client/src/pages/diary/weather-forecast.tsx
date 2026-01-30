@@ -539,12 +539,12 @@ export default function WeatherForecast() {
             >
               {loading ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   Načítavam...
                 </>
               ) : (
                 <>
-                  <MapPin className="w-4 h-4 mr-2" />
+                  <MapPin className="h-4 w-4 mr-2 text-muted-foreground" strokeWidth={1.75} />
                   Moja poloha
                 </>
               )}
@@ -633,8 +633,8 @@ export default function WeatherForecast() {
                       <p className="text-sm text-muted-foreground">{getDate(day.date)}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-bold">{Math.round(day.day.maxtemp_c)}°</p>
-                      <p className="text-sm text-muted-foreground">{Math.round(day.day.mintemp_c)}°</p>
+                      <p className="text-2xl font-mono font-medium text-[#F97316]">{Math.round(day.day.maxtemp_c)}°</p>
+                      <p className="text-sm font-mono text-muted-foreground">{Math.round(day.day.mintemp_c)}°</p>
                     </div>
                   </div>
                 </button>

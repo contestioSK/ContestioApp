@@ -150,7 +150,7 @@ export default function TripGallery() {
                     <span className="sr-only md:hidden">Späť</span>
                   </Button>
                   <div className="flex items-center gap-2">
-                    <Grid3x3 className="w-5 h-5 md:w-6 md:h-6 text-primary" />
+                    <Grid3x3 className="h-5 w-5 md:h-6 md:w-6 text-muted-foreground" strokeWidth={1.75} />
                     <div>
                       <h1 className="text-lg md:text-2xl font-bold text-foreground">
                         Galéria fotiek
@@ -319,7 +319,7 @@ export default function TripGallery() {
                           {getFishTypeLabel(photo.fishType)}
                         </p>
                         <p className="text-[10px] md:text-xs opacity-90 drop-shadow-lg">
-                          {photo.weight} kg • {photo.angler.name}
+                          <span className="font-mono font-medium">{photo.weight}</span> kg • {photo.angler.name}
                         </p>
                       </div>
                     </div>
@@ -427,7 +427,7 @@ export default function TripGallery() {
                     {getFishTypeLabel(filteredPhotos[selectedPhotoIndex].fishType)}
                   </h3>
                   <div className="flex flex-wrap items-center gap-2 md:gap-4 text-xs md:text-base opacity-90">
-                    <span className="font-semibold">{filteredPhotos[selectedPhotoIndex].weight} kg</span>
+                    <span className="font-mono font-medium">{filteredPhotos[selectedPhotoIndex].weight} kg</span>
                     <span className="hidden md:inline">•</span>
                     <span>{filteredPhotos[selectedPhotoIndex].angler.name}</span>
                     <span className="hidden md:inline">•</span>

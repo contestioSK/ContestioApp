@@ -246,7 +246,7 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
     <>
       <div className="text-center mb-6">
         <h3 className="text-2xl font-bold text-foreground mb-2">Nový úlovok</h3>
-        <p className="text-base text-foreground/80 font-medium">Zadajte detaily úlovku a nahrajte fotku</p>
+        <p className="text-sm text-muted-foreground font-medium">Zadajte detaily úlovku a nahrajte fotku</p>
       </div>
       
       <Form {...form}>
@@ -266,12 +266,12 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
                 
               return (
                 <FormItem>
-                  <FormLabel className="text-lg font-semibold text-foreground">Vybrať tím</FormLabel>
+                  <FormLabel className="text-base font-bold text-foreground">Vybrať tím</FormLabel>
                   
                   {/* Quick Select Buttons */}
                   {quickSelectTeams.length > 0 && (
                     <div className="space-y-2">
-                      <div className="text-sm text-foreground font-semibold">Rýchly výber:</div>
+                      <div className="text-sm text-muted-foreground font-bold">Rýchly výber:</div>
                       <div className="grid grid-cols-1 gap-2">
                         {quickSelectTeams.map((team) => (
                           <Button
@@ -297,7 +297,7 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
                           </Button>
                         ))}
                       </div>
-                      <div className="text-sm text-foreground/70 text-center font-medium">alebo vyberte zo všetkých:</div>
+                      <div className="text-sm text-muted-foreground text-center font-medium">alebo vyberte zo všetkých:</div>
                     </div>
                   )}
                   
@@ -366,8 +366,8 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
               
               return (
               <FormItem>
-                <FormLabel className="text-lg font-semibold text-foreground">
-                  Váha (gramy) - min. {minWeightGrams} g ({minWeightKg} kg)
+                <FormLabel className="text-base font-bold text-foreground">
+                  Váha (gramy) - min. <span className="font-mono font-medium text-[#F97316]">{minWeightGrams}</span> g (<span className="font-mono font-medium text-[#F97316]">{minWeightKg}</span> kg)
                 </FormLabel>
                 <FormControl>
                   <div className="flex items-center gap-2">
@@ -423,11 +423,11 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
                 </FormControl>
                 {/* Show kg equivalent when weight is entered */}
                 {currentWeight > 0 && (
-                  <div className={`text-center text-lg font-semibold ${isValidWeight ? 'text-green-600' : 'text-orange-600'}`}>
+                  <div className={`text-center text-lg font-mono font-medium ${isValidWeight ? 'text-green-600' : 'text-orange-600'}`}>
                     = {formatWeightDisplay(currentWeight)}
                   </div>
                 )}
-                <FormDescription className={`text-sm font-medium ${isUnderWeight ? 'text-orange-600' : 'text-foreground/70'}`}>
+                <FormDescription className={`text-sm font-medium ${isUnderWeight ? 'text-orange-600' : 'text-muted-foreground'}`}>
                   {isUnderWeight 
                     ? `⚠️ Váha je pod limitom ${minWeightGrams} g - nebude započítaná`
                     : `Úlovky pod ${minWeightGrams} g (${minWeightKg} kg) nebudú započítané`
@@ -445,7 +445,7 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
             name="fishType"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-lg font-semibold text-foreground">Typ ryby</FormLabel>
+                <FormLabel className="text-base font-bold text-foreground">Typ ryby</FormLabel>
                 <FormControl>
                   <div className="grid grid-cols-2 gap-3">
                     <Button
@@ -481,7 +481,7 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
           
           {/* Photo Upload with Thumbnail Preview */}
           <div>
-            <Label className="block text-lg font-semibold text-foreground mb-3">Fotka ryby</Label>
+            <Label className="block text-base font-bold text-foreground mb-3">Fotka ryby</Label>
             <input
               id="photo-input"
               type="file"
@@ -517,7 +517,7 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
                     </Button>
                   </div>
                   <div className="absolute bottom-0 left-0 right-0 bg-green-600/90 text-white py-2 px-3 flex items-center justify-center gap-2">
-                    <Check className="h-5 w-5" />
+                    <Check className="h-5 w-5" strokeWidth={1.75} />
                     <span className="font-semibold">Fotka pripravená</span>
                   </div>
                 </div>
@@ -529,7 +529,7 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
                   onClick={() => document.getElementById('photo-input')?.click()}
                   data-testid="button-retake-photo"
                 >
-                  <Camera className="mr-2 h-5 w-5" />
+                  <Camera className="mr-2 h-5 w-5" strokeWidth={1.75} />
                   Odfotiť znovu
                 </Button>
               </div>
@@ -540,9 +540,9 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
                 data-testid="photo-upload-area"
               >
                 <div className="space-y-3">
-                  <Camera className="mx-auto h-10 w-10 text-muted-foreground" />
+                  <Camera className="mx-auto h-10 w-10 text-muted-foreground" strokeWidth={1.75} />
                   <div className="text-lg font-bold text-foreground">Odfotiť rybu</div>
-                  <div className="text-sm text-foreground/70 font-medium">Ťuknite pre otvorenie fotoaparátu</div>
+                  <div className="text-sm text-muted-foreground font-medium">Ťuknite pre otvorenie fotoaparátu</div>
                 </div>
               </div>
             )}
@@ -902,24 +902,24 @@ export default function RefereeInterface() {
             <div className="flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2">
-                  <CardTitle className="font-semibold truncate max-w-[200px]">
+                  <CardTitle className="font-bold truncate max-w-[200px]">
                     {selectedCompetitionDetails?.name || "Rozhranie rozhodcu"}
                   </CardTitle>
                   {/* Offline/Online Status */}
                   <div className="flex items-center gap-1">
                     {isOffline ? (
                       <div className="flex items-center gap-1 bg-amber-700/30 px-2 py-1 rounded text-sm font-semibold">
-                        <WifiOff className="w-4 h-4" />
+                        <WifiOff className="w-4 h-4" strokeWidth={1.75} />
                         OFFLINE
                       </div>
                     ) : (
-                      <Wifi className="w-4 h-4 text-green-300" />
+                      <Wifi className="w-4 h-4 text-green-300" strokeWidth={1.75} />
                     )}
                     {pendingCatches.length > 0 && (
                       <div className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold ${
                         isOffline ? 'bg-amber-700/30' : 'bg-yellow-500/20'
                       }`}>
-                        <Upload className="w-3 h-3" />
+                        <Upload className="w-3 h-3" strokeWidth={1.75} />
                         {pendingCatches.length}
                       </div>
                     )}
@@ -954,7 +954,7 @@ export default function RefereeInterface() {
                 }}
                 data-testid="button-logout"
               >
-                <LogOut className="w-4 h-4" />
+                <LogOut className="w-4 h-4" strokeWidth={1.75} />
               </Button>
             </div>
           </CardHeader>
@@ -987,15 +987,15 @@ export default function RefereeInterface() {
           {/* Pending Catches (Offline) */}
           {pendingCatches.length > 0 && (
             <div className="border-t border-border p-4 bg-yellow-50 dark:bg-yellow-900/10">
-              <h4 className="font-medium text-foreground mb-3 flex items-center gap-2">
-                <Upload className="w-4 h-4" />
-                Čakajúce na odoslanie ({pendingCatches.length})
+              <h4 className="font-bold text-foreground mb-3 flex items-center gap-2">
+                <Upload className="w-4 h-4 text-muted-foreground" strokeWidth={1.75} />
+                Čakajúce na odoslanie (<span className="font-mono font-medium text-[#F97316]">{pendingCatches.length}</span>)
               </h4>
               <div className="space-y-2 max-h-32 overflow-y-auto">
                 {pendingCatches.map((catch_) => (
                   <div key={catch_.id} className="flex items-center justify-between text-sm" data-testid={`pending-catch-${catch_.id}`}>
                     <span className="text-foreground">
-                      {catch_.weight >= 1000 ? `${(catch_.weight / 1000).toFixed(2)} kg` : `${catch_.weight} g`} - {catch_.fishType === 'scaly' ? 'Šupináč' : 'Lysec'}
+                      <span className="font-mono font-medium text-[#F97316]">{catch_.weight >= 1000 ? `${(catch_.weight / 1000).toFixed(2)} kg` : `${catch_.weight} g`}</span> - {catch_.fishType === 'scaly' ? 'Šupináč' : 'Lysec'}
                       {catch_.hasPhoto && catch_.photoMissing && (
                         <span className="text-red-500 ml-2 text-xs">(foto chýba)</span>
                       )}
@@ -1003,12 +1003,12 @@ export default function RefereeInterface() {
                     <div className="flex items-center gap-2">
                       {catch_.hasPhoto && catch_.photoMissing && (
                         <Badge className="bg-red-500 text-red-50">
-                          <Camera className="w-3 h-3 mr-1" />
+                          <Camera className="w-3 h-3 mr-1" strokeWidth={1.75} />
                           Foto?
                         </Badge>
                       )}
                       <Badge className="bg-yellow-500 text-yellow-50">
-                        <Clock className="w-3 h-3 mr-1" />
+                        <Clock className="w-3 h-3 mr-1" strokeWidth={1.75} />
                         Offline
                       </Badge>
                     </div>
@@ -1031,15 +1031,15 @@ export default function RefereeInterface() {
           {/* Recent Submissions */}
           {selectedCompetition && recentCatches && (
             <div className="border-t border-border p-4">
-              <h4 className="font-medium text-foreground mb-3">Posledné odosílania</h4>
+              <h4 className="font-bold text-foreground mb-3">Posledné odosílania</h4>
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {recentCatches.slice(0, 5).map((catch_: Catch & { team: Team }) => (
                   <div key={catch_.id} className="flex items-center justify-between text-sm" data-testid={`catch-${catch_.id}`}>
                     <span className="text-muted-foreground">
-                      {catch_.team?.name} - {catch_.weight}kg
+                      {catch_.team?.name} - <span className="font-mono font-medium text-[#F97316]">{catch_.weight}kg</span>
                     </span>
                     <Badge className="bg-secondary text-secondary-foreground">
-                      <Check className="w-3 h-3 mr-1" />
+                      <Check className="w-3 h-3 mr-1" strokeWidth={1.75} />
                       Potvrdený
                     </Badge>
                   </div>
@@ -1068,7 +1068,7 @@ export default function RefereeInterface() {
               >
                 {submitHandle.isPending ? (
                   <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" strokeWidth={1.75} />
                     Odosíla sa...
                   </>
                 ) : (
