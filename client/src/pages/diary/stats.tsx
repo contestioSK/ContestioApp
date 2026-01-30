@@ -112,6 +112,7 @@ export default function DiaryStats() {
       : biggest.photos![0].url;
     
     return {
+      id: biggest.id,
       photo: photoUrl,
       weight: parseFloat(biggest.weight),
       species: getFishTypeLabel(biggest.fishType),
@@ -199,7 +200,10 @@ export default function DiaryStats() {
 
             {/* Hero Catch - len ak má fotku */}
             {heroCatch && (
-              <section className="relative aspect-[4/5] md:aspect-[21/9] rounded-xl overflow-hidden border border-border/50 shadow-2xl group">
+              <section 
+                className="relative aspect-[4/5] md:aspect-[21/9] rounded-xl overflow-hidden border border-border/50 shadow-2xl group cursor-pointer hover:border-amber-500/50 transition-all"
+                onClick={() => setLocation(`/diary/catches/${heroCatch.id}`)}
+              >
                 <img 
                   src={heroCatch.photo} 
                   alt={heroCatch.species}
