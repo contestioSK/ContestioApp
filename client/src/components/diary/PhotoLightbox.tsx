@@ -50,10 +50,10 @@ export function PhotoLightbox({ photos, currentIndex, onClose, onNavigate }: Pho
     >
       <button
         onClick={(e) => { e.stopPropagation(); onClose(); }}
-        className="absolute top-4 right-4 z-10 bg-white/10 hover:bg-white/20 text-white rounded-full p-2 transition-colors"
+        className="absolute top-4 right-4 z-20 bg-white/10 hover:bg-white/20 text-white rounded-full p-2 transition-colors pointer-events-auto"
         aria-label="Zavrieť"
       >
-        <X className="w-6 h-6" />
+        <X className="w-6 h-6 pointer-events-none" />
       </button>
 
       {photos.length > 1 && (
@@ -66,11 +66,16 @@ export function PhotoLightbox({ photos, currentIndex, onClose, onNavigate }: Pho
         </button>
       )}
 
-      <img 
-        src={photos[currentIndex]} 
-        alt={`Fotografia úlovku ${currentIndex + 1}`}
-        className="max-w-[90vw] max-h-[85vh] object-contain pointer-events-none"
-      />
+      <div 
+        className="pointer-events-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <img 
+          src={photos[currentIndex]} 
+          alt={`Fotografia úlovku ${currentIndex + 1}`}
+          className="max-w-[90vw] max-h-[85vh] object-contain"
+        />
+      </div>
 
       {photos.length > 1 && (
         <button
