@@ -94,8 +94,8 @@ export function TripCard({ trip, catchCount = 0, biggestCatch, onClick, isLocked
       {isLocked && (
         <div className="absolute inset-0 flex items-center justify-center z-10">
           <div className="bg-slate-900/80 backdrop-blur-sm rounded-xl p-4 flex flex-col items-center gap-2">
-            <Lock className="w-8 h-8 text-yellow-400" />
-            <span className="text-sm font-medium text-yellow-400">Premium</span>
+            <Lock className="h-6 w-6 text-muted-foreground" strokeWidth={1.75} />
+            <span className="text-sm font-medium text-muted-foreground">Premium</span>
           </div>
         </div>
       )}
@@ -108,8 +108,8 @@ export function TripCard({ trip, catchCount = 0, biggestCatch, onClick, isLocked
           {statusConfig[status].label}
         </div>
         {isLocked && (
-          <div className="px-2 py-1 rounded-full text-xs font-bold bg-yellow-500/90 text-slate-900 flex items-center gap-1">
-            <Crown className="w-3 h-3" />
+          <div className="px-2 py-1 rounded-lg text-xs font-bold bg-slate-500/90 text-white flex items-center gap-1">
+            <Crown className="h-4 w-4" strokeWidth={1.75} />
           </div>
         )}
       </div>
@@ -129,8 +129,8 @@ export function TripCard({ trip, catchCount = 0, biggestCatch, onClick, isLocked
 
         <div className="flex items-center gap-6 text-white">
           <div className="flex items-center gap-2">
-            <Fish className="w-5 h-5 text-blue-400" />
-            <span className="text-lg font-semibold" data-testid={`trip-catch-count-${trip.id}`}>
+            <Fish className="h-5 w-5 text-muted-foreground" strokeWidth={1.75} />
+            <span className="font-mono font-medium text-[#F97316] text-lg" data-testid={`trip-catch-count-${trip.id}`}>
               {catchCount}
             </span>
             <span className="text-sm text-slate-300">úlovkov</span>
@@ -138,8 +138,8 @@ export function TripCard({ trip, catchCount = 0, biggestCatch, onClick, isLocked
           
           {biggestCatch && (
             <div className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-yellow-400" />
-              <span className="text-lg font-semibold" data-testid={`trip-biggest-${trip.id}`}>
+              <TrendingUp className="h-5 w-5 text-muted-foreground" strokeWidth={1.75} />
+              <span className="font-mono font-medium text-[#F97316] text-lg" data-testid={`trip-biggest-${trip.id}`}>
                 {biggestCatch.weight} kg
               </span>
               <span className="text-sm text-slate-300">{biggestCatch.fishType}</span>

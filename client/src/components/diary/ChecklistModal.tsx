@@ -51,16 +51,17 @@ type ChecklistTemplate = {
 };
 
 const getCategoryIcon = (iconName: string) => {
-  const iconClass = "w-4 h-4";
+  const iconClass = "h-4 w-4 text-muted-foreground";
+  const strokeWidth = 1.75;
   switch (iconName) {
-    case "documents": return <FileText className={iconClass} />;
-    case "camping": return <Tent className={iconClass} />;
-    case "fishing": return <Fish className={iconClass} />;
-    case "food": return <UtensilsCrossed className={iconClass} />;
-    case "clothes": return <Shirt className={iconClass} />;
-    case "hygiene": return <Droplets className={iconClass} />;
-    case "gear": return <Briefcase className={iconClass} />;
-    default: return <FileText className={iconClass} />;
+    case "documents": return <FileText className={iconClass} strokeWidth={strokeWidth} />;
+    case "camping": return <Tent className={iconClass} strokeWidth={strokeWidth} />;
+    case "fishing": return <Fish className={iconClass} strokeWidth={strokeWidth} />;
+    case "food": return <UtensilsCrossed className={iconClass} strokeWidth={strokeWidth} />;
+    case "clothes": return <Shirt className={iconClass} strokeWidth={strokeWidth} />;
+    case "hygiene": return <Droplets className={iconClass} strokeWidth={strokeWidth} />;
+    case "gear": return <Briefcase className={iconClass} strokeWidth={strokeWidth} />;
+    default: return <FileText className={iconClass} strokeWidth={strokeWidth} />;
   }
 };
 
@@ -468,8 +469,8 @@ export function ChecklistModal({ isOpen, onClose }: ChecklistModalProps) {
           {packedItems} / {totalItems} položiek
         </p>
         {progressPercent === 100 && (
-          <Badge className="bg-green-500 text-white">
-            <Check className="w-3 h-3 mr-1" />
+          <Badge className="bg-green-500 text-white rounded-lg">
+            <Check className="h-4 w-4 mr-1" strokeWidth={1.75} />
             Všetko zbalené!
           </Badge>
         )}
@@ -504,7 +505,7 @@ export function ChecklistModal({ isOpen, onClose }: ChecklistModalProps) {
               onClick={() => setIsSaveTemplateOpen(true)}
               data-testid="button-save-template"
             >
-              <Save className="w-4 h-4 mr-1" />
+              <Save className="h-4 w-4 mr-1 text-muted-foreground" strokeWidth={1.75} />
               <span className="hidden sm:inline">Uložiť</span>
             </Button>
             
@@ -514,7 +515,7 @@ export function ChecklistModal({ isOpen, onClose }: ChecklistModalProps) {
               onClick={() => setIsResetConfirmOpen(true)}
               data-testid="button-reset"
             >
-              <RotateCcw className="w-4 h-4 mr-1" />
+              <RotateCcw className="h-4 w-4 mr-1 text-muted-foreground" strokeWidth={1.75} />
               <span className="hidden sm:inline">Reset</span>
             </Button>
           </div>
@@ -576,7 +577,7 @@ export function ChecklistModal({ isOpen, onClose }: ChecklistModalProps) {
                             ? "bg-green-500 border-green-500 text-white" 
                             : "border-muted-foreground/30"
                         )}>
-                          {item.packed && <Check className="w-4 h-4" />}
+                          {item.packed && <Check className="h-4 w-4" strokeWidth={1.75} />}
                         </div>
                         <span className={cn(
                           "flex-1 text-foreground",
@@ -595,7 +596,7 @@ export function ChecklistModal({ isOpen, onClose }: ChecklistModalProps) {
                             }}
                             data-testid={`delete-${item.id}`}
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="h-4 w-4" strokeWidth={1.75} />
                           </Button>
                         )}
                       </div>
@@ -610,7 +611,7 @@ export function ChecklistModal({ isOpen, onClose }: ChecklistModalProps) {
 
       {/* FAB for adding items */}
       <Button
-        className="fixed bottom-24 right-6 h-14 w-14 rounded-full shadow-lg z-50"
+        className="fixed bottom-24 right-6 h-14 w-14 rounded-xl shadow-lg z-50"
         size="icon"
         onClick={() => {
           setAddItemCategory(categories[0]?.id || "");
@@ -618,7 +619,7 @@ export function ChecklistModal({ isOpen, onClose }: ChecklistModalProps) {
         }}
         data-testid="fab-add-item"
       >
-        <Plus className="w-6 h-6" />
+        <Plus className="h-6 w-6" strokeWidth={1.75} />
       </Button>
 
       {/* Add Item Dialog */}

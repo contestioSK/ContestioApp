@@ -180,7 +180,7 @@ export default function CompetitionCard({ competition }: CompetitionCardProps) {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Končí:</span>
-                <span className="font-mono font-medium text-foreground">
+                <span className="font-mono font-medium text-[#F97316]">
                   {formatDate(competition.endDate)}
                 </span>
               </div>
@@ -192,7 +192,7 @@ export default function CompetitionCard({ competition }: CompetitionCardProps) {
               {competition.firstPlacePrize && (
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Výhra:</span>
-                  <span className="font-medium text-foreground">
+                  <span className="font-mono font-medium text-[#F97316]">
                     €{parseFloat(competition.firstPlacePrize).toLocaleString()}
                   </span>
                 </div>
@@ -200,7 +200,7 @@ export default function CompetitionCard({ competition }: CompetitionCardProps) {
               {competition.registrationFee && (
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Štartovné na tím:</span>
-                  <span className="font-medium text-foreground">
+                  <span className="font-mono font-medium text-[#F97316]">
                     €{parseFloat(competition.registrationFee)}/tím
                   </span>
                 </div>
@@ -218,7 +218,7 @@ export default function CompetitionCard({ competition }: CompetitionCardProps) {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Trvanie:</span>
-                <span className="font-mono font-medium text-foreground">
+                <span className="font-mono font-medium text-[#F97316]">
                   {Math.ceil((new Date(competition.endDate).getTime() - new Date(competition.startDate).getTime()) / (1000 * 60 * 60 * 24))} dní
                 </span>
               </div>

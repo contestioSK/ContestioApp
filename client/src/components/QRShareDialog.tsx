@@ -120,7 +120,7 @@ export function QRShareDialog({
         )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-md p-0 bg-transparent border-0 shadow-none">
-        <div className={`relative w-full bg-slate-900 dark:bg-slate-950 border border-white/10 rounded-3xl shadow-2xl overflow-hidden transition-all duration-300 ${isVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}>
+        <div className={`relative w-full bg-slate-900 dark:bg-slate-950 border border-white/10 rounded-xl shadow-2xl overflow-hidden transition-all duration-300 ${isVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}>
           
           {/* Ambient Glow */}
           {isCompetition ? (
@@ -134,12 +134,12 @@ export function QRShareDialog({
             <h2 className="text-lg font-bold text-white tracking-wide flex items-center gap-2">
               {isCompetition ? (
                 <>
-                  <Trophy className="w-5 h-5 text-rose-500" />
+                  <Trophy className="w-5 h-5 text-muted-foreground" strokeWidth={1.75} />
                   Scan & Register
                 </>
               ) : (
                 <>
-                  <Swords className="w-5 h-5 text-amber-500" />
+                  <Swords className="w-5 h-5 text-muted-foreground" strokeWidth={1.75} />
                   Scan & Fight
                 </>
               )}
@@ -157,13 +157,13 @@ export function QRShareDialog({
           <div className="p-6 flex flex-col items-center relative z-10">
             
             {/* Ticket Card */}
-            <div className="relative w-full bg-slate-950 dark:bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
+            <div className="relative w-full bg-slate-950 dark:bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-2xl">
               
-              {/* Top Gradient Stripe */}
+              {/* Top Stripe */}
               {isCompetition ? (
-                <div className="h-2 w-full bg-gradient-to-r from-rose-500 via-red-500 to-rose-600" />
+                <div className="h-2 w-full bg-rose-500" />
               ) : (
-                <div className="h-2 w-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600" />
+                <div className="h-2 w-full bg-amber-500" />
               )}
               
               <div className="p-5 text-center">
@@ -219,7 +219,7 @@ export function QRShareDialog({
                       )}
                       {!date && !location && (
                         <div className="flex items-center gap-2 text-slate-400 text-xs font-medium">
-                          <Trophy className="w-3.5 h-3.5 text-rose-500" /> Turnajová registrácia
+                          <Trophy className="w-4 h-4 text-muted-foreground" strokeWidth={1.75} /> Turnajová registrácia
                         </div>
                       )}
                     </>
@@ -227,11 +227,11 @@ export function QRShareDialog({
                     <>
                       {participants !== undefined && (
                         <div className="flex items-center gap-2 text-slate-400 text-xs font-medium">
-                          <Users className="w-3.5 h-3.5 text-amber-500" /> {participants} rybárov v battle
+                          <Users className="w-4 h-4 text-muted-foreground" strokeWidth={1.75} /> <span className="font-mono font-medium text-[#F97316]">{participants}</span> rybárov v battle
                         </div>
                       )}
                       <div className="flex items-center gap-2 text-slate-400 text-xs font-medium">
-                        <Zap className="w-3.5 h-3.5 text-yellow-500" /> Okamžité pripojenie
+                        <Zap className="w-4 h-4 text-muted-foreground" strokeWidth={1.75} /> Okamžité pripojenie
                       </div>
                     </>
                   )}
@@ -243,15 +243,9 @@ export function QRShareDialog({
                     <div className="text-[10px] text-slate-500 uppercase tracking-wider font-bold">
                       {isCompetition ? "ID Súťaže" : "Battle Kód"}
                     </div>
-                    {isCompetition ? (
-                      <div className="text-base font-mono font-bold tracking-widest truncate text-rose-500">
-                        {shortCode}
-                      </div>
-                    ) : (
-                      <div className="text-base font-mono font-bold tracking-widest truncate text-amber-500">
-                        {shortCode}
-                      </div>
-                    )}
+                    <div className="text-base font-mono font-medium tracking-widest truncate text-[#F97316]">
+                    {shortCode}
+                  </div>
                   </div>
                   <button 
                     onClick={handleCopyLink}

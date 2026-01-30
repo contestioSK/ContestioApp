@@ -143,9 +143,9 @@ export default function NotificationsDropdown() {
         onClick={() => setIsOpen(!isOpen)}
         data-testid="topbar-notifications"
       >
-        <Bell className="h-5 w-5" />
+        <Bell className="h-5 w-5 text-muted-foreground" strokeWidth={1.75} />
         {pendingInvitations.length > 0 && (
-          <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-orange-500 text-white text-xs font-bold flex items-center justify-center animate-pulse">
+          <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-[#F97316] text-white text-xs font-mono font-medium flex items-center justify-center animate-pulse">
             {pendingInvitations.length > 9 ? '9+' : pendingInvitations.length}
           </span>
         )}
@@ -161,10 +161,10 @@ export default function NotificationsDropdown() {
           data-testid="notifications-dropdown"
         >
           <div className="flex items-center justify-between p-4 border-b border-border/50">
-            <h3 className="text-sm font-semibold">
+            <h3 className="text-sm font-bold">
               Notifikácie
               {pendingInvitations.length > 0 && (
-                <span className="ml-2 text-xs text-muted-foreground">
+                <span className="ml-2 text-xs font-mono font-medium text-[#F97316]">
                   ({pendingInvitations.length})
                 </span>
               )}
@@ -174,11 +174,11 @@ export default function NotificationsDropdown() {
           <div className="overflow-y-auto max-h-[60vh]">
             {isLoading ? (
               <div className="p-8 text-center">
-                <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
+                <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" strokeWidth={1.75} />
               </div>
             ) : pendingInvitations.length === 0 ? (
               <div className="p-8 text-center">
-                <Check className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" />
+                <Check className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" strokeWidth={1.75} />
                 <p className="text-sm font-medium text-foreground">Všetko vyriešené!</p>
                 <p className="text-xs text-muted-foreground mt-1">Žiadne nové notifikácie</p>
               </div>
@@ -213,7 +213,7 @@ export default function NotificationsDropdown() {
                         onClick={() => acceptMutation.mutate(invitation.id)}
                         disabled={acceptMutation.isPending}
                       >
-                        <Check className="h-3 w-3 mr-1" />
+                        <Check className="h-3 w-3 mr-1" strokeWidth={1.75} />
                         Prijať
                       </Button>
                       <Button
@@ -223,7 +223,7 @@ export default function NotificationsDropdown() {
                         onClick={() => rejectMutation.mutate(invitation.id)}
                         disabled={rejectMutation.isPending}
                       >
-                        <X className="h-3 w-3 mr-1" />
+                        <X className="h-3 w-3 mr-1" strokeWidth={1.75} />
                         Odmietnuť
                       </Button>
                     </div>
