@@ -1,0 +1,308 @@
+import React, { useState, useMemo } from "react";
+import { 
+  Lock, Unlock, ChevronDown, Trophy, Sparkles, Award, 
+  Calendar, Crosshair, Target, Crown, Moon, FileText, 
+  Snowflake, Flame, Zap, CheckCircle2, TrendingUp, Medal,
+  X, Filter, Eye, Info
+} from "lucide-react";
+
+// --- CONTESTIO DESIGN SYSTEM CONSTANTS (v2.8 Human Coach) ---
+const cn = (...classes) => classes.filter(Boolean).join(" ");
+
+// --- UI COMPONENTS ---
+
+const TacticalCard = ({ children, className = "", title, subtitle, icon: Icon, variant = "default" }) => {
+  const variants = {
+    default: "bg-[#0F172A] border-slate-800",
+    identity: "bg-[#0F172A] border-[#F97316]/20",
+    accent: "bg-gradient-to-br from-slate-900 to-slate-950 border-slate-800"
+  };
+
+  return (
+    <div className={cn("rounded-[2rem] border overflow-hidden shadow-xl transition-all duration-300", variants[variant], className)}>
+      {(title || Icon) && (
+        <div className="px-8 pt-8 pb-4 flex items-center justify-between border-b border-slate-800/30">
+          <div>
+            <h3 className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-500">{title}</h3>
+            {subtitle && <p className="text-xs font-bold text-white mt-1 italic tracking-tight">{subtitle}</p>}
+          </div>
+          {Icon && <div className="p-2 bg-slate-950/50 rounded-lg text-slate-600 border border-slate-800/50"><Icon size={14} /></div>}
+        </div>
+      )}
+      <div className="p-8">{children}</div>
+    </div>
+  );
+};
+
+const Progress = ({ value, status = "normal" }) => {
+  const colorClass = status === 'completed' ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]' : 'bg-[#F97316] shadow-[0_0_10px_rgba(249,115,22,0.2)]';
+  return (
+    <div className="h-1.5 w-full bg-slate-900 rounded-full overflow-hidden border border-white/5">
+      <div 
+        className={cn("h-full transition-all duration-1000 ease-out", colorClass)}
+        style={{ width: `${value}%` }}
+      />
+    </div>
+  );
+};
+
+// --- DATA DEFINITIONS ---
+const BADGE_DEFINITIONS = {
+  total_weight: {
+    id: "total_weight",
+    name: "Ťažká váha",
+    description: "Súčet váhy tvojich úlovkov",
+    icon: Target,
+    tiers: {
+      bronze: { threshold: 10, description: "Dosiahni limit 10kg" },
+      silver: { threshold: 50, description: "Dosiahni limit 50kg" },
+      gold: { threshold: 100, description: "Dosiahni limit 100kg" }
+    }
+  },
+  catches_count: {
+    id: "catches_count",
+    name: "Kadencia",
+    description: "Tvoj celkový počet potvrdených úlovkov",
+    icon: Crosshair,
+    tiers: {
+      bronze: { threshold: 5, description: "5 overených kusov" },
+      silver: { threshold: 25, description: "25 overených kusov" },
+      gold: { threshold: 100, description: "100 overených kusov" }
+    }
+  }
+};
+
+const getTierStyle = (tier, isActive = true) => {
+  if (!isActive) return "text-slate-700 bg-slate-900/40 border-slate-800/50 grayscale opacity-40";
+  switch (tier) {
+    case 'gold': return "text-amber-400 bg-amber-400/10 border-amber-400/50 shadow-[inset_0_0_10px_rgba(251,191,36,0.1)]";
+    case 'silver': return "text-slate-300 bg-slate-300/10 border-slate-300/30";
+    case 'bronze': return "text-orange-500 bg-orange-500/10 border-orange-500/30";
+    default: return "text-slate-500 bg-slate-900";
+  }
+};
+
+// --- MAIN PAGE ---
+
+export default function App() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  const userBadges = [
+    { badgeType: "total_weight", tier: "bronze" },
+  ];
+  
+  const badgeProgress = { total_weight: 45, catches_count: 8 };
+
+  const unlockedBadges = new Set(userBadges.map(b => `${b.badgeType}_${b.tier}`));
+  const badgesList = Object.values(BADGE_DEFINITIONS);
+
+  const nextGoal = useMemo(() => {
+    let best = null;
+    for (const badgeDef of badgesList) {
+      for (const tier of ['bronze', 'silver', 'gold']) {
+        if (unlockedBadges.has(`${badgeDef.id}_${tier}`)) continue;
+        const current = badgeProgress[badgeDef.id] || 0;
+        const threshold = badgeDef.tiers[tier].threshold;
+        const percent = Math.min((current / threshold) * 100, 100);
+        if (percent >= 100) continue;
+        if (!best || percent > best.percent) {
+          best = { badgeDef, tier, current, threshold, percent, remaining: Math.max(0, threshold - current) };
+        }
+      }
+    }
+    return best;
+  }, [badgesList, unlockedBadges]);
+
+  return (
+    <div className="min-h-screen bg-[#0B1C2F] text-slate-300 font-sans p-6 md:p-12 pb-32 selection:bg-orange-500/30 overflow-x-hidden">
+      
+      {/* HEADER */}
+      <header className="max-w-4xl mx-auto mb-16 transition-all duration-300">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <span className="h-0.5 w-8 bg-[#F97316]"></span>
+              <span className="text-[9px] font-black uppercase tracking-[0.4em] text-[#F97316]">Tvoje úspechy</span>
+            </div>
+            <div className="space-y-1">
+              <h1 className="text-5xl md:text-7xl font-black italic tracking-tighter uppercase text-white leading-none">
+                Sieň slávy
+              </h1>
+              <p className="text-sm md:text-lg font-bold text-slate-500 italic tracking-tight opacity-80 pl-1">
+                Odznaky a rybárske míľniky
+              </p>
+            </div>
+          </div>
+          
+          <div className="flex flex-col items-end gap-4">
+             {/* NEW TRIGGER: Katalóg výziev */}
+             <button 
+               onClick={() => setIsModalOpen(true)}
+               className="flex items-center gap-2 px-6 py-2.5 bg-slate-900 border border-slate-800 rounded-full hover:border-[#F97316]/50 transition-all text-slate-400 hover:text-white"
+             >
+                <Lock size={12} className="text-[#F97316]" />
+                <span className="text-[10px] font-black uppercase tracking-widest">Katalóg výziev</span>
+             </button>
+
+             <div className="flex items-center gap-4 bg-slate-900/50 border border-slate-800 p-5 rounded-[2rem] shadow-lg backdrop-blur-sm">
+                <div className="text-right">
+                  <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-0.5">Tvoj pokrok</span>
+                  <span className="text-2xl font-black text-white leading-none">
+                    {userBadges.length} <span className="text-xs text-slate-600 font-normal">/ {badgesList.length * 3}</span>
+                  </span>
+                </div>
+                <div className="h-12 w-12 bg-amber-400/10 rounded-2xl flex items-center justify-center text-amber-400 border border-amber-400/20 shadow-inner">
+                  <Trophy size={20} />
+                </div>
+             </div>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-4xl mx-auto space-y-12">
+        
+        {/* NASLEDUJÚCI CIEĽ */}
+        {nextGoal && (
+          <TacticalCard 
+            title="Tvoj najbližší míľnik" 
+            subtitle="Už si takmer tam" 
+            icon={TrendingUp}
+            variant="identity"
+          >
+            <div className="flex flex-col md:flex-row items-center gap-8">
+              <div className="relative shrink-0">
+                <div className="h-20 w-20 rounded-2xl bg-slate-950 flex items-center justify-center border border-slate-800 shadow-2xl ring-1 ring-white/5">
+                  {React.createElement(nextGoal.badgeDef.icon, { size: 32, className: "text-[#F97316]" })}
+                </div>
+                <div className="absolute -bottom-2 -right-2 bg-[#F97316] text-white text-[9px] font-black px-2 py-1 rounded shadow-lg uppercase tracking-tighter">
+                  {nextGoal.tier}
+                </div>
+              </div>
+
+              <div className="flex-1 space-y-1 text-center md:text-left">
+                <h3 className="text-2xl font-black text-white italic uppercase tracking-tight">
+                  {nextGoal.badgeDef.name}
+                </h3>
+                <p className="text-sm text-slate-500 font-medium italic">
+                  Chýba ti už len <span className="text-white font-bold">{nextGoal.remaining} {nextGoal.badgeDef.id.includes('weight') ? 'kg' : 'ks'}</span> k odomknutiu.
+                </p>
+              </div>
+
+              <div className="w-full md:w-48 space-y-2">
+                <div className="flex justify-between items-end">
+                  <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Tvoj postup</span>
+                  <span className="text-xs font-black text-[#F97316]">{Math.round(nextGoal.percent)}%</span>
+                </div>
+                <Progress value={nextGoal.percent} />
+              </div>
+            </div>
+          </TacticalCard>
+        )}
+
+        {/* ODOMKNUTÉ ODZNAKY */}
+        <div className="space-y-10">
+          {['gold', 'silver', 'bronze'].map(tier => {
+            const items = badgesList.filter(b => unlockedBadges.has(`${b.id}_${tier}`));
+            if (items.length === 0) return null;
+
+            return (
+              <div key={tier} className="space-y-4">
+                <div className="flex items-center gap-4 pl-1">
+                  <div className={cn("h-1 w-8 rounded-full", tier === 'gold' ? 'bg-amber-500' : tier === 'silver' ? 'bg-slate-400' : 'bg-orange-600')} />
+                  <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">
+                    {tier === 'gold' ? 'Zlaté odznaky' : tier === 'silver' ? 'Strieborné odznaky' : 'Bronzové odznaky'}
+                  </h2>
+                </div>
+                
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  {items.map(badgeDef => (
+                    <div key={`${badgeDef.id}_${tier}`} className="group p-6 rounded-3xl bg-slate-900/40 border border-slate-800/60 hover:border-slate-600 transition-all text-center space-y-4">
+                      <div className={cn("mx-auto h-12 w-12 rounded-xl flex items-center justify-center border shadow-lg", getTierStyle(tier))}>
+                        {React.createElement(badgeDef.icon, { size: 24 })}
+                      </div>
+                      <p className="text-xs font-black uppercase italic text-slate-400 group-hover:text-white transition-colors leading-tight">
+                        {badgeDef.name}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </main>
+
+      {/* KATALÓG MODAL */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0B1C2F]/90 backdrop-blur-xl animate-in fade-in duration-300">
+           <div className="relative w-full max-w-2xl max-h-[85vh] bg-[#0F172A] border border-slate-800 rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+              
+              {/* Modal Header */}
+              <div className="px-8 pt-8 pb-6 border-b border-slate-800 flex items-center justify-between">
+                 <div>
+                    <h2 className="text-2xl font-black italic uppercase text-white tracking-tight leading-none">Katalóg výziev</h2>
+                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-2 italic">Prehľad všetkých možných úspechov</p>
+                 </div>
+                 <button 
+                   onClick={() => setIsModalOpen(false)}
+                   className="p-3 bg-slate-900 rounded-2xl text-slate-500 hover:text-white border border-slate-800 transition-colors"
+                 >
+                    <X size={20} />
+                 </button>
+              </div>
+
+              {/* Modal Content - Scrollable */}
+              <div className="flex-1 overflow-y-auto p-8 space-y-6 scrollbar-thin scrollbar-thumb-slate-800">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {badgesList.map(badgeDef => (
+                      <div key={badgeDef.id} className="p-6 rounded-[2rem] bg-slate-900/40 border border-slate-800/60 space-y-6">
+                        <div className="flex items-center gap-4">
+                          <div className="p-2.5 bg-slate-950 rounded-lg border border-slate-800 text-slate-700">
+                            {React.createElement(badgeDef.icon, { size: 18 })}
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-black uppercase text-slate-200 italic leading-none">{badgeDef.name}</h4>
+                            <p className="text-[10px] text-slate-500 font-medium mt-1">{badgeDef.description}</p>
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-3 gap-2">
+                          {['bronze', 'silver', 'gold'].map(tier => {
+                            const unlocked = unlockedBadges.has(`${badgeDef.id}_${tier}`);
+                            return (
+                              <div key={tier} className={cn("p-3 rounded-xl border text-center space-y-1 transition-all", getTierStyle(tier, unlocked))}>
+                                <p className="text-[8px] font-black uppercase opacity-60 tracking-tighter">{tier}</p>
+                                <p className="text-[10px] font-bold">{badgeDef.tiers[tier].threshold}{badgeDef.id.includes('weight') ? 'kg' : 'ks'}</p>
+                                {unlocked ? <CheckCircle2 size={10} className="mx-auto" /> : <Lock size={10} className="mx-auto opacity-30" />}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                 </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="p-6 bg-slate-900/50 border-t border-slate-800 flex justify-center">
+                 <button 
+                   onClick={() => setIsModalOpen(false)}
+                   className="text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white transition-colors"
+                 >
+                    Zavrieť katalóg
+                 </button>
+              </div>
+           </div>
+        </div>
+      )}
+
+      <footer className="max-w-4xl mx-auto mt-24 pt-10 border-t border-slate-800/30 flex justify-between items-center opacity-20">
+        <div className="flex items-center gap-4">
+           <Zap size={16} className="text-[#F97316]" />
+           <span className="text-[9px] font-black uppercase tracking-[0.4em]">Contestio Obsidian v2.8</span>
+        </div>
+        <p className="text-[9px] font-black uppercase tracking-widest tracking-tighter italic">Instrument Calibration: Standard</p>
+      </footer>
+    </div>
+  );
+}
