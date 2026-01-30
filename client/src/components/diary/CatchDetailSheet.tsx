@@ -46,14 +46,14 @@ export function CatchDetailSheet({
       <SheetContent className="w-full sm:max-w-md p-0 bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 overflow-y-auto" data-testid="catch-detail-panel">
         <div className="flex flex-col min-h-full pt-5">
           {/* Hero Photo Section */}
-          <div className="relative h-64 bg-slate-900 mx-5 rounded-lg overflow-hidden">
+          <div className="relative bg-slate-900 mx-5 rounded-lg overflow-hidden min-h-48 sm:min-h-64">
             {catchData.photos && catchData.photos.length > 0 ? (
               <SimplePhotoSlider 
                 photos={catchData.photos} 
                 onPhotoClick={handlePhotoClick}
               />
             ) : (
-              <div className="absolute inset-0 bg-gradient-to-b from-slate-800 to-slate-900 flex items-center justify-center">
+              <div className="w-full min-h-48 bg-gradient-to-b from-slate-800 to-slate-900 flex items-center justify-center">
                 <Fish className="h-20 w-20 text-slate-700" strokeWidth={1} />
               </div>
             )}

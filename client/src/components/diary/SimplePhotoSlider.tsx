@@ -63,7 +63,7 @@ export function SimplePhotoSlider({ photos, onPhotoClick }: SimplePhotoSliderPro
   return (
     <div className="relative rounded-lg overflow-hidden">
       <div 
-        className="relative h-48 sm:h-64 bg-slate-900 cursor-pointer"
+        className="relative bg-slate-900 cursor-pointer min-h-48 sm:min-h-64"
         onClick={handlePhotoClick}
       >
         {photos.map((photo, idx) => {
@@ -73,20 +73,20 @@ export function SimplePhotoSlider({ photos, onPhotoClick }: SimplePhotoSliderPro
           return (
             <div
               key={typeof photo === 'string' ? idx : photo.id}
-              className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${
-                idx === activeIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
+              className={`transition-opacity duration-500 ease-in-out ${
+                idx === activeIndex ? 'relative opacity-100 z-10' : 'absolute inset-0 opacity-0 z-0'
               }`}
             >
               {photoUrl ? (
                 <img 
                   src={photoUrl} 
                   alt={`Fotografia úlovku ${idx + 1}`}
-                  className="w-full h-full object-cover hover:opacity-90 transition-opacity"
+                  className="w-full max-h-[70vh] object-contain sm:object-cover hover:opacity-90 transition-opacity"
                   draggable={false}
                   data-testid={`catch-photo-${idx}`}
                 />
               ) : (
-                <div className="w-full h-full bg-muted flex items-center justify-center">
+                <div className="w-full min-h-48 bg-muted flex items-center justify-center">
                   <Fish className="w-16 h-16 text-muted-foreground/30" />
                 </div>
               )}
