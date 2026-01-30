@@ -35,6 +35,13 @@ Preferred communication style: Simple, everyday language.
 - Dark: bg `#0B1C2F`, surface `#0F172A`, border `#1E293B`, text `#F8FAFC`, accent `#F97316`
 - Light: bg `#F8FAFC`, surface `#FFFFFF`, border `#E2E8F0`, text `#0F172A`, accent `#C2410C`
 
+**Light Mode Policy (LOCKED):**
+- Contestio je navrhnuté výhradne pre tmavé prostredie
+- Light mode slúži VÝLUČNE na vývojové účely (calibration, testovanie kontrastu)
+- NIE JE súčasťou produkčného MVP
+- V produkcii: žiadny prepínač, ani skrytý
+- V kóde používaj: `DEV_LIGHT_MODE` alebo `CALIBRATION_MODE` (nikdy "Light mode")
+
 **Typography Rules:**
 - `font-black italic` (900) → ONLY for H1 Hero headlines
 - `font-bold` (700) → Section headers, card titles
