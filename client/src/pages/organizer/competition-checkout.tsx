@@ -260,10 +260,10 @@ export default function CompetitionCheckout() {
 
         <div className="text-center mb-8">
           <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
-            Vyberte balík pre "{competition.name}"
+            Vyber balík pre "{competition.name}"
           </h1>
           <p className="text-muted-foreground">
-            Vyberte si balík podľa veľkosti a potrieb vašej súťaže.
+            Vyber si balík podľa veľkosti a potrieb tvojej súťaže.
           </p>
         </div>
 

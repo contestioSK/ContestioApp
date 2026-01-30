@@ -326,7 +326,7 @@ export default function CompetitionManage() {
     setShowPrepareDialog(false);
     toast({
       title: "✅ Súťaž pripravená",
-      description: "Teraz vyberte balík a zaplaťte pre aktiváciu.",
+      description: "Teraz vyber balík a zaplať pre aktiváciu.",
     });
     setShowSelectPlanDialog(true);
   };
@@ -599,7 +599,7 @@ export default function CompetitionManage() {
                     Súťaž je zaplatená a pripravená
                   </h3>
                   <p className="text-sm text-green-700 dark:text-green-300">
-                    Balík: <span className="font-medium capitalize">{competition.planTier || 'Pro'}</span> • Môžete pozvať tímy a spustiť súťaž
+                    Balík: <span className="font-medium capitalize">{competition.planTier || 'Pro'}</span> • Môžeš pozvať tímy a spustiť súťaž
                   </p>
                 </div>
               </div>
@@ -1027,7 +1027,7 @@ export default function CompetitionManage() {
             <AlertDialogTitle>Pripraviť súťaž na spustenie?</AlertDialogTitle>
             <AlertDialogDescription>
               Po potvrdení bude súťaž "{competition.name}" označená ako pripravená. 
-              Následne budete presmerovaní na výber balíka a platbu.
+              Následne budeš presmerovaný na výber balíka a platbu.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -1047,9 +1047,9 @@ export default function CompetitionManage() {
       <Dialog open={showSelectPlanDialog} onOpenChange={setShowSelectPlanDialog}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>Vyberte balík pre vašu súťaž</DialogTitle>
+            <DialogTitle>Vyber balík pre svoju súťaž</DialogTitle>
             <DialogDescription>
-              Vyberte si balík podľa veľkosti a potrieb vašej súťaže.
+              Vyber si balík podľa veľkosti a potrieb tvojej súťaže.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -1165,7 +1165,7 @@ export default function CompetitionManage() {
             )}
             {refereeEmail && !selectedRefereeUser && (
               <p className="text-xs text-muted-foreground">
-                Po odoslaní pozvánky sa rozhodca zaregistruje a vy ho budete môcť pridať do súťaže.
+                Po odoslaní pozvánky sa rozhodca zaregistruje a budeš ho môcť pridať do súťaže.
               </p>
             )}
           </div>
@@ -1195,7 +1195,7 @@ export default function CompetitionManage() {
           <DialogHeader>
             <DialogTitle>Nový oznam</DialogTitle>
             <DialogDescription>
-              Vytvorte oznam pre účastníkov súťaže.
+              Vytvor oznam pre účastníkov súťaže.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">

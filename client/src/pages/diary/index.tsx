@@ -186,7 +186,7 @@ export default function DiaryIndex() {
       // Show toast notification
       toast({
         title: "🎣 Nová výzva!",
-        description: `${message.inviterName} vás pozval do battle: ${message.battleName}`,
+        description: `${message.inviterName} ťa pozval do battle: ${message.battleName}`,
       });
     }
   });
@@ -454,7 +454,7 @@ export default function DiaryIndex() {
       quickStartForm.reset();
       toast({
         title: "Rybačka začatá!",
-        description: "Teraz môžete pridávať úlovky.",
+        description: "Teraz môžeš pridávať úlovky.",
       });
       setLocation("/diary/catches");
     },
@@ -1111,9 +1111,9 @@ export default function DiaryIndex() {
         <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Naozaj chcete zmazať tento úlovok?</AlertDialogTitle>
+              <AlertDialogTitle>Naozaj chceš zmazať tento úlovok?</AlertDialogTitle>
               <AlertDialogDescription>
-                Táto akcia je nenávratná. Úlovok bude trvalo odstránený z vášho denníka.
+                Táto akcia je nenávratná. Úlovok bude trvalo odstránený z tvojho denníka.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -1149,7 +1149,7 @@ export default function DiaryIndex() {
                 Začať rybačku
               </DialogTitle>
               <DialogDescription>
-                Rýchlo spustite jednodňovú rybačku. Stačí zadať lokalitu a môžete pridávať úlovky.
+                Rýchlo spusti jednodňovú rybačku. Stačí zadať lokalitu a môžeš pridávať úlovky.
               </DialogDescription>
             </DialogHeader>
             <Form {...quickStartForm}>

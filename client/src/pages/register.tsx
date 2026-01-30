@@ -18,7 +18,7 @@ export default function Register() {
             Zaregistruj sa do Contestio
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Vyberte si typ účtu, ktorý najlepšie vyhovuje vašim potrebám.
+            Vyber si typ účtu, ktorý najlepšie vyhovuje tvojim potrebám.
           </p>
           <div className="w-24 h-1 bg-gradient-to-r from-primary to-primary/60 mx-auto mt-6 rounded-full"></div>
         </div>
@@ -44,21 +44,21 @@ export default function Register() {
                   <BookOpen className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
                   <div>
                     <h4 className="font-medium text-foreground">Rybársky denník</h4>
-                    <p className="text-sm text-muted-foreground">Zaznamenávajte svoje úlovky a miesta</p>
+                    <p className="text-sm text-muted-foreground">Zaznamenávaj svoje úlovky a miesta</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Trophy className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
                   <div>
                     <h4 className="font-medium text-foreground">Fishing battles</h4>
-                    <p className="text-sm text-muted-foreground">Súťažte s priateľmi v osobných výzvach</p>
+                    <p className="text-sm text-muted-foreground">Súťaž s priateľmi v osobných výzvach</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
                   <Users className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
                   <div>
                     <h4 className="font-medium text-foreground">Pripojenie k súťažiam</h4>
-                    <p className="text-sm text-muted-foreground">Zaregistrujte sa do verejných súťaží</p>
+                    <p className="text-sm text-muted-foreground">Zaregistruj sa do verejných súťaží</p>
                   </div>
                 </div>
               </div>
@@ -71,7 +71,7 @@ export default function Register() {
                 Prihlásiť sa / Registrovať
               </Button>
               <p className="text-xs text-muted-foreground text-center mt-3">
-                Začnite bezplatne s freemium verziou
+                Začni bezplatne s freemium verziou
               </p>
             </CardContent>
           </Card>
@@ -148,23 +148,23 @@ export default function Register() {
         {/* Help section */}
         <div className="bg-muted/50 rounded-lg p-6 mt-12">
           <h3 className="text-lg font-semibold text-foreground mb-3 text-center">
-            Potrebujete pomoc s výberom?
+            Potrebuješ pomoc s výberom?
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
-              <h4 className="font-medium text-foreground mb-2">Individuálny účet je pre vás, ak:</h4>
+              <h4 className="font-medium text-foreground mb-2">Individuálny účet je pre teba, ak:</h4>
               <ul className="space-y-1 text-muted-foreground">
-                <li>• Chcete si viesť osobný rybársky denník</li>
-                <li>• Plánujete sa pripojiť k existujúcim súťažiam</li>
-                <li>• Súťažíte rekreačne s priateľmi</li>
+                <li>• Chceš si viesť osobný rybársky denník</li>
+                <li>• Plánuješ sa pripojiť k existujúcim súťažiam</li>
+                <li>• Súťažíš rekreačne s priateľmi</li>
               </ul>
             </div>
             <div>
-              <h4 className="font-medium text-foreground mb-2">Organizátorský účet je pre vás, ak:</h4>
+              <h4 className="font-medium text-foreground mb-2">Organizátorský účet je pre teba, ak:</h4>
               <ul className="space-y-1 text-muted-foreground">
-                <li>• Organizujete oficiálne rybárske súťaže</li>
-                <li>• Potrebujete spravovať viacero tímov</li>
-                <li>• Chcete live sledovanie a reporting</li>
+                <li>• Organizuješ oficiálne rybárske súťaže</li>
+                <li>• Potrebuješ spravovať viacero tímov</li>
+                <li>• Chceš live sledovanie a reporting</li>
               </ul>
             </div>
           </div>

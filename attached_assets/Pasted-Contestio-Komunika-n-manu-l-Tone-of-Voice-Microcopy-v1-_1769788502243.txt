@@ -1,0 +1,229 @@
+Contestio – Komunikačný manuál (Tone of Voice & Microcopy) v1.1
+
+Tento dokument je záväzný komunikačný manuál aplikácie Contestio. Slúži ako jednotný zdroj pravdy pre všetky texty v aplikácii – UI, systémové hlášky, empty states, notifikácie aj onboarding.
+
+1. Základné rozhodnutie
+
+Contestio používa TYKANIE. VŽDY. BEZ VÝNIMIEK.
+
+Ty / Tvoj / Tvoje
+
+Rozkazovací tvar (Imperatív)
+
+Vecný, pokojný tón
+
+Filozofia: Contestio je osobný rybársky nástroj (ako nôž alebo sonar), nie úrad, banka ani marketingová aplikácia. Prístroj ti nevyká, prístroj slúži.
+
+2. Charakter hlasu (Voice archetyp)
+
+Contestio komunikuje ako:
+Skúsený rybár – Tichý coach – Profesionálny prístroj
+
+Nie je:
+❌ kamarát v krčme (žiadne slangy typu "nahoď to tam")
+❌ motivačný speaker (žiadne "dokážeš to!")
+❌ herná aplikácia (žiadne "Level Up!")
+
+Je:
+✅ pokojný
+✅ presný
+✅ dôveryhodný
+✅ úsporný (minimalizmus slov)
+
+3. Emocionálny rozsah (čo si môžeme dovoliť)
+
+Povolené:
+
+tiché povzbudenie (cez fakty)
+
+uznanie (cez status)
+
+vecná spätná väzba
+
+Zakázané:
+
+prehnané emócie (výkričníky sú vzácne)
+
+hype
+
+infantilné vyjadrenia
+
+Príklad:
+❌ „Super! Podarilo sa ti to!“
+✅ „Záznam bol uložený.“
+✅ „Nový osobný rekord.“
+
+4. Pravidlá jazyka
+
+4.1 Stručnosť
+
+krátke vety
+
+žiadne omáčky
+
+žiadne vysvetľovanie, ktoré nebolo vyžiadané (tooltipy len tam, kde treba)
+
+Príklad:
+❌ „Váš úlovok bol úspešne pridaný do systému a je viditeľný v denníku.“
+✅ „Úlovok uložený.“
+
+4.2 Rozkazovací tvar (Imperatív)
+
+UI je inštrument. Hovorí, čo sa stane alebo čo máš urobiť.
+
+Ulož
+
+Zmaž
+
+Upraviť (v kontexte menu) / Uprav (v kontexte tlačidla)
+
+Zobraziť detail
+
+Príklad:
+❌ „Chceli by ste uložiť zmeny?“
+✅ „Uložiť zmeny?“
+
+4.3 Žiadne zdrobneniny (Prísny zákaz)
+
+Rybársky svet je drsný. Jazyk musí byť adekvátny.
+
+❌ rybka, fotka, poznámočka, vodička, úlovček
+✅ ryba, fotografia, poznámka, voda, úlovok
+
+5. Emoji politika
+
+Core UI: ŽIADNE emoji.
+Ikony (lucide-react) nahrádzajú emoji. Pôsobia technicky, nie emotívne.
+
+Výnimky (kontrolované):
+
+Toast notifikácia po výnimočnom úspechu (napr. Zlatý odznak).
+
+Maximálne 1 emoji. Nikdy viac.
+
+Povolené sety: 🏆, 🎣, 🌊 (žiadne tváričky).
+
+6. Systémové hlášky (Feedback Loop)
+
+6.1 Úspech
+
+Neutrálne, potvrdzujúce vykonanie akcie.
+
+„Úlovok uložený.“
+
+„Profil aktualizovaný.“
+
+„Heslo zmenené.“
+
+6.2 Chyba
+
+Vecná, bez obviňovania používateľa. Ak sa dá, navrhni riešenie.
+
+❌ „Zadal si zlý formát!“
+✅ „Nesprávny formát dátumu.“
+✅ „Chyba pripojenia. Dáta uložené lokálne.“ (Buduje dôveru)
+
+6.3 Potvrdenie nevratnej akcie (Destructive)
+
+Vždy jasne pomenovať následok.
+
+„Naozaj zmazať tento úlovok? Akcia je nevratná.“
+
+Tlačidlo: „Zmazať navždy“ (nie len „Áno“)
+
+7. Empty states (Inštrumentálna poetika)
+
+Contestio môže byť jemne poetické (voda, ticho), ale nikdy nie sentimentálne. Empty state nie je "chyba", je to "priestor na akciu".
+
+Povolené:
+
+Metafora vody, ticha, čakania, prípravy.
+
+„Voda zatiaľ mlčí.“
+
+„Denník čaká na prvý záznam.“
+
+Nepovolené:
+
+Vtipy, nátlak ("Tak už niečo chyť!").
+
+8. Odznaky, míľniky, úspechy
+
+Tone: Pokojné uznanie profesionála.
+
+❌ „Získal si super odznak!“
+✅ „Míľnik dosiahnutý.“
+❌ „Si kráľ rybárov!“
+✅ „Patríš medzi top 5 % v tejto sezóne.“
+
+9. Prémiová komunikácia (Upsell)
+
+Prémiový upsell je tichý, nenásilný a informatívny. Contestio si pýta peniaze za hodnotu, nie za "odblokovanie zábavy".
+
+❌ „Odomkni si všetko a buď PRO!“
+✅ „Získaj neobmedzený archív a pokročilé štatistiky.“
+
+Nikdy nepoužívať falošné časovače alebo agresívne odpočítavanie.
+
+10. Konzistencia je zákon
+
+Ak si nie si istý textom:
+👉 Zvoľ tichšiu, kratšiu, vecnejšiu variantu.
+Contestio má pôsobiť ako nástroj, ktorému dôveruješ, aj keď nič nehovorí.
+
+11. Rýchly checklist pre každý nový text
+
+Je to tykanie?
+
+Dá sa to skrátiť (odstrániť prídavné mená)?
+
+Nepôsobí to ako marketing?
+
+Je význam jasný bez vysvetľovania?
+
+Nepoužívam emóciu tam, kde má byť pokoj?
+
+12. Formátovanie dát (DOPLNENÉ - Precision)
+
+Pretože sme "Instrument", preferujeme presnosť pred relatívnym časom.
+
+Dátum: 24.05.2025 (nie "včera" alebo "pred týždňom" v zoznamoch).
+
+Čas: 14:05 (24h formát, nie AM/PM).
+
+Miery: Vždy s jednotkou. 12.5 kg, 45 cm.
+
+Desatinné miesta: Konzistentne na 1 alebo 2 desatinné miesta. (Nikdy 12 a 12.5 naraz, vždy 12.0 a 12.5).
+
+13. Placeholdery a Input Labels (DOPLNENÉ - Silent Guides)
+
+Placeholder nesmie opakovať Label. Musí ukazovať formát alebo príklad.
+
+❌ Label: Váha / Placeholder: Zadaj váhu
+
+✅ Label: Váha / Placeholder: 0.00 kg
+
+✅ Label: Revír / Placeholder: Napr. Liptovská Mara
+
+✅ Label: Poznámka / Placeholder: Počasie, nástraha, hĺbka...
+
+14. Notifikácie (Push) (DOPLNENÉ)
+
+Push notifikácie musia byť užitočné, nie otravné.
+
+❌ "Dlho sme ťa nevideli!" (Needy girlfriend efekt)
+
+✅ "Podmienky na lov sú ideálne. Tlak 1015 hPa." (Utility)
+
+✅ "Tvoj týždenný report je pripravený."
+
+15. Tlačidlá (CTA) (DOPLNENÉ)
+
+Primárna akcia (Commit): Sloveso. "Uložiť", "Odoslať", "Zmazať", "Pridať".
+
+Navigácia (Go to): Podstatné meno. "Nastavenia", "Profil", "Denník".
+
+Späť/Zrušiť: "Zrušiť" (nie "Späť", ak ide o modál), "Späť" (ak ide o navigáciu).
+
+Status manuálu: LOCKED v1.1
+Platnosť: Contestio MVP → Produkcia

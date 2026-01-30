@@ -723,7 +723,7 @@ export default function SeasonalGoals() {
                 <p className="text-muted-foreground mb-4">
                   {isViewingHistoricalSeason 
                     ? "Táto sezóna nemala žiadne aktívne ciele."
-                    : "Vytvorte si nové ciele pre túto sezónu a začnite sledovať svoj pokrok."
+                    : "Vytvor si nové ciele pre túto sezónu a začni sledovať svoj pokrok."
                   }
                 </p>
                 {!isViewingHistoricalSeason && (

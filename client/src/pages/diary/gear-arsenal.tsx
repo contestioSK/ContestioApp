@@ -362,7 +362,7 @@ export default function GearArsenalPage() {
     if (!selectedBaitManufacturer || !selectedProductLine || !selectedFlavor) {
       toast({
         title: "Chyba",
-        description: "Vyberte výrobcu, produktový rad a príchuť",
+        description: "Vyber výrobcu, produktový rad a príchuť",
         variant: "destructive",
       });
       return;
@@ -381,7 +381,7 @@ export default function GearArsenalPage() {
     if (!selectedBaitManufacturer || !selectedProductLine) {
       toast({
         title: "Chyba",
-        description: "Vyberte výrobcu a produktový rad",
+        description: "Vyber výrobcu a produktový rad",
         variant: "destructive",
       });
       return;
@@ -492,7 +492,7 @@ export default function GearArsenalPage() {
                   <DialogHeader>
                     <DialogTitle>Pridať boilies do arzenálu</DialogTitle>
                     <DialogDescription>
-                      Vyberte boilies z databázy a pridajte ich do svojho arzenálu
+                      Vyber boilies z databázy a pridaj ich do svojho arzenálu
                     </DialogDescription>
                   </DialogHeader>
 
@@ -511,7 +511,7 @@ export default function GearArsenalPage() {
                           onValueChange={handleBaitManufacturerChange}
                         >
                           <SelectTrigger className="bg-slate-800 border-slate-600" data-testid="select-bait-manufacturer">
-                            <SelectValue placeholder="Vyberte výrobcu..." />
+                            <SelectValue placeholder="Vyber výrobcu..." />
                           </SelectTrigger>
                           <SelectContent>
                             {baitManufacturers?.map((manufacturer) => (
@@ -528,7 +528,7 @@ export default function GearArsenalPage() {
                     <div className="space-y-2">
                       <Label htmlFor="productLine">2. Produktový rad</Label>
                       {!selectedBaitManufacturer ? (
-                        <p className="text-sm text-muted-foreground py-2">Najprv vyberte výrobcu</p>
+                        <p className="text-sm text-muted-foreground py-2">Najprv vyber výrobcu</p>
                       ) : loadingProductLines ? (
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Loader2 className="h-4 w-4 animate-spin" />
@@ -541,7 +541,7 @@ export default function GearArsenalPage() {
                           disabled={!selectedBaitManufacturer}
                         >
                           <SelectTrigger className="bg-slate-800 border-slate-600" data-testid="select-product-line">
-                            <SelectValue placeholder="Vyberte produktový rad..." />
+                            <SelectValue placeholder="Vyber produktový rad..." />
                           </SelectTrigger>
                           <SelectContent>
                             {productLines?.map((productLine) => (
@@ -558,7 +558,7 @@ export default function GearArsenalPage() {
                     <div className="space-y-2">
                       <Label htmlFor="flavor">3. Príchuť</Label>
                       {!selectedProductLine ? (
-                        <p className="text-sm text-muted-foreground py-2">Najprv vyberte produktový rad</p>
+                        <p className="text-sm text-muted-foreground py-2">Najprv vyber produktový rad</p>
                       ) : loadingFlavors ? (
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Loader2 className="h-4 w-4 animate-spin" />
@@ -571,7 +571,7 @@ export default function GearArsenalPage() {
                           disabled={!selectedProductLine}
                         >
                           <SelectTrigger className="bg-slate-800 border-slate-600" data-testid="select-flavor">
-                            <SelectValue placeholder="Vyberte príchuť..." />
+                            <SelectValue placeholder="Vyber príchuť..." />
                           </SelectTrigger>
                           <SelectContent>
                             {flavors?.map((flavor) => (
@@ -592,7 +592,7 @@ export default function GearArsenalPage() {
                         onValueChange={setSelectedDiameter}
                       >
                         <SelectTrigger className="bg-slate-800 border-slate-600" data-testid="select-diameter">
-                          <SelectValue placeholder="Vyberte priemer..." />
+                          <SelectValue placeholder="Vyber priemer..." />
                         </SelectTrigger>
                         <SelectContent>
                           {DIAMETER_OPTIONS.map((diameter) => (
@@ -687,7 +687,7 @@ export default function GearArsenalPage() {
                     <Label>Priemer pre všetky (voliteľné)</Label>
                     <Select value={bulkDiameter || ""} onValueChange={setBulkDiameter}>
                       <SelectTrigger className="bg-slate-800 border-slate-600" data-testid="select-bulk-diameter">
-                        <SelectValue placeholder="Vyberte priemer..." />
+                        <SelectValue placeholder="Vyber priemer..." />
                       </SelectTrigger>
                       <SelectContent>
                         {DIAMETER_OPTIONS.map((diameter) => (

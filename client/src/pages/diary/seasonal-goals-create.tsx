@@ -120,9 +120,9 @@ const goalTypeConfig = {
 
 // Form Schema
 const createGoalSchema = z.object({
-  seasonId: z.string().min(1, "Musíte vybrať sezónu"),
+  seasonId: z.string().min(1, "Musíš vybrať sezónu"),
   goalType: z.enum(['total_weight', 'fish_count', 'trips_count', 'biggest_fish', 'personal_best', 'min_size_catch_count', 'min_weight_catch_count', 'spot_catch_count', 'bait_catch_count', 'night_trips_count'], {
-    required_error: "Musíte vybrať typ cieľa"
+    required_error: "Musíš vybrať typ cieľa"
   }),
   targetValue: z.string().min(1, "Cieľová hodnota je povinná").refine((val) => {
     const num = parseFloat(val);
@@ -257,7 +257,7 @@ export default function SeasonalGoalsCreate() {
       queryClient.invalidateQueries({ queryKey: ["/api/seasonal-goals/limit"] });
       toast({
         title: "🎯 Cieľ vytvorený!",
-        description: "Váš sezónny cieľ bol úspešne vytvorený.",
+        description: "Tvoj sezónny cieľ bol úspešne vytvorený.",
       });
       setLocation("/diary/seasonal-goals");
     },
@@ -312,9 +312,9 @@ export default function SeasonalGoalsCreate() {
           {/* STEP 1: Goal Type Selection */}
           <Card>
             <CardHeader>
-              <CardTitle>Krok 1: Vyberte typ cieľa</CardTitle>
+              <CardTitle>Krok 1: Vyber typ cieľa</CardTitle>
               <CardDescription>
-                Vyberte si, aký cieľ chcete dosiahnuť v tejto sezóne
+                Vyber si, aký cieľ chceš dosiahnuť v tejto sezóne
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -358,7 +358,7 @@ export default function SeasonalGoalsCreate() {
               <CardHeader>
                 <CardTitle>Krok 2: Nastavte hodnotu</CardTitle>
                 <CardDescription>
-                  Zadajte detaily vášho cieľa pre {goalTypeConfig[selectedGoalType as keyof typeof goalTypeConfig]?.label.toLowerCase()}
+                  Zadaj detaily cieľa pre {goalTypeConfig[selectedGoalType as keyof typeof goalTypeConfig]?.label.toLowerCase()}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -374,7 +374,7 @@ export default function SeasonalGoalsCreate() {
                           <Select onValueChange={field.onChange} value={field.value} disabled={seasonsLoading}>
                             <FormControl>
                               <SelectTrigger data-testid="select-season">
-                                <SelectValue placeholder={seasonsLoading ? "Načítavajú sa sezóny..." : "Vyberte sezónu"} />
+                                <SelectValue placeholder={seasonsLoading ? "Načítavam sezóny..." : "Vyber sezónu"} />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -424,7 +424,7 @@ export default function SeasonalGoalsCreate() {
                           </div>
                           {selectedGoalType === 'biggest_fish' && (
                             <FormDescription>
-                              Môžete zadať hmotnosť, dĺžku, alebo oboje
+                              Môžeš zadať hmotnosť, dĺžku, alebo oboje
                             </FormDescription>
                           )}
                           <FormMessage />
@@ -582,7 +582,7 @@ export default function SeasonalGoalsCreate() {
                           />
                         </FormControl>
                         <FormDescription>
-                          Názov sa automaticky vygeneruje alebo si ho môžete upraviť
+                          Názov sa automaticky vygeneruje alebo si ho môžeš upraviť
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -627,7 +627,7 @@ export default function SeasonalGoalsCreate() {
                             Hlavný cieľ sezóny
                           </FormLabel>
                           <FormDescription>
-                            Označte tento cieľ ako váš hlavný cieľ pre sezónu. Bude zvýraznený a sledovaný s vyššou prioritou.
+                            Označ tento cieľ ako tvoj hlavný cieľ pre sezónu. Bude zvýraznený a sledovaný s vyššou prioritou.
                           </FormDescription>
                         </div>
                       </FormItem>

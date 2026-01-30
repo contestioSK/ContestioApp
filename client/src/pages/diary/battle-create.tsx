@@ -241,7 +241,7 @@ export default function BattleCreate() {
     onSuccess: (data) => {
       toast({
         title: "Úspech",
-        description: "Váš fishing battle bol úspešne vytvorený."
+        description: "Tvoj fishing battle bol úspešne vytvorený."
       });
       queryClient.invalidateQueries({ queryKey: ["/api/diary/battles"] });
       queryClient.invalidateQueries({ queryKey: ["/api/diary/trips"] });
@@ -357,7 +357,7 @@ export default function BattleCreate() {
               </Badge>
             </div>
             <p className="text-muted-foreground text-lg">
-              Vytvorte súťaž medzi kamarátmi a zmerajte si sily na vode
+              Vytvor súťaž medzi kamarátmi a zmeraj si sily na vode
             </p>
           </div>
 
@@ -496,7 +496,7 @@ export default function BattleCreate() {
                             />
                           </FormControl>
                           <FormDescription>
-                            Vyberte revír kde sa bude súťaž konať
+                            Vyber revír kde sa bude súťaž konať
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
@@ -538,13 +538,13 @@ export default function BattleCreate() {
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                               <SelectTrigger data-testid="select-trip">
-                                <SelectValue placeholder="Vyberte výpravu pre battle" />
+                                <SelectValue placeholder="Vyber výpravu pre battle" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
                               {trips.length === 0 ? (
                                 <div className="p-2 text-sm text-muted-foreground">
-                                  Najprv vytvorte výpravu v sekcii Výpravy
+                                  Najprv vytvor výpravu v sekcii Výpravy
                                 </div>
                               ) : (
                                 trips.filter(trip => {
@@ -585,7 +585,7 @@ export default function BattleCreate() {
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger data-testid="select-game-mode">
-                              <SelectValue placeholder="Vyberte herný režim" />
+                              <SelectValue placeholder="Vyber herný režim" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
