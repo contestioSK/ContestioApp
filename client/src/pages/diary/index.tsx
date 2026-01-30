@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Fish, Plus, X, MapPin, Target, Ruler, Weight, Swords, Trophy, Crown, Play, Edit2, Trash2, CalendarIcon, CalendarDays, ChevronLeft, ChevronRight, Loader2, AlertCircle, Check, UserPlus, WifiOff, SlidersHorizontal } from "lucide-react";
+import { Fish, Plus, X, MapPin, Target, Ruler, Weight, Swords, Trophy, Crown, Play, Edit2, Trash2, CalendarIcon, CalendarDays, ChevronLeft, ChevronRight, Loader2, AlertCircle, Check, UserPlus, WifiOff, SlidersHorizontal, Star } from "lucide-react";
 import { useLocation, Link, useSearch } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -553,7 +553,7 @@ export default function DiaryIndex() {
   const hasActiveFilters = selectedTechnique !== "all" || selectedFishType !== "all" || selectedSpot !== "all" || dateRange?.from !== undefined;
 
   // Display catches: show top 5 when no filters are active, otherwise show all filtered results
-  const displayedCatches = hasActiveFilters ? filteredCatches : filteredCatches.slice(0, 5);
+  const displayedCatches = hasActiveFilters ? filteredCatches : filteredCatches.slice(0, 4);
 
   // Get unique techniques and spots for filter dropdowns (from all catches)
   const uniqueTechniques = Array.from(new Set(allCatchesList.map((c: any) => c.bait).filter(Boolean)));
@@ -1094,133 +1094,96 @@ export default function DiaryIndex() {
           )}
         </div>
 
-        {/* Catches Table */}
-        <Card className="bg-white dark:bg-slate-800/50 border overflow-hidden">
-          <CardContent className="p-0">
-            {/* Desktop Table Header */}
-            <div className="hidden md:grid grid-cols-5 gap-4 p-4 border-b text-xs font-semibold text-muted-foreground dark:text-slate-400 uppercase tracking-wider bg-muted/50 dark:bg-slate-700/30">
-              <div>DRUH RYBY</div>
-              <div>VÁHA / DĹŽKA</div>
-              <div>REVÍR</div>
-              <div>NÁVNADA/NÁSTRAHA</div>
-              <div>DÁTUM</div>
-            </div>
-            
-            {/* Table Rows */}
-            {displayedCatches.length > 0 ? (
-              displayedCatches.map((catch_: any, index: number) => (
-                <div 
-                  key={catch_.id || index} 
-                  className="border-b hover:bg-muted/50 dark:hover:bg-slate-700/30 transition-colors cursor-pointer"
-                  onClick={() => setSelectedCatch(catch_)}
-                  data-testid={`catch-row-${catch_.id || index}`}
-                >
-                  {/* Desktop Row */}
-                  <div className="hidden md:grid grid-cols-5 gap-4 p-4 relative group">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 flex items-center justify-center overflow-hidden">
-                        {getCatchThumbnail(catch_)}
-                      </div>
-                      <div className="text-foreground dark:text-white font-medium">
-                        {catch_.fishType ? getFishTypeLabel(catch_.fishType) : 'Neznámy druh'}
-                      </div>
-                    </div>
-                    
-                    <div className="font-mono font-medium text-[#F97316] text-xl">
-                      {catch_.weight ? `${catch_.weight} kg` : catch_.lengthCm ? `${catch_.lengthCm} cm` : 'N/A'}
-                    </div>
-                    
-                    <div className="text-muted-foreground dark:text-slate-300">
-                      {catch_.spot || 'Neznáme miesto'}
-                    </div>
-                    
-                    <div className="text-muted-foreground dark:text-slate-300">
-                      {catch_.bait || 'Neznáma'}
-                    </div>
-                    
-                    <div className="text-muted-foreground dark:text-slate-300 flex items-center justify-between">
-                      <span>{catch_.capturedAt ? format(new Date(catch_.capturedAt), "dd. MMM yyyy", { locale: sk }) : 'N/A'}</span>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedCatch(catch_);
-                        }}
-                        className="p-2 rounded-lg bg-muted dark:bg-slate-600/50 hover:bg-primary/20 text-muted-foreground dark:text-slate-400 hover:text-primary transition-colors opacity-30 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:focus-visible:ring-offset-slate-800"
-                        title="Upraviť"
-                        data-testid={`button-edit-catch-${catch_.id || index}`}
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                    </div>
+        {/* Catches Grid Gallery */}
+        {displayedCatches.length > 0 ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+            {displayedCatches.map((catch_: any, index: number) => (
+              <div
+                key={catch_.id || index}
+                onClick={() => setSelectedCatch(catch_)}
+                className="group relative aspect-[4/5] overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-800 cursor-pointer shadow-sm hover:shadow-xl transition-all hover:-translate-y-1"
+                data-testid={`catch-card-${catch_.id || index}`}
+              >
+                {/* Photo */}
+                {catch_.photos && catch_.photos.length > 0 ? (
+                  <img
+                    src={catch_.photos[0].url || catch_.photos[0]}
+                    alt={catch_.fishType ? getFishTypeLabel(catch_.fishType) : 'Úlovok'}
+                    loading="lazy"
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                ) : (
+                  <div className="h-full w-full flex items-center justify-center text-slate-300 dark:text-slate-600 bg-slate-50 dark:bg-slate-800">
+                    <Fish size={48} strokeWidth={1} />
                   </div>
-
-                  {/* Mobile Card */}
-                  <div className="md:hidden p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="w-12 h-12 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                        {getCatchThumbnail(catch_)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <div className="text-foreground dark:text-white font-medium mb-1">
-                            {catch_.fishType ? getFishTypeLabel(catch_.fishType) : 'Neznámy druh'}
-                          </div>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedCatch(catch_);
-                            }}
-                            className="p-2 rounded-lg bg-muted dark:bg-slate-600/50 hover:bg-primary/20 text-muted-foreground dark:text-slate-400 hover:text-primary transition-colors"
-                            title="Upraviť"
-                            data-testid={`button-edit-catch-mobile-${catch_.id || index}`}
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                        <div className="font-mono font-medium text-[#F97316] text-lg mb-2">
-                          {catch_.weight ? `${catch_.weight} kg` : catch_.lengthCm ? `${catch_.lengthCm} cm` : 'N/A'}
-                        </div>
-                        <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground dark:text-slate-400">
-                          <div>
-                            <span className="text-muted-foreground/70 dark:text-slate-500">Revír:</span> {catch_.spotName || catch_.tripLocation || catch_.spot || 'N/A'}
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground/70 dark:text-slate-500">Nástraha:</span> {formatBaitShort(catch_.bait)}
-                          </div>
-                          <div className="col-span-2">
-                            <span className="text-muted-foreground/70 dark:text-slate-500">Dátum:</span> {catch_.capturedAt ? format(new Date(catch_.capturedAt), "dd. MMM yyyy", { locale: sk }) : 'N/A'}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="p-8 text-center">
-                <div className="flex justify-center mb-4">
-                  <TacticalIcon icon={Fish} variant="neutral" size="lg" showLabel={false} />
-                </div>
-                <p className="text-muted-foreground dark:text-slate-400 mb-4">
-                  {allCatchesList.length === 0 
-                    ? "Zatiaľ nemáte žiadne úlovky" 
-                    : "Žiadne úlovky nevyhovujú zvoleným filtrom"}
-                </p>
-                {allCatchesList.length === 0 && (
-                  <Button 
-                    onClick={() => setLocation("/diary/catches")}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    Pridať prvý úlovok
-                  </Button>
                 )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
 
-        {/* View All Button - show when there are more than 5 catches total, regardless of filters */}
-        {allCatchesList.length > 5 && (
+                {/* Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+
+                {/* Top Badge - Weight or Length */}
+                <div className="absolute top-2 left-2 right-2 flex justify-between items-start">
+                  <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md text-slate-900 dark:text-white font-black px-2 py-1 rounded-lg text-sm shadow-lg">
+                    {catch_.weight ? (
+                      <>{catch_.weight} <span className="text-[9px] text-slate-500 dark:text-slate-400 uppercase">kg</span></>
+                    ) : catch_.lengthCm ? (
+                      <>{catch_.lengthCm} <span className="text-[9px] text-slate-500 dark:text-slate-400 uppercase">cm</span></>
+                    ) : (
+                      <span className="text-slate-400">—</span>
+                    )}
+                  </div>
+                  {catch_.isFavorite && (
+                    <div className="bg-amber-400 text-amber-900 p-1.5 rounded-full shadow-sm">
+                      <Star size={10} fill="currentColor" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Bottom Content */}
+                <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
+                  <h3 className="font-bold text-base truncate mb-0.5">
+                    {catch_.fishType ? getFishTypeLabel(catch_.fishType) : 'Neznámy druh'}
+                  </h3>
+                  {catch_.nickname && (
+                    <p className="text-sm text-cyan-200 italic truncate mb-1 leading-none">"{catch_.nickname}"</p>
+                  )}
+                  <p className="text-[10px] text-white/70 font-medium flex items-center gap-2 mt-1 border-t border-white/10 pt-2 truncate">
+                    <span>{catch_.capturedAt ? format(new Date(catch_.capturedAt), "dd. MMM", { locale: sk }) : 'N/A'}</span>
+                    <span>·</span>
+                    <span className="truncate">{catch_.spot || 'N/A'}</span>
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          /* Empty State - Poetic */
+          <div className="py-16 text-center flex flex-col items-center">
+            <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6 text-slate-300 dark:text-slate-600">
+              <Fish size={32} strokeWidth={1} />
+            </div>
+            <h3 className="text-lg font-bold text-foreground dark:text-white tracking-tight mb-2">
+              Voda zatiaľ mlčí...
+            </h3>
+            <p className="text-muted-foreground dark:text-slate-400 text-sm mb-6 max-w-[280px] mx-auto leading-relaxed">
+              {allCatchesList.length === 0 
+                ? "Zatiaľ nemáte v denníku žiadne úlovky. Čas to zmeniť!"
+                : "Pre zadanú kombináciu filtrov sme nenašli žiadne úlovky."}
+            </p>
+            {allCatchesList.length === 0 && (
+              <Button 
+                onClick={() => setLocation("/diary/catches")}
+                className="bg-cyan-600 hover:bg-cyan-700 rounded-xl px-6"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Pridať prvý úlovok
+              </Button>
+            )}
+          </div>
+        )}
+
+        {/* View All Button - show when there are more than 4 catches total, regardless of filters */}
+        {allCatchesList.length > 4 && (
           <div className="flex justify-center mt-4">
             <Button
               onClick={() => setLocation("/diary/catches")}
