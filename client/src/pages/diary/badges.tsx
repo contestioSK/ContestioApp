@@ -5,6 +5,7 @@ import { useConfetti } from "@/hooks/useConfetti";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { TacticalIcon } from "@/components/ui/tactical-icon";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { 
@@ -199,9 +200,12 @@ export default function BadgesPage() {
               <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#F97316]">Tvoje úspechy</span>
             </div>
             <div className="space-y-1">
-              <h1 className="text-4xl md:text-5xl font-black italic tracking-tighter uppercase text-foreground leading-none">
-                Sieň slávy
-              </h1>
+              <div className="flex items-center gap-4">
+                <TacticalIcon icon={Trophy} variant="orange" size="lg" showLabel={false} />
+                <h1 className="text-4xl md:text-5xl font-black italic tracking-tighter uppercase text-foreground leading-none">
+                  Sieň slávy
+                </h1>
+              </div>
               <p className="text-sm font-medium text-muted-foreground italic tracking-tight pl-0.5">
                 Odznaky a rybárske míľniky
               </p>
