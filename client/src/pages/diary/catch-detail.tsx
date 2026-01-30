@@ -236,24 +236,25 @@ export default function CatchDetail() {
           )}
         </div>
 
-        {/* Image Indicators (vertical dots on right) */}
+        {/* Navigation arrows */}
         {photoUrls.length > 1 && (
-          <div
-            className="absolute top-1/2 right-4 -translate-y-1/2 flex flex-col gap-3 z-20"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {photoUrls.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setActiveImage(idx)}
-                className={`w-1 rounded-full transition-all duration-500 backdrop-blur-sm shadow-sm ${
-                  activeImage === idx 
-                    ? 'h-8 bg-white' 
-                    : 'h-2 bg-white/30 hover:bg-white/60'
-                }`}
-              />
-            ))}
-          </div>
+          <>
+            <button
+              onClick={(e) => { e.stopPropagation(); prevImage(); }}
+              className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-black/30 hover:bg-black/50 rounded-full text-white backdrop-blur-md z-20 transition-colors"
+            >
+              <ChevronLeft size={24} strokeWidth={2} />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); nextImage(); }}
+              className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-black/30 hover:bg-black/50 rounded-full text-white backdrop-blur-md z-20 transition-colors"
+            >
+              <ChevronLeft size={24} strokeWidth={2} className="rotate-180" />
+            </button>
+            <div className="absolute bottom-32 md:bottom-40 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-black/40 backdrop-blur-md rounded-full text-white text-xs font-medium z-20">
+              {activeImage + 1} / {photoUrls.length}
+            </div>
+          </>
         )}
 
         {/* Hero Content */}
