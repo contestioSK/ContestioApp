@@ -146,7 +146,7 @@ const competitionNavigationItems = [
   {
     icon: CalendarDays,
     label: "Súťaže",
-    href: "/categories/live",
+    href: "/",
     description: "Registrácia a live výsledky",
     highlight: true
   }
@@ -544,12 +544,12 @@ export default function DiaryLayout({ children, fullBleed = false }: DiaryLayout
             {/* Súťaže - napravo */}
             <button
               onClick={() => {
-                setLocation("/categories/live");
+                setLocation("/");
                 window.scrollTo(0, 0);
               }}
               className={`
                 flex flex-col items-center justify-center py-2 flex-1 min-w-0 transition-colors
-                ${isActivePath("/categories/live")
+                ${location === "/"
                   ? 'text-emerald-400 bg-emerald-500/20' 
                   : 'text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10'
                 }
