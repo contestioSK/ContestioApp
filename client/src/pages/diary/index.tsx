@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Fish, Plus, X, MapPin, Target, Ruler, Weight, Swords, Trophy, Crown, Play, Edit2, Trash2, CalendarIcon, CalendarDays, ChevronLeft, ChevronRight, Loader2, AlertCircle, Check, UserPlus, WifiOff, SlidersHorizontal, Star } from "lucide-react";
+import { Fish, Plus, X, MapPin, Target, Ruler, Weight, Swords, Trophy, Crown, Play, Edit2, Trash2, CalendarIcon, CalendarDays, ChevronLeft, ChevronRight, Loader2, AlertCircle, Check, UserPlus, WifiOff, SlidersHorizontal, Star, Maximize2 } from "lucide-react";
 import { useLocation, Link, useSearch } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -1032,159 +1032,207 @@ export default function DiaryIndex() {
 
         {/* Detail Panel */}
         <Sheet open={!!selectedCatch} onOpenChange={() => setSelectedCatch(null)}>
-          <SheetContent className="w-full sm:max-w-md bg-slate-800 border text-white overflow-y-auto" data-testid="catch-detail-panel">
-            <SheetHeader className="pb-6">
-              <SheetTitle className="text-white flex items-center gap-3">
-                <div className="w-10 h-10 flex items-center justify-center">
-                  {getFishIcon(selectedCatch?.fishType)}
-                </div>
-                {selectedCatch?.fishType ? getFishTypeLabel(selectedCatch.fishType) : 'Detail úlovku'}
-              </SheetTitle>
-            </SheetHeader>
-
+          <SheetContent className="w-full sm:max-w-md p-0 bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 overflow-y-auto" data-testid="catch-detail-panel">
             {selectedCatch && (
-              <div className="space-y-6">
-                {/* Photo Carousel */}
-                {selectedCatch.photos && selectedCatch.photos.length > 0 && (
-                  <PhotoCarousel 
-                    photos={selectedCatch.photos} 
-                    onPhotoClick={(photo) => setLightboxImage(photo)}
-                  />
-                )}
-
-                {/* Basic Info */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <Weight className="w-5 h-5 text-slate-400" />
-                    <div>
-                      <div className="text-sm text-slate-400">Váha</div>
-                      <div className="font-semibold" data-testid="detail-weight">{selectedCatch.weight ? `${selectedCatch.weight} kg` : 'Neuvedené'}</div>
+              <div className="flex flex-col min-h-full">
+                {/* Hero Photo Section */}
+                <div className="relative h-64 bg-slate-900">
+                  {selectedCatch.photos && selectedCatch.photos.length > 0 ? (
+                    <PhotoCarousel 
+                      photos={selectedCatch.photos} 
+                      onPhotoClick={(photo) => setLightboxImage(photo)}
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-b from-slate-800 to-slate-900 flex items-center justify-center">
+                      <Fish className="h-20 w-20 text-slate-700" strokeWidth={1} />
                     </div>
+                  )}
+                  <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-slate-950 via-slate-900/80 to-transparent" />
+                  
+                  {/* Overlay content */}
+                  <div className="absolute bottom-0 left-0 right-0 p-5">
+                    <p className="text-white/60 text-xs font-medium uppercase tracking-widest mb-1">
+                      {selectedCatch.capturedAt 
+                        ? format(new Date(selectedCatch.capturedAt), "d. MMMM yyyy", { locale: sk })
+                        : 'Dátum neuvedený'
+                      }
+                    </p>
+                    <h2 className="text-2xl font-black text-white tracking-tight leading-tight">
+                      {selectedCatch?.fishType ? getFishTypeLabel(selectedCatch.fishType) : 'Úlovok'}
+                    </h2>
                   </div>
+                </div>
 
-                  <div className="flex items-center gap-3">
-                    <Ruler className="w-5 h-5 text-slate-400" />
+                {/* Content Body */}
+                <div className="flex-1 p-5 space-y-5">
+                  {/* Weight & Length - Editorial Numbers */}
+                  <div className="flex items-end gap-6 py-3 border-b border-slate-100 dark:border-slate-800">
                     <div>
-                      <div className="text-sm text-slate-400">Dĺžka</div>
-                      <div className="font-semibold">{selectedCatch.lengthCm ? `${selectedCatch.lengthCm} cm` : 'Neuvedené'}</div>
+                      <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-0.5">Váha</p>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-4xl font-black font-mono text-[#F97316]" data-testid="detail-weight">
+                          {selectedCatch.weight || '—'}
+                        </span>
+                        {selectedCatch.weight && <span className="text-sm text-muted-foreground">kg</span>}
+                      </div>
                     </div>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <MapPin className="w-5 h-5 text-slate-400" />
                     <div>
-                      <div className="text-sm text-slate-400">Revír</div>
-                      <div className="font-semibold">{selectedCatch.spot || 'Neuvedené'}</div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <Target className="w-5 h-5 text-slate-400" />
-                    <div>
-                      <div className="text-sm text-slate-400">Nástraha</div>
-                      <div className="font-semibold">{selectedCatch.bait || 'Neuvedené'}</div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <CalendarIcon className="w-5 h-5 text-slate-400" />
-                    <div>
-                      <div className="text-sm text-slate-400">Dátum úlovku</div>
-                      <div className="font-semibold">
-                        {selectedCatch.capturedAt ? format(new Date(selectedCatch.capturedAt), "EEEE, d. MMMM yyyy", { locale: sk }) : 'Neuvedené'}
+                      <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-0.5">Dĺžka</p>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-2xl font-bold font-mono text-foreground">
+                          {selectedCatch.lengthCm || '—'}
+                        </span>
+                        {selectedCatch.lengthCm && <span className="text-sm text-muted-foreground">cm</span>}
                       </div>
                     </div>
                   </div>
-                </div>
 
-                {/* GPS Coordinates */}
-                {(selectedCatch.latitude || selectedCatch.longitude) && (
-                  <div className="bg-slate-700/30 rounded-lg p-4 space-y-2">
-                    <div className="text-sm font-semibold text-slate-300 mb-3">📍 GPS Súradnice</div>
-                    <div className="grid grid-cols-2 gap-3 text-sm">
-                      {selectedCatch.latitude && (
-                        <div>
-                          <div className="text-slate-400">Zem. šírka</div>
-                          <div className="font-medium">{Number(selectedCatch.latitude).toFixed(6)}°</div>
-                        </div>
-                      )}
-                      {selectedCatch.longitude && (
-                        <div>
-                          <div className="text-slate-400">Zem. dĺžka</div>
-                          <div className="font-medium">{Number(selectedCatch.longitude).toFixed(6)}°</div>
-                        </div>
-                      )}
+                  {/* Info Grid */}
+                  <div className="space-y-3">
+                    {/* Spot */}
+                    <div className="flex items-center justify-between py-2">
+                      <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                        <MapPin size={14} strokeWidth={1.75} />
+                        <span>Revír</span>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold text-foreground text-sm">
+                          {(selectedCatch as any).spotName || (selectedCatch as any).tripLocation || selectedCatch.spot || 'Neuvedené'}
+                        </p>
+                        {selectedCatch.spot && (selectedCatch as any).spotName && (
+                          <p className="text-xs text-muted-foreground">{selectedCatch.spot}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Bait */}
+                    <div className="flex items-center justify-between py-2">
+                      <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                        <Target size={14} strokeWidth={1.75} />
+                        <span>Nástraha</span>
+                      </div>
+                      <p className="font-semibold text-foreground text-sm">
+                        {selectedCatch.bait || 'Neuvedené'}
+                      </p>
+                    </div>
+
+                    {/* Date */}
+                    <div className="flex items-center justify-between py-2">
+                      <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                        <CalendarIcon size={14} strokeWidth={1.75} />
+                        <span>Dátum</span>
+                      </div>
+                      <p className="font-semibold text-foreground text-sm">
+                        {selectedCatch.capturedAt 
+                          ? format(new Date(selectedCatch.capturedAt), "EEEE, d. MMM", { locale: sk })
+                          : 'Neuvedené'
+                        }
+                      </p>
                     </div>
                   </div>
-                )}
 
-                {/* Weather Conditions */}
-                {(selectedCatch.waterTemp !== null && selectedCatch.waterTemp !== undefined) || 
-                 (selectedCatch.airTemp !== null && selectedCatch.airTemp !== undefined) || 
-                 (selectedCatch.windSpeed !== null && selectedCatch.windSpeed !== undefined) || 
-                 (selectedCatch.airPressure !== null && selectedCatch.airPressure !== undefined) ? (
-                  <div className="bg-slate-700/30 rounded-lg p-4 space-y-2">
-                    <div className="text-sm font-semibold text-slate-300 mb-3">🌤️ Podmienky počasia</div>
-                    <div className="grid grid-cols-2 gap-3 text-sm">
-                      {(selectedCatch.waterTemp !== null && selectedCatch.waterTemp !== undefined) && (
-                        <div>
-                          <div className="text-slate-400">Teplota vody</div>
-                          <div className="font-medium">{selectedCatch.waterTemp}°C</div>
-                        </div>
-                      )}
-                      {(selectedCatch.airTemp !== null && selectedCatch.airTemp !== undefined) && (
-                        <div>
-                          <div className="text-slate-400">Teplota vzduchu</div>
-                          <div className="font-medium">{selectedCatch.airTemp}°C</div>
-                        </div>
-                      )}
-                      {(selectedCatch.windSpeed !== null && selectedCatch.windSpeed !== undefined) && (
-                        <div>
-                          <div className="text-slate-400">Rýchlosť vetra</div>
-                          <div className="font-medium">{selectedCatch.windSpeed} km/h</div>
-                        </div>
-                      )}
-                      {(selectedCatch.airPressure !== null && selectedCatch.airPressure !== undefined) && (
-                        <div>
-                          <div className="text-slate-400">Tlak vzduchu</div>
-                          <div className="font-medium">{selectedCatch.airPressure} hPa</div>
-                        </div>
-                      )}
+                  {/* Notes */}
+                  {selectedCatch.notes && (
+                    <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
+                      <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-2">Poznámky</p>
+                      <p className="text-sm text-foreground leading-relaxed font-serif">
+                        {selectedCatch.notes}
+                      </p>
                     </div>
-                  </div>
-                ) : null}
+                  )}
 
-                {/* Notes */}
-                {selectedCatch.notes && (
-                  <div>
-                    <div className="text-sm text-slate-400 mb-2">Poznámky</div>
-                    <div className="bg-slate-700/50 rounded-lg p-3 text-sm">
-                      {selectedCatch.notes}
+                  {/* Weather Conditions - Collapsible Style */}
+                  {((selectedCatch.waterTemp !== null && selectedCatch.waterTemp !== undefined) || 
+                    (selectedCatch.airTemp !== null && selectedCatch.airTemp !== undefined) || 
+                    (selectedCatch.windSpeed !== null && selectedCatch.windSpeed !== undefined) || 
+                    (selectedCatch.airPressure !== null && selectedCatch.airPressure !== undefined)) && (
+                    <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
+                      <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-3">Podmienky</p>
+                      <div className="grid grid-cols-2 gap-3">
+                        {(selectedCatch.waterTemp !== null && selectedCatch.waterTemp !== undefined) && (
+                          <div className="bg-blue-50 dark:bg-blue-950/30 rounded-lg p-3">
+                            <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-1">Voda</p>
+                            <p className="font-mono font-medium text-[#F97316]" data-testid="detail-water-temp">{selectedCatch.waterTemp}°C</p>
+                          </div>
+                        )}
+                        {(selectedCatch.airTemp !== null && selectedCatch.airTemp !== undefined) && (
+                          <div className="bg-blue-50 dark:bg-blue-950/30 rounded-lg p-3">
+                            <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-1">Vzduch</p>
+                            <p className="font-mono font-medium text-[#F97316]" data-testid="detail-air-temp">{selectedCatch.airTemp}°C</p>
+                          </div>
+                        )}
+                        {(selectedCatch.windSpeed !== null && selectedCatch.windSpeed !== undefined) && (
+                          <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3">
+                            <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-1">Vietor</p>
+                            <p className="font-mono font-medium text-foreground" data-testid="detail-wind-speed">{selectedCatch.windSpeed} km/h</p>
+                          </div>
+                        )}
+                        {(selectedCatch.airPressure !== null && selectedCatch.airPressure !== undefined) && (
+                          <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3">
+                            <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-1">Tlak</p>
+                            <p className="font-mono font-medium text-foreground" data-testid="detail-air-pressure">{selectedCatch.airPressure} hPa</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Action Buttons */}
-                <div className="pt-4 space-y-3">
-                  <Button 
-                    className="w-full bg-blue-600 hover:bg-blue-700"
-                    onClick={() => openEditDialog(selectedCatch)}
-                    data-testid="button-edit-catch"
-                  >
-                    <Edit2 className="w-4 h-4 mr-2" />
-                    Upraviť
-                  </Button>
-                  <Button 
-                    variant="destructive"
-                    className="w-full"
-                    onClick={() => {
-                      openDeleteDialog(selectedCatch.id);
-                    }}
-                    data-testid="button-delete-catch"
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Zmazať
-                  </Button>
+                  {/* GPS Coordinates */}
+                  {(selectedCatch.latitude || selectedCatch.longitude) && (
+                    <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
+                      <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-2">GPS Súradnice</p>
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        {selectedCatch.latitude && (
+                          <div>
+                            <p className="text-xs text-muted-foreground">Šírka</p>
+                            <p className="font-mono font-medium text-[#F97316]">{Number(selectedCatch.latitude).toFixed(5)}°</p>
+                          </div>
+                        )}
+                        {selectedCatch.longitude && (
+                          <div>
+                            <p className="text-xs text-muted-foreground">Dĺžka</p>
+                            <p className="font-mono font-medium text-[#F97316]">{Number(selectedCatch.longitude).toFixed(5)}°</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Action Buttons */}
+                  <div className="pt-5 mt-auto space-y-3">
+                    <Button 
+                      variant="outline"
+                      className="w-full h-11 border-slate-200 dark:border-slate-700"
+                      onClick={() => {
+                        setSelectedCatch(null);
+                        setLocation(`/diary/catches/${selectedCatch.id}`);
+                      }}
+                      data-testid="button-view-full-page"
+                    >
+                      <Maximize2 className="w-4 h-4 mr-2" />
+                      Zobraziť celú stránku
+                    </Button>
+                    <Button 
+                      className="w-full bg-blue-600 hover:bg-blue-700 h-12 text-base font-semibold"
+                      onClick={() => openEditDialog(selectedCatch)}
+                      data-testid="button-edit-catch"
+                    >
+                      <Edit2 className="w-4 h-4 mr-2" />
+                      Upraviť
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      className="w-full border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 h-11"
+                      onClick={() => {
+                        openDeleteDialog(selectedCatch.id);
+                        setSelectedCatch(null);
+                      }}
+                      data-testid="button-delete-catch"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Zmazať
+                    </Button>
+                  </div>
                 </div>
               </div>
             )}
