@@ -3,15 +3,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { useConfetti } from "@/hooks/useConfetti";
 import { useToast } from "@/hooks/use-toast";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { 
   Lock, 
   Unlock, 
-  ChevronDown, 
   Plus, 
   Trophy, 
   Sparkles, 
@@ -44,8 +42,7 @@ const BADGE_ICON_MAP: Record<string, LucideIcon> = {
 
 import { useLocation } from "wouter";
 import DiaryLayout from "@/components/DiaryLayout";
-import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
-import { BADGE_DEFINITIONS, getTierColor, getTierBgClass, getTierTextClass, BadgeTier } from "@shared/badges";
+import { BADGE_DEFINITIONS, BadgeTier } from "@shared/badges";
 import type { UserBadge } from "@shared/schema";
 import { BadgeCelebrationModal } from "@/components/diary/BadgeCelebrationModal";
 import { cn } from "@/lib/utils";
@@ -94,7 +91,7 @@ export default function BadgesPage() {
   const { celebrateGoalCompletion } = useConfetti();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
-  const [showAllBadges, setShowAllBadges] = useState(false);
+  const [isCatalogOpen, setIsCatalogOpen] = useState(false);
   const [demoBadge, setDemoBadge] = useState<{
     badgeType: string;
     badgeName: string;
@@ -194,7 +191,7 @@ export default function BadgesPage() {
     <DiaryLayout>
       <div className="space-y-12">
         
-        {/* HERO HEADER - Dramatic typography */}
+        {/* HERO HEADER - with Catalog button */}
         <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-3">
             <div className="flex items-center gap-3">
@@ -211,19 +208,32 @@ export default function BadgesPage() {
             </div>
           </div>
           
-          <div className="flex items-center gap-4 bg-card border border-border p-4 rounded-2xl shadow-lg">
-            <div className="text-right">
-              <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest block mb-0.5">Tvoj pokrok</span>
-              <span className="text-2xl font-black text-foreground leading-none">
-                {userBadges.length} <span className="text-xs text-muted-foreground font-normal">/ {totalPossibleBadges}</span>
-              </span>
-              <div className="flex items-center justify-end gap-1.5 mt-1.5">
-                <span className="text-[8px] font-black uppercase tracking-widest text-orange-500">{currentStatus}</span>
-                <div className="w-1 h-1 rounded-full bg-orange-500 animate-pulse" />
+          <div className="flex flex-col items-end gap-3">
+            {/* Catalog button */}
+            <button 
+              onClick={() => setIsCatalogOpen(true)}
+              className="flex items-center gap-2 px-5 py-2 bg-card border border-border rounded-full hover:border-orange-500/50 transition-all text-muted-foreground hover:text-foreground"
+              data-testid="button-open-catalog"
+            >
+              <Lock size={12} className="text-orange-500" strokeWidth={1.75} />
+              <span className="text-[10px] font-black uppercase tracking-widest">Katalóg výziev</span>
+            </button>
+
+            {/* Progress counter */}
+            <div className="flex items-center gap-4 bg-card border border-border p-4 rounded-2xl shadow-lg">
+              <div className="text-right">
+                <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest block mb-0.5">Tvoj pokrok</span>
+                <span className="text-2xl font-black text-foreground leading-none">
+                  {userBadges.length} <span className="text-xs text-muted-foreground font-normal">/ {totalPossibleBadges}</span>
+                </span>
+                <div className="flex items-center justify-end gap-1.5 mt-1.5">
+                  <span className="text-[8px] font-black uppercase tracking-widest text-orange-500">{currentStatus}</span>
+                  <div className="w-1 h-1 rounded-full bg-orange-500 animate-pulse" />
+                </div>
               </div>
-            </div>
-            <div className="h-12 w-12 bg-amber-400/10 rounded-2xl flex items-center justify-center text-amber-400 border border-amber-400/20 shadow-inner">
-              <Trophy size={20} strokeWidth={1.75} />
+              <div className="h-12 w-12 bg-amber-400/10 rounded-2xl flex items-center justify-center text-amber-400 border border-amber-400/20 shadow-inner">
+                <Trophy size={20} strokeWidth={1.75} />
+              </div>
             </div>
           </div>
         </header>
@@ -343,86 +353,6 @@ export default function BadgesPage() {
           })}
         </div>
 
-        {/* CATALOG - Collapsible with grayscale locked badges */}
-        <Collapsible open={showAllBadges} onOpenChange={setShowAllBadges} className="pt-10 border-t border-border/50">
-          <CollapsibleTrigger asChild>
-            <button 
-              className="w-full group flex items-center justify-between p-3 rounded-xl hover:bg-muted/40 transition-all"
-              data-testid="button-toggle-all-badges"
-            >
-              <div className="flex items-center gap-4">
-                <div className="p-2 bg-card rounded-lg text-muted-foreground group-hover:text-foreground transition-colors border border-border/50">
-                  <Lock size={14} strokeWidth={1.75} />
-                </div>
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground group-hover:text-foreground transition-colors">
-                  Katalóg výziev
-                </span>
-              </div>
-              <ChevronDown className={cn(
-                "w-4 h-4 text-muted-foreground transition-transform duration-300",
-                showAllBadges && "rotate-180"
-              )} strokeWidth={1.75} />
-            </button>
-          </CollapsibleTrigger>
-          
-          <CollapsibleContent className="pt-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {badgesList.map(badgeDef => {
-                const IconComponent = BADGE_ICON_MAP[badgeDef.icon] || Award;
-                
-                return (
-                  <Card key={badgeDef.id} className="p-4 bg-card/50 rounded-2xl">
-                    <div className="flex items-start gap-3 mb-3">
-                      <div className="p-2 bg-muted rounded-lg text-muted-foreground">
-                        <IconComponent size={18} strokeWidth={1.75} />
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-foreground">{badgeDef.name}</h3>
-                        <p className="text-xs text-muted-foreground">{badgeDef.description}</p>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      {(['bronze', 'silver', 'gold'] as const).map(tier => {
-                        const isUnlocked = unlockedBadges.has(`${badgeDef.id}_${tier}`);
-                        const tierDef = badgeDef.tiers[tier];
-                        const currentValue = badgeProgress[badgeDef.id] || 0;
-                        const threshold = tierDef.threshold;
-                        const progressPercent = Math.min((currentValue / threshold) * 100, 100);
-
-                        return (
-                          <div
-                            key={tier}
-                            className={cn(
-                              "flex items-center justify-between p-2 rounded-lg transition-all",
-                              isUnlocked 
-                                ? "bg-muted/50" 
-                                : "bg-muted/20 opacity-50 grayscale"
-                            )}
-                          >
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm">
-                                {tier === 'bronze' ? '🥉' : tier === 'silver' ? '🥈' : '🥇'}
-                              </span>
-                              <span className="text-xs text-muted-foreground">{tierDef.description}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              {isUnlocked ? (
-                                <Unlock className="w-3.5 h-3.5 text-emerald-500" strokeWidth={1.75} />
-                              ) : (
-                                <span className="text-[10px] text-muted-foreground">{currentValue}/{threshold}</span>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </Card>
-                );
-              })}
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
-
         {/* Demo Button - subtle placement */}
         <div className="flex justify-center pt-4">
           <Button
@@ -447,6 +377,76 @@ export default function BadgesPage() {
           </Button>
         </div>
       </div>
+
+      {/* CATALOG MODAL */}
+      <Dialog open={isCatalogOpen} onOpenChange={setIsCatalogOpen}>
+        <DialogContent className="max-w-2xl max-h-[85vh] rounded-3xl border-border bg-card overflow-hidden p-0">
+          <DialogHeader className="px-6 pt-6 pb-4 border-b border-border">
+            <DialogTitle className="text-2xl font-black italic uppercase text-foreground tracking-tight leading-none">
+              Katalóg výziev
+            </DialogTitle>
+            <DialogDescription className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-2 italic">
+              Prehľad všetkých možných úspechov
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-y-auto p-6 space-y-4 max-h-[calc(85vh-120px)]">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {badgesList.map(badgeDef => {
+                const IconComponent = BADGE_ICON_MAP[badgeDef.icon] || Award;
+                
+                return (
+                  <div key={badgeDef.id} className="p-5 rounded-2xl bg-muted/20 border border-border/60 space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2.5 bg-card rounded-lg border border-border text-muted-foreground">
+                        <IconComponent size={18} strokeWidth={1.75} />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-foreground">{badgeDef.name}</h3>
+                        <p className="text-xs text-muted-foreground">{badgeDef.description}</p>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      {(['bronze', 'silver', 'gold'] as const).map(tier => {
+                        const isUnlocked = unlockedBadges.has(`${badgeDef.id}_${tier}`);
+                        const tierDef = badgeDef.tiers[tier];
+                        const currentValue = badgeProgress[badgeDef.id] || 0;
+                        const threshold = tierDef.threshold;
+
+                        return (
+                          <div
+                            key={tier}
+                            className={cn(
+                              "flex items-center justify-between p-2.5 rounded-xl transition-all",
+                              isUnlocked 
+                                ? "bg-card/80 border border-border/50" 
+                                : "bg-muted/30 opacity-50 grayscale"
+                            )}
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm">
+                                {tier === 'bronze' ? '🥉' : tier === 'silver' ? '🥈' : '🥇'}
+                              </span>
+                              <span className="text-xs text-muted-foreground">{tierDef.description}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {isUnlocked ? (
+                                <Unlock className="w-3.5 h-3.5 text-emerald-500" strokeWidth={1.75} />
+                              ) : (
+                                <span className="text-[10px] text-muted-foreground font-medium">{currentValue}/{threshold}</span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Demo Badge Celebration Modal */}
       <BadgeCelebrationModal
