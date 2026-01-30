@@ -1,0 +1,125 @@
+### v catch form nám ale chýba pridať nickname pre rybu
+
+**Chýba.**
+
+A je dobre, že si si to všimol **teraz**, nie o tri týždne.
+
+Teraz ti poviem **presne ako to uchopiť**, aby si **neporušil filozofiu Catch Formu**, ktorú už máme.
+
+**🔴 REALITA**
+
+- **Catch Detail**: nickname existuje, je krásny, funguje emocionálne
+- **Catch Form**: nickname zatiaľ **nie je**
+
+👉 To je **nekonzistencia modelu**, nie len UI detail.
+
+Ale pozor:
+
+❌ **NEZNAMENÁ TO**, že teraz máš do formu pridať ďalšie povinné pole.
+
+**🧠 PRODUKTOVÉ ROZHODNUTIE (SPRÁVNE)**
+
+**NICKNAME MUSÍ BYŤ:**
+
+- **voliteľný**
+- **nenápadný**
+- **emocionálny**, nie technický
+
+A hlavne:
+
+**NESMIE SPOMALIŤ ZÁPIS.**
+
+**❌ AKO TO NESPRAVIŤ**
+
+- ❌ pridať input medzi povinné polia
+- ❌ dať ho hore k fotke
+- ❌ označiť ako „dôležité“
+- ❌ tlačiť usera do pomenovávania ryby
+
+To by zabilo to, čo si doteraz vybudoval.
+
+**✅ AKO TO SPRAVIŤ SPRÁVNE (KONKRÉTNE)**
+
+**1️⃣ UMIESTNENIE**
+
+➡️ **Do rovnakého collapsu ako poznámka.**
+
+Struktúra:
+
+[ Povinné polia ]
+
+[ Fotka ]
+
+▼ Pridať detaily (voliteľné)
+
+- Dĺžka
+
+- Nástraha
+
+- Revír
+
+- Nickname ryby
+
+- Poznámka / príbeh
+
+Nickname patrí **k príbehu**, nie k dátam.
+
+**2️⃣ LABEL & COPY (VEĽMI DÔLEŽITÉ)**
+
+**Label:**
+
+**„Prezývka ryby“**
+
+**Placeholder (emocionálny, ale krátky):**
+
+„napr. Šupináč zo zátoky“
+
+Nie:
+
+- „Názov ryby“
+- „Meno“
+
+To by znelo čudne a umelo.
+
+**3️⃣ TECHNICKÉ PRAVIDLÁ**
+
+- max. **40 znakov**
+- žiadna validácia
+- žiadny error
+- žiadny hint po uložení
+
+Ak user:
+
+- nevyplní → nič sa nedeje
+- vyplní → zobrazí sa v detaile
+
+**4️⃣ VPLYV NA UX**
+
+Týmto krokom:
+
+- **nič nepokazíš**
+- **nič nespomalíš**
+- ale pridáš **emocionálnu vrstvu**, ktorá už v detaile existuje
+
+To je presne ten typ feature, ktorý:
+
+- si všimnú len tí správni useri
+- ale výrazne zvýši hodnotu appky
+
+**🧠 FINÁLNY VERDIKT**
+
+Áno, nickname **chýba**.
+
+Ale:
+
+👉 **Je to malý, čistý a správny doplnok.**
+
+👉 Neotvára Pandorinu skrinku.
+
+Ak ho:
+
+- dáš do collapsu
+- necháš ho tiché
+- nenútiš usera
+
+➡️ **Catch Form ostáva hotový.**
