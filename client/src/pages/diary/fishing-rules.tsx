@@ -1,7 +1,7 @@
-import { useState, useMemo, Fragment } from "react";
+import { useState, useMemo, Fragment, useEffect } from "react";
 import DiaryLayout from "@/components/DiaryLayout";
-import { Search, Shield, Ruler, Clock, AlertCircle, MapPin, Loader2, Scale } from "lucide-react";
-import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
+import { Search, Shield, Ruler, Clock, AlertCircle, MapPin, Loader2, Scale, Filter, Info } from "lucide-react";
+import { TacticalIcon } from "@/components/ui/tactical-icon";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -16,30 +16,15 @@ interface QuickLinkCard {
   id: QuickLinkType;
   icon: React.ElementType;
   title: string;
+  shortTitle: string;
 }
 
 // Dáta pre karty rýchleho prístupu
 const quickLinks: QuickLinkCard[] = [
-  {
-    id: "sizes",
-    icon: Ruler,
-    title: "Lovné Miery"
-  },
-  {
-    id: "closedSeasons",
-    icon: Shield,
-    title: "Doby Hájenia"
-  },
-  {
-    id: "dailyHours",
-    icon: Clock,
-    title: "Denná Doba Lovu"
-  },
-  {
-    id: "fishingAreas",
-    icon: MapPin,
-    title: "Revíry"
-  }
+  { id: "sizes", icon: Ruler, title: "Lovné Miery", shortTitle: "Miery" },
+  { id: "closedSeasons", icon: Shield, title: "Doby Hájenia", shortTitle: "Hájenie" },
+  { id: "dailyHours", icon: Clock, title: "Denná Doba Lovu", shortTitle: "Časy lovu" },
+  { id: "fishingAreas", icon: MapPin, title: "Revíry", shortTitle: "Revíry" }
 ];
 
 // Statické dáta pre tabuľku "Lovné miery" (2025)
@@ -121,13 +106,26 @@ const dailyHoursData = [
   { month: "December", carpWaters: "06:00 - 21:00", troutWaters: "07:00 - 17:00" }
 ];
 
+// --- SIGNAL COMPONENT (Sonar Pulse) ---
+function Signal({ variant = "blue" }: { variant?: "blue" | "red" }) {
+  return (
+    <span className="relative flex h-2 w-2">
+      <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+        variant === "red" ? "bg-red-500" : "bg-blue-400"
+      }`} />
+      <span className={`relative inline-flex rounded-full h-2 w-2 ${
+        variant === "red" ? "bg-red-600" : "bg-blue-500"
+      }`} />
+    </span>
+  );
+}
+
 // Helper: Check if fish is currently protected (in closed season)
 function isCurrentlyProtected(fromStr: string, toStr: string): boolean {
   const today = new Date();
-  today.setHours(0, 0, 0, 0); // Normalize to start of day
+  today.setHours(0, 0, 0, 0);
   const currentYear = today.getFullYear();
   
-  // Parse dates (format: "DD.MM." - e.g., "15.03.")
   const fromParts = fromStr.split('.').filter(p => p.length > 0);
   const toParts = toStr.split('.').filter(p => p.length > 0);
   
@@ -143,9 +141,7 @@ function isCurrentlyProtected(fromStr: string, toStr: string): boolean {
   const fromDate = new Date(currentYear, fromMonth - 1, fromDay);
   const toDate = new Date(currentYear, toMonth - 1, toDay);
   
-  // Handle year wraparound (e.g., 01.09. to 15.04.)
   if (toDate < fromDate) {
-    // Season spans across year boundary - check if today is in either part
     return today >= fromDate || today <= toDate;
   }
   
@@ -163,7 +159,7 @@ function HighlightText({ text, query }: { text: string; query: string }) {
     <>
       {parts.map((part, i) => 
         regex.test(part) ? (
-          <mark key={i} className="bg-yellow-200 dark:bg-yellow-800 px-0.5 rounded font-semibold">
+          <mark key={i} className="bg-blue-500/30 text-blue-200 dark:text-blue-300 rounded-sm px-0.5 font-semibold">
             {part}
           </mark>
         ) : (
@@ -174,11 +170,89 @@ function HighlightText({ text, query }: { text: string; query: string }) {
   );
 }
 
+// --- LEGAL DISCLAIMER COMPONENT ---
+function LegalDisclaimer() {
+  return (
+    <div className="mt-8 p-4 rounded-xl bg-slate-100 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800">
+      <div className="flex items-start gap-3">
+        <Info className="w-5 h-5 text-slate-500 shrink-0 mt-0.5" strokeWidth={1.75} />
+        <div className="space-y-2">
+          <p className="text-xs font-medium uppercase tracking-widest text-slate-500">
+            Právne upozornenie
+          </p>
+          <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+            Tieto údaje sú informatívneho charakteru. Pred lovom si vždy overte aktuálne platné pravidlá 
+            na stránkach Slovenského rybárskeho zväzu. Niektoré revíry môžu mať odlišné miestne predpisy 
+            a výnimky. Za dodržiavanie pravidiel zodpovedá každý rybár individuálne.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- EMPTY STATE COMPONENT ---
+function EmptyState({ query, type }: { query: string; type: "search" | "areas" }) {
+  if (type === "areas") {
+    return (
+      <div className="py-16 text-center space-y-6">
+        <div className="w-20 h-20 bg-slate-100 dark:bg-slate-900/50 rounded-full flex items-center justify-center mx-auto border border-slate-200 dark:border-slate-800">
+          <MapPin className="text-slate-400 dark:text-slate-600" size={36} strokeWidth={1.25} />
+        </div>
+        <div className="space-y-2">
+          <h3 className="text-xl font-bold text-foreground tracking-tight">Vyhľadať revír</h3>
+          <p className="text-sm text-muted-foreground max-w-xs mx-auto leading-relaxed">
+            Zadajte číslo alebo názov revíru (min. 2 znaky).
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="py-16 text-center space-y-4">
+      <div className="w-14 h-14 bg-slate-100 dark:bg-slate-900 rounded-xl flex items-center justify-center mx-auto border border-slate-200 dark:border-slate-800">
+        <Filter size={24} strokeWidth={1.5} className="text-slate-400 dark:text-slate-600" />
+      </div>
+      <div className="space-y-1">
+        <p className="text-foreground font-semibold tracking-tight">Nenašli sa výsledky pre "{query}"</p>
+        <p className="text-xs text-muted-foreground font-medium">Skúste skrátený tvar (napr. "kapor").</p>
+      </div>
+    </div>
+  );
+}
+
 export default function FishingRulesPage() {
-  const [activeSection, setActiveSection] = useState<QuickLinkType>("sizes");
+  const isMobile = useIsMobile();
+  
+  // State with localStorage persistence
+  const [activeSection, setActiveSection] = useState<QuickLinkType>(() => {
+    try {
+      const saved = localStorage.getItem('contestio_active_fishing_tab');
+      return (saved as QuickLinkType) || "sizes";
+    } catch {
+      return "sizes";
+    }
+  });
+  
   const [searchQuery, setSearchQuery] = useState("");
   const [areasSearchQuery, setAreasSearchQuery] = useState("");
-  const isMobile = useIsMobile();
+
+  // Persist activeSection to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('contestio_active_fishing_tab', activeSection);
+    } catch {
+      // Ignore localStorage errors
+    }
+  }, [activeSection]);
+
+  // Reset search when changing tabs (except for fishingAreas)
+  useEffect(() => {
+    if (activeSection !== "fishingAreas") {
+      setSearchQuery("");
+    }
+  }, [activeSection]);
 
   // Fetch fishing areas when on that tab with search
   const { data: fishingAreasData, isLoading: isLoadingAreas } = useQuery<FishingArea[]>({
@@ -219,74 +293,69 @@ export default function FishingRulesPage() {
       case "sizes": {
         const filteredSizeLimits = filterData(sizeLimitsData);
         
+        if (searchQuery && filteredSizeLimits.length === 0) {
+          return <EmptyState query={searchQuery} type="search" />;
+        }
+        
         // Mobile Card View
         if (isMobile) {
           return (
             <div className="space-y-3">
-              {filteredSizeLimits.length === 0 ? (
-                <div className="py-8 text-center text-muted-foreground">
-                  Nenašli sa žiadne výsledky
-                </div>
-              ) : (
-                filteredSizeLimits.map((row, index) => (
-                  <Card key={index} className="p-4 bg-muted/30" data-testid={`card-size-limit-${index}`}>
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-foreground" data-testid={`text-fish-${index}`}>
+              {filteredSizeLimits.map((row, index) => (
+                <Card key={index} className="p-5 bg-slate-50 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800" data-testid={`card-size-limit-${index}`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <TacticalIcon icon={Ruler} variant="neutral" size="sm" showLabel={false} />
+                      <div>
+                        <p className="text-sm font-semibold text-foreground tracking-tight" data-testid={`text-fish-${index}`}>
                           <HighlightText text={row.fish} query={searchQuery} />
-                        </h4>
-                        <div className="mt-2 flex items-center gap-2">
-                          <Ruler className="h-4 w-4 text-muted-foreground shrink-0" strokeWidth={1.75} />
-                          <span className="text-sm font-mono font-medium text-[#F97316]" data-testid={`text-size-${index}`}>
-                            <HighlightText text={row.minMax} query={searchQuery} />
-                          </span>
-                        </div>
+                        </p>
+                        <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest mt-0.5">
+                          Minimálna lovná miera
+                        </p>
                       </div>
                     </div>
-                  </Card>
-                ))
-              )}
+                    <p className="text-xl font-mono font-medium text-[#F97316] tracking-tight" data-testid={`text-size-${index}`}>
+                      {row.minMax}
+                    </p>
+                  </div>
+                </Card>
+              ))}
             </div>
           );
         }
         
         // Desktop Table View
         return (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
             <table className="w-full border-collapse">
               <thead>
-                <tr className="bg-sidebar border-b border-sidebar-border">
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-sidebar-foreground">
+                <tr className="bg-slate-100 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
+                  <th className="px-6 py-4 text-left text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
                     Druh Ryby
                   </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-sidebar-foreground">
+                  <th className="px-6 py-4 text-right text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
                     Minimálna lovná miera
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {filteredSizeLimits.length === 0 ? (
-                  <tr>
-                    <td colSpan={2} className="px-6 py-8 text-center text-muted-foreground">
-                      Nenašli sa žiadne výsledky
-                    </td>
-                  </tr>
-                ) : (
-                  filteredSizeLimits.map((row, index) => (
+                {filteredSizeLimits.map((row, index) => (
                   <tr 
                     key={index} 
-                    className="border-b border-border hover:bg-sidebar-accent transition-colors"
+                    className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors"
                     data-testid={`row-size-limit-${index}`}
                   >
-                    <td className="px-6 py-4 text-sm text-foreground font-medium" data-testid={`text-fish-${index}`}>
+                    <td className="px-6 py-4 text-sm text-foreground font-semibold" data-testid={`text-fish-${index}`}>
                       <HighlightText text={row.fish} query={searchQuery} />
                     </td>
-                    <td className="px-6 py-4 text-sm text-foreground" data-testid={`text-size-${index}`}>
-                      <HighlightText text={row.minMax} query={searchQuery} />
+                    <td className="px-6 py-4 text-right">
+                      <span className="font-mono font-medium text-[#F97316]" data-testid={`text-size-${index}`}>
+                        {row.minMax}
+                      </span>
                     </td>
                   </tr>
-                  ))
-                )}
+                ))}
               </tbody>
             </table>
           </div>
@@ -296,122 +365,106 @@ export default function FishingRulesPage() {
       case "closedSeasons": {
         const filteredClosedSeasons = filterData(closedSeasonsData);
         
+        if (searchQuery && filteredClosedSeasons.length === 0) {
+          return <EmptyState query={searchQuery} type="search" />;
+        }
+        
         // Mobile Card View
         if (isMobile) {
           return (
             <div className="space-y-3">
-              {filteredClosedSeasons.length === 0 ? (
-                <div className="py-8 text-center text-muted-foreground">
-                  Nenašli sa žiadne výsledky
-                </div>
-              ) : (
-                filteredClosedSeasons.map((row, index) => {
-                  const isProtected = protectedFishSet.has(row.fish);
-                  return (
-                    <Card 
-                      key={index} 
-                      className={`p-4 ${isProtected ? 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900' : 'bg-muted/30'}`}
-                      data-testid={`card-closed-season-${index}`}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1 min-w-0">
+              {filteredClosedSeasons.map((row, index) => {
+                const isProtected = protectedFishSet.has(row.fish);
+                return (
+                  <Card 
+                    key={index} 
+                    className={`relative p-5 transition-all duration-300 ${
+                      isProtected 
+                        ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900/50' 
+                        : 'bg-slate-50 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800'
+                    }`}
+                    data-testid={`card-closed-season-${index}`}
+                  >
+                    {isProtected && (
+                      <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-red-500 animate-pulse rounded-l-xl" />
+                    )}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <TacticalIcon icon={Shield} variant={isProtected ? "red" : "neutral"} size="sm" showLabel={false} />
+                        <div>
                           <div className="flex items-center gap-2">
-                            <h4 className="font-semibold text-foreground" data-testid={`text-season-fish-${index}`}>
+                            <p className="text-sm font-semibold text-foreground tracking-tight" data-testid={`text-season-fish-${index}`}>
                               <HighlightText text={row.fish} query={searchQuery} />
-                            </h4>
+                            </p>
+                            {isProtected && <Signal variant="red" />}
+                          </div>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-xs text-muted-foreground font-medium">{row.from} — {row.to}</span>
                             {isProtected && (
-                              <Badge variant="destructive" className="text-xs gap-1" data-testid={`badge-protected-${index}`}>
-                                <AlertCircle className="h-3 w-3" />
+                              <Badge variant="destructive" className="text-[10px] font-bold uppercase tracking-widest" data-testid={`badge-protected-${index}`}>
                                 Hájená
                               </Badge>
                             )}
                           </div>
-                          <div className="mt-2 flex items-center gap-4 text-sm">
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-muted-foreground">Od:</span>
-                              <span className="text-foreground font-medium" data-testid={`text-season-from-${index}`}>
-                                <HighlightText text={row.from} query={searchQuery} />
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-muted-foreground">Do:</span>
-                              <span className="text-foreground font-medium" data-testid={`text-season-to-${index}`}>
-                                <HighlightText text={row.to} query={searchQuery} />
-                              </span>
-                            </div>
-                          </div>
                         </div>
-                        {isProtected && (
-                          <div className="h-3 w-3 rounded-full bg-red-500 animate-pulse shrink-0 mt-1" aria-label="Aktuálne hájená" />
-                        )}
                       </div>
-                    </Card>
-                  );
-                })
-              )}
+                    </div>
+                  </Card>
+                );
+              })}
             </div>
           );
         }
         
         // Desktop Table View
         return (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
             <table className="w-full border-collapse">
               <thead>
-                <tr className="bg-sidebar border-b border-sidebar-border">
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-sidebar-foreground">
+                <tr className="bg-slate-100 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
+                  <th className="px-6 py-4 text-left text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
                     Druh Ryby
                   </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-sidebar-foreground">
-                    Od
+                  <th className="px-6 py-4 text-left text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+                    Doba hájenia
                   </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-sidebar-foreground">
-                    Do
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-sidebar-foreground">
+                  <th className="px-6 py-4 text-right text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
                     Stav
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {filteredClosedSeasons.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className="px-6 py-8 text-center text-muted-foreground">
-                      Nenašli sa žiadne výsledky
-                    </td>
-                  </tr>
-                ) : (
-                  filteredClosedSeasons.map((row, index) => {
-                    const isProtected = protectedFishSet.has(row.fish);
-                    return (
-                      <tr 
-                        key={index} 
-                        className={`border-b border-border hover:bg-sidebar-accent transition-colors ${isProtected ? 'bg-red-50/50 dark:bg-red-950/20' : ''}`}
-                        data-testid={`row-closed-season-${index}`}
-                      >
-                        <td className="px-6 py-4 text-sm text-foreground font-medium" data-testid={`text-season-fish-${index}`}>
-                          <HighlightText text={row.fish} query={searchQuery} />
-                        </td>
-                        <td className="px-6 py-4 text-sm text-foreground" data-testid={`text-season-from-${index}`}>
-                          <HighlightText text={row.from} query={searchQuery} />
-                        </td>
-                        <td className="px-6 py-4 text-sm text-foreground" data-testid={`text-season-to-${index}`}>
-                          <HighlightText text={row.to} query={searchQuery} />
-                        </td>
-                        <td className="px-6 py-4 text-sm">
-                          {isProtected ? (
-                            <div className="flex items-center gap-2">
-                              <span className="h-2.5 w-2.5 rounded-full bg-red-500 animate-pulse" />
-                              <span className="text-red-600 dark:text-red-400 font-medium">Hájená</span>
-                            </div>
-                          ) : (
-                            <span className="text-green-600 dark:text-green-400">Možno loviť</span>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
+                {filteredClosedSeasons.map((row, index) => {
+                  const isProtected = protectedFishSet.has(row.fish);
+                  return (
+                    <tr 
+                      key={index} 
+                      className={`border-b border-slate-100 dark:border-slate-800 transition-colors ${
+                        isProtected ? 'bg-red-50/50 dark:bg-red-950/10' : 'hover:bg-slate-50 dark:hover:bg-slate-900/30'
+                      }`}
+                      data-testid={`row-closed-season-${index}`}
+                    >
+                      <td className="px-6 py-4 text-sm text-foreground font-semibold" data-testid={`text-season-fish-${index}`}>
+                        <HighlightText text={row.fish} query={searchQuery} />
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="font-mono font-medium text-muted-foreground" data-testid={`text-season-dates-${index}`}>
+                          {row.from} — {row.to}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        {isProtected ? (
+                          <div className="flex items-center justify-end gap-2">
+                            <Signal variant="red" />
+                            <span className="text-red-600 dark:text-red-400 font-medium text-sm">Hájená</span>
+                          </div>
+                        ) : (
+                          <span className="text-emerald-600 dark:text-emerald-400 font-medium text-sm">Možno loviť</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -423,108 +476,110 @@ export default function FishingRulesPage() {
         const currentMonth = new Date().toLocaleDateString('sk-SK', { month: 'long' });
         const currentMonthCapitalized = currentMonth.charAt(0).toUpperCase() + currentMonth.slice(1);
         
+        if (searchQuery && filteredDailyHours.length === 0) {
+          return <EmptyState query={searchQuery} type="search" />;
+        }
+        
         // Mobile Card View
         if (isMobile) {
           return (
             <div className="space-y-3">
-              {filteredDailyHours.length === 0 ? (
-                <div className="py-8 text-center text-muted-foreground">
-                  Nenašli sa žiadne výsledky
-                </div>
-              ) : (
-                filteredDailyHours.map((row, index) => {
-                  const isCurrentMonth = row.month === currentMonthCapitalized;
-                  return (
-                    <Card 
-                      key={index} 
-                      className={`p-4 ${isCurrentMonth ? 'bg-primary/10 border-primary/30 ring-1 ring-primary/20' : 'bg-muted/30'}`}
-                      data-testid={`card-daily-hours-${index}`}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <h4 className="font-semibold text-foreground" data-testid={`text-month-${index}`}>
-                              <HighlightText text={row.month} query={searchQuery} />
-                            </h4>
-                            {isCurrentMonth && (
-                              <Badge variant="default" className="text-xs">Aktuálny</Badge>
-                            )}
-                          </div>
-                          <div className="mt-3 space-y-2 text-sm">
-                            <div className="flex items-center justify-between">
-                              <span className="text-muted-foreground">Kaprové vody:</span>
-                              <span className="text-foreground font-medium" data-testid={`text-carp-hours-${index}`}>
-                                <HighlightText text={row.carpWaters} query={searchQuery} />
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-muted-foreground">Pstruhové vody:</span>
-                              <span className="text-foreground font-medium" data-testid={`text-trout-hours-${index}`}>
-                                <HighlightText text={row.troutWaters} query={searchQuery} />
-                              </span>
-                            </div>
-                          </div>
+              {filteredDailyHours.map((row, index) => {
+                const isCurrentMonth = row.month === currentMonthCapitalized;
+                return (
+                  <Card 
+                    key={index} 
+                    className={`p-5 space-y-4 ${
+                      isCurrentMonth 
+                        ? 'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900/50' 
+                        : 'bg-slate-50 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800'
+                    }`}
+                    data-testid={`card-daily-hours-${index}`}
+                  >
+                    <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-700 pb-3">
+                      <h3 className="font-bold text-foreground text-lg" data-testid={`text-month-${index}`}>
+                        <HighlightText text={row.month} query={searchQuery} />
+                      </h3>
+                      {isCurrentMonth && (
+                        <div className="flex items-center gap-2">
+                          <Signal variant="blue" />
+                          <Badge className="text-[10px] font-bold uppercase tracking-widest">Aktuálny</Badge>
                         </div>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-2 gap-6">
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest">Kaprové</p>
+                        <p className="text-sm font-mono font-medium text-[#F97316]" data-testid={`text-carp-hours-${index}`}>
+                          {row.carpWaters}
+                        </p>
                       </div>
-                    </Card>
-                  );
-                })
-              )}
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest">Pstruhové</p>
+                        <p className="text-sm font-mono font-medium text-[#F97316]" data-testid={`text-trout-hours-${index}`}>
+                          {row.troutWaters}
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                );
+              })}
             </div>
           );
         }
         
         // Desktop Table View
         return (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
             <table className="w-full border-collapse">
               <thead>
-                <tr className="bg-sidebar border-b border-sidebar-border">
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-sidebar-foreground">
+                <tr className="bg-slate-100 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
+                  <th className="px-6 py-4 text-left text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
                     Mesiac
                   </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-sidebar-foreground">
+                  <th className="px-6 py-4 text-left text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
                     Kaprové Vody
                   </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-sidebar-foreground">
+                  <th className="px-6 py-4 text-left text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
                     Pstruhové Vody
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {filteredDailyHours.length === 0 ? (
-                  <tr>
-                    <td colSpan={3} className="px-6 py-8 text-center text-muted-foreground">
-                      Nenašli sa žiadne výsledky
-                    </td>
-                  </tr>
-                ) : (
-                  filteredDailyHours.map((row, index) => {
-                    const isCurrentMonth = row.month === currentMonthCapitalized;
-                    return (
-                      <tr 
-                        key={index} 
-                        className={`border-b border-border hover:bg-sidebar-accent transition-colors ${isCurrentMonth ? 'bg-primary/5' : ''}`}
-                        data-testid={`row-daily-hours-${index}`}
-                      >
-                        <td className="px-6 py-4 text-sm text-foreground font-medium" data-testid={`text-month-${index}`}>
-                          <div className="flex items-center gap-2">
-                            <HighlightText text={row.month} query={searchQuery} />
-                            {isCurrentMonth && (
-                              <Badge variant="secondary" className="text-xs">Aktuálny</Badge>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-foreground" data-testid={`text-carp-hours-${index}`}>
-                          <HighlightText text={row.carpWaters} query={searchQuery} />
-                        </td>
-                        <td className="px-6 py-4 text-sm text-foreground" data-testid={`text-trout-hours-${index}`}>
-                          <HighlightText text={row.troutWaters} query={searchQuery} />
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
+                {filteredDailyHours.map((row, index) => {
+                  const isCurrentMonth = row.month === currentMonthCapitalized;
+                  return (
+                    <tr 
+                      key={index} 
+                      className={`border-b border-slate-100 dark:border-slate-800 transition-colors ${
+                        isCurrentMonth ? 'bg-blue-50/50 dark:bg-blue-950/10' : 'hover:bg-slate-50 dark:hover:bg-slate-900/30'
+                      }`}
+                      data-testid={`row-daily-hours-${index}`}
+                    >
+                      <td className="px-6 py-4 text-sm text-foreground font-semibold" data-testid={`text-month-${index}`}>
+                        <div className="flex items-center gap-2">
+                          <HighlightText text={row.month} query={searchQuery} />
+                          {isCurrentMonth && (
+                            <div className="flex items-center gap-1.5">
+                              <Signal variant="blue" />
+                              <Badge variant="secondary" className="text-[10px] font-bold uppercase tracking-widest">Aktuálny</Badge>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="font-mono font-medium text-[#F97316]" data-testid={`text-carp-hours-${index}`}>
+                          {row.carpWaters}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="font-mono font-medium text-[#F97316]" data-testid={`text-trout-hours-${index}`}>
+                          {row.troutWaters}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -532,27 +587,17 @@ export default function FishingRulesPage() {
       }
 
       case "fishingAreas": {
-        // Show instructions when no search
         if (areasSearchQuery.length < 2) {
-          return (
-            <div className="text-center py-12">
-              <MapPin className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
-              <h3 className="text-lg font-medium text-foreground mb-2">Vyhľadajte rybársky revír</h3>
-              <p className="text-muted-foreground mb-4">
-                Zadajte aspoň 2 znaky do vyhľadávacieho poľa vyššie
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Môžete hľadať podľa čísla revíru (napr. 1-0020-1-1), názvu alebo kľúčových slov v poznámkach
-              </p>
-            </div>
-          );
+          return <EmptyState query="" type="areas" />;
         }
         
         if (isLoadingAreas) {
           return (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <span className="ml-3 text-muted-foreground">Načítavam revíry...</span>
+            <div className="py-16 text-center">
+              <Loader2 className="h-10 w-10 animate-spin text-[#F97316] mx-auto" />
+              <p className="text-muted-foreground mt-4 font-medium uppercase tracking-widest text-[10px]">
+                Prehľadávam databázu...
+              </p>
             </div>
           );
         }
@@ -561,12 +606,16 @@ export default function FishingRulesPage() {
         
         if (areas.length === 0) {
           return (
-            <div className="text-center py-12">
-              <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-              <h3 className="text-lg font-medium text-foreground mb-2">Žiadne výsledky</h3>
-              <p className="text-muted-foreground">
-                Pre "{areasSearchQuery}" sme nenašli žiadne revíry
-              </p>
+            <div className="py-16 text-center space-y-4">
+              <div className="w-14 h-14 bg-slate-100 dark:bg-slate-900 rounded-xl flex items-center justify-center mx-auto border border-slate-200 dark:border-slate-800">
+                <AlertCircle size={24} strokeWidth={1.5} className="text-slate-400 dark:text-slate-600" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-foreground font-semibold tracking-tight">Žiadne výsledky</p>
+                <p className="text-xs text-muted-foreground font-medium">
+                  Pre "{areasSearchQuery}" sme nenašli žiadne revíry.
+                </p>
+              </div>
             </div>
           );
         }
@@ -578,15 +627,13 @@ export default function FishingRulesPage() {
               {areas.map((area, index) => (
                 <Card 
                   key={area.id} 
-                  className="p-4 bg-muted/30"
+                  className="p-5 bg-slate-50 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800"
                   data-testid={`card-fishing-area-${index}`}
                 >
                   <div className="space-y-2">
-                    <div className="flex items-start justify-between gap-2">
-                      <Badge variant="outline" className="font-mono text-xs shrink-0" data-testid={`text-area-number-${index}`}>
-                        {area.number}
-                      </Badge>
-                    </div>
+                    <Badge variant="outline" className="font-mono text-xs" data-testid={`text-area-number-${index}`}>
+                      {area.number}
+                    </Badge>
                     <h4 className="font-semibold text-foreground" data-testid={`text-area-name-${index}`}>
                       <HighlightText text={area.name} query={areasSearchQuery} />
                     </h4>
@@ -604,17 +651,17 @@ export default function FishingRulesPage() {
         
         // Desktop Table View
         return (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
             <table className="w-full border-collapse">
               <thead>
-                <tr className="bg-sidebar border-b border-sidebar-border">
-                  <th className="px-4 py-4 text-left text-sm font-semibold text-sidebar-foreground w-32">
+                <tr className="bg-slate-100 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
+                  <th className="px-4 py-4 text-left text-[11px] font-medium uppercase tracking-widest text-muted-foreground w-32">
                     Číslo
                   </th>
-                  <th className="px-4 py-4 text-left text-sm font-semibold text-sidebar-foreground w-64">
+                  <th className="px-4 py-4 text-left text-[11px] font-medium uppercase tracking-widest text-muted-foreground w-64">
                     Názov
                   </th>
-                  <th className="px-4 py-4 text-left text-sm font-semibold text-sidebar-foreground">
+                  <th className="px-4 py-4 text-left text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
                     Poznámky
                   </th>
                 </tr>
@@ -623,13 +670,13 @@ export default function FishingRulesPage() {
                 {areas.map((area, index) => (
                   <tr 
                     key={area.id} 
-                    className="border-b border-border hover:bg-sidebar-accent transition-colors"
+                    className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-colors"
                     data-testid={`row-fishing-area-${index}`}
                   >
-                    <td className="px-4 py-4 text-sm font-mono text-foreground" data-testid={`text-area-number-${index}`}>
+                    <td className="px-4 py-4 text-sm font-mono font-medium text-[#F97316]" data-testid={`text-area-number-${index}`}>
                       <HighlightText text={area.number} query={areasSearchQuery} />
                     </td>
-                    <td className="px-4 py-4 text-sm text-foreground font-medium" data-testid={`text-area-name-${index}`}>
+                    <td className="px-4 py-4 text-sm text-foreground font-semibold" data-testid={`text-area-name-${index}`}>
                       <HighlightText text={area.name} query={areasSearchQuery} />
                     </td>
                     <td className="px-4 py-4 text-sm text-muted-foreground" data-testid={`text-area-notes-${index}`}>
@@ -655,22 +702,25 @@ export default function FishingRulesPage() {
   return (
     <DiaryLayout>
       <div className="space-y-8">
-          {/* Hlavička */}
-          <div className="flex items-center gap-4">
-            <TacticalIcon icon={Scale} variant="active" size="lg" showLabel={false} />
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
+        {/* Header */}
+        <div className="flex items-center gap-4">
+          <TacticalIcon icon={Scale} variant="active" size="lg" showLabel={false} />
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-3xl md:text-4xl font-black italic text-foreground">
                 Rybársky Poriadok
               </h1>
-              <p className="text-muted-foreground text-lg">
-                Interaktívna databáza rybárskych pravidiel a predpisov
-              </p>
+              <Signal variant="blue" />
             </div>
+            <p className="text-muted-foreground">
+              Interaktívna databáza rybárskych pravidiel SR 2025
+            </p>
           </div>
+        </div>
 
-          {/* Vyhľadávacie pole */}
+        {/* Search Input */}
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" strokeWidth={1.75} />
           <Input
             type="text"
             placeholder={activeSection === "fishingAreas" 
@@ -681,71 +731,74 @@ export default function FishingRulesPage() {
               ? setAreasSearchQuery(e.target.value)
               : setSearchQuery(e.target.value)
             }
-            className="pl-12 h-14 text-lg bg-background border-border"
+            className="pl-12 h-14 text-lg bg-background border-slate-200 dark:border-slate-800 rounded-xl"
             data-testid="input-search-rules"
           />
         </div>
 
-        {/* Karty pre rýchly prístup */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {/* Navigation Grid: 2x2 mobile, 4x1 desktop */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {quickLinks.map((link) => {
             const Icon = link.icon;
             const isActive = activeSection === link.id;
 
             return (
-              <Card
+              <button
                 key={link.id}
                 onClick={() => setActiveSection(link.id)}
                 className={`
-                  p-6 cursor-pointer transition-all duration-200
+                  p-4 md:p-5 rounded-xl border transition-all duration-200 text-left
                   ${isActive 
-                    ? 'bg-sidebar-primary border-sidebar-primary shadow-lg' 
-                    : 'bg-card border-border hover:border-sidebar-primary hover:shadow-md'
+                    ? 'bg-blue-500/10 border-blue-500/30 dark:bg-blue-950/30 dark:border-blue-800' 
+                    : 'bg-slate-50 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
                   }
                 `}
                 data-testid={`card-${link.id}`}
               >
-                <div className="flex flex-col items-center text-center space-y-3">
+                <div className="flex flex-col items-center text-center space-y-2">
                   <div className={`
-                    p-4 rounded-full
+                    p-3 rounded-xl
                     ${isActive 
-                      ? 'bg-sidebar-primary-foreground/10' 
-                      : 'bg-sidebar-accent'
+                      ? 'bg-blue-500/20 dark:bg-blue-500/10' 
+                      : 'bg-slate-100 dark:bg-slate-800'
                     }
                   `}>
                     <Icon className={`
-                      h-8 w-8
+                      h-6 w-6
                       ${isActive 
-                        ? 'text-sidebar-primary-foreground' 
-                        : 'text-sidebar-primary'
+                        ? 'text-blue-600 dark:text-blue-400' 
+                        : 'text-slate-500 dark:text-slate-400'
                       }
-                    `} />
+                    `} strokeWidth={1.75} />
                   </div>
                   <h3 className={`
-                    text-lg font-semibold
+                    text-sm font-semibold
                     ${isActive 
-                      ? 'text-sidebar-primary-foreground' 
+                      ? 'text-blue-600 dark:text-blue-400' 
                       : 'text-foreground'
                     }
                   `}>
-                    {link.title}
+                    {isMobile ? link.shortTitle : link.title}
                   </h3>
                 </div>
-              </Card>
+              </button>
             );
           })}
         </div>
 
-        {/* Oblasť pre zobrazenie obsahu */}
-        <Card className="bg-card border-border">
+        {/* Content Area */}
+        <Card className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-xl">
           <div className="p-6">
-            <h2 className="text-2xl font-bold text-foreground mb-6">
+            <h2 className="text-xl font-bold text-foreground mb-6">
               {quickLinks.find(link => link.id === activeSection)?.title}
             </h2>
             {renderTable()}
           </div>
         </Card>
-        </div>
+
+        {/* Legal Disclaimer */}
+        <LegalDisclaimer />
+      </div>
     </DiaryLayout>
   );
 }

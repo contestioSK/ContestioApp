@@ -1,0 +1,32 @@
+"Pretransformuj priložený React kód do produkčnej podoby so zameraním na nasledujúcu funkčnú logiku a systémovú architektúru:
+
+**1. Architektúra komponentov a stavu:**
+
+- **State Management:** Použi `useState` pre riadenie aktívnej sekcie (Tabs/Karty) a globálneho vyhľadávania.
+- **Perzistencia:** Implementuj `localStorage` pre ukladanie stavu `activeTab`. Pri znovunačítaní stránky musí používateľ zostať v naposledy otvorenej sekcii.
+- **Modularita:** Rozdeľ kód na menšie funkčné celky: `Navigation`, `SearchHeader`, `DataDisplay` (Table/Cards) a `LegalDisclaimer`.
+
+**2. Logika vyhľadávania a kontextu:**
+
+- **Contextual Reset:** Implementuj `useEffect`, ktorý pri každej zmene `activeTab` resetuje stav `search` na prázdny reťazec.
+- **Výnimka:** Sekcia 'Revíry' musí zachovať hodnotu vyhľadávania aj pri prepnutí, ak užívateľ hľadá konkrétny kód revíru.
+- **Micro-copy Logic:** Pre stavy '0 výsledkov' implementuj podmienené renderovanie s inštruktážnym textom (napr. 'Skúste hľadať skrátený tvar').
+
+**3. Typografická hierarchia a váhy (Striktné pravidlá):**
+
+- **Nadpis:** Použi váhu 900 (Black) výhradne pre hlavný H1.
+- **Názvy rýb:** Použi váhu 600 (Semibold) pre primárne textové identifikátory v zoznamoch.
+- **Dáta:** Číselné hodnoty v stĺpci 'Minimálna lovná miera' a časy lovu musia mať váhu 500 (Medium).
+- **Statusy:** Doplnkové informácie a labely musia byť v `font-medium` (500) s uppercase štylizáciou a zvýšeným `tracking-widest`.
+
+**4. Responsívna logika (Mriežka vs. Tabuľka):**
+
+- **Detekcia zariadenia:** Implementuj spoľahlivý `useIsMobile` hook.
+- **Breakpoint Logic:** - Desktop: Dáta v `<table>` štruktúre bez ikon v riadkoch pre lepšiu skenovateľnosť.
+    - Mobile: Dáta v `Card` komponentoch s priloženými ikonami pre lepšiu dotykovú orientáciu.
+- **Navigácia:** Na mobile implementuj mriežku 2x2 pre hlavné kategórie. Na desktope mriežku 4x1.
+
+**5. Systémová signalizácia:**
+
+- **Condition-based Pulse:** Implementuj logiku, kde sa vizuálny 'Sonar' efekt (pulzovanie) spúšťa len pri splnení podmienky `isCurrentlyProtected` (hájenie rýb) alebo v headeri pre potvrdenie aktuálnosti dát.
+- **Legal Safeguard:** Disclaimer v pätičke musí byť statický komponent s rozšíreným textom o miestnych výnimkách."
