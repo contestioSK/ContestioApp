@@ -415,6 +415,7 @@ export const diaryCatches = pgTable("diary_catches", {
   weight: decimal("weight", { precision: 10, scale: 3 }).notNull(), // in kg
   lengthCm: integer("length_cm"), // optional length in cm
   fishType: varchar("fish_type").notNull(), // Fish species
+  nickname: varchar("nickname", { length: 40 }), // Optional nickname for the fish (emotional, max 40 chars)
   bait: text("bait"), // what bait was used
   spot: text("spot"), // fishing spot description
   latitude: decimal("latitude", { precision: 10, scale: 8 }), // GPS coordinates

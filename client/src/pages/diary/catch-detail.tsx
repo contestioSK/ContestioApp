@@ -287,6 +287,12 @@ export default function CatchDetail() {
               {getFishTypeLabel(catch_.fishType)}
             </h1>
 
+            {/* Nickname if exists */}
+            {catch_.nickname && (
+              <p className="text-xl md:text-2xl text-blue-200 font-serif italic opacity-90 mb-4">
+                "{catch_.nickname}"
+              </p>
+            )}
 
             {/* Weight and Length */}
             <div className="flex flex-wrap items-end gap-6 md:gap-10 mt-4">
