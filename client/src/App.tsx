@@ -32,6 +32,7 @@ import RegistrationOpenPage from "@/pages/registration-open";
 import UpcomingPage from "@/pages/upcoming";
 import LivePage from "@/pages/live";
 import FinishedPage from "@/pages/finished";
+import CompetitionsPage from "@/pages/competitions";
 import NotificationPreferences from "@/pages/notification-preferences";
 import Favorites from "@/pages/favorites";
 import DiaryIndex from "@/pages/diary/index";
@@ -131,6 +132,7 @@ function Router() {
       <Route path="/contact" component={Contact} />
       <Route path="/terms" component={Terms} />
       <Route path="/privacy" component={Privacy} />
+      <Route path="/competitions" component={CompetitionsPage} />
       <Route path="/categories/registration-open" component={RegistrationOpenPage} />
       <Route path="/categories/upcoming" component={UpcomingPage} />
       <Route path="/categories/live" component={LivePage} />
