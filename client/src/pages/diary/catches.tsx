@@ -47,7 +47,8 @@ import {
   Search,
   ArrowUpDown,
   Trophy,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Maximize2
 } from "lucide-react";
 
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -1660,6 +1661,18 @@ export default function DiaryCatches() {
 
                     {/* Action Buttons */}
                     <div className="pt-5 mt-auto space-y-3">
+                      <Button 
+                        variant="outline"
+                        className="w-full h-11 border-slate-200 dark:border-slate-700"
+                        onClick={() => {
+                          setSelectedCatch(null);
+                          setLocation(`/diary/catches/${selectedCatch.id}`);
+                        }}
+                        data-testid="button-view-full-page"
+                      >
+                        <Maximize2 className="w-4 h-4 mr-2" />
+                        Zobraziť celú stránku
+                      </Button>
                       <Button 
                         className="w-full bg-blue-600 hover:bg-blue-700 h-12 text-base font-semibold"
                         onClick={() => {
