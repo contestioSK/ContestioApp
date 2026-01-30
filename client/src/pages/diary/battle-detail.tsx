@@ -7,9 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Trophy, Plus, AlertCircle, Clock, Fish, CheckCircle2, Medal, Flag, BarChart3, TrendingUp, Award, QrCode, Swords, Weight, Ruler, MapPin, Target, Calendar as CalendarIcon, Cloud, Thermometer, Wind, Gauge } from "lucide-react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Trophy, Plus, AlertCircle, Clock, Fish, CheckCircle2, Medal, Flag, BarChart3, TrendingUp, Award, QrCode, Swords, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { QRShareDialog } from "@/components/QRShareDialog";
+import { CatchDetailSheet } from "@/components/diary/CatchDetailSheet";
 import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 import { format, formatDistanceToNow } from "date-fns";
 import { sk } from "date-fns/locale";
@@ -53,6 +53,7 @@ export default function BattleDetail() {
   const [showEndBattleDialog, setShowEndBattleDialog] = useState(false);
   const [showVictoryModal, setShowVictoryModal] = useState(false);
   const [selectedCatch, setSelectedCatch] = useState<DiaryCatch | null>(null);
+  const [lightboxState, setLightboxState] = useState<{ photos: string[], currentIndex: number } | null>(null);
 
   // WebSocket connection for live updates
   useWebSocket((message: WebSocketMessage) => {
@@ -932,151 +933,79 @@ export default function BattleDetail() {
       </AlertDialog>
 
       {/* Catch Detail Side Panel */}
-      <Sheet open={!!selectedCatch} onOpenChange={() => setSelectedCatch(null)}>
-        <SheetContent className="w-full sm:max-w-md bg-card dark:bg-slate-800 border text-foreground dark:text-white overflow-y-auto" data-testid="catch-detail-panel">
-          <SheetHeader className="pb-6">
-            <SheetTitle className="text-foreground dark:text-white flex items-center gap-3">
-              <Fish className="w-6 h-6 text-primary" />
-              {selectedCatch?.fishType ? getFishTypeLabel(selectedCatch.fishType) : 'Detail úlovku'}
-            </SheetTitle>
-          </SheetHeader>
+      <CatchDetailSheet
+        catchData={selectedCatch}
+        onClose={() => setSelectedCatch(null)}
+        onOpenFullPage={(catchId) => setLocation(`/diary/catches/${catchId}`)}
+        onOpenLightbox={(photos, index) => setLightboxState({ photos, currentIndex: index })}
+      />
 
-          {selectedCatch && (
-            <div className="space-y-6">
-              {/* Photo */}
-              {selectedCatch.photos && selectedCatch.photos.length > 0 && (
-                <div className="rounded-lg overflow-hidden">
-                  <img 
-                    src={typeof selectedCatch.photos[0] === 'string' ? selectedCatch.photos[0] : selectedCatch.photos[0].url}
-                    alt={getFishTypeLabel(selectedCatch.fishType)}
-                    className="w-full h-auto object-cover"
-                  />
-                </div>
-              )}
+      {/* Photo Lightbox with Navigation - Fullscreen on mobile */}
+      {lightboxState && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center"
+          onClick={() => setLightboxState(null)}
+          data-testid="photo-lightbox"
+        >
+          {/* Close button */}
+          <button
+            onClick={() => setLightboxState(null)}
+            className="absolute top-4 right-4 z-20 bg-black/50 text-white rounded-full p-2 hover:bg-black/70 transition-colors"
+            aria-label="Zatvoriť"
+          >
+            <X className="h-6 w-6" />
+          </button>
 
-              {/* Basic Info */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <TacticalIconInline icon={Weight} variant="orange" size="md" />
-                  <div>
-                    <div className="text-sm text-muted-foreground dark:text-slate-400">Váha</div>
-                    <div className="font-semibold">{selectedCatch.weight ? `${selectedCatch.weight} kg` : 'Neuvedené'}</div>
-                  </div>
-                </div>
-
-                {selectedCatch.lengthCm && (
-                  <div className="flex items-center gap-3">
-                    <TacticalIconInline icon={Ruler} variant="orange" size="md" />
-                    <div>
-                      <div className="text-sm text-muted-foreground dark:text-slate-400">Dĺžka</div>
-                      <div className="font-semibold">{selectedCatch.lengthCm} cm</div>
-                    </div>
-                  </div>
-                )}
-
-                {selectedCatch.spot && (
-                  <div className="flex items-center gap-3">
-                    <TacticalIconInline icon={MapPin} variant="emerald" size="md" />
-                    <div>
-                      <div className="text-sm text-muted-foreground dark:text-slate-400">Revír</div>
-                      <div className="font-semibold">{selectedCatch.spot}</div>
-                    </div>
-                  </div>
-                )}
-
-                {selectedCatch.bait && (
-                  <div className="flex items-center gap-3">
-                    <TacticalIconInline icon={Target} variant="purple" size="md" />
-                    <div>
-                      <div className="text-sm text-muted-foreground dark:text-slate-400">Nástraha</div>
-                      <div className="font-semibold">{selectedCatch.bait}</div>
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex items-center gap-3">
-                  <TacticalIconInline icon={CalendarIcon} variant="indigo" size="md" />
-                  <div>
-                    <div className="text-sm text-muted-foreground dark:text-slate-400">Dátum úlovku</div>
-                    <div className="font-semibold">
-                      {selectedCatch.capturedAt ? format(new Date(selectedCatch.capturedAt), "EEEE, d. MMMM yyyy", { locale: sk }) : 'Neuvedené'}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <TacticalIconInline icon={Trophy} variant="amber" size="md" />
-                  <div>
-                    <div className="text-sm text-muted-foreground dark:text-slate-400">Rybár</div>
-                    <div className="font-semibold">{selectedCatch.angler.name}</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Notes */}
-              {selectedCatch.notes && (
-                <div>
-                  <div className="text-sm text-muted-foreground dark:text-slate-400 mb-2">Poznámky</div>
-                  <div className="bg-muted dark:bg-slate-700/50 rounded-lg p-3 text-sm">
-                    {selectedCatch.notes}
-                  </div>
-                </div>
-              )}
-
-              {/* Weather Conditions */}
-              {((selectedCatch.waterTemp !== null && selectedCatch.waterTemp !== undefined) || 
-               (selectedCatch.airTemp !== null && selectedCatch.airTemp !== undefined) || 
-               (selectedCatch.windSpeed !== null && selectedCatch.windSpeed !== undefined) || 
-               (selectedCatch.airPressure !== null && selectedCatch.airPressure !== undefined)) && (
-                <div className="border-t border-border dark:border-slate-700 pt-4">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Cloud className="w-5 h-5 text-muted-foreground dark:text-slate-400" />
-                    <div className="text-sm text-muted-foreground dark:text-slate-400">Podmienky počasia</div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    {(selectedCatch.waterTemp !== null && selectedCatch.waterTemp !== undefined) && (
-                      <div className="bg-muted dark:bg-slate-700/50 rounded-lg p-3">
-                        <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400 mb-1">
-                          <Thermometer className="w-4 h-4" />
-                          <span className="text-xs">Teplota vody</span>
-                        </div>
-                        <div className="font-semibold">{selectedCatch.waterTemp}°C</div>
-                      </div>
-                    )}
-                    {(selectedCatch.airTemp !== null && selectedCatch.airTemp !== undefined) && (
-                      <div className="bg-muted dark:bg-slate-700/50 rounded-lg p-3">
-                        <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400 mb-1">
-                          <Thermometer className="w-4 h-4" />
-                          <span className="text-xs">Teplota vzduchu</span>
-                        </div>
-                        <div className="font-semibold">{selectedCatch.airTemp}°C</div>
-                      </div>
-                    )}
-                    {(selectedCatch.windSpeed !== null && selectedCatch.windSpeed !== undefined) && (
-                      <div className="bg-muted dark:bg-slate-700/50 rounded-lg p-3">
-                        <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400 mb-1">
-                          <Wind className="w-4 h-4" />
-                          <span className="text-xs">Vietor</span>
-                        </div>
-                        <div className="font-semibold">{selectedCatch.windSpeed} km/h</div>
-                      </div>
-                    )}
-                    {(selectedCatch.airPressure !== null && selectedCatch.airPressure !== undefined) && (
-                      <div className="bg-muted dark:bg-slate-700/50 rounded-lg p-3">
-                        <div className="flex items-center gap-2 text-muted-foreground dark:text-slate-400 mb-1">
-                          <Gauge className="w-4 h-4" />
-                          <span className="text-xs">Tlak vzduchu</span>
-                        </div>
-                        <div className="font-semibold">{selectedCatch.airPressure} mb</div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
+          {/* Previous button */}
+          {lightboxState.photos.length > 1 && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setLightboxState(prev => prev ? {
+                  ...prev,
+                  currentIndex: prev.currentIndex > 0 ? prev.currentIndex - 1 : prev.photos.length - 1
+                } : null);
+              }}
+              className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-10 bg-black/50 text-white hover:bg-black/70 rounded-full p-2 sm:p-3 min-w-[44px] min-h-[44px] flex items-center justify-center"
+              aria-label="Predchádzajúca fotografia"
+            >
+              <ChevronLeft className="h-6 w-6" />
+            </button>
+          )}
+          
+          {/* Current photo */}
+          <img 
+            src={lightboxState.photos[lightboxState.currentIndex]} 
+            alt={`Fotografia úlovku ${lightboxState.currentIndex + 1}`}
+            className="max-w-[90vw] max-h-[85vh] object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+          
+          {/* Next button */}
+          {lightboxState.photos.length > 1 && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setLightboxState(prev => prev ? {
+                  ...prev,
+                  currentIndex: prev.currentIndex < prev.photos.length - 1 ? prev.currentIndex + 1 : 0
+                } : null);
+              }}
+              className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-10 bg-black/50 text-white hover:bg-black/70 rounded-full p-2 sm:p-3 min-w-[44px] min-h-[44px] flex items-center justify-center"
+              aria-label="Nasledujúca fotografia"
+            >
+              <ChevronRight className="h-6 w-6" />
+            </button>
+          )}
+          
+          {/* Photo counter */}
+          {lightboxState.photos.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white text-sm px-3 py-1 rounded-full">
+              {lightboxState.currentIndex + 1} / {lightboxState.photos.length}
             </div>
           )}
-        </SheetContent>
-      </Sheet>
+        </div>
+      )}
     </DiaryLayout>
   );
 }
