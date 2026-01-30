@@ -444,7 +444,7 @@ export default function TeamDetail() {
                               ) : (
                                 <div className="flex items-center justify-center">
                                   <Camera className="w-4 h-4 text-muted-foreground" strokeWidth={1.75} />
-                                  <span className="text-xs text-muted-foreground ml-1">Bez fotky</span>
+                                  <span className="text-xs text-muted-foreground ml-1">Bez fotografie</span>
                                 </div>
                               )}
                             </td>
@@ -478,7 +478,7 @@ export default function TeamDetail() {
                 <div className="relative">
                   <img 
                     src={selectedPhoto.url}
-                    alt="Zväčšená fotka úlovku"
+                    alt="Zväčšená fotografia úlovku"
                     className="w-full h-auto max-h-[70vh] object-contain"
                   />
                 </div>

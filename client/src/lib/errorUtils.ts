@@ -71,7 +71,7 @@ export function parseApiError(error: Error, context?: string): ParsedError {
       'trip': 'Skontrolujte údaje o výprave a skúste znovu.',
       'catch': 'Skontrolujte údaje o úlovku a skúste znovu.',
       'battle': 'Skontrolujte údaje o súboji a skúste znovu.',
-      'photo': 'Problém s nahrávaním fotky. Skúste inú fotku.',
+      'photo': 'Problém s nahrávaním fotografie. Skúste inú fotografiu.',
     };
 
     return {
@@ -109,7 +109,7 @@ function getContextTitle(context: string): string {
     'trip': 'práci s výpravou',
     'catch': 'práci s úlovkom',
     'battle': 'vytváraní súboja',
-    'photo': 'nahrávaní fotky',
+    'photo': 'nahrávaní fotografie',
     'delete': 'mazaní',
     'update': 'aktualizácii',
     'create': 'vytváraní'

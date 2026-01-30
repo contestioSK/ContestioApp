@@ -91,7 +91,7 @@ export default function FAQ() {
       items: [
         {
           question: "Čo je rybársky denník?",
-          answer: "Digitálny denník, kde si môžeš zapisovať úlovky, fotky, lokality, nástrahy a podmienky lovu. Všetko máš uložené na jednom mieste."
+          answer: "Digitálny denník, kde si môžeš zapisovať úlovky, fotografie, lokality, nástrahy a podmienky lovu. Všetko máš uložené na jednom mieste."
         },
         {
           question: "Obsahuje denník aj predpoveď počasia?",
@@ -107,11 +107,11 @@ export default function FAQ() {
         },
         {
           question: "Funguje denník aj offline?",
-          answer: "Zápis úlovkov, fotiek a poznámok je možný aj bez internetu. Po opätovnom pripojení sa všetko automaticky synchronizuje."
+          answer: "Zápis úlovkov, fotografií a poznámok je možný aj bez internetu. Po opätovnom pripojení sa všetko automaticky synchronizuje."
         },
         {
           question: "Aký je rozdiel medzi FREE a PREMIUM?",
-          answer: "FREE verzia ti ponúka neobmedzené výpravy (s prístupom k posledným 3), kapacitu 50 úlovkov, 1 fotku na úlovok a môžeš prijímať battle výzvy. PREMIUM ti odomkne neobmedzenú históriu výprav, neobmedzené úlovky a fotky, pokročilé štatistiky a grafy, ukladanie GPS lokalít, predpoveď počasia, offline režim so synchronizáciou a možnosť vytvárať vlastné battle súboje. Cena je 5,90 €/mesiac alebo 59,90 €/rok."
+          answer: "FREE verzia ti ponúka neobmedzené výpravy (s prístupom k posledným 3), kapacitu 50 úlovkov, 1 fotografiu na úlovok a môžeš prijímať battle výzvy. PREMIUM ti odomkne neobmedzenú históriu výprav, neobmedzené úlovky a fotografie, pokročilé štatistiky a grafy, ukladanie GPS lokalít, predpoveď počasia, offline režim so synchronizáciou a možnosť vytvárať vlastné battle súboje. Cena je 5,90 €/mesiac alebo 59,90 €/rok."
         }
       ]
     },

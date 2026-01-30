@@ -453,7 +453,7 @@ export default function CatchFormDialog({
           title: "📤 Uložené offline",
           description:
             selectedPhotos.length > 0
-              ? "Úlovok s fotkou sa odošle automaticky po obnovení pripojenia"
+              ? "Úlovok s fotografiou sa odošle automaticky po obnovení pripojenia"
               : "Úlovok sa odošle automaticky po obnovení pripojenia",
           variant: "default",
         });
@@ -494,8 +494,8 @@ export default function CatchFormDialog({
           } catch (error) {
             console.error("Photo upload error:", error);
             toast({
-              title: "❌ Chyba pri nahrávaní fotiek",
-              description: "Úlovok bude aktualizovaný bez nových fotiek",
+              title: "❌ Chyba pri nahrávaní fotografií",
+              description: "Úlovok bude aktualizovaný bez nových fotografií",
               variant: "destructive",
             });
           }
@@ -527,7 +527,7 @@ export default function CatchFormDialog({
             if (photosToUpload.length > 0) {
               toast({
                 title: "✅ Úlovok uložený!",
-                description: `${photosToUpload.length} ${photosToUpload.length === 1 ? "fotka sa nahráva" : "fotky sa nahrávajú"} na pozadí...`,
+                description: `${photosToUpload.length} ${photosToUpload.length === 1 ? "fotografia sa nahráva" : "fotografie sa nahrávajú"} na pozadí...`,
                 variant: "success" as any,
               });
 
@@ -597,8 +597,8 @@ export default function CatchFormDialog({
     } catch (error) {
       console.error("Background photo upload error:", error);
       toast({
-        title: "Chyba pri nahrávaní fotiek",
-        description: "Úlovok je uložený, ale fotky sa nepodarilo nahrať",
+        title: "Chyba pri nahrávaní fotografií",
+        description: "Úlovok je uložený, ale fotografie sa nepodarilo nahrať",
         variant: "destructive",
       });
     }
@@ -787,7 +787,7 @@ export default function CatchFormDialog({
               {editingCatch ? "Upraviť úlovok" : "Nový úlovok"}
             </h2>
             <p className="text-muted-foreground text-xs mt-1 font-medium">
-              Stačí fotka, ryba a váha. Hotovo.
+              Stačí fotografia, ryba a váha. Hotovo.
             </p>
             {!editingCatch && activeBattle && (
               <Badge
@@ -811,14 +811,14 @@ export default function CatchFormDialog({
                 {existingPhotos.length > 0 && (
                   <div className="mb-3">
                     <p className="text-xs text-muted-foreground mb-2">
-                      Existujúce fotky:
+                      Existujúce fotografie:
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {existingPhotos.map((photo, index) => (
                         <div key={photo.id} className="relative group">
                           <img
                             src={photo.url || photo.originalUrl}
-                            alt={`Existujúca fotka ${index + 1}`}
+                            alt={`Existujúca fotografia ${index + 1}`}
                             className="w-20 h-20 object-cover rounded-lg border"
                           />
                           <button
@@ -850,7 +850,7 @@ export default function CatchFormDialog({
                     {/* Premium badge */}
                     {isPremium && (
                       <div className="absolute top-3 left-3 bg-slate-200 dark:bg-slate-700 text-[#F97316] text-[9px] font-bold px-2 py-1 rounded-lg border border-slate-300 dark:border-slate-600 uppercase tracking-wider">
-                        ∞ fotiek
+                        ∞ fotografií
                       </div>
                     )}
 
@@ -858,7 +858,7 @@ export default function CatchFormDialog({
                       <ImagePlus className="h-6 w-6 text-muted-foreground" strokeWidth={1.75} />
                     </div>
                     <span className="text-sm font-bold uppercase tracking-widest text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
-                      Pridať fotku ryby
+                      Pridať fotografiu ryby
                     </span>
                     <span className="text-xs text-muted-foreground mt-1">
                       Rýchlo, kým je na podložke
@@ -881,8 +881,8 @@ export default function CatchFormDialog({
 
                         if (totalPhotos > maxPhotos) {
                           toast({
-                            title: "Príliš veľa fotiek",
-                            description: `Môžete mať celkovo maximálne ${maxPhotos} ${maxPhotos === 1 ? "fotku" : "fotiek"}. Môžete pridať ešte ${remainingSlots}.`,
+                            title: "Príliš veľa fotografií",
+                            description: `Môžete mať celkovo maximálne ${maxPhotos} ${maxPhotos === 1 ? "fotografiu" : "fotografií"}. Môžete pridať ešte ${remainingSlots}.`,
                             variant: "destructive",
                           });
                           e.target.value = "";

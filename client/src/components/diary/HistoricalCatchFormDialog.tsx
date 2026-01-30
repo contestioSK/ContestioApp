@@ -467,7 +467,7 @@ export default function HistoricalCatchFormDialog({ isOpen, onClose, onSuccess }
               
               <label className="flex items-center gap-2 px-4 py-3 bg-slate-800 border border-dashed border-slate-600 rounded-xl cursor-pointer hover:border-amber-500/50 transition-colors">
                 <Camera className="h-5 w-5 text-muted-foreground" strokeWidth={1.75} />
-                <span className="text-slate-400 text-sm">Pridať fotku</span>
+                <span className="text-slate-400 text-sm">Pridať fotografiu</span>
                 <input 
                   type="file" 
                   accept="image/*" 
