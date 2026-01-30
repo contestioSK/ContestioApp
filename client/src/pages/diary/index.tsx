@@ -136,7 +136,7 @@ export default function DiaryIndex() {
   const [, setLocation] = useLocation();
   const searchString = useSearch();
   const [selectedCatch, setSelectedCatch] = useState<any>(null);
-  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  const [lightboxState, setLightboxState] = useState<{ photos: string[], currentIndex: number } | null>(null);
   const [isStartFishingOpen, setIsStartFishingOpen] = useState(false);
   const [isCreateCatchOpen, setIsCreateCatchOpen] = useState(false);
   const [editingCatch, setEditingCatch] = useState<DiaryCatch | null>(null);
@@ -1040,7 +1040,12 @@ export default function DiaryIndex() {
                   {selectedCatch.photos && selectedCatch.photos.length > 0 ? (
                     <PhotoCarousel 
                       photos={selectedCatch.photos} 
-                      onPhotoClick={(photo) => setLightboxImage(photo)}
+                      onPhotoClick={(photo, index) => {
+                        const photoUrls = selectedCatch.photos.map((p: any) => 
+                          typeof p === 'string' ? p : (p.variants?.find((v: any) => v.width === 800 && v.format === 'webp')?.url || p.url || p.originalUrl || '')
+                        );
+                        setLightboxState({ photos: photoUrls, currentIndex: index });
+                      }}
                     />
                   ) : (
                     <div className="absolute inset-0 bg-gradient-to-b from-slate-800 to-slate-900 flex items-center justify-center">
@@ -1239,24 +1244,63 @@ export default function DiaryIndex() {
           </SheetContent>
         </Sheet>
 
-        {/* Photo Lightbox */}
-        <Dialog open={!!lightboxImage} onOpenChange={() => setLightboxImage(null)}>
+        {/* Photo Lightbox with Navigation */}
+        <Dialog open={!!lightboxState} onOpenChange={() => setLightboxState(null)}>
           <DialogContent className="max-w-4xl max-h-[90vh] p-0 bg-black/90 border-0" data-testid="photo-lightbox">
             <div className="relative flex items-center justify-center h-full">
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setLightboxImage(null)}
+                onClick={() => setLightboxState(null)}
                 className="absolute top-4 right-4 z-10 text-white hover:bg-white/10"
               >
                 <X className="h-5 w-5" />
               </Button>
-              {lightboxImage && (
+              
+              {/* Previous button */}
+              {lightboxState && lightboxState.photos.length > 1 && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setLightboxState(prev => prev ? {
+                    ...prev,
+                    currentIndex: prev.currentIndex > 0 ? prev.currentIndex - 1 : prev.photos.length - 1
+                  } : null)}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-black/50 text-white hover:bg-black/70 rounded-full w-12 h-12"
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                </Button>
+              )}
+              
+              {/* Current photo */}
+              {lightboxState && (
                 <img 
-                  src={lightboxImage} 
-                  alt="Fotografia úlovku"
+                  src={lightboxState.photos[lightboxState.currentIndex]} 
+                  alt={`Fotografia úlovku ${lightboxState.currentIndex + 1}`}
                   className="max-w-full max-h-full object-contain"
                 />
+              )}
+              
+              {/* Next button */}
+              {lightboxState && lightboxState.photos.length > 1 && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setLightboxState(prev => prev ? {
+                    ...prev,
+                    currentIndex: prev.currentIndex < prev.photos.length - 1 ? prev.currentIndex + 1 : 0
+                  } : null)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-black/50 text-white hover:bg-black/70 rounded-full w-12 h-12"
+                >
+                  <ChevronRight className="h-6 w-6" />
+                </Button>
+              )}
+              
+              {/* Photo counter */}
+              {lightboxState && lightboxState.photos.length > 1 && (
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white text-sm px-3 py-1 rounded-full">
+                  {lightboxState.currentIndex + 1} / {lightboxState.photos.length}
+                </div>
               )}
             </div>
           </DialogContent>
