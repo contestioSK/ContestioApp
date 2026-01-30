@@ -47,7 +47,11 @@ Preferred communication style: Simple, everyday language.
 - `font-bold` (700) → Section headers, card titles
 - `font-medium font-mono` (500) → Data values, numbers, percentages (in Apex Orange #F97316)
 
-**Icon Colors:**
+**Icon System:**
+- `strokeWidth: 1.75` (standard), `2.25` (premium badge)
+- Sizes: `h-5 w-5` (menu/20px), `h-4 w-4` (tool/16px), `h-6 w-6` (hero/24px), `h-10 w-10` (giant/40px)
+- Inactive state: `text-slate-600 dark:text-slate-500` with `bg-slate-100 dark:bg-transparent`
+- Active state: colored background (`bg-[color]-500/10`) with matching text color
 - Icons use `text-muted-foreground` (gray), NOT orange
 - Apex Orange (#F97316) is reserved for DATA and INTERACTION only
 
