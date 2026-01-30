@@ -456,7 +456,7 @@ export default function DiaryLayout({ children, fullBleed = false }: DiaryLayout
       {/* Main content */}
       <div className="flex-1 min-w-0 w-full overflow-x-hidden md:ml-[240px] lg:ml-[280px]">
         {/* Content area - with padding for TopBar on mobile, sidebar offset on desktop */}
-        <main className="min-h-screen bg-background pb-16 md:pb-0 w-full">
+        <main className="min-h-screen bg-background dark:bg-slate-900 pb-16 md:pb-0 w-full">
           <div className={fullBleed ? "w-full" : "w-full max-w-screen-xl mx-auto px-4 md:px-6 py-4 md:py-6"}>
             {children}
           </div>
