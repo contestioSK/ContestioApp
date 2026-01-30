@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contestio - Rybárske súťaže</title>
+    <!-- React Dependencies -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Icons: Switching to Vanilla Lucide for stable CDN usage -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap');
+        
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* OPTIMALIZOVANÉ POZADIE: Znížená opacita na 0.02 pre lepšiu čitateľnosť */
+        .tactical-grid {
+            background-image: 
+                linear-gradient(rgba(30, 41, 59, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(30, 41, 59, 0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+    </style>
+</head>
+<body class="bg-[#0B1C2F] text-slate-300 min-h-screen">
+
+<div id="root"></div>
+
+<script type="text/babel">
+    // --- ICON SYSTEM ADAPTER ---
+    const iconsData = (window.lucide && window.lucide.icons) ? window.lucide.icons : {};
+
+    const createIcon = (name, iconNode) => {
+        if (!iconNode) {
+            return ({ size = 24, className }) => (
+                <div style={{ width: size, height: size }} className={`bg-red-500/20 rounded ${className}`} />
+            );
+        }
+
+        return ({ size = 24, strokeWidth = 1.75, className, ...props }) => (
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width={size}
+                height={size}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={strokeWidth}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className={className}
+                {...props}
+            >
+                {iconNode.map(([tag, attrs], index) => 
+                    React.createElement(tag, { ...attrs, key: index })
+                )}
+            </svg>
+        );
+    };
+
+    const ClipboardList = createIcon('ClipboardList', iconsData.ClipboardList);
+    const CalendarClock = createIcon('CalendarClock', iconsData.CalendarClock);
+    const Radio = createIcon('Radio', iconsData.Radio);
+    const Flag = createIcon('Flag', iconsData.Flag);
+    const ArrowRight = createIcon('ArrowRight', iconsData.ArrowRight);
+    const Zap = createIcon('Zap', iconsData.Zap);
+
+    // --- TACTICAL ICON COMPONENT ---
+    const TacticalIcon = ({ icon: Icon, variant = "neutral" }) => {
+        const variants = {
+            neutral: "text-slate-400 border-slate-700 bg-slate-800/50",
+            orange: "text-[#F97316] border-[#F97316]/30 bg-[#F97316]/10",
+            blue: "text-blue-400 border-blue-500/30 bg-blue-500/10",
+            emerald: "text-emerald-400 border-emerald-500/30 bg-emerald-500/10",
+            slate: "text-slate-500 border-slate-700 bg-slate-800/30",
+        };
+
+        const markers = {
+            neutral: "text-slate-600",
+            orange: "text-[#F97316]",
+            blue: "text-blue-400",
+            emerald: "text-emerald-400",
+            slate: "text-slate-600",
+        };
+
+        return (
+            <div className="relative w-12 h-12 flex items-center justify-center">
+                <div className={`absolute inset-0 border rounded-lg transition-all duration-300 ${variants[variant]}`} />
+                <div className={`absolute inset-0 opacity-30 pointer-events-none ${markers[variant]}`}>
+                    <div className="absolute left-1/2 -translate-x-1/2 w-0.5 h-1 bg-current top-1" />
+                    <div className="absolute left-1/2 -translate-x-1/2 w-0.5 h-1 bg-current bottom-1" />
+                    <div className="absolute top-1/2 -translate-y-1/2 h-0.5 w-1 bg-current left-1" />
+                    <div className="absolute top-1/2 -translate-y-1/2 h-0.5 w-1 bg-current right-1" />
+                </div>
+                <Icon size={20} className="relative z-10" />
+            </div>
+        );
+    };
+
+    // --- MODE CARD COMPONENT (FIXED: Routing & Accessibility) ---
+    const ModeCard = ({ title, description, cta, icon, variant, route, isPriority = false }) => {
+        
+        // Handling navigation
+        const handleNavigation = () => {
+            console.log(`Navigating to: ${route}`);
+            // In a real app: history.push(route) or similar
+            // window.location.href = route; 
+        };
+
+        // Handling Keyboard Accessibility (A11y)
+        const handleKeyDown = (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault(); // Prevent scrolling for space
+                handleNavigation();
+            }
+        };
+
+        return (
+            <div 
+                onClick={handleNavigation}
+                onKeyDown={handleKeyDown}
+                role="link"
+                tabIndex="0"
+                className={`
+                group relative flex flex-col justify-between p-8 h-64
+                bg-[#0F172A] border rounded-xl transition-all duration-300 cursor-pointer overflow-hidden outline-none focus:ring-2 focus:ring-[#F97316]/50 focus:border-[#F97316]
+                ${isPriority 
+                    ? 'border-emerald-500/30 hover:border-emerald-500/60 shadow-[0_0_30px_-10px_rgba(16,185,129,0.1)]' 
+                    : 'border-slate-800 hover:border-slate-600 hover:shadow-xl'}
+            `}>
+                {/* Gradient: Kept as requested for this specific page only */}
+                <div className={`absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none
+                    ${variant === 'orange' ? 'from-orange-500 to-transparent' : ''}
+                    ${variant === 'blue' ? 'from-blue-500 to-transparent' : ''}
+                    ${variant === 'emerald' ? 'from-emerald-500 to-transparent' : ''}
+                    ${variant === 'slate' ? 'from-slate-500 to-transparent' : ''}
+                `} />
+
+                <div>
+                    <div className="flex justify-between items-start mb-6">
+                        <TacticalIcon icon={icon} variant={variant} />
+                        {isPriority && (
+                            <div className="flex items-center gap-1.5 px-2 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+                                <span className="relative flex h-2 w-2">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                </span>
+                                <span className="text-[9px] font-black uppercase tracking-widest text-emerald-400">On Air</span>
+                            </div>
+                        )}
+                    </div>
+
+                    <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white mb-2 group-hover:translate-x-1 transition-transform duration-300">
+                        {title}
+                    </h3>
+                    <p className="text-sm text-slate-500 font-medium leading-relaxed max-w-[240px]">
+                        {description}
+                    </p>
+                </div>
+
+                <div className="flex justify-end">
+                    {/* Visual CTA - Click is handled by parent div */}
+                    <span className={`
+                        flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] transition-all
+                        ${isPriority ? 'text-emerald-400 group-hover:text-emerald-300' : 'text-slate-500 group-hover:text-white'}
+                    `}>
+                        {cta} 
+                        <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                    </span>
+                </div>
+            </div>
+        );
+    };
+
+    const App = () => {
+        return (
+            <div className="min-h-screen p-6 md:p-12 pb-32 tactical-grid flex flex-col">
+                
+                {/* HLAVIČKA - AKTUALIZOVANÁ PRE VARIANT B */}
+                <header className="max-w-5xl mx-auto w-full mb-16 space-y-4 pt-8">
+                    <div className="flex items-center gap-3 animate-in fade-in slide-in-from-left-4 duration-500">
+                        <span className="h-0.5 w-8 bg-[#F97316]"></span>
+                        <span className="text-[9px] font-black uppercase tracking-[0.4em] text-[#F97316]">Súťaže</span>
+                    </div>
+                    <div className="space-y-2 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
+                        <h1 className="text-5xl md:text-7xl font-black italic tracking-tighter uppercase text-white leading-none">
+                            Rybárske súťaže
+                        </h1>
+                        <p className="text-sm md:text-lg font-bold text-slate-500 italic tracking-tight opacity-80 pl-1 max-w-xl">
+                            Registrácia, priebeh a výsledky.
+                        </p>
+                    </div>
+                </header>
+
+                {/* HLAVNÝ OBSAH - GRID */}
+                <main className="max-w-5xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in zoom-in-95 duration-700 delay-200">
+                    
+                    <ModeCard 
+                        title="Registrácia"
+                        description="Otvorené súťaže, do ktorých sa môžeš prihlásiť."
+                        cta="Zobraziť"
+                        icon={ClipboardList}
+                        variant="orange"
+                        route="/competitions/registration"
+                    />
+
+                    <ModeCard 
+                        title="Nadchádzajúce"
+                        description="Súťaže, ktoré začnú v najbližšom období."
+                        cta="Zobraziť"
+                        icon={CalendarClock}
+                        variant="blue"
+                        route="/competitions/upcoming"
+                    />
+
+                    <ModeCard 
+                        title="Live súťaže"
+                        description="Súťaže, ktoré práve prebiehajú."
+                        cta="Vstúpiť"
+                        icon={Radio}
+                        variant="emerald"
+                        route="/competitions/live"
+                        isPriority={true}
+                    />
+
+                    <ModeCard 
+                        title="Ukončené"
+                        description="Dokončené súťaže a výsledky."
+                        cta="Prehliadať"
+                        icon={Flag}
+                        variant="slate"
+                        route="/competitions/finished"
+                    />
+
+                </main>
+
+                {/* FOOTER */}
+                <footer className="max-w-5xl mx-auto w-full mt-auto pt-24 flex items-center gap-4 opacity-20">
+                    <Zap size={14} className="text-[#F97316]" />
+                    {/* Visual anchor only */}
+                </footer>
+
+            </div>
+        );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+</script>
+
+</body>
+</html>
