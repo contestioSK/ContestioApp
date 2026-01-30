@@ -236,8 +236,8 @@ export default function FishingRulesPage() {
                           <HighlightText text={row.fish} query={searchQuery} />
                         </h4>
                         <div className="mt-2 flex items-center gap-2">
-                          <Ruler className="h-4 w-4 text-primary shrink-0" />
-                          <span className="text-sm text-foreground" data-testid={`text-size-${index}`}>
+                          <Ruler className="h-4 w-4 text-muted-foreground shrink-0" strokeWidth={1.75} />
+                          <span className="text-sm font-mono font-medium text-[#F97316]" data-testid={`text-size-${index}`}>
                             <HighlightText text={row.minMax} query={searchQuery} />
                           </span>
                         </div>

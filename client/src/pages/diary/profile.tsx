@@ -543,7 +543,7 @@ export default function Profile() {
                 className="gap-2"
                 data-testid="button-edit-profile"
               >
-                <User className="w-4 h-4" />
+                <User className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} />
                 Upraviť profil
               </Button>
             )}
@@ -572,7 +572,7 @@ export default function Profile() {
                   }
                 </CardTitle>
                 <CardDescription className="flex items-center justify-center gap-2">
-                  <Mail className="w-4 h-4" />
+                  <Mail className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} />
                   {user.email}
                 </CardDescription>
               </CardHeader>
@@ -602,7 +602,7 @@ export default function Profile() {
                       onClick={() => window.location.href = '/pricing?tab=diary'}
                       data-testid="button-unlock-premium"
                     >
-                      <Sparkles className="w-4 h-4" />
+                      <Sparkles className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} />
                       Odomknúť plný výkon
                     </Button>
                   )}

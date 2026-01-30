@@ -835,10 +835,10 @@ export default function DiaryTrips() {
           {/* Hero Grid (2/3 + 1/3 Layout) */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
             {/* Main Card: Trip Planner (2/3) */}
-            <div className="col-span-1 md:col-span-2 bg-gradient-to-br from-cyan-600 to-blue-700 dark:from-cyan-700 dark:to-blue-800 rounded-2xl md:rounded-[32px] p-6 md:p-8 relative overflow-hidden flex flex-col justify-between min-h-[220px] md:min-h-[260px] shadow-xl group border border-cyan-400/20">
+            <div className="col-span-1 md:col-span-2 bg-cyan-600 dark:bg-cyan-700 rounded-xl p-6 md:p-8 relative overflow-hidden flex flex-col justify-between min-h-[220px] md:min-h-[260px] shadow-xl group border border-cyan-400/20">
               {/* Decorative background */}
               <div className="absolute top-0 right-0 w-60 md:w-80 h-60 md:h-80 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
-              <MapPin className="absolute -bottom-6 -right-6 w-32 md:w-48 h-32 md:h-48 text-white/5 rotate-12 group-hover:rotate-0 transition-transform duration-700" strokeWidth={1} />
+              <MapPin className="absolute -bottom-6 -right-6 w-32 md:w-48 h-32 md:h-48 text-white/5 rotate-12 group-hover:rotate-0 transition-transform duration-700" strokeWidth={1.75} />
 
               <div className="relative z-10 max-w-lg">
                 <div className="inline-flex items-center gap-2 bg-black/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-medium text-cyan-50 mb-3 md:mb-4 border border-white/10">
@@ -861,7 +861,7 @@ export default function DiaryTrips() {
                   className="bg-white text-cyan-900 font-bold px-5 md:px-6 py-3 md:py-3.5 rounded-full shadow-lg hover:shadow-xl hover:bg-slate-50 transition-all transform hover:-translate-y-1 h-auto"
                   data-testid="button-create-trip"
                 >
-                  <Plus size={20} strokeWidth={2.5} className="mr-2" />
+                  <Plus size={20} strokeWidth={1.75} className="mr-2" />
                   <span>Nová výprava</span>
                 </Button>
 
@@ -879,9 +879,9 @@ export default function DiaryTrips() {
             </div>
 
             {/* Secondary Card: Checklist (1/3) */}
-            <div className="col-span-1 bg-card/60 backdrop-blur-md border border-border/50 rounded-2xl md:rounded-[32px] p-6 md:p-8 flex flex-col justify-between hover:border-emerald-500/30 hover:bg-card/80 transition-all shadow-lg group relative overflow-hidden min-h-[200px] md:min-h-[260px]">
+            <div className="col-span-1 bg-card/60 backdrop-blur-md border border-border/50 rounded-xl p-6 md:p-8 flex flex-col justify-between hover:border-emerald-500/30 hover:bg-card/80 transition-all shadow-lg group relative overflow-hidden min-h-[200px] md:min-h-[260px]">
               <div className="absolute top-0 right-0 p-4 md:p-6 opacity-50 group-hover:opacity-100 transition-opacity">
-                <div className="bg-emerald-500/10 p-2 md:p-3 rounded-xl md:rounded-2xl border border-emerald-500/20">
+                <div className="bg-emerald-500/10 p-2 md:p-3 rounded-xl border border-emerald-500/20">
                   <ClipboardCheck className="text-emerald-500 dark:text-emerald-400" size={24} />
                 </div>
               </div>
@@ -1018,7 +1018,7 @@ export default function DiaryTrips() {
               </div>
             ) : trips.length === 0 ? (
               /* First-time empty state */
-              <div className="flex flex-col items-center justify-center py-16 md:py-20 px-4 text-center rounded-2xl md:rounded-[32px] border-2 border-dashed border-border/50 bg-card/30">
+              <div className="flex flex-col items-center justify-center py-16 md:py-20 px-4 text-center rounded-xl border-2 border-dashed border-border/50 bg-card/30">
                 <div className="w-20 h-20 md:w-24 md:h-24 bg-card rounded-full flex items-center justify-center mb-6 shadow-xl border border-border/50 relative">
                   <div className="absolute inset-0 rounded-full blur-xl opacity-20 bg-cyan-500"></div>
                   <Compass size={36} className="text-cyan-500 relative z-10" />
@@ -1036,7 +1036,7 @@ export default function DiaryTrips() {
                   className="bg-cyan-500 hover:bg-cyan-400 text-white font-bold px-6 md:px-8 py-3 md:py-4 rounded-full shadow-lg transition-all transform hover:-translate-y-1"
                   data-testid="button-create-first-trip"
                 >
-                  <Plus size={20} strokeWidth={3} className="mr-2" />
+                  <Plus size={20} strokeWidth={1.75} className="mr-2" />
                   <span>Naplánovať prvú výpravu</span>
                 </Button>
               </div>
@@ -1044,7 +1044,7 @@ export default function DiaryTrips() {
               <>
                 <TabsContent value="active" className="space-y-6 mt-0">
                   {activeAndPlannedTrips.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-16 md:py-20 px-4 text-center rounded-2xl md:rounded-[32px] border-2 border-dashed border-border/50 bg-card/30">
+                    <div className="flex flex-col items-center justify-center py-16 md:py-20 px-4 text-center rounded-xl border-2 border-dashed border-border/50 bg-card/30">
                       <div className="w-20 h-20 md:w-24 md:h-24 bg-card rounded-full flex items-center justify-center mb-6 shadow-xl border border-border/50 relative">
                         <div className="absolute inset-0 rounded-full blur-xl opacity-20 bg-cyan-500"></div>
                         <Compass size={36} className="text-cyan-500 relative z-10" />
@@ -1060,7 +1060,7 @@ export default function DiaryTrips() {
                         disabled={limits && !limits.canCreate}
                         className="bg-cyan-500 hover:bg-cyan-400 text-white font-bold px-6 py-3 rounded-full shadow-lg transition-all transform hover:-translate-y-1"
                       >
-                        <Plus size={20} strokeWidth={3} className="mr-2" />
+                        <Plus size={20} strokeWidth={1.75} className="mr-2" />
                         <span>Nová výprava</span>
                       </Button>
                     </div>
@@ -1083,7 +1083,7 @@ export default function DiaryTrips() {
 
                 <TabsContent value="history" className="space-y-6 mt-0">
                   {finishedTrips.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-16 md:py-20 px-4 text-center rounded-2xl md:rounded-[32px] border-2 border-dashed border-border/50 bg-card/30">
+                    <div className="flex flex-col items-center justify-center py-16 md:py-20 px-4 text-center rounded-xl border-2 border-dashed border-border/50 bg-card/30">
                       <div className="w-20 h-20 md:w-24 md:h-24 bg-card rounded-full flex items-center justify-center mb-6 shadow-xl border border-border/50 relative">
                         <div className="absolute inset-0 rounded-full blur-xl opacity-20 bg-purple-500"></div>
                         <History size={36} className="text-purple-500 relative z-10" />

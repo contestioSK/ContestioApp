@@ -836,13 +836,13 @@ export default function DiaryCatches() {
               <div className="mb-6">
                 <h2 className="text-sm font-medium text-muted-foreground dark:text-slate-400 mb-3">Moja celková štatistika</h2>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                  <Card className="bg-card border border-slate-200 shadow-sm dark:bg-transparent dark:bg-gradient-to-br dark:from-blue-600/20 dark:to-cyan-600/20 dark:border-blue-500/30 transition-all duration-200 hover:shadow-md dark:hover:from-blue-600/30 dark:hover:to-cyan-600/30 dark:hover:border-blue-400/50 dark:hover:shadow-blue-500/20" data-testid="card-total-count">
+                  <Card className="bg-card border border-border rounded-xl shadow-sm transition-all duration-200 hover:shadow-md hover:border-border/80" data-testid="card-total-count">
                     <CardContent className="p-4 md:p-6">
                       <div className="flex items-center gap-3 md:gap-4">
                         <TacticalIcon icon={Fish} variant="cyan" size="sm" showLabel={false} />
                         <div className="flex-1">
-                          <div className="text-xs md:text-sm text-muted-foreground dark:text-slate-300 mb-1">Úlovky</div>
-                          <div className="text-xl md:text-2xl font-bold text-teal-700 dark:text-white" data-testid="text-total-count">{totalCount} ks</div>
+                          <div className="text-xs md:text-sm text-muted-foreground mb-1">Úlovky</div>
+                          <div className="text-xl md:text-2xl font-mono font-medium text-[#F97316]" data-testid="text-total-count">{totalCount} ks</div>
                         </div>
                       </div>
                     </CardContent>
@@ -850,7 +850,7 @@ export default function DiaryCatches() {
                   
                   <Card 
                     className={cn(
-                      "bg-card border border-slate-200 shadow-sm dark:bg-transparent dark:bg-gradient-to-br dark:from-emerald-600/20 dark:to-green-600/20 dark:border-emerald-500/30 transition-all duration-200 hover:shadow-md dark:hover:from-emerald-600/30 dark:hover:to-green-600/30 dark:hover:border-emerald-400/50 dark:hover:shadow-emerald-500/20",
+                      "bg-card border border-border rounded-xl shadow-sm transition-all duration-200 hover:shadow-md hover:border-border/80",
                       biggestFishCatch && "cursor-pointer hover:scale-[1.02]"
                     )}
                     onClick={() => biggestFishCatch && setSelectedCatch(biggestFishCatch)}
@@ -860,32 +860,32 @@ export default function DiaryCatches() {
                       <div className="flex items-center gap-3 md:gap-4">
                         <TacticalIcon icon={Trophy} variant="amber" size="sm" showLabel={false} />
                         <div className="flex-1">
-                          <div className="text-xs md:text-sm text-muted-foreground dark:text-slate-300 mb-1">Najväčšia ryba</div>
-                          <div className="text-xl md:text-2xl font-bold text-amber-700 dark:text-white" data-testid="text-total-biggest">{biggestFish.toFixed(1)} kg</div>
+                          <div className="text-xs md:text-sm text-muted-foreground mb-1">Najväčšia ryba</div>
+                          <div className="text-xl md:text-2xl font-mono font-medium text-[#F97316]" data-testid="text-total-biggest">{biggestFish.toFixed(1)} kg</div>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
                   
-                  <Card className="bg-card border border-slate-200 shadow-sm dark:bg-transparent dark:bg-gradient-to-br dark:from-purple-600/20 dark:to-pink-600/20 dark:border-purple-500/30 transition-all duration-200 hover:shadow-md dark:hover:from-purple-600/30 dark:hover:to-pink-600/30 dark:hover:border-purple-400/50 dark:hover:shadow-purple-500/20" data-testid="card-total-weight">
+                  <Card className="bg-card border border-border rounded-xl shadow-sm transition-all duration-200 hover:shadow-md hover:border-border/80" data-testid="card-total-weight">
                     <CardContent className="p-4 md:p-6">
                       <div className="flex items-center gap-3 md:gap-4">
                         <TacticalIcon icon={Weight} variant="indigo" size="sm" showLabel={false} />
                         <div className="flex-1">
-                          <div className="text-xs md:text-sm text-muted-foreground dark:text-slate-300 mb-1">Celková váha</div>
-                          <div className="text-xl md:text-2xl font-bold text-slate-700 dark:text-white" data-testid="text-total-weight">{totalWeight.toFixed(1)} kg</div>
+                          <div className="text-xs md:text-sm text-muted-foreground mb-1">Celková váha</div>
+                          <div className="text-xl md:text-2xl font-mono font-medium text-[#F97316]" data-testid="text-total-weight">{totalWeight.toFixed(1)} kg</div>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
                   
-                  <Card className="bg-card border border-slate-200 shadow-sm dark:bg-transparent dark:bg-gradient-to-br dark:from-amber-600/20 dark:to-orange-600/20 dark:border-amber-500/30 transition-all duration-200 hover:shadow-md dark:hover:from-amber-600/30 dark:hover:to-orange-600/30 dark:hover:border-amber-400/50 dark:hover:shadow-amber-500/20" data-testid="card-total-average">
+                  <Card className="bg-card border border-border rounded-xl shadow-sm transition-all duration-200 hover:shadow-md hover:border-border/80" data-testid="card-total-average">
                     <CardContent className="p-4 md:p-6">
                       <div className="flex items-start gap-3 md:gap-4">
                         <TacticalIcon icon={Target} variant="purple" size="sm" showLabel={false} />
                         <div className="flex-1">
-                          <div className="text-xs md:text-sm text-muted-foreground dark:text-slate-300 mb-1">Váhový priemer</div>
-                          <div className="text-xl md:text-2xl font-bold text-violet-700 dark:text-white" data-testid="text-total-average">{averageWeight.toFixed(2)} kg</div>
+                          <div className="text-xs md:text-sm text-muted-foreground mb-1">Váhový priemer</div>
+                          <div className="text-xl md:text-2xl font-mono font-medium text-[#F97316]" data-testid="text-total-average">{averageWeight.toFixed(2)} kg</div>
                         </div>
                       </div>
                     </CardContent>

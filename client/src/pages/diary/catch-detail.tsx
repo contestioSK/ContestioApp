@@ -147,10 +147,10 @@ export default function CatchDetail() {
 
         {/* Title */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 bg-clip-text text-transparent mb-2 drop-shadow-lg">
-            🏆 Môj osobný rekord 🏆
+          <h1 className="text-4xl md:text-5xl font-black italic text-foreground mb-2 tracking-tight uppercase">
+            Môj osobný rekord
           </h1>
-          <div className="h-1 w-32 mx-auto bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 rounded-full"></div>
+          <div className="h-1 w-32 mx-auto bg-[#F97316] rounded-full"></div>
         </div>
 
         <Card className="bg-slate-800 border-slate-700">
@@ -175,7 +175,7 @@ export default function CatchDetail() {
                 </div>
                 <div>
                   <div className="text-sm text-slate-400">Váha</div>
-                  <div className="font-semibold text-white" data-testid="detail-weight">
+                  <div className="font-mono font-medium text-[#F97316]" data-testid="detail-weight">
                     {catch_.weight ? `${catch_.weight} kg` : 'Neuvedené'}
                   </div>
                 </div>
@@ -187,7 +187,7 @@ export default function CatchDetail() {
                 </div>
                 <div>
                   <div className="text-sm text-slate-400">Dĺžka</div>
-                  <div className="font-semibold text-white">
+                  <div className="font-mono font-medium text-[#F97316]">
                     {catch_.lengthCm ? `${catch_.lengthCm} cm` : 'Neuvedené'}
                   </div>
                 </div>
@@ -248,13 +248,13 @@ export default function CatchDetail() {
                   {catch_.latitude && (
                     <div>
                       <div className="text-slate-400">Zem. šírka</div>
-                      <div className="font-medium text-white">{Number(catch_.latitude).toFixed(6)}°</div>
+                      <div className="font-mono font-medium text-[#F97316]">{Number(catch_.latitude).toFixed(6)}°</div>
                     </div>
                   )}
                   {catch_.longitude && (
                     <div>
                       <div className="text-slate-400">Zem. dĺžka</div>
-                      <div className="font-medium text-white">{Number(catch_.longitude).toFixed(6)}°</div>
+                      <div className="font-mono font-medium text-[#F97316]">{Number(catch_.longitude).toFixed(6)}°</div>
                     </div>
                   )}
                 </div>
@@ -268,37 +268,37 @@ export default function CatchDetail() {
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   {catch_.airTemp && (
                     <div className="flex items-center gap-2">
-                      <Thermometer className="w-4 h-4 text-orange-400" />
+                      <Thermometer className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} />
                       <div>
                         <div className="text-slate-400">Teplota vzduchu</div>
-                        <div className="font-medium text-white">{Number(catch_.airTemp).toFixed(1)}°C</div>
+                        <div className="font-mono font-medium text-[#F97316]">{Number(catch_.airTemp).toFixed(1)}°C</div>
                       </div>
                     </div>
                   )}
                   {catch_.waterTemp && (
                     <div className="flex items-center gap-2">
-                      <Droplets className="w-4 h-4 text-blue-400" />
+                      <Droplets className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} />
                       <div>
                         <div className="text-slate-400">Teplota vody</div>
-                        <div className="font-medium text-white">{Number(catch_.waterTemp).toFixed(1)}°C</div>
+                        <div className="font-mono font-medium text-[#F97316]">{Number(catch_.waterTemp).toFixed(1)}°C</div>
                       </div>
                     </div>
                   )}
                   {catch_.windSpeed && (
                     <div className="flex items-center gap-2">
-                      <Wind className="w-4 h-4 text-cyan-400" />
+                      <Wind className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} />
                       <div>
                         <div className="text-slate-400">Rýchlosť vetra</div>
-                        <div className="font-medium text-white">{Number(catch_.windSpeed).toFixed(1)} km/h</div>
+                        <div className="font-mono font-medium text-[#F97316]">{Number(catch_.windSpeed).toFixed(1)} km/h</div>
                       </div>
                     </div>
                   )}
                   {catch_.airPressure && (
                     <div className="flex items-center gap-2">
-                      <Gauge className="w-4 h-4 text-purple-400" />
+                      <Gauge className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} />
                       <div>
                         <div className="text-slate-400">Tlak vzduchu</div>
-                        <div className="font-medium text-white">{Number(catch_.airPressure).toFixed(0)} hPa</div>
+                        <div className="font-mono font-medium text-[#F97316]">{Number(catch_.airPressure).toFixed(0)} hPa</div>
                       </div>
                     </div>
                   )}

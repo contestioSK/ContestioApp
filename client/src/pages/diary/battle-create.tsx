@@ -365,7 +365,7 @@ export default function BattleCreate() {
           <Card className="mb-8">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <FolderOpen className="w-5 h-5" />
+                <FolderOpen className="w-5 h-5 text-muted-foreground" strokeWidth={1.75} />
                 Šablóny súbojov
               </CardTitle>
             </CardHeader>
@@ -666,7 +666,7 @@ export default function BattleCreate() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Users className="w-5 h-5" />
+                    <Users className="w-5 h-5 text-muted-foreground" strokeWidth={1.75} />
                     Účastníci
                   </CardTitle>
                 </CardHeader>
@@ -715,7 +715,7 @@ export default function BattleCreate() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Clock className="w-5 h-5" />
+                    <Clock className="w-5 h-5 text-muted-foreground" strokeWidth={1.75} />
                     Nastavenia
                   </CardTitle>
                 </CardHeader>

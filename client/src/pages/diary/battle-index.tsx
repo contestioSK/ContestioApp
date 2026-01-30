@@ -419,7 +419,7 @@ export default function BattleIndex() {
                                 <span className="text-muted-foreground" data-testid={`text-battle-progress-${battle.id}`}>
                                   Priebeh súboja
                                 </span>
-                                <span className="text-muted-foreground" data-testid={`text-battle-progress-percent-${battle.id}`}>
+                                <span className="font-mono font-medium text-[#F97316]" data-testid={`text-battle-progress-percent-${battle.id}`}>
                                   {progress}%
                                 </span>
                               </div>
@@ -654,7 +654,7 @@ export default function BattleIndex() {
               </Card>
 
               {/* Section: Sieň Slávy */}
-              <Card className="bg-yellow-50 dark:bg-transparent dark:bg-gradient-to-br dark:from-yellow-500/10 dark:to-amber-600/10 border-yellow-500/30">
+              <Card className="bg-yellow-50 dark:bg-yellow-950/20 border-yellow-500/30">
                 <CardContent className="p-6">
                   <div className="text-center">
                     <div className="flex justify-center mb-4">

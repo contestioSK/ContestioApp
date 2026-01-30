@@ -743,7 +743,7 @@ export default function DiaryIndex() {
         {/* Gentle Premium Upgrade Banner for FREE users */}
         {!isPremium && !premiumLoading && (
           <Link href="/pricing" data-testid="link-premium-upgrade-banner">
-            <div className="mb-6 p-3 rounded-lg bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 border border-amber-200/50 dark:border-amber-500/30 cursor-pointer hover:from-amber-100 hover:to-yellow-100 dark:hover:from-amber-900/30 dark:hover:to-yellow-900/30 transition-colors">
+            <div className="mb-6 p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200/50 dark:border-amber-500/30 cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors">
               <div className="flex items-center gap-3">
                 <Crown className="w-5 h-5 text-amber-500 flex-shrink-0" />
                 <p className="text-sm text-amber-700 dark:text-amber-300">
@@ -1126,7 +1126,7 @@ export default function DiaryIndex() {
                       </div>
                     </div>
                     
-                    <div className="text-foreground dark:text-white font-bold text-xl">
+                    <div className="font-mono font-medium text-[#F97316] text-xl">
                       {catch_.weight ? `${catch_.weight} kg` : catch_.lengthCm ? `${catch_.lengthCm} cm` : 'N/A'}
                     </div>
                     
@@ -1177,7 +1177,7 @@ export default function DiaryIndex() {
                             <Edit2 className="w-4 h-4" />
                           </button>
                         </div>
-                        <div className="text-foreground dark:text-white font-bold text-lg mb-2">
+                        <div className="font-mono font-medium text-[#F97316] text-lg mb-2">
                           {catch_.weight ? `${catch_.weight} kg` : catch_.lengthCm ? `${catch_.lengthCm} cm` : 'N/A'}
                         </div>
                         <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground dark:text-slate-400">

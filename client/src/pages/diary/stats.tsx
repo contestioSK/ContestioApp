@@ -162,40 +162,39 @@ export default function DiaryStats() {
 
             {/* Sezónny prehľad - 4 karty */}
             <section className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div className="bg-card border border-border/50 p-5 rounded-2xl flex flex-col justify-between h-32 hover:border-border transition-colors">
+              <div className="bg-card border border-border/50 p-5 rounded-xl flex flex-col justify-between h-32 hover:border-border transition-colors">
                 <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Ulovil si</span>
-                <span className="text-4xl font-bold text-foreground tracking-tighter">{basicStats.totalCatches}</span>
+                <span className="text-4xl font-mono font-medium text-[#F97316] tracking-tighter">{basicStats.totalCatches}</span>
               </div>
               
-              <div className="bg-card border border-border/50 p-5 rounded-2xl flex flex-col justify-between h-32 hover:border-border transition-colors">
+              <div className="bg-card border border-border/50 p-5 rounded-xl flex flex-col justify-between h-32 hover:border-border transition-colors">
                 <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Najväčšia ryba</span>
                 <div>
-                  <span className="text-4xl font-bold text-foreground tracking-tighter">{basicStats.biggestCatch.toFixed(1)}</span>
+                  <span className="text-4xl font-mono font-medium text-[#F97316] tracking-tighter">{basicStats.biggestCatch.toFixed(1)}</span>
                   <span className="text-sm text-muted-foreground ml-1">kg</span>
                 </div>
               </div>
 
-              <div className="bg-card border border-border/50 p-5 rounded-2xl flex flex-col justify-between h-32 hover:border-border transition-colors">
+              <div className="bg-card border border-border/50 p-5 rounded-xl flex flex-col justify-between h-32 hover:border-border transition-colors">
                 <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Výpravy</span>
-                <span className="text-4xl font-bold text-foreground tracking-tighter">{basicStats.totalTrips}</span>
+                <span className="text-4xl font-mono font-medium text-[#F97316] tracking-tighter">{basicStats.totalTrips}</span>
               </div>
 
-              <div className="bg-card border border-border/50 p-5 rounded-2xl flex flex-col justify-between h-32 hover:border-border transition-colors">
+              <div className="bg-card border border-border/50 p-5 rounded-xl flex flex-col justify-between h-32 hover:border-border transition-colors">
                 <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Priemer / Lov</span>
-                <span className="text-4xl font-bold text-foreground tracking-tighter">{basicStats.successRate.toFixed(1)}</span>
+                <span className="text-4xl font-mono font-medium text-[#F97316] tracking-tighter">{basicStats.successRate.toFixed(1)}</span>
               </div>
             </section>
 
             {/* Hero Catch - len ak má fotku */}
             {heroCatch && (
-              <section className="relative aspect-[4/5] md:aspect-[21/9] rounded-3xl overflow-hidden border border-border/50 shadow-2xl group">
+              <section className="relative aspect-[4/5] md:aspect-[21/9] rounded-xl overflow-hidden border border-border/50 shadow-2xl group">
                 <img 
                   src={heroCatch.photo} 
                   alt={heroCatch.species}
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-90"></div>
-                <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-transparent to-transparent opacity-60"></div>
+                <div className="absolute inset-0 bg-background/80"></div>
                 
                 <div className="absolute top-6 right-6">
                   <div className="bg-amber-500/90 backdrop-blur-sm text-black text-xs font-black px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg shadow-amber-500/20">
@@ -218,7 +217,7 @@ export default function DiaryStats() {
             )}
 
             {/* Mesačný progres */}
-            <section className="bg-card border border-border/50 rounded-3xl p-6 md:p-8">
+            <section className="bg-card border border-border/50 rounded-xl p-6 md:p-8">
               <div className="flex justify-between items-center mb-1">
                 <h3 className="text-lg font-bold text-foreground">Ako sa ti darilo počas sezóny</h3>
                 {monthlyTrendData.some(d => d.val > 0) && (
@@ -240,7 +239,7 @@ export default function DiaryStats() {
           <div className="md:col-span-4 space-y-6">
 
             {/* Hodinový insight */}
-            <section className="bg-card border border-border/50 rounded-3xl p-6 relative overflow-hidden">
+            <section className="bg-card border border-border/50 rounded-xl p-6 relative overflow-hidden">
               <h3 className="text-lg font-bold text-foreground mb-4">Kedy sa ti darí najviac</h3>
               
               {hasEnoughData && topHourlyWindows.length > 0 ? (
@@ -250,7 +249,7 @@ export default function DiaryStats() {
                     <ul className="space-y-3">
                       {topHourlyWindows.map((time, i) => (
                         <li key={i} className="flex items-center gap-3 text-foreground font-medium p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                          <Clock size={16} className="text-primary" />
+                          <Clock className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} />
                           {time}
                         </li>
                       ))}
@@ -294,7 +293,7 @@ export default function DiaryStats() {
             </section>
 
             {/* Top druhy */}
-            <section className="bg-card border border-border/50 rounded-3xl p-6">
+            <section className="bg-card border border-border/50 rounded-xl p-6">
               <h3 className="text-lg font-bold text-foreground mb-4">Top druhy</h3>
               {topSpecies.length > 0 ? (
                 <ul className="space-y-3">
@@ -310,7 +309,7 @@ export default function DiaryStats() {
                         </div>
                         <span className="font-medium text-foreground">{species.name}</span>
                       </div>
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge variant="secondary" className="text-xs font-mono font-medium text-[#F97316]">
                         {species.count} ks
                       </Badge>
                     </li>
@@ -323,9 +322,9 @@ export default function DiaryStats() {
 
             {/* Míľniky */}
             {(personalRecords.heaviestCatch || personalRecords.bestTrip || personalRecords.streaks.longest > 0) && (
-              <section className="bg-card border border-border/50 rounded-3xl p-6">
+              <section className="bg-card border border-border/50 rounded-xl p-6">
                 <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
-                  <Trophy className="w-5 h-5 text-amber-500" />
+                  <Trophy className="h-5 w-5 text-muted-foreground" strokeWidth={1.75} />
                   Míľniky
                 </h3>
                 <ul className="space-y-3">
@@ -334,7 +333,7 @@ export default function DiaryStats() {
                       <div className="w-2 h-2 rounded-full bg-amber-500 mt-2 flex-shrink-0" />
                       <div>
                         <p className="font-medium text-foreground text-sm">Osobný rekord</p>
-                        <p className="text-xs text-muted-foreground">{parseFloat(personalRecords.heaviestCatch.weight).toFixed(1)} kg - {getFishTypeLabel(personalRecords.heaviestCatch.fishType)}</p>
+                        <p className="text-xs text-muted-foreground"><span className="font-mono font-medium text-[#F97316]">{parseFloat(personalRecords.heaviestCatch.weight).toFixed(1)} kg</span> - {getFishTypeLabel(personalRecords.heaviestCatch.fishType)}</p>
                       </div>
                     </li>
                   )}
@@ -343,7 +342,7 @@ export default function DiaryStats() {
                       <div className="w-2 h-2 rounded-full bg-emerald-500 mt-2 flex-shrink-0" />
                       <div>
                         <p className="font-medium text-foreground text-sm">Najlepšia výprava</p>
-                        <p className="text-xs text-muted-foreground">{personalRecords.bestTrip.catchCount} úlovkov, {personalRecords.bestTrip.totalWeight.toFixed(1)} kg</p>
+                        <p className="text-xs text-muted-foreground"><span className="font-mono font-medium text-[#F97316]">{personalRecords.bestTrip.catchCount}</span> úlovkov, <span className="font-mono font-medium text-[#F97316]">{personalRecords.bestTrip.totalWeight.toFixed(1)} kg</span></p>
                       </div>
                     </li>
                   )}
@@ -352,7 +351,7 @@ export default function DiaryStats() {
                       <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0" />
                       <div>
                         <p className="font-medium text-foreground text-sm">Najdlhšia séria</p>
-                        <p className="text-xs text-muted-foreground">{personalRecords.streaks.longest} úspešných výprav za sebou</p>
+                        <p className="text-xs text-muted-foreground"><span className="font-mono font-medium text-[#F97316]">{personalRecords.streaks.longest}</span> úspešných výprav za sebou</p>
                       </div>
                     </li>
                   )}
@@ -362,9 +361,9 @@ export default function DiaryStats() {
 
             {/* Premium CTA */}
             {!isPremium && (
-              <section className="bg-gradient-to-br from-amber-500/10 via-card to-card border border-amber-500/20 rounded-3xl p-6 relative overflow-hidden">
+              <section className="bg-card border border-amber-500/20 rounded-xl p-6 relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-4 opacity-5">
-                  <Crown className="w-20 h-20 -rotate-12" />
+                  <Crown className="h-10 w-10 -rotate-12" strokeWidth={1.75} />
                 </div>
                 <Badge className="mb-3 bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30">
                   PREMIUM
@@ -382,7 +381,7 @@ export default function DiaryStats() {
                   onClick={() => setLocation('/pricing?tab=diary')}
                   data-testid="button-get-premium"
                 >
-                  <Crown className="w-4 h-4 mr-2" />
+                  <Crown className="h-4 w-4 mr-2" strokeWidth={1.75} />
                   Získať PREMIUM
                 </Button>
               </section>
@@ -390,14 +389,14 @@ export default function DiaryStats() {
 
             {/* Best time info for premium */}
             {isPremium && advancedSuccessRate.bestHour && (
-              <section className="bg-primary/5 border border-primary/20 rounded-3xl p-6">
+              <section className="bg-card border border-primary/20 rounded-xl p-6">
                 <h3 className="text-lg font-bold text-foreground mb-2">Najlepší čas lovu</h3>
                 <div className="flex items-center gap-4">
-                  <div className="text-4xl font-bold text-primary">
+                  <div className="text-4xl font-mono font-medium text-[#F97316]">
                     {String(advancedSuccessRate.bestHour.hour).padStart(2, '0')}:00
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    {advancedSuccessRate.bestHour.rate.toFixed(1)} úlovkov/hod
+                    <span className="font-mono font-medium text-[#F97316]">{advancedSuccessRate.bestHour.rate.toFixed(1)}</span> úlovkov/hod
                   </div>
                 </div>
               </section>

@@ -307,15 +307,13 @@ export default function TripDetail() {
           </div>
 
           {/* Hero Card - Trip Title & Info */}
-          <div className="bg-gradient-to-br from-card to-card/80 dark:from-slate-800/60 dark:to-slate-900/60 rounded-3xl p-6 md:p-8 border border-border/50 dark:border-white/5 shadow-xl relative overflow-hidden group">
-            {/* Background blur decoration */}
-            <div className="absolute top-0 right-0 w-80 h-80 bg-primary/5 dark:bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none group-hover:bg-primary/10 dark:group-hover:bg-primary/15 transition-colors duration-700"></div>
+          <div className="bg-card rounded-xl p-6 md:p-8 border border-border/50 shadow-xl relative overflow-hidden group">
 
-            <div className="relative z-10">
+            <div className="relative">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
                   <div className="flex items-center gap-3 mb-3 flex-wrap">
-                    <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-foreground tracking-tight" data-testid="text-trip-name">
+                    <h1 className="text-3xl md:text-4xl lg:text-5xl font-black italic text-foreground tracking-tight" data-testid="text-trip-name">
                       {trip.name}
                     </h1>
                     {(isPast(new Date(trip.endDate)) || isToday(new Date(trip.endDate))) ? (
@@ -330,14 +328,14 @@ export default function TripDetail() {
                   </div>
                   
                   <div className="flex flex-wrap gap-3 text-sm md:text-base text-muted-foreground">
-                    <div className="flex items-center gap-2 bg-background/50 dark:bg-white/5 px-3 py-1.5 rounded-full border border-border/50 dark:border-white/5">
-                      <CalendarIcon className="w-4 h-4 text-primary" />
+                    <div className="flex items-center gap-2 bg-muted/30 px-3 py-1.5 rounded-lg border border-border/50">
+                      <CalendarIcon className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} />
                       <span data-testid="text-trip-dates">
                         {format(new Date(trip.startDate), "d. MMM", { locale: sk })} - {format(new Date(trip.endDate), "d. MMM yyyy", { locale: sk })}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 bg-background/50 dark:bg-white/5 px-3 py-1.5 rounded-full border border-border/50 dark:border-white/5">
-                      <MapPin className="w-4 h-4 text-emerald-500" />
+                    <div className="flex items-center gap-2 bg-muted/30 px-3 py-1.5 rounded-lg border border-border/50">
+                      <MapPin className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} />
                       <span data-testid="text-trip-location">{trip.location}</span>
                     </div>
                   </div>
@@ -357,7 +355,7 @@ export default function TripDetail() {
           </CardHeader>
           <CardContent className="space-y-6">
             {totalCatches === 0 ? (
-              <div className="text-center py-12 border-2 border-dashed border-border/50 rounded-[32px] bg-muted/20" data-testid="empty-catches">
+              <div className="text-center py-12 border-2 border-dashed border-border/50 rounded-xl bg-muted/20" data-testid="empty-catches">
                 <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
                   <Fish className="w-8 h-8 text-muted-foreground opacity-50" />
                 </div>
@@ -416,12 +414,12 @@ export default function TripDetail() {
                               <div className="space-y-1">
                                 <div className="flex items-center justify-between">
                                   <span className="text-sm text-muted-foreground">Váha:</span>
-                                  <span className="font-semibold text-lg">{parseFloat(catch_.weight).toFixed(1)} kg</span>
+                                  <span className="font-mono font-medium text-lg text-[#F97316]">{parseFloat(catch_.weight).toFixed(1)} kg</span>
                                 </div>
                                 {catch_.lengthCm && (
                                   <div className="flex items-center justify-between">
                                     <span className="text-sm text-muted-foreground">Dĺžka:</span>
-                                    <span className="font-semibold">{catch_.lengthCm} cm</span>
+                                    <span className="font-mono font-medium text-[#F97316]">{catch_.lengthCm} cm</span>
                                   </div>
                                 )}
                               </div>
@@ -884,17 +882,17 @@ export default function TripDetail() {
 
               {/* Statistics */}
               <div className="grid grid-cols-3 gap-6">
-                <div className="bg-slate-800/50 rounded-2xl p-6 text-center">
+                <div className="bg-slate-800/50 rounded-xl p-6 text-center">
                   <div className="text-4xl font-bold text-white mb-2">{totalCatches}</div>
                   <div className="text-slate-400 text-lg">
                     {totalCatches === 0 ? "Úlovkov" : totalCatches === 1 ? "Úlovok" : "Úlovkov"}
                   </div>
                 </div>
-                <div className="bg-slate-800/50 rounded-2xl p-6 text-center">
+                <div className="bg-slate-800/50 rounded-xl p-6 text-center">
                   <div className="text-4xl font-bold text-white mb-2">{totalWeight.toFixed(1)} kg</div>
                   <div className="text-slate-400 text-lg">Celková váha</div>
                 </div>
-                <div className="bg-slate-800/50 rounded-2xl p-6 text-center">
+                <div className="bg-slate-800/50 rounded-xl p-6 text-center">
                   <div className="text-4xl font-bold text-white mb-2">
                     {biggestCatch ? parseFloat(biggestCatch.weight).toFixed(1) : "0"} kg
                   </div>
@@ -910,7 +908,7 @@ export default function TripDetail() {
                     {top3Catches.map((catch_, index) => (
                       <div 
                         key={catch_.id}
-                        className="bg-slate-800/50 rounded-2xl overflow-hidden"
+                        className="bg-slate-800/50 rounded-xl overflow-hidden"
                       >
                         {/* Photo */}
                         {catch_.photos && catch_.photos.length > 0 ? (
