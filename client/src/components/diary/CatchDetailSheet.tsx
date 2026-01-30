@@ -44,9 +44,9 @@ export function CatchDetailSheet({
   return (
     <Sheet open onOpenChange={onClose}>
       <SheetContent className="w-full sm:max-w-md p-0 bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 overflow-y-auto" data-testid="catch-detail-panel">
-        <div className="flex flex-col min-h-full pt-6">
+        <div className="flex flex-col min-h-full pt-5">
           {/* Hero Photo Section */}
-          <div className="relative h-64 bg-slate-900 rounded-t-lg overflow-hidden">
+          <div className="relative h-64 bg-slate-900 mx-5 rounded-lg overflow-hidden">
             {catchData.photos && catchData.photos.length > 0 ? (
               <SimplePhotoSlider 
                 photos={catchData.photos} 
