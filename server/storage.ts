@@ -18,6 +18,7 @@ import {
   diaryCatches,
   diaryBattles,
   battleInvitations,
+  diaryCatchShares,
   friendships,
   promoCodes,
   promoCodeUsages,
@@ -336,6 +337,12 @@ export interface IStorage {
   getUserBattleInvitations(userId: string, status?: string): Promise<any[]>;
   updateInvitationStatus(id: string, status: string): Promise<any>;
   getInvitedUsersForBattle(battleId: string): Promise<string[]>;
+  
+  // Catch share operations (public sharing)
+  createCatchShare(catchId: string, ownerUserId: string, privacySettings: { hideGps: boolean; hideBait: boolean; hideSpot: boolean }): Promise<{ shareToken: string; shareUrl: string }>;
+  getCatchByShareToken(shareToken: string): Promise<DiaryCatch | undefined>;
+  incrementShareViewCount(shareToken: string): Promise<void>;
+  getCatchShareByCatchId(catchId: string, ownerUserId: string): Promise<{ shareToken: string } | undefined>;
   
   // Freemium limit checks
   checkDiaryTripLimit(userId: string): Promise<{ canCreate: boolean; currentCount: number; limit: number }>;
@@ -3530,6 +3537,109 @@ export class DatabaseStorage implements IStorage {
       .where(eq(battleInvitations.battleId, battleId));
     
     return invitations.map(inv => inv.userId);
+  }
+
+  // Catch share operations (public sharing)
+  async createCatchShare(
+    catchId: string, 
+    ownerUserId: string, 
+    privacySettings: { hideGps: boolean; hideBait: boolean; hideSpot: boolean }
+  ): Promise<{ shareToken: string; shareUrl: string }> {
+    // Check if share already exists for this catch
+    const existing = await this.getCatchShareByCatchId(catchId, ownerUserId);
+    if (existing) {
+      // Update privacy settings and return existing token
+      await db
+        .update(diaryCatchShares)
+        .set({ privacySettings })
+        .where(eq(diaryCatchShares.shareToken, existing.shareToken));
+      
+      return {
+        shareToken: existing.shareToken,
+        shareUrl: `/s/${existing.shareToken}`
+      };
+    }
+    
+    // Generate unique 16-character token
+    const shareToken = this.generateShareToken();
+    
+    await db.insert(diaryCatchShares).values({
+      shareToken,
+      catchId,
+      ownerUserId,
+      privacySettings,
+    });
+    
+    return {
+      shareToken,
+      shareUrl: `/s/${shareToken}`
+    };
+  }
+  
+  private generateShareToken(): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let token = '';
+    for (let i = 0; i < 16; i++) {
+      token += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return token;
+  }
+  
+  async getCatchByShareToken(shareToken: string): Promise<DiaryCatch | undefined> {
+    const [share] = await db
+      .select()
+      .from(diaryCatchShares)
+      .where(eq(diaryCatchShares.shareToken, shareToken));
+    
+    if (!share) {
+      return undefined;
+    }
+    
+    // Check if expired
+    if (share.expiresAt && new Date(share.expiresAt) < new Date()) {
+      return undefined;
+    }
+    
+    const [catch_] = await db
+      .select()
+      .from(diaryCatches)
+      .where(eq(diaryCatches.id, share.catchId));
+    
+    if (!catch_) {
+      return undefined;
+    }
+    
+    // Apply privacy settings - mask hidden fields
+    const privacy = share.privacySettings as { hideGps: boolean; hideBait: boolean; hideSpot: boolean };
+    
+    return {
+      ...catch_,
+      latitude: privacy.hideGps ? null : catch_.latitude,
+      longitude: privacy.hideGps ? null : catch_.longitude,
+      bait: privacy.hideBait ? null : catch_.bait,
+      spot: privacy.hideSpot ? null : catch_.spot,
+    };
+  }
+  
+  async incrementShareViewCount(shareToken: string): Promise<void> {
+    await db
+      .update(diaryCatchShares)
+      .set({ viewCount: sql`COALESCE(view_count, 0) + 1` })
+      .where(eq(diaryCatchShares.shareToken, shareToken));
+  }
+  
+  async getCatchShareByCatchId(catchId: string, ownerUserId: string): Promise<{ shareToken: string } | undefined> {
+    const [share] = await db
+      .select({ shareToken: diaryCatchShares.shareToken })
+      .from(diaryCatchShares)
+      .where(
+        and(
+          eq(diaryCatchShares.catchId, catchId),
+          eq(diaryCatchShares.ownerUserId, ownerUserId)
+        )
+      );
+    
+    return share;
   }
 
   // Check if user can access advanced statistics (PREMIUM feature)
