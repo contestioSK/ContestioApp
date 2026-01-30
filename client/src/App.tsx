@@ -57,6 +57,7 @@ import BattleDetail from "@/pages/diary/battle-detail";
 import BattleArchive from "@/pages/diary/battle-archive";
 import TripGallery from "@/pages/diary/trip-gallery";
 import Register from "@/pages/register";
+import SharedCatch from "@/pages/shared-catch";
 import OrganizerDashboard from "@/pages/organizer-dashboard";
 import OrganizerCompetitions from "@/pages/organizer/competitions";
 import OrganizerCompetitionManage from "@/pages/organizer/competition-manage";
@@ -103,6 +104,9 @@ function Router() {
     <Switch>
       <Route path="/" component={user ? Home : Landing} />
       <Route path="/register" component={Register} />
+      
+      {/* Public shared catch page - no authentication required */}
+      <Route path="/s/:shareToken" component={SharedCatch} />
       
       {/* New authentication routes */}
       <Route path="/auth/register" component={AuthRegister} />
