@@ -462,60 +462,103 @@ export default function DiaryLayout({ children, fullBleed = false }: DiaryLayout
           </div>
         </main>
         
-        {/* Mobile Bottom Navigation */}
-        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50 overflow-x-auto">
-          <div className="flex min-w-max">
-            {[...mainSection, ...fishingLifeSection.slice(0, 2), ...communitySection.slice(0, 1)].map((item) => {
-              const Icon = item.icon;
-              const isActive = isActivePath(item.href);
-              
-              return (
-                <button
-                  key={item.href}
-                  onClick={() => {
-                    setLocation(item.href);
-                    window.scrollTo(0, 0);
-                  }}
-                  className={`
-                    flex flex-col items-center justify-center space-y-1 transition-colors px-4 py-2 min-w-[20%] flex-1
-                    ${isActive 
-                      ? 'text-primary' 
-                      : 'text-muted-foreground hover:text-foreground'
-                    }
-                  `}
-                  data-testid={`mobile-nav-${item.label.toLowerCase().replace(' ', '-')}`}
-                >
-                  <Icon className="h-5 w-5 flex-shrink-0" />
-                  <span className="text-[10px] font-medium truncate max-w-full">{item.label}</span>
-                </button>
-              );
-            })}
-            
-            {competitionNavigationItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = isActivePath(item.href);
-              
-              return (
-                <button
-                  key={item.href}
-                  onClick={() => {
-                    setLocation(item.href);
-                    window.scrollTo(0, 0);
-                  }}
-                  className={`
-                    flex flex-col items-center justify-center space-y-1 transition-colors px-4 py-2 min-w-[20%] flex-1
-                    ${isActive 
-                      ? 'text-emerald-400 bg-emerald-500/20' 
-                      : 'text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10'
-                    }
-                  `}
-                  data-testid={`mobile-nav-${item.label.toLowerCase().replace(' ', '-')}`}
-                >
-                  <Icon className="h-5 w-5 flex-shrink-0" />
-                  <span className="text-[10px] font-medium truncate max-w-full">{item.label}</span>
-                </button>
-              );
-            })}
+        {/* Mobile Bottom Navigation - 5 items: Denník, Úlovky, Počasie, Štatistiky, Súťaže */}
+        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50">
+          <div className="flex w-full">
+            {/* Denník */}
+            <button
+              onClick={() => {
+                setLocation("/diary");
+                window.scrollTo(0, 0);
+              }}
+              className={`
+                flex flex-col items-center justify-center py-2 flex-1 min-w-0 transition-colors
+                ${isActivePath("/diary") && location === "/diary"
+                  ? 'text-primary' 
+                  : 'text-muted-foreground hover:text-foreground'
+                }
+              `}
+              data-testid="mobile-nav-dennik"
+            >
+              <BookOpen className="h-5 w-5 flex-shrink-0" />
+              <span className="text-[10px] font-medium truncate">Denník</span>
+            </button>
+
+            {/* Moje úlovky */}
+            <button
+              onClick={() => {
+                setLocation("/diary/catches");
+                window.scrollTo(0, 0);
+              }}
+              className={`
+                flex flex-col items-center justify-center py-2 flex-1 min-w-0 transition-colors
+                ${isActivePath("/diary/catches")
+                  ? 'text-primary' 
+                  : 'text-muted-foreground hover:text-foreground'
+                }
+              `}
+              data-testid="mobile-nav-ulovky"
+            >
+              <Fish className="h-5 w-5 flex-shrink-0" />
+              <span className="text-[10px] font-medium truncate">Úlovky</span>
+            </button>
+
+            {/* Počasie */}
+            <button
+              onClick={() => {
+                setLocation("/diary/weather-forecast");
+                window.scrollTo(0, 0);
+              }}
+              className={`
+                flex flex-col items-center justify-center py-2 flex-1 min-w-0 transition-colors
+                ${isActivePath("/diary/weather-forecast")
+                  ? 'text-primary' 
+                  : 'text-muted-foreground hover:text-foreground'
+                }
+              `}
+              data-testid="mobile-nav-pocasie"
+            >
+              <Cloud className="h-5 w-5 flex-shrink-0" />
+              <span className="text-[10px] font-medium truncate">Počasie</span>
+            </button>
+
+            {/* Štatistiky */}
+            <button
+              onClick={() => {
+                setLocation("/diary/stats");
+                window.scrollTo(0, 0);
+              }}
+              className={`
+                flex flex-col items-center justify-center py-2 flex-1 min-w-0 transition-colors
+                ${isActivePath("/diary/stats")
+                  ? 'text-primary' 
+                  : 'text-muted-foreground hover:text-foreground'
+                }
+              `}
+              data-testid="mobile-nav-statistiky"
+            >
+              <BarChart3 className="h-5 w-5 flex-shrink-0" />
+              <span className="text-[10px] font-medium truncate">Štatistiky</span>
+            </button>
+
+            {/* Súťaže - napravo */}
+            <button
+              onClick={() => {
+                setLocation("/categories/live");
+                window.scrollTo(0, 0);
+              }}
+              className={`
+                flex flex-col items-center justify-center py-2 flex-1 min-w-0 transition-colors
+                ${isActivePath("/categories/live")
+                  ? 'text-emerald-400 bg-emerald-500/20' 
+                  : 'text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10'
+                }
+              `}
+              data-testid="mobile-nav-sutaze"
+            >
+              <Trophy className="h-5 w-5 flex-shrink-0" />
+              <span className="text-[10px] font-medium truncate">Súťaže</span>
+            </button>
           </div>
         </div>
 
