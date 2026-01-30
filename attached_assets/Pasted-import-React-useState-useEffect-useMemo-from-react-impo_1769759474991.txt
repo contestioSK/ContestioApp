@@ -1,0 +1,329 @@
+import React, { useState, useEffect, useMemo } from "react";
+import { 
+  Lock, 
+  Unlock, 
+  ChevronDown, 
+  ChevronUp, 
+  Target, 
+  Plus, 
+  Trophy, 
+  Sparkles, 
+  Award, 
+  Calendar, 
+  Crosshair, 
+  Crown, 
+  Moon, 
+  FileText, 
+  Snowflake,
+  Flame,
+  Zap,
+  Star,
+  CheckCircle2,
+  TrendingUp,
+  Medal
+} from "lucide-react";
+
+// --- MOCKY A POMOCNÉ KOMPONENTY (Pre funkčnosť v náhľade) ---
+const cn = (...classes) => classes.filter(Boolean).join(" ");
+
+const useAuth = () => ({ user: { id: "1", username: "rybar_marek" } });
+const useConfetti = () => ({ celebrateGoalCompletion: () => {} });
+const useToast = () => ({ toast: () => {} });
+const useLocation = () => ["/badges", (path) => {}];
+
+const useQuery = ({ queryKey }) => {
+  if (queryKey[0] === "/api/diary/badges") {
+    return { data: [
+      { badgeType: "total_weight", tier: "bronze" },
+      { badgeType: "total_weight", tier: "silver" },
+      { badgeType: "first_catch", tier: "bronze" }
+    ], isSuccess: true };
+  }
+  if (queryKey[0] === "/api/diary/badges/progress") {
+    return { data: { total_weight: 45, catches_count: 8, species_count: 3 } };
+  }
+  return { data: {} };
+};
+
+// --- OPTIMALIZOVANÉ UI KOMPONENTY (Clean & Pro) ---
+const Collapsible = ({ open, onOpenChange, children, className }) => (
+  <div className={cn("space-y-2", className)}>{children}</div>
+);
+
+const CollapsibleTrigger = ({ asChild, children, className, onClick }) => {
+  const Comp = asChild ? "div" : "button";
+  return <Comp onClick={onClick} className={className}>{children}</Comp>;
+};
+
+const CollapsibleContent = ({ children, className, open }) => {
+  if (!open) return null;
+  return <div className={cn("animate-in slide-in-from-top-2 duration-200", className)}>{children}</div>;
+};
+
+const Progress = ({ value, className }) => (
+  <div className={cn("w-full bg-slate-800 rounded-full h-1.5 overflow-hidden", className)}>
+    <div className="bg-blue-500 h-full transition-all duration-700 ease-out" style={{ width: `${value}%` }} />
+  </div>
+);
+
+const Button = ({ children, onClick, className, variant = "primary" }) => {
+  const variants = {
+    primary: "bg-blue-600 text-white hover:bg-blue-700 shadow-sm",
+    ghost: "text-slate-400 hover:text-white hover:bg-slate-800/50",
+    outline: "border border-slate-800 text-slate-300 hover:bg-slate-800"
+  };
+  return (
+    <button onClick={onClick} className={cn("inline-flex items-center px-4 py-2 rounded-lg font-bold transition-all active:scale-95", variants[variant], className)}>
+      {children}
+    </button>
+  );
+};
+
+const Card = ({ children, className }) => (
+  <div className={cn("bg-slate-900/40 border border-slate-800/60 rounded-2xl", className)}>
+    {children}
+  </div>
+);
+
+const DiaryLayout = ({ children }) => (
+  <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-blue-500/30">
+    <div className="max-w-4xl mx-auto p-6 md:p-12 pb-24">{children}</div>
+  </div>
+);
+
+// --- KONFIGURÁCIA IKON A ŠTÝLOV ---
+const BADGE_DEFINITIONS = {
+  total_weight: {
+    id: "total_weight",
+    name: "Ťažká váha",
+    description: "Celková váha tvojich úlovkov",
+    icon: "Target",
+    tiers: {
+      bronze: { threshold: 10, description: "Chyť spolu 10kg rýb" },
+      silver: { threshold: 50, description: "Chyť spolu 50kg rýb" },
+      gold: { threshold: 100, description: "Chyť spolu 100kg rýb" }
+    }
+  },
+  catches_count: {
+    id: "catches_count",
+    name: "Lovec",
+    description: "Celkový počet tvojich úlovkov",
+    icon: "Crosshair",
+    tiers: {
+      bronze: { threshold: 5, description: "Chyť 5 rýb" },
+      silver: { threshold: 25, description: "Chyť 25 rýb" },
+      gold: { threshold: 100, description: "Chyť 100 rýb" }
+    }
+  }
+};
+
+const BADGE_ICON_MAP = { Calendar, Crosshair, Target, Crown, Moon, FileText, Snowflake, Trophy, Award };
+
+const getTierStyle = (tier, isActive = true) => {
+  if (!isActive) return "text-slate-600 bg-slate-800/20 border-slate-800/40 opacity-40";
+  switch (tier) {
+    case 'gold': 
+      // Zlatý tier je jemne posilnený (Enhancement podľa feedbacku)
+      return "text-amber-400 bg-amber-400/10 border-amber-400/50 shadow-[inset_0_0_10px_rgba(251,191,36,0.1)] scale-[1.02]";
+    case 'silver': 
+      return "text-slate-300 bg-slate-300/10 border-slate-300/30";
+    case 'bronze': 
+      return "text-orange-500 bg-orange-500/10 border-orange-500/30";
+    default: return "text-slate-500 bg-slate-500/10";
+  }
+};
+
+export default function App() {
+  const [showAllBadges, setShowAllBadges] = useState(false);
+  const { user } = useAuth();
+  const [, setLocation] = useLocation();
+
+  const { data: userBadges = [] } = useQuery({ queryKey: ["/api/diary/badges"] });
+  const { data: badgeProgress = {} } = useQuery({ queryKey: ["/api/diary/badges/progress"] });
+
+  const unlockedBadges = new Set(userBadges.map(b => `${b.badgeType}_${b.tier}`));
+  const badgesList = Object.values(BADGE_DEFINITIONS);
+
+  const nextGoal = useMemo(() => {
+    let best = null;
+    for (const badgeDef of badgesList) {
+      for (const tier of ['bronze', 'silver', 'gold']) {
+        if (unlockedBadges.has(`${badgeDef.id}_${tier}`)) continue;
+        const current = badgeProgress[badgeDef.id] || 0;
+        const threshold = badgeDef.tiers[tier].threshold;
+        const percent = Math.min((current / threshold) * 100, 100);
+        if (percent >= 100) continue;
+        if (!best || percent > best.percent) {
+          best = { badgeDef, tier, current, threshold, percent, remaining: Math.max(0, threshold - current) };
+        }
+      }
+    }
+    return best;
+  }, [badgesList, unlockedBadges, badgeProgress]);
+
+  const unlockedByTier = useMemo(() => {
+    return {
+      gold: unlockedBadgesList(unlockedBadges, badgesList, 'gold'),
+      silver: unlockedBadgesList(unlockedBadges, badgesList, 'silver'),
+      bronze: unlockedBadgesList(unlockedBadges, badgesList, 'bronze'),
+    };
+  }, [unlockedBadges, badgesList]);
+
+  function unlockedBadgesList(unlockedSet, list, tier) {
+    return list.filter(b => unlockedSet.has(`${b.id}_${tier}`)).map(b => ({ badgeDef: b, tier }));
+  }
+
+  return (
+    <DiaryLayout>
+      <div className="space-y-10 animate-in fade-in duration-500">
+        
+        {/* HEADER - Uzemnený naratív */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-black tracking-tight text-white uppercase italic">Sieň slávy</h1>
+            <p className="text-slate-500 text-sm font-medium">Prehľad tvojich rybárskych úspechov a míľnikov.</p>
+          </div>
+          <div className="flex items-center gap-3 bg-slate-900 border border-slate-800 p-3 rounded-xl shadow-sm">
+            <div className="text-right">
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Stav zbierky</span>
+              <span className="text-xl font-black text-amber-500 leading-none">
+                {userBadges.length} <span className="text-xs text-slate-600 font-normal">/ {badgesList.length * 3}</span>
+              </span>
+            </div>
+            <div className="h-10 w-10 bg-amber-400/10 rounded-lg flex items-center justify-center text-amber-400">
+              <Trophy size={20} strokeWidth={1.75} />
+            </div>
+          </div>
+        </div>
+
+        {/* NEXT GOAL - Opravená hierarchia informácií */}
+        {nextGoal && (
+          <Card className="border-blue-500/20 bg-blue-500/[0.03] transition-all hover:bg-blue-500/[0.05]">
+            <div className="p-6 flex flex-col md:flex-row items-center gap-8">
+              <div className="relative shrink-0">
+                <div className="h-20 w-20 rounded-2xl bg-slate-950 flex items-center justify-center border border-slate-800 shadow-xl ring-1 ring-white/5 transition-transform group-hover:scale-105">
+                  {React.createElement(BADGE_ICON_MAP[nextGoal.badgeDef.icon] || Award, {
+                    size: 32,
+                    strokeWidth: 1.75,
+                    className: "text-blue-400"
+                  })}
+                </div>
+                <div className="absolute -bottom-2 -right-2 bg-blue-600 text-white text-[9px] font-black px-2 py-1 rounded shadow-lg border border-white/10 uppercase">
+                  {nextGoal.tier}
+                </div>
+              </div>
+
+              <div className="flex-1 space-y-1 text-center md:text-left">
+                <div className="flex items-center justify-center md:justify-start gap-2 text-blue-400 mb-1">
+                  <TrendingUp size={14} />
+                  <span className="text-[10px] font-bold uppercase tracking-widest">Najbližší míľnik</span>
+                </div>
+                {/* FIX: Meno odznaku je na prvom mieste */}
+                <h3 className="text-xl font-bold text-white tracking-tight leading-tight">
+                  {nextGoal.badgeDef.name} <span className="text-slate-500 font-normal ml-1">({nextGoal.tier})</span>
+                </h3>
+                <p className="text-sm text-slate-400">
+                  Už len <span className="text-white font-bold">{nextGoal.remaining} {nextGoal.badgeDef.id.includes('weight') ? 'kg' : 'úlovkov'}</span> k odomknutiu.
+                </p>
+              </div>
+
+              <div className="w-full md:w-48 space-y-2.5">
+                <div className="flex justify-between items-end">
+                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">Postup</span>
+                  <span className="text-xs font-black text-blue-400">{Math.round(nextGoal.percent)}%</span>
+                </div>
+                <Progress value={nextGoal.percent} />
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* UNLOCKED BADGES - Grouping pre lepšie škálovanie */}
+        <div className="space-y-8">
+          {Object.entries(unlockedByTier).map(([tier, items]) => {
+            if (items.length === 0) return null;
+            return (
+              <div key={tier} className="space-y-4">
+                <div className="flex items-center gap-2 pl-1 border-l-2 border-slate-800">
+                  <h2 className={cn(
+                    "text-[10px] font-black uppercase tracking-[0.2em] ml-2",
+                    tier === 'gold' ? "text-amber-500" : tier === 'silver' ? "text-slate-400" : "text-orange-600"
+                  )}>
+                    {tier} Odznaky
+                  </h2>
+                </div>
+                
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {items.map(({ badgeDef }) => (
+                    <div key={`${badgeDef.id}_${tier}`} className="group p-4 rounded-xl bg-slate-900/30 border border-slate-800/40 hover:border-slate-700 transition-all text-center space-y-3">
+                      <div className={cn("mx-auto h-12 w-12 rounded-lg flex items-center justify-center border transition-all group-hover:scale-110", getTierStyle(tier))}>
+                        {React.createElement(BADGE_ICON_MAP[badgeDef.icon] || Award, {
+                          size: 24,
+                          strokeWidth: 1.75
+                        })}
+                      </div>
+                      <p className="text-[11px] font-bold text-slate-300 group-hover:text-white truncate px-1">
+                        {badgeDef.name}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* KATALÓG - Profesionálna knižnica výziev */}
+        <Collapsible open={showAllBadges} onOpenChange={setShowAllBadges} className="pt-8 border-t border-slate-900">
+          <CollapsibleTrigger asChild onClick={() => setShowAllBadges(!showAllBadges)}>
+            <button className="w-full group flex items-center justify-between p-3 rounded-xl hover:bg-slate-900/40 transition-all">
+              <div className="flex items-center gap-4">
+                <div className="p-2 bg-slate-900 rounded-lg text-slate-600 group-hover:text-slate-400 transition-colors">
+                  <Lock size={14} />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover:text-slate-300 transition-colors">Katalóg výziev</span>
+              </div>
+              <ChevronDown className={cn("w-4 h-4 text-slate-700 transition-transform duration-300", showAllBadges && "rotate-180")} />
+            </button>
+          </CollapsibleTrigger>
+          
+          <CollapsibleContent open={showAllBadges} className="pt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            {badgesList.map(badgeDef => (
+              <div key={badgeDef.id} className="p-5 rounded-2xl bg-slate-900/20 border border-slate-800/30 space-y-5">
+                <div className="flex items-center gap-4">
+                  <div className="p-2.5 bg-slate-950 rounded-lg border border-slate-800 shadow-inner">
+                    {React.createElement(BADGE_ICON_MAP[badgeDef.icon] || Award, { size: 18, strokeWidth: 1.75, className: "text-slate-500" })}
+                  </div>
+                  <div className="space-y-0.5">
+                    <h3 className="text-sm font-bold text-slate-200">{badgeDef.name}</h3>
+                    <p className="text-[10px] text-slate-500 leading-tight">{badgeDef.description}</p>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-3 gap-2">
+                  {['bronze', 'silver', 'gold'].map(tier => {
+                    const isUnlocked = unlockedBadges.has(`${badgeDef.id}_${tier}`);
+                    const current = badgeProgress[badgeDef.id] || 0;
+                    const threshold = badgeDef.tiers[tier].threshold;
+                    
+                    return (
+                      <div key={tier} className={cn(
+                        "p-2.5 rounded-lg border text-center space-y-1.5 transition-all",
+                        getTierStyle(tier, isUnlocked)
+                      )}>
+                        <p className="text-[8px] font-black uppercase tracking-tighter opacity-70">{tier}</p>
+                        <div className="text-[10px] font-bold">{threshold}x</div>
+                        {isUnlocked ? <Unlock size={10} className="mx-auto" /> : <div className="text-[8px] opacity-60 font-mono">{current}/{threshold}</div>}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </CollapsibleContent>
+        </Collapsible>
+
+      </div>
+    </DiaryLayout>
+  );
+}
