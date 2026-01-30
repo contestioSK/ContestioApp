@@ -8,7 +8,6 @@ import { useLocation } from "wouter";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import useEmblaCarousel from "embla-carousel-react";
 import type { DateRange } from "react-day-picker";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -62,6 +61,7 @@ import type { DiaryCatch, DiaryTrip } from "@shared/schema";
 import { getFishTypeLabel, getFishTypeOptions } from "@/utils/fishTypeMapping";
 import DiaryLayout from "@/components/DiaryLayout";
 import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
+import { PhotoCarousel } from "@/components/diary/PhotoCarousel";
 import CatchFormDialog from "@/components/diary/CatchFormDialog";
 import HistoricalCatchFormDialog from "@/components/diary/HistoricalCatchFormDialog";
 import { Input } from "@/components/ui/input";
@@ -126,179 +126,6 @@ const formatBaitShort = (bait?: string): string => {
   return size ? `${name} (${size})` : name;
 };
 
-type PhotoObject = {
-  id: string;
-  url: string;
-  status: 'processing' | 'ready' | 'failed';
-  originalUrl?: string;
-  variants?: Array<{width: number; format: string; url: string;}>;
-  placeholder?: string;
-  error?: string;
-};
-
-// Photo Carousel Component
-function PhotoCarousel({ photos, onPhotoClick }: { photos: (string | PhotoObject)[], onPhotoClick: (photo: string) => void }) {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false });
-  const [selectedIndex, setSelectedIndex] = useState(0);
-
-  const onSelect = useCallback(() => {
-    if (!emblaApi) return;
-    setSelectedIndex(emblaApi.selectedScrollSnap());
-  }, [emblaApi]);
-
-  useEffect(() => {
-    if (!emblaApi) return;
-    onSelect();
-    emblaApi.on('select', onSelect);
-    return () => {
-      emblaApi.off('select', onSelect);
-    };
-  }, [emblaApi, onSelect]);
-
-  // Reset to first photo when photos change
-  useEffect(() => {
-    if (!emblaApi) return;
-    emblaApi.reInit();
-    emblaApi.scrollTo(0);
-    setSelectedIndex(0);
-  }, [photos, emblaApi]);
-
-  const scrollPrev = useCallback(() => {
-    if (emblaApi) emblaApi.scrollPrev();
-  }, [emblaApi]);
-
-  const scrollNext = useCallback(() => {
-    if (emblaApi) emblaApi.scrollNext();
-  }, [emblaApi]);
-
-  const scrollTo = useCallback((index: number) => {
-    if (emblaApi) emblaApi.scrollTo(index);
-  }, [emblaApi]);
-
-  // Helper to get best photo URL
-  const getPhotoUrl = (photo: string | PhotoObject): string => {
-    if (typeof photo === 'string') return photo;
-    
-    // Prefer WebP 800w variant if available
-    const webp800 = photo.variants?.find(v => v.width === 800 && v.format === 'webp');
-    if (webp800) return webp800.url;
-    
-    // Fallback to any 800w variant
-    const any800 = photo.variants?.find(v => v.width === 800);
-    if (any800) return any800.url;
-    
-    // Use main URL, fallback to originalUrl if url is empty or undefined
-    return photo.url || photo.originalUrl || '';
-  };
-
-  // Helper to get photo status
-  const getPhotoStatus = (photo: string | PhotoObject): 'processing' | 'ready' | 'failed' | null => {
-    if (typeof photo === 'string') return null;
-    return photo.status;
-  };
-
-  if (photos.length === 0) return null;
-
-  return (
-    <div className="relative">
-      <div className="overflow-hidden rounded-lg" ref={emblaRef}>
-        <div className="flex">
-          {photos.map((photo, index) => {
-            const photoUrl = getPhotoUrl(photo);
-            const status = getPhotoStatus(photo);
-            
-            return (
-              <div key={typeof photo === 'string' ? index : photo.id} className="flex-[0_0_100%] min-w-0 relative">
-                {photoUrl ? (
-                  <img 
-                    src={photoUrl} 
-                    alt={`Fotografia úlovku ${index + 1}`}
-                    className="w-full h-64 object-cover cursor-pointer hover:opacity-80 transition-opacity"
-                    onClick={() => status !== 'processing' && onPhotoClick(photoUrl)}
-                    data-testid={`catch-photo-${index}`}
-                  />
-                ) : (
-                  <div className="w-full h-64 bg-muted flex items-center justify-center">
-                    <Fish className="w-16 h-16 text-muted-foreground/30" />
-                  </div>
-                )}
-                {status === 'processing' && photoUrl && (
-                  <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
-                    <Loader2 className="w-3 h-3 animate-spin" />
-                    <span>Optimalizujem...</span>
-                  </div>
-                )}
-                {status === 'processing' && !photoUrl && (
-                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                    <Loader2 className="w-8 h-8 text-white animate-spin" />
-                  </div>
-                )}
-                {status === 'failed' && (
-                  <div className="absolute inset-0 bg-red-500/50 flex items-center justify-center">
-                    <X className="w-8 h-8 text-white" />
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-      
-      {/* Navigation Buttons (only show if more than 1 photo) */}
-      {photos.length > 1 && (
-        <>
-          <button
-            onClick={scrollPrev}
-            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-3 hover:bg-black/70 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-            aria-label="Predchádzajúca fotka"
-            data-testid="button-prev-photo"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <button
-            onClick={scrollNext}
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-3 hover:bg-black/70 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-            aria-label="Ďalšia fotka"
-            data-testid="button-next-photo"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
-        </>
-      )}
-      
-      {/* Dots Indicator (only show if more than 1 photo) */}
-      {photos.length > 1 && (
-        <div className="flex justify-center gap-3 mt-3">
-          {photos.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => scrollTo(index)}
-              className={cn(
-                "min-w-[44px] min-h-[44px] flex items-center justify-center",
-              )}
-              aria-label={`Zobraziť fotku ${index + 1}`}
-              data-testid={`dot-${index}`}
-            >
-              <span className={cn(
-                "rounded-full transition-all",
-                index === selectedIndex 
-                  ? "bg-white w-6 h-3" 
-                  : "bg-white/50 hover:bg-white/70 w-3 h-3"
-              )} />
-            </button>
-          ))}
-        </div>
-      )}
-      
-      {/* Photo counter */}
-      {photos.length > 1 && (
-        <div className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
-          {selectedIndex + 1} / {photos.length}
-        </div>
-      )}
-    </div>
-  );
-}
 
 export default function DiaryCatches() {
   const { user } = useAuth();
