@@ -7064,6 +7064,59 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
+  // Create share link for a catch
+  app.post('/api/diary/catches/:id/share', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const catchId = req.params.id;
+      
+      // Verify user owns this catch
+      const catch_ = await storage.getDiaryCatch(catchId, userId);
+      if (!catch_) {
+        return res.status(404).json({ message: "Úlovok sa nenašiel" });
+      }
+      
+      // Get privacy settings from request body or use defaults
+      const privacySettings = {
+        hideGps: req.body.hideGps ?? true,
+        hideBait: req.body.hideBait ?? true,
+        hideSpot: req.body.hideSpot ?? false,
+      };
+      
+      const result = await storage.createCatchShare(catchId, userId, privacySettings);
+      
+      res.json({
+        shareToken: result.shareToken,
+        shareUrl: result.shareUrl,
+        fullUrl: `${req.protocol}://${req.get('host')}${result.shareUrl}`,
+      });
+    } catch (error) {
+      console.error("Error creating share link:", error);
+      res.status(500).json({ message: "Nepodarilo sa vytvoriť link na zdieľanie" });
+    }
+  });
+
+  // Public endpoint - get shared catch (no authentication required)
+  app.get('/api/public/catches/:shareToken', async (req, res) => {
+    try {
+      const { shareToken } = req.params;
+      
+      const catch_ = await storage.getCatchByShareToken(shareToken);
+      
+      if (!catch_) {
+        return res.status(404).json({ message: "Zdieľaný úlovok sa nenašiel alebo expiroval" });
+      }
+      
+      // Increment view count
+      await storage.incrementShareViewCount(shareToken);
+      
+      res.json(catch_);
+    } catch (error) {
+      console.error("Error fetching shared catch:", error);
+      res.status(500).json({ message: "Nepodarilo sa načítať zdieľaný úlovok" });
+    }
+  });
+
   app.get('/api/diary/catches', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.id || req.user?.claims?.sub;
