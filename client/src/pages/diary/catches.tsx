@@ -13,7 +13,6 @@ import type { DateRange } from "react-day-picker";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -1502,58 +1501,72 @@ export default function DiaryCatches() {
             />
           )}
 
-          {/* Photo Lightbox with Navigation */}
-          <Dialog open={!!lightboxState} onOpenChange={() => setLightboxState(null)}>
-            <DialogContent className="max-w-4xl max-h-[90vh] p-0 bg-black/90 border-0 [&>button]:text-white [&>button]:hover:bg-white/20" data-testid="photo-lightbox">
-              <div className="relative flex items-center justify-center h-full">
-                {/* Previous button */}
-                {lightboxState && lightboxState.photos.length > 1 && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setLightboxState(prev => prev ? {
+          {/* Photo Lightbox with Navigation - Fullscreen on mobile */}
+          {lightboxState && (
+            <div 
+              className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center"
+              onClick={() => setLightboxState(null)}
+              data-testid="photo-lightbox"
+            >
+              {/* Close button */}
+              <button
+                onClick={() => setLightboxState(null)}
+                className="absolute top-4 right-4 z-20 bg-black/50 text-white rounded-full p-2 hover:bg-black/70 transition-colors"
+                aria-label="Zatvoriť"
+              >
+                <X className="h-6 w-6" />
+              </button>
+
+              {/* Previous button */}
+              {lightboxState.photos.length > 1 && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setLightboxState(prev => prev ? {
                       ...prev,
                       currentIndex: prev.currentIndex > 0 ? prev.currentIndex - 1 : prev.photos.length - 1
-                    } : null)}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-black/50 text-white hover:bg-black/70 rounded-full w-12 h-12"
-                  >
-                    <ChevronLeft className="h-6 w-6" />
-                  </Button>
-                )}
-                
-                {/* Current photo */}
-                {lightboxState && (
-                  <img 
-                    src={lightboxState.photos[lightboxState.currentIndex]} 
-                    alt={`Fotografia úlovku ${lightboxState.currentIndex + 1}`}
-                    className="max-w-full max-h-full object-contain"
-                  />
-                )}
-                
-                {/* Next button */}
-                {lightboxState && lightboxState.photos.length > 1 && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setLightboxState(prev => prev ? {
+                    } : null);
+                  }}
+                  className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-10 bg-black/50 text-white hover:bg-black/70 rounded-full p-2 sm:p-3 min-w-[44px] min-h-[44px] flex items-center justify-center"
+                  aria-label="Predchádzajúca fotografia"
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                </button>
+              )}
+              
+              {/* Current photo */}
+              <img 
+                src={lightboxState.photos[lightboxState.currentIndex]} 
+                alt={`Fotografia úlovku ${lightboxState.currentIndex + 1}`}
+                className="max-w-[90vw] max-h-[85vh] object-contain"
+                onClick={(e) => e.stopPropagation()}
+              />
+              
+              {/* Next button */}
+              {lightboxState.photos.length > 1 && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setLightboxState(prev => prev ? {
                       ...prev,
                       currentIndex: prev.currentIndex < prev.photos.length - 1 ? prev.currentIndex + 1 : 0
-                    } : null)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-black/50 text-white hover:bg-black/70 rounded-full w-12 h-12"
-                  >
-                    <ChevronRight className="h-6 w-6" />
-                  </Button>
-                )}
-                
-                {/* Photo counter */}
-                {lightboxState && lightboxState.photos.length > 1 && (
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white text-sm px-3 py-1 rounded-full">
-                    {lightboxState.currentIndex + 1} / {lightboxState.photos.length}
-                  </div>
-                )}
-              </div>
-            </DialogContent>
-          </Dialog>
+                    } : null);
+                  }}
+                  className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-10 bg-black/50 text-white hover:bg-black/70 rounded-full p-2 sm:p-3 min-w-[44px] min-h-[44px] flex items-center justify-center"
+                  aria-label="Nasledujúca fotografia"
+                >
+                  <ChevronRight className="h-6 w-6" />
+                </button>
+              )}
+              
+              {/* Photo counter */}
+              {lightboxState.photos.length > 1 && (
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white text-sm px-3 py-1 rounded-full">
+                  {lightboxState.currentIndex + 1} / {lightboxState.photos.length}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Delete Confirmation Dialog */}
           <AlertDialog open={!!deletingCatch} onOpenChange={(open) => !open && setDeletingCatch(null)}>
