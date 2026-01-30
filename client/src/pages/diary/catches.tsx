@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useDiaryOffline } from "@/hooks/use-diary-offline";
@@ -48,7 +49,12 @@ import {
   ArrowUpDown,
   Trophy,
   SlidersHorizontal,
-  Maximize2
+  Maximize2,
+  LayoutGrid,
+  List,
+  Star,
+  Sparkles,
+  RotateCcw
 } from "lucide-react";
 
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -359,6 +365,20 @@ export default function DiaryCatches() {
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
   const [showCompetitionCatches, setShowCompetitionCatches] = useState<boolean>(false);
   
+  // View mode state with localStorage persistence
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('diaryViewMode');
+      return saved === 'grid' ? 'grid' : 'list';
+    }
+    return 'list';
+  });
+
+  // Persist viewMode to localStorage
+  useEffect(() => {
+    localStorage.setItem('diaryViewMode', viewMode);
+  }, [viewMode]);
+  
   // Offline functionality
   const { 
     isOffline, 
@@ -668,6 +688,23 @@ export default function DiaryCatches() {
     minWeight || maxWeight
   ].filter(Boolean).length;
 
+  // Check if any filters are active (for reset button visibility)
+  const hasActiveFilters = selectedTechnique !== "all" || selectedFishType !== "all" || 
+    selectedSpot !== "all" || dateRange?.from || searchQuery || minWeight || maxWeight;
+
+  // Timeline grouping by month for Gallery view
+  const groupedCatches = useMemo(() => {
+    const groups: Record<string, DiaryCatch[]> = {};
+    filteredCatches.forEach((catch_: any) => {
+      const date = catch_.capturedAt ? new Date(catch_.capturedAt) : new Date();
+      const key = date.toLocaleString('sk-SK', { month: 'long', year: 'numeric' });
+      const capitalizedKey = key.charAt(0).toUpperCase() + key.slice(1);
+      if (!groups[capitalizedKey]) groups[capitalizedKey] = [];
+      groups[capitalizedKey].push(catch_);
+    });
+    return groups;
+  }, [filteredCatches]);
+
   // Loading state
   if (isLoading) {
     return (
@@ -918,46 +955,90 @@ export default function DiaryCatches() {
               </Button>
             </div>
 
-            {/* Desktop: Search, Season and Sort Row - Hidden on mobile */}
-            <div className="hidden md:flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground dark:text-slate-400" />
-                <Input
-                  type="text"
-                  placeholder="Hľadať v úlovkoch..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 bg-muted dark:bg-slate-700/50 border text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-slate-400"
-                  data-testid="input-search"
-                />
+            {/* Desktop: Utility Bar with Search, View Toggle, Sort - Hidden on mobile */}
+            <div className="hidden md:flex flex-col gap-4">
+              {/* Top Row: Search + Utility Bar */}
+              <div className="flex items-center gap-3">
+                {/* Search */}
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground dark:text-slate-400" />
+                  <Input
+                    type="text"
+                    placeholder="Hľadaj 'kapor 20kg', 'Domaša'..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 bg-muted dark:bg-slate-700/50 border text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-slate-400 rounded-xl"
+                    data-testid="input-search"
+                  />
+                  {searchQuery && (
+                    <button 
+                      onClick={() => setSearchQuery("")} 
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-red-500"
+                    >
+                      <X size={16} />
+                    </button>
+                  )}
+                </div>
+
+                {/* Utility Bar: View Toggle + Sort */}
+                <div className="flex items-center gap-2 bg-muted dark:bg-slate-700/30 p-1 rounded-xl">
+                  {/* View Toggle */}
+                  <div className="flex gap-1 bg-slate-200 dark:bg-slate-800 p-1 rounded-lg">
+                    <button
+                      onClick={() => setViewMode('list')}
+                      className={cn(
+                        "p-2 rounded-lg transition-all",
+                        viewMode === 'list' 
+                          ? 'bg-white dark:bg-slate-700 shadow-sm text-cyan-600' 
+                          : 'text-slate-400 hover:text-slate-600'
+                      )}
+                      title="Zoznam"
+                      data-testid="view-mode-list"
+                    >
+                      <List size={16} />
+                    </button>
+                    <button
+                      onClick={() => setViewMode('grid')}
+                      className={cn(
+                        "p-2 rounded-lg transition-all",
+                        viewMode === 'grid' 
+                          ? 'bg-white dark:bg-slate-700 shadow-sm text-cyan-600' 
+                          : 'text-slate-400 opacity-60 hover:text-slate-600 hover:opacity-100'
+                      )}
+                      title="Galéria"
+                      data-testid="view-mode-grid"
+                    >
+                      <LayoutGrid size={16} />
+                    </button>
+                  </div>
+
+                  {/* Sort Dropdown */}
+                  <button
+                    onClick={() => setSortBy(sortBy === 'newest' ? 'heaviest' : sortBy === 'heaviest' ? 'oldest' : sortBy === 'oldest' ? 'lightest' : 'newest')}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-white dark:hover:bg-slate-700 transition-all"
+                    data-testid="button-sort-toggle"
+                  >
+                    <ArrowUpDown size={14} className="text-cyan-600" />
+                    <span className="hidden lg:inline">
+                      {sortBy === 'newest' ? 'Najnovšie' : sortBy === 'oldest' ? 'Najstaršie' : sortBy === 'heaviest' ? 'Najväčšie' : 'Najmenšie'}
+                    </span>
+                  </button>
+                </div>
+
+                {/* Season Filter */}
+                <Select value={selectedSeason} onValueChange={setSelectedSeason}>
+                  <SelectTrigger className="w-[140px] bg-muted dark:bg-slate-700/50 border text-foreground dark:text-white rounded-xl" data-testid="filter-season">
+                    <CalendarIcon className="w-4 h-4 mr-2" />
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Všetky roky</SelectItem>
+                    <SelectItem value="2025">Sezóna 2025</SelectItem>
+                    <SelectItem value="2024">Sezóna 2024</SelectItem>
+                    <SelectItem value="2023">Sezóna 2023</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              
-              {/* Season Filter */}
-              <Select value={selectedSeason} onValueChange={setSelectedSeason}>
-                <SelectTrigger className="w-full sm:w-[140px] bg-muted dark:bg-slate-700/50 border text-foreground dark:text-white" data-testid="filter-season">
-                  <CalendarIcon className="w-4 h-4 mr-2" />
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Všetky roky</SelectItem>
-                  <SelectItem value="2025">Sezóna 2025</SelectItem>
-                  <SelectItem value="2024">Sezóna 2024</SelectItem>
-                  <SelectItem value="2023">Sezóna 2023</SelectItem>
-                </SelectContent>
-              </Select>
-              
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-full sm:w-[160px] bg-muted dark:bg-slate-700/50 border text-foreground dark:text-white" data-testid="filter-sort">
-                  <ArrowUpDown className="w-4 h-4 mr-2" />
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="newest">Najnovšie</SelectItem>
-                  <SelectItem value="oldest">Najstaršie</SelectItem>
-                  <SelectItem value="heaviest">Najväčšie</SelectItem>
-                  <SelectItem value="lightest">Najmenšie</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
 
             {/* Desktop Filter Controls - Hidden on mobile */}
@@ -1338,158 +1419,229 @@ export default function DiaryCatches() {
             </SheetContent>
           </Sheet>
 
-          {/* Catches Table */}
-          <Card className="bg-card dark:bg-slate-800/50 border overflow-hidden">
-            <CardContent className="p-0">
-              {/* Desktop Table Header */}
-              <div className="hidden md:grid grid-cols-5 gap-4 p-4 border-b text-xs font-semibold text-muted-foreground dark:text-slate-400 uppercase tracking-wider bg-muted dark:bg-slate-700/30">
-                <div>DRUH RYBY</div>
-                <div>VÁHA / DĹŽKA</div>
-                <div>REVÍR</div>
-                <div>NÁVNADA/NÁSTRAHA</div>
-                <div>DÁTUM</div>
-              </div>
-              
-              {/* Table Rows */}
-              {filteredCatches.length > 0 ? (
-                filteredCatches.map((catch_: any, index: number) => (
-                  <div 
-                    key={catch_.id || index} 
-                    className="border-b hover:bg-muted dark:hover:bg-slate-700/30 transition-colors cursor-pointer"
-                    onClick={() => setSelectedCatch(catch_)}
-                    data-testid={`catch-row-${catch_.id || index}`}
+          {/* Catches Gallery with Timeline Grouping */}
+          {filteredCatches.length > 0 ? (
+            <div className="space-y-8">
+              <AnimatePresence mode="wait">
+                {Object.entries(groupedCatches).map(([dateGroup, items]) => (
+                  <motion.div
+                    key={dateGroup}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3 }}
+                    className="space-y-4"
                   >
-                    {/* Desktop Row */}
-                    <div className="hidden md:grid grid-cols-5 gap-4 p-4 relative group">
-                      <div className="flex items-center gap-3">
-                        {catch_.photos && catch_.photos.length > 0 ? (
-                          <div className="w-10 h-10 bg-muted dark:bg-slate-600/50 rounded-lg flex items-center justify-center overflow-hidden">
-                            <img 
-                              src={catch_.photos[0].url || catch_.photos[0]} 
-                              alt={catch_.fishType ? getFishTypeLabel(catch_.fishType) : 'Úlovok'}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        ) : (
-                          getFishIcon(catch_.fishType)
-                        )}
-                        <div className="text-foreground dark:text-white font-medium">
-                          {catch_.fishType ? getFishTypeLabel(catch_.fishType) : 'Neznámy druh'}
-                        </div>
-                      </div>
-                      
-                      <div className="text-foreground dark:text-white font-bold text-xl">
-                        {catch_.weight ? `${catch_.weight} kg` : catch_.lengthCm ? `${catch_.lengthCm} cm` : 'N/A'}
-                      </div>
-                      
-                      <div className="text-muted-foreground dark:text-slate-300">
-                        {catch_.spot || 'Neznáme miesto'}
-                      </div>
-                      
-                      <div className="text-muted-foreground dark:text-slate-300">
-                        {catch_.bait || 'Neznáma'}
-                      </div>
-                      
-                      <div className="text-muted-foreground dark:text-slate-300 flex items-center justify-between">
-                        <span>{catch_.capturedAt ? format(new Date(catch_.capturedAt), "dd. MMM yyyy", { locale: sk }) : 'N/A'}</span>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedCatch(catch_);
-                          }}
-                          className="p-2 rounded-lg bg-muted dark:bg-slate-600/50 hover:bg-primary/20 text-muted-foreground dark:text-slate-400 hover:text-primary transition-colors opacity-30 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:focus-visible:ring-offset-slate-800"
-                          title="Upraviť"
-                          data-testid={`button-edit-catch-${catch_.id || index}`}
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                      </div>
+                    {/* Timeline Header - Ghost style in List mode */}
+                    <div className={cn(
+                      "flex items-center gap-4",
+                      viewMode === 'list' && "opacity-50"
+                    )}>
+                      <h2 className={cn(
+                        "font-black uppercase tracking-widest text-muted-foreground dark:text-slate-500 whitespace-nowrap",
+                        viewMode === 'list' ? 'text-[10px]' : 'text-xs'
+                      )}>
+                        {dateGroup}
+                      </h2>
+                      <div className="h-px w-full bg-slate-200 dark:bg-slate-700" />
                     </div>
 
-                    {/* Mobile Card */}
-                    <div className="md:hidden p-4">
-                      <div className="flex items-start gap-3">
-                        {catch_.photos && catch_.photos.length > 0 ? (
-                          <div className="w-12 h-12 bg-muted dark:bg-slate-600/50 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
-                            <img 
-                              src={catch_.photos[0].url || catch_.photos[0]} 
-                              alt={catch_.fishType ? getFishTypeLabel(catch_.fishType) : 'Úlovok'}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        ) : (
-                          <div className="flex-shrink-0">
-                            {getFishIcon(catch_.fishType)}
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <div className="text-foreground dark:text-white font-medium mb-1">
-                              {catch_.fishType ? getFishTypeLabel(catch_.fishType) : 'Neznámy druh'}
+                    {/* Grid View */}
+                    {viewMode === 'grid' ? (
+                      <motion.div
+                        layout
+                        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4"
+                      >
+                        {items.map((catch_: any, index: number) => (
+                          <motion.div
+                            key={catch_.id || index}
+                            layout
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            whileHover={{ y: -4 }}
+                            transition={{ duration: 0.2 }}
+                            onClick={() => setSelectedCatch(catch_)}
+                            className="group relative aspect-[4/5] overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-800 cursor-pointer shadow-sm hover:shadow-xl transition-shadow"
+                            data-testid={`catch-card-${catch_.id || index}`}
+                          >
+                            {/* Photo */}
+                            {catch_.photos && catch_.photos.length > 0 ? (
+                              <img
+                                src={catch_.photos[0].url || catch_.photos[0]}
+                                alt={catch_.fishType ? getFishTypeLabel(catch_.fishType) : 'Úlovok'}
+                                loading="lazy"
+                                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                              />
+                            ) : (
+                              <div className="h-full w-full flex items-center justify-center text-slate-300 dark:text-slate-600 bg-slate-50 dark:bg-slate-800">
+                                <Fish size={48} strokeWidth={1} />
+                              </div>
+                            )}
+
+                            {/* Gradient Overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+
+                            {/* Top Badge - Weight or Length */}
+                            <div className="absolute top-2 left-2 right-2 flex justify-between items-start">
+                              <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md text-slate-900 dark:text-white font-black px-2 py-1 rounded-lg text-sm shadow-lg">
+                                {catch_.weight ? (
+                                  <>{catch_.weight} <span className="text-[9px] text-slate-500 dark:text-slate-400 uppercase">kg</span></>
+                                ) : catch_.lengthCm ? (
+                                  <>{catch_.lengthCm} <span className="text-[9px] text-slate-500 dark:text-slate-400 uppercase">cm</span></>
+                                ) : (
+                                  <span className="text-slate-400">—</span>
+                                )}
+                              </div>
+                              {catch_.isFavorite && (
+                                <div className="bg-amber-400 text-amber-900 p-1.5 rounded-full shadow-sm">
+                                  <Star size={10} fill="currentColor" />
+                                </div>
+                              )}
                             </div>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedCatch(catch_);
-                              }}
-                              className="p-2 rounded-lg bg-muted dark:bg-slate-600/50 hover:bg-primary/20 text-muted-foreground dark:text-slate-400 hover:text-primary transition-colors"
-                              title="Upraviť"
-                              data-testid={`button-edit-catch-mobile-${catch_.id || index}`}
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                          <div className="text-foreground dark:text-white font-bold text-lg mb-2 flex items-center gap-2">
-                            {catch_.weight ? (
-                              <>
-                                <TacticalIconInline icon={Weight} variant="orange" size="sm" />
-                                {catch_.weight} kg
-                              </>
-                            ) : catch_.lengthCm ? (
-                              <>
-                                <TacticalIconInline icon={Ruler} variant="blue" size="sm" />
-                                {catch_.lengthCm} cm
-                              </>
-                            ) : 'N/A'}
-                          </div>
-                          <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground dark:text-slate-400">
-                            <div>
-                              <span className="text-muted-foreground/70 dark:text-slate-500">Revír:</span> {catch_.spotName || catch_.tripLocation || catch_.spot || 'N/A'}
+
+                            {/* Bottom Content */}
+                            <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
+                              <h3 className="font-bold text-base truncate mb-0.5">
+                                {catch_.fishType ? getFishTypeLabel(catch_.fishType) : 'Neznámy druh'}
+                              </h3>
+                              {catch_.nickname && (
+                                <p className="text-sm text-cyan-200 italic truncate mb-1 leading-none">"{catch_.nickname}"</p>
+                              )}
+                              <p className="text-[10px] text-white/70 font-medium flex items-center gap-2 mt-1 border-t border-white/10 pt-2 truncate">
+                                <span>{catch_.capturedAt ? format(new Date(catch_.capturedAt), "dd. MMM", { locale: sk }) : 'N/A'}</span>
+                                <span>·</span>
+                                <span className="truncate">{catch_.spot || 'N/A'}</span>
+                              </p>
                             </div>
-                            <div>
-                              <span className="text-muted-foreground/70 dark:text-slate-500">Nástraha:</span> {formatBaitShort(catch_.bait)}
+                          </motion.div>
+                        ))}
+                      </motion.div>
+                    ) : (
+                      /* List View */
+                      <motion.div layout className="space-y-2">
+                        {items.map((catch_: any, index: number) => (
+                          <motion.div
+                            key={catch_.id || index}
+                            layout
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 20 }}
+                            transition={{ duration: 0.2 }}
+                            onClick={() => setSelectedCatch(catch_)}
+                            className="group flex items-center gap-3 p-3 bg-card dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700 hover:border-cyan-200 dark:hover:border-cyan-800 hover:shadow-md transition-all cursor-pointer"
+                            data-testid={`catch-row-${catch_.id || index}`}
+                          >
+                            {/* Thumbnail */}
+                            <div className="w-14 h-14 rounded-lg bg-slate-100 dark:bg-slate-700 flex-shrink-0 overflow-hidden relative shadow-inner">
+                              {catch_.photos && catch_.photos.length > 0 ? (
+                                <img
+                                  src={catch_.photos[0].url || catch_.photos[0]}
+                                  alt=""
+                                  className="w-full h-full object-cover"
+                                  loading="lazy"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-slate-400 dark:text-slate-500">
+                                  <Fish size={20} />
+                                </div>
+                              )}
+                              {catch_.isFavorite && (
+                                <div className="absolute top-1 left-1 bg-amber-400 w-2 h-2 rounded-full ring-2 ring-white" />
+                              )}
                             </div>
-                            <div className="col-span-2">
-                              <span className="text-muted-foreground/70 dark:text-slate-500">Dátum:</span> {catch_.capturedAt ? format(new Date(catch_.capturedAt), "dd. MMM yyyy", { locale: sk }) : 'N/A'}
+
+                            {/* Content */}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-baseline justify-between">
+                                <h3 className="font-bold text-foreground dark:text-white truncate text-sm leading-tight">
+                                  {catch_.fishType ? getFishTypeLabel(catch_.fishType) : 'Neznámy druh'}
+                                </h3>
+                                <span className="font-black font-mono text-[#F97316] text-sm ml-2">
+                                  {catch_.weight ? `${catch_.weight} kg` : catch_.lengthCm ? `${catch_.lengthCm} cm` : '—'}
+                                </span>
+                              </div>
+                              {catch_.nickname && (
+                                <div className="text-[11px] text-cyan-600 dark:text-cyan-400 italic truncate leading-none mt-0.5">
+                                  "{catch_.nickname}"
+                                </div>
+                              )}
+                              <div className="flex items-center gap-2 mt-1.5 text-[10px] text-muted-foreground dark:text-slate-400 font-medium">
+                                <span className="flex items-center gap-1">
+                                  <CalendarIcon size={10} />
+                                  {catch_.capturedAt ? format(new Date(catch_.capturedAt), "dd. MMM", { locale: sk }) : 'N/A'}
+                                </span>
+                                <span className="truncate">· {catch_.spot || 'N/A'}</span>
+                              </div>
                             </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="p-8 text-center">
-                  <div className="flex justify-center mb-4">
-                    <TacticalIcon icon={Fish} variant="neutral" size="lg" showLabel={false} />
-                  </div>
-                  <p className="text-muted-foreground dark:text-slate-400 mb-4">
-                    {seasonFilteredCatches.length === 0 
-                      ? "Zatiaľ nemáte žiadne úlovky" 
-                      : "Žiadne úlovky nevyhovujú zvoleným filtrom"}
-                  </p>
-                  {seasonFilteredCatches.length === 0 && (
-                    <Button 
-                      onClick={() => setIsCreateDialogOpen(true)}
-                      className="bg-green-600 hover:bg-green-700"
-                    >
-                      Pridať prvý úlovok
-                    </Button>
-                  )}
-                </div>
+
+                            {/* Edit Button - Hover */}
+                            <div className="pl-2 border-l border-slate-100 dark:border-slate-700 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingCatch(catch_);
+                                }}
+                                className="p-1.5 rounded-lg text-muted-foreground hover:text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-900/20"
+                              >
+                                <Edit2 size={14} />
+                              </button>
+                            </div>
+                          </motion.div>
+                        ))}
+                      </motion.div>
+                    )}
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+
+              {/* Performance HUD - Scroll Indicator */}
+              <div className="text-center text-[11px] font-medium text-muted-foreground dark:text-slate-500 py-4">
+                Zobrazených <span className="font-bold text-foreground dark:text-white">{filteredCatches.length}</span> z {seasonFilteredCatches.length} úlovkov
+              </div>
+            </div>
+          ) : (
+            /* Empty State - Poetic */
+            <div className="py-24 text-center flex flex-col items-center">
+              <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6 text-slate-300 dark:text-slate-600">
+                <Fish size={32} strokeWidth={1} />
+              </div>
+              <h3 className="text-lg font-bold text-foreground dark:text-white tracking-tight mb-2">
+                Voda zatiaľ mlčí...
+              </h3>
+              <p className="text-muted-foreground dark:text-slate-400 text-sm mb-6 max-w-[280px] mx-auto leading-relaxed">
+                {seasonFilteredCatches.length === 0 
+                  ? "Zatiaľ nemáte v denníku žiadne úlovky. Čas to zmeniť!"
+                  : "Pre zadanú kombináciu filtrov sme v denníku nenašli žiadnu jazdu."}
+              </p>
+              {seasonFilteredCatches.length === 0 ? (
+                <Button 
+                  onClick={() => setIsCreateDialogOpen(true)}
+                  className="bg-cyan-600 hover:bg-cyan-700 rounded-xl px-6"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Pridať prvý úlovok
+                </Button>
+              ) : hasActiveFilters && (
+                <Button
+                  onClick={() => {
+                    setSelectedTechnique("all");
+                    setSelectedFishType("all");
+                    setSelectedSpot("all");
+                    setDateRange(undefined);
+                    setSearchQuery("");
+                    setMinWeight("");
+                    setMaxWeight("");
+                  }}
+                  variant="outline"
+                  className="rounded-xl px-6 border-slate-200 dark:border-slate-700"
+                >
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Zobraziť všetko
+                </Button>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          )}
 
           {/* Detail Panel - Editorial Design */}
           <Sheet open={!!selectedCatch} onOpenChange={() => setSelectedCatch(null)}>
