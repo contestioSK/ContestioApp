@@ -61,7 +61,7 @@ import type { DiaryCatch, DiaryTrip } from "@shared/schema";
 import { getFishTypeLabel, getFishTypeOptions } from "@/utils/fishTypeMapping";
 import DiaryLayout from "@/components/DiaryLayout";
 import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
-import { PhotoCarousel } from "@/components/diary/PhotoCarousel";
+import { SimplePhotoSlider } from "@/components/diary/SimplePhotoSlider";
 import CatchFormDialog from "@/components/diary/CatchFormDialog";
 import HistoricalCatchFormDialog from "@/components/diary/HistoricalCatchFormDialog";
 import { Input } from "@/components/ui/input";
@@ -1486,7 +1486,7 @@ export default function DiaryCatches() {
                   {/* Hero Photo Section */}
                   <div className="relative h-64 bg-slate-900">
                     {selectedCatch.photos && selectedCatch.photos.length > 0 ? (
-                      <PhotoCarousel 
+                      <SimplePhotoSlider 
                         photos={selectedCatch.photos} 
                         onPhotoClick={(photo, index) => {
                           const photoUrls = (selectedCatch.photos || []).map((p: any) => 
