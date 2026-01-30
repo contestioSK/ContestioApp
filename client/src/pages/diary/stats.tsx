@@ -14,10 +14,12 @@ import {
   Info,
   Crown,
   Lock,
-  Trophy
+  Trophy,
+  BarChart3
 } from "lucide-react";
 
 import DiaryLayout from "@/components/DiaryLayout";
+import { TacticalIcon } from "@/components/ui/tactical-icon";
 import { useTheme } from "@/contexts/ThemeContext";
 
 import {
@@ -145,10 +147,19 @@ export default function DiaryStats() {
     <DiaryLayout>
       <div className="space-y-6 pb-12" data-testid="page-diary-stats">
         
-        <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground tracking-tight">Sezóna v číslach</h1>
-            <p className="text-muted-foreground text-sm mt-1">Tvoje ryby premenené na prehľad.</p>
+        <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <span className="h-px w-16 bg-[#F97316]"></span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#F97316]">Štatistiky</span>
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-4">
+                <TacticalIcon icon={BarChart3} variant="orange" size="lg" showLabel={false} />
+                <h1 className="text-4xl md:text-5xl font-black italic tracking-tighter uppercase text-foreground leading-none">Sezóna v číslach</h1>
+              </div>
+              <p className="text-sm font-medium text-muted-foreground italic tracking-tight pl-0.5">Tvoje ryby premenené na prehľad</p>
+            </div>
           </div>
           <div className="hidden md:block text-xs text-muted-foreground font-mono uppercase">
             Posledná aktualizácia: Dnes

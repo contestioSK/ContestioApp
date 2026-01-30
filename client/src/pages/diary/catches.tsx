@@ -721,61 +721,69 @@ export default function DiaryCatches() {
     <DiaryLayout>
       <div className="space-y-8">
           {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-4 mb-2">
-                <TacticalIcon icon={Fish} variant="cyan" size="lg" showLabel={false} />
-                <h1 className="text-3xl font-bold text-foreground">Moje úlovky</h1>
-                {isOffline && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Badge variant="destructive" className="flex items-center gap-1" data-testid="badge-offline">
-                          <WifiOff className="w-3 h-3" />
-                          Offline
-                        </Badge>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Bez pripojenia - úlovky sa uložia lokálne s fotkami</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
-                {isSyncing && (
-                  <Badge variant="secondary" className="flex items-center gap-1" data-testid="badge-syncing">
-                    <Loader2 className="w-3 h-3 animate-spin" />
-                    Synchronizujem...
-                  </Badge>
-                )}
-                {!isOffline && pendingCatches.length > 0 && !isSyncing && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Badge variant="outline" className="flex items-center gap-1" data-testid="badge-pending">
-                          <Upload className="w-3 h-3" />
-                          {pendingCatches.length} čakajúcich
-                        </Badge>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{pendingCatches.filter(c => c.hasPhoto).length} s fotkami</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
+          <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <span className="h-px w-16 bg-[#F97316]"></span>
+                <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#F97316]">Galéria</span>
               </div>
-              <p className="text-muted-foreground">
-                Spravujte svoje úlovky a sledujte svoje rybárske úspechy
-              </p>
+              <div className="space-y-1">
+                <div className="flex items-center gap-4">
+                  <TacticalIcon icon={Fish} variant="orange" size="lg" showLabel={false} />
+                  <h1 className="text-4xl md:text-5xl font-black italic tracking-tighter uppercase text-foreground leading-none">Moje úlovky</h1>
+                </div>
+                <p className="text-sm font-medium text-muted-foreground italic tracking-tight pl-0.5">
+                  Spravujte svoje úlovky a sledujte úspechy
+                </p>
+              </div>
             </div>
-            <Button 
-              onClick={() => setIsCreateDialogOpen(true)}
-              disabled={limits && !limits.canCreate}
-              data-testid="button-add-catch"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Pridať úlovok
-            </Button>
-          </div>
+            <div className="flex items-center gap-2">
+              {isOffline && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Badge variant="destructive" className="flex items-center gap-1" data-testid="badge-offline">
+                        <WifiOff className="w-3 h-3" />
+                        Offline
+                      </Badge>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Bez pripojenia - úlovky sa uložia lokálne s fotkami</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+              {isSyncing && (
+                <Badge variant="secondary" className="flex items-center gap-1" data-testid="badge-syncing">
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                  Synchronizujem...
+                </Badge>
+              )}
+              {!isOffline && pendingCatches.length > 0 && !isSyncing && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Badge variant="outline" className="flex items-center gap-1" data-testid="badge-pending">
+                        <Upload className="w-3 h-3" />
+                        {pendingCatches.length} čakajúcich
+                      </Badge>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{pendingCatches.filter(c => c.hasPhoto).length} s fotkami</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+              <Button 
+                onClick={() => setIsCreateDialogOpen(true)}
+                disabled={limits && !limits.canCreate}
+                data-testid="button-add-catch"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Pridať úlovok
+              </Button>
+            </div>
+          </header>
 
           <CatchFormDialog
             isOpen={isCreateDialogOpen || !!editingCatch}

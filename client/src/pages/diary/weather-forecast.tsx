@@ -479,15 +479,23 @@ export default function WeatherForecast() {
     <DiaryLayout>
       <div className="space-y-6">
         <div className="flex flex-col space-y-4">
-          <div className="flex items-center gap-4">
-            <TacticalIcon icon={Cloud} variant="active" size="lg" showLabel={false} />
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Predpoveď počasia</h1>
-              <p className="text-muted-foreground mt-2">
-                Plánuj svoje výpravy ako profesionál
-              </p>
+          <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <span className="h-px w-16 bg-[#F97316]"></span>
+                <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#F97316]">Počasie</span>
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-4">
+                  <TacticalIcon icon={Cloud} variant="orange" size="lg" showLabel={false} />
+                  <h1 className="text-4xl md:text-5xl font-black italic tracking-tighter uppercase text-foreground leading-none">Predpoveď počasia</h1>
+                </div>
+                <p className="text-sm font-medium text-muted-foreground italic tracking-tight pl-0.5">
+                  Plánuj svoje výpravy ako profesionál
+                </p>
+              </div>
             </div>
-          </div>
+          </header>
 
           <div className="flex flex-col sm:flex-row gap-3">
             {/* Search Input with Autocomplete */}

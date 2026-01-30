@@ -318,12 +318,16 @@ export default function BattleIndex() {
     <DiaryLayout>
       <div className="space-y-6">
         {/* Header */}
-          <div className="mb-6 md:mb-8">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
-              <div>
-                <div className="flex items-center gap-3 md:gap-4 mb-2">
-                  <TacticalIcon icon={Swords} variant="rose" size="lg" showLabel={false} />
-                  <h1 className="text-xl md:text-3xl font-bold text-foreground" data-testid="heading-fishing-battle">
+          <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-6 md:mb-8">
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <span className="h-px w-16 bg-[#F97316]"></span>
+                <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#F97316]">Súboje</span>
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-4">
+                  <TacticalIcon icon={Swords} variant="orange" size="lg" showLabel={false} />
+                  <h1 className="text-4xl md:text-5xl font-black italic tracking-tighter uppercase text-foreground leading-none" data-testid="heading-fishing-battle">
                     Fishing Battle
                   </h1>
                   <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 text-xs md:text-sm">
@@ -331,10 +335,11 @@ export default function BattleIndex() {
                     PREMIUM
                   </Badge>
                 </div>
-                <p className="text-muted-foreground text-sm md:text-lg" data-testid="text-battle-description">
-                  Súťažte s kamarátmi v priateľských rybárskych dueloch a zistite, kto je najlepší rybár!
+                <p className="text-sm font-medium text-muted-foreground italic tracking-tight pl-0.5" data-testid="text-battle-description">
+                  Súťažte s kamarátmi v priateľských rybárskych dueloch
                 </p>
               </div>
+            </div>
               
               <Button
                 size="sm"
@@ -359,8 +364,7 @@ export default function BattleIndex() {
                   </Badge>
                 )}
               </Button>
-            </div>
-          </div>
+          </header>
 
           {/* Main Grid Layout: 3 columns (2+1) */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
