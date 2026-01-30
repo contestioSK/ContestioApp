@@ -694,29 +694,37 @@ export default function DiaryIndex() {
     <DiaryLayout>
       <div className="space-y-6">
         {/* Header with personalized greeting */}
-        <div className="flex items-center gap-4 mb-4">
-          <TacticalIcon icon={BookOpen} variant="active" size="lg" showLabel={false} />
-          <div>
-            <h1 className="text-xl md:text-3xl font-bold text-foreground dark:text-white">
-              {(() => {
-                const onboardingCompleted = user?.preferences?.onboardingCompleted;
-                const hasCatches = diaryStats.totalCatches > 0;
-                const displayName = user?.firstName || user?.lastName || '';
-                
-                if (!onboardingCompleted) {
-                  return "Vitaj v Contestio 👋";
-                } else if (!hasCatches) {
-                  return "Vitaj vo vodách Contestia 🎣";
-                } else {
-                  return displayName ? `Vitaj späť, ${displayName} 👋` : "Vitaj späť 👋";
-                }
-              })()}
-            </h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              Tvoj rybársky denník • Sezóna {currentYear}
-            </p>
+        <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <span className="h-px w-16 bg-[#F97316]"></span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#F97316]">Rybársky denník</span>
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-4">
+                <TacticalIcon icon={BookOpen} variant="orange" size="lg" showLabel={false} />
+                <h1 className="text-4xl md:text-5xl font-black italic tracking-tighter uppercase text-foreground leading-none">
+                  {(() => {
+                    const onboardingCompleted = user?.preferences?.onboardingCompleted;
+                    const hasCatches = diaryStats.totalCatches > 0;
+                    const displayName = user?.firstName || user?.lastName || '';
+                    
+                    if (!onboardingCompleted) {
+                      return "Vitaj";
+                    } else if (!hasCatches) {
+                      return "Vitaj";
+                    } else {
+                      return displayName ? `Vitaj, ${displayName}` : "Vitaj";
+                    }
+                  })()}
+                </h1>
+              </div>
+              <p className="text-sm font-medium text-muted-foreground italic tracking-tight pl-0.5">
+                Tvoj rybársky denník • Sezóna {currentYear}
+              </p>
+            </div>
           </div>
-        </div>
+        </header>
 
         {/* Primary Actions Row: Action Card (2/3) + Season Overview (1/3) */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">

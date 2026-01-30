@@ -792,9 +792,21 @@ export default function DiaryTrips() {
     <DiaryLayout>
       <div className="space-y-6 pb-24 md:pb-0">
           {/* Page Header */}
-          <div className="mb-2">
-            <div className="flex items-center gap-3 mb-1">
-              <h1 className="text-2xl md:text-3xl font-bold text-foreground">Moje Výpravy</h1>
+          <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-2">
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <span className="h-px w-16 bg-[#F97316]"></span>
+                <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#F97316]">Výpravy</span>
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-4">
+                  <TacticalIcon icon={MapPin} variant="orange" size="lg" showLabel={false} />
+                  <h1 className="text-4xl md:text-5xl font-black italic tracking-tighter uppercase text-foreground leading-none">Moje Výpravy</h1>
+                </div>
+                <p className="text-sm font-medium text-muted-foreground italic tracking-tight pl-0.5">Plánuj, spravuj a uchovávaj svoje rybárske výpravy</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
               {(isOffline || isSyncing || (!isOffline && pendingTrips.length > 0)) && (
                 <TooltipProvider>
                   <Tooltip>
@@ -829,8 +841,7 @@ export default function DiaryTrips() {
                 </TooltipProvider>
               )}
             </div>
-            <p className="text-muted-foreground">Plánuj, spravuj a uchovávaj svoje rybárske výpravy.</p>
-          </div>
+          </header>
 
           {/* Hero Grid (2/3 + 1/3 Layout) */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">

@@ -527,12 +527,18 @@ export default function Profile() {
     <DiaryLayout>
       <div className="space-y-8">
           {/* Header */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <TacticalIcon icon={User} variant="active" size="lg" showLabel={false} />
-              <div>
-                <h1 className="text-3xl font-bold text-foreground mb-2">Môj profil</h1>
-                <p className="text-muted-foreground">
+          <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <span className="h-px w-16 bg-[#F97316]"></span>
+                <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#F97316]">Profil</span>
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-4">
+                  <TacticalIcon icon={User} variant="orange" size="lg" showLabel={false} />
+                  <h1 className="text-4xl md:text-5xl font-black italic tracking-tighter uppercase text-foreground leading-none">Môj profil</h1>
+                </div>
+                <p className="text-sm font-medium text-muted-foreground italic tracking-tight pl-0.5">
                   Spravujte svoje osobné údaje a nastavenia účtu
                 </p>
               </div>
@@ -547,7 +553,7 @@ export default function Profile() {
                 Upraviť profil
               </Button>
             )}
-          </div>
+          </header>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Profile Summary */}

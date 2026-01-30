@@ -423,15 +423,23 @@ export default function GearArsenalPage() {
     <DiaryLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center gap-4">
-          <TacticalIcon icon={Archive} variant="active" size="lg" showLabel={false} />
-          <h1 className="text-2xl font-bold">
-            Môj Arzenál
-          </h1>
-          <p className="text-muted-foreground">
-            Spravuj svoje nástrahy a vybavenie na jednom mieste
-          </p>
-        </div>
+        <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <span className="h-px w-16 bg-[#F97316]"></span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#F97316]">Vybavenie</span>
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-4">
+                <TacticalIcon icon={Archive} variant="orange" size="lg" showLabel={false} />
+                <h1 className="text-4xl md:text-5xl font-black italic tracking-tighter uppercase text-foreground leading-none">Môj Arzenál</h1>
+              </div>
+              <p className="text-sm font-medium text-muted-foreground italic tracking-tight pl-0.5">
+                Spravuj svoje nástrahy a vybavenie
+              </p>
+            </div>
+          </div>
+        </header>
 
         {/* Main Tabs */}
         <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as "baits" | "equipment")}>

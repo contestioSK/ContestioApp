@@ -504,18 +504,25 @@ export default function SeasonalGoals() {
     <DiaryLayout>
       <div className="space-y-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4 flex-1">
-            <TacticalIcon icon={Target} variant="active" size="lg" showLabel={false} />
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">Sezónne Ciele</h1>
-              <p className="text-muted-foreground text-sm sm:text-base">
-                Nastavte si ciele a sledujte svoj pokrok počas sezóny
+        <header className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-6">
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <span className="h-px w-16 bg-[#F97316]"></span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#F97316]">Sezónne ciele</span>
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-4">
+                <TacticalIcon icon={Target} variant="orange" size="lg" showLabel={false} />
+                <h1 className="text-4xl md:text-5xl font-black italic tracking-tighter uppercase text-foreground leading-none">Sezónne Ciele</h1>
+              </div>
+              <p className="text-sm font-medium text-muted-foreground italic tracking-tight pl-0.5">
+                Nastavte si ciele a sledujte svoj pokrok
               </p>
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
-            {/* Season Switcher */}
+        </header>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+          {/* Season Switcher */}
             {allSeasons.length > 1 && (
               <Select
                 value={selectedSeasonId || currentSeason?.id || ""}
@@ -584,7 +591,6 @@ export default function SeasonalGoals() {
                 )}
               </div>
             )}
-          </div>
         </div>
 
         {/* Historical season notice */}
