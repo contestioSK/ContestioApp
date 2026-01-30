@@ -1697,17 +1697,8 @@ export default function DiaryCatches() {
 
           {/* Photo Lightbox with Navigation */}
           <Dialog open={!!lightboxState} onOpenChange={() => setLightboxState(null)}>
-            <DialogContent className="max-w-4xl max-h-[90vh] p-0 bg-black/90 border-0" data-testid="photo-lightbox">
+            <DialogContent className="max-w-4xl max-h-[90vh] p-0 bg-black/90 border-0 [&>button]:text-white [&>button]:hover:bg-white/20" data-testid="photo-lightbox">
               <div className="relative flex items-center justify-center h-full">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setLightboxState(null)}
-                  className="absolute top-4 right-4 z-10 text-white hover:bg-white/10"
-                >
-                  <X className="h-5 w-5" />
-                </Button>
-                
                 {/* Previous button */}
                 {lightboxState && lightboxState.photos.length > 1 && (
                   <Button
