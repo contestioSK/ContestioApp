@@ -25,7 +25,7 @@ import DiaryLayout from "@/components/DiaryLayout";
 import CatchFormDialog from "@/components/diary/CatchFormDialog";
 import FishingActionCard from "@/components/diary/FishingActionCard";
 import SeasonOverviewCard from "@/components/diary/SeasonOverviewCard";
-import { PhotoCarousel } from "@/components/diary/PhotoCarousel";
+import { SimplePhotoSlider } from "@/components/diary/SimplePhotoSlider";
 import { LocationSearchField } from "@/components/LocationSearchField";
 import { TacticalIcon } from "@/components/ui/tactical-icon";
 import { BookOpen } from "lucide-react";
@@ -1038,7 +1038,7 @@ export default function DiaryIndex() {
                 {/* Hero Photo Section */}
                 <div className="relative h-64 bg-slate-900">
                   {selectedCatch.photos && selectedCatch.photos.length > 0 ? (
-                    <PhotoCarousel 
+                    <SimplePhotoSlider 
                       photos={selectedCatch.photos} 
                       onPhotoClick={(photo, index) => {
                         const photoUrls = selectedCatch.photos.map((p: any) => 
