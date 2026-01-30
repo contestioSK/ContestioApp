@@ -55,26 +55,28 @@ export function DonutChart({ title, data }: DonutChartProps) {
     <Card className="bg-card border-border p-4 md:p-6">
       <h3 className="text-base md:text-lg font-semibold text-foreground mb-3 md:mb-4">{title}</h3>
       
-      <ResponsiveContainer width="100%" height={200} className="md:h-[250px]">
-        <PieChart>
-          <Pie
-            data={data}
-            cx="50%"
-            cy="50%"
-            innerRadius={45}
-            outerRadius={65}
-            paddingAngle={2}
-            dataKey="value"
-            label={renderCustomLabel}
-            labelLine={false}
-          >
-            {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.color} />
-            ))}
-          </Pie>
-          <Legend content={renderLegend} />
-        </PieChart>
-      </ResponsiveContainer>
+      <div className="h-[300px] w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+            <Pie
+              data={data}
+              cx="50%"
+              cy="50%"
+              innerRadius={60}
+              outerRadius={80}
+              paddingAngle={2}
+              dataKey="value"
+              label={renderCustomLabel}
+              labelLine={false}
+            >
+              {data.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
+              ))}
+            </Pie>
+            <Legend content={renderLegend} verticalAlign="bottom" align="center" />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
     </Card>
   );
 }
