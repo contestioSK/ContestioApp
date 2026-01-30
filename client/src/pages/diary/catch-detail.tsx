@@ -93,7 +93,7 @@ export default function CatchDetail() {
 
   // Fetch catch data
   const { data: catch_, isLoading } = useQuery<DiaryCatch>({
-    queryKey: [`/api/diary/catches/${id}`],
+    queryKey: ['/api/diary/catches', id],
     enabled: !!id
   });
 
