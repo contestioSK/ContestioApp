@@ -59,27 +59,26 @@ export function PhotoLightbox({ photos, currentIndex, onClose, onNavigate }: Pho
       {photos.length > 1 && (
         <button
           onClick={handlePrev}
-          className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/20 text-white rounded-full p-3 transition-colors"
+          className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white/10 hover:bg-white/20 text-white rounded-full p-3 transition-colors pointer-events-auto"
           aria-label="Predchádzajúca fotografia"
         >
-          <ChevronLeft className="w-8 h-8" />
+          <ChevronLeft className="w-8 h-8 pointer-events-none" />
         </button>
       )}
 
       <img 
         src={photos[currentIndex]} 
         alt={`Fotografia úlovku ${currentIndex + 1}`}
-        className="max-w-[90vw] max-h-[85vh] object-contain"
-        onClick={(e) => e.stopPropagation()}
+        className="max-w-[90vw] max-h-[85vh] object-contain pointer-events-none"
       />
 
       {photos.length > 1 && (
         <button
           onClick={handleNext}
-          className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/20 text-white rounded-full p-3 transition-colors"
+          className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white/10 hover:bg-white/20 text-white rounded-full p-3 transition-colors pointer-events-auto"
           aria-label="Ďalšia fotografia"
         >
-          <ChevronRight className="w-8 h-8" />
+          <ChevronRight className="w-8 h-8 pointer-events-none" />
         </button>
       )}
 
