@@ -552,7 +552,7 @@ async function startPhotoCleanupScheduler() {
       const catchesWithProcessingPhotos = await db
         .select()
         .from(diaryCatches)
-        .where(sql`photos::text LIKE '%"status":"processing"%'`);
+        .where(sql`photos::text LIKE '%"status": "processing"%'`);
       
       if (catchesWithProcessingPhotos.length === 0) {
         return; // No stuck photos to process
