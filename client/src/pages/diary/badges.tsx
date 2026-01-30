@@ -220,7 +220,7 @@ export default function BadgesPage() {
             </button>
 
             {/* Progress counter */}
-            <div className="flex items-center gap-4 bg-card border border-border p-4 rounded-3xl shadow-lg">
+            <div className="flex items-center gap-4 bg-card border border-border p-4 rounded-xl shadow-lg">
               <div className="text-right">
                 <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest block mb-0.5">Tvoj pokrok</span>
                 <span className="text-2xl font-medium text-[#F97316] leading-none font-mono tracking-tighter">
@@ -240,7 +240,7 @@ export default function BadgesPage() {
 
         {/* EMPTY STATE - Dashed border, circular icon */}
         {hasNoBadges && (
-          <div className="py-16 text-center space-y-6 bg-card/20 rounded-3xl border border-dashed border-border">
+          <div className="py-16 text-center space-y-6 bg-card/20 rounded-xl border border-dashed border-border">
             <div className="w-20 h-20 bg-card rounded-full flex items-center justify-center mx-auto border border-border text-muted-foreground">
               <Medal size={36} strokeWidth={1} />
             </div>
@@ -263,7 +263,7 @@ export default function BadgesPage() {
 
         {/* NEXT GOAL CARD - Orange border for active state per design manual */}
         {nextGoal && (
-          <Card className="border-2 border-[#F97316] bg-card transition-all rounded-3xl overflow-hidden shadow-2xl shadow-orange-500/10">
+          <Card className="border-2 border-[#F97316] bg-card transition-all rounded-xl overflow-hidden shadow-2xl shadow-orange-500/10">
             <div className="px-6 pt-6 pb-4 flex items-center justify-between border-b border-border/30">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-muted-foreground">Tvoj najbližší míľnik</span>
@@ -332,7 +332,7 @@ export default function BadgesPage() {
                     return (
                       <div 
                         key={`${badgeDef.id}_${tier}`} 
-                        className="group p-6 rounded-3xl bg-card/40 border border-border/60 hover:border-border transition-all text-center space-y-4"
+                        className="group p-6 rounded-xl bg-card/40 border border-border/60 hover:border-border transition-all text-center space-y-4"
                         data-testid={`badge-unlocked-${badgeDef.id}-${tier}`}
                       >
                         <div className={cn(
@@ -380,7 +380,7 @@ export default function BadgesPage() {
 
       {/* CATALOG MODAL */}
       <Dialog open={isCatalogOpen} onOpenChange={setIsCatalogOpen}>
-        <DialogContent className="max-w-2xl max-h-[85vh] rounded-3xl border-border bg-card overflow-hidden p-0">
+        <DialogContent className="max-w-2xl max-h-[85vh] rounded-xl border-border bg-card overflow-hidden p-0">
           <DialogHeader className="px-6 pt-6 pb-4 border-b border-border">
             <DialogTitle className="text-2xl font-bold italic uppercase text-foreground tracking-tight leading-none">
               Katalóg výziev
@@ -396,7 +396,7 @@ export default function BadgesPage() {
                 const IconComponent = BADGE_ICON_MAP[badgeDef.icon] || Award;
                 
                 return (
-                  <div key={badgeDef.id} className="p-5 rounded-2xl bg-muted/20 border border-border/60 space-y-4">
+                  <div key={badgeDef.id} className="p-5 rounded-xl bg-muted/20 border border-border/60 space-y-4">
                     <div className="flex items-center gap-3">
                       <div className="p-2.5 bg-card rounded-xl border border-border text-muted-foreground">
                         <IconComponent size={18} strokeWidth={1.75} />
