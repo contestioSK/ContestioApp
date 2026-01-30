@@ -107,9 +107,9 @@ export default function BattlePaywall() {
           </div>
 
           <div className="relative max-w-sm mx-auto mb-20 group cursor-default">
-            <div className="absolute -inset-1 bg-gradient-to-b from-border to-background rounded-[2.5rem] blur opacity-50" />
+            <div className="absolute -inset-1 bg-border/50 rounded-xl blur opacity-50" />
             
-            <Card className="relative bg-card border-border shadow-2xl rounded-[2rem] overflow-hidden">
+            <Card className="relative bg-card border-border shadow-2xl rounded-xl overflow-hidden">
               <div className="bg-muted/50 p-4 border-b border-border flex justify-between items-center">
                 <div className="flex items-center gap-2">
                    <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
@@ -150,7 +150,7 @@ export default function BattlePaywall() {
               <div className="p-4 bg-muted/50 border-t border-border flex justify-center">
                  <Button 
                    size="sm" 
-                   className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white border border-amber-400/20"
+                   className="w-full bg-amber-500 hover:bg-amber-600 text-white border border-amber-400/20"
                    onClick={() => setLocation('/pricing?tab=diary')}
                    data-testid="button-unlock-battle"
                  >
@@ -170,7 +170,7 @@ export default function BattlePaywall() {
           <div className="grid md:grid-cols-2 gap-4 mb-16">
             {premiumFeatures.map((feature, i) => (
               <Card key={i} className="p-6 hover:bg-muted/30 transition-colors group border-border">
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${feature.bg}`}>
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${feature.bg}`}>
                   <feature.icon className={`w-6 h-6 ${feature.color}`} />
                 </div>
                 <h3 className="text-lg font-bold uppercase text-foreground mb-2">{feature.title}</h3>
@@ -190,7 +190,7 @@ export default function BattlePaywall() {
               {battleModes.map((mode, i) => (
                 <div 
                   key={i} 
-                  className="p-4 bg-muted/30 border border-border rounded-2xl text-center hover:border-amber-500/30 transition-colors cursor-default relative"
+                  className="p-4 bg-muted/30 border border-border rounded-xl text-center hover:border-amber-500/30 transition-colors cursor-default relative"
                 >
                   <Badge className="absolute -top-2 -right-2 bg-amber-500/20 text-amber-400 border-amber-500/30 text-[9px] px-1.5 py-0.5">
                     <Lock className="w-2.5 h-2.5 mr-0.5" />
@@ -204,7 +204,7 @@ export default function BattlePaywall() {
             </div>
           </div>
 
-          <div className="max-w-lg mx-auto mb-16 p-6 bg-muted/20 border border-border rounded-2xl">
+          <div className="max-w-lg mx-auto mb-16 p-6 bg-muted/20 border border-border rounded-xl">
             <h3 className="text-center text-lg font-bold uppercase text-foreground mb-6">FREE vs Premium</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -257,7 +257,7 @@ export default function BattlePaywall() {
             {faqItems.map((item, i) => (
               <div 
                 key={i} 
-                className="bg-muted/20 border border-border rounded-2xl p-5 hover:bg-muted/30 transition-colors"
+                className="bg-muted/20 border border-border rounded-xl p-5 hover:bg-muted/30 transition-colors"
               >
                 <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
                   <HelpCircle className="w-4 h-4 text-muted-foreground" />
@@ -272,7 +272,7 @@ export default function BattlePaywall() {
           </div>
 
           <div className="text-center fixed bottom-20 md:bottom-6 left-0 right-0 z-40 px-3 md:px-6">
-            <div className="inline-block p-1 md:p-1.5 rounded-xl md:rounded-2xl bg-card/95 backdrop-blur-xl border border-border shadow-2xl max-w-md md:max-w-none mx-auto">
+            <div className="inline-block p-1 md:p-1.5 rounded-xl bg-card/95 backdrop-blur-xl border border-border shadow-2xl max-w-md md:max-w-none mx-auto">
               <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 px-3 md:px-6 py-2 md:py-3">
                  <div className="text-left hidden md:block">
                    <div className="text-sm font-bold text-foreground uppercase">Contestio Premium</div>
@@ -281,7 +281,7 @@ export default function BattlePaywall() {
                  
                  <Button 
                    size="default"
-                   className="w-full md:w-auto md:min-w-[200px] bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white font-bold uppercase tracking-wider text-sm md:text-base py-2.5"
+                   className="w-full md:w-auto md:min-w-[200px] bg-amber-500 hover:bg-amber-600 text-white font-bold uppercase tracking-wider text-sm md:text-base py-2.5"
                    onClick={() => setLocation('/pricing?tab=diary')}
                    data-testid="button-get-premium-footer"
                  >

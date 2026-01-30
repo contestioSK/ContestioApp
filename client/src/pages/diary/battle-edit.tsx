@@ -338,7 +338,7 @@ export default function BattleEdit() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <TacticalIconInline icon={Users} variant="orange" size="md" />
+                    <Users className="w-5 h-5 text-muted-foreground" strokeWidth={1.75} />
                     Účastníci
                   </CardTitle>
                 </CardHeader>
