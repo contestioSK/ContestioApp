@@ -234,13 +234,13 @@ export default function DiaryStats() {
             {/* Hero Catch - len ak má fotku */}
             {heroCatch && (
               <section 
-                className="relative aspect-[3/4] rounded-xl overflow-hidden border border-border/50 shadow-2xl group cursor-pointer hover:border-amber-500/50 transition-all"
+                className="relative aspect-[4/5] md:aspect-[21/9] rounded-xl overflow-hidden border border-border/50 shadow-2xl group cursor-pointer hover:border-amber-500/50 transition-all"
                 onClick={() => setLocation(`/diary/catches/${heroCatch.id}`)}
               >
                 <img 
                   src={heroCatch.photo} 
                   alt={heroCatch.species}
-                  className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105" 
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
                 
