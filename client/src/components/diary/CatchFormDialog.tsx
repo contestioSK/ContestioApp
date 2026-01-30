@@ -770,27 +770,27 @@ export default function CatchFormDialog({
             </DialogTitle>
           </VisuallyHidden>
 
-          {/* Compact Gradient Header */}
-          <div className="relative bg-gradient-to-br from-cyan-600 to-blue-700 p-5 pt-6 pb-5 rounded-lg">
+          {/* Compact Header */}
+          <div className="relative bg-slate-100 dark:bg-slate-800 p-5 pt-6 pb-5 rounded-xl border border-slate-200 dark:border-slate-700">
             <button
               type="button"
               onClick={handleClose}
-              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+              className="absolute top-4 right-4 w-8 h-8 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 flex items-center justify-center transition-colors"
             >
-              <X size={18} className="text-white" />
+              <X className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} />
             </button>
-            <h2 className="text-xl font-black text-white tracking-tight">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
               {editingCatch ? "Upraviť úlovok" : "Nový úlovok"}
             </h2>
-            <p className="text-cyan-100 text-xs mt-1 font-medium">
+            <p className="text-muted-foreground text-xs mt-1 font-medium">
               Stačí fotka, ryba a váha. Hotovo.
             </p>
             {!editingCatch && activeBattle && (
               <Badge
                 variant="secondary"
-                className="mt-2 bg-white/10 text-white border-white/20"
+                className="mt-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-600 rounded-lg"
               >
-                <Trophy className="w-3 h-3 mr-1" />
+                <Trophy className="h-4 w-4 mr-1 text-muted-foreground" strokeWidth={1.75} />
                 Battle: {activeBattle.name}
               </Badge>
             )}
@@ -837,23 +837,23 @@ export default function CatchFormDialog({
 
                 {/* Upload new photos - HERO dropzone */}
                 {existingPhotos.length + selectedPhotos.length < maxPhotos && (
-                  <div className="relative group h-48 rounded-xl border-2 border-dashed border-cyan-500/40 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-400/60 transition-all flex flex-col items-center justify-center cursor-pointer overflow-hidden">
+                  <div className="relative group h-48 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-500 transition-all flex flex-col items-center justify-center cursor-pointer overflow-hidden">
                     {/* Badge */}
-                    <div className="absolute top-3 right-3 bg-cyan-950/50 dark:bg-cyan-900/60 text-cyan-400 text-[9px] font-bold px-2 py-1 rounded-md border border-cyan-500/20 uppercase tracking-wider">
+                    <div className="absolute top-3 right-3 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[9px] font-bold px-2 py-1 rounded-lg border border-slate-300 dark:border-slate-600 uppercase tracking-wider">
                       Najdôležitejší krok
                     </div>
 
                     {/* Premium badge */}
                     {isPremium && (
-                      <div className="absolute top-3 left-3 bg-yellow-500/20 text-yellow-500 text-[9px] font-bold px-2 py-1 rounded-md border border-yellow-500/20 uppercase tracking-wider">
+                      <div className="absolute top-3 left-3 bg-slate-200 dark:bg-slate-700 text-[#F97316] text-[9px] font-bold px-2 py-1 rounded-lg border border-slate-300 dark:border-slate-600 uppercase tracking-wider">
                         ∞ fotiek
                       </div>
                     )}
 
-                    <div className="w-12 h-12 rounded-full bg-cyan-500/10 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                      <ImagePlus className="text-cyan-500" size={24} />
+                    <div className="w-12 h-12 rounded-xl bg-slate-200 dark:bg-slate-700 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                      <ImagePlus className="h-6 w-6 text-muted-foreground" strokeWidth={1.75} />
                     </div>
-                    <span className="text-sm font-bold uppercase tracking-widest text-cyan-600 dark:text-cyan-400 group-hover:text-cyan-500 transition-colors">
+                    <span className="text-sm font-bold uppercase tracking-widest text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
                       Pridať fotku ryby
                     </span>
                     <span className="text-xs text-muted-foreground mt-1">
@@ -899,9 +899,9 @@ export default function CatchFormDialog({
                       <Badge
                         key={index}
                         variant="secondary"
-                        className="flex items-center gap-1 bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20"
+                        className="flex items-center gap-1 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-600 rounded-lg"
                       >
-                        <Camera className="w-3 h-3" />
+                        <Camera className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} />
                         {photo.name.length > 15
                           ? photo.name.substring(0, 15) + "..."
                           : photo.name}
@@ -914,7 +914,7 @@ export default function CatchFormDialog({
                           }}
                           className="ml-1 hover:text-red-500"
                         >
-                          <X className="w-3 h-3" />
+                          <X className="h-4 w-4" strokeWidth={1.75} />
                         </button>
                       </Badge>
                     ))}
@@ -948,7 +948,7 @@ export default function CatchFormDialog({
                             className="font-semibold"
                           >
                             <div className="flex items-center gap-2">
-                              <Fish className="w-4 h-4 text-muted-foreground" />
+                              <Fish className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} />
                               <SelectValue placeholder="Vyberte" />
                             </div>
                           </SelectTrigger>
@@ -1032,7 +1032,7 @@ export default function CatchFormDialog({
                             className="font-bold text-lg pr-10"
                             {...field}
                           />
-                          <Scale className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                          <Scale className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" strokeWidth={1.75} />
                         </div>
                       </FormControl>
                       <FormMessage />
@@ -1057,11 +1057,11 @@ export default function CatchFormDialog({
                         className="flex items-center gap-2 py-2 px-3 rounded-lg bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors"
                         onClick={() => setIsEditingDateTime(true)}
                       >
-                        <CalendarIcon className="w-4 h-4 text-muted-foreground" />
+                        <CalendarIcon className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} />
                         <span className="text-sm text-muted-foreground">
                           {formatDateTimeDisplay(currentValue)}
                         </span>
-                        <span className="text-xs text-cyan-600 dark:text-cyan-400 font-medium ml-auto">
+                        <span className="text-xs text-[#F97316] font-medium ml-auto">
                           upraviť
                         </span>
                       </div>
@@ -1099,7 +1099,7 @@ export default function CatchFormDialog({
                         <button
                           type="button"
                           onClick={() => setIsEditingDateTime(false)}
-                          className="text-xs text-cyan-600 dark:text-cyan-400 font-medium hover:underline"
+                          className="text-xs text-[#F97316] font-medium hover:underline"
                         >
                           hotovo
                         </button>
@@ -1146,11 +1146,11 @@ export default function CatchFormDialog({
                       Ak chceš, doplň detaily
                     </span>
                     <ChevronDown
-                      size={16}
                       className={cn(
-                        "text-muted-foreground transition-transform duration-200",
+                        "h-4 w-4 text-muted-foreground transition-transform duration-200",
                         isDetailsOpen && "rotate-180",
                       )}
+                      strokeWidth={1.75}
                     />
                   </button>
                 </CollapsibleTrigger>
@@ -1295,10 +1295,10 @@ export default function CatchFormDialog({
                   </span>
                   <div className="flex gap-3 mt-1 opacity-60">
                     <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                      <MapPin size={10} /> GPS
+                      <MapPin className="h-3 w-3" strokeWidth={1.75} /> GPS
                     </div>
                     <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                      <CloudRain size={10} /> Počasie
+                      <CloudRain className="h-3 w-3" strokeWidth={1.75} /> Počasie
                     </div>
                   </div>
                 </div>
@@ -1319,14 +1319,14 @@ export default function CatchFormDialog({
                   data-testid="button-get-location-weather"
                 >
                   {isLoadingWeather ? (
-                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <Loader2 className="h-3 w-3 animate-spin" strokeWidth={1.75} />
                   ) : weatherDataLoaded ? (
                     "Načítané ✔"
                   ) : isPremium ? (
                     "Načítať"
                   ) : (
                     <>
-                      <Lock className="h-3 w-3 mr-1" />
+                      <Lock className="h-3 w-3 mr-1" strokeWidth={1.75} />
                       Premium
                     </>
                   )}
@@ -1345,7 +1345,7 @@ export default function CatchFormDialog({
                 </Button>
                 <Button
                   type="submit"
-                  className="flex-[2] bg-cyan-600 hover:bg-cyan-500 font-bold text-xs uppercase tracking-wide"
+                  className="flex-[2] bg-[#F97316] hover:bg-[#EA580C] font-bold text-xs uppercase tracking-wide"
                   disabled={
                     createCatchMutation.isPending ||
                     updateCatchMutation.isPending
@@ -1354,9 +1354,9 @@ export default function CatchFormDialog({
                 >
                   {createCatchMutation.isPending ||
                   updateCatchMutation.isPending ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" strokeWidth={1.75} />
                   ) : (
-                    <Plus size={16} strokeWidth={3} className="mr-2" />
+                    <Plus className="h-4 w-4 mr-2" strokeWidth={1.75} />
                   )}
                   {editingCatch ? "Uložiť zmeny" : "Zapísať úlovok"}
                 </Button>

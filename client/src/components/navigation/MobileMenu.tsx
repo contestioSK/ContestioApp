@@ -108,7 +108,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
           {/* Role Switcher (if has multiple roles) */}
           {hasMultipleRoles && (
             <div className="p-4 border-b border-border">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
                 Režim
               </p>
               <div className="space-y-1">
@@ -122,7 +122,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                         : "hover:bg-muted"
                     )}
                   >
-                    <BookOpen className="h-4 w-4" />
+                    <BookOpen className="h-4 w-4" strokeWidth={1.75} />
                     <span className="text-sm">Denník</span>
                   </button>
                 )}
@@ -136,7 +136,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                         : "hover:bg-muted"
                     )}
                   >
-                    <Shield className="h-4 w-4" />
+                    <Shield className="h-4 w-4" strokeWidth={1.75} />
                     <span className="text-sm">Rozhodca</span>
                   </button>
                 )}
@@ -150,7 +150,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                         : "hover:bg-muted"
                     )}
                   >
-                    <Building2 className="h-4 w-4" />
+                    <Building2 className="h-4 w-4" strokeWidth={1.75} />
                     <span className="text-sm">Organizátor</span>
                   </button>
                 )}
@@ -160,7 +160,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
 
           {/* Main Navigation */}
           <div className="p-4">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
               Môj rybársky život
             </p>
             <div className="space-y-1">
@@ -175,10 +175,10 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                       "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors",
                       isActive 
                         ? "bg-primary/10 text-primary" 
-                        : "hover:bg-muted"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
                     )}
                   >
-                    <Icon className="h-5 w-5" />
+                    <Icon className="h-5 w-5" strokeWidth={1.75} />
                     <span className="text-sm font-medium">{item.label}</span>
                   </button>
                 );
@@ -188,7 +188,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
 
           {/* Community */}
           <div className="p-4 border-t border-border">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
               Komunita
             </p>
             <div className="space-y-1">
@@ -203,14 +203,14 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                       "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors",
                       isActive 
                         ? "bg-primary/10 text-primary" 
-                        : "hover:bg-muted"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
                     )}
                   >
-                    <Icon className="h-5 w-5" />
+                    <Icon className="h-5 w-5" strokeWidth={1.75} />
                     <span className="text-sm font-medium">{item.label}</span>
                     {item.premium && !isPremium && (
                       <Badge variant="secondary" className="ml-auto bg-amber-500/20 text-amber-500 text-xs">
-                        <Crown className="h-3 w-3 mr-1" />
+                        <Crown className="h-3 w-3 mr-1" strokeWidth={1.75} />
                         PREMIUM
                       </Badge>
                     )}
@@ -222,7 +222,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
 
           {/* Tools */}
           <div className="p-4 border-t border-border">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">
               Nástroje
             </p>
             <div className="space-y-1">
@@ -237,10 +237,10 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                       "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors",
                       isActive 
                         ? "bg-primary/10 text-primary" 
-                        : "hover:bg-muted"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
                     )}
                   >
-                    <Icon className="h-5 w-5" />
+                    <Icon className="h-5 w-5" strokeWidth={1.75} />
                     <span className="text-sm font-medium">{item.label}</span>
                   </button>
                 );
@@ -257,7 +257,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                 "bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20"
               )}
             >
-              <Trophy className="h-5 w-5 text-emerald-500" />
+              <Trophy className="h-5 w-5 text-emerald-500" strokeWidth={1.75} />
               <span className="text-sm font-medium text-emerald-500">Oficiálne súťaže</span>
               <Badge className="ml-auto bg-emerald-500 text-white text-xs">LIVE</Badge>
             </button>

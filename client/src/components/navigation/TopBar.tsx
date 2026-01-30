@@ -50,7 +50,7 @@ export default function TopBar() {
               onClick={() => setIsMobileMenuOpen(true)}
               data-testid="button-mobile-menu"
             >
-              <Menu className="h-5 w-5" />
+              <Menu className="h-5 w-5 text-muted-foreground" strokeWidth={1.75} />
             </Button>
 
             {/* Logo */}
@@ -82,7 +82,7 @@ export default function TopBar() {
               onClick={() => setIsMobileSearchOpen(true)}
               data-testid="button-mobile-search"
             >
-              <Search className="h-5 w-5" />
+              <Search className="h-5 w-5 text-muted-foreground" strokeWidth={1.75} />
             </Button>
 
             {/* Notifications */}

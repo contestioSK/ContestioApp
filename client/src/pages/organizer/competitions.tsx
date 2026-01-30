@@ -31,7 +31,6 @@ import {
   Timer,
   Zap
 } from "lucide-react";
-import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 import { PulsingDot } from "@/components/ui/pulsing-dot";
 import type { Competition } from "@shared/schema";
 import { useState, useMemo } from "react";
@@ -85,7 +84,7 @@ export default function OrganizerCompetitions() {
         );
       case 'live':
         return (
-          <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 shadow-lg shadow-green-500/25">
+          <Badge className="bg-green-500 text-white border-0 shadow-lg shadow-green-500/25">
             <PulsingDot color="green" />
             <span className="ml-2">Živá</span>
           </Badge>
@@ -130,10 +129,10 @@ export default function OrganizerCompetitions() {
         </div>
         <Button 
           onClick={() => setLocation('/organizer/create')} 
-          className="bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white shadow-lg shadow-orange-500/25 border-0"
+          className="bg-[#F97316] hover:bg-[#EA580C] text-white shadow-lg shadow-orange-500/25 border-0"
           data-testid="button-create-competition"
         >
-          <Plus className="w-4 h-4 mr-2" />
+          <Plus className="w-4 h-4 mr-2" strokeWidth={1.75} />
           Vytvoriť súťaž
         </Button>
       </div>
@@ -191,9 +190,9 @@ export default function OrganizerCompetitions() {
               {/* Status ribbon at top */}
               <div className={`absolute top-0 left-0 right-0 h-1 ${
                 competition.status === 'live' 
-                  ? 'bg-gradient-to-r from-green-500 to-emerald-500' 
+                  ? 'bg-green-500' 
                   : competition.status === 'registration'
-                  ? 'bg-gradient-to-r from-blue-500 to-cyan-500'
+                  ? 'bg-blue-500'
                   : 'bg-slate-300 dark:bg-slate-600'
               }`} />
               
@@ -208,15 +207,14 @@ export default function OrganizerCompetitions() {
                   ) : (
                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
                       competition.status === 'live' 
-                        ? 'bg-gradient-to-br from-green-500 to-emerald-600' 
-                        : 'bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30'
+                        ? 'bg-green-500' 
+                        : 'bg-slate-100 dark:bg-slate-800'
                     }`}>
-                      <TacticalIconInline 
-                        icon={competition.status === 'live' ? Zap : Trophy} 
-                        variant={competition.status === 'live' ? 'emerald' : 'amber'} 
-                        size="md" 
-                        className={competition.status === 'live' ? 'text-white' : ''}
-                      />
+                      {competition.status === 'live' ? (
+                        <Zap className="w-5 h-5 text-white" strokeWidth={1.75} />
+                      ) : (
+                        <Trophy className="w-5 h-5 text-muted-foreground" strokeWidth={1.75} />
+                      )}
                     </div>
                   )}
                   <div className="min-w-0 flex-1">
@@ -229,12 +227,12 @@ export default function OrganizerCompetitions() {
               </CardHeader>
               <CardContent className="pt-2 space-y-3">
                 <div className="flex items-center text-sm text-muted-foreground">
-                  <TacticalIconInline icon={MapPin} variant="emerald" size="sm" className="mr-2 flex-shrink-0" />
+                  <MapPin className="h-4 w-4 mr-2 flex-shrink-0 text-muted-foreground" strokeWidth={1.75} />
                   <span className="truncate">{competition.location}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <div className="flex items-center text-muted-foreground">
-                    <TacticalIconInline icon={Calendar} variant="indigo" size="sm" className="mr-2 flex-shrink-0" />
+                    <Calendar className="h-4 w-4 mr-2 flex-shrink-0 text-muted-foreground" strokeWidth={1.75} />
                     {new Date(competition.startDate).toLocaleDateString('sk-SK')} - {new Date(competition.endDate).toLocaleDateString('sk-SK')}
                   </div>
                 </div>
@@ -244,8 +242,8 @@ export default function OrganizerCompetitions() {
                   <div className="flex items-center justify-between">
                     {competition.maxTeams && (
                       <div className="flex items-center text-sm text-muted-foreground">
-                        <TacticalIconInline icon={Users} variant="orange" size="sm" className="mr-1 flex-shrink-0" />
-                        <span className="text-xs">Max. {competition.maxTeams}</span>
+                        <Users className="h-4 w-4 mr-1 flex-shrink-0 text-muted-foreground" strokeWidth={1.75} />
+                        <span className="text-xs">Max. <span className="font-mono font-medium text-[#F97316]">{competition.maxTeams}</span></span>
                       </div>
                     )}
                     <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
@@ -267,7 +265,7 @@ export default function OrganizerCompetitions() {
                   <div className="space-y-1">
                     <div className="flex justify-between text-xs text-muted-foreground">
                       <span>Registrácia</span>
-                      <span>0/{competition.maxTeams}</span>
+                      <span className="font-mono font-medium text-[#F97316]">0/{competition.maxTeams}</span>
                     </div>
                     <Progress value={0} className="h-1.5" />
                   </div>
@@ -289,14 +287,14 @@ export default function OrganizerCompetitions() {
                   </Button>
                   <Button 
                     size="sm" 
-                    className="flex-1 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white border-0"
+                    className="flex-1 bg-[#F97316] hover:bg-[#EA580C] text-white border-0"
                     onClick={(e) => {
                       e.stopPropagation();
                       setLocation(`/organizer/competition/${competition.id}`);
                     }}
                     data-testid={`button-manage-${competition.id}`}
                   >
-                    <Settings className="w-4 h-4 mr-1" />
+                    <Settings className="w-4 h-4 mr-1" strokeWidth={1.75} />
                     Spravovať
                   </Button>
                 </div>
@@ -308,8 +306,8 @@ export default function OrganizerCompetitions() {
         <Card className="bg-card border border-slate-200 dark:border-slate-700 shadow-sm">
           <CardContent className="text-center py-12">
             <div className="flex justify-center mb-4">
-              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-orange-500/10 to-amber-600/10 flex items-center justify-center border border-orange-500/20">
-                <TacticalIconInline icon={Trophy} variant="amber" size="lg" />
+              <div className="w-20 h-20 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center border border-slate-200 dark:border-slate-700">
+                <Trophy className="w-6 h-6 text-muted-foreground" strokeWidth={1.75} />
               </div>
             </div>
             {competitions && competitions.length > 0 ? (
@@ -327,9 +325,9 @@ export default function OrganizerCompetitions() {
                 </p>
                 <Button 
                   onClick={() => setLocation('/organizer/create')}
-                  className="bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white shadow-lg shadow-orange-500/25"
+                  className="bg-[#F97316] hover:bg-[#EA580C] text-white shadow-lg shadow-orange-500/25"
                 >
-                  <Plus className="w-4 h-4 mr-2" />
+                  <Plus className="w-4 h-4 mr-2" strokeWidth={1.75} />
                   Vytvoriť súťaž
                 </Button>
               </>

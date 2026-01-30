@@ -290,10 +290,10 @@ export default function CompetitionCheckout() {
                   </Badge>
                 )}
                 <CardHeader className="text-center pt-8 pb-4">
-                  <div className={`w-12 h-12 mx-auto rounded-full flex items-center justify-center mb-3 ${
+                  <div className={`w-12 h-12 mx-auto rounded-xl flex items-center justify-center mb-3 ${
                     isSelected ? 'bg-orange-100 dark:bg-orange-900/30' : 'bg-slate-100 dark:bg-slate-800'
                   }`}>
-                    <Icon className={`w-6 h-6 ${isSelected ? 'text-orange-500' : 'text-slate-500'}`} />
+                    <Icon className={`w-6 h-6 ${isSelected ? 'text-[#F97316]' : 'text-muted-foreground'}`} strokeWidth={1.75} />
                   </div>
                   <CardTitle className="text-xl">{plan.name}</CardTitle>
                   <CardDescription>{plan.description}</CardDescription>
@@ -302,7 +302,7 @@ export default function CompetitionCheckout() {
                       <span className="text-xl font-bold text-foreground">Cena na vyžiadanie</span>
                     ) : (
                       <>
-                        <span className="text-3xl font-bold text-foreground">{plan.price}€</span>
+                        <span className="text-3xl font-mono font-medium text-[#F97316]">{plan.price}€</span>
                         <span className="text-muted-foreground"> / súťaž</span>
                       </>
                     )}
@@ -312,7 +312,7 @@ export default function CompetitionCheckout() {
                   <ul className="space-y-3">
                     {plan.features.map((feature, idx) => (
                       <li key={idx} className="flex items-center gap-2 text-sm">
-                        <Check className={`w-4 h-4 ${isSelected ? 'text-orange-500' : 'text-green-500'}`} />
+                        <Check className="w-4 h-4 text-green-500" strokeWidth={1.75} />
                         <span className="text-muted-foreground">{feature}</span>
                       </li>
                     ))}
@@ -337,8 +337,8 @@ export default function CompetitionCheckout() {
 
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CreditCard className="w-5 h-5" />
+            <CardTitle className="font-bold flex items-center gap-2">
+              <CreditCard className="w-5 h-5 text-muted-foreground" strokeWidth={1.75} />
               Súhrn objednávky
             </CardTitle>
           </CardHeader>
@@ -348,7 +348,7 @@ export default function CompetitionCheckout() {
                 <p className="font-medium text-foreground">{competition.name}</p>
                 <p className="text-sm text-muted-foreground">Balík: {selectedPlan.name}</p>
               </div>
-              <p className="text-2xl font-bold text-foreground">
+              <p className="text-2xl font-mono font-medium text-[#F97316]">
                 {selectedPlan.price ? `${selectedPlan.price}€` : 'Na vyžiadanie'}
               </p>
             </div>
@@ -356,11 +356,11 @@ export default function CompetitionCheckout() {
               <div className="border-t pt-4">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-muted-foreground">Súťaž</span>
-                  <span className="text-foreground">{selectedPlan.price}€</span>
+                  <span className="font-mono font-medium text-[#F97316]">{selectedPlan.price}€</span>
                 </div>
                 <div className="flex items-center justify-between font-bold text-lg">
                   <span className="text-foreground">Celkom</span>
-                  <span className="text-orange-500">{selectedPlan.price}€</span>
+                  <span className="font-mono font-medium text-[#F97316]">{selectedPlan.price}€</span>
                 </div>
               </div>
             )}
@@ -384,7 +384,7 @@ export default function CompetitionCheckout() {
             <Button
               onClick={handlePayment}
               disabled={isProcessing || paymentMutation.isPending}
-              className="bg-orange-500 hover:bg-orange-600 text-white order-1 sm:order-2"
+              className="bg-[#F97316] hover:bg-[#EA580C] text-white order-1 sm:order-2"
               data-testid="button-pay"
             >
               {isProcessing || paymentMutation.isPending ? (
@@ -394,7 +394,7 @@ export default function CompetitionCheckout() {
                 </>
               ) : (
                 <>
-                  <CreditCard className="w-4 h-4 mr-2" />
+                  <CreditCard className="w-4 h-4 mr-2" strokeWidth={1.75} />
                   Zaplatiť {selectedPlan.price}€
                 </>
               )}

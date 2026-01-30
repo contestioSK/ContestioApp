@@ -218,8 +218,8 @@ export default function HistoricalCatchFormDialog({ isOpen, onClose, onSuccess }
         </DialogHeader>
 
         {/* Info Alert */}
-        <Alert className="bg-amber-500/10 border-amber-500/30">
-          <AlertCircle className="h-4 w-4 text-amber-500" />
+        <Alert className="bg-amber-500/10 border-amber-500/30 rounded-xl">
+          <AlertCircle className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} />
           <AlertDescription className="text-amber-200 text-sm">
             Tento úlovok sa uloží ako historický a <strong>nebude započítaný</strong> do súťaží, 
             súbojov, štatistík ani odznakov. Slúži len ako osobný archív spomienok.
@@ -253,7 +253,7 @@ export default function HistoricalCatchFormDialog({ isOpen, onClose, onSuccess }
                           ) : (
                             <span>Vyber dátum</span>
                           )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          <CalendarIcon className="ml-auto h-4 w-4 text-muted-foreground" strokeWidth={1.75} />
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
@@ -465,8 +465,8 @@ export default function HistoricalCatchFormDialog({ isOpen, onClose, onSuccess }
                 </div>
               )}
               
-              <label className="flex items-center gap-2 px-4 py-3 bg-slate-800 border border-dashed border-slate-600 rounded-lg cursor-pointer hover:border-amber-500/50 transition-colors">
-                <Camera className="w-5 h-5 text-slate-400" />
+              <label className="flex items-center gap-2 px-4 py-3 bg-slate-800 border border-dashed border-slate-600 rounded-xl cursor-pointer hover:border-amber-500/50 transition-colors">
+                <Camera className="h-5 w-5 text-muted-foreground" strokeWidth={1.75} />
                 <span className="text-slate-400 text-sm">Pridať fotku</span>
                 <input 
                   type="file" 
@@ -489,12 +489,12 @@ export default function HistoricalCatchFormDialog({ isOpen, onClose, onSuccess }
               >
                 {createHistoricalCatchMutation.isPending ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" strokeWidth={1.75} />
                     Ukladám...
                   </>
                 ) : (
                   <>
-                    <History className="w-4 h-4 mr-2" />
+                    <History className="h-4 w-4 mr-2" strokeWidth={1.75} />
                     Uložiť historický úlovok
                   </>
                 )}

@@ -63,8 +63,8 @@ export default function TeamOverviewContent({
       <div className="p-6 border-b border-border bg-muted/30">
         <div className="flex items-start justify-between">
           <div>
-            <h2 className="text-xl font-black text-foreground flex items-center gap-3">
-              <Users className="text-cyan-500" />
+            <h2 className="text-xl font-bold text-foreground flex items-center gap-3">
+              <Users className="h-5 w-5 text-muted-foreground" strokeWidth={1.75} />
               {team.name}
             </h2>
             <div className="flex items-center gap-2 mt-2">
@@ -96,40 +96,40 @@ export default function TeamOverviewContent({
         {/* QUICK STATS 2x2 */}
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-muted/30 border border-border rounded-xl p-3 text-center">
-            <div className="p-2 bg-cyan-500/10 rounded-lg text-cyan-500 w-fit mx-auto mb-1">
-              <Fish size={16} />
+            <div className="p-2 bg-cyan-500/10 rounded-lg text-muted-foreground w-fit mx-auto mb-1">
+              <Fish size={16} strokeWidth={1.75} />
             </div>
-            <div className="text-xl font-black text-foreground">{stats.catchCount}</div>
+            <div className="text-xl font-mono font-medium text-[#F97316]">{stats.catchCount}</div>
             <div className="text-[10px] text-muted-foreground uppercase font-bold">Úlovky</div>
           </div>
           <div className="bg-muted/30 border border-border rounded-xl p-3 text-center">
-            <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-500 w-fit mx-auto mb-1">
-              <Trophy size={16} />
+            <div className="p-2 bg-emerald-500/10 rounded-lg text-muted-foreground w-fit mx-auto mb-1">
+              <Trophy size={16} strokeWidth={1.75} />
             </div>
-            <div className="text-xl font-black text-foreground">{stats.totalWeight.toFixed(1)} <span className="text-xs font-normal">kg</span></div>
+            <div className="text-xl font-mono font-medium text-[#F97316]">{stats.totalWeight.toFixed(1)} <span className="text-xs font-sans font-normal text-muted-foreground">kg</span></div>
             <div className="text-[10px] text-muted-foreground uppercase font-bold">Celková váha</div>
           </div>
           <div 
             className={`bg-muted/30 border border-border rounded-xl p-3 text-center ${stats.biggestCatch && onCatchClick ? 'cursor-pointer hover:bg-muted/50 hover:border-amber-500/30 transition-all' : ''}`}
             onClick={() => stats.biggestCatch && onCatchClick?.(stats.biggestCatch)}
           >
-            <div className="p-2 bg-amber-500/10 rounded-lg text-amber-500 w-fit mx-auto mb-1">
-              <Crown size={16} />
+            <div className="p-2 bg-amber-500/10 rounded-lg text-muted-foreground w-fit mx-auto mb-1">
+              <Crown size={16} strokeWidth={1.75} />
             </div>
-            <div className="text-xl font-black text-foreground">
+            <div className="text-xl font-mono font-medium text-[#F97316]">
               {stats.biggestCatch ? `${parseFloat(String(stats.biggestCatch.weight)).toFixed(1)}` : '-'} 
-              <span className="text-xs font-normal">kg</span>
+              <span className="text-xs font-sans font-normal text-muted-foreground">kg</span>
             </div>
             <div className="text-[10px] text-muted-foreground uppercase font-bold">Najväčšia ryba</div>
             {stats.biggestCatch && onCatchClick && (
-              <div className="text-[9px] text-amber-500 mt-0.5">Klikni pre detail</div>
+              <div className="text-[9px] text-[#F97316] mt-0.5">Klikni pre detail</div>
             )}
           </div>
           <div className="bg-muted/30 border border-border rounded-xl p-3 text-center">
-            <div className="p-2 bg-purple-500/10 rounded-lg text-purple-500 w-fit mx-auto mb-1">
-              <MapPin size={16} />
+            <div className="p-2 bg-purple-500/10 rounded-lg text-muted-foreground w-fit mx-auto mb-1">
+              <MapPin size={16} strokeWidth={1.75} />
             </div>
-            <div className="text-xl font-black text-foreground">{rank || '-'}.</div>
+            <div className="text-xl font-mono font-medium text-[#F97316]">{rank || '-'}.</div>
             <div className="text-[10px] text-muted-foreground uppercase font-bold">Poradie</div>
           </div>
         </div>
@@ -194,8 +194,8 @@ export default function TeamOverviewContent({
                           </div>
                         </div>
                       </div>
-                      <div className="text-lg font-black text-foreground">
-                        {parseFloat(String(c.weight)).toFixed(1)} <span className="text-xs font-normal text-muted-foreground">kg</span>
+                      <div className="text-lg font-mono font-medium text-[#F97316]">
+                        {parseFloat(String(c.weight)).toFixed(1)} <span className="text-xs font-sans font-normal text-muted-foreground">kg</span>
                       </div>
                     </div>
                   </div>

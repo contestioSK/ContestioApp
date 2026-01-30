@@ -518,7 +518,7 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
                   </div>
                   <div className="absolute bottom-0 left-0 right-0 bg-green-600/90 text-white py-2 px-3 flex items-center justify-center gap-2">
                     <Check className="h-5 w-5" strokeWidth={1.75} />
-                    <span className="font-semibold">Fotka pripravená</span>
+                    <span className="font-bold">Fotka pripravená</span>
                   </div>
                 </div>
                 {/* Retake button */}
@@ -529,7 +529,7 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
                   onClick={() => document.getElementById('photo-input')?.click()}
                   data-testid="button-retake-photo"
                 >
-                  <Camera className="mr-2 h-5 w-5" strokeWidth={1.75} />
+                  <Camera className="mr-2 h-5 w-5 text-muted-foreground" strokeWidth={1.75} />
                   Odfotiť znovu
                 </Button>
               </div>
@@ -908,19 +908,19 @@ export default function RefereeInterface() {
                   {/* Offline/Online Status */}
                   <div className="flex items-center gap-1">
                     {isOffline ? (
-                      <div className="flex items-center gap-1 bg-amber-700/30 px-2 py-1 rounded text-sm font-semibold">
-                        <WifiOff className="w-4 h-4" strokeWidth={1.75} />
+                      <div className="flex items-center gap-1 bg-amber-700/30 px-2 py-1 rounded text-sm font-bold">
+                        <WifiOff className="w-4 h-4 text-muted-foreground" strokeWidth={1.75} />
                         OFFLINE
                       </div>
                     ) : (
                       <Wifi className="w-4 h-4 text-green-300" strokeWidth={1.75} />
                     )}
                     {pendingCatches.length > 0 && (
-                      <div className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold ${
+                      <div className={`flex items-center gap-1 px-2 py-1 rounded text-xs ${
                         isOffline ? 'bg-amber-700/30' : 'bg-yellow-500/20'
                       }`}>
-                        <Upload className="w-3 h-3" strokeWidth={1.75} />
-                        {pendingCatches.length}
+                        <Upload className="w-3 h-3 text-muted-foreground" strokeWidth={1.75} />
+                        <span className="font-mono font-medium text-[#F97316]">{pendingCatches.length}</span>
                       </div>
                     )}
                   </div>

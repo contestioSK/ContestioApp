@@ -113,7 +113,7 @@ export function PremiumUpsellModal({ isOpen, onClose, trigger }: PremiumUpsellMo
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-lg p-0 overflow-hidden bg-slate-900/95 backdrop-blur-xl border-slate-700/50 text-white">
         <div className="relative">
-          <div className="absolute inset-0 bg-gradient-to-br from-amber-600/20 via-amber-500/10 to-amber-400/10" />
+          <div className="absolute inset-0 bg-amber-500/10" />
           
           <div className="relative p-6">
             <DialogHeader className="mb-6">
@@ -156,10 +156,10 @@ export function PremiumUpsellModal({ isOpen, onClose, trigger }: PremiumUpsellMo
                 {appliedDiscount ? (
                   <>
                     <p className="text-lg text-slate-500 line-through">{MONTHLY_PRICE.toFixed(2)} €</p>
-                    <p className="text-2xl font-bold text-white">{discountedMonthly.toFixed(2)} €</p>
+                    <p className="text-2xl font-mono font-medium text-[#F97316]">{discountedMonthly.toFixed(2)} €</p>
                   </>
                 ) : (
-                  <p className="text-2xl font-bold text-white">{MONTHLY_PRICE.toFixed(2)} €</p>
+                  <p className="text-2xl font-mono font-medium text-[#F97316]">{MONTHLY_PRICE.toFixed(2)} €</p>
                 )}
                 <p className="text-xs text-slate-500 mt-1">Flexibilné zrušenie</p>
                 <Button 
@@ -170,7 +170,7 @@ export function PremiumUpsellModal({ isOpen, onClose, trigger }: PremiumUpsellMo
                 </Button>
               </div>
 
-              <div className="relative p-4 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 border-2 border-amber-500/50 text-center">
+              <div className="relative p-4 rounded-xl bg-amber-500/10 border-2 border-amber-500/50 text-center">
                 <div className="absolute -top-2 left-1/2 -translate-x-1/2">
                   <span className="px-2 py-0.5 text-xs font-bold bg-amber-500 text-slate-900 rounded-full">
                     <Sparkles className="h-3 w-3 inline mr-1" />
@@ -181,16 +181,16 @@ export function PremiumUpsellModal({ isOpen, onClose, trigger }: PremiumUpsellMo
                 {appliedDiscount ? (
                   <>
                     <p className="text-lg text-slate-500 line-through">{YEARLY_PRICE.toFixed(2)} €</p>
-                    <p className="text-2xl font-bold text-amber-400">{discountedYearly.toFixed(2)} €</p>
+                    <p className="text-2xl font-mono font-medium text-[#F97316]">{discountedYearly.toFixed(2)} €</p>
                     <p className="text-xs text-slate-400 mt-1">
-                      (Len {discountedYearlyMonthly.toFixed(2)} € mesačne)
+                      (Len <span className="font-mono">{discountedYearlyMonthly.toFixed(2)}</span> € mesačne)
                     </p>
                   </>
                 ) : (
                   <>
-                    <p className="text-2xl font-bold text-amber-400">{YEARLY_PRICE.toFixed(2)} €</p>
+                    <p className="text-2xl font-mono font-medium text-[#F97316]">{YEARLY_PRICE.toFixed(2)} €</p>
                     <p className="text-xs text-slate-400 mt-1">
-                      (Len {YEARLY_MONTHLY_EQUIVALENT.toFixed(2)} € mesačne)
+                      (Len <span className="font-mono">{YEARLY_MONTHLY_EQUIVALENT.toFixed(2)}</span> € mesačne)
                     </p>
                   </>
                 )}

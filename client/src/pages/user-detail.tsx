@@ -237,7 +237,7 @@ export default function UserDetail() {
       <DiaryLayout>
         <div className="container max-w-4xl mx-auto p-4">
           <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
+            <AlertCircle className="h-4 w-4" strokeWidth={1.75} />
             <AlertDescription>Používateľ nebol nájdený</AlertDescription>
           </Alert>
         </div>
@@ -256,7 +256,7 @@ export default function UserDetail() {
             onClick={() => navigate('/admin')}
             data-testid="button-back-admin"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="h-4 w-4 mr-2" strokeWidth={1.75} />
             Späť na Admin Panel
           </Button>
         </div>
@@ -274,7 +274,7 @@ export default function UserDetail() {
             </Badge>
             {user.isPremium && (
               <Badge variant="default" className="bg-yellow-500">
-                <Crown className="h-3 w-3 mr-1" />
+                <Crown className="h-3 w-3 mr-1" strokeWidth={1.75} />
                 Premium
               </Badge>
             )}
@@ -402,7 +402,7 @@ export default function UserDetail() {
                     disabled={updateUserMutation.isPending}
                     data-testid="button-save-profile"
                   >
-                    <Save className="h-4 w-4 mr-2" />
+                    <Save className="h-4 w-4 mr-2" strokeWidth={1.75} />
                     {updateUserMutation.isPending ? "Ukladám..." : "Uložiť zmeny"}
                   </Button>
 
@@ -413,7 +413,7 @@ export default function UserDetail() {
                     disabled={resetPasswordMutation.isPending}
                     data-testid="button-reset-password"
                   >
-                    <RefreshCw className="h-4 w-4 mr-2" />
+                    <RefreshCw className="h-4 w-4 mr-2" strokeWidth={1.75} />
                     {resetPasswordMutation.isPending ? "Resetujem..." : "Resetovať heslo"}
                   </Button>
                 </div>
@@ -426,7 +426,7 @@ export default function UserDetail() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Crown className="h-5 w-5 text-yellow-500" />
+              <Crown className="h-5 w-5 text-muted-foreground" strokeWidth={1.75} />
               Premium Management
             </CardTitle>
             <CardDescription>
@@ -484,7 +484,7 @@ export default function UserDetail() {
                   disabled={updatePremiumMutation.isPending}
                   data-testid="button-save-premium"
                 >
-                  <Save className="h-4 w-4 mr-2" />
+                  <Save className="h-4 w-4 mr-2" strokeWidth={1.75} />
                   {updatePremiumMutation.isPending ? "Ukladám..." : "Uložiť Premium nastavenia"}
                 </Button>
               </form>

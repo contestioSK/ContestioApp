@@ -103,7 +103,7 @@ export default function CompetitionCatches() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 dark:from-blue-950 dark:via-gray-900 dark:to-green-950">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
           
@@ -115,7 +115,7 @@ export default function CompetitionCatches() {
               onClick={() => navigate(`/competition/${id}`)}
               data-testid="button-back-to-competition"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" />
+              <ArrowLeft className="w-4 h-4 mr-2" strokeWidth={1.75} />
               Späť na súťaž
             </Button>
             
@@ -172,10 +172,10 @@ export default function CompetitionCatches() {
 
           {/* Catches Table */}
           {filteredCatches.length > 0 ? (
-            <Card className="overflow-hidden shadow-xl border-0 bg-gradient-to-br from-background via-background to-muted/20">
+            <Card className="overflow-hidden shadow-sm border border-border bg-card">
               <Table data-testid="table-catches">
                 <TableHeader>
-                  <TableRow className="bg-gradient-to-r from-primary/5 via-secondary/5 to-accent/5 border-b-2 border-primary/10">
+                  <TableRow className="bg-muted/30 border-b border-border">
                     <TableHead className="w-[140px] font-bold text-foreground py-4">Hmotnosť</TableHead>
                     <TableHead className="font-bold text-foreground py-4">Druh</TableHead>
                     <TableHead className="font-bold text-foreground py-4">Tím</TableHead>
@@ -190,17 +190,16 @@ export default function CompetitionCatches() {
                       key={catch_.id} 
                       className={`
                         ${index % 2 === 0 ? 'bg-background' : 'bg-muted/30'}
-                        hover:bg-gradient-to-r hover:from-primary/5 hover:to-secondary/5
-                        transition-all duration-300 ease-in-out
-                        hover:shadow-lg hover:scale-[1.01]
+                        hover:bg-muted/50
+                        transition-colors duration-200
                         border-b border-border/50
                       `}
                       data-testid={`row-catch-${catch_.id}`}
                     >
-                      <TableCell className="font-bold text-primary py-4">
+                      <TableCell className="py-4">
                         <div className="flex items-center gap-1">
-                          <Weight className="w-4 h-4 text-primary" />
-                          <span data-testid={`text-catch-weight-${catch_.id}`} className="font-bold">
+                          <Weight className="w-4 h-4 text-muted-foreground" strokeWidth={1.75} />
+                          <span data-testid={`text-catch-weight-${catch_.id}`} className="font-mono font-medium text-[#F97316]">
                             {catch_.weight} kg
                           </span>
                         </div>
@@ -249,7 +248,7 @@ export default function CompetitionCatches() {
                       </TableCell>
                       <TableCell className="py-4">
                         <div className="flex items-center gap-2 p-2 bg-muted/20 rounded-lg">
-                          <Clock className="w-4 h-4 text-muted-foreground" />
+                          <Clock className="w-4 h-4 text-muted-foreground" strokeWidth={1.75} />
                           <span data-testid={`text-catch-time-${catch_.id}`} className="text-sm font-medium">
                             {(() => {
                               const submittedDate = catch_.submittedAt ? new Date(catch_.submittedAt) : null;
@@ -283,13 +282,13 @@ export default function CompetitionCatches() {
                                 alt="Úlovok" 
                                 className="w-full h-full object-cover pointer-events-none group-hover:scale-110 transition-transform duration-300"
                               />
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                              <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                             </div>
-                            <Camera className="w-5 h-5 text-emerald-500 drop-shadow-sm" />
+                            <Camera className="w-5 h-5 text-muted-foreground" strokeWidth={1.75} />
                           </div>
                         ) : (
                           <div className="flex items-center gap-2 p-2 bg-muted/30 rounded-lg">
-                            <Camera className="w-4 h-4 text-muted-foreground" />
+                            <Camera className="w-4 h-4 text-muted-foreground" strokeWidth={1.75} />
                             <span className="text-xs text-muted-foreground">Bez fotografie</span>
                           </div>
                         )}
@@ -330,7 +329,7 @@ export default function CompetitionCatches() {
                 className="absolute top-4 right-4 z-50 bg-black/20 text-white hover:bg-black/40"
                 onClick={() => setSelectedPhoto(null)}
               >
-                <X className="w-4 h-4" />
+                <X className="w-4 h-4" strokeWidth={1.75} />
               </Button>
               
               {selectedPhoto && (
@@ -352,7 +351,7 @@ export default function CompetitionCatches() {
                         Detail úlovku s váhou a typom ryby
                       </p>
                       <div className="flex items-center space-x-4 mt-2">
-                        <div className="font-mono text-2xl text-accent font-bold">
+                        <div className="font-mono font-medium text-[#F97316] text-2xl">
                           {selectedPhoto.weight}
                         </div>
                         <Badge variant="outline" className="text-base px-3 py-1">

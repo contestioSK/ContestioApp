@@ -97,7 +97,7 @@ export default function TeamDetail() {
           <p className="text-muted-foreground mb-4">Zadaný tím neexistuje alebo bol odstránený.</p>
           <Link href="/">
             <Button>
-              <ArrowLeft className="w-4 h-4 mr-2" />
+              <ArrowLeft className="w-4 h-4 mr-2" strokeWidth={1.75} />
               Späť na hlavnú stránku
             </Button>
           </Link>
@@ -180,7 +180,7 @@ export default function TeamDetail() {
         <div className="mb-6">
           <Link href={teamData.competitionId ? `/competition/${teamData.competitionId}` : '/'}>
             <Button variant="ghost" className="mb-4" data-testid="button-back">
-              <ArrowLeft className="w-4 h-4 mr-2" />
+              <ArrowLeft className="w-4 h-4 mr-2" strokeWidth={1.75} />
               Späť na súťaž
             </Button>
           </Link>
@@ -205,7 +205,7 @@ export default function TeamDetail() {
                 data-testid="button-toggle-favorite-team"
                 className={isFavorite ? "bg-red-500 hover:bg-red-600 text-white" : ""}
               >
-                <Heart className={`w-4 h-4 mr-2 ${isFavorite ? "fill-current" : ""}`} />
+                <Heart className={`w-4 h-4 mr-2 ${isFavorite ? "fill-current" : ""}`} strokeWidth={1.75} />
                 {isFavorite ? "Obľúbené" : "Pridať do obľúbených"}
               </Button>
             )}
@@ -261,7 +261,7 @@ export default function TeamDetail() {
                             />
                           ) : (
                             <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center">
-                              <Users className="w-6 h-6 text-muted-foreground" />
+                              <Users className="w-6 h-6 text-muted-foreground" strokeWidth={1.75} />
                             </div>
                           )}
                         </div>
@@ -300,21 +300,21 @@ export default function TeamDetail() {
               <CardContent className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Celková váha:</span>
-                  <span className="font-bold text-lg text-foreground" data-testid="stat-total-weight">
+                  <span className="font-mono font-medium text-[#F97316] text-lg" data-testid="stat-total-weight">
                     {totalWeight.toFixed(2)} kg
                   </span>
                 </div>
                 
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Počet rýb:</span>
-                  <span className="font-medium text-foreground" data-testid="stat-fish-count">
+                  <span className="font-mono font-medium text-[#F97316]" data-testid="stat-fish-count">
                     {catchCount}
                   </span>
                 </div>
                 
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Priemerná váha:</span>
-                  <span className="font-medium text-foreground" data-testid="stat-average-weight">
+                  <span className="font-mono font-medium text-[#F97316]" data-testid="stat-average-weight">
                     {averageWeight.toFixed(2)} kg
                   </span>
                 </div>
@@ -323,7 +323,7 @@ export default function TeamDetail() {
                   <div className="pt-3 border-t border-border">
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground">Najväčší úlovok:</span>
-                      <span className="font-bold text-foreground" data-testid="stat-biggest-catch">
+                      <span className="font-mono font-medium text-[#F97316]" data-testid="stat-biggest-catch">
                         {parseFloat(biggestCatch.weight).toFixed(2)} kg
                       </span>
                     </div>
@@ -389,7 +389,7 @@ export default function TeamDetail() {
                               </Badge>
                             </td>
                             <td className="p-3 text-right">
-                              <span className="font-bold text-foreground">
+                              <span className="font-mono font-medium text-[#F97316]">
                                 {parseFloat(catch_.weight).toFixed(2)} kg
                               </span>
                             </td>
@@ -443,7 +443,7 @@ export default function TeamDetail() {
                                 </div>
                               ) : (
                                 <div className="flex items-center justify-center">
-                                  <Camera className="w-4 h-4 text-muted-foreground" />
+                                  <Camera className="w-4 h-4 text-muted-foreground" strokeWidth={1.75} />
                                   <span className="text-xs text-muted-foreground ml-1">Bez fotky</span>
                                 </div>
                               )}
@@ -470,7 +470,7 @@ export default function TeamDetail() {
               className="absolute top-4 right-4 z-50 bg-black/20 text-white hover:bg-black/40"
               onClick={() => setSelectedPhoto(null)}
             >
-              <X className="w-4 h-4" />
+              <X className="w-4 h-4" strokeWidth={1.75} />
             </Button>
             
             {selectedPhoto && (
