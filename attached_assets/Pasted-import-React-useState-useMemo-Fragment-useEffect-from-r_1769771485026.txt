@@ -1,0 +1,461 @@
+import React, { useState, useMemo, Fragment, useEffect } from "react";
+import { 
+  Search, 
+  Shield, 
+  Ruler, 
+  Clock, 
+  AlertCircle, 
+  MapPin, 
+  Loader2, 
+  Scale, 
+  ChevronRight,
+  Info,
+  Calendar,
+  Zap,
+  Filter,
+  Waves
+} from "lucide-react";
+
+// --- MOCKY & UI KOMPONENTY (Contestio Typographic Polish v3.0) ---
+const cn = (...classes) => classes.filter(Boolean).join(" ");
+
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+  return isMobile;
+};
+
+// --- ATMOSPHERIC COMPONENTS ---
+
+const Signal = ({ variant = "blue" }) => (
+  <span className="relative flex h-2 w-2">
+    <span className={cn(
+      "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75",
+      variant === "red" ? "bg-red-500" : "bg-blue-400"
+    )}></span>
+    <span className={cn(
+      "relative inline-flex rounded-full h-2 w-2",
+      variant === "red" ? "bg-red-600" : "bg-blue-500"
+    )}></span>
+  </span>
+);
+
+const Card = ({ children, className, isProtected = false }) => (
+  <div className={cn(
+    "relative bg-slate-900/40 border transition-all duration-300",
+    isProtected 
+      ? "border-red-900/50 bg-red-500/[0.02] shadow-[0_0_15px_-5px_rgba(239,68,68,0.15)] rounded-2xl" 
+      : "border-slate-800 rounded-2xl hover:border-slate-700 shadow-sm",
+    className
+  )}>
+    {isProtected && <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-red-600 animate-pulse" />}
+    {children}
+  </div>
+);
+
+const Badge = ({ children, variant = "default", className }) => {
+  const variants = {
+    default: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+    destructive: "bg-red-500/10 text-red-500 border-red-500/30",
+    success: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+  };
+  return (
+    <span className={cn(
+      "px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border", 
+      variants[variant], 
+      className
+    )}>
+      {children}
+    </span>
+  );
+};
+
+const TacticalIcon = ({ icon: Icon, variant = "neutral" }) => {
+  const variants = {
+    active: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+    neutral: "bg-slate-950 text-slate-500 border-slate-800"
+  };
+  return (
+    <div className={cn("p-2.5 rounded-xl border transition-all duration-300", variants[variant])}>
+      <Icon size={18} strokeWidth={1.5} />
+    </div>
+  );
+};
+
+const DiaryLayout = ({ children }) => (
+  <div className="min-h-screen bg-[#020617] text-slate-100 font-sans selection:bg-blue-500/30">
+    <div className="max-w-4xl mx-auto p-4 md:p-12 pb-24">{children}</div>
+  </div>
+);
+
+// --- DÁTA ---
+const sizeLimitsData = [
+  { fish: "Kapor rybničný", minMax: "40 cm" },
+  { fish: "Sumec veľký", minMax: "70 cm" },
+  { fish: "Šťuka severná", minMax: "60 cm" },
+  { fish: "Zubáč veľkoústy", minMax: "50 cm" },
+  { fish: "Pstruh potočný", minMax: "27 cm" },
+  { fish: "Amur biely", minMax: "60 cm" },
+  { fish: "Lieň sliznatý", minMax: "30 cm" },
+  { fish: "Mrena severná", minMax: "40 cm" },
+];
+
+const closedSeasonsData = [
+  { fish: "Kapor rybničný", from: "15.03.", to: "31.05." },
+  { fish: "Sumec veľký", from: "01.01.", to: "15.06." },
+  { fish: "Šťuka severná", from: "01.01.", to: "31.05." },
+  { fish: "Zubáč veľkoústy", from: "01.01.", to: "15.06." },
+  { fish: "Pstruh potočný", from: "01.09.", to: "15.04." },
+  { fish: "Lipeň tymianový", from: "01.01.", to: "31.05." },
+];
+
+const dailyHoursData = [
+  { month: "Január", carp: "06:00 - 21:00", trout: "07:00 - 17:00" },
+  { month: "Február", carp: "06:00 - 21:00", trout: "07:00 - 17:00" },
+  { month: "Jún", carp: "00:00 - 24:00", trout: "05:00 - 21:00" },
+  { month: "Október", carp: "00:00 - 24:00", trout: "07:00 - 19:00" },
+];
+
+// --- POMOCNÉ FUNKCIE ---
+function isCurrentlyProtected(fromStr, toStr) {
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  const [fD, fM] = fromStr.split('.').map(Number);
+  const [tD, tM] = toStr.split('.').map(Number);
+  const fromDate = new Date(currentYear, fM - 1, fD);
+  const toDate = new Date(currentYear, tM - 1, tD);
+  if (toDate < fromDate) return today >= fromDate || today <= toDate;
+  return today >= fromDate && today <= toDate;
+}
+
+function HighlightText({ text, query }) {
+  if (!query.trim()) return text;
+  const regex = new RegExp(`(${query})`, 'gi');
+  return text.split(regex).map((part, i) => 
+    regex.test(part) ? <mark key={i} className="bg-blue-500/30 text-blue-200 rounded-sm px-0.5">{part}</mark> : part
+  );
+}
+
+// --- HLAVNÁ STRÁNKA ---
+export default function FishingRulesPage() {
+  const isMobile = useIsMobile();
+  
+  const [activeTab, setActiveTab] = useState(() => {
+    try {
+      return localStorage.getItem('contestio_active_fishing_tab') || "sizes";
+    } catch {
+      return "sizes";
+    }
+  });
+
+  const [search, setSearch] = useState("");
+  const [isLoadingAreas, setIsLoadingAreas] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem('contestio_active_fishing_tab', activeTab);
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (activeTab !== "areas") {
+      setSearch("");
+    }
+  }, [activeTab]);
+
+  const tabs = [
+    { id: "sizes", label: "Miery", icon: Ruler },
+    { id: "closed", label: "Hájenie", icon: Shield },
+    { id: "hours", label: "Časy lovu", icon: Clock },
+    { id: "areas", label: "Revíry", icon: MapPin },
+  ];
+
+  const filteredData = useMemo(() => {
+    const q = search.toLowerCase();
+    if (activeTab === "sizes") return sizeLimitsData.filter(d => d.fish.toLowerCase().includes(q));
+    if (activeTab === "closed") return closedSeasonsData.filter(d => d.fish.toLowerCase().includes(q));
+    if (activeTab === "hours") return dailyHoursData.filter(d => d.month.toLowerCase().includes(q));
+    return [];
+  }, [activeTab, search]);
+
+  const renderEmptyState = (query) => (
+    <div className="py-24 text-center space-y-4">
+      <div className="w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center mx-auto border border-slate-800 text-slate-700">
+        <Filter size={24} strokeWidth={1.5} />
+      </div>
+      <div className="space-y-1">
+        <p className="text-slate-400 font-semibold tracking-tight">Nenašli sa výsledky pre "{query}"</p>
+        <p className="text-xs text-slate-600 font-medium">Skúste skrátený tvar (napr. "kapor").</p>
+      </div>
+    </div>
+  );
+
+  const renderContent = () => {
+    if (activeTab === "areas") {
+       if (search.length < 2) {
+          return (
+            <div className="py-24 text-center space-y-6">
+               <div className="w-20 h-20 bg-slate-900/50 rounded-full flex items-center justify-center mx-auto border border-slate-800 shadow-inner">
+                  <MapPin className="text-slate-700" size={36} strokeWidth={1.25} />
+               </div>
+               <div className="space-y-2">
+                  <h3 className="text-xl font-semibold text-white tracking-tight">Vyhľadať revír</h3>
+                  <p className="text-sm text-slate-500 max-w-xs mx-auto leading-relaxed text-[13px]">Zadajte číslo alebo názov revíru.</p>
+               </div>
+            </div>
+          );
+       }
+       if (isLoadingAreas) {
+         return (
+           <div className="py-20 text-center">
+             <Loader2 className="h-10 w-10 animate-spin text-blue-500 mx-auto" />
+             <p className="text-slate-500 mt-4 font-bold uppercase tracking-widest text-[10px]">Prehľadávam databázu...</p>
+           </div>
+         );
+       }
+       return (
+         <div className="py-12 text-center text-slate-600 italic text-sm">
+           Pripájam sa k registru revírov SR...
+         </div>
+       );
+    }
+
+    if (isMobile) {
+      return (
+        <div className="grid grid-cols-1 gap-4">
+          {filteredData.length === 0 ? (
+            renderEmptyState(search)
+          ) : (
+            filteredData.map((item, idx) => {
+              if (activeTab === "sizes") {
+                return (
+                  <Card key={idx} className="p-5 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <TacticalIcon icon={Ruler} />
+                      <div>
+                        <p className="text-sm font-semibold text-slate-100 tracking-tight"><HighlightText text={item.fish} query={search} /></p>
+                        <p className="text-[10px] text-slate-500 font-medium mt-0.5">Minimálna lovná miera</p>
+                      </div>
+                    </div>
+                    {/* Zmena: font-bold -> font-medium */}
+                    <p className="text-xl font-medium text-blue-500 tracking-tight">{item.minMax}</p>
+                  </Card>
+                );
+              }
+              if (activeTab === "closed") {
+                const isProtected = isCurrentlyProtected(item.from, item.to);
+                return (
+                  <Card key={idx} isProtected={isProtected} className="p-5 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <TacticalIcon icon={Shield} variant={isProtected ? "active" : "neutral"} />
+                      <div>
+                        <p className="text-sm font-semibold text-slate-100 tracking-tight"><HighlightText text={item.fish} query={search} /></p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs text-slate-500 font-medium">{item.from} — {item.to}</span>
+                          {isProtected && <Badge variant="destructive">Hájená</Badge>}
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                );
+              }
+              if (activeTab === "hours") {
+                const isCurrent = item.month.toLowerCase() === new Date().toLocaleDateString('sk-SK', { month: 'long' }).toLowerCase();
+                return (
+                  <Card key={idx} className={cn("p-6 space-y-6", isCurrent && "border-blue-500/30 bg-blue-500/[0.03]")}>
+                    <div className="flex justify-between items-center border-b border-slate-800 pb-3">
+                      <h3 className="font-bold text-white text-lg">{item.month}</h3>
+                      {isCurrent && <Badge>Aktuálny</Badge>}
+                    </div>
+                    <div className="grid grid-cols-2 gap-6">
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">Kaprové</p>
+                        <p className="text-sm font-semibold text-slate-200 tracking-tight">{item.carp}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">Pstruhové</p>
+                        <p className="text-sm font-semibold text-slate-200 tracking-tight">{item.trout}</p>
+                      </div>
+                    </div>
+                  </Card>
+                );
+              }
+              return null;
+            })
+          )}
+        </div>
+      );
+    }
+
+    // Desktop Table View
+    return (
+      <Card className="border-slate-800/50 bg-slate-900/20 shadow-none backdrop-blur-none">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="border-b border-slate-800 bg-slate-900/50">
+              {/* Zmena: font-bold -> font-semibold */}
+              <th className="px-6 py-5 text-[11px] font-semibold uppercase tracking-widest text-slate-500">Druh ryby / Mesiac</th>
+              {activeTab === "sizes" && <th className="px-6 py-5 text-[11px] font-semibold uppercase tracking-widest text-slate-500 text-right">Minimálna lovná miera</th>}
+              {activeTab === "closed" && (
+                <>
+                  <th className="px-6 py-5 text-[11px] font-semibold uppercase tracking-widest text-slate-500">Doba hájenia</th>
+                  <th className="px-6 py-5 text-[11px] font-semibold uppercase tracking-widest text-slate-500 text-right">Stav</th>
+                </>
+              )}
+              {activeTab === "hours" && (
+                <>
+                  <th className="px-6 py-5 text-[11px] font-semibold uppercase tracking-widest text-slate-500">Kaprové vody</th>
+                  <th className="px-6 py-5 text-[11px] font-semibold uppercase tracking-widest text-slate-500">Pstruhové vody</th>
+                </>
+              )}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-800/50">
+            {filteredData.length === 0 ? (
+              <tr>
+                <td colSpan={5}>{renderEmptyState(search)}</td>
+              </tr>
+            ) : (
+              filteredData.map((item, idx) => {
+                const isProtected = activeTab === "closed" && isCurrentlyProtected(item.from, item.to);
+                return (
+                  <tr key={idx} className={cn(
+                    "hover:bg-slate-800/20 transition-colors group",
+                    isProtected && "bg-red-500/[0.015]"
+                  )}>
+                    <td className="px-6 py-4.5 text-sm font-semibold text-slate-200">
+                      <HighlightText text={item.fish || item.month} query={search} />
+                    </td>
+                    {activeTab === "sizes" && (
+                      <td className="px-6 py-4.5 text-lg font-medium text-blue-500 text-right tracking-tight transition-transform duration-300 group-hover:translate-x-[-4px]">
+                        {item.minMax}
+                      </td>
+                    )}
+                    {activeTab === "closed" && (
+                      <>
+                        <td className="px-6 py-4.5 text-xs font-medium text-slate-500 tracking-wide">{item.from} — {item.to}</td>
+                        <td className="px-6 py-4.5 text-right">
+                          {isProtected && <Badge variant="destructive">Hájená</Badge>}
+                        </td>
+                      </>
+                    )}
+                    {activeTab === "hours" && (
+                      <>
+                        <td className="px-6 py-4.5 text-sm text-slate-400 font-medium">{item.carp}</td>
+                        <td className="px-6 py-4.5 text-sm text-slate-400 font-medium">{item.trout}</td>
+                      </>
+                    )}
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </Card>
+    );
+  };
+
+  return (
+    <DiaryLayout>
+      <div className="space-y-10 animate-in fade-in duration-1000 font-sans">
+        
+        {/* ATMOSPHERIC HEADER */}
+        <div className="relative p-8 md:p-12 -mx-4 md:-mx-12 -mt-4 md:-mt-12 bg-gradient-to-b from-[#0a1128] to-[#020617] border-b border-slate-800/50 mb-4 overflow-hidden shadow-2xl">
+          <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none">
+            <Waves size={200} strokeWidth={0.5} />
+          </div>
+
+          <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
+            <div className="space-y-2">
+              <h1 className="text-4xl font-black tracking-tighter text-white uppercase italic leading-none">
+                Rybársky Poriadok
+              </h1>
+              <div className="flex items-center gap-3">
+                 <Signal />
+                 <p className="text-slate-500 text-[11px] font-bold uppercase tracking-[0.2em]">Sezóna 2025</p>
+              </div>
+            </div>
+            <div className="w-full md:w-auto">
+               <div className="relative group">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-blue-500 transition-colors" size={16} strokeWidth={2} />
+                  <input 
+                    type="text"
+                    placeholder="Hľadať rybu alebo revír..."
+                    className="w-full md:w-72 bg-slate-950/50 border border-slate-800 rounded-2xl py-3 pl-12 pr-4 text-sm text-white focus:outline-none focus:border-blue-500/40 transition-all placeholder:text-slate-700 shadow-inner"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* NAVIGATION CARDS */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  "relative group flex flex-col items-center justify-center p-6 rounded-[2rem] border transition-all duration-300 overflow-hidden",
+                  isActive 
+                    ? "bg-slate-900 border-blue-500/50 shadow-lg scale-[1.02] ring-1 ring-blue-500/20" 
+                    : "bg-slate-900/40 border-slate-800/60 hover:border-slate-700 hover:bg-slate-900/60"
+                )}
+              >
+                <div className={cn(
+                  "mb-3 p-3 rounded-2xl transition-all duration-500",
+                  isActive 
+                    ? "bg-blue-500/10 text-blue-400 drop-shadow-[0_0_8px_rgba(59,130,246,0.2)]" 
+                    : "bg-slate-950 text-slate-600 group-hover:text-slate-400"
+                )}>
+                  <Icon size={22} strokeWidth={isActive ? 2 : 1.5} />
+                </div>
+                
+                <span className={cn(
+                  "text-[11px] font-bold uppercase tracking-widest transition-colors",
+                  isActive ? "text-blue-400" : "text-slate-500 group-hover:text-slate-300"
+                )}>
+                  {tab.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* SUBHEADER CONTEXT */}
+        <div className="space-y-6">
+          <div className="flex items-center justify-between px-2">
+            <h2 className="text-[11px] font-bold text-slate-600 uppercase tracking-widest flex items-center gap-3">
+              <span className="w-8 h-[1px] bg-slate-800"></span>
+              {tabs.find(t => t.id === activeTab).label}
+            </h2>
+            <div className="flex items-center gap-2 text-[10px] text-slate-700 font-bold uppercase tracking-wider">
+              <Calendar size={12} strokeWidth={2} />
+              Aktuálne k: {new Date().toLocaleDateString('sk-SK')}
+            </div>
+          </div>
+
+          <div className="animate-in slide-in-from-bottom-2 duration-500">
+            {renderContent()}
+          </div>
+        </div>
+
+        {/* LEGAL DISCLAIMER */}
+        <div className="p-6 rounded-3xl bg-amber-500/[0.01] border border-amber-500/10 flex gap-5 opacity-60 hover:opacity-100 transition-opacity">
+           <AlertCircle className="text-amber-600 shrink-0" size={20} strokeWidth={1.5} />
+           <p className="text-[10px] text-amber-600/70 leading-relaxed uppercase font-bold tracking-wider">
+             Tieto údaje sú informatívne a nemusia zohľadňovať miestne výnimky, mimoriadne nariadenia alebo súkromné revíry. Vždy sa riaďte miestnym rybárskym poriadkom.
+           </p>
+        </div>
+
+      </div>
+    </DiaryLayout>
+  );
+}
