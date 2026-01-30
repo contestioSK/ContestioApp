@@ -1,0 +1,501 @@
+ROZHODNUTIE PRE /diary/stats → KARTA „TOP ÚLOVOK“
+
+👉 ÁNO, fotku treba prispôsobiť karte.
+👉 NIE, nemá sa zobrazovať celá za každú cenu.
+
+Táto karta nie je galéria.
+Je to štatistický highlight.
+
+🧠 Kontext je kľúčový
+Čo je „Top úlovok“ karta?
+
+sumarizačný prvok
+
+rýchly prehľad
+
+vizuálny akcent k číslu
+
+Nie:
+
+prehliadanie fotografie
+
+detail úlovku
+
+storytelling
+
+👉 Preto NEPOUŽÍVAJ object-contain ako default.
+
+❌ Prečo NIE object-contain v tejto karte
+
+vzniknú „čierne pásy“
+
+karta stratí vizuálnu váhu
+
+fotka pôsobí menšia než je dôležitosť úlovku
+
+rozbiješ rytmus gridu
+
+object-contain patrí:
+
+do sheetu
+
+do lightboxu
+
+do full page detailu
+
+Nie do stat karty.
+
+✅ SPRÁVNE RIEŠENIE (LOCKED)
+🥇 Aspect-ratio wrapper + object-cover
+
+Ale nie náhodný pomer.
+
+Odporúčaný pomer pre Top úlovok:
+
+👉 aspect-[4/5] alebo aspect-[3/4]
+
+Prečo:
+
+väčšina rybárskych fotiek je vertikála
+
+sedí na mobil
+
+sedí na editorial karty
+
+🔧 Konkrétna implementácia
+<div className="relative aspect-[4/5] overflow-hidden rounded-xl bg-slate-900">
+  <img
+    src={photoUrl}
+    alt="Top úlovok"
+    className="absolute inset-0 w-full h-full object-cover"
+  />
+</div>
+
+Čo tým dosiahneš:
+
+karta má vždy rovnaký tvar
+
+layout sa nerozbije
+
+fotka má silu
+
+mierne orezanie nevadí (je to highlight)
+
+📱 Mobil vs desktop
+
+Toto riešenie:
+
+funguje rovnako na mobile aj desktope
+
+netreba breakpoint hacky
+
+karta sa správa predvídateľne
+
+Ak chceš byť extra precízny:
+
+aspect-[3/4] sm:aspect-[4/5]
+
+❗ Dôležité UX pravidlo (zapamätaj si ho)
+
+Nie každá fotka musí byť zobrazená celá.
+Dôležité je, kde sa nachádza.
+
+stats → cover
+
+sheet → contain
+
+lightbox → full
+
+Ty to už intuitívne cítiš – len si to teraz „zamkol“.
+
+ČO ODPÍSAŤ REPLITU (hotová odpoveď)
+
+Ak chceš, pošli mu toto:
+
+Pre kartu „Top úlovok“ zvoľ aspect-ratio wrapper (ideálne 4/5 alebo 3/4) s object-cover. Je to štatistický highlight, nie galéria, mierne orezanie je v poriadku. object-contain používame len v detaile a lightboxe.
+
+Ak chceš, ďalší krok môžeme:
+
+prejsť všetky miesta, kde sa zobrazujú fotky a spraviť jednotnú tabuľku (stats / grid / sheet / detail)
+
+alebo doladiť responsive grid pre /diary/stats, aby vizuálne držal aj pri slabších fotkách
+
+vyzerá to teraz takto aby si mal lepšiu predstavu 
+
+Perfektné, toto už je konkrétny obraz, takže idem tvrdý UX / UI review, bez obalu.
+
+TL;DR verdict
+
+➡️ VIZUÁLNE silné, ale UX-ovo má Top úlovok momentálne 2 vážne problémy.
+➡️ Orezanie fotky je akceptovateľné, ale nie takto.
+➡️ Riešenie: kontrolovaný crop + jasný fokus + jemná korekcia hierarchie.
+
+1️⃣ OREZ FOTKY – problém nie je „že je orezaná“, ale AKO
+Čo je teraz zle
+
+ryba je rezaná v hlave aj v chvoste
+
+človek je zrezaný v tvári → pôsobí rušivo
+
+oko nevie, čo je fokus (ryba vs človek vs text)
+
+👉 Toto je náhodný crop, nie zámerný.
+
+✅ Správny prístup pre túto kartu
+🎯 Pravidlo:
+
+Top úlovok = ryba je hlavný hrdina, nie rybár
+
+🔧 Konkrétne UX riešenie (LOCKED)
+A) Ponechaj object-cover
+
+ALE:
+
+<img
+  src={photo}
+  className="w-full h-full object-cover object-[50%_65%]"
+/>
+
+
+alebo pre ešte lepší výsledok:
+
+object-[50%_70%]
+
+Prečo:
+
+posunieš fokus nižšie
+
+ryba ostane celá alebo takmer celá
+
+hlava ryby má prioritu
+
+rybár zmizne z vizuálneho konfliktu
+
+👉 Toto je presne ten rozdiel medzi „funguje“ a „vyzerá profi“.
+
+2️⃣ ASPECT RATIO – dobrý, ale dá sa doladiť
+
+Teraz to pôsobí ako príliš plochý hero.
+
+Odporúčanie:
+
+mobil: aspect-[3/4]
+
+desktop: aspect-[4/5]
+
+<div className="aspect-[3/4] md:aspect-[4/5]">
+
+
+📱 Mobil → ryba má priestor
+🖥 Desktop → hero pôsobí prémiovo
+
+3️⃣ TEXT NA FOTKE – hierarchia je skoro dobrá, ale…
+Čo je výborné
+
+veľké číslo 25.3 kg 🔥
+
+kontrast OK
+
+názov druhu čitateľný
+
+Čo by som upravil
+❌ „január 2026 · Neznáma lokalita“
+
+je slabé
+
+mentálne nezaujímavé
+
+zbytočne berie pozornosť
+
+👉 Presuň to do spodného info riadku mimo fotky
+alebo zmenši opacity + font-size
+
+4️⃣ BADGE „TOP ÚLOVOK“ – funguje, ale…
+
+Teraz je:
+
+trochu „nalepený“
+
+má slabú väzbu na kartu
+
+Malý, ale silný tweak:
+
+jemný blur pod badge
+
+o 4–6px viac padding
+
+UX detail, ktorý robí „Apple feel“.
+
+5️⃣ Najdôležitejšie rozhodnutie (a tu si trafil)
+
+❗ TOTO NEMÁ BYŤ CELÁ FOTKA
+
+A ty si to správne cítil.
+
+Top úlovok:
+
+má navnaďovať
+
+má vytvárať emóciu
+
+nie dokumentovať realitu
+
+👉 Detail = sheet / lightbox
+👉 Stats = vizuálny highlight
+
+Tvoje aktuálne riešenie je 80 % správne.
+Týmito úpravami sa dostaneš na 95 % pro level.
+
+🔒 FINÁLNY VERDIKT
+
+✔️ Nemeň object-cover
+✔️ Uprav object-position
+✔️ Zvýrazni rybu, potlač rybára
+✔️ Aspect ratio mierne vertikálnejší
+
+Ak chceš, ďalší krok môžeme:
+
+prejsť všetky stat karty a zjednotiť ich vizuálny rytmus
+
+alebo vyriešiť fallback, keď fotka nemá správny pomer (čo sa stane často)
+
+Toto je veľmi dobrá práca. Teraz už len brúsiš detaily.
+
+ale problém je ten že každá fotka bude inak nafotená
+
+Presne. A práve preto nemôžeš riešiť Top úlovok „manuálne“ per fotka.
+Musíš to vyriešiť systémovo, nie esteticky.
+
+Teraz idem tvrdo a prakticky.
+
+ZÁKLADNÁ PRAVDA (ktorú treba prijať)
+
+Fotky z terénu sú chaotické.
+Rôzny pomer strán, ryba vľavo/vpravo, rybár v strede, niekto fotí na výšku, niekto na šírku.
+
+👉 UX úloha NIE JE zobraziť každú fotku „správne“,
+👉 ale konzistentne a predvídateľne.
+
+SPRÁVNY MENTÁLNY MODEL PRE TOP ÚLOVOK
+
+Top úlovok ≠ fotografia
+Top úlovok = vizuálny highlight so silnou hierarchiou
+
+Fotka je materiál, nie pravda.
+
+RIEŠENIE, KTORÉ BUDE FUNGOVAŤ PRE 100 % FOTIEK
+🥇 VARIANTA A – DOPORUČUJEM (najviac UX-safe)
+Hero crop + garantovaný fokus
+<div className="relative aspect-[3/4] overflow-hidden rounded-xl">
+  <img
+    src={photo}
+    className="absolute inset-0 w-full h-full object-cover object-center"
+  />
+
+  {/* Gradient maska */}
+  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+</div>
+
+Prečo to funguje:
+
+object-cover = vizuálna sila
+
+gradient = text je vždy čitateľný
+
+nezaujíma ťa rybár → zanikne v tme
+
+ryba prežije v 90 % prípadov
+
+👉 Áno, niektoré fotky budú „orezané“.
+👉 To je OK.
+👉 UX má prednosť pred dokumentárnou presnosťou.
+
+🥈 VARIANTA B – keď chceš byť „férovejší“ k fotke
+Contain + maska + max výška
+<img
+  src={photo}
+  className="max-h-[260px] w-full object-contain bg-slate-900"
+/>
+
+Nevýhody:
+
+prázdne okraje
+
+slabší hero efekt
+
+karta pôsobí menej prémiovo
+
+👉 Hodí sa skôr pre detail, nie pre stats hero.
+
+🥉 VARIANTA C – AUTOMATICKÝ SMART CROP (advanced)
+
+Toto je vyšší level, ale stojí za zmienku.
+
+Logika:
+
+ak je fotka na výšku → object-contain
+
+ak je na šírku → object-cover
+
+const isPortrait = image.height > image.width;
+
+
+Ale:
+
+potrebuješ metadata
+
+viac kódu
+
+viac edge cases
+
+👉 Na MVP by som to NEROBIL.
+
+ČO URČITE NEROBIŤ ❌
+
+❌ snažiť sa „zobraziť celú rybu vždy“
+
+❌ meniť layout podľa fotky
+
+❌ riešiť to individuálne
+
+To je UX smrť a maintenance peklo.
+
+DÔLEŽITÉ UX PRAVIDLO (zapíš si ho)
+
+Ak používateľ chce vidieť celú fotku, klikne.
+Ak len scrolluje, chce rýchly vizuálny signál.
+
+A ty:
+
+✅ máš sheet
+
+✅ máš lightbox
+
+✅ máš detail
+
+➡️ Top úlovok nemusí byť férový. Musí byť silný.
+
+FINÁLNE ROZHODNUTIE (odporúčam zamknúť)
+
+✔️ Top úlovok = aspect-[3/4]
+✔️ object-cover
+✔️ silná gradient maska
+✔️ detail = miesto pravdy
+
+Toto je profesionálny prístup, nie kompromis.
+
+Ak chceš, ďalší krok môžeme:
+
+navrhnúť fallback pre fotky bez ryby
+
+alebo nastaviť automatický „crop bias“ (preferuj stred-dole)
+
+Teraz si na správnej strane UX histórie.
+
+čiže by si to v podstate nechal tak ako to je teraz
+
+Krátka odpoveď: áno – ale s jednou dôležitou úpravou.
+A teraz presne vysvetlím prečo a čo tým myslím, bez balastu.
+
+ÁNO, KONCEPT JE SPRÁVNY
+
+To, čo máš teraz na Top úlovok:
+
+hero karta
+
+veľká fotka
+
+výrazná váha
+
+gradient
+
+jasná hierarchia
+
+👉 to je UX-ovo správne
+👉 to je presne to, čo má byť v sekcii „Sezóna v číslach“
+
+Nemáš tam chybný layout.
+Máš tam nepríjemnú realitu fotiek z terénu.
+
+ALE ❗ PROBLÉM NIE JE OREZ, PROBLÉM JE KONTROLA OREZU
+
+Momentálne máš:
+
+object-cover
+
+
+čo znamená:
+
+browser sa rozhoduje sám
+
+niekedy odreže hlavu
+
+inokedy chvost
+
+niekedy váhu / rybu
+
+👉 To je to, čo ti vadí. Oprávnene.
+
+JEDINÁ ÚPRAVA, KTORÚ ODPORÚČAM
+🎯 ZAFIXUJ ASPECT RATIO + STRED
+
+Nie „full height“, nie „contain“.
+
+Správny kompromis:
+<div className="relative aspect-[3/4] overflow-hidden rounded-xl">
+  <img
+    src={photo}
+    className="absolute inset-0 w-full h-full object-cover object-center"
+  />
+</div>
+
+Čo tým dosiahneš:
+
+📱 mobil má predvídateľnú výšku
+
+📐 karta má konzistentný tvar
+
+👁️ používateľ vie, čo čakať
+
+✂️ orez je kontrolovaný, nie náhodný
+
+➡️ UX stabilita > fotografická korektnosť
+
+ČO URČITE NEROBIŤ (a prečo)
+❌ object-contain
+
+karta stratí silu
+
+vzniknú „mŕtve“ okraje
+
+hero prestane byť hero
+
+❌ dynamická výška podľa fotky
+
+rozbije layout
+
+rozbije rytmus stránky
+
+pôsobí amatérsky
+
+TVOJA INTUÍCIA JE SPRÁVNA
+
+To, že sa pýtaš:
+
+„každá fotka bude inak nafotená“
+
+znamená, že:
+
+rozmýšľaš systémovo
+
+nie pixel-perfect
+
+ale produktovo
+
+A to je presne to, čo Contestio potrebuje.
+
+FINÁLNY VERDIKT
+
+✔️ Áno, nechal by som to tak ako to je teraz
+✔️ len by som to zamkol cez aspect ratio
+✔️ detail + lightbox = miesto pravdy
