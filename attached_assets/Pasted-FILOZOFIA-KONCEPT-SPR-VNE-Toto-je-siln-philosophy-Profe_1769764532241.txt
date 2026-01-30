@@ -1,0 +1,213 @@
+FILOZOFIA & KONCEPT – ✔️ SPRÁVNE
+
+Toto je silné:
+
+philosophy: "Profesionálny rybársky prístroj. Farba = Význam. UI = Ticho."
+
+
+To je jasný sever.
+Nie je to marketingový bullshit, ale dizajnové kritérium.
+
+✔️ Názov systému
+✔️ „Locked v2.0“ framing
+✔️ Rozdelenie dark / light
+
+Toto všetko je produktovo dospelé.
+
+2️⃣ NAJVÄČŠÍ PROBLÉM: LIGHT MODE
+
+Teraz budem nepríjemný – ale je to dôležité.
+
+❌ Light mode ide proti archetypu Contestio
+
+Contestio je:
+
+terén
+
+slnko
+
+voda
+
+kontrast
+
+Light mode:
+
+zjemňuje
+
+robí appku „webovejšou“
+
+vytvára druhú vizuálnu osobnosť
+
+👉 Riziko:
+Začneš robiť kompromisy:
+
+„v light mode to nefunguje“
+
+„musíme pridať inú farbu“
+
+„tu to vyzerá divne“
+
+Odporúčanie (silné, ale správne):
+
+light mode ako „reference / preview“
+
+NIE ako plnohodnotný produktový mód
+
+Konkrétne:
+
+zakáž ho v produkcii
+
+nechaj ho len v tomto DesignLab-e
+
+alebo ho označ ako Experimental
+
+Inak si rozbiješ disciplínu.
+
+3️⃣ FARBY – takmer perfektné, ale 1 porušenie vlastných pravidiel
+❌ Problém:
+secondary: "#64748B"
+
+
+Používaš:
+
+secondary
+
+tactical gray
+
+slate-500
+
+slate-300
+
+👉 Máš príliš veľa sivých rolí, ktoré nie sú jasne pomenované.
+
+Contestio potrebuje:
+
+TEXT_PRIMARY
+
+TEXT_MUTED
+
+BORDER
+
+Nie „secondary“, „tactical“, „cool“.
+
+Odporúčanie:
+
+premenuj role
+
+nie farby
+
+Farby sú OK.
+Názvoslovie nie je ešte nástrojové.
+
+4️⃣ TYPOGRAFIA – ✔️ VEĽMI SILNÁ
+
+Toto je výborné:
+
+Logika 'Instrument-first'
+H1 = jediná plocha pre Black
+
+
+A hlavne:
+
+váha > veľkosť
+
+data v mono
+
+oranžová len pre hodnoty
+
+To je presne to, čo robí rozdiel medzi:
+
+appkou
+
+a prístrojom
+
+✔️ Schválené bez výhrad.
+
+5️⃣ SIGNAL KOMPONENT – UX PROBLÉM
+
+Teraz pozor. Toto je jemné, ale dôležité.
+
+animate-ping
+
+
+Ping = pozornosť kradne.
+
+👉 Používaj ho iba pri stave, ktorý sa mení
+Nie ako dekoráciu.
+
+Inak:
+
+UI nikdy „neutíchne“
+
+všetko bude pôsobiť urgentne
+
+Odporúčanie:
+
+default = statický bod
+
+ping len pri prechode stavu (napr. danger)
+
+6️⃣ HERO SEKCIa DESIGN LAB-u – ❗️ POZOR NA PREZDOBENIE
+
+Je krásna.
+Ale:
+
+Kombinácia taktickej brutality a digitálnej elegancie
+
+
+To je jediná veta v celom systéme, ktorá znie viac ako marketing než nástroj.
+
+👉 Odporúčam ju:
+
+buď skrátiť
+
+alebo presunúť do dokumentácie, nie UI
+
+DesignLab môže byť poetickejší.
+Produkcia nie.
+
+7️⃣ DOS & DON’TS – ✔️ ZLATÝ ŠTANDARD
+
+Toto je presne ten typ sekcie, ktorú:
+
+si každý vývojár zapamätá
+
+každý nový contributor pochopí
+
+Veľké plus.
+
+8️⃣ ČO TOMU CHÝBA, ABY TO BOL „ZÁKON“
+
+Toto je kľúčové.
+
+❗️ Chýba sekcia: „KEDY NIEČO NEPOUŽIŤ“
+
+Navrhujem pridať:
+
+05. Anti-patterns
+
+kedy NEPOUŽIŤ oranžovú
+
+kedy NEPOUŽIŤ kartu
+
+kedy NEPOUŽIŤ modal
+
+kedy NEPOUŽIŤ animáciu
+
+Toto odlišuje:
+
+pekný dizajn
+
+od nezničiteľného systému
+
+FINÁLNY VERDIKT
+Oblasť	Hodnotenie
+Filozofia	10/10
+Farby	9/10
+Typografia	10/10
+Konzistentnosť	8.5/10
+Produkčná disciplína	8/10
+
+👉 Je to správny dizajnový manuál.
+👉 Je dostatočne silný na to, aby si na ňom staval celé UI.
+👉 Ale ešte nie je úplne nepriestrelný.
