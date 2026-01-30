@@ -15,8 +15,16 @@ import {
   Crown,
   Lock,
   Trophy,
-  BarChart3
+  BarChart3,
+  Weight,
+  Map
 } from "lucide-react";
+
+const getFishDeclension = (count: number): string => {
+  if (count === 1) return "rybu";
+  if (count >= 2 && count <= 4) return "ryby";
+  return "rýb";
+};
 
 import DiaryLayout from "@/components/DiaryLayout";
 import { TacticalIcon } from "@/components/ui/tactical-icon";
@@ -175,26 +183,51 @@ export default function DiaryStats() {
             {/* Sezónny prehľad - 4 karty */}
             <section className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div className="bg-card border border-border/50 p-5 rounded-xl flex flex-col justify-between h-32 hover:border-border transition-colors">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Ulovil si</span>
-                <span className="text-4xl font-mono font-medium text-[#F97316] tracking-tighter">{basicStats.totalCatches}</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Ulovil si</span>
+                  <Fish className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} />
+                </div>
+                <div>
+                  <span className="text-4xl font-mono font-medium text-[#F97316] tracking-tighter">{basicStats.totalCatches}</span>
+                  <span className="text-sm text-muted-foreground ml-1">{getFishDeclension(basicStats.totalCatches)}</span>
+                </div>
               </div>
               
-              <div className="bg-card border border-border/50 p-5 rounded-xl flex flex-col justify-between h-32 hover:border-border transition-colors">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Najväčšia ryba</span>
+              <div 
+                className={`bg-card border border-border/50 p-5 rounded-xl flex flex-col justify-between h-32 transition-colors ${
+                  personalRecords.heaviestCatch ? 'hover:border-amber-500/50 cursor-pointer' : 'hover:border-border'
+                }`}
+                onClick={() => personalRecords.heaviestCatch && setLocation(`/diary/catches/${personalRecords.heaviestCatch.id}`)}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Najväčšia ryba</span>
+                  <Trophy className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} />
+                </div>
                 <div>
-                  <span className="text-4xl font-mono font-medium text-[#F97316] tracking-tighter">{basicStats.biggestCatch.toFixed(1)}</span>
+                  <span className="text-4xl font-mono font-medium text-[#F97316] tracking-tighter">
+                    {personalRecords.heaviestCatch ? parseFloat(personalRecords.heaviestCatch.weight).toFixed(1) : basicStats.biggestCatch.toFixed(1)}
+                  </span>
                   <span className="text-sm text-muted-foreground ml-1">kg</span>
                 </div>
               </div>
 
               <div className="bg-card border border-border/50 p-5 rounded-xl flex flex-col justify-between h-32 hover:border-border transition-colors">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Výpravy</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Výpravy</span>
+                  <Map className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} />
+                </div>
                 <span className="text-4xl font-mono font-medium text-[#F97316] tracking-tighter">{basicStats.totalTrips}</span>
               </div>
 
               <div className="bg-card border border-border/50 p-5 rounded-xl flex flex-col justify-between h-32 hover:border-border transition-colors">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Priemer / Lov</span>
-                <span className="text-4xl font-mono font-medium text-[#F97316] tracking-tighter">{basicStats.successRate.toFixed(1)}</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Priemer / Lov</span>
+                  <Weight className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} />
+                </div>
+                <div>
+                  <span className="text-4xl font-mono font-medium text-[#F97316] tracking-tighter">{basicStats.successRate.toFixed(1)}</span>
+                  <span className="text-sm text-muted-foreground ml-1">kg</span>
+                </div>
               </div>
             </section>
 
