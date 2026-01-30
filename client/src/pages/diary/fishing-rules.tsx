@@ -390,7 +390,7 @@ export default function FishingRulesPage() {
                     )}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        <TacticalIcon icon={Shield} variant={isProtected ? "red" : "neutral"} size="sm" showLabel={false} />
+                        <TacticalIcon icon={Shield} variant={isProtected ? "danger" : "neutral"} size="sm" showLabel={false} />
                         <div>
                           <div className="flex items-center gap-2">
                             <p className="text-sm font-semibold text-foreground tracking-tight" data-testid={`text-season-fish-${index}`}>
@@ -703,20 +703,24 @@ export default function FishingRulesPage() {
     <DiaryLayout>
       <div className="space-y-8">
         {/* Header */}
-        <div className="flex items-center gap-4">
-          <TacticalIcon icon={Scale} variant="active" size="lg" showLabel={false} />
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl md:text-4xl font-black italic text-foreground">
-                Rybársky Poriadok
-              </h1>
-              <Signal variant="blue" />
+        <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <span className="h-px w-16 bg-[#F97316]"></span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#F97316]">Pravidlá</span>
             </div>
-            <p className="text-muted-foreground">
-              Interaktívna databáza rybárskych pravidiel SR 2025
-            </p>
+            <div className="space-y-1">
+              <div className="flex items-center gap-4">
+                <TacticalIcon icon={Scale} variant="orange" size="lg" showLabel={false} />
+                <h1 className="text-4xl md:text-5xl font-black italic tracking-tighter uppercase text-foreground leading-none">Rybársky Poriadok</h1>
+                <Signal variant="blue" />
+              </div>
+              <p className="text-sm font-medium text-muted-foreground italic tracking-tight pl-0.5">
+                Interaktívna databáza rybárskych pravidiel SR 2025
+              </p>
+            </div>
           </div>
-        </div>
+        </header>
 
         {/* Search Input */}
         <div className="relative">
