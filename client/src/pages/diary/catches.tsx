@@ -576,7 +576,7 @@ export default function DiaryCatches() {
                       </Badge>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Bez pripojenia - úlovky sa uložia lokálne s fotkami</p>
+                      <p>Bez pripojenia - úlovky sa uložia lokálne s fotografiami</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -597,7 +597,7 @@ export default function DiaryCatches() {
                       </Badge>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>{pendingCatches.filter(c => c.hasPhoto).length} s fotkami</p>
+                      <p>{pendingCatches.filter(c => c.hasPhoto).length} s fotografiami</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>

@@ -246,7 +246,7 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
     <>
       <div className="text-center mb-6">
         <h3 className="text-2xl font-bold text-foreground mb-2">Nový úlovok</h3>
-        <p className="text-sm text-muted-foreground font-medium">Zadajte detaily úlovku a nahrajte fotku</p>
+        <p className="text-sm text-muted-foreground font-medium">Zadajte detaily úlovku a nahrajte fotografiu</p>
       </div>
       
       <Form {...form}>
@@ -497,7 +497,7 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
                 <div className="relative rounded-lg overflow-hidden border-2 border-green-500 bg-muted">
                   <img 
                     src={photoPreview} 
-                    alt="Náhľad fotky" 
+                    alt="Náhľad fotografie" 
                     className="w-full h-48 object-cover"
                     data-testid="photo-preview"
                   />

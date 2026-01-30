@@ -451,7 +451,7 @@ export default function Landing() {
                   Inteligentný Denník
                 </h3>
                 <p className="text-white/80 text-lg leading-relaxed">
-                  Vytvor si osobný rybársky denník s GPS lokalitami, fotkami úlovkov a pokročilými štatistikami. Sleduj svoj progres, súťaž s priateľmi v Fishing Battle a využívaj predpoveď počasia pre maximálny úspech.
+                  Vytvor si osobný rybársky denník s GPS lokalitami, fotografiami úlovkov a pokročilými štatistikami. Sleduj svoj progres, súťaž s priateľmi v Fishing Battle a využívaj predpoveď počasia pre maximálny úspech.
                 </p>
                 <Link href="/diary">
                   <div className="bg-[#fb923c] px-[10px] py-[17px] rounded-[28px] w-fit min-w-[165px] flex items-center justify-center cursor-pointer hover:bg-[#f97316] transition-colors">
