@@ -4,6 +4,8 @@ import { useUserMode, type UserMode } from "@/contexts/UserModeContext";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import contestioLogo from "@assets/contestio logo_1760283270014.png";
+import contestioLogoDark from "@assets/contestio_logo_black_1766308180088.png";
 import { 
   BookOpen, 
   Fish, 
@@ -102,10 +104,18 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent side="left" className="w-[85vw] max-w-sm p-0 flex flex-col bg-slate-50 dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800">
         <SheetHeader className="p-6 pb-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 flex flex-row items-center justify-between shrink-0">
-          <div>
-            <SheetTitle className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent text-left">
-              Contestio
-            </SheetTitle>
+          <div className="flex flex-col gap-1">
+            <SheetTitle className="sr-only">Menu</SheetTitle>
+            <img 
+              src={contestioLogoDark} 
+              alt="Contestio" 
+              className="h-7 w-auto hidden dark:block" 
+            />
+            <img 
+              src={contestioLogo} 
+              alt="Contestio" 
+              className="h-7 w-auto dark:hidden" 
+            />
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Tvoj rybársky spoločník</p>
           </div>
           <button 
