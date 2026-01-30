@@ -28,6 +28,32 @@ Preferred communication style: Simple, everyday language.
 - **Authentication**: Session-based authentication with Replit Auth.
 - **Design System**: Unified 10-color palette for consistent visualization (`client/src/lib/colors.ts`). Dark mode uses shade 500, Light mode uses shade 600.
 
+### Contestio Obsidian Ember v2.0 Design Manual (January 2025)
+**Philosophy**: Profesionálny rybársky prístroj. Farba = Význam. UI = Ticho.
+
+**Color Tokens:**
+- Dark: bg `#0B1C2F`, surface `#0F172A`, border `#1E293B`, text `#F8FAFC`, accent `#F97316`
+- Light: bg `#F8FAFC`, surface `#FFFFFF`, border `#E2E8F0`, text `#0F172A`, accent `#C2410C`
+
+**Typography Rules:**
+- `font-black italic` (900) → ONLY for H1 Hero headlines
+- `font-bold` (700) → Section headers, card titles
+- `font-medium font-mono` (500) → Data values, numbers, percentages (in Apex Orange #F97316)
+
+**Icon Colors:**
+- Icons use `text-muted-foreground` (gray), NOT orange
+- Apex Orange (#F97316) is reserved for DATA and INTERACTION only
+
+**Border Radius (LOCKED):**
+- Use standard Contestio values: `rounded-xl` (12px), `rounded-lg` (8px)
+- Do NOT use larger values like `rounded-[2.5rem]` or `rounded-3xl` from design manual
+- Reference: `/diary/seasonal-goals` for correct styling
+
+**Forbidden:**
+- No gradients on buttons and cards
+- No pastel or "candy" colors
+- No Black weight (900) for regular text
+
 ## Backend Architecture
 - **Runtime**: Node.js with Express.js.
 - **API Design**: RESTful API with structured error handling.
