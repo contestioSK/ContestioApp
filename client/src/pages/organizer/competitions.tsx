@@ -117,7 +117,7 @@ export default function OrganizerCompetitions() {
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-foreground">Moje súťaže</h1>
             <p className="text-muted-foreground mt-1">
-              Zoznam všetkých vašich súťaží
+              Zoznam všetkých tvojich súťaží
             </p>
           </div>
           {liveCount > 0 && (
@@ -314,14 +314,14 @@ export default function OrganizerCompetitions() {
               <>
                 <h3 className="text-lg font-bold text-foreground mb-2">Žiadne výsledky</h3>
                 <p className="text-muted-foreground">
-                  Žiadne súťaže nevyhovujú vášmu vyhľadávaniu.
+                  Žiadne súťaže nevyhovujú tvojmu vyhľadávaniu.
                 </p>
               </>
             ) : (
               <>
                 <h3 className="text-lg font-bold text-foreground mb-2">Žiadne súťaže</h3>
                 <p className="text-muted-foreground mb-6">
-                  Zatiaľ nemáte žiadne súťaže. Vytvorte svoju prvú súťaž!
+                  Zatiaľ nemáš žiadne súťaže. Vytvor svoju prvú súťaž!
                 </p>
                 <Button 
                   onClick={() => setLocation('/organizer/create')}

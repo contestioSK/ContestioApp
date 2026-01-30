@@ -647,7 +647,7 @@ export default function BattleDetail() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-base">
                       <Award className="w-5 h-5 text-primary" />
-                      Vaše Výsledky
+                      Tvoje výsledky
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -659,7 +659,7 @@ export default function BattleDetail() {
                       if (!userResult) {
                         return (
                           <p className="text-sm text-muted-foreground text-center">
-                            Nezúčastnili ste sa tohto battle
+                            Nezúčastnil si sa tohto battle
                           </p>
                         );
                       }
@@ -679,7 +679,7 @@ export default function BattleDetail() {
                           
                           <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
-                              <span className="text-muted-foreground">Váš výsledok:</span>
+                              <span className="text-muted-foreground">Tvoj výsledok:</span>
                               <span className="font-mono font-medium text-[#F97316]">
                                 {battle?.rules.mode === "most_fish" ? userResult.score.toFixed(0) : userResult.score.toFixed(1)} {battle?.rules.mode === "most_fish" ? "ks" : "kg"}
                               </span>

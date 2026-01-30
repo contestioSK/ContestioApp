@@ -42,7 +42,7 @@ export default function Contact() {
     
     toast({
       title: "Správa odoslaná!",
-      description: "Ďakujeme za vašu správu. Odpovieme vám čo najskôr.",
+      description: "Ďakujeme za tvoju správu. Odpovieme ti čo najskôr.",
     });
     
     form.reset();
@@ -60,7 +60,7 @@ export default function Contact() {
             Kontaktujte nás
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Máte otázky o platforme Contestio? Radi vám pomôžeme s čímkoľvek potrebujete.
+            Máš otázky o platforme Contestio? Radi ti pomôžeme s čímkoľvek potrebuješ.
           </p>
           <div className="w-24 h-1 bg-gradient-to-r from-primary to-primary/60 mx-auto mt-6 rounded-full"></div>
         </div>
@@ -200,7 +200,7 @@ export default function Contact() {
                             <FormLabel>Meno a priezvisko *</FormLabel>
                             <FormControl>
                               <Input 
-                                placeholder="Vaše meno a priezvisko"
+                                placeholder="Tvoje meno a priezvisko"
                                 data-testid="input-name"
                                 {...field} 
                               />
@@ -274,7 +274,7 @@ export default function Contact() {
                           <FormLabel>Správa *</FormLabel>
                           <FormControl>
                             <Textarea 
-                              placeholder="Napíšte nám detaily vašej otázky alebo požiadavky..."
+                              placeholder="Napíš nám detaily tvojej otázky alebo požiadavky..."
                               className="min-h-32"
                               data-testid="textarea-message"
                               {...field} 
@@ -308,7 +308,7 @@ export default function Contact() {
         <div className="mt-16 text-center">
           <div className="bg-muted/30 rounded-2xl p-8 md:p-12">
             <h3 className="text-2xl font-bold text-foreground mb-4">
-              Potrebujete rýchlu pomoc?
+              Potrebuješ rýchlu pomoc?
             </h3>
             <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
               Pre naliehavé otázky alebo technickú podporu počas súťaže nás kontaktujte priamo. 

@@ -37,7 +37,7 @@ export default function VerifyEmailPage() {
       setVerificationStatus("success");
       toast({
         title: "Email overený!",
-        description: "Váš účet bol úspešne aktivovaný. Môžete sa teraz prihlásiť.",
+        description: "Tvoj účet bol úspešne aktivovaný. Môžeš sa teraz prihlásiť.",
       });
     },
     onError: (error: Error) => {
@@ -120,7 +120,7 @@ export default function VerifyEmailPage() {
               <h1 className="text-2xl font-bold text-primary">Contestio</h1>
             </div>
             <CardTitle className="text-2xl font-bold" data-testid="text-verifying-title">
-              Overujeme váš email
+              Overujeme tvoj email
             </CardTitle>
           </CardHeader>
           <CardContent className="text-center space-y-4">
@@ -150,7 +150,7 @@ export default function VerifyEmailPage() {
           </CardHeader>
           <CardContent className="text-center space-y-4">
             <p className="text-muted-foreground">
-              Váš účet bol úspešne aktivovaný. Môžete sa teraz prihlásiť a začať používať Contestio.
+              Tvoj účet bol úspešne aktivovaný. Môžeš sa teraz prihlásiť a začať používať Contestio.
             </p>
             <div className="pt-4">
               <Button asChild className="w-full" data-testid="button-go-to-login">
@@ -180,7 +180,7 @@ export default function VerifyEmailPage() {
           <CardContent className="text-center space-y-4">
             <Alert variant="destructive">
               <AlertDescription>
-                Nepodarilo sa overiť váš email. Overovací kód môže byť neplatný alebo expirovaný.
+                Nepodarilo sa overiť tvoj email. Overovací kód môže byť neplatný alebo expirovaný.
               </AlertDescription>
             </Alert>
             <div className="space-y-2">

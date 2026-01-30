@@ -336,7 +336,7 @@ export default function BattleIndex() {
                   </Badge>
                 </div>
                 <p className="text-sm font-medium text-muted-foreground italic tracking-tight pl-0.5" data-testid="text-battle-description">
-                  Súťažte s kamarátmi v priateľských rybárskych dueloch
+                  Súťaž s kamarátmi v priateľských rybárskych dueloch
                 </p>
               </div>
             </div>
@@ -572,7 +572,7 @@ export default function BattleIndex() {
                         Žiadne nové výzvy.
                       </h3>
                       <p className="text-muted-foreground mb-4 max-w-md mx-auto">
-                        Požiadajte kamarátov, nech vás vyzvú, alebo ich predbehnite a vytvorte súboj sami!
+                        Požiadaj kamarátov, nech ťa vyzvú, alebo ich predbehni a vytvor súboj sám!
                       </p>
                       <Button
                         variant="link"
@@ -580,7 +580,7 @@ export default function BattleIndex() {
                         onClick={() => {
                           toast({
                             title: "Ako funguje vyzývanie?",
-                            description: "Vytvorte nový súboj a pozvite do neho svojich kamarátov. Oni dostanú výzvu a môžu ju prijať alebo odmietnuť.",
+                            description: "Vytvor nový súboj a pozvi do neho svojich kamarátov. Oni dostanú výzvu a môžu ju prijať alebo odmietnuť.",
                           });
                         }}
                         data-testid="link-learn-challenges"

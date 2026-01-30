@@ -28,7 +28,7 @@ export default function Home() {
     if (!isLoading && !isAuthenticated) {
       toast({
         title: "Nepovolený prístup",
-        description: "Ste odhlásený. Prihlasujeme vás znovu...",
+        description: "Si odhlásený. Prihlasujem ťa znovu...",
         variant: "destructive",
       });
       setTimeout(() => {
@@ -47,7 +47,7 @@ export default function Home() {
     if (error && isUnauthorizedError(error)) {
       toast({
         title: "Nepovolený prístup",
-        description: "Ste odhlásený. Prihlasujeme vás znovu...",
+        description: "Si odhlásený. Prihlasujem ťa znovu...",
         variant: "destructive",
       });
       setTimeout(() => {

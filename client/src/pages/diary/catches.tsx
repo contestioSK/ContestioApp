@@ -1559,9 +1559,9 @@ export default function DiaryCatches() {
           <AlertDialog open={!!deletingCatch} onOpenChange={(open) => !open && setDeletingCatch(null)}>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Naozaj chcete zmazať tento úlovok?</AlertDialogTitle>
+                <AlertDialogTitle>Naozaj chceš zmazať tento úlovok?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Táto akcia je nenávratná. Úlovok bude trvalo odstránený z vášeho denníka.
+                  Táto akcia je nenávratná. Úlovok bude trvalo odstránený z tvojho denníka.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>

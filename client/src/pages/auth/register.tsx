@@ -28,7 +28,7 @@ const registerSchema = z.object({
   firstName: z.string().min(1, "Meno je povinné").max(100, "Meno je príliš dlhé"),
   lastName: z.string().min(1, "Priezvisko je povinné").max(100, "Priezvisko je príliš dlhé"),
   role: z.enum(["fisherman", "organizer"], {
-    required_error: "Vyberte typ účtu",
+    required_error: "Vyber typ účtu",
   }),
   isNewsletterSubscribed: z.boolean().optional().default(false),
 });
@@ -97,8 +97,8 @@ export default function RegisterPage() {
           </CardHeader>
           <CardContent className="text-center space-y-4">
             <p className="text-muted-foreground">
-              Poslali sme vám email s odkazom na aktiváciu účtu. 
-              Kliknite na odkaz v emaili a môžete sa prihlásiť.
+              Poslali sme ti email s odkazom na aktiváciu účtu. 
+              Klikni na odkaz v emaili a môžeš sa prihlásiť.
             </p>
             <div className="pt-4">
               <Button asChild className="w-full">
@@ -121,10 +121,10 @@ export default function RegisterPage() {
             <img src={contestioLogo} alt="Contestio" className="h-10" />
           </div>
           <CardTitle className="text-2xl font-bold" data-testid="text-register-title">
-            Vytvorte si účet
+            Vytvor si účet
           </CardTitle>
           <p className="text-muted-foreground">
-            Zaregistrujte sa a začnite používať Contestio
+            Zaregistruj sa a začni používať Contestio
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -173,7 +173,7 @@ export default function RegisterPage() {
                       <FormControl>
                         <Input
                           {...field}
-                          placeholder="Vaše meno"
+                          placeholder="Tvoje meno"
                           disabled={registerMutation.isPending}
                           data-testid="input-first-name"
                         />
@@ -191,7 +191,7 @@ export default function RegisterPage() {
                       <FormControl>
                         <Input
                           {...field}
-                          placeholder="Vaše priezvisko"
+                          placeholder="Tvoje priezvisko"
                           disabled={registerMutation.isPending}
                           data-testid="input-last-name"
                         />
@@ -268,7 +268,7 @@ export default function RegisterPage() {
                     <Select onValueChange={field.onChange} defaultValue={field.value} disabled={registerMutation.isPending}>
                       <FormControl>
                         <SelectTrigger data-testid="select-role">
-                          <SelectValue placeholder="Vyberte typ účtu" />
+                          <SelectValue placeholder="Vyber typ účtu" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -332,10 +332,10 @@ export default function RegisterPage() {
           </Form>
 
           <div className="text-center text-sm">
-            <span className="text-muted-foreground">Už máte účet? </span>
+            <span className="text-muted-foreground">Už máš účet? </span>
             <Button variant="link" className="p-0 h-auto font-semibold" asChild data-testid="link-login">
               <Link href="/auth/login">
-                Prihláste sa
+                Prihlás sa
               </Link>
             </Button>
           </div>

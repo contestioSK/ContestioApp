@@ -79,7 +79,7 @@ export default function Favorites() {
             <h1 className="text-3xl font-bold text-foreground">Obľúbené</h1>
           </div>
           <p className="text-muted-foreground">
-            Vaše obľúbené súťaže a tímy na jednom mieste
+            Tvoje obľúbené súťaže a tímy na jednom mieste
           </p>
         </div>
 
@@ -89,10 +89,10 @@ export default function Favorites() {
             <CardContent className="py-12 text-center">
               <Heart className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
               <h2 className="text-xl font-semibold text-foreground mb-2">
-                Zatiaľ nemáte žiadne obľúbené
+                Zatiaľ nemáš žiadne obľúbené
               </h2>
               <p className="text-muted-foreground mb-6">
-                Pridajte si obľúbené súťaže a tímy, aby ste ich mali vždy na dosah
+                Pridaj si obľúbené súťaže a tímy, aby si ich mal vždy na dosah
               </p>
               <Link href="/">
                 <Button>

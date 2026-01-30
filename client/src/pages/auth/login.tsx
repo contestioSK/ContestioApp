@@ -62,7 +62,7 @@ export default function LoginPage() {
       if (error.message.includes("401")) {
         errorMessage = "Nesprávny email alebo heslo.";
       } else if (error.message.includes("403")) {
-        errorMessage = "Váš účet nie je aktivovaný. Skontrolujte svoj email.";
+        errorMessage = "Tvoj účet nie je aktivovaný. Skontroluj svoj email.";
       }
       
       toast({
@@ -92,7 +92,7 @@ export default function LoginPage() {
             Prihlásenie
           </CardTitle>
           <p className="text-muted-foreground">
-            Prihláste sa do svojho účtu
+            Prihlás sa do svojho účtu
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -151,7 +151,7 @@ export default function LoginPage() {
                         <Input
                           {...field}
                           type={showPassword ? "text" : "password"}
-                          placeholder="Vaše heslo"
+                          placeholder="Tvoje heslo"
                           disabled={loginMutation.isPending}
                           data-testid="input-password"
                         />
@@ -199,15 +199,15 @@ export default function LoginPage() {
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              Ak sa nemôžete prihlásiť, skontrolujte si email a aktivujte svoj účet.
+              Ak sa nemôžeš prihlásiť, skontroluj si email a aktivuj svoj účet.
             </AlertDescription>
           </Alert>
 
           <div className="text-center text-sm">
-            <span className="text-muted-foreground">Nemáte ešte účet? </span>
+            <span className="text-muted-foreground">Nemáš ešte účet? </span>
             <Button variant="link" className="p-0 h-auto font-semibold" asChild data-testid="link-register">
               <Link href="/auth/register">
-                Zaregistrujte sa
+                Zaregistruj sa
               </Link>
             </Button>
           </div>

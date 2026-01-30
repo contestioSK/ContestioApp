@@ -24,7 +24,7 @@ const navigationItems = [
     icon: Trophy,
     label: "Moje súťaže",
     href: "/organizer/competitions",
-    description: "Zoznam vašich súťaží"
+    description: "Zoznam tvojich súťaží"
   },
   {
     icon: Plus,

@@ -87,7 +87,7 @@ const PLANS = [
 ];
 
 const STEPS = [
-  { id: 1, title: "Výber balíka", icon: CreditCard, description: "Vyberte si plán" },
+  { id: 1, title: "Výber balíka", icon: CreditCard, description: "Vyber si plán" },
   { id: 2, title: "Základné údaje", icon: FileText, description: "Názov, miesto a dátumy" },
   { id: 3, title: "Pravidlá", icon: Settings, description: "Bodovanie a nastavenia" },
   { id: 4, title: "Sektory", icon: MapPin, description: "Rozdelenie na sektory" },
@@ -342,8 +342,8 @@ export default function CreateCompetition() {
     if (currentStep === 1) {
       if (!selectedPlan) {
         toast({
-          title: "Vyberte balík",
-          description: "Pre pokračovanie musíte vybrať cenový balík.",
+          title: "Vyber balík",
+          description: "Pre pokračovanie musíš vybrať cenový balík.",
           variant: "destructive",
         });
         return;
@@ -494,7 +494,7 @@ export default function CreateCompetition() {
         <Card className="max-w-md w-full">
           <CardHeader className="text-center">
             <CardTitle>Prihlásenie potrebné</CardTitle>
-            <CardDescription>Pre vytvorenie súťaže sa musíte prihlásiť.</CardDescription>
+            <CardDescription>Pre vytvorenie súťaže sa musíš prihlásiť.</CardDescription>
           </CardHeader>
           <CardContent>
             <Button onClick={() => setLocation('/auth/login')} className="w-full">
@@ -527,8 +527,8 @@ export default function CreateCompetition() {
           </h1>
           <p className="text-muted-foreground mt-2">
             {editId 
-              ? 'Dokončite nastavenie vašej rozpracovanej súťaže.' 
-              : 'Vyplňte údaje o súťaži. Všetko môžete kedykoľvek upraviť.'
+              ? 'Dokonči nastavenie svojej rozpracovanej súťaže.' 
+              : 'Vyplň údaje o súťaži. Všetko môžeš kedykoľvek upraviť.'
             }
           </p>
         </div>
@@ -577,10 +577,10 @@ export default function CreateCompetition() {
                   <div className="space-y-6">
                     <div className="flex items-center gap-2 mb-4">
                       <CreditCard className="w-5 h-5 text-muted-foreground" strokeWidth={1.75} />
-                      <h2 className="text-lg font-bold">Vyberte cenový balík</h2>
+                      <h2 className="text-lg font-bold">Vyber cenový balík</h2>
                     </div>
                     <p className="text-muted-foreground mb-6">
-                      Výber balíka určuje limity a funkcie pre vašu súťaž. Platba bude až na konci.
+                      Výber balíka určuje limity a funkcie pre tvoju súťaž. Platba bude až na konci.
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -690,7 +690,7 @@ export default function CreateCompetition() {
                               <DateTimePicker
                                 value={field.value}
                                 onChange={field.onChange}
-                                placeholder="Vyberte dátum a čas začiatku"
+                                placeholder="Vyber dátum a čas začiatku"
                                 data-testid="input-start-date"
                               />
                             </FormControl>
@@ -709,7 +709,7 @@ export default function CreateCompetition() {
                               <DateTimePicker
                                 value={field.value}
                                 onChange={field.onChange}
-                                placeholder="Vyberte dátum a čas konca"
+                                placeholder="Vyber dátum a čas konca"
                                 data-testid="input-end-date"
                               />
                             </FormControl>
@@ -809,7 +809,7 @@ export default function CreateCompetition() {
                             <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl>
                                 <SelectTrigger data-testid="select-scoring-type">
-                                  <SelectValue placeholder="Vyberte typ" />
+                                  <SelectValue placeholder="Vyber typ" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
@@ -855,7 +855,7 @@ export default function CreateCompetition() {
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                               <SelectTrigger data-testid="select-result-blocking">
-                                <SelectValue placeholder="Vyberte možnosť" />
+                                <SelectValue placeholder="Vyber možnosť" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -1084,7 +1084,7 @@ export default function CreateCompetition() {
                     </div>
 
                     <p className="text-muted-foreground">
-                      Vyberte doplnkové kategórie, ktoré chcete sledovať počas súťaže.
+                      Vyber doplnkové kategórie, ktoré chceš sledovať počas súťaže.
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1143,8 +1143,8 @@ export default function CreateCompetition() {
                             Ďalší krok: Platba
                           </h4>
                           <p className="text-sm text-green-700 dark:text-green-300 mt-1">
-                            Po kliknutí na "Pokračovať" budete presmerovaní na platobnú stránku 
-                            kde dokončíte registráciu súťaže.
+                            Po kliknutí na "Pokračovať" budeš presmerovaný na platobnú stránku 
+                            kde dokončíš registráciu súťaže.
                           </p>
                         </div>
                       </div>

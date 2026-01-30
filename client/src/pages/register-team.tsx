@@ -197,7 +197,7 @@ export default function RegisterTeam() {
 
       toast({
         title: "Tím bol úspešne zaregistrovaný!",
-        description: "Registrácia vášho tímu čaká na schválenie organizátorom.",
+        description: "Registrácia tvojho tímu čaká na schválenie organizátorom.",
       });
       form.reset();
       setMemberPhotos({});
@@ -232,7 +232,7 @@ export default function RegisterTeam() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">Zaregistrovať tím</h1>
           <p className="text-muted-foreground">
-            Vytvorte svoj tím a zaregistrujte sa do rybárskej súťaže
+            Vytvor svoj tím a zaregistruj sa do rybárskej súťaže
           </p>
         </div>
 
@@ -244,10 +244,10 @@ export default function RegisterTeam() {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
                   <p className="font-medium text-amber-800 dark:text-amber-200">
-                    Pre registráciu tímu sa musíte prihlásiť
+                    Pre registráciu tímu sa musíš prihlásiť
                   </p>
                   <p className="text-sm text-amber-600 dark:text-amber-400">
-                    Ako kapitán budete automaticky dostávať notifikácie o súťaži
+                    Ako kapitán budeš automaticky dostávať notifikácie o súťaži
                   </p>
                 </div>
                 <Link href="/auth/login">
@@ -272,7 +272,7 @@ export default function RegisterTeam() {
                 </span>
                 <span className="text-sm text-green-600 dark:text-green-400 flex items-center gap-1">
                   <Bell className="w-3 h-3" />
-                  Budete dostávať notifikácie
+                  Budeš dostávať notifikácie
                 </span>
               </div>
             </AlertDescription>
@@ -286,7 +286,7 @@ export default function RegisterTeam() {
               <span>Informácie o tíme</span>
             </CardTitle>
             <CardDescription>
-              Vyplňte základné informácie o vašom tíme a členoch
+              Vyplň základné informácie o tvojom tíme a členoch
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -302,7 +302,7 @@ export default function RegisterTeam() {
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger data-testid="select-competition">
-                            <SelectValue placeholder="Vyberte súťaž" />
+                            <SelectValue placeholder="Vyber súťaž" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -332,7 +332,7 @@ export default function RegisterTeam() {
                     <FormItem>
                       <FormLabel>Názov tímu</FormLabel>
                       <FormControl>
-                        <Input placeholder="Zadajte názov vášho tímu" {...field} data-testid="input-team-name" />
+                        <Input placeholder="Napr. Rybári z Liptova" {...field} data-testid="input-team-name" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -347,7 +347,7 @@ export default function RegisterTeam() {
                     <FormItem>
                       <FormLabel>Popis tímu (voliteľné)</FormLabel>
                       <FormControl>
-                        <Textarea placeholder="Krátky popis vášho tímu" {...field} />
+                        <Textarea placeholder="Krátky popis tímu" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -367,7 +367,7 @@ export default function RegisterTeam() {
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger data-testid="select-team-country">
-                            <SelectValue placeholder="Vyberte krajinu" />
+                            <SelectValue placeholder="Vyber krajinu" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent className="max-h-60">
@@ -519,7 +519,7 @@ export default function RegisterTeam() {
                                         field.onChange(name);
                                         form.setValue(`members.${index}.userId`, userId || null);
                                       }}
-                                      placeholder="Začnite písať meno..."
+                                      placeholder="Začni písať meno..."
                                       data-testid={`input-member-name-${index}`}
                                     />
                                   )}

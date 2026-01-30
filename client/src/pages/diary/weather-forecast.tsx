@@ -251,7 +251,7 @@ export default function WeatherForecast() {
 
     if (!navigator.geolocation) {
       if (!silent) {
-        setError("Váš prehliadač nepodporuje geolokáciu");
+        setError("Tvoj prehliadač nepodporuje geolokáciu");
         setLoading(false);
       }
       return;
@@ -1215,7 +1215,7 @@ export default function WeatherForecast() {
               <div className="flex justify-center mb-4">
                 <TacticalIcon icon={MapPin} variant="neutral" size="lg" showLabel={false} />
               </div>
-              <CardTitle className="text-xl">Začnite plánovať svoju rybačku</CardTitle>
+              <CardTitle className="text-xl">Začni plánovať svoju rybačku</CardTitle>
               <CardDescription className="text-base mt-2">
                 Zadajte lokalitu do vyhľadávacieho poľa vyššie alebo použijte tlačidlo "Moja poloha" pre automatickú detekciu a získajte presnú predpoveď počasia.
               </CardDescription>

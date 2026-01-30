@@ -87,7 +87,7 @@ export default function RegisterCompetition() {
 
       toast({
         title: "Registrácia úspešne vytvorená!",
-        description: "Teraz môžete pokračovať v nastavení súťaže.",
+        description: "Teraz môžeš pokračovať v nastavení súťaže.",
       });
       
       // Invalidate organizer competitions cache so new competition appears in list
@@ -123,7 +123,7 @@ export default function RegisterCompetition() {
           
           <h1 className="text-3xl font-bold text-foreground">Rýchla registrácia súťaže</h1>
           <p className="text-muted-foreground mt-2">
-            Vyplňte základné údaje za 60 sekúnd. Detaily môžete nastaviť neskôr.
+            Vyplň základné údaje za 60 sekúnd. Detaily môžeš nastaviť neskôr.
           </p>
         </div>
 
@@ -315,7 +315,7 @@ export default function RegisterCompetition() {
                         <FormItem>
                           <FormLabel>Meno kontaktnej osoby *</FormLabel>
                           <FormControl>
-                            <Input placeholder="Vaše meno" {...field} data-testid="input-contact-name" />
+                            <Input placeholder="Tvoje meno" {...field} data-testid="input-contact-name" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

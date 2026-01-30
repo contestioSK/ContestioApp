@@ -118,7 +118,7 @@ export default function OrganizerDashboard() {
             </div>
             <CardTitle>Prihlásenie potrebné</CardTitle>
             <CardDescription>
-              Pre prístup k organizátorskému panelu sa musíte prihlásiť.
+              Pre prístup k organizátorskému panelu sa musíš prihlásiť.
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
@@ -241,9 +241,9 @@ export default function OrganizerDashboard() {
             <div className="w-20 h-20 rounded-2xl bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center mx-auto mb-4 border border-orange-200 dark:border-orange-800/30">
               <TacticalIconInline icon={Trophy} variant="amber" size="lg" />
             </div>
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Vytvorte svoju prvú súťaž</h2>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Vytvor svoju prvú súťaž</h2>
             <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
-              Začnite organizovať rybárske súťaže a sledujte výsledky v reálnom čase.
+              Začni organizovať rybárske súťaže a sleduj výsledky v reálnom čase.
             </p>
             <Button 
               className="bg-orange-500 hover:bg-orange-600 text-white shadow-sm"
@@ -343,7 +343,7 @@ export default function OrganizerDashboard() {
       {/* Header for Recent Competitions */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <h2 className="text-xl font-bold text-foreground">Vaše súťaže</h2>
+          <h2 className="text-xl font-bold text-foreground">Tvoje súťaže</h2>
           {liveCompetitions.length > 0 && (
             <Badge className="bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20">
               {liveCompetitions.length} aktívna
@@ -524,7 +524,7 @@ export default function OrganizerDashboard() {
             </div>
             <h3 className="text-lg font-bold text-foreground mb-2">Žiadne súťaže</h3>
             <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
-              Zatiaľ nemáte žiadne súťaže. Vytvorte svoju prvú súťaž a začnite organizovať!
+              Zatiaľ nemáš žiadne súťaže. Vytvor svoju prvú súťaž a začni organizovať!
             </p>
             <Button 
               onClick={() => setLocation('/organizer/create')}

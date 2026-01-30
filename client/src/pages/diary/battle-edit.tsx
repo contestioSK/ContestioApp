@@ -205,7 +205,7 @@ export default function BattleEdit() {
               </h1>
             </div>
             <p className="text-muted-foreground mt-2">
-              Upravte detaily vášho fishing battle
+              Uprav detaily svojho fishing battle
             </p>
           </div>
 
@@ -240,7 +240,7 @@ export default function BattleEdit() {
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger data-testid="select-mode">
-                              <SelectValue placeholder="Vyberte herný mód" />
+                              <SelectValue placeholder="Vyber herný mód" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -279,7 +279,7 @@ export default function BattleEdit() {
                                   className="pl-3 text-left font-normal"
                                   data-testid="button-start-date"
                                 >
-                                  {field.value ? format(field.value, "PPP", { locale: sk }) : "Vyberte dátum"}
+                                  {field.value ? format(field.value, "PPP", { locale: sk }) : "Vyber dátum"}
                                   <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                 </Button>
                               </FormControl>
@@ -312,7 +312,7 @@ export default function BattleEdit() {
                                   className="pl-3 text-left font-normal"
                                   data-testid="button-end-date"
                                 >
-                                  {field.value ? format(field.value, "PPP", { locale: sk }) : "Vyberte dátum"}
+                                  {field.value ? format(field.value, "PPP", { locale: sk }) : "Vyber dátum"}
                                   <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                 </Button>
                               </FormControl>

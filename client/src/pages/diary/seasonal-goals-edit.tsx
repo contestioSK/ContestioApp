@@ -74,9 +74,9 @@ const goalTypeConfig = {
 
 // Form Schema
 const editGoalSchema = z.object({
-  seasonId: z.string().min(1, "Musíte vybrať sezónu"),
+  seasonId: z.string().min(1, "Musíš vybrať sezónu"),
   goalType: z.enum(['total_weight', 'fish_count', 'trips_count', 'biggest_fish', 'species_variety'], {
-    required_error: "Musíte vybrať typ cieľa"
+    required_error: "Musíš vybrať typ cieľa"
   }),
   targetValue: z.string().min(1, "Cieľová hodnota je povinná").refine((val) => {
     const num = parseFloat(val);
@@ -190,7 +190,7 @@ export default function SeasonalGoalsEdit() {
       queryClient.invalidateQueries({ queryKey: ["/api/seasonal-goals"] });
       toast({
         title: "Cieľ aktualizovaný!",
-        description: "Váš sezónny cieľ bol úspešne aktualizovaný.",
+        description: "Tvoj sezónny cieľ bol úspešne aktualizovaný.",
       });
       setLocation("/diary/seasonal-goals");
     },
@@ -263,7 +263,7 @@ export default function SeasonalGoalsEdit() {
             </div>
             <h1 className="text-3xl font-bold text-foreground">Upraviť cieľ</h1>
             <p className="text-muted-foreground">
-              Upravte detaily vášho sezónneho cieľa
+              Uprav detaily svojho sezónneho cieľa
             </p>
           </div>
 
@@ -296,7 +296,7 @@ export default function SeasonalGoalsEdit() {
             <CardHeader>
               <CardTitle>Detaily cieľa</CardTitle>
               <CardDescription>
-                Upravte informácie o vašom sezónnom cieli
+                Uprav informácie o svojom sezónnom cieli
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -312,7 +312,7 @@ export default function SeasonalGoalsEdit() {
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger data-testid="select-season">
-                              <SelectValue placeholder="Vyberte sezónu" />
+                              <SelectValue placeholder="Vyber sezónu" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -343,7 +343,7 @@ export default function SeasonalGoalsEdit() {
                       <FormItem>
                         <FormLabel>Typ cieľa</FormLabel>
                         <FormDescription>
-                          Vyberte typ cieľa, ktorý chcete sledovať
+                          Vyber typ cieľa, ktorý chceš sledovať
                         </FormDescription>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                           {Object.entries(goalTypeConfig).map(([key, config]) => {
@@ -409,7 +409,7 @@ export default function SeasonalGoalsEdit() {
                           )}
                         </div>
                         <FormDescription>
-                          {selectedConfig ? `Cieľová hodnota pre ${selectedConfig.label.toLowerCase()}` : "Vyberte typ cieľa"}
+                          {selectedConfig ? `Cieľová hodnota pre ${selectedConfig.label.toLowerCase()}` : "Vyber typ cieľa"}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -431,7 +431,7 @@ export default function SeasonalGoalsEdit() {
                           />
                         </FormControl>
                         <FormDescription>
-                          Názov sa automaticky vygeneruje alebo si ho môžete upraviť
+                          Názov sa automaticky vygeneruje alebo si ho môžeš upraviť
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -476,7 +476,7 @@ export default function SeasonalGoalsEdit() {
                             Hlavný cieľ sezóny
                           </FormLabel>
                           <FormDescription>
-                            Označte tento cieľ ako váš hlavný cieľ pre sezónu. Bude zvýraznený a sledovaný s vyššou prioritou.
+                            Označ tento cieľ ako tvoj hlavný cieľ pre sezónu. Bude zvýraznený a sledovaný s vyššou prioritou.
                           </FormDescription>
                         </div>
                       </FormItem>
