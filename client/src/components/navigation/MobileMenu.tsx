@@ -107,12 +107,12 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
           <div className="flex flex-col gap-1">
             <SheetTitle className="sr-only">Menu</SheetTitle>
             <img 
-              src={contestioLogoDark} 
+              src={contestioLogo} 
               alt="Contestio" 
               className="h-7 w-auto hidden dark:block" 
             />
             <img 
-              src={contestioLogo} 
+              src={contestioLogoDark} 
               alt="Contestio" 
               className="h-7 w-auto dark:hidden" 
             />
