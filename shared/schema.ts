@@ -485,6 +485,22 @@ export const battleInvitations = pgTable("battle_invitations", {
   index("battle_invitations_invited_user_idx").on(table.invitedUserId, table.status),
 ]);
 
+// Diary catch shares table (for public sharing of catches)
+export const diaryCatchShares = pgTable("diary_catch_shares", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  shareToken: varchar("share_token", { length: 32 }).notNull().unique(),
+  catchId: uuid("catch_id").notNull().references(() => diaryCatches.id, { onDelete: "cascade" }),
+  ownerUserId: varchar("owner_user_id").notNull().references(() => users.id),
+  privacySettings: jsonb("privacy_settings").$type<{
+    hideGps: boolean;
+    hideBait: boolean;
+    hideSpot: boolean;
+  }>().notNull(),
+  viewCount: integer("view_count").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  expiresAt: timestamp("expires_at"), // Optional expiration
+});
+
 // Friendships table (for managing friend relationships)
 export const friendships = pgTable("friendships", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
