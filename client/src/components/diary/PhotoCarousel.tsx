@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight, Fish, Loader2, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -21,6 +21,42 @@ interface PhotoCarouselProps {
 export function PhotoCarousel({ photos, onPhotoClick }: PhotoCarouselProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false });
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const isDraggingRef = useRef(false);
+
+  // Track user-initiated drag (not arrow navigation)
+  const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
+  
+  const handlePointerDown = useCallback((e: React.PointerEvent) => {
+    pointerStartRef.current = { x: e.clientX, y: e.clientY };
+    isDraggingRef.current = false;
+  }, []);
+  
+  const handlePointerMove = useCallback((e: React.PointerEvent) => {
+    if (pointerStartRef.current) {
+      const dx = Math.abs(e.clientX - pointerStartRef.current.x);
+      const dy = Math.abs(e.clientY - pointerStartRef.current.y);
+      // Mark as dragging if moved more than 10px
+      if (dx > 10 || dy > 10) {
+        isDraggingRef.current = true;
+      }
+    }
+  }, []);
+  
+  const handlePointerCancel = useCallback(() => {
+    pointerStartRef.current = null;
+    isDraggingRef.current = false;
+  }, []);
+  
+  const handleClick = useCallback((e: React.MouseEvent, photoUrl: string, index: number, status: string | null) => {
+    e.stopPropagation();
+    // Only open lightbox if it was a click, not a drag
+    if (!isDraggingRef.current && status !== 'processing') {
+      onPhotoClick(photoUrl, index);
+    }
+    // Reset for next interaction
+    pointerStartRef.current = null;
+    isDraggingRef.current = false;
+  }, [onPhotoClick]);
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
@@ -89,12 +125,11 @@ export function PhotoCarousel({ photos, onPhotoClick }: PhotoCarouselProps) {
                     src={photoUrl} 
                     alt={`Fotografia úlovku ${index + 1}`}
                     className="w-full h-48 sm:h-64 object-cover cursor-pointer hover:opacity-80 transition-opacity"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (status !== 'processing') {
-                        onPhotoClick(photoUrl, index);
-                      }
-                    }}
+                    onPointerDown={handlePointerDown}
+                    onPointerMove={handlePointerMove}
+                    onPointerCancel={handlePointerCancel}
+                    onPointerLeave={handlePointerCancel}
+                    onClick={(e) => handleClick(e, photoUrl, index, status)}
                     draggable={false}
                     data-testid={`catch-photo-${index}`}
                   />
