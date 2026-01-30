@@ -446,7 +446,7 @@ export default function RegisterTeam() {
                           <Users className="w-8 h-8 text-primary" />
                         </div>
                         <p className="text-sm font-medium text-foreground mb-1">
-                          Pridať logo alebo fotku tímu
+                          Pridať logo alebo fotografiu tímu
                         </p>
                         <p className="text-xs text-muted-foreground text-center">
                           Kliknite pre výber súboru
@@ -626,7 +626,7 @@ export default function RegisterTeam() {
                                 />
                                 <Camera className="w-8 h-8 text-muted-foreground mb-2" />
                                 <p className="text-sm text-muted-foreground text-center">
-                                  Kliknite pre výber fotky
+                                  Kliknite pre výber fotografie
                                   <br />
                                   <span className="text-xs">JPG, PNG, GIF (max 5MB)</span>
                                 </p>

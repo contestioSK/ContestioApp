@@ -674,7 +674,7 @@ export default function TripDetail() {
                     }}
                     role="button"
                     tabIndex={0}
-                    aria-label="Zobraziť fotku na celú obrazovku"
+                    aria-label="Zobraziť fotografiu na celú obrazovku"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
                         const photoUrl = typeof selectedCatch.photos![0] === 'string' 
@@ -970,7 +970,7 @@ export default function TripDetail() {
           onClick={() => setLightboxPhoto(null)}
           role="dialog"
           aria-modal="true"
-          aria-label="Zobrazenie fotky na celú obrazovku"
+          aria-label="Zobrazenie fotografie na celú obrazovku"
           data-testid="lightbox-overlay"
         >
           {/* Close button */}

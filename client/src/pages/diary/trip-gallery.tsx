@@ -153,7 +153,7 @@ export default function TripGallery() {
                     <Grid3x3 className="h-5 w-5 md:h-6 md:w-6 text-muted-foreground" strokeWidth={1.75} />
                     <div>
                       <h1 className="text-lg md:text-2xl font-bold text-foreground">
-                        Galéria fotiek
+                        Galéria fotografií
                       </h1>
                       <p className="text-xs md:text-sm text-muted-foreground hidden md:block">
                         {trip?.name}
@@ -162,7 +162,7 @@ export default function TripGallery() {
                   </div>
                 </div>
                 <Badge variant="secondary" className="text-xs">
-                  {filteredPhotos.length} fotiek
+                  {filteredPhotos.length} fotografií
                 </Badge>
               </div>
               
@@ -225,7 +225,7 @@ export default function TripGallery() {
               <SheetHeader className="pb-4">
                 <SheetTitle className="flex items-center gap-2">
                   <SlidersHorizontal className="w-5 h-5" />
-                  Filtrovať fotky
+                  Filtrovať fotografie
                 </SheetTitle>
               </SheetHeader>
               <div className="space-y-4">
@@ -251,7 +251,7 @@ export default function TripGallery() {
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Calendar className="w-4 h-4" />
                   <span>
-                    {catches.length} úlovkov • {allPhotos.length} celkovo fotiek
+                    {catches.length} úlovkov • {allPhotos.length} celkovo fotografií
                   </span>
                 </div>
                 
@@ -285,13 +285,13 @@ export default function TripGallery() {
                 </div>
                 <h3 className="text-lg font-semibold text-foreground mb-2">
                   {searchTerm || filterFishType !== "all" 
-                    ? "Žiadne fotky nezodpovedajú filtrom"
-                    : "Zatiaľ žiadne fotky"}
+                    ? "Žiadne fotografie nezodpovedajú filtrom"
+                    : "Zatiaľ žiadne fotografie"}
                 </h3>
                 <p className="text-muted-foreground text-sm max-w-sm mx-auto">
                   {searchTerm || filterFishType !== "all" 
                     ? "Skúste upraviť vyhľadávanie alebo zrušiť filtre."
-                    : "Pridajte úlovky s fotkami do tejto výpravy a zobrazia sa tu."}
+                    : "Pridajte úlovky s fotografiami do tejto výpravy a zobrazia sa tu."}
                 </p>
               </CardContent>
             </Card>
@@ -359,7 +359,7 @@ export default function TripGallery() {
                       handlePrevPhoto();
                     }}
                     className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 z-20 text-white hover:bg-white/20 h-14 w-14 rounded-full bg-black/30"
-                    aria-label="Predchádzajúca fotka"
+                    aria-label="Predchádzajúca fotografia"
                     data-testid="button-prev-photo"
                   >
                     <ChevronLeft className="h-8 w-8" />
@@ -372,7 +372,7 @@ export default function TripGallery() {
                       handleNextPhoto();
                     }}
                     className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 z-20 text-white hover:bg-white/20 h-14 w-14 rounded-full bg-black/30"
-                    aria-label="Nasledujúca fotka"
+                    aria-label="Nasledujúca fotografia"
                     data-testid="button-next-photo"
                   >
                     <ChevronRight className="h-8 w-8" />
@@ -399,7 +399,7 @@ export default function TripGallery() {
                       handlePrevPhoto();
                     }}
                     className="text-white hover:bg-white/20 h-14 w-14 rounded-full bg-black/50"
-                    aria-label="Predchádzajúca fotka"
+                    aria-label="Predchádzajúca fotografia"
                     data-testid="button-prev-photo-mobile"
                   >
                     <ChevronLeft className="h-8 w-8" />
@@ -412,7 +412,7 @@ export default function TripGallery() {
                       handleNextPhoto();
                     }}
                     className="text-white hover:bg-white/20 h-14 w-14 rounded-full bg-black/50"
-                    aria-label="Nasledujúca fotka"
+                    aria-label="Nasledujúca fotografia"
                     data-testid="button-next-photo-mobile"
                   >
                     <ChevronRight className="h-8 w-8" />

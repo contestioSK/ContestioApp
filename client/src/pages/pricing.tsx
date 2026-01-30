@@ -180,7 +180,7 @@ export default function Pricing() {
     features: [
       "✅ Neobmedzené výpravy (posledné 3 prístupné)",
       "✅ Kapacita 50 úlovkov",
-      "✅ 1 fotka na úlovok",
+      "✅ 1 fotografia na úlovok",
       "✅ Prijímanie výziev v Battle"
     ],
     missingFeatures: [
@@ -188,7 +188,7 @@ export default function Pricing() {
       "❌ Vytváranie vlastných Súbojov",
       "❌ Predpoveď počasia a aktivity",
       "❌ Neobmedzená história výprav",
-      "❌ Neobmedzené fotky k úlovkom"
+      "❌ Neobmedzené fotografie k úlovkom"
     ]
   };
 
@@ -206,7 +206,7 @@ export default function Pricing() {
     features: [
       "✅ **Neobmedzené výpravy**",
       "✅ **Neobmedzené úlovky**",
-      "📸 **Neobmedzené fotky k úlovkom**",
+      "📸 **Neobmedzené fotografie k úlovkom**",
       "📊 Pokročilé štatistiky a grafy",
       "🎯 Sezónne ciele s progress tracking",
       "⚔️ Fishing Battle (súťaž s priateľmi)",

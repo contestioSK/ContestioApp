@@ -227,7 +227,7 @@ export default function CatchTimeline({ catches, isLoading, competitionId }: Cat
                 <div className="relative">
                   <img 
                     src={selectedPhoto.url}
-                    alt="Zväčšená fotka úlovku"
+                    alt="Zväčšená fotografia úlovku"
                     className="w-full h-auto max-h-[70vh] object-contain"
                   />
                 </div>

@@ -51,7 +51,7 @@ export default function AboutUs() {
             <ul className="space-y-1.5 text-sm text-muted-foreground mb-5">
               <li className="flex items-start">
                 <span className="text-primary mr-2 mt-0.5">•</span>
-                <span>zapisovať si úlovky s fotkami, nástrahami a poznámkami,</span>
+                <span>zapisovať si úlovky s fotografiami, nástrahami a poznámkami,</span>
               </li>
               <li className="flex items-start">
                 <span className="text-primary mr-2 mt-0.5">•</span>
@@ -74,13 +74,13 @@ export default function AboutUs() {
               <div className="bg-muted/50 rounded-lg p-4 border border-border">
                 <h3 className="font-semibold text-foreground mb-1.5 text-sm">Verzia FREE</h3>
                 <p className="text-xs text-muted-foreground">
-                  Neobmedzené výpravy (posledné 3 prístupné), 50 úlovkov, 1 fotka na úlovok, prijímanie battle výziev.
+                  Neobmedzené výpravy (posledné 3 prístupné), 50 úlovkov, 1 fotografia na úlovok, prijímanie battle výziev.
                 </p>
               </div>
               <div className="bg-muted/50 rounded-lg p-4 border border-primary">
                 <h3 className="font-semibold text-primary mb-1.5 text-sm">Verzia PREMIUM</h3>
                 <p className="text-xs text-muted-foreground">
-                  Neobmedzené výpravy, úlovky a fotky, pokročilé štatistiky a grafy, ukladanie GPS lokalít, predpoveď počasia, offline režim so synchronizáciou, vytváranie battle súbojov.
+                  Neobmedzené výpravy, úlovky a fotografie, pokročilé štatistiky a grafy, ukladanie GPS lokalít, predpoveď počasia, offline režim so synchronizáciou, vytváranie battle súbojov.
                 </p>
               </div>
             </div>

@@ -165,7 +165,7 @@ export function PhotoCarousel({ photos, onPhotoClick }: PhotoCarouselProps) {
           <button
             onClick={scrollPrev}
             className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-black/50 text-white rounded-full p-3 hover:bg-black/70 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-            aria-label="Predchádzajúca fotka"
+            aria-label="Predchádzajúca fotografia"
             data-testid="button-prev-photo"
           >
             <ChevronLeft className="w-5 h-5" />
@@ -173,7 +173,7 @@ export function PhotoCarousel({ photos, onPhotoClick }: PhotoCarouselProps) {
           <button
             onClick={scrollNext}
             className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-black/50 text-white rounded-full p-3 hover:bg-black/70 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-            aria-label="Ďalšia fotka"
+            aria-label="Ďalšia fotografia"
             data-testid="button-next-photo"
           >
             <ChevronRight className="w-5 h-5" />
@@ -188,7 +188,7 @@ export function PhotoCarousel({ photos, onPhotoClick }: PhotoCarouselProps) {
               key={index}
               onClick={() => scrollTo(index)}
               className="min-w-[44px] min-h-[44px] flex items-center justify-center"
-              aria-label={`Zobraziť fotku ${index + 1}`}
+              aria-label={`Zobraziť fotografiu ${index + 1}`}
               data-testid={`dot-${index}`}
             >
               <span className={cn(
