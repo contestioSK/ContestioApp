@@ -109,6 +109,7 @@ const catchFormSchema = z.object({
     .optional(),
   fishType: z.string().min(1, "Typ ryby je povinný"),
   bait: z.string().optional(),
+  nickname: z.string().max(40, "Maximálne 40 znakov").optional(),
   notes: z.string().optional(),
   spot: z.string().optional(),
   verified: z.boolean().default(false),
@@ -261,6 +262,7 @@ export default function CatchFormDialog({
       weight: "",
       fishType: getDefaultFishType(),
       bait: "",
+      nickname: "",
       notes: "",
       spot: "",
       verified: false,
@@ -294,6 +296,7 @@ export default function CatchFormDialog({
         lengthCm: editingCatch.lengthCm || undefined,
         fishType: editingCatch.fishType as any,
         bait: editingCatch.bait || "",
+        nickname: editingCatch.nickname || "",
         notes: editingCatch.notes || "",
         spot: editingCatch.spot || "",
         verified: editingCatch.verified || false,
@@ -324,6 +327,7 @@ export default function CatchFormDialog({
         weight: "",
         fishType: "kapor_supinac",
         bait: "",
+        nickname: "",
         notes: "",
         spot: "",
         verified: false,
@@ -1257,6 +1261,29 @@ export default function CatchFormDialog({
                           value={field.value}
                           onChange={field.onChange}
                         />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Nickname */}
+                  <FormField
+                    control={form.control}
+                    name="nickname"
+                    render={({ field }) => (
+                      <FormItem className="space-y-1">
+                        <FormLabel className="text-[10px] font-bold text-muted-foreground ml-1">
+                          Prezývka ryby
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="napr. Šupináč zo zátoky"
+                            className="bg-muted/30 border-border/50"
+                            maxLength={40}
+                            data-testid="input-nickname"
+                            {...field}
+                          />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
