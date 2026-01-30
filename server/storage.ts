@@ -3612,13 +3612,36 @@ export class DatabaseStorage implements IStorage {
     // Apply privacy settings - mask hidden fields
     const privacy = share.privacySettings as { hideGps: boolean; hideBait: boolean; hideSpot: boolean };
     
+    // PUBLIC RESPONSE WHITELIST - only include safe fields for public viewing
+    // Explicitly whitelist fields to prevent leaking private data
     return {
-      ...catch_,
+      id: catch_.id,
+      fishType: catch_.fishType,
+      weight: catch_.weight,
+      lengthCm: catch_.lengthCm,
+      photos: catch_.photos,
+      capturedAt: catch_.capturedAt,
+      nickname: catch_.nickname,
+      notes: catch_.notes, // Public story/notes
+      // Weather data (public)
+      airTemp: catch_.airTemp,
+      waterTemp: catch_.waterTemp,
+      windSpeed: catch_.windSpeed,
+      airPressure: catch_.airPressure,
+      // Privacy-controlled fields
       latitude: privacy.hideGps ? null : catch_.latitude,
       longitude: privacy.hideGps ? null : catch_.longitude,
       bait: privacy.hideBait ? null : catch_.bait,
       spot: privacy.hideSpot ? null : catch_.spot,
-    };
+      // Explicit nulls for private fields (never expose)
+      userId: null,
+      tripId: null,
+      battleId: null,
+      source: null,
+      createdAt: null,
+      updatedAt: null,
+      authorshipRole: null,
+    } as DiaryCatch;
   }
   
   async incrementShareViewCount(shareToken: string): Promise<void> {

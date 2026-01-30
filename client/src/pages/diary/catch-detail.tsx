@@ -1,5 +1,6 @@
 import { useParams, useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
 import { useState, useEffect } from "react";
@@ -90,6 +91,36 @@ export default function CatchDetail() {
       hideSpot: privacy?.hideSpot ?? false,
     });
   }, [user?.preferences?.privacySettings]);
+
+  // State for public share link
+  const [publicShareUrl, setPublicShareUrl] = useState<string | null>(null);
+  const [isGeneratingLink, setIsGeneratingLink] = useState(false);
+
+  // Generate public share link
+  const generateShareLink = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", `/api/diary/catches/${id}/share`, shareOverrides);
+      return res.json();
+    },
+    onSuccess: (data) => {
+      setPublicShareUrl(data.fullUrl);
+    },
+    onError: (error) => {
+      console.error("Error generating share link:", error);
+      toast({ title: "Chyba", description: "Nepodarilo sa vytvoriť link na zdieľanie", variant: "destructive" });
+    }
+  });
+
+  // Generate link when sharing
+  const handleShare = async () => {
+    setIsGeneratingLink(true);
+    try {
+      const data = await generateShareLink.mutateAsync();
+      return data.fullUrl as string;
+    } finally {
+      setIsGeneratingLink(false);
+    }
+  };
 
   // Fetch catch data
   const { data: catch_, isLoading } = useQuery<DiaryCatch>({
@@ -498,13 +529,15 @@ export default function CatchDetail() {
                 <Button
                   variant="outline"
                   className="gap-2"
+                  disabled={isGeneratingLink}
                   onClick={async () => {
-                    const shareText = buildShareText(shareOverrides, catch_);
                     try {
+                      const shareUrl = await handleShare();
+                      const shareText = buildShareText(shareOverrides, catch_);
                       await navigator.share({
                         title: `Môj úlovok: ${getFishTypeLabel(catch_.fishType)}`,
                         text: shareText,
-                        url: window.location.href,
+                        url: shareUrl,
                       });
                       toast({ title: "Zdieľané!", description: "Úlovok bol úspešne zdieľaný." });
                     } catch (err) {
@@ -516,7 +549,7 @@ export default function CatchDetail() {
                   data-testid="button-share-native"
                 >
                   <Share2 className="w-4 h-4" />
-                  Zdieľať
+                  {isGeneratingLink ? "Generujem..." : "Zdieľať"}
                 </Button>
               )}
 
@@ -524,9 +557,15 @@ export default function CatchDetail() {
               <Button
                 variant="outline"
                 className="gap-2"
-                onClick={() => {
-                  const url = encodeURIComponent(window.location.href);
-                  window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank', 'width=600,height=400');
+                disabled={isGeneratingLink}
+                onClick={async () => {
+                  try {
+                    const shareUrl = await handleShare();
+                    const url = encodeURIComponent(shareUrl);
+                    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank', 'width=600,height=400');
+                  } catch (err) {
+                    console.error('Error sharing to Facebook:', err);
+                  }
                 }}
                 data-testid="button-share-facebook"
               >
@@ -538,11 +577,13 @@ export default function CatchDetail() {
               <Button
                 variant="outline"
                 className="gap-2"
+                disabled={isGeneratingLink}
                 onClick={async () => {
                   try {
-                    await navigator.clipboard.writeText(window.location.href);
+                    const shareUrl = await handleShare();
+                    await navigator.clipboard.writeText(shareUrl);
                     setCopied(true);
-                    toast({ title: "Odkaz skopírovaný!", description: "Odkaz na úlovok bol skopírovaný do schránky." });
+                    toast({ title: "Odkaz skopírovaný!", description: "Verejný odkaz na úlovok bol skopírovaný do schránky." });
                     setTimeout(() => setCopied(false), 2000);
                   } catch (err) {
                     console.error('Error copying:', err);
