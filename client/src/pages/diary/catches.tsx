@@ -1500,20 +1500,6 @@ export default function DiaryCatches() {
                         <Fish className="h-20 w-20 text-slate-700" strokeWidth={1} />
                       </div>
                     )}
-                    <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-slate-950 via-slate-900/80 to-transparent" />
-                    
-                    {/* Overlay content */}
-                    <div className="absolute bottom-0 left-0 right-0 p-5">
-                      <p className="text-white/60 text-xs font-medium uppercase tracking-widest mb-1">
-                        {selectedCatch.capturedAt 
-                          ? format(new Date(selectedCatch.capturedAt), "d. MMMM yyyy", { locale: sk })
-                          : 'Dátum neuvedený'
-                        }
-                      </p>
-                      <h2 className="text-2xl font-black text-white tracking-tight leading-tight">
-                        {selectedCatch?.fishType ? getFishTypeLabel(selectedCatch.fishType) : 'Úlovok'}
-                      </h2>
-                    </div>
                   </div>
 
                   {/* Content Body */}
