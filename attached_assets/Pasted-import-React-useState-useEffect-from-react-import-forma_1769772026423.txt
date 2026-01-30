@@ -1,0 +1,238 @@
+import React, { useState, useEffect } from "react";
+import { format } from "date-fns";
+import { sk } from "date-fns/locale";
+import {
+  ChevronLeft, ChevronRight, Share2, MoreVertical,
+  MapPin, Calendar, ChevronDown, ChevronUp,
+  Thermometer, Wind, Droplets, Utensils, Navigation,
+  Edit2, Trash2, Info, Moon, X, Maximize2
+} from "lucide-react";
+// TODO: Importuj reálne komponenty Button, Sheet/Dropdown atď. z @/components/ui/...
+
+export default function CatchDetail() {
+  // TODO: Nahraď reálnymi hookmi pre navigáciu a parametre
+  // const [location, setLocation] = useLocation();
+  // const { id } = useParams();
+
+  // State
+  const [activeImage, setActiveImage] = useState(0);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [storyExpanded, setStoryExpanded] = useState(false);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+
+  // TODO: Nahraď za useQuery volanie
+  const catchData = {
+      // ... tu namapuj dáta z API ...
+      // images: array of strings
+      // caughtAt: ISO string
+      // location: object with name, spotName
+      // weather: object
+      // bait: object
+  };
+
+  const nextImage = () => setActiveImage((prev) => (prev + 1) % catchData.images.length);
+  const prevImage = () => setActiveImage((prev) => (prev - 1 + catchData.images.length) % catchData.images.length);
+
+  // Klávesová navigácia pre Lightbox
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isLightboxOpen) return;
+      if (e.key === "Escape") setIsLightboxOpen(false);
+      if (e.key === "ArrowRight") nextImage();
+      if (e.key === "ArrowLeft") prevImage();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isLightboxOpen]);
+
+  // HELPER KOMPONENT PRE RIADKY (Môžeš ho nechať takto alebo extrahovať)
+  const SimpleRow = ({ icon: Icon, label, value, detail }: any) => (
+    <div className="flex items-center justify-between py-1">
+       <div className="flex items-center gap-3 text-slate-500 text-sm font-medium">
+          {Icon && <Icon size={16} className="text-slate-300" />}
+          {label}
+       </div>
+       <div className="text-right">
+          <div className="font-bold text-slate-900">{value}</div>
+          {detail && <div className="text-xs text-slate-400 font-medium">{detail}</div>}
+       </div>
+    </div>
+  );
+
+  if (!catchData) return <div>Loading...</div>;
+
+  return (
+    <div className="min-h-screen bg-white pb-20 font-sans text-slate-900 selection:bg-slate-200">
+
+      {/* --- HERO SEKICIA --- */}
+      <div
+        className="relative h-[600px] md:h-[750px] bg-slate-900 group cursor-zoom-in"
+        onClick={() => setIsLightboxOpen(true)}
+      >
+        {/* Navigácia - Stop Propagation je dôležité */}
+        <div className="fixed top-6 left-4 z-50" onClick={(e) => e.stopPropagation()}>
+           {/* Použi reálny Button komponent s variant="ghost" alebo vlastným štýlom pre glass efekt */}
+           <button className="bg-black/10 hover:bg-black/30 backdrop-blur-md text-white border border-white/10 shadow-lg h-12 w-12 flex items-center justify-center rounded-full" onClick={() => window.history.back()}>
+             <ChevronLeft size={24} strokeWidth={2} />
+           </button>
+        </div>
+
+        <div className="fixed top-6 right-4 z-50" onClick={(e) => e.stopPropagation()}>
+           <button className="bg-black/10 hover:bg-black/30 backdrop-blur-md text-white border border-white/10 shadow-lg h-12 w-12 flex items-center justify-center rounded-full" onClick={() => setShowMenu(!showMenu)}>
+             <MoreVertical size={24} strokeWidth={2} />
+           </button>
+        </div>
+
+        {/* Image Slider */}
+        <div className="absolute inset-0">
+           {catchData.images.map((img, idx) => (
+             <div
+               key={idx}
+               className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${idx === activeImage ? 'opacity-100' : 'opacity-0'}`}
+             >
+                <img src={img} alt="" className="w-full h-full object-cover" />
+                <div className="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-slate-950 via-slate-900/40 to-transparent" />
+             </div>
+           ))}
+        </div>
+
+        {/* Indikátory */}
+        {catchData.images.length > 1 && (
+            <div
+              className="absolute top-1/2 right-4 -translate-y-1/2 flex flex-col gap-3 z-20"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {catchData.images.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setActiveImage(idx)}
+                  className={`w-1 rounded-full transition-all duration-500 backdrop-blur-sm shadow-sm ${activeImage === idx ? 'h-8 bg-white' : 'h-1.5 bg-white/30 hover:bg-white/60'}`}
+                />
+              ))}
+            </div>
+        )}
+
+        {/* Obsah Hero sekcie */}
+        <div className="absolute bottom-0 left-0 right-0 px-8 pt-8 pb-24 md:px-12 md:pt-12 md:pb-32 cursor-default" onClick={(e) => e.stopPropagation()}>
+          <div className="max-w-3xl mx-auto">
+            <div className="flex flex-wrap items-center gap-4 text-white/60 text-sm font-medium tracking-wide mb-4">
+               <span className="flex items-center gap-2">
+                 <Calendar size={14} className="opacity-70" />
+                 {format(new Date(catchData.caughtAt), "d. MMMM yyyy", { locale: sk })}
+               </span>
+               <span className="w-1 h-1 bg-white/30 rounded-full" />
+               <span className="flex items-center gap-2">
+                 <MapPin size={14} className="opacity-70" />
+                 {catchData.location?.name}
+               </span>
+            </div>
+
+            <h1 className="text-5xl md:text-7xl font-black text-white tracking-tight leading-[0.9] mb-2 drop-shadow-lg">
+              {catchData.species}
+            </h1>
+
+            <div className="flex flex-col md:flex-row md:items-end gap-6 md:gap-12 mt-4">
+               {catchData.nickname && (
+                 <p className="text-2xl md:text-3xl text-blue-200 font-serif italic opacity-90">
+                   "{catchData.nickname}"
+                 </p>
+               )}
+
+               <div className="flex items-baseline gap-2 ml-auto md:ml-0">
+                  <span className="text-7xl md:text-8xl font-black text-white tracking-tighter">
+                    {catchData.weight}
+                  </span>
+                  <span className="text-xl md:text-2xl font-medium text-white/50 mb-4">kg</span>
+               </div>
+
+               <div className="hidden md:flex flex-col items-start pb-4 opacity-60">
+                  <span className="text-xs uppercase font-bold tracking-widest text-white/50">Dĺžka</span>
+                  <div className="flex items-baseline gap-1">
+                     <span className="text-3xl font-bold text-white">{catchData.length}</span>
+                     <span className="text-sm font-medium text-white/70">cm</span>
+                  </div>
+               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* --- CONTENT BODY --- */}
+      <div className="max-w-2xl mx-auto px-6 md:px-0 -mt-8 relative z-30">
+        <div className="bg-white rounded-t-3xl p-6 md:p-10 shadow-[0_-20px_40px_rgba(0,0,0,0.1)]">
+           <div className={`relative transition-all duration-700 ease-in-out overflow-hidden ${storyExpanded ? 'max-h-[2000px]' : 'max-h-[160px]'}`}>
+              <p className="text-xl md:text-2xl text-slate-800 leading-relaxed font-serif text-pretty">
+                 {catchData.notes}
+              </p>
+              {!storyExpanded && (
+                <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-white via-white/90 to-transparent flex items-end justify-center pb-0" />
+              )}
+           </div>
+
+           <div className="flex justify-center mt-2">
+             <button
+               onClick={() => setStoryExpanded(!storyExpanded)}
+               className="group flex flex-col items-center gap-1 p-2 text-slate-400 hover:text-slate-900 transition-colors"
+             >
+               <span className="text-xs font-bold uppercase tracking-widest">
+                  {storyExpanded ? "Zbaliť príbeh" : "Čítať celý príbeh"}
+               </span>
+               {storyExpanded ? <ChevronUp size={16} className="animate-bounce" /> : <ChevronDown size={16} />}
+             </button>
+           </div>
+        </div>
+
+        {/* Technické Detaily */}
+        <div className="px-6 md:px-10 pb-12 space-y-12">
+           <div className="border-t border-slate-100 pt-8">
+              <button
+                onClick={() => setDetailsOpen(!detailsOpen)}
+                className="w-full flex items-center justify-between group"
+              >
+                 <div className="text-left">
+                    <h3 className="text-lg font-bold text-slate-900 group-hover:text-blue-600 transition-colors">Technické údaje</h3>
+                    <p className="text-sm text-slate-500">Počasie, výbava a podmienky</p>
+                 </div>
+                 <ChevronDown size={20} className={`text-slate-400 transition-transform ${detailsOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              <div className={`grid transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${detailsOpen ? 'grid-rows-[1fr] opacity-100 mt-8' : 'grid-rows-[0fr] opacity-0 mt-0'}`}>
+                 <div className="overflow-hidden space-y-8">
+                       <div>
+                          <div className="flex items-center gap-2 mb-4 text-xs font-bold uppercase tracking-widest text-slate-400">
+                             <Utensils size={14} /> Výbava
+                          </div>
+                          <div className="bg-slate-50 rounded-2xl p-6 space-y-4">
+                             <SimpleRow label="Nástraha" value={catchData.bait?.type} detail={catchData.bait?.flavor} />
+                             <SimpleRow label="Metóda" value={catchData.method} />
+                             <SimpleRow label="Hĺbka" value={`${catchData.depth} m`} />
+                          </div>
+                       </div>
+                       {/* Sem pridaj ďalšie sekcie (Podmienky, Lokalita) mapujúce reálne dáta */}
+                 </div>
+              </div>
+           </div>
+        </div>
+      </div>
+
+      {/* --- LIGHTBOX OVERLAY --- */}
+      {isLightboxOpen && (
+        <div className="fixed inset-0 z-[100] bg-black animate-in fade-in duration-300 flex items-center justify-center cursor-default">
+           <button onClick={() => setIsLightboxOpen(false)} className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-md z-50">
+             <X size={24} />
+           </button>
+           <div className="w-full h-full flex items-center justify-center p-4 md:p-10">
+             <img
+               key={activeImage}
+               src={catchData.images[activeImage]}
+               alt="Fullscreen catch"
+               className="max-h-full max-w-full object-contain shadow-2xl animate-in fade-in duration-500"
+               onClick={(e) => e.stopPropagation()}
+             />
+           </div>
+        </div>
+      )}
+    </div>
+  );
+}
