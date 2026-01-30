@@ -118,13 +118,6 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
             />
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Tvoj rybársky spoločník</p>
           </div>
-          <button 
-            onClick={onClose} 
-            className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors text-slate-500 dark:text-slate-400"
-            aria-label="Zatvoriť menu"
-          >
-            <X className="w-5 h-5" />
-          </button>
         </SheetHeader>
 
         <div className="overflow-y-auto flex-1 bg-slate-50/50 dark:bg-slate-950">
