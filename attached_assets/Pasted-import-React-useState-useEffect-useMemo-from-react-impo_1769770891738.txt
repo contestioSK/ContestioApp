@@ -1,0 +1,714 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import {
+Plus, Fish, MapPin, Calendar, Waves, Anchor, ChevronRight, LogOut,
+User, BarChart3, History, Trash2, AlertCircle, Loader2, Target,
+Trophy, Crown, Zap, Edit, Lock, Moon, Star, Ruler, Weight, CheckCircle2, Sun,
+ClipboardPen, ArrowUpRight, Sparkles, Filter, Hash, Fingerprint, Flame, Hourglass
+} from 'lucide-react';
+import { initializeApp } from 'firebase/app';
+import {
+getAuth, signInAnonymously, signInWithCustomToken,
+onAuthStateChanged, signOut
+} from 'firebase/auth';
+import {
+getFirestore, collection, doc, addDoc, deleteDoc,
+onSnapshot, query, Timestamp, serverTimestamp, orderBy
+} from 'firebase/firestore';
+
+// --- DEMO CONFIG ---
+const IS_DEMO_MODE = true;
+
+// --- KONFIGURÁCIA ---
+const firebaseConfig = JSON.parse(__firebase_config);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'contestio-app';
+
+// --- DATA & KONŠTANTY ---
+const FISH_TYPES = [
+{ value: 'kapor', label: 'Kapor' },
+{ value: 'pstruh', label: 'Pstruh' },
+{ value: 'zubac', label: 'Zubáč' },
+{ value: 'stuka', label: 'Šťuka' },
+{ value: 'sumec', label: 'Sumec' },
+{ value: 'pleskac', label: 'Pleskáč' },
+{ value: 'amur', label: 'Amur' },
+{ value: 'ine', label: 'Iné' }
+];
+
+const GOAL_TYPES = [
+{ value: 'total_weight', label: 'Celková váha', unit: 'kg', icon: Weight, description: 'Súčet váhy všetkých úlovkov' },
+{ value: 'total_catches', label: 'Počet rýb', unit: 'ks', icon: Fish, description: 'Celkový počet chytených rýb' },
+{ value: 'max_weight', label: 'Najväčšia ryba', unit: 'kg', icon: Trophy, description: 'Váha najťažšej ryby' },
+{ value: 'species_variety', label: 'Druhy rýb', unit: 'druhov', icon: Fingerprint, description: 'Počet rôznych druhov rýb' },
+{ value: 'trips_count', label: 'Počet výprav', unit: 'výprav', icon: Calendar, description: 'Počet dní pri vode' },
+{ value: 'min_weight_catch_count', label: 'Ryby nad váhu', unit: 'ks', icon: Weight, hasParameter: true, paramLabel: 'Minimálna váha (kg)', description: 'Počet rýb ťažších ako X kg' },
+{ value: 'min_size_catch_count', label: 'Ryby nad dĺžku', unit: 'ks', icon: Ruler, hasParameter: true, paramLabel: 'Minimálna dĺžka (cm)', description: 'Počet rýb dlhších ako X cm' },
+{ value: 'spot_catch_count', label: 'Úlovky na revíri', unit: 'ks', icon: MapPin, hasParameter: true, paramLabel: 'Názov revíru / lokality', description: 'Počet rýb na konkrétnom mieste' },
+{ value: 'bait_catch_count', label: 'Úlovky na nástrahu', unit: 'ks', icon: Anchor, hasParameter: true, paramLabel: 'Názov nástrahy', description: 'Napr. boilies, kukurica...' }
+];
+
+// --- MOCK DATA ---
+const DEMO_CATCHES = [
+{ id: '1', species: 'sumec', weight: 15, length: 110, location: 'Domaša', date: new Date('2025-05-15') },
+{ id: '2', species: 'kapor', weight: 10, length: 85, location: 'Liptovská Mara', date: new Date('2025-05-10') },
+{ id: '3', species: 'zubac', weight: 5, length: 70, location: 'Zemplínska Šírava', date: new Date('2025-04-20') },
+{ id: '4', species: 'stuka', weight: 5, length: 75, location: 'Orava', date: new Date('2025-04-15') },
+{ id: '5', species: 'pleskac', weight: 1, length: 40, location: 'Váh', date: new Date('2025-04-01') }
+];
+
+const DEMO_GOALS = [
+// 0% - START
+{ id: 'start', title: 'Jesenný lov', type: 'total_weight', target: 50, isMain: true, createdAt: { seconds: 1200 } },
+// 80% - NEAR FINISH
+{ id: 'next', title: 'Jarná kampaň', type: 'total_weight', target: 45, isMain: false, createdAt: { seconds: 900 } },
+// 100% - DONE
+{ id: 'done1', title: 'Zberateľ druhov', type: 'species_variety', target: 5, isMain: false, createdAt: { seconds: 800 } },
+// 40% - FLOW
+{ id: 'flow', title: 'Kaprárska sezóna', type: 'total_catches', target: 20, isMain: false, createdAt: { seconds: 700 } },
+
+{ id: 'done2', title: 'Big Mama', type: 'max_weight', target: 10, isMain: false, createdAt: { seconds: 700 } },
+{ id: 'done3', title: 'Rozbeh sezóny', type: 'total_catches', target: 5, isMain: false, createdAt: { seconds: 600 } },
+{ id: 'done4', title: 'Ťažká váha', type: 'min_weight_catch_count', target: 2, parameter: '5', isMain: false, createdAt: { seconds: 500 } }
+];
+
+// --- UI COMPONENTS ---
+
+const Badge = ({ children, variant = "default", className = "" }) => {
+const variants = {
+default: "bg-blue-600 text-white border-transparent shadow-sm",
+secondary: "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100 border-transparent",
+outline: "text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-800",
+gold: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800",
+green: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800",
+blue: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800",
+slate: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400 border-slate-200 dark:border-slate-700"
+};
+return (
+<div className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider transition-colors ${variants[variant]} ${className}`}>
+{children}
+</div>
+);
+};
+
+const Card = ({ className = "", children, ...props }) => (
+<div className={`rounded-xl border border-slate-200 bg-white text-slate-950 shadow-sm dark:border-slate-800 dark:bg-slate-950 dark:text-slate-50 ${className}`} {...props}>
+{children}
+</div>
+);
+
+const CardContent = ({ className = "", children }) => (
+<div className={`p-6 pt-0 ${className}`}>{children}</div>
+);
+
+const CardHeader = ({ className = "", children }) => (
+<div className={`flex flex-col space-y-1.5 p-6 ${className}`}>{children}</div>
+);
+
+const CardTitle = ({ className = "", children }) => (
+<h3 className={`text-2xl font-semibold leading-none tracking-tight ${className}`}>{children}</h3>
+);
+
+const Progress = ({ value, className = "", status = "normal" }) => {
+const colorClass = status === 'completed' ? 'bg-emerald-500' : (status === 'near' ? 'bg-amber-500' : 'bg-blue-600 dark:bg-blue-500');
+
+return (
+<div className={`relative h-2.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800 ${className}`}>
+<div
+className={`h-full w-full flex-1 transition-all duration-1000 ease-out ${colorClass}`}
+style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
+/>
+</div>
+);
+};
+
+function CircularProgress({ value, max, size = 120, strokeWidth = 10, className = "", children, status = "normal" }) {
+const percentage = Math.min((value / max) * 100, 100);
+const radius = (size - strokeWidth) / 2;
+const circumference = radius * 2 * Math.PI;
+const strokeDashoffset = circumference - (percentage / 100) * circumference;
+
+const colorClass = status === 'completed' ? 'text-emerald-500' : (status === 'near' ? 'text-amber-500' : (status === 'start' ? 'text-slate-300 dark:text-slate-700' : 'text-blue-600 dark:text-blue-500'));
+
+return (
+<div className={`relative ${className}`} style={{ width: size, height: size }}>
+<svg className="transform -rotate-90" width={size} height={size}>
+<circle
+cx={size / 2} cy={size / 2} r={radius}
+stroke="currentColor" strokeWidth={strokeWidth}
+fill="transparent"
+className="text-slate-100 dark:text-slate-800"
+/>
+<circle
+cx={size / 2} cy={size / 2} r={radius}
+stroke="currentColor" strokeWidth={strokeWidth}
+fill="transparent"
+strokeDasharray={`${circumference} ${circumference}`}
+strokeDashoffset={strokeDashoffset}
+strokeLinecap="round"
+className={`${colorClass} transition-all duration-1000 ease-out`}
+/>
+</svg>
+<div className="absolute inset-0 flex items-center justify-center flex-col">
+{children}
+</div>
+</div>
+);
+}
+
+const TacticalIcon = ({ icon: Icon, variant = "neutral", size = "md" }) => {
+const variants = {
+active: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
+neutral: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-slate-200",
+action: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
+success: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+start: "bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500 border-slate-200"
+};
+const sizes = { sm: "p-1.5", md: "p-2.5", lg: "p-3.5" };
+const iconSizes = { sm: "w-3 h-3", md: "w-5 h-5", lg: "w-6 h-6" };
+
+return (
+<div className={`rounded-lg border ${variants[variant]} ${sizes[size]} inline-flex items-center justify-center`}>
+<Icon className={iconSizes[size]} />
+</div>
+);
+};
+
+// --- NARRATIVE LOGIC (MIKROCOPY SYSTÉM v2.1) ---
+
+const formatNumber = (val) => val.toLocaleString('sk-SK');
+
+const getGoalNarrative = (goal) => {
+const p = goal.percentage;
+const remaining = formatNumber(goal.target - goal.current);
+const unit = goal.unit;
+
+// 1. STAV: COMPLETED (100%) - Hrdosť (Hero) / Pokora (List)
+if (p >= 100) {
+return {
+status: 'completed',
+badgeText: 'ZVLÁDNUTÉ',
+badgeVariant: 'green',
+headline: 'Dokázal si to.',
+subtext: 'Cieľ je pokorený.',
+colorClass: 'text-emerald-600 dark:text-emerald-400',
+icon: Trophy,
+progressColor: 'bg-emerald-500'
+};
+}
+
+// 2. STAV: NEAR COMPLETION (80-99%) - Napätie
+if (p >= 80) {
+return {
+status: 'near',
+badgeText: 'FINÁLE BLÍZKO',
+badgeVariant: 'gold',
+headline: `Už len ${remaining} ${unit}.`, // Stručné
+subtext: 'Toto je moment, ktorý rozhoduje.', // Úderné
+colorClass: 'text-amber-600 dark:text-amber-400',
+icon: Flame,
+progressColor: 'bg-amber-500'
+};
+}
+
+// 3. STAV: FLOW (20-79%) - Minimalistická sila (Variant C)
+if (p >= 20) {
+return {
+status: 'normal',
+badgeText: 'V TEMPE',
+badgeVariant: 'blue',
+headline: 'Drž tempo.',
+subtext: 'Presne takto sa robí sezóna.', // Minimalistické
+colorClass: 'text-blue-600 dark:text-blue-400',
+icon: Zap,
+progressColor: 'bg-blue-600'
+};
+}
+
+// 4. STAV: START / STAGNÁCIA (0-19%)
+return {
+status: 'start',
+badgeText: 'SEZÓNA SA ZAČÍNA',
+badgeVariant: 'slate',
+headline: 'Sezóna sa práve začína.',
+subtext: 'Zapíš prvý úlovok a všetko sa pohne.',
+colorClass: 'text-slate-500 dark:text-slate-400',
+icon: Hourglass,
+progressColor: 'bg-slate-300 dark:bg-slate-700'
+};
+};
+
+const calculateProgress = (goal, catches) => {
+let current = 0;
+switch (goal.type) {
+case 'total_weight': current = catches.reduce((acc, c) => acc + (c.weight || 0), 0); break;
+case 'total_catches': current = catches.length; break;
+case 'max_weight': current = catches.reduce((max, c) => Math.max(max, c.weight || 0), 0); break;
+case 'species_variety': current = new Set(catches.map(c => c.species)).size; break;
+case 'trips_count': current = new Set(catches.map(c => c.date.toDateString())).size; break;
+case 'min_weight_catch_count':
+const minW = parseFloat(goal.parameter) || 0;
+current = catches.filter(c => (c.weight || 0) >= minW).length;
+break;
+case 'min_size_catch_count':
+const minL = parseFloat(goal.parameter) || 0;
+current = catches.filter(c => (c.length || 0) >= minL).length;
+break;
+case 'spot_catch_count':
+const spot = (goal.parameter || '').toLowerCase();
+current = catches.filter(c => (c.location || '').toLowerCase().includes(spot)).length;
+break;
+case 'bait_catch_count':
+const bait = (goal.parameter || '').toLowerCase();
+current = catches.filter(c => (c.bait || '').toLowerCase().includes(bait)).length;
+break;
+default: current = 0;
+}
+
+current = parseFloat(current.toFixed(1));
+const target = parseFloat(goal.target);
+const percentage = target > 0 ? Math.min((current / target) * 100, 100) : 0;
+
+const baseGoal = { current, target, percentage, isCompleted: current >= target };
+const narrative = getGoalNarrative({ ...goal, ...baseGoal });
+
+return { ...baseGoal, ...narrative };
+};
+
+// --- APP ---
+
+export default function App() {
+const [user, setUser] = useState(null);
+const [isDarkMode, setIsDarkMode] = useState(true);
+const [activeTab, setActiveTab] = useState('goals');
+const [catches, setCatches] = useState([]);
+const [goals, setGoals] = useState([]);
+const [isCatchModalOpen, setIsCatchModalOpen] = useState(false);
+const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
+const [catchForm, setCatchForm] = useState({
+species: 'kapor', weight: '', length: '', location: '', bait: '', date: new Date().toISOString().split('T')[0]
+});
+const [goalForm, setGoalForm] = useState({
+title: '', type: 'total_weight', target: '', parameter: ''
+});
+
+useEffect(() => {
+const init = async () => {
+if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) await signInWithCustomToken(auth, __initial_auth_token);
+else await signInAnonymously(auth);
+};
+init();
+return onAuthStateChanged(auth, setUser);
+}, []);
+
+useEffect(() => {
+if (!user) return;
+if (IS_DEMO_MODE) {
+setCatches(DEMO_CATCHES);
+setGoals(DEMO_GOALS);
+return;
+}
+const unsubCatches = onSnapshot(query(collection(db, 'artifacts', appId, 'users', user.uid, 'catches')),
+(s) => setCatches(s.docs.map(d => ({id: [d.id](http://d.id/), ...d.data(), date: d.data().date?.toDate?.() || new Date()}))));
+const unsubGoals = onSnapshot(query(collection(db, 'artifacts', appId, 'users', user.uid, 'goals'), orderBy('createdAt', 'desc')),
+(s) => setGoals(s.docs.map(d => ({id: [d.id](http://d.id/), ...d.data()}))));
+return () => { unsubCatches(); unsubGoals(); };
+}, [user]);
+
+const addCatch = async (e) => {
+e.preventDefault();
+if (IS_DEMO_MODE) return alert("Demo režim: Ukladanie vypnuté.");
+if(!user) return;
+await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'catches'), {
+...catchForm,
+weight: parseFloat(catchForm.weight)||0,
+length: parseFloat(catchForm.length)||0,
+date: Timestamp.fromDate(new Date(catchForm.date)),
+createdAt: serverTimestamp()
+});
+setIsCatchModalOpen(false);
+setCatchForm({ species: 'kapor', weight: '', length: '', location: '', bait: '', date: new Date().toISOString().split('T')[0] });
+};
+
+const addGoal = async (e) => {
+e.preventDefault();
+if (IS_DEMO_MODE) return alert("Demo režim: Ukladanie vypnuté.");
+if(!user) return;
+await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'goals'), {
+...goalForm,
+target: parseFloat(goalForm.target)||0,
+isMain: goals.length === 0,
+createdAt: serverTimestamp()
+});
+setIsGoalModalOpen(false);
+setGoalForm({ title: '', type: 'total_weight', target: '', parameter: '' });
+};
+
+const deleteGoal = async (id) => {
+if (IS_DEMO_MODE) return alert("Demo režim: Mazanie zakázané.");
+if(confirm('Zmazať tento cieľ?')) await deleteDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'goals', id));
+};
+
+const processedGoals = useMemo(() => goals.map(g => {
+const typeInfo = GOAL_TYPES.find(t => t.value === g.type);
+let dynamicLabel = typeInfo?.label;
+if (g.type === 'min_weight_catch_count') dynamicLabel = `Ryby nad ${g.parameter}kg`;
+if (g.type === 'min_size_catch_count') dynamicLabel = `Ryby nad ${g.parameter}cm`;
+if (g.type === 'spot_catch_count') dynamicLabel = `Úlovky na: ${g.parameter}`;
+if (g.type === 'bait_catch_count') dynamicLabel = `Ryby na: ${g.parameter}`;
+return { ...g, ...typeInfo, label: dynamicLabel, ...calculateProgress(g, catches) };
+}), [goals, catches]);
+
+const mainGoal = processedGoals.find(g => g.isMain) || processedGoals[0];
+const activeGoals = processedGoals.filter(g => [g.id](http://g.id/) !== mainGoal?.id && !g.isCompleted);
+const nextGoal = activeGoals.sort((a,b) => b.percentage - a.percentage)[0];
+const completedGoals = processedGoals.filter(g => g.isCompleted);
+const allActiveDone = processedGoals.length > 0 && activeGoals.length === 0 && !mainGoal?.isCompleted === false;
+const selectedGoalTypeInfo = GOAL_TYPES.find(t => t.value === goalForm.type);
+
+if (!user) return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white"><Loader2 className="animate-spin" /></div>;
+
+return (
+<div className={isDarkMode ? "dark" : ""}>
+<div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-20 font-sans selection:bg-blue-500/30 transition-colors duration-300">
+
+```
+    {/* HEADER */}
+    <div className="sticky top-0 z-40 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+      <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/20">
+            <Target className="text-white w-5 h-5" />
+          </div>
+          <div>
+            <h1 className="font-bold text-lg tracking-tight">Tvoje sezónne ciele</h1>
+            {IS_DEMO_MODE && <span className="text-[10px] text-amber-500 font-bold uppercase tracking-wider">Demo</span>}
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <button onClick={() => setIsCatchModalOpen(true)} className="hidden sm:flex items-center gap-2 text-xs font-bold text-blue-600 dark:text-blue-400 hover:opacity-80 transition-opacity bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-full">
+            <ClipboardPen className="w-3.5 h-3.5" /> Zapísať progres
+          </button>
+          <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-2 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+            {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <main className="max-w-4xl mx-auto px-4 py-8 space-y-8 animate-in fade-in duration-500">
+      {processedGoals.length === 0 ? (
+        <div className="py-20 flex flex-col items-center justify-center text-center space-y-6">
+           <div className="w-24 h-24 bg-slate-100 dark:bg-slate-900 rounded-full flex items-center justify-center mb-4 relative">
+              <Target className="w-12 h-12 text-slate-300" />
+              <Sparkles className="w-6 h-6 text-amber-400 absolute top-4 right-4 animate-pulse" />
+            </div>
+            <div className="max-w-md space-y-2">
+              <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Začni svoju prvú sezónu</h2>
+              <p className="text-slate-500 dark:text-slate-400 text-lg">Ciele ti pomôžu udržať tempo a motiváciu počas celého roka.</p>
+            </div>
+            <button onClick={() => setIsGoalModalOpen(true)} className="mt-8 bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold text-lg shadow-xl shadow-blue-500/20 flex items-center gap-2 hover:scale-105 transition-all">
+              <Plus className="w-5 h-5" /> Pridať prvú výzvu
+            </button>
+        </div>
+      ) : (
+        <>
+          {/* HEADER SECTION */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 pb-4">
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Sezóna v hre</h2>
+              <p className="text-slate-500 dark:text-slate-400">Kam sa chceš túto sezónu dostať.</p>
+            </div>
+          </div>
+
+          {/* HLAVNÝ CIEĽ - HERO */}
+          {mainGoal && (
+            <Card className={`relative overflow-hidden border-2 transition-all duration-500 ${
+              mainGoal.status === 'completed'
+                ? 'border-emerald-500/50 dark:border-emerald-500/50 shadow-[0_0_30px_-10px_rgba(16,185,129,0.3)]'
+                : (mainGoal.status === 'near'
+                    ? 'border-amber-500/50 dark:border-amber-500/50 shadow-[0_0_30px_-10px_rgba(245,158,11,0.2)]'
+                    : 'border-slate-200 dark:border-slate-800 shadow-sm')
+            }`}>
+              {mainGoal.status === 'completed' && <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none"><Crown className="w-48 h-48 rotate-12" /></div>}
+              <CardContent className="p-8 sm:p-10">
+                <div className="flex flex-col md:flex-row items-center gap-10">
+                  {/* Kruh */}
+                  <div className="flex-shrink-0 relative">
+                    <CircularProgress value={mainGoal.current} max={mainGoal.target} size={180} strokeWidth={14} status={mainGoal.status}>
+                      <div className="text-center">
+                        {mainGoal.percentage === 0 ? (
+                          <div className="text-slate-300 dark:text-slate-700 font-bold text-6xl opacity-30">0</div>
+                        ) : (
+                          <div className={`text-4xl font-extrabold tracking-tight ${mainGoal.status === 'completed' ? 'text-emerald-500' : (mainGoal.status === 'near' ? 'text-amber-500' : 'text-blue-600 dark:text-blue-400')}`}>
+                            {Math.round(mainGoal.percentage)}%
+                          </div>
+                        )}
+                      </div>
+                    </CircularProgress>
+                    {mainGoal.status === 'near' && !mainGoal.isCompleted && (
+                      <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 text-[10px] font-bold px-3 py-1 rounded-full whitespace-nowrap border border-amber-200 dark:border-amber-700 animate-pulse">
+                        FINÁLE BLÍZKO
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Text */}
+                  <div className="flex-1 text-center md:text-left space-y-6 w-full">
+                    <div>
+                      <div className="flex items-center justify-center md:justify-start gap-2 mb-3">
+                        <Badge variant={mainGoal.badgeVariant}>{mainGoal.badgeText}</Badge>
+                        {mainGoal.isMain && <span className="text-[10px] font-bold text-slate-400 tracking-wider">HLAVNÝ CIEĽ</span>}
+                      </div>
+                      <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white leading-tight mb-2">
+                        {mainGoal.headline}
+                      </h2>
+                      <p className="text-slate-500 dark:text-slate-400 text-lg">{mainGoal.subtext}</p>
+                    </div>
+
+                    {/* Detail Stats (Secondary now) */}
+                    <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-6 pt-2 opacity-80">
+                      <div>
+                        <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Aktuálne</p>
+                        <p className="text-xl font-mono font-bold text-slate-700 dark:text-slate-300">
+                          {formatNumber(mainGoal.current)} <span className="text-sm text-slate-500">{mainGoal.unit}</span>
+                        </p>
+                      </div>
+                      <div className="hidden sm:block w-px h-8 bg-slate-200 dark:bg-slate-800"></div>
+                      <div>
+                        <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Cieľ</p>
+                        <p className="text-xl font-mono font-bold text-slate-700 dark:text-slate-300">
+                          {formatNumber(mainGoal.target)} <span className="text-sm text-slate-500">{mainGoal.unit}</span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* NEXT UP / WIN STATE */}
+          {allActiveDone ? (
+            <Card className="bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-900">
+               <CardContent className="p-6 flex items-center gap-4">
+                    <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-full text-emerald-600 dark:text-emerald-400"><Sparkles className="w-6 h-6" /></div>
+                    <div>
+                      <h3 className="font-bold text-lg text-emerald-800 dark:text-emerald-200">Sezóna ide podľa plánu</h3>
+                      <p className="text-emerald-600 dark:text-emerald-400 text-sm">Všetky rozpracované ciele máš splnené.</p>
+                    </div>
+                    <button onClick={() => setIsGoalModalOpen(true)} className="ml-auto text-sm font-bold text-emerald-700 hover:text-emerald-900 dark:text-emerald-400 dark:hover:text-emerald-300">+ Nová výzva</button>
+                  </CardContent>
+            </Card>
+          ) : (
+            nextGoal && (
+              <Card className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 relative overflow-hidden transition-all hover:border-blue-300 dark:hover:border-blue-700 group">
+                <div className={`absolute top-0 left-0 w-1.5 h-full ${nextGoal.status === 'near' ? 'bg-amber-500' : 'bg-blue-500'}`}></div>
+                <CardContent className="p-6 pl-8">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-5">
+                      <div className={`w-12 h-12 flex items-center justify-center rounded-full border-2 ${nextGoal.status === 'near' ? 'border-amber-100 bg-amber-50 text-amber-600 dark:border-amber-900/30 dark:bg-amber-900/20 dark:text-amber-500' : 'border-blue-100 bg-blue-50 text-blue-600 dark:border-blue-900/30 dark:bg-blue-900/20 dark:text-blue-500'}`}>
+                        <nextGoal.icon className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className={`text-xs font-bold uppercase tracking-wider ${nextGoal.status === 'near' ? 'text-amber-600 dark:text-amber-500' : 'text-blue-600 dark:text-blue-500'}`}>
+                            {nextGoal.badgeText}
+                          </span>
+                        </div>
+                        <h3 className="text-xl font-bold text-slate-900 dark:text-white">{nextGoal.headline}</h3>
+                        {/* Subtext skrytý pri NEAR stave */}
+                        {nextGoal.status !== 'near' && (
+                          <p className="text-sm text-slate-500">{nextGoal.subtext}</p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-right flex items-center sm:block gap-3">
+                      {nextGoal.status !== 'near' && nextGoal.percentage > 0 && (
+                        <span className="text-4xl font-extrabold block text-slate-900 dark:text-white">{Math.round(nextGoal.percentage)}%</span>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )
+          )}
+
+          {/* COMPLETED */}
+          {completedGoals.length > 0 && (
+            <div className="pt-6">
+               <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-4 pl-1">
+                <CheckCircle2 className="w-4 h-4" /> Splnené ciele ({completedGoals.length})
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {completedGoals.map(goal => (
+                  <Card key={goal.id} className="border-emerald-100/50 dark:border-emerald-900/20 bg-slate-50 dark:bg-slate-900/50 opacity-70 hover:opacity-100 transition-opacity cursor-default">
+                    <CardContent className="p-4 flex items-center gap-3">
+                       <div className="p-2 bg-emerald-100 dark:bg-emerald-900/20 rounded-full text-emerald-600 dark:text-emerald-500 grayscale-[0.3]"><Trophy className="w-4 h-4" /></div>
+                       <div className="flex-1">
+                         <h4 className="font-bold text-sm text-slate-700 dark:text-slate-300 line-through decoration-emerald-500/30">{goal.title}</h4>
+                         <p className="text-xs text-emerald-600 dark:text-emerald-500 font-medium">Pokorené</p>
+                       </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ACTIVE LIST - TICHŠIA VERZIA */}
+          {activeGoals.length > 1 && (
+            <div className="pt-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <Target className="w-4 h-4 text-slate-400" /> Aktívne ciele
+                </h3>
+                <button onClick={() => setIsGoalModalOpen(true)} className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1">
+                  <Plus className="w-4 h-4" /> Pridať novú výzvu
+                </button>
+              </div>
+              <div className="grid gap-3">
+                {activeGoals.filter(g => g.id !== nextGoal.id).map(goal => (
+                  <Card key={goal.id} className="hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+                    <CardContent className="p-4 sm:p-5">
+                      <div className="flex flex-col gap-3">
+                            <div className="flex justify-between items-start">
+                              <div className="flex items-center gap-3">
+                                <TacticalIcon icon={goal.icon || Target} variant={goal.status} size="sm" />
+                                <div>
+                                  {/* HLAVNÁ EMÓCIA */}
+                                  <h4 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base">{goal.headline}</h4>
+                                  {/* TICHÝ KONTEXT */}
+                                  <div className="flex items-center gap-1.5 mt-0.5">
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{goal.title}</span>
+                                    {/* Subtext len ak nie sme v critical states */}
+                                    {goal.status !== 'near' && (
+                                       <span className="text-[10px] text-slate-400 truncate max-w-[150px] hidden sm:inline">• {goal.subtext}</span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                              <button onClick={() => deleteGoal(goal.id)} className="text-slate-300 hover:text-red-500 p-2 -mr-2 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                            </div>
+                            <div className="pt-1">
+                              <Progress value={goal.percentage} status={goal.status} />
+                            </div>
+                          </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* FOOTER STATS */}
+          <div className="pt-12 border-t border-slate-100 dark:border-slate-900 mt-12 mb-8">
+            <div className="flex justify-center gap-8 text-[10px] text-slate-300 dark:text-slate-600 uppercase tracking-widest font-bold">
+              <div>Výzvy spolu: {processedGoals.length}</div>
+              <div>Dokončené: {completedGoals.length}</div>
+            </div>
+          </div>
+        </>
+      )}
+    </main>
+
+    {/* MODALS UNCHANGED */}
+     {isGoalModalOpen && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+        <Card className="w-full max-w-md animate-in zoom-in-95 shadow-2xl max-h-[90vh] overflow-y-auto">
+          <CardHeader className="flex flex-row items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+            <CardTitle className="text-lg">Nová výzva</CardTitle>
+            <button onClick={() => setIsGoalModalOpen(false)}><Plus className="rotate-45 w-5 h-5 text-slate-500" /></button>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <form onSubmit={addGoal} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Názov cieľa</label>
+                <input className="w-full p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" required placeholder="napr. Veľký kapor" value={goalForm.title} onChange={e => setGoalForm({...goalForm, title: e.target.value})} />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">O čo pôjde?</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {GOAL_TYPES.map(t => (
+                    <button key={t.value} type="button" onClick={() => setGoalForm({...goalForm, type: t.value})} className={`p-3 rounded-lg border text-left text-sm flex flex-col gap-1 transition-all ${goalForm.type === t.value ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 ring-1 ring-blue-500' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 opacity-70 hover:opacity-100'}`}>
+                      <span className="font-bold text-xs">{t.label}</span>
+                      <span className="text-[10px] opacity-60 leading-tight">{t.description}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {selectedGoalTypeInfo?.hasParameter && (
+                <div className="space-y-2 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-100 dark:border-slate-800">
+                  <label className="text-sm font-bold text-blue-600 dark:text-blue-400">{selectedGoalTypeInfo.paramLabel}</label>
+                  <input type={selectedGoalTypeInfo.value.includes('weight') || selectedGoalTypeInfo.value.includes('size') ? "number" : "text"} className="w-full p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" required placeholder={selectedGoalTypeInfo.value.includes('bait') ? "napr. Boilies" : "0"} value={goalForm.parameter} onChange={e => setGoalForm({...goalForm, parameter: e.target.value})} />
+                </div>
+              )}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Cieľová hodnota ({selectedGoalTypeInfo?.unit})</label>
+                <div className="relative">
+                  <input type="number" className="w-full p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none pr-12" required placeholder="0" value={goalForm.target} onChange={e => setGoalForm({...goalForm, target: e.target.value})} />
+                  <span className="absolute right-3 top-2.5 text-slate-400 text-sm font-medium">{selectedGoalTypeInfo?.unit}</span>
+                </div>
+              </div>
+              <button type="submit" className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-500/20 mt-2">Vytvoriť výzvu</button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    )}
+    {isCatchModalOpen && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+        <Card className="w-full max-w-md animate-in zoom-in-95 shadow-2xl max-h-[90vh] overflow-y-auto">
+          <CardHeader className="flex flex-row items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+            <CardTitle className="text-lg">Zapísať progres</CardTitle>
+            <button onClick={() => setIsCatchModalOpen(false)}><Plus className="rotate-45 w-5 h-5 text-slate-500" /></button>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <form onSubmit={addCatch} className="space-y-4">
+              <div className="p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-xs rounded-lg flex gap-2 items-start mb-4">
+                <ClipboardPen className="w-4 h-4 mt-0.5 shrink-0" /> <p>Zadaním úlovku sa automaticky prepočítajú všetky relevantné ciele.</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Druh</label>
+                  <select className="w-full p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" value={catchForm.species} onChange={e => setCatchForm({...catchForm, species: e.target.value})}>
+                    {FISH_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                  </select>
+                </div>
+                 <div className="space-y-2">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Dátum</label>
+                  <input type="date" className="w-full p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" required value={catchForm.date} onChange={e => setCatchForm({...catchForm, date: e.target.value})} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Váha (kg)</label>
+                  <input type="number" className="w-full p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" required placeholder="0.0" value={catchForm.weight} onChange={e => setCatchForm({...catchForm, weight: e.target.value})} />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Dĺžka (cm)</label>
+                  <input type="number" className="w-full p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" placeholder="0" value={catchForm.length} onChange={e => setCatchForm({...catchForm, length: e.target.value})} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Lokalita / Revír</label>
+                <input className="w-full p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" required placeholder="napr. Liptovská Mara" value={catchForm.location} onChange={e => setCatchForm({...catchForm, location: e.target.value})} />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Nástraha</label>
+                <input className="w-full p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" placeholder="napr. Boilies Jahoda" value={catchForm.bait} onChange={e => setCatchForm({...catchForm, bait: e.target.value})} />
+              </div>
+              <button type="submit" className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-500/20 mt-2">Zapísať a prepočítať</button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    )}
+  </div>
+</div>
+
+```
+
+);
+}
