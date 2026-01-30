@@ -15,7 +15,7 @@ type PhotoObject = {
 
 interface PhotoCarouselProps {
   photos: (string | PhotoObject)[];
-  onPhotoClick: (photo: string) => void;
+  onPhotoClick: (photo: string, index: number) => void;
 }
 
 export function PhotoCarousel({ photos, onPhotoClick }: PhotoCarouselProps) {
@@ -89,7 +89,13 @@ export function PhotoCarousel({ photos, onPhotoClick }: PhotoCarouselProps) {
                     src={photoUrl} 
                     alt={`Fotografia úlovku ${index + 1}`}
                     className="w-full h-48 sm:h-64 object-cover cursor-pointer hover:opacity-80 transition-opacity"
-                    onClick={() => status !== 'processing' && onPhotoClick(photoUrl)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (status !== 'processing') {
+                        onPhotoClick(photoUrl, index);
+                      }
+                    }}
+                    draggable={false}
                     data-testid={`catch-photo-${index}`}
                   />
                 ) : (
