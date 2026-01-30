@@ -10,6 +10,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Trophy, Plus, AlertCircle, Clock, Fish, CheckCircle2, Medal, Flag, BarChart3, TrendingUp, Award, QrCode, Swords, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { QRShareDialog } from "@/components/QRShareDialog";
 import { CatchDetailSheet } from "@/components/diary/CatchDetailSheet";
+import { PhotoLightbox } from "@/components/diary/PhotoLightbox";
 import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 import { format, formatDistanceToNow } from "date-fns";
 import { sk } from "date-fns/locale";
@@ -940,71 +941,14 @@ export default function BattleDetail() {
         onOpenLightbox={(photos, index) => setLightboxState({ photos, currentIndex: index })}
       />
 
-      {/* Photo Lightbox with Navigation - Fullscreen on mobile */}
+      {/* Photo Lightbox - Portal renders to document.body */}
       {lightboxState && (
-        <div 
-          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center"
-          onClick={() => setLightboxState(null)}
-          data-testid="photo-lightbox"
-        >
-          {/* Close button */}
-          <button
-            onClick={() => setLightboxState(null)}
-            className="absolute top-4 right-4 z-20 bg-black/50 text-white rounded-full p-2 hover:bg-black/70 transition-colors"
-            aria-label="Zatvoriť"
-          >
-            <X className="h-6 w-6" />
-          </button>
-
-          {/* Previous button */}
-          {lightboxState.photos.length > 1 && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setLightboxState(prev => prev ? {
-                  ...prev,
-                  currentIndex: prev.currentIndex > 0 ? prev.currentIndex - 1 : prev.photos.length - 1
-                } : null);
-              }}
-              className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-10 bg-black/50 text-white hover:bg-black/70 rounded-full p-2 sm:p-3 min-w-[44px] min-h-[44px] flex items-center justify-center"
-              aria-label="Predchádzajúca fotografia"
-            >
-              <ChevronLeft className="h-6 w-6" />
-            </button>
-          )}
-          
-          {/* Current photo */}
-          <img 
-            src={lightboxState.photos[lightboxState.currentIndex]} 
-            alt={`Fotografia úlovku ${lightboxState.currentIndex + 1}`}
-            className="max-w-[90vw] max-h-[85vh] object-contain"
-            onClick={(e) => e.stopPropagation()}
-          />
-          
-          {/* Next button */}
-          {lightboxState.photos.length > 1 && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setLightboxState(prev => prev ? {
-                  ...prev,
-                  currentIndex: prev.currentIndex < prev.photos.length - 1 ? prev.currentIndex + 1 : 0
-                } : null);
-              }}
-              className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-10 bg-black/50 text-white hover:bg-black/70 rounded-full p-2 sm:p-3 min-w-[44px] min-h-[44px] flex items-center justify-center"
-              aria-label="Nasledujúca fotografia"
-            >
-              <ChevronRight className="h-6 w-6" />
-            </button>
-          )}
-          
-          {/* Photo counter */}
-          {lightboxState.photos.length > 1 && (
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white text-sm px-3 py-1 rounded-full">
-              {lightboxState.currentIndex + 1} / {lightboxState.photos.length}
-            </div>
-          )}
-        </div>
+        <PhotoLightbox
+          photos={lightboxState.photos}
+          currentIndex={lightboxState.currentIndex}
+          onClose={() => setLightboxState(null)}
+          onNavigate={(newIndex) => setLightboxState(prev => prev ? { ...prev, currentIndex: newIndex } : null)}
+        />
       )}
     </DiaryLayout>
   );
