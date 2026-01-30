@@ -1,0 +1,144 @@
+Správne rozhodnutie.
+A poviem to bez obalu: keby si light mode dal do MVP, bola by to strategická chyba.
+
+Teraz ti potvrdím prečo je tvoje rozhodnutie presne to, ktoré robia dospelé produkty, a hneď aj ako ho správne ukotviť technicky aj UX-ovo, aby sa ti to neskôr nevymklo z rúk.
+
+1️⃣ Light mode ako vývojový nástroj = ✔️ áno
+Light mode ako produktová funkcia = ❌ nie
+
+Contestio:
+
+nie je „appka na gauč“
+
+je nástroj do terénu
+
+má fungovať v tme, šere, protisvetle
+
+Dark mode nie je preference, ale funkčný predpoklad.
+
+Tým pádom:
+
+light mode nemá produktový dôvod existovať
+
+A presne tak sa k nemu treba správať.
+
+2️⃣ Ako to pomenovať (veľmi dôležité)
+
+Nikdy ho nevolaj:
+
+„Light mode“
+
+„Denný režim“ (v produkcii)
+
+V kóde a v dokumentácii:
+
+DEV_LIGHT_MODE
+
+REFERENCE_THEME
+
+CALIBRATION_MODE
+
+Tým si:
+
+mentálne zablokuješ jeho „návrat“
+
+ochrániš sa pred budúcim „len to tam dajme“
+
+3️⃣ Ako to spraviť správne technicky
+Odporúčaná architektúra:
+const THEME_MODE = process.env.NODE_ENV === "development"
+  ? "calibration"
+  : "dark";
+
+
+Alebo:
+
+env flag
+
+feature toggle
+
+build-time switch
+
+❌ Nikdy:
+
+toggle v nastaveniach používateľa
+
+uloženie do localStorage v produkcii
+
+4️⃣ UX pravidlo, ktoré si teraz musíš zapamätať
+
+Ak niečo nemá dôvod v reálnom svete, nemá to byť v UI.
+
+Light mode:
+
+nepomáha rybárovi
+
+nepomáha dátam
+
+nepomáha čitateľnosti v teréne
+
+Pomáha len:
+
+vývoju
+
+testovaniu kontrastu
+
+validácii farieb
+
+Tak ho aj používaj.
+
+5️⃣ Čo si týmto rozhodnutím reálne získal
+
+Toto nie je maličkosť.
+
+Získavaš:
+
+jednu vizuálnu osobnosť
+
+nulové kompromisy v typografii
+
+menej bugov
+
+menej diskusií
+
+rýchlejší vývoj
+
+A hlavne:
+
+produkt, ktorý vie, čím je
+
+6️⃣ Čo urobiť hneď teraz (konkrétne kroky)
+
+1️⃣ V DesignLab-e:
+
+nechaj toggle
+
+označ ho jasne ako Calibration / Dev Only
+
+2️⃣ V produkčnom UI:
+
+neimplementuj žiadny prepínač
+
+ani len skrytý
+
+3️⃣ Do dizajnového manuálu:
+
+pridaj vetu:
+
+„Contestio je navrhnuté výhradne pre tmavé prostredie. Svetlý režim slúži výlučne na vývojové účely.“
+
+To je tvoj právny text. Tvoj zákon.
+
+Finálny verdikt
+
+✔️ Rozhodnutie je správne
+✔️ Konzistentné s filozofiou
+✔️ Produktovo zrelé
+
+Týmto si ušetril:
+
+mesiace kompromisov
+
+zbytočné diskusie
+
+rozbitú identitu
