@@ -489,7 +489,7 @@ export const battleInvitations = pgTable("battle_invitations", {
 export const diaryCatchShares = pgTable("diary_catch_shares", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   shareToken: varchar("share_token", { length: 32 }).notNull().unique(),
-  catchId: uuid("catch_id").notNull().references(() => diaryCatches.id, { onDelete: "cascade" }),
+  catchId: varchar("catch_id").notNull().references(() => diaryCatches.id, { onDelete: "cascade" }),
   ownerUserId: varchar("owner_user_id").notNull().references(() => users.id),
   privacySettings: jsonb("privacy_settings").$type<{
     hideGps: boolean;
@@ -1492,6 +1492,15 @@ export type DiaryBattle = typeof diaryBattles.$inferSelect;
 export type InsertDiaryBattle = z.infer<typeof insertDiaryBattleSchema>;
 export type BattleInvitation = typeof battleInvitations.$inferSelect;
 export type InsertBattleInvitation = z.infer<typeof insertBattleInvitationSchema>;
+
+// Diary catch share types
+export type DiaryCatchShare = typeof diaryCatchShares.$inferSelect;
+export const insertDiaryCatchShareSchema = createInsertSchema(diaryCatchShares).omit({
+  id: true,
+  viewCount: true,
+  createdAt: true,
+});
+export type InsertDiaryCatchShare = z.infer<typeof insertDiaryCatchShareSchema>;
 
 // Friendship types
 export type Friendship = typeof friendships.$inferSelect;
