@@ -1,0 +1,243 @@
+import React, { useState } from 'react';
+import { 
+  // Core Navigation
+  BookOpen, Fish, MapPin, Package, BarChart3,
+  // Community & Social
+  Users, Swords, Trophy, Crown,
+  // Tools & Utility
+  Cloud, Scale, Target, Award,
+  // System & UI
+  Settings, LogOut, Sun, Moon, X, ChevronRight, Plus, Trash2, Search, Filter,
+  // Status / Misc
+  Zap, Shield, Building2, AlertCircle, CheckCircle2, Loader2
+} from 'lucide-react';
+
+// --- UTILS ---
+function cn(...classes) {
+  return classes.filter(Boolean).join(" ");
+}
+
+// --- SYSTEM CONFIGURATION (NON-NEGOTIABLE RULES) ---
+const ICON_CONFIG = {
+  strokeWidth: 1.75, 
+  premiumStrokeWidth: 2.25,
+  size: {
+    menu: "h-5 w-5",      // 20px
+    tool: "h-4 w-4",      // 16px
+    hero: "h-6 w-6",      // 24px
+    giant: "h-10 w-10"    // 40px
+  }
+};
+
+// --- MAIN COMPONENT ---
+export default function IconSystem() {
+  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [activeTab, setActiveTab] = useState('diary');
+
+  const toggleTheme = () => setIsDarkMode(!isDarkMode);
+
+  const Container = ({ title, children, className = "" }) => (
+    <section className="space-y-4">
+      <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
+        <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">{title}</h2>
+      </div>
+      <div className={className}>{children}</div>
+    </section>
+  );
+
+  return (
+    <div className={isDarkMode ? "dark" : ""}>
+      <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-8 font-sans transition-colors duration-300">
+        
+        {/* Header */}
+        <header className="max-w-5xl mx-auto mb-12 flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent mb-2">
+              Contestio Icon System
+            </h1>
+            <p className="text-slate-500 dark:text-slate-400 max-w-lg">
+              Official Manual. Icons must always be wrapped in the correct container.
+              Contrast boost applied for Light Mode to ensure accessibility.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <button 
+              onClick={toggleTheme}
+              className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:scale-105 transition-transform flex items-center gap-2 text-xs font-bold"
+            >
+              {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              {isDarkMode ? 'LIGHT MODE' : 'DARK MODE'}
+            </button>
+          </div>
+        </header>
+
+        <main className="max-w-5xl mx-auto space-y-12">
+
+          {/* 1. NAVIGATION (Logic with Light Mode Fix) */}
+          <Container title="1. Main Navigation (Contrast & Volume check)" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            
+            {/* Core (Blue) */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-blue-600 dark:text-blue-400">Core Navigation</h3>
+              <div className="bg-slate-50/50 dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
+                <MenuRow 
+                  icon={BookOpen} 
+                  label="Denník" 
+                  isActive={activeTab === 'diary'} 
+                  onClick={() => setActiveTab('diary')}
+                  variant="blue"
+                />
+                 <MenuRow 
+                  icon={Fish} 
+                  label="Moje úlovky" 
+                  isActive={activeTab === 'catches'} 
+                  onClick={() => setActiveTab('catches')}
+                  variant="blue"
+                />
+              </div>
+            </div>
+
+            {/* Special (Social) */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-pink-600 dark:text-pink-400">Social & Gamification</h3>
+              <div className="bg-slate-50/50 dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
+                <MenuRow 
+                  icon={Users} 
+                  label="Priatelia" 
+                  isActive={activeTab === 'friends'} 
+                  onClick={() => setActiveTab('friends')}
+                  variant="pink"
+                />
+                <MenuRow 
+                  icon={Swords} 
+                  label="Fishing Battle" 
+                  isActive={activeTab === 'battles'} 
+                  onClick={() => setActiveTab('battles')}
+                  variant="amber"
+                  isPremium
+                />
+              </div>
+            </div>
+
+             {/* Utility (Inverse) */}
+             <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400">Utility (Inverse)</h3>
+              <div className="bg-slate-50/50 dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
+                <MenuRow 
+                  icon={Cloud} 
+                  label="Počasie" 
+                  isActive={activeTab === 'weather'} 
+                  onClick={() => setActiveTab('weather')}
+                  variant="inverse"
+                />
+                 <MenuRow 
+                  icon={Target} 
+                  label="Ciele" 
+                  isActive={activeTab === 'goals'} 
+                  onClick={() => setActiveTab('goals')}
+                  variant="inverse"
+                />
+              </div>
+            </div>
+          </Container>
+
+          {/* 2. LIBRARY GRID */}
+          <Container title="2. Icon Card Library (Grid Check)" className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
+             <IconCard icon={BookOpen} name="BookOpen" />
+             <IconCard icon={Fish} name="Fish" />
+             <IconCard icon={MapPin} name="MapPin" />
+             <IconCard icon={Package} name="Package" />
+             <IconCard icon={BarChart3} name="BarChart3" />
+             <IconCard icon={Users} name="Users" />
+             <IconCard icon={Swords} name="Swords" />
+             <IconCard icon={Cloud} name="Cloud" />
+             <IconCard icon={Scale} name="Scale" />
+             <IconCard icon={Target} name="Target" />
+             <IconCard icon={Award} name="Award" />
+             <IconCard icon={X} name="X (Close)" />
+          </Container>
+
+        </main>
+      </div>
+    </div>
+  );
+}
+
+// --- SUB-COMPONENTS ---
+
+const MenuRow = ({ icon: Icon, label, isActive, onClick, variant, isPremium }) => {
+  // Logic for anchored icons (Light mode visibility fix)
+  const getIconWrapperClasses = (v, active) => {
+    if (!active) {
+      // Light Mode: bg-slate-100 gives icon volume. Text-slate-600 gives contrast.
+      // Dark Mode: bg-transparent is preferred for minimalism as contrast is naturally higher.
+      return "text-slate-600 dark:text-slate-500 bg-slate-100 dark:bg-transparent transition-all";
+    }
+    
+    switch (v) {
+      case 'blue': return "bg-blue-500/10 text-blue-600 dark:text-blue-400";
+      case 'pink': return "bg-pink-500/10 text-pink-600 dark:text-pink-400";
+      case 'amber': return "bg-amber-500/10 text-amber-600 dark:text-amber-400";
+      case 'inverse': return "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 shadow-md"; 
+      default: return "bg-slate-100 text-slate-900";
+    }
+  };
+
+  const getDotClass = (v) => {
+    switch (v) {
+      case 'blue': return "bg-blue-600";
+      case 'pink': return "bg-pink-600";
+      case 'amber': return "bg-amber-600";
+      default: return "bg-transparent";
+    }
+  };
+
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200",
+        isActive 
+          ? "bg-white dark:bg-slate-950 shadow-sm border border-slate-200 dark:border-slate-800" 
+          : "hover:bg-white dark:hover:bg-slate-800/50"
+      )}
+    >
+      <div className={cn(
+        "h-9 w-9 rounded-lg flex items-center justify-center relative",
+        getIconWrapperClasses(variant, isActive)
+      )}>
+        <Icon size={20} strokeWidth={ICON_CONFIG.strokeWidth} />
+        
+        {isPremium && (
+           <div className="absolute -top-1 -right-1 bg-amber-100 dark:bg-amber-900 text-amber-600 dark:text-amber-400 rounded-full p-0.5 border-2 border-white dark:border-slate-950 shadow-sm">
+             <Crown size={8} strokeWidth={ICON_CONFIG.premiumStrokeWidth} />
+           </div>
+        )}
+      </div>
+
+      <span className={cn(
+        "text-sm font-medium transition-colors",
+        isActive ? "text-slate-900 dark:text-white font-bold" : "text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200"
+      )}>
+        {label}
+      </span>
+
+      {isActive && (
+        <div className={cn("ml-auto w-1.5 h-1.5 rounded-full transition-all", getDotClass(variant))} />
+      )}
+    </button>
+  );
+};
+
+const IconCard = ({ icon: Icon, name }) => (
+  <div className="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl hover:border-blue-400 dark:hover:border-blue-800 transition-colors group">
+    <Icon 
+      size={20}
+      className="text-slate-600 dark:text-slate-400 group-hover:text-blue-500 transition-colors" 
+      strokeWidth={ICON_CONFIG.strokeWidth} 
+    />
+    <span className="mt-3 text-[10px] font-mono text-slate-500">
+      {name}
+    </span>
+  </div>
+);
