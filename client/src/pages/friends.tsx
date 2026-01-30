@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, UserCheck, Search } from "lucide-react";
-import { TacticalIconInline } from "@/components/ui/tactical-icon";
+import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 import { useQuery } from "@tanstack/react-query";
 import DiaryLayout from "@/components/DiaryLayout";
 import FriendsList from "@/components/friends/FriendsList";
@@ -74,13 +74,24 @@ export default function Friends() {
   return (
     <DiaryLayout>
       <div className="space-y-6">
-          <div className="space-y-2">
-            <h1 className="text-3xl font-bold text-foreground dark:text-white flex items-center gap-3">
-              <TacticalIconInline icon={Users} variant="orange" />
-              Priatelia
-            </h1>
-            <p className="text-muted-foreground dark:text-slate-400">Pridaj si kamarátov a vyzvi ich na rybársky súboj.</p>
-          </div>
+          {/* Header */}
+          <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <span className="h-px w-16 bg-[#F97316]"></span>
+                <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#F97316]">Komunita</span>
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-4">
+                  <TacticalIcon icon={Users} variant="orange" size="lg" showLabel={false} />
+                  <h1 className="text-4xl md:text-5xl font-black italic tracking-tighter uppercase text-foreground leading-none">Priatelia</h1>
+                </div>
+                <p className="text-sm font-medium text-muted-foreground italic tracking-tight pl-0.5">
+                  Pridaj si kamarátov a vyzvi ich na rybársky súboj
+                </p>
+              </div>
+            </div>
+          </header>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-3 bg-muted dark:bg-slate-700/50">
