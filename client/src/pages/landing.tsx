@@ -64,14 +64,42 @@ export default function Landing() {
   return (
     <div className="bg-[#08101a] min-h-screen relative overflow-x-hidden">
       
-      {/* Background Effects - Gradient Orbs (exact Figma positioning) */}
-      <div className="absolute pointer-events-none" style={{ top: '-181.42px', left: '192.2px', width: '948.31px', height: '571.27px' }}>
+      {/* Background Effects - scale factor: min(1, 100vw/1440px) */}
+      {/* Orb1: X=192.2, Y=-181.42, W=948.31, H=571.27 */}
+      <div 
+        className="absolute pointer-events-none"
+        style={{ 
+          top: 'calc(-181px * min(1, 100vw / 1440px))',
+          left: 'calc(192px * min(1, 100vw / 1440px))',
+          width: 'calc(948px * min(1, 100vw / 1440px))', 
+          height: 'calc(571px * min(1, 100vw / 1440px))' 
+        }}
+      >
         <GradientOrb1 />
       </div>
-      <div className="absolute pointer-events-none" style={{ top: '297.88px', left: '385.27px', width: '948.31px', height: '303.95px' }}>
+      {/* Orb2: X=385.27, Y=297.88, W=948.31, H=303.95 */}
+      <div 
+        className="absolute pointer-events-none"
+        style={{ 
+          top: 'calc(298px * min(1, 100vw / 1440px))',
+          left: 'calc(385px * min(1, 100vw / 1440px))',
+          width: 'calc(948px * min(1, 100vw / 1440px))', 
+          height: 'calc(304px * min(1, 100vw / 1440px))' 
+        }}
+      >
         <GradientOrb2 />
       </div>
-      <div className="absolute top-[-17px] left-[-191px] w-[1834px] h-[1200px] mix-blend-screen pointer-events-none">
+      {/* Stars background: Figma 1834x1200, scaled 1.4x = 2568x1680, centered */}
+      <div 
+        className="absolute mix-blend-screen pointer-events-none"
+        style={{
+          top: 'calc(-17px * min(1, 100vw / 1440px))',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: 'calc(2568px * min(1, 100vw / 1440px))',
+          height: 'calc(1680px * min(1, 100vw / 1440px))'
+        }}
+      >
         <img src={starsBackground} alt="" className="w-full h-full object-cover" />
       </div>
 
