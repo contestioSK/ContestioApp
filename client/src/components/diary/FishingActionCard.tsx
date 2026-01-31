@@ -33,7 +33,7 @@ export default function FishingActionCard({
           <img 
             src={carpImage} 
             alt="Kapor" 
-            className="w-28 h-auto md:w-64 opacity-20 grayscale brightness-200"
+            className="w-28 h-auto md:w-64 opacity-5 grayscale brightness-200"
           />
         </div>
         
