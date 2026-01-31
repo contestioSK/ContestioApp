@@ -28,7 +28,7 @@ export default function FishingActionCard({
       
       <CardContent className="relative p-4 md:p-6 flex flex-col h-full min-h-[140px] md:min-h-[200px]">
         <div className="absolute right-2 top-2 md:-left-2 md:right-auto md:top-1/2 md:-translate-y-1/2 pointer-events-none">
-          <Fish className="w-16 h-16 md:w-48 md:h-48 text-white/10" strokeWidth={1.75} />
+          <Fish className="w-16 h-16 md:w-48 md:h-48 text-white/[0.03]" strokeWidth={1} />
         </div>
         
         <div className="relative z-10 md:ml-40 mb-2 md:mb-0 md:flex-1">
