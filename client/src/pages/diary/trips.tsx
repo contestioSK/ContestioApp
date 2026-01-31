@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
+import waterRaysBg from "@assets/water-rays-bg.png";
 import { useAuth } from "@/hooks/useAuth";
 import { useDiaryOffline } from "@/hooks/use-diary-offline";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -846,20 +847,29 @@ export default function DiaryTrips() {
           {/* Hero Grid (2/3 + 1/3 Layout) */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
             {/* Main Card: Trip Planner (2/3) */}
-            <div className="col-span-1 md:col-span-2 bg-cyan-600 dark:bg-cyan-700 rounded-xl p-6 md:p-8 relative overflow-hidden flex flex-col justify-between min-h-[220px] md:min-h-[260px] shadow-xl group border border-cyan-400/20">
-              {/* Decorative background */}
-              <div className="absolute top-0 right-0 w-60 md:w-80 h-60 md:h-80 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
-              <MapPin className="absolute -bottom-6 -right-6 w-32 md:w-48 h-32 md:h-48 text-white/5 rotate-12 group-hover:rotate-0 transition-transform duration-700" strokeWidth={1.75} />
+            <div className="col-span-1 md:col-span-2 rounded-xl p-6 md:p-8 relative overflow-hidden flex flex-col justify-between min-h-[220px] md:min-h-[260px] shadow-xl group border border-slate-700" style={{ backgroundColor: '#0B1C2F' }}>
+              {/* Water rays background - from left side */}
+              <div 
+                className="absolute inset-0 opacity-60 pointer-events-none"
+                style={{
+                  backgroundImage: `url(${waterRaysBg})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center left',
+                  transform: 'scaleX(-1)',
+                }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-l from-[#0B1C2F] via-[#0B1C2F]/80 to-transparent pointer-events-none" />
+              <MapPin className="absolute -bottom-6 -right-6 w-32 md:w-48 h-32 md:h-48 text-white/[0.03] rotate-12 group-hover:rotate-0 transition-transform duration-700" strokeWidth={1} />
 
               <div className="relative z-10 max-w-lg">
-                <div className="inline-flex items-center gap-2 bg-black/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-medium text-cyan-50 mb-3 md:mb-4 border border-white/10">
+                <div className="inline-flex items-center gap-2 bg-black/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-medium text-slate-300 mb-3 md:mb-4 border border-white/10">
                   <CalendarIcon size={12} />
                   <span>Výpravy</span>
                 </div>
                 <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2 md:mb-3 leading-tight">
                   Kam vyrazíš najbližšie?
                 </h2>
-                <p className="text-cyan-50 font-medium text-base md:text-lg opacity-90">
+                <p className="text-slate-300 font-medium text-base md:text-lg">
                   Naplánuj novú výpravu alebo sa vráť k miestam, kde si už chytal.
                 </p>
               </div>
@@ -869,7 +879,7 @@ export default function DiaryTrips() {
                 <Button 
                   onClick={() => setIsCreateDialogOpen(true)}
                   disabled={limits && !limits.canCreate}
-                  className="bg-white text-cyan-900 font-bold px-5 md:px-6 py-3 md:py-3.5 rounded-full shadow-lg hover:shadow-xl hover:bg-slate-50 transition-all transform hover:-translate-y-1 h-auto"
+                  className="bg-[#F97316] hover:bg-[#EA580C] text-white font-bold px-5 md:px-6 py-3 md:py-3.5 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 h-auto"
                   data-testid="button-create-trip"
                 >
                   <Plus size={20} strokeWidth={1.75} className="mr-2" />
@@ -880,11 +890,11 @@ export default function DiaryTrips() {
                 <Button 
                   variant="ghost"
                   onClick={scrollToHistory}
-                  className="group/hist backdrop-blur-md border border-white/20 text-white font-medium px-5 md:px-6 py-3 md:py-3.5 rounded-full hover:bg-white/10 transition-all h-auto"
+                  className="group/hist backdrop-blur-md border border-slate-600 bg-slate-800/80 text-white font-medium px-5 md:px-6 py-3 md:py-3.5 rounded-full hover:bg-slate-700 transition-all h-auto"
                 >
                   <History size={18} className="opacity-80 mr-2" />
                   <span>História výprav</span>
-                  <ArrowDown size={14} className="ml-1 opacity-0 -translate-y-1 group-hover/hist:opacity-100 group-hover/hist:translate-y-0 transition-all text-cyan-200" />
+                  <ArrowDown size={14} className="ml-1 opacity-0 -translate-y-1 group-hover/hist:opacity-100 group-hover/hist:translate-y-0 transition-all text-slate-300" />
                 </Button>
               </div>
             </div>
