@@ -879,7 +879,7 @@ export default function DiaryTrips() {
                 <Button 
                   onClick={() => setIsCreateDialogOpen(true)}
                   disabled={limits && !limits.canCreate}
-                  className="bg-[#F97316] hover:bg-[#EA580C] text-white font-bold px-5 md:px-6 py-3 md:py-3.5 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 h-auto"
+                  className="bg-[#F97316] hover:bg-[#EA580C] text-white font-bold px-5 md:px-6 py-3 md:py-3.5 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 h-auto"
                   data-testid="button-create-trip"
                 >
                   <Plus size={20} strokeWidth={1.75} className="mr-2" />
@@ -890,7 +890,7 @@ export default function DiaryTrips() {
                 <Button 
                   variant="ghost"
                   onClick={scrollToHistory}
-                  className="group/hist backdrop-blur-md border border-slate-600 bg-slate-800/80 text-white font-medium px-5 md:px-6 py-3 md:py-3.5 rounded-full hover:bg-slate-700 transition-all h-auto"
+                  className="group/hist backdrop-blur-md border border-slate-600 bg-slate-800/80 text-white font-medium px-5 md:px-6 py-3 md:py-3.5 rounded-xl hover:bg-slate-700 transition-all h-auto"
                 >
                   <History size={18} className="opacity-80 mr-2" />
                   <span>História výprav</span>

@@ -54,7 +54,7 @@ export default function FishingActionCard({
         <div className="relative z-10 flex flex-wrap gap-3 md:gap-4 mt-6 md:mt-8">
           <Button
             onClick={onStartFishing}
-            className="bg-[#F97316] hover:bg-[#EA580C] text-white font-bold px-5 md:px-6 py-3 md:py-3.5 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 h-auto text-sm md:text-base"
+            className="bg-[#F97316] hover:bg-[#EA580C] text-white font-bold px-5 md:px-6 py-3 md:py-3.5 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 h-auto text-sm md:text-base"
             data-testid="cta-start-fishing"
           >
             <Play className="w-4 h-4 md:w-5 md:h-5 mr-2" strokeWidth={1.75} />
@@ -64,7 +64,7 @@ export default function FishingActionCard({
             onClick={onAddCatch}
             disabled={!canAddCatch}
             variant="ghost"
-            className="group/btn backdrop-blur-md border border-slate-600 bg-slate-800/80 text-white font-medium px-5 md:px-6 py-3 md:py-3.5 rounded-full hover:bg-slate-700 transition-all h-auto text-sm md:text-base"
+            className="group/btn backdrop-blur-md border border-slate-600 bg-slate-800/80 text-white font-medium px-5 md:px-6 py-3 md:py-3.5 rounded-xl hover:bg-slate-700 transition-all h-auto text-sm md:text-base"
             data-testid="cta-add-catch"
           >
             <Plus className="w-4 h-4 md:w-5 md:h-5 mr-2" strokeWidth={1.75} />
