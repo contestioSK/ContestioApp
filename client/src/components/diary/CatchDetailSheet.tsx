@@ -7,7 +7,8 @@ import {
   Edit2, 
   Trash2, 
   Target,
-  Maximize2
+  Maximize2,
+  X
 } from "lucide-react";
 
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -43,7 +44,17 @@ export function CatchDetailSheet({
 
   return (
     <Sheet open onOpenChange={onClose}>
-      <SheetContent className="w-full sm:max-w-md p-0 bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 overflow-y-auto" data-testid="catch-detail-panel">
+      <SheetContent className="relative w-full sm:max-w-md p-0 bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 overflow-y-auto" data-testid="catch-detail-panel">
+        {/* Close button - positioned above everything */}
+        <button
+          onClick={(e) => { e.stopPropagation(); onClose(); }}
+          className="absolute top-3 right-3 z-50 p-2 rounded-full bg-slate-900/80 hover:bg-slate-900 text-white transition-colors"
+          style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}
+          aria-label="Zavrieť"
+        >
+          <X className="h-5 w-5" strokeWidth={2.5} />
+        </button>
+        
         <div className="flex flex-col min-h-full pt-5">
           {/* Hero Photo Section */}
           <div className="relative bg-slate-900 mx-5 rounded-lg overflow-hidden min-h-48 sm:min-h-64">
