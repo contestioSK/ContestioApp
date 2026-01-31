@@ -29,11 +29,11 @@ export default function FishingActionCard({
       <div className="absolute inset-0 bg-gradient-to-l from-[#0B1C2F] via-[#0B1C2F]/80 to-transparent pointer-events-none" />
       
       <CardContent className="relative p-4 md:p-6 flex flex-col h-full min-h-[140px] md:min-h-[200px]">
-        <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none pr-2 md:pr-4">
+        <div className="absolute right-0 top-[40%] -translate-y-1/2 pointer-events-none pr-2 md:pr-4">
           <img 
             src={carpImage} 
             alt="Kapor" 
-            className="w-32 h-auto md:w-80 opacity-20 grayscale brightness-200"
+            className="w-28 h-auto md:w-64 opacity-20 grayscale brightness-200"
           />
         </div>
         
