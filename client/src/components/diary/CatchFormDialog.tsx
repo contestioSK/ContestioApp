@@ -766,7 +766,7 @@ export default function CatchFormDialog({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto p-0 [&>button]:hidden">
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto p-0 [&>button]:hidden bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
           {/* Accessibility: Hidden title for screen readers */}
           <VisuallyHidden>
             <DialogTitle>
