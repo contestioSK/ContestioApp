@@ -18,7 +18,7 @@ export default function FishingActionCard({
   return (
     <Card className="relative overflow-hidden h-full border border-slate-700 shadow-lg" style={{ backgroundColor: '#0B1C2F' }}>
       <div 
-        className="absolute inset-0 opacity-60 pointer-events-none"
+        className="absolute inset-0 opacity-40 pointer-events-none"
         style={{
           backgroundImage: `url(${waterRaysBg})`,
           backgroundSize: 'cover',
@@ -38,10 +38,10 @@ export default function FishingActionCard({
         </div>
         
         <div className="relative z-10 mb-2 md:mb-0 md:flex-1">
-          <h2 className="text-base md:text-2xl font-bold text-white mb-1 md:mb-2">
+          <h2 className="text-lg md:text-3xl font-bold text-white mb-1 md:mb-2">
             Čo ideš dnes robiť?
           </h2>
-          <p className="text-xs md:text-base text-slate-300 mb-2 md:mb-4 leading-relaxed">
+          <p className="text-sm md:text-xl text-slate-300 mb-2 md:mb-4 leading-relaxed font-medium">
             Začni rybačku alebo si rýchlo zapíš úlovok.
             <span className="hidden md:inline"><br />Contestio sa postará o zvyšok.</span>
           </p>
