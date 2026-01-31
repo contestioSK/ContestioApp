@@ -1100,18 +1100,21 @@ export default function DiaryIndex() {
 
         {/* Quick Start Fishing Dialog */}
         <Dialog open={isStartFishingOpen} onOpenChange={setIsStartFishingOpen}>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Play className="w-5 h-5 text-blue-500" />
-                Začať rybačku
-              </DialogTitle>
-              <DialogDescription>
-                Rýchlo spusti jednodňovú rybačku. Stačí zadať lokalitu a môžeš pridávať úlovky.
-              </DialogDescription>
-            </DialogHeader>
+          <DialogContent className="sm:max-w-[500px] p-0 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+            {/* Header with slate-950 background */}
+            <div className="bg-slate-100 dark:bg-slate-950 p-5 rounded-t-lg border-b border-slate-200 dark:border-slate-800">
+              <DialogHeader className="space-y-1">
+                <DialogTitle className="flex items-center gap-2">
+                  <Play className="w-5 h-5 text-blue-500" />
+                  Začať rybačku
+                </DialogTitle>
+                <DialogDescription>
+                  Rýchlo spusti jednodňovú rybačku. Stačí zadať lokalitu a môžeš pridávať úlovky.
+                </DialogDescription>
+              </DialogHeader>
+            </div>
             <Form {...quickStartForm}>
-              <form onSubmit={quickStartForm.handleSubmit(handleQuickStart)} className="space-y-4">
+              <form onSubmit={quickStartForm.handleSubmit(handleQuickStart)} className="space-y-4 p-5">
                 <FormField
                   control={quickStartForm.control}
                   name="location"
