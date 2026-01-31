@@ -489,7 +489,7 @@ export default function Landing() {
               <ul className="space-y-3">
                 <li><Link href="/pricing"><span className="text-white/50 hover:text-white text-sm cursor-pointer transition-colors">Cenník</span></Link></li>
                 <li><Link href="/#features"><span className="text-white/50 hover:text-white text-sm cursor-pointer transition-colors">Funkcie</span></Link></li>
-                <li><Link href="/categories/live"><span className="text-white/50 hover:text-white text-sm cursor-pointer transition-colors">Živé súťaže</span></Link></li>
+                <li><Link href="/competitions"><span className="text-white/50 hover:text-white text-sm cursor-pointer transition-colors">Súťaže</span></Link></li>
                 <li><Link href="/diary"><span className="text-white/50 hover:text-white text-sm cursor-pointer transition-colors">Rybársky denník</span></Link></li>
               </ul>
             </div>
