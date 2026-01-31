@@ -37,36 +37,38 @@ export default function FishingActionCard({
           />
         </div>
         
-        <div className="relative z-10 mb-2 md:mb-0 md:flex-1">
-          <h2 className="text-lg md:text-3xl font-bold text-white mb-1 md:mb-2">
+        <div className="relative z-10 max-w-lg">
+          <div className="inline-flex items-center gap-2 bg-black/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-medium text-slate-300 mb-3 md:mb-4 border border-white/10">
+            <Plus size={12} />
+            <span>Rýchle akcie</span>
+          </div>
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2 md:mb-3 leading-tight">
             Čo ideš dnes robiť?
           </h2>
-          <p className="text-sm md:text-xl text-slate-300 mb-2 md:mb-4 leading-relaxed font-medium">
+          <p className="text-slate-300 font-medium text-base md:text-lg">
             Začni rybačku alebo si rýchlo zapíš úlovok.
             <span className="hidden md:inline"><br />Contestio sa postará o zvyšok.</span>
           </p>
         </div>
         
-        <div className="relative z-10 grid grid-cols-2 gap-2 md:gap-3 mt-auto">
+        <div className="relative z-10 flex flex-wrap gap-3 md:gap-4 mt-6 md:mt-8">
           <Button
             onClick={onStartFishing}
-            size="lg"
-            className="h-10 md:h-14 text-xs md:text-base bg-[#F97316] hover:bg-[#EA580C] text-white font-bold shadow-lg hover:shadow-xl transition-all"
+            className="bg-[#F97316] hover:bg-[#EA580C] text-white font-bold px-5 md:px-6 py-3 md:py-3.5 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 h-auto text-sm md:text-base"
             data-testid="cta-start-fishing"
           >
-            <Play className="w-4 h-4 md:w-5 md:h-5 mr-1.5 md:mr-2" strokeWidth={1.75} />
-            Začať rybačku
+            <Play className="w-4 h-4 md:w-5 md:h-5 mr-2" strokeWidth={1.75} />
+            <span>Začať rybačku</span>
           </Button>
           <Button
             onClick={onAddCatch}
             disabled={!canAddCatch}
-            variant="outline"
-            size="lg"
-            className="h-10 md:h-14 text-xs md:text-base border border-slate-600 bg-slate-800/80 hover:bg-slate-700 text-white font-bold shadow-md hover:shadow-lg transition-all"
+            variant="ghost"
+            className="group/btn backdrop-blur-md border border-slate-600 bg-slate-800/80 text-white font-medium px-5 md:px-6 py-3 md:py-3.5 rounded-full hover:bg-slate-700 transition-all h-auto text-sm md:text-base"
             data-testid="cta-add-catch"
           >
-            <Plus className="w-4 h-4 md:w-5 md:h-5 mr-1.5 md:mr-2" strokeWidth={1.75} />
-            Pridať úlovok
+            <Plus className="w-4 h-4 md:w-5 md:h-5 mr-2" strokeWidth={1.75} />
+            <span>Pridať úlovok</span>
           </Button>
         </div>
       </CardContent>
