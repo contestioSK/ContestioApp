@@ -44,7 +44,7 @@ export function CatchDetailSheet({
 
   return (
     <Sheet open onOpenChange={onClose}>
-      <SheetContent className="relative w-full sm:max-w-md p-0 bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 overflow-y-auto" data-testid="catch-detail-panel">
+      <SheetContent className="w-full sm:max-w-md p-0 bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 overflow-y-auto" data-testid="catch-detail-panel">
         {/* Close button - positioned above everything */}
         <button
           onClick={(e) => { e.stopPropagation(); onClose(); }}
