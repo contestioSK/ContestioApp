@@ -131,10 +131,10 @@ export default function CategoryPage({ category, title, description }: CategoryP
       <section className="py-12 bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-4 mb-6">
-            <Link href="/">
+            <Link href="/competitions">
               <Button variant="outline" size="sm" className="gap-2">
                 <ArrowLeft className="w-4 h-4" />
-                Späť na hlavnú
+                Späť na súťaže
               </Button>
             </Link>
           </div>
