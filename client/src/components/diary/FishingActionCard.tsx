@@ -21,10 +21,11 @@ export default function FishingActionCard({
         style={{
           backgroundImage: `url(${waterRaysBg})`,
           backgroundSize: 'cover',
-          backgroundPosition: 'center right',
+          backgroundPosition: 'center left',
+          transform: 'scaleX(-1)',
         }}
       />
-      <div className="absolute inset-0 bg-gradient-to-r from-[#0B1C2F] via-[#0B1C2F]/80 to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-l from-[#0B1C2F] via-[#0B1C2F]/80 to-transparent pointer-events-none" />
       
       <CardContent className="relative p-4 md:p-6 flex flex-col h-full min-h-[140px] md:min-h-[200px]">
         <div className="absolute right-2 top-2 md:-left-2 md:right-auto md:top-1/2 md:-translate-y-1/2 pointer-events-none">
