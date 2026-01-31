@@ -950,7 +950,7 @@ export default function DiaryTrips() {
             </Drawer>
           ) : (
             <Dialog open={isCreateDialogOpen || !!editingTrip} onOpenChange={(open) => !open && closeDialog()}>
-              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
                 <DialogHeader>
                   <DialogTitle>
                     {editingTrip ? "Upraviť výpravu" : "Nová rybárska výprava"}
@@ -1158,7 +1158,7 @@ export default function DiaryTrips() {
 
           {/* Delete Confirmation Dialog */}
           <Dialog open={!!deletingTrip} onOpenChange={() => setDeletingTrip(null)}>
-            <DialogContent>
+            <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
               <DialogHeader>
                 <DialogTitle>Zmazať výpravu</DialogTitle>
                 <DialogDescription>
