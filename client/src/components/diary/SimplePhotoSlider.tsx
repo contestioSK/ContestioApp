@@ -115,19 +115,19 @@ export function SimplePhotoSlider({ photos, onPhotoClick }: SimplePhotoSliderPro
         <>
           <button
             onClick={(e) => { e.stopPropagation(); prevImage(); }}
-            className="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-black/50 text-white rounded-full p-2 hover:bg-black/70 transition-colors"
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-20 p-2 text-white transition-opacity hover:opacity-80 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
             aria-label="Predchádzajúca fotografia"
             data-testid="button-prev-photo"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-6 h-6" strokeWidth={2.5} />
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); nextImage(); }}
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-black/50 text-white rounded-full p-2 hover:bg-black/70 transition-colors"
+            className="absolute right-2 top-1/2 -translate-y-1/2 z-20 p-2 text-white transition-opacity hover:opacity-80 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
             aria-label="Ďalšia fotografia"
             data-testid="button-next-photo"
           >
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight className="w-6 h-6" strokeWidth={2.5} />
           </button>
           <div className="absolute top-2 right-2 z-20 bg-black/50 text-white text-xs px-2 py-1 rounded-full">
             {activeIndex + 1} / {photos.length}
