@@ -775,7 +775,7 @@ export default function CatchFormDialog({
           </VisuallyHidden>
 
           {/* Compact Header */}
-          <div className="relative bg-slate-100 dark:bg-slate-800 p-5 pt-6 pb-5 rounded-xl border border-slate-200 dark:border-slate-700">
+          <div className="relative bg-slate-100 dark:bg-slate-950 p-5 pt-6 pb-5 rounded-xl border border-slate-200 dark:border-slate-800">
             <button
               type="button"
               onClick={handleClose}
