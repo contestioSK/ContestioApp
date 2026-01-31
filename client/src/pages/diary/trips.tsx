@@ -950,19 +950,24 @@ export default function DiaryTrips() {
             </Drawer>
           ) : (
             <Dialog open={isCreateDialogOpen || !!editingTrip} onOpenChange={(open) => !open && closeDialog()}>
-              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-                <DialogHeader>
-                  <DialogTitle>
-                    {editingTrip ? "Upraviť výpravu" : "Nová rybárska výprava"}
-                  </DialogTitle>
-                  <DialogDescription>
-                    {editingTrip 
-                      ? "Aktualizuj detaily svojej rybárskej výpravy."
-                      : "Vytvor novú rybársku výpravu a začni zapisovať úlovky."
-                    }
-                  </DialogDescription>
-                </DialogHeader>
-                <TripFormContent />
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+                {/* Header with slate-950 background */}
+                <div className="bg-slate-100 dark:bg-slate-950 p-5 rounded-t-lg border-b border-slate-200 dark:border-slate-800">
+                  <DialogHeader className="space-y-1">
+                    <DialogTitle>
+                      {editingTrip ? "Upraviť výpravu" : "Nová rybárska výprava"}
+                    </DialogTitle>
+                    <DialogDescription>
+                      {editingTrip 
+                        ? "Aktualizuj detaily svojej rybárskej výpravy."
+                        : "Vytvor novú rybársku výpravu a začni zapisovať úlovky."
+                      }
+                    </DialogDescription>
+                  </DialogHeader>
+                </div>
+                <div className="p-5">
+                  <TripFormContent />
+                </div>
               </DialogContent>
             </Dialog>
           )}
