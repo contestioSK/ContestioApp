@@ -272,15 +272,15 @@ export default function CatchDetail() {
           <>
             <button
               onClick={(e) => { e.stopPropagation(); prevImage(); }}
-              className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-black/30 hover:bg-black/50 rounded-full text-white backdrop-blur-md z-20 transition-colors"
+              className="absolute left-4 top-1/2 -translate-y-1/2 p-2 text-white z-20 transition-opacity hover:opacity-80 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
             >
-              <ChevronLeft size={24} strokeWidth={2} />
+              <ChevronLeft size={28} strokeWidth={2.5} />
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); nextImage(); }}
-              className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-black/30 hover:bg-black/50 rounded-full text-white backdrop-blur-md z-20 transition-colors"
+              className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-white z-20 transition-opacity hover:opacity-80 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
             >
-              <ChevronLeft size={24} strokeWidth={2} className="rotate-180" />
+              <ChevronLeft size={28} strokeWidth={2.5} className="rotate-180" />
             </button>
             <div className="absolute bottom-32 md:bottom-40 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-black/40 backdrop-blur-md rounded-full text-white text-xs font-medium z-20">
               {activeImage + 1} / {photoUrls.length}
@@ -618,15 +618,15 @@ export default function CatchDetail() {
             <>
               <button
                 onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-md z-50 transition-colors"
+                className="absolute left-4 top-1/2 -translate-y-1/2 p-2 text-white z-50 transition-opacity hover:opacity-80 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
               >
-                <ChevronLeft size={28} strokeWidth={2} />
+                <ChevronLeft size={32} strokeWidth={2.5} />
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-md z-50 transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-white z-50 transition-opacity hover:opacity-80 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
               >
-                <ChevronLeft size={28} strokeWidth={2} className="rotate-180" />
+                <ChevronLeft size={32} strokeWidth={2.5} className="rotate-180" />
               </button>
             </>
           )}
