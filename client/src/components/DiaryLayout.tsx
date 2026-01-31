@@ -188,7 +188,7 @@ export default function DiaryLayout({ children, fullBleed = false }: DiaryLayout
   return (
     <div className="min-h-screen bg-background flex">
       {/* Desktop Sidebar - hidden on mobile (navigation is in TopBar MobileMenu) */}
-      <div className="hidden md:flex fixed inset-y-0 left-0 z-40 bg-sidebar border-r border-sidebar-border w-[240px] lg:w-[280px] flex-shrink-0 pt-16">
+      <div className="hidden md:flex fixed inset-y-0 left-0 z-40 bg-slate-50 dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 w-[240px] lg:w-[280px] flex-shrink-0 pt-16">
         <div className="flex flex-col h-full w-full">
           {/* Navigation */}
           <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
