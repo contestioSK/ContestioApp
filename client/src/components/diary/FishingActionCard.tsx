@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Fish, Play, Plus } from "lucide-react";
+import { Play, Plus } from "lucide-react";
 import waterRaysBg from "@assets/water-rays-bg.png";
+import carpImage from "@assets/Gemini_Generated_Image_kur5qpkur5qpkur5-Photoroom_1769878046486.png";
 
 interface FishingActionCardProps {
   onStartFishing: () => void;
@@ -28,8 +29,12 @@ export default function FishingActionCard({
       <div className="absolute inset-0 bg-gradient-to-l from-[#0B1C2F] via-[#0B1C2F]/80 to-transparent pointer-events-none" />
       
       <CardContent className="relative p-4 md:p-6 flex flex-col h-full min-h-[140px] md:min-h-[200px]">
-        <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none pr-4 md:pr-8">
-          <Fish className="w-24 h-24 md:w-64 md:h-64 text-white/[0.03]" strokeWidth={1} />
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none pr-2 md:pr-4">
+          <img 
+            src={carpImage} 
+            alt="Kapor" 
+            className="w-32 h-auto md:w-80 opacity-20 grayscale brightness-200"
+          />
         </div>
         
         <div className="relative z-10 mb-2 md:mb-0 md:flex-1">
