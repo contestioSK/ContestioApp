@@ -28,11 +28,11 @@ export default function FishingActionCard({
       <div className="absolute inset-0 bg-gradient-to-l from-[#0B1C2F] via-[#0B1C2F]/80 to-transparent pointer-events-none" />
       
       <CardContent className="relative p-4 md:p-6 flex flex-col h-full min-h-[140px] md:min-h-[200px]">
-        <div className="absolute right-2 top-2 md:-left-2 md:right-auto md:top-1/2 md:-translate-y-1/2 pointer-events-none">
-          <Fish className="w-16 h-16 md:w-48 md:h-48 text-white/[0.03]" strokeWidth={1} />
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none pr-4 md:pr-8">
+          <Fish className="w-24 h-24 md:w-64 md:h-64 text-white/[0.03]" strokeWidth={1} />
         </div>
         
-        <div className="relative z-10 md:ml-40 mb-2 md:mb-0 md:flex-1">
+        <div className="relative z-10 mb-2 md:mb-0 md:flex-1">
           <h2 className="text-base md:text-2xl font-bold text-white mb-1 md:mb-2">
             Čo ideš dnes robiť?
           </h2>
@@ -42,7 +42,7 @@ export default function FishingActionCard({
           </p>
         </div>
         
-        <div className="relative z-10 grid grid-cols-2 gap-2 md:gap-3 mt-auto md:ml-40">
+        <div className="relative z-10 grid grid-cols-2 gap-2 md:gap-3 mt-auto">
           <Button
             onClick={onStartFishing}
             size="lg"
