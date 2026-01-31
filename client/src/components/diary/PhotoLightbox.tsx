@@ -59,10 +59,10 @@ export function PhotoLightbox({ photos, currentIndex, onClose, onNavigate }: Pho
       {photos.length > 1 && (
         <button
           onClick={handlePrev}
-          className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white/10 hover:bg-white/20 text-white rounded-full p-3 transition-colors pointer-events-auto"
+          className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-2 text-white transition-opacity hover:opacity-80 pointer-events-auto drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
           aria-label="Predchádzajúca fotografia"
         >
-          <ChevronLeft className="w-8 h-8 pointer-events-none" />
+          <ChevronLeft className="w-8 h-8 pointer-events-none" strokeWidth={2.5} />
         </button>
       )}
 
@@ -80,10 +80,10 @@ export function PhotoLightbox({ photos, currentIndex, onClose, onNavigate }: Pho
       {photos.length > 1 && (
         <button
           onClick={handleNext}
-          className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white/10 hover:bg-white/20 text-white rounded-full p-3 transition-colors pointer-events-auto"
+          className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-2 text-white transition-opacity hover:opacity-80 pointer-events-auto drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
           aria-label="Ďalšia fotografia"
         >
-          <ChevronRight className="w-8 h-8 pointer-events-none" />
+          <ChevronRight className="w-8 h-8 pointer-events-none" strokeWidth={2.5} />
         </button>
       )}
 
