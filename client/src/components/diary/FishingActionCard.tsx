@@ -29,7 +29,7 @@ export default function FishingActionCard({
       <div className="absolute inset-0 bg-gradient-to-l from-[#0B1C2F] via-[#0B1C2F]/80 to-transparent pointer-events-none" />
       
       <CardContent className="relative p-4 md:p-6 flex flex-col h-full min-h-[140px] md:min-h-[200px]">
-        <div className="absolute right-4 bottom-4 md:bottom-auto md:top-[40%] md:-translate-y-1/2 md:right-0 pointer-events-none md:pr-4">
+        <div className="absolute right-4 bottom-4 md:bottom-auto md:top-1/2 md:-translate-y-1/2 md:right-0 pointer-events-none md:pr-4">
           <img 
             src={carpImage} 
             alt="Kapor" 
