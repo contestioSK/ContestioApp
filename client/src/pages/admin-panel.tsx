@@ -1792,7 +1792,7 @@ export default function AdminPanel() {
     <div className="min-h-screen bg-background flex">
       {/* Sidebar */}
       <div className={`
-        fixed inset-y-0 left-0 z-50 bg-sidebar border-r border-sidebar-border transform transition-transform duration-300 ease-in-out
+        fixed inset-y-0 left-0 z-50 bg-slate-50 dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 transform transition-transform duration-300 ease-in-out
         w-[85vw] max-w-[280px] md:w-[240px] lg:w-[280px]
         lg:translate-x-0 lg:static lg:inset-0
         md:translate-x-0 md:static md:inset-0
@@ -2085,39 +2085,39 @@ export default function AdminPanel() {
       )}
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 bg-background dark:bg-slate-900">
         {/* Top bar with hamburger */}
-        <div className="sticky top-0 z-30 flex items-center justify-between p-4 bg-background border-b border-border md:hidden">
+        <div className="sticky top-0 z-30 flex items-center justify-between p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 md:hidden">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setSidebarOpen(true)}
-            className="text-foreground"
+            className="text-slate-600 dark:text-slate-400"
           >
             <Menu className="h-5 w-5" />
           </Button>
-          <h1 className="text-lg font-semibold text-foreground">
+          <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
             {isAdmin ? "Správa systému" : "Správa súťaží"}
           </h1>
           <div className="w-10" /> {/* Spacer for centering */}
         </div>
 
         {/* Main content */}
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-auto bg-slate-50 dark:bg-slate-900">
           {competitionsLoading ? (
             <div className="p-6">
               <div className="space-y-4">
-                <Skeleton className="h-8 w-1/3" />
-                <Skeleton className="h-32 w-full" />
+                <Skeleton className="h-8 w-1/3 bg-slate-200 dark:bg-slate-800" />
+                <Skeleton className="h-32 w-full bg-slate-200 dark:bg-slate-800" />
               </div>
             </div>
           ) : !selectedCompetition && !isAdmin ? (
-            <div className="text-center py-12 px-4">
-              <Trophy className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium text-foreground mb-2">
+            <div className="text-center py-12 px-4 bg-slate-50 dark:bg-slate-900">
+              <Trophy className="mx-auto h-12 w-12 text-slate-400 dark:text-slate-600 mb-4" />
+              <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100 mb-2">
                 {competitions?.length === 0 ? "Zatiaľ žiadne súťaže" : "Vyberte súťaž"}
               </h3>
-              <p className="text-muted-foreground mb-6">
+              <p className="text-slate-500 dark:text-slate-400 mb-6">
                 {competitions?.length === 0 
                   ? "Vytvorte svoju prvú súťaž a začnite spravovať tímy a udalosti." 
                   : "Vyberte súťaž zo sidebar menu pre správu jej detailov."
@@ -2125,7 +2125,7 @@ export default function AdminPanel() {
               </p>
             </div>
           ) : (
-            <div className="w-full">
+            <div className="w-full bg-slate-50 dark:bg-slate-900 min-h-full">
               {/* Admin-only Tabs */}
               {isAdmin && activeTab === 'dashboard' && (
                   <div className="p-4 md:p-6 flex flex-col min-h-0">
