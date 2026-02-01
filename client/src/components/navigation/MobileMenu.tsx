@@ -80,24 +80,25 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
     return location.startsWith(href);
   };
 
-  const navItems = [
-    { icon: BookOpen, label: "Denník", href: "/diary", color: "text-blue-500", bg: "bg-blue-500/10" },
-    { icon: Fish, label: "Moje úlovky", href: "/diary/catches", color: "text-blue-500", bg: "bg-blue-500/10" },
-    { icon: MapPin, label: "Rybárske výpravy", href: "/diary/trips", color: "text-blue-500", bg: "bg-blue-500/10" },
-    { icon: Package, label: "Môj arzenál", href: "/diary/arsenal", color: "text-blue-500", bg: "bg-blue-500/10" },
-    { icon: BarChart3, label: "Štatistiky", href: "/diary/stats", color: "text-blue-500", bg: "bg-blue-500/10" },
+  const mainItem = { icon: BookOpen, label: "Denník", href: "/diary", color: "blue" };
+
+  const fishingLifeItems = [
+    { icon: Fish, label: "Moje úlovky", href: "/diary/catches", color: "cyan" },
+    { icon: MapPin, label: "Rybárske výpravy", href: "/diary/trips", color: "cyan" },
+    { icon: Package, label: "Môj arzenál", href: "/diary/arsenal", color: "cyan" },
+    { icon: BarChart3, label: "Štatistiky", href: "/diary/stats", color: "cyan" },
   ];
 
   const communityItems = [
-    { icon: Users, label: "Priatelia", href: "/friends", color: "text-pink-500", bg: "bg-pink-500/10", premium: false },
-    { icon: Swords, label: "Fishing Battle", href: isPremium ? "/diary/battles" : "/diary/battles/paywall", premium: true, color: "text-amber-500", bg: "bg-amber-500/10" },
+    { icon: Users, label: "Priatelia", href: "/friends", color: "amber", premium: false },
+    { icon: Swords, label: "Fishing Battle", href: isPremium ? "/diary/battles" : "/diary/battles/paywall", premium: true, color: "amber" },
   ];
 
   const toolsItems = [
-    { icon: Cloud, label: "Počasie", href: "/diary/weather-forecast", color: "text-slate-500", bg: "bg-slate-500/10" },
-    { icon: Scale, label: "Rybársky poriadok", href: "/diary/fishing-rules", color: "text-slate-500", bg: "bg-slate-500/10" },
-    { icon: Target, label: "Ciele", href: "/diary/seasonal-goals", color: "text-slate-500", bg: "bg-slate-500/10" },
-    { icon: Award, label: "Odznaky", href: "/diary/badges", color: "text-slate-500", bg: "bg-slate-500/10" },
+    { icon: Cloud, label: "Počasie", href: "/diary/weather-forecast", color: "orange" },
+    { icon: Scale, label: "Rybársky poriadok", href: "/diary/fishing-rules", color: "orange" },
+    { icon: Target, label: "Ciele", href: "/diary/seasonal-goals", color: "orange" },
+    { icon: Award, label: "Odznaky", href: "/diary/badges", color: "orange" },
   ];
 
   return (
@@ -212,12 +213,48 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
           )}
 
           <div className="p-4 pt-0 space-y-6">
+            {/* Main Section - Denník (blue) */}
             <div>
-              <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 pl-3">
+              <div className="space-y-1">
+                {(() => {
+                  const isActive = isActivePath(mainItem.href);
+                  return (
+                    <button
+                      onClick={() => handleNavigation(mainItem.href)}
+                      className={cn(
+                        "group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200",
+                        isActive 
+                          ? "bg-white dark:bg-slate-900 shadow-sm border border-blue-200 dark:border-blue-800/50" 
+                          : "hover:bg-white/60 dark:hover:bg-slate-900/60 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 border border-transparent"
+                      )}
+                    >
+                      <div className={cn(
+                        "h-9 w-9 rounded-lg flex items-center justify-center transition-colors",
+                        isActive 
+                          ? "bg-blue-600 text-white shadow-md shadow-blue-500/20" 
+                          : "bg-slate-100 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 group-hover:text-blue-500 dark:group-hover:text-blue-400 group-hover:bg-blue-500/10 dark:group-hover:bg-blue-900/20"
+                      )}>
+                        <mainItem.icon className="h-5 w-5" />
+                      </div>
+                      <span className={cn(
+                        "text-sm font-medium",
+                        isActive ? "text-blue-600 dark:text-blue-400 font-bold" : ""
+                      )}>
+                        {mainItem.label}
+                      </span>
+                    </button>
+                  );
+                })()}
+              </div>
+            </div>
+
+            {/* Fishing Life Section (cyan) */}
+            <div>
+              <p className="text-[10px] font-bold text-cyan-600 dark:text-cyan-500 uppercase tracking-widest mb-2 pl-3">
                 Môj rybársky život
               </p>
               <div className="space-y-1">
-                {navItems.map((item) => {
+                {fishingLifeItems.map((item) => {
                   const isActive = isActivePath(item.href);
                   return (
                     <button
@@ -226,21 +263,21 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                       className={cn(
                         "group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200",
                         isActive 
-                          ? "bg-white dark:bg-slate-900 shadow-sm border border-slate-100 dark:border-slate-800" 
+                          ? "bg-white dark:bg-slate-900 shadow-sm border border-cyan-200 dark:border-cyan-800/50" 
                           : "hover:bg-white/60 dark:hover:bg-slate-900/60 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 border border-transparent"
                       )}
                     >
                       <div className={cn(
                         "h-9 w-9 rounded-lg flex items-center justify-center transition-colors",
                         isActive 
-                          ? "bg-blue-600 text-white shadow-md shadow-blue-500/10" 
-                          : "bg-slate-100 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 group-hover:text-blue-500 dark:group-hover:text-blue-400 group-hover:bg-blue-500/10 dark:group-hover:bg-blue-900/20"
+                          ? "bg-cyan-600 text-white shadow-md shadow-cyan-500/20" 
+                          : "bg-slate-100 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 group-hover:text-cyan-500 dark:group-hover:text-cyan-400 group-hover:bg-cyan-500/10 dark:group-hover:bg-cyan-900/20"
                       )}>
                         <item.icon className="h-5 w-5" />
                       </div>
                       <span className={cn(
                         "text-sm font-medium",
-                        isActive ? "text-slate-900 dark:text-white font-bold" : ""
+                        isActive ? "text-cyan-600 dark:text-cyan-400 font-bold" : ""
                       )}>
                         {item.label}
                       </span>
@@ -250,15 +287,14 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
               </div>
             </div>
 
+            {/* Community Section (amber) */}
             <div>
-              <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 pl-3">
-                Komunita & Súboje
+              <p className="text-[10px] font-bold text-amber-600 dark:text-amber-500 uppercase tracking-widest mb-2 pl-3">
+                Súťaže & Komunita
               </p>
               <div className="space-y-1">
                 {communityItems.map((item) => {
                   const isActive = isActivePath(item.href);
-                  const activeColor = item.color === "text-pink-500" ? "bg-pink-600" : "bg-amber-600";
-                  const activeShadow = item.color === "text-pink-500" ? "shadow-pink-500/10" : "shadow-amber-500/10";
                   return (
                     <button
                       key={item.href}
@@ -266,21 +302,21 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                       className={cn(
                         "group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200",
                         isActive 
-                          ? "bg-white dark:bg-slate-900 shadow-sm border border-slate-100 dark:border-slate-800" 
+                          ? "bg-white dark:bg-slate-900 shadow-sm border border-amber-200 dark:border-amber-800/50" 
                           : "hover:bg-white/60 dark:hover:bg-slate-900/60 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 border border-transparent"
                       )}
                     >
                       <div className={cn(
                         "h-9 w-9 rounded-lg flex items-center justify-center transition-colors",
                         isActive 
-                          ? `${activeColor} text-white shadow-md ${activeShadow}` 
-                          : `bg-slate-100 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 group-hover:${item.color} dark:group-hover:text-pink-400 group-hover:${item.bg} dark:group-hover:bg-pink-900/20`
+                          ? "bg-amber-600 text-white shadow-md shadow-amber-500/20" 
+                          : "bg-slate-100 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 group-hover:text-amber-500 dark:group-hover:text-amber-400 group-hover:bg-amber-500/10 dark:group-hover:bg-amber-900/20"
                       )}>
                         <item.icon className="h-5 w-5" />
                       </div>
                       <span className={cn(
                         "text-sm font-medium",
-                        isActive ? "text-slate-900 dark:text-white font-bold" : ""
+                        isActive ? "text-amber-600 dark:text-amber-400 font-bold" : ""
                       )}>
                         {item.label}
                       </span>
@@ -297,9 +333,10 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
               </div>
             </div>
 
+            {/* Tools Section (orange) */}
             <div>
-              <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 pl-3">
-                Nástroje
+              <p className="text-[10px] font-bold text-orange-600 dark:text-orange-500 uppercase tracking-widest mb-2 pl-3">
+                Nástroje & Progres
               </p>
               <div className="grid grid-cols-2 gap-2 px-1">
                 {toolsItems.map((item) => {
@@ -311,21 +348,21 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                       className={cn(
                         "group flex flex-col items-center justify-center gap-2 p-3 rounded-xl transition-all duration-200 border",
                         isActive 
-                          ? "bg-white dark:bg-slate-900 shadow-sm border-slate-200 dark:border-slate-800" 
+                          ? "bg-white dark:bg-slate-900 shadow-sm border-orange-200 dark:border-orange-800/50" 
                           : "bg-white/40 dark:bg-slate-900/40 border-transparent dark:border-slate-800/30 hover:bg-white dark:hover:bg-slate-900 hover:shadow-sm"
                       )}
                     >
                       <div className={cn(
                         "h-8 w-8 rounded-full flex items-center justify-center transition-colors",
                         isActive 
-                          ? "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900" 
-                          : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-300 group-hover:bg-slate-200/80 dark:group-hover:bg-slate-700"
+                          ? "bg-orange-600 text-white" 
+                          : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:text-orange-500 dark:group-hover:text-orange-400 group-hover:bg-orange-500/10 dark:group-hover:bg-orange-900/20"
                       )}>
                         <item.icon className="h-4 w-4" />
                       </div>
                       <span className={cn(
                         "text-xs font-medium text-center",
-                        isActive ? "text-slate-900 dark:text-white font-bold" : "text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200"
+                        isActive ? "text-orange-600 dark:text-orange-400 font-bold" : "text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200"
                       )}>
                         {item.label}
                       </span>
