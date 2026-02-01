@@ -313,7 +313,7 @@ export default function BadgesPage() {
         )}
 
         {/* TIERED UNLOCKED BADGES - Colored accent lines */}
-        <div className="space-y-10">
+        <div className="space-y-10 pb-12">
           {(['gold', 'silver', 'bronze'] as const).map((tier) => {
             const items = unlockedByTier[tier];
             if (items.length === 0) return null;
@@ -355,30 +355,6 @@ export default function BadgesPage() {
               </div>
             );
           })}
-        </div>
-
-        {/* Demo Button - subtle placement */}
-        <div className="flex justify-center pt-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              const demoTiers: BadgeTier[] = ['gold', 'silver', 'bronze'];
-              const randomTier = demoTiers[Math.floor(Math.random() * demoTiers.length)];
-              const firstBadge = badgesList[0];
-              setDemoBadge({
-                badgeType: firstBadge.id,
-                badgeName: firstBadge.name,
-                tier: randomTier,
-                icon: firstBadge.icon,
-              });
-            }}
-            className="text-muted-foreground hover:text-foreground"
-            data-testid="button-demo-celebration"
-          >
-            <Sparkles className="w-4 h-4 mr-2" strokeWidth={1.75} />
-            Demo oslavy
-          </Button>
         </div>
       </div>
 
