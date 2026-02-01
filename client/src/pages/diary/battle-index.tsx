@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { DiaryBattle } from "@shared/schema";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import waterRaysBg from "@assets/water-rays-bg.png";
 
 interface BattleInvitation {
   id: string;
@@ -167,14 +168,18 @@ function HeroBattleCard({ battle, onEnter }: { battle: DiaryBattle; onEnter: () 
   const displayTime = isEndingSoon ? timeLeft : getTimeRemaining(battle.endAt);
 
   return (
-    <div className="relative w-full overflow-hidden rounded-2xl border border-border bg-card/40 backdrop-blur-xl mb-8">
+    <div className="group relative w-full overflow-hidden rounded-2xl border border-border bg-card/40 backdrop-blur-xl mb-8">
       <div 
-        className="absolute inset-0 opacity-40 pointer-events-none"
+        className="absolute inset-0 opacity-60 pointer-events-none"
         style={{
-          backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.02) 1px, transparent 0)',
-          backgroundSize: '24px 24px'
+          backgroundImage: `url(${waterRaysBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center left',
+          transform: 'scaleX(-1)',
         }}
       />
+      <div className="absolute inset-0 bg-gradient-to-l from-[#0B1C2F] via-[#0B1C2F]/80 to-transparent pointer-events-none" />
+      <Swords className="absolute -bottom-6 -right-6 w-32 md:w-48 h-32 md:h-48 text-white/[0.03] rotate-12 group-hover:rotate-0 transition-transform duration-700" strokeWidth={1} />
       
       <div className="relative z-10 p-6 md:p-10 flex flex-col items-center text-center">
         {isEndingSoon && (
