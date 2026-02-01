@@ -13,9 +13,9 @@ import { sk } from "date-fns/locale";
 import { 
   Trophy, Users, Clock, X, User as UserIcon, Save, FolderOpen, 
   Trash2, Swords, Target, Weight, Star, MapPin, Anchor, 
-  ShieldCheck, ChevronDown, AlertCircle, Timer, ChevronRight
+  ShieldCheck, ChevronDown, AlertCircle, Timer, ChevronRight, ArrowLeft
 } from "lucide-react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -441,7 +441,14 @@ export default function BattleCreate() {
     <DiaryLayout>
       <div className="max-w-3xl mx-auto pb-16">
         
-        <div className="flex items-center justify-end mb-6">
+        <div className="flex items-center justify-between mb-6">
+          <Link href="/diary/battles">
+            <button className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm">
+              <ArrowLeft size={16} />
+              <span className="text-[10px] font-bold uppercase tracking-widest">Späť</span>
+            </button>
+          </Link>
+          
           {templates.length > 0 && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
