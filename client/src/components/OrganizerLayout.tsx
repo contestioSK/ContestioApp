@@ -48,10 +48,10 @@ export default function OrganizerLayout({ children }: OrganizerLayoutProps) {
   return (
     <div className="min-h-screen bg-background flex">
       {/* Desktop Sidebar - hidden on mobile (navigation is in TopBar MobileMenu) */}
-      <div className="hidden md:flex fixed inset-y-0 left-0 z-40 bg-sidebar border-r border-sidebar-border w-[240px] lg:w-[280px] flex-shrink-0 pt-16">
+      <div className="hidden md:flex fixed inset-y-0 left-0 z-40 bg-slate-50 dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 w-[240px] lg:w-[280px] flex-shrink-0 pt-16">
         <div className="flex flex-col h-full w-full">
           {/* Navigation */}
-          <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
+          <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto bg-slate-50 dark:bg-slate-950">
             {/* Section Header */}
             <div className="pb-2">
               <div className="px-3 flex items-center gap-1.5">
@@ -115,7 +115,7 @@ export default function OrganizerLayout({ children }: OrganizerLayoutProps) {
       {/* Main content */}
       <div className="flex-1 min-w-0 w-full overflow-x-hidden md:ml-[240px] lg:ml-[280px]">
         {/* Page content */}
-        <main className="p-4 md:p-6 lg:p-8">
+        <main className="p-4 md:p-6 lg:p-8 min-h-screen bg-background dark:bg-slate-900">
           {children}
         </main>
       </div>
