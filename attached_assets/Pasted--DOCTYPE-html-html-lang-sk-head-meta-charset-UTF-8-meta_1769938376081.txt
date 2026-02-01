@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PvP Battle Zone | Contestio</title>
+    
+    <!-- Dependencies -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&display=swap');
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #020617; 
+            color: #f8fafc;
+            -webkit-font-smoothing: antialiased;
+        }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* Jemná textúra pre Hero Kartu */
+        .hero-pattern {
+            background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.02) 1px, transparent 0);
+            background-size: 24px 24px;
+        }
+        
+        /* Utility pre collapsible animáciu */
+        .collapsible-content {
+            transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+            max-height: 2000px;
+            opacity: 1;
+            overflow: hidden;
+        }
+        .collapsible-content.collapsed {
+            max-height: 0;
+            opacity: 0;
+        }
+
+        /* Vyladenie scrollbaru pre čistý look */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #020617; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #334155; }
+    </style>
+</head>
+<body class="min-h-screen overflow-x-hidden selection:bg-orange-500/30">
+
+<div id="root"></div>
+
+<script type="text/babel">
+    const { useState, useEffect, useMemo } = React;
+    const { motion, AnimatePresence } = window.Motion;
+
+    // --- MOCK DATA ---
+    const MOCK_ACTIVE_BATTLES = [
+        {
+            id: 'b1',
+            name: "Víkendová Kaprárina",
+            status: 'active',
+            startAt: new Date(Date.now() - 3600000 * 40).toISOString(), 
+            endAt: new Date(Date.now() + 3600000 * 4).toISOString(),
+            participants: [{ id: '1', name: 'Martin Rybár' }, { id: '2', name: 'Jozef Lov' }],
+            myRank: 2
+        },
+        {
+            id: 'b2',
+            name: "Dlhodobá Liga",
+            status: 'active',
+            startAt: new Date(Date.now() - 3600000 * 100).toISOString(),
+            endAt: new Date(Date.now() + 3600000 * 200).toISOString(),
+            participants: [{ id: '1', name: 'Martin Rybár' }, { id: '3', name: 'Fero' }],
+            myRank: 1
+        }
+    ];
+    const MOCK_INVITATIONS = [
+        {
+            id: 'inv1',
+            battle: { name: "Súboj o najväčšieho sumca" },
+            invitedByUser: { firstName: 'Peter', lastName: 'Novák', email: 'peter@test.com' },
+            status: 'pending'
+        }
+    ];
+    const MOCK_ARCHIVE = [
+        { id: 'a1', name: "Jarný Prívlač Cup", userPosition: 1, participantCount: 4, winner: 'Martin Rybár' },
+        { id: 'a2', name: "Zemplínska Šírava Duel", userPosition: 2, participantCount: 2, winner: 'Jozef Lov' },
+        { id: 'a3', name: "Nočný Lov", userPosition: 1, participantCount: 3, winner: 'Martin Rybár' },
+    ];
+
+    // --- UI BASE COMPONENTS ---
+    const Button = ({ variant = 'default', size = 'default', className, children, onClick }) => {
+        let baseClass = "inline-flex items-center justify-center rounded-lg font-bold tracking-tight transition-all focus-visible:outline-none active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none cursor-pointer";
+        let variantClass = variant === 'outline' ? "border border-slate-800 hover:bg-slate-800 text-slate-200" : 
+                           variant === 'ghost' ? "hover:bg-slate-800/50 text-slate-400 hover:text-white" :
+                           variant === 'hero' ? "bg-[#F97316] hover:bg-orange-600 text-white shadow-lg shadow-orange-950/20 border border-orange-400/10" :
+                           "bg-slate-800 text-slate-50 hover:bg-slate-700 border border-slate-700"; 
+        let sizeClass = size === 'sm' ? "h-9 px-3 text-xs" : size === 'lg' ? "h-14 px-10 text-base" : "h-11 px-6 text-sm";
+        
+        return <button onClick={onClick} className={`${baseClass} ${variantClass} ${sizeClass} ${className}`}>{children}</button>;
+    };
+
+    const Badge = ({ variant = 'default', className, children }) => {
+        let variantClass = variant === 'outline' ? "border border-slate-800 text-slate-500" : 
+                           variant === 'hero' ? "bg-red-500/10 text-red-500 border border-red-500/20" :
+                           variant === 'success' ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20" :
+                           "bg-slate-800/50 text-slate-400 border border-slate-800";
+        return <div className={`inline-flex items-center rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-widest ${variantClass} ${className}`}>{children}</div>;
+    };
+
+    const Progress = ({ value, className, color = "bg-[#F97316]" }) => (
+        <div className={`relative h-1 w-full overflow-hidden rounded-full bg-slate-800/50 ${className}`}>
+            <div className={`h-full w-full flex-1 transition-all duration-1000 ${color}`} style={{ transform: `translateX(-${100 - (value || 0)}%)` }}></div>
+        </div>
+    );
+
+    const Avatar = ({ className, children }) => <div className={`relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full bg-slate-800 border border-slate-800 shadow-sm ${className}`}>{children}</div>;
+    const AvatarFallback = ({ children }) => <div className="flex h-full w-full items-center justify-center font-bold text-xs text-slate-400">{children}</div>;
+
+    const Icon = ({ name, size = 20, className, strokeWidth = 2 }) => {
+        if (!window.lucide || !window.lucide.icons) return null;
+        const iconData = window.lucide.icons[name];
+        if (!iconData) return null;
+        return (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}>
+                {iconData.map(([tag, attrs], index) => React.createElement(tag, { ...attrs, key: index }))}
+            </svg>
+        );
+    };
+
+    // --- COMPACT SYMMETRICAL HERO CARD ---
+    const HeroBattleCard = ({ battle, onEnter }) => {
+        const end = new Date(battle.endAt).getTime();
+        const now = Date.now();
+        const diff = end - now;
+        
+        const [timeLeft, setTimeLeft] = useState("00:00:00");
+
+        useEffect(() => {
+            const timer = setInterval(() => {
+                const d = end - Date.now();
+                if (d <= 0) {
+                    setTimeLeft("KONIEC");
+                    clearInterval(timer);
+                } else {
+                    const h = Math.floor(d / (1000 * 60 * 60));
+                    const m = Math.floor((d % (1000 * 60 * 60)) / (1000 * 60));
+                    const s = Math.floor((d % (1000 * 60)) / 1000);
+                    setTimeLeft(`${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`);
+                }
+            }, 1000);
+            return () => clearInterval(timer);
+        }, [end]);
+
+        return (
+            <div className="relative w-full overflow-hidden rounded-3xl border border-slate-800 bg-[#0F172A]/40 backdrop-blur-xl mb-8 group">
+                <div className="absolute inset-0 hero-pattern opacity-40 pointer-events-none"></div>
+                
+                <div className="relative z-10 p-6 md:p-10 flex flex-col items-center text-center">
+                    
+                    <Badge variant="hero" className="mb-4">
+                        <span className="relative flex h-2 w-2 mr-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                        </span>
+                        Súboj vrcholí
+                    </Badge>
+
+                    <h2 className="text-2xl md:text-4xl font-black text-white uppercase tracking-tight mb-6 italic">
+                        {battle.name}
+                    </h2>
+
+                    <div className="w-full max-w-xs bg-black/30 rounded-2xl p-4 border border-white/5 mb-6">
+                        <div className="text-[10px] text-slate-500 uppercase tracking-widest font-black mb-1">Zostáva</div>
+                        <div className="text-3xl md:text-5xl font-mono font-bold text-white tabular-nums tracking-tighter leading-none">
+                            {timeLeft}
+                        </div>
+                    </div>
+
+                    <div className="flex flex-wrap justify-center items-center gap-6 mb-8 text-[11px] font-bold uppercase tracking-widest text-slate-500">
+                        <span className="flex items-center gap-2">
+                            <Icon name="Users" size={14} className="text-slate-600" /> 
+                            {battle.participants.length} Účastníci
+                        </span>
+                        <div className="w-1 h-1 rounded-full bg-slate-800"></div>
+                        <span className="flex items-center gap-2">
+                            <Icon name="Trophy" size={14} className="text-emerald-500" /> 
+                            Miesto: <span className="text-white">{battle.myRank}.</span>
+                        </span>
+                    </div>
+
+                    <Button variant="hero" className="w-full md:w-auto min-w-[220px] rounded-xl" onClick={onEnter}>
+                        Vstúpiť do Arény
+                    </Button>
+                </div>
+            </div>
+        );
+    };
+
+    const BattleRow = ({ battle }) => {
+        const end = new Date(battle.endAt).getTime();
+        const now = Date.now();
+        const diff = end - now;
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        
+        return (
+            <div className="group flex items-center justify-between p-4 bg-slate-900/30 border border-slate-800 rounded-2xl hover:border-slate-600 transition-all cursor-pointer">
+                <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 flex items-center justify-center bg-slate-800 rounded-xl text-slate-400 group-hover:bg-slate-700 group-hover:text-white transition-all">
+                        <Icon name="Swords" size={18} />
+                    </div>
+                    <div>
+                        <h4 className="font-bold text-slate-200 text-sm group-hover:text-white transition-colors">{battle.name}</h4>
+                        <p className="text-[10px] text-slate-600 uppercase font-black tracking-widest mt-0.5">Súper: {battle.participants[1]?.name || '---'}</p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-4">
+                    <div className="text-right hidden sm:block">
+                        <span className="block text-[9px] text-slate-600 uppercase font-bold tracking-wider">Koniec</span>
+                        <span className="text-xs font-mono text-slate-400">{hours}h</span>
+                    </div>
+                    <Icon name="ChevronRight" size={16} className="text-slate-800 group-hover:text-slate-400" />
+                </div>
+            </div>
+        );
+    };
+
+    const MobileSection = ({ title, icon, children, defaultOpen = true }) => {
+        const [isOpen, setIsOpen] = useState(defaultOpen);
+        return (
+            <section className="space-y-4">
+                <div className="flex items-center justify-between cursor-pointer md:cursor-default" onClick={() => setIsOpen(!isOpen)}>
+                    <h3 className="text-[10px] font-black text-slate-600 uppercase tracking-[0.2em] flex items-center gap-2">
+                        {icon && <Icon name={icon} size={12} />}
+                        {title}
+                    </h3>
+                    <div className="md:hidden text-slate-700"><Icon name={isOpen ? "ChevronUp" : "ChevronDown"} size={14} /></div>
+                </div>
+                <div className={`collapsible-content ${isOpen ? '' : 'collapsed'} md:!max-h-[2000px] md:!opacity-100`}>
+                    {children}
+                </div>
+            </section>
+        );
+    };
+
+    const App = () => {
+        const [invitations, setInvitations] = useState(MOCK_INVITATIONS);
+
+        return (
+            <div className="p-4 md:p-8 max-w-6xl mx-auto min-h-screen flex flex-col">
+                
+                <header className="flex items-center justify-between py-6 mb-2">
+                    <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center">
+                            <Icon name="Fish" className="text-black" size={18} />
+                        </div>
+                        <span className="font-black text-xl tracking-tighter text-white">CONTESTIO</span>
+                    </div>
+                    
+                    <div className="flex gap-4 items-center">
+                        <div className="hidden md:block h-5 w-[1px] bg-slate-800 mx-1"></div>
+                        <Avatar className="h-8 w-8"><AvatarFallback>MR</AvatarFallback></Avatar>
+                    </div>
+                </header>
+
+                <main className="flex-1">
+                    
+                    <HeroBattleCard battle={MOCK_ACTIVE_BATTLES[0]} onEnter={() => {}} />
+
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-10">
+                        
+                        {/* LEFT: MAIN FEED */}
+                        <div className="lg:col-span-8 space-y-10">
+                            
+                            {invitations.length > 0 && (
+                                <section className="space-y-4">
+                                    <h3 className="text-[10px] font-black text-slate-600 uppercase tracking-[0.2em] pl-1">Aktuálne výzvy</h3>
+                                    <div className="bg-orange-500/5 border border-orange-500/10 rounded-2xl p-5 flex flex-col md:flex-row items-center justify-between gap-6">
+                                        <div className="flex items-center gap-4 text-center md:text-left flex-col md:flex-row">
+                                            <Avatar className="w-12 h-12 border-orange-500/10"><AvatarFallback>PN</AvatarFallback></Avatar>
+                                            <div>
+                                                <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest">Pozvanie od Peter Novák</p>
+                                                <h4 className="text-lg font-black text-white italic tracking-tight">{invitations[0].battle.name}</h4>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-2 w-full md:w-auto">
+                                            <Button variant="hero" size="sm" className="flex-1 md:flex-none" onClick={() => setInvitations([])}>Prijať</Button>
+                                            <Button variant="ghost" size="sm" className="flex-1 md:flex-none" onClick={() => setInvitations([])}>Ignorovať</Button>
+                                        </div>
+                                    </div>
+                                </section>
+                            )}
+
+                            <section className="space-y-4">
+                                <div className="flex items-center justify-between border-b border-slate-900 pb-3 pl-1">
+                                    <h3 className="text-[10px] font-black text-slate-600 uppercase tracking-[0.2em]">Aktívne Súboje</h3>
+                                    <Button variant="outline" size="sm" className="rounded-lg h-7 px-3 text-[10px]">
+                                        <Icon name="Plus" size={12} className="mr-1.5" /> Nový
+                                    </Button>
+                                </div>
+                                <div className="grid gap-2.5">
+                                    {MOCK_ACTIVE_BATTLES.slice(1).map(battle => <BattleRow key={battle.id} battle={battle} />)}
+                                    {MOCK_ACTIVE_BATTLES.length <= 1 && <p className="text-slate-700 text-xs italic py-4">Žiadne ďalšie súboje.</p>}
+                                </div>
+                            </section>
+                        </div>
+
+                        {/* RIGHT: SIDEBAR */}
+                        <div className="lg:col-span-4 space-y-10">
+                            <MobileSection title="Vaše Štatistiky" icon="BarChart3">
+                                <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-6">
+                                    <div className="grid grid-cols-2 gap-6">
+                                        <div>
+                                            <span className="block text-2xl font-black text-white leading-none">12</span>
+                                            <span className="text-[9px] text-slate-600 uppercase font-bold tracking-widest">Víťazstvá</span>
+                                        </div>
+                                        <div>
+                                            <span className="block text-2xl font-black text-emerald-500 leading-none">66%</span>
+                                            <span className="text-[9px] text-slate-600 uppercase font-bold tracking-widest">Win Rate</span>
+                                        </div>
+                                    </div>
+                                    <div className="mt-6 pt-6 border-t border-slate-800/40">
+                                        <div className="flex justify-between text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-2">
+                                            <span>Level 14</span>
+                                            <span className="text-white">850 XP</span>
+                                        </div>
+                                        <Progress value={85} />
+                                    </div>
+                                </div>
+                            </MobileSection>
+
+                            <MobileSection title="Nedávny Archív" icon="Clock">
+                                <div className="space-y-1">
+                                    {MOCK_ARCHIVE.map(battle => (
+                                        <div key={battle.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-800/30 transition-colors group">
+                                            <span className="text-xs text-slate-500 group-hover:text-white transition-colors truncate max-w-[140px]">{battle.name}</span>
+                                            <Badge variant={battle.userPosition === 1 ? 'success' : 'outline'} className="text-[9px]">
+                                                {battle.userPosition === 1 ? 'WIN' : `#${battle.userPosition}`}
+                                            </Badge>
+                                        </div>
+                                    ))}
+                                    <button className="w-full mt-4 text-[9px] text-slate-700 font-black uppercase hover:text-white transition-colors tracking-[0.2em]">Kompletná história</button>
+                                </div>
+                            </MobileSection>
+                        </div>
+
+                    </div>
+                </main>
+
+                <footer className="py-10 mt-10 border-t border-slate-900 flex justify-between items-center text-slate-700 text-[9px] font-black uppercase tracking-[0.3em]">
+                    <span>© 2024 CONTESTIO</span>
+                    <div className="flex gap-6">
+                        <a href="#" className="hover:text-white transition-colors">Pravidlá</a>
+                        <a href="#" className="hover:text-white transition-colors">Podpora</a>
+                    </div>
+                </footer>
+            </div>
+        );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+</script>
+
+</body>
+</html>
