@@ -1,0 +1,69 @@
+Implementácia "The Arena - Battle Architect v2.1"
+Cieľ: Implementuj pokročilý, vysoko-konverzný flow na vytváranie rybárskych súbojov (Battles) v rámci aplikácie Contestio. Nejde o obyčajný formulár, ale o "Mission Briefing" zážitok.
+
+Technický Stack:
+
+React (Vite)
+
+Tailwind CSS
+
+Lucide React (ikony)
+
+Framer Motion (animácie a prechody)
+
+React Hook Form + Zod (validácia)
+
+Kľúčové UX Princípy (Povinné dodržať):
+
+Sekvenčný flow (Checkpointy): Rozdelenie do 4 jasných sekcií (01 Konfigurácia, 02 Logistika, 03 Personál, 04 Protokoly). Každá má SectionHeader s číslom, titulkom a sub-labelom.
+
+ModeCards: Režim hry sa nevyberá cez select, ale cez interaktívne karty s ikonou a micro-copy popisom.
+
+Trip Decision Cards: Výber medzi "Nová výprava" a "Existujúca výprava" musí byť vizuálne dominantný (veľké karty), nie binary switch.
+
+Time Quick Presets: Pri výbere času ukončenia implementuj rýchle voľby: [4h], [8h], [24h], [Víkend], ktoré dynamicky dopočítajú endAt od aktuálneho startAt.
+
+Progressive Disclosure: Pokročilé pravidlá (min. váha, verifikácia) sú schované za "Advanced" prepínačom, aby nezahlcovali používateľa.
+
+Final Briefing (Summary): Pred submitom zobraziť dynamickú rekapituláciu misie.
+
+Špecifické funkcie & Logika:
+
+Validácia: Použi z.superRefine. Koniec súboja nesmie byť skôr ako začiatok. Ak je zvolená "Nová výprava", pole "Lokalita" je povinné.
+
+Copywriting: Používaj "Military/Arena" tón. Miesto "Vytvoriť" použiť "Potvrdiť a založiť súboj". Miesto "Existujúca výprava" v systéme použiť "Priradiť k už naplánovanej akcii".
+
+Placeholder: Prvý input (Názov) musí mať placeholder: "napr. Jesenná výprava s Mišom" (osobný tón).
+
+Vizuálny štýl:
+
+Dark Mode (#020617).
+
+Akcentná farba: Orange-500 (#f97316).
+
+Zaoblenie rohov: rounded-2xl až rounded-[2.5rem].
+
+Typografia: Pre labely použiť text-[10px] font-black uppercase tracking-[0.2em].
+
+Zadanie pre kód: Vytvoriť jeden hlavný komponent BattleCreateFlow, ktorý zapuzdruje celú logiku, stavy a animácie podľa vyššie uvedených bodov.
+
+🧠 Alternatívne riešenia a vylepšenia (UX Bonus)
+Keď to budeš mať v Replite, zváž tieto tri vylepšenia, ktoré posunú produkt ešte ďalej:
+
+"Smart Default" na základe lokality:
+
+Problém: Pýtať sa na lokalitu môže byť otrava, ak rybár už v minulosti niekde chytal.
+
+Riešenie: Pridaj pod input "Lokalita" malé bubliny s tvojimi 3 najčastejšími revírmi. Klik = vyplnené.
+
+Visual Battle Duration:
+
+Problém: Časový údaj 24.10. 14:00 je abstraktný.
+
+Riešenie: Vedľa rekapitulácie pridaj progress bar alebo vizuálnu os, ktorá ukáže: "Trvanie: 2 dni a 4 hodiny". Človek lepšie vníma čas ako úsečku než ako dátum.
+
+The "Hype" Invitation:
+
+Problém: Pozývanie cez email/meno je suché.
+
+Riešenie: Po pridaní súpera mu vygeneruj "Challenge Code" alebo unikátny link, ktorý môže rybár skopírovať a hodiť do Messenger skupiny s textom: "Vyzývam vás do Arény!".
