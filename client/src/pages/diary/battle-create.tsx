@@ -126,7 +126,7 @@ const saveTemplates = (templates: BattleTemplate[]) => {
 };
 
 const SectionHeader = ({ number, title, subtitle }: { number: string; title: string; subtitle: string }) => (
-  <div className="flex gap-4 mb-8">
+  <div className="flex gap-3 mb-4">
     <div className="flex-none w-8 h-8 rounded-full bg-slate-800 dark:bg-slate-800 border border-slate-700 dark:border-slate-700 flex items-center justify-center text-[10px] font-black text-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.1)]">
       {number}
     </div>
@@ -439,19 +439,9 @@ export default function BattleCreate() {
 
   return (
     <DiaryLayout>
-      <div className="max-w-3xl mx-auto pb-32">
+      <div className="max-w-3xl mx-auto pb-16">
         
-        <div className="flex items-center justify-between mb-16">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-orange-500 rounded-2xl shadow-[0_0_30px_rgba(249,115,22,0.3)]">
-              <Anchor size={24} className="text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-black text-foreground uppercase tracking-tighter italic leading-none">The Arena</h1>
-              <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-[0.3em] mt-2">Battle Architect v2.1</p>
-            </div>
-          </div>
-          
+        <div className="flex items-center justify-end mb-6">
           {templates.length > 0 && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
@@ -505,7 +495,7 @@ export default function BattleCreate() {
           )}
         </div>
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-20">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           {/* Hidden inputs for form registration */}
           <input type="hidden" {...form.register("mode")} />
           <input type="hidden" {...form.register("location")} />
@@ -516,7 +506,7 @@ export default function BattleCreate() {
           
           <section>
             <SectionHeader number="01" title="Konfigurácia súboja" subtitle="Základné parametre operácie" />
-            <div className="space-y-8">
+            <div className="space-y-5">
               <InputField 
                 label="Názov operácie"
                 placeholder="napr. Jesenná výprava s Mišom"
@@ -542,7 +532,7 @@ export default function BattleCreate() {
 
           <section>
             <SectionHeader number="02" title="Logistika a terén" subtitle="Kde a kedy sa stretnete?" />
-            <div className="bg-card/20 dark:bg-slate-900/20 border border-border/50 dark:border-slate-800/50 rounded-[2rem] p-8 space-y-10">
+            <div className="bg-card/20 dark:bg-slate-900/20 border border-border/50 dark:border-slate-800/50 rounded-xl p-5 space-y-5">
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <button 
@@ -700,7 +690,7 @@ export default function BattleCreate() {
 
           <section>
             <SectionHeader number="03" title="Operačný personál" subtitle="Kto prijme vašu výzvu?" />
-            <div className="bg-card/20 dark:bg-slate-900/20 border border-border/50 dark:border-slate-800/50 rounded-[2rem] p-8 space-y-6">
+            <div className="bg-card/20 dark:bg-slate-900/20 border border-border/50 dark:border-slate-800/50 rounded-xl p-5 space-y-4">
               <div className="space-y-3">
                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Vyhľadať súpera</label>
                 <UserSearch
@@ -769,7 +759,7 @@ export default function BattleCreate() {
                   exit={{ opacity: 0, height: 0 }}
                   className="overflow-hidden"
                 >
-                  <div className="bg-card/20 dark:bg-slate-900/20 border border-border/50 dark:border-slate-800/50 rounded-[2rem] p-8 space-y-6">
+                  <div className="bg-card/20 dark:bg-slate-900/20 border border-border/50 dark:border-slate-800/50 rounded-xl p-5 space-y-4">
                     <div className="space-y-2">
                       <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Minimálna hmotnosť (kg)</label>
                       <Input
@@ -800,8 +790,8 @@ export default function BattleCreate() {
             </AnimatePresence>
           </section>
 
-          <section className="bg-gradient-to-b from-orange-500/5 to-transparent border border-orange-500/20 rounded-[2rem] p-8">
-            <div className="text-center mb-8">
+          <section className="bg-gradient-to-b from-orange-500/5 to-transparent border border-orange-500/20 rounded-xl p-5">
+            <div className="text-center mb-5">
               <div className="inline-flex items-center gap-2 bg-orange-500/10 px-4 py-2 rounded-full mb-4">
                 <Timer size={14} className="text-orange-500" />
                 <span className="text-[10px] font-black uppercase tracking-widest text-orange-500">Mission Briefing</span>
@@ -809,20 +799,20 @@ export default function BattleCreate() {
               <h3 className="text-xl font-black text-foreground uppercase tracking-tight">Rekapitulácia operácie</h3>
             </div>
             
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              <div className="text-center p-4 rounded-2xl bg-card/30 dark:bg-slate-900/30 border border-border dark:border-slate-800">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+              <div className="text-center p-3 rounded-xl bg-card/30 dark:bg-slate-900/30 border border-border dark:border-slate-800">
                 <div className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1">Režim</div>
                 <div className="text-sm font-bold text-foreground">{getSelectedMode()?.label || "—"}</div>
               </div>
-              <div className="text-center p-4 rounded-2xl bg-card/30 dark:bg-slate-900/30 border border-border dark:border-slate-800">
+              <div className="text-center p-3 rounded-xl bg-card/30 dark:bg-slate-900/30 border border-border dark:border-slate-800">
                 <div className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1">Trvanie</div>
                 <div className="text-sm font-bold text-foreground">{getDurationDisplay() || "—"}</div>
               </div>
-              <div className="text-center p-4 rounded-2xl bg-card/30 dark:bg-slate-900/30 border border-border dark:border-slate-800">
+              <div className="text-center p-3 rounded-xl bg-card/30 dark:bg-slate-900/30 border border-border dark:border-slate-800">
                 <div className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1">Súperi</div>
                 <div className="text-sm font-bold text-foreground">{invitedUserIds.length}</div>
               </div>
-              <div className="text-center p-4 rounded-2xl bg-card/30 dark:bg-slate-900/30 border border-border dark:border-slate-800">
+              <div className="text-center p-3 rounded-xl bg-card/30 dark:bg-slate-900/30 border border-border dark:border-slate-800">
                 <div className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1">Lokalita</div>
                 <div className="text-sm font-bold text-foreground truncate">{useExistingTrip ? "Existujúca" : (formValues.location || "—")}</div>
               </div>
