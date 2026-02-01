@@ -1,0 +1,41 @@
+ Technický a architektonický prompt pre Replit (v2.0 Clean Edition)
+
+"Implementuj modul 'PvP Battle Zone' (Súboje) v Reacte. Tento modul musí striktne dodržiavať čistú, symetrickú estetiku definovanú v priloženom prototype battle_index_clean.html a systémové pravidlá Contestio Obsidian v2.0.
+
+1. Vizuálna integrita (Striktná symetria):
+
+Hero Sekcia: Musí byť 100% symetrická a centrovaná na vertikálnej osi. Žiadne asymetrické karty ani HUD prvky.
+
+Farebná paleta: Pozadie #020617, povrchy #0F172A s jemným backdrop-blur (12px-20px). Border #1E293B s nízkou opacitou.
+
+Typografia: Akcentná váha 900 (Black Italic) len pre hlavný nadpis v Hero sekcii. Ostatné texty váha 500/600.
+
+Zákaz šumu: Žiadne scanlines, žiadne sonary, žiadne častice, žiadna mriežka na pozadí. Len čisté plochy a precízna typografia.
+
+2. Komponentová logika a UI:
+
+Hero Battle Card: Implementuj kompaktnú verziu s centrálnym odpočtom času v font-mono. Použi AnimatePresence z Framer Motion pre plynulé prechody.
+
+Grid System: Použi 12-stĺpcový grid. Na desktope: Main Feed (8 stĺpcov) vľavo, Sidebar (4 stĺpce) vpravo. Na mobile: Stacked layout (všetko v jednom stĺpci).
+
+Interakcie: Tlačidlá musia byť rounded-xl (12px). Hlavné CTA (variant="hero") používa farbu #F97316 s jemným tieňom.
+
+3. State Management & Firebase (Striktné pravidlá):
+
+Auth First: Pred akýmkoľvek volaním Firestore musí prebehnúť signInAnonymously alebo signInWithCustomToken.
+
+Rule 2 (No Complex Queries): Sťahuj celú kolekciu súbojov z cesty /artifacts/${appId}/public/data/battles a filtrovanie (aktívne vs. archív) rieš v pamäti pomocou useMemo.
+
+Real-time: Použi onSnapshot s error callbackom pre okamžitú aktualizáciu stavu súboja (zmena poradia, koniec času).
+
+4. Komunikačný kód (Tone of Voice v1.1):
+
+Tykanie: Striktne používaj tykanie.
+
+Minimalizmus: Žiadne zdrobneniny. Namiesto 'úlovček' použi 'úlovok', namiesto 'čajíček' použi 'štatistiky'.
+
+Inštrumentálny tón: Texty musia znieť ako z profesionálneho prístroja (napr. 'Súboj vrcholí', 'Rank: 2.', 'Vstúpiť do arény').
+
+5. Responsivita:
+
+Implementuj MobileSection komponent, ktorý na mobile funguje ako collapsible (akordeón), ale na desktope je fixne rozbalený. Toto je kľúčové pre UX štatistík a histórie."

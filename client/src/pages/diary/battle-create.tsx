@@ -137,21 +137,21 @@ export default function BattleCreate() {
   const [invitedUserIds, setInvitedUserIds] = useState<string[]>([]);
   const [templates, setTemplates] = useState<BattleTemplate[]>(loadTemplates);
   const [templateName, setTemplateName] = useState("");
-  
+
   // Fetch user's trips for the trip selector
   const { data: trips = [], isLoading: isLoadingTrips } = useQuery<DiaryTrip[]>({
     queryKey: ["/api/diary/trips"],
     enabled: !!user
   });
-  
+
   // Check premium status for battle creation
   const { data: premiumStatus, isLoading: isLoadingPremium } = useQuery<{ isPremium: boolean }>({
     queryKey: ["/api/auth/premium-status"],
     enabled: !!user?.id
   });
-  
+
   const isPremium = premiumStatus?.isPremium || false;
-  
+
   // Redirect FREE users to paywall
   useEffect(() => {
     if (!isLoadingPremium && !isPremium && user) {
@@ -177,7 +177,7 @@ export default function BattleCreate() {
     }
     return { name: "", mode: "most_fish" as const, participantUserIds: [] as string[] };
   });
-  
+
   // Initialize invited users from rematch data
   useEffect(() => {
     if (rematchDefaults.participantUserIds.length > 0) {
@@ -198,7 +198,7 @@ export default function BattleCreate() {
       tripId: ""
     }
   });
-  
+
   const useExistingTrip = form.watch("useExistingTrip");
 
   const createBattleMutation = useMutation({
@@ -245,7 +245,7 @@ export default function BattleCreate() {
       });
       queryClient.invalidateQueries({ queryKey: ["/api/diary/battles"] });
       queryClient.invalidateQueries({ queryKey: ["/api/diary/trips"] });
-      
+
       // Handle response - can be either { battle, trip } or just battle
       const battleId = data.battle?.id || data.id;
       setLocation(`/diary/battles/${battleId}`);
@@ -277,12 +277,12 @@ export default function BattleCreate() {
       });
       return;
     }
-    
+
     const values = form.getValues();
     const startAt = values.startAt instanceof Date ? values.startAt : new Date(values.startAt);
     const endAt = values.endAt instanceof Date ? values.endAt : new Date(values.endAt);
     const durationMinutes = Math.round((endAt.getTime() - startAt.getTime()) / (1000 * 60));
-    
+
     const newTemplate: BattleTemplate = {
       id: Date.now().toString(),
       name: templateName,
@@ -291,12 +291,12 @@ export default function BattleCreate() {
       includeOnlyVerified: values.includeOnlyVerified,
       durationMinutes: durationMinutes > 0 ? durationMinutes : 24 * 60 // Default 24h
     };
-    
+
     const updated = [...templates, newTemplate];
     setTemplates(updated);
     saveTemplates(updated);
     setTemplateName("");
-    
+
     toast({
       title: "Šablóna uložená",
       description: `"${templateName}" bola uložená pre budúce použitie.`
@@ -307,14 +307,14 @@ export default function BattleCreate() {
   const handleLoadTemplate = (template: BattleTemplate) => {
     const now = new Date();
     const endAt = new Date(now.getTime() + template.durationMinutes * 60 * 1000);
-    
+
     // Use shouldValidate and shouldDirty to trigger proper re-render
     form.setValue("mode", template.mode as any, { shouldValidate: true, shouldDirty: true });
     form.setValue("minWeightKg", template.minWeightKg, { shouldValidate: true, shouldDirty: true });
     form.setValue("includeOnlyVerified", template.includeOnlyVerified, { shouldValidate: true, shouldDirty: true });
     form.setValue("startAt", now, { shouldValidate: true, shouldDirty: true });
     form.setValue("endAt", endAt, { shouldValidate: true, shouldDirty: true });
-    
+
     toast({
       title: "Šablóna načítaná",
       description: `Nastavenia "${template.name}" boli aplikované.`
@@ -326,7 +326,7 @@ export default function BattleCreate() {
     const updated = templates.filter(t => t.id !== templateId);
     setTemplates(updated);
     saveTemplates(updated);
-    
+
     toast({
       title: "Šablóna vymazaná",
       description: "Šablóna bola odstránená."
@@ -423,7 +423,7 @@ export default function BattleCreate() {
                   </div>
                 </div>
               )}
-              
+
               {/* Save New Template */}
               <div className="flex gap-2">
                 <Input
