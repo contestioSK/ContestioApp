@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Trophy, Plus, AlertCircle, Clock, Fish, CheckCircle2, Medal, Flag, BarChart3, TrendingUp, Award, QrCode, Swords, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Trophy, Plus, AlertCircle, Clock, Fish, CheckCircle2, Medal, Flag, BarChart3, TrendingUp, Award, QrCode, Swords, X, ChevronLeft, ChevronRight, ArrowLeft } from "lucide-react";
+import { Link } from "wouter";
 import { QRShareDialog } from "@/components/QRShareDialog";
 import { CatchDetailSheet } from "@/components/diary/CatchDetailSheet";
 import { PhotoLightbox } from "@/components/diary/PhotoLightbox";
@@ -265,6 +266,14 @@ export default function BattleDetail() {
       )}
 
       <div className="space-y-4 md:space-y-6">
+        {/* Back navigation */}
+        <Link href="/diary/battles">
+          <button className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm mb-2">
+            <ArrowLeft size={16} />
+            <span className="text-[10px] font-bold uppercase tracking-widest">Späť</span>
+          </button>
+        </Link>
+
         {/* Header */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div>
