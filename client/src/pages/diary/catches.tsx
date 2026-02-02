@@ -710,7 +710,7 @@ export default function DiaryCatches() {
               <div className="mb-6">
                 <h2 className="text-sm font-medium text-muted-foreground dark:text-slate-400 mb-3">Moja celková štatistika</h2>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                  <Card className="bg-card border border-border rounded-xl shadow-sm transition-all duration-200 hover:shadow-md hover:border-border/80" data-testid="card-total-count">
+                  <Card className="bg-card dark:bg-slate-900 border border-border rounded-xl shadow-sm transition-all duration-200 hover:shadow-md hover:border-border/80" data-testid="card-total-count">
                     <CardContent className="p-4 md:p-6">
                       <div className="flex items-center gap-3 md:gap-4">
                         <TacticalIcon icon={Fish} variant="cyan" size="sm" showLabel={false} />
@@ -724,7 +724,7 @@ export default function DiaryCatches() {
                   
                   <Card 
                     className={cn(
-                      "bg-card border border-border rounded-xl shadow-sm transition-all duration-200 hover:shadow-md hover:border-border/80",
+                      "bg-card dark:bg-slate-900 border border-border rounded-xl shadow-sm transition-all duration-200 hover:shadow-md hover:border-border/80",
                       biggestFishCatch && "cursor-pointer hover:scale-[1.02]"
                     )}
                     onClick={() => biggestFishCatch && setSelectedCatch(biggestFishCatch)}
@@ -741,7 +741,7 @@ export default function DiaryCatches() {
                     </CardContent>
                   </Card>
                   
-                  <Card className="bg-card border border-border rounded-xl shadow-sm transition-all duration-200 hover:shadow-md hover:border-border/80" data-testid="card-total-weight">
+                  <Card className="bg-card dark:bg-slate-900 border border-border rounded-xl shadow-sm transition-all duration-200 hover:shadow-md hover:border-border/80" data-testid="card-total-weight">
                     <CardContent className="p-4 md:p-6">
                       <div className="flex items-center gap-3 md:gap-4">
                         <TacticalIcon icon={Weight} variant="indigo" size="sm" showLabel={false} />
@@ -753,7 +753,7 @@ export default function DiaryCatches() {
                     </CardContent>
                   </Card>
                   
-                  <Card className="bg-card border border-border rounded-xl shadow-sm transition-all duration-200 hover:shadow-md hover:border-border/80" data-testid="card-total-average">
+                  <Card className="bg-card dark:bg-slate-900 border border-border rounded-xl shadow-sm transition-all duration-200 hover:shadow-md hover:border-border/80" data-testid="card-total-average">
                     <CardContent className="p-4 md:p-6">
                       <div className="flex items-center gap-3 md:gap-4">
                         <TacticalIcon icon={Target} variant="purple" size="sm" showLabel={false} />
