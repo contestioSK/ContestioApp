@@ -182,7 +182,7 @@ export default function DiaryStats() {
 
             {/* Sezónny prehľad - 4 karty */}
             <section className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div className="bg-card border border-border/50 p-5 rounded-xl flex flex-col justify-between h-32 hover:border-border transition-colors">
+              <div className="bg-card dark:bg-slate-900 border border-border/50 p-5 rounded-xl flex flex-col justify-between h-32 hover:border-border transition-colors">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Ulovil si</span>
                   <Fish className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} />
@@ -194,7 +194,7 @@ export default function DiaryStats() {
               </div>
               
               <div 
-                className={`bg-card border border-border/50 p-5 rounded-xl flex flex-col justify-between h-32 transition-colors ${
+                className={`bg-card dark:bg-slate-900 border border-border/50 p-5 rounded-xl flex flex-col justify-between h-32 transition-colors ${
                   personalRecords.heaviestCatch ? 'hover:border-amber-500/50 cursor-pointer' : 'hover:border-border'
                 }`}
                 onClick={() => personalRecords.heaviestCatch && setLocation(`/diary/catches/${personalRecords.heaviestCatch.id}`)}
@@ -211,7 +211,7 @@ export default function DiaryStats() {
                 </div>
               </div>
 
-              <div className="bg-card border border-border/50 p-5 rounded-xl flex flex-col justify-between h-32 hover:border-border transition-colors">
+              <div className="bg-card dark:bg-slate-900 border border-border/50 p-5 rounded-xl flex flex-col justify-between h-32 hover:border-border transition-colors">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Výpravy</span>
                   <Map className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} />
@@ -219,7 +219,7 @@ export default function DiaryStats() {
                 <span className="text-4xl font-mono font-medium text-[#F97316] tracking-tighter">{basicStats.totalTrips}</span>
               </div>
 
-              <div className="bg-card border border-border/50 p-5 rounded-xl flex flex-col justify-between h-32 hover:border-border transition-colors">
+              <div className="bg-card dark:bg-slate-900 border border-border/50 p-5 rounded-xl flex flex-col justify-between h-32 hover:border-border transition-colors">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Priemer / Lov</span>
                   <Weight className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} />
@@ -265,7 +265,7 @@ export default function DiaryStats() {
             )}
 
             {/* Mesačný progres */}
-            <section className="bg-card border border-border/50 rounded-xl p-6 md:p-8">
+            <section className="bg-card dark:bg-slate-900 border border-border/50 rounded-xl p-6 md:p-8">
               <div className="flex justify-between items-center mb-1">
                 <h3 className="text-lg font-bold text-foreground">Ako sa ti darilo počas sezóny</h3>
                 {monthlyTrendData.some(d => d.val > 0) && (
@@ -287,7 +287,7 @@ export default function DiaryStats() {
           <div className="md:col-span-4 space-y-6">
 
             {/* Hodinový insight */}
-            <section className="bg-card border border-border/50 rounded-xl p-6 relative overflow-hidden">
+            <section className="bg-card dark:bg-slate-900 border border-border/50 rounded-xl p-6 relative overflow-hidden">
               <h3 className="text-lg font-bold text-foreground mb-4">Kedy sa ti darí najviac</h3>
               
               {hasEnoughData && topHourlyWindows.length > 0 ? (
@@ -341,7 +341,7 @@ export default function DiaryStats() {
             </section>
 
             {/* Top druhy */}
-            <section className="bg-card border border-border/50 rounded-xl p-6">
+            <section className="bg-card dark:bg-slate-900 border border-border/50 rounded-xl p-6">
               <h3 className="text-lg font-bold text-foreground mb-4">Top druhy</h3>
               {topSpecies.length > 0 ? (
                 <ul className="space-y-3">
@@ -370,7 +370,7 @@ export default function DiaryStats() {
 
             {/* Míľniky */}
             {(personalRecords.heaviestCatch || personalRecords.bestTrip || personalRecords.streaks.longest > 0) && (
-              <section className="bg-card border border-border/50 rounded-xl p-6">
+              <section className="bg-card dark:bg-slate-900 border border-border/50 rounded-xl p-6">
                 <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
                   <Trophy className="h-5 w-5 text-muted-foreground" strokeWidth={1.75} />
                   Míľniky

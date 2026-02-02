@@ -398,7 +398,7 @@ export default function SeasonalGoals() {
     const NarrativeIcon = narrative.icon;
 
     return (
-      <Card key={goal.id} className="hover:shadow-lg transition-all" data-testid={`card-goal-${goal.id}`}>
+      <Card key={goal.id} className="dark:bg-slate-900 hover:shadow-lg transition-all" data-testid={`card-goal-${goal.id}`}>
         <CardContent className="p-6">
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-3 flex-1">
@@ -595,7 +595,7 @@ export default function SeasonalGoals() {
 
         {/* Historical season notice */}
         {isViewingHistoricalSeason && (
-          <Card className="bg-muted/50 border-muted-foreground/20">
+          <Card className="bg-muted/50 dark:bg-slate-900 border-muted-foreground/20">
             <CardContent className="p-4 flex items-center gap-3">
               <History className="w-5 h-5 text-muted-foreground" strokeWidth={1.75} />
               <div>
@@ -608,7 +608,7 @@ export default function SeasonalGoals() {
 
         {/* ===== SECTION 1: HERO - Hlavný Cieľ Sezóny ===== */}
         {mainGoal && mainGoalNarrative && (
-          <Card className="border-primary/30" data-testid="card-main-goal">
+          <Card className="dark:bg-slate-900 border-primary/30" data-testid="card-main-goal">
             <CardContent className="p-6 sm:p-8">
               <div className="flex flex-col md:flex-row items-center gap-6 sm:gap-8">
                 {/* Kruhový Progress Bar */}
@@ -688,7 +688,7 @@ export default function SeasonalGoals() {
               {completedGoals.map((goal) => {
                 const IconComponent = getGoalIcon(goal.goalType);
                 return (
-                  <Card key={goal.id} className="bg-emerald-500/5 border-emerald-500/20" data-testid={`card-completed-${goal.id}`}>
+                  <Card key={goal.id} className="bg-emerald-500/5 dark:bg-slate-900 border-emerald-500/20" data-testid={`card-completed-${goal.id}`}>
                     <CardContent className="p-4">
                       <div className="flex items-center gap-3">
                         <TacticalIcon icon={IconComponent} variant="emerald" size="sm" showLabel={false} />
@@ -712,7 +712,7 @@ export default function SeasonalGoals() {
         <div>
           <h2 className="text-xl font-bold text-foreground mb-4">Aktívne Ciele</h2>
           {activeGoals.filter(g => g.id !== nextGoal?.id && !g.isMainGoal).length === 0 && !nextGoal && !mainGoal ? (
-            <Card>
+            <Card className="dark:bg-slate-900">
               <CardContent className="p-8 text-center">
                 <div className="flex justify-center mb-4">
                   <TacticalIcon icon={Target} variant="neutral" size="lg" showLabel={false} />
