@@ -324,7 +324,7 @@ export default function BattleDetail() {
             {/* Left Section (2 columns) */}
             <div className="lg:col-span-2 space-y-4 md:space-y-6">
               {/* Leaderboard */}
-              <Card>
+              <Card className="dark:bg-slate-900">
                 <CardHeader className="p-4 md:p-6">
                   <CardTitle className="flex items-center gap-2 text-base md:text-lg">
                     <TacticalIconInline icon={Trophy} variant="amber" size="md" />
@@ -387,7 +387,7 @@ export default function BattleDetail() {
 
               {/* Score Comparison Chart (only for finished battles) */}
               {battle.status === "finished" && leaderboardData.length > 0 && (
-                <Card>
+                <Card className="dark:bg-slate-900">
                   <CardHeader className="p-4 md:p-6">
                     <CardTitle className="flex items-center gap-2 text-base md:text-lg">
                       <TacticalIconInline icon={BarChart3} variant="orange" size="md" />
@@ -454,7 +454,7 @@ export default function BattleDetail() {
 
               {/* Fish Types Distribution (only for finished battles with catches) */}
               {battle.status === "finished" && catches.length > 0 && (
-                <Card>
+                <Card className="dark:bg-slate-900">
                   <CardHeader className="p-4 md:p-6">
                     <CardTitle className="flex items-center gap-2 text-base md:text-lg">
                       <TacticalIconInline icon={Fish} variant="cyan" size="md" />
@@ -516,7 +516,7 @@ export default function BattleDetail() {
               )}
 
               {/* Live Feed of Catches */}
-              <Card>
+              <Card className="dark:bg-slate-900">
                 <CardHeader className="p-4 md:p-6">
                   <CardTitle className="flex items-center gap-2 text-base md:text-lg">
                     <TacticalIconInline icon={Fish} variant="cyan" size="md" />
@@ -599,7 +599,7 @@ export default function BattleDetail() {
             <div className="space-y-6">
               {/* Time Remaining or Battle Results */}
               {battle.status === "finished" ? (
-                <Card className="border-yellow-500 bg-yellow-50/50 dark:bg-yellow-950/20">
+                <Card className="border-yellow-500 bg-yellow-50/50 dark:bg-slate-900">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-yellow-700 dark:text-yellow-400">
                       <Trophy className="w-5 h-5" />
@@ -632,7 +632,7 @@ export default function BattleDetail() {
                   </CardContent>
                 </Card>
               ) : (
-                <Card className="border-primary">
+                <Card className="border-primary dark:bg-slate-900">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-primary">
                       <Clock className="w-5 h-5" />
@@ -654,7 +654,7 @@ export default function BattleDetail() {
 
               {/* Personal Statistics (only for finished battles) */}
               {battle.status === "finished" && user && (
-                <Card className="border-primary/50">
+                <Card className="border-primary/50 dark:bg-slate-900">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-base">
                       <Award className="w-5 h-5 text-primary" />
@@ -725,7 +725,7 @@ export default function BattleDetail() {
 
               {/* Battle Insights (only for finished battles) */}
               {battle.status === "finished" && catches.length > 0 && (
-                <Card className="border-blue-500/50">
+                <Card className="border-blue-500/50 dark:bg-slate-900">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-base">
                       <BarChart3 className="w-5 h-5 text-blue-500" />
@@ -809,7 +809,7 @@ export default function BattleDetail() {
               )}
 
               {/* Highlight Súboja */}
-              <Card>
+              <Card className="dark:bg-slate-900">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Trophy className="w-5 h-5 text-yellow-500" />
@@ -853,7 +853,7 @@ export default function BattleDetail() {
               </Card>
 
               {/* Pravidlá Súboja */}
-              <Card>
+              <Card className="dark:bg-slate-900">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <CheckCircle2 className="w-5 h-5" />
