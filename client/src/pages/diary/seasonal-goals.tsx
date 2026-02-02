@@ -688,7 +688,7 @@ export default function SeasonalGoals() {
               {completedGoals.map((goal) => {
                 const IconComponent = getGoalIcon(goal.goalType);
                 return (
-                  <Card key={goal.id} className="bg-emerald-500/5 dark:bg-slate-900 border-emerald-500/20" data-testid={`card-completed-${goal.id}`}>
+                  <Card key={goal.id} className="bg-emerald-500/5 border-emerald-500/20" data-testid={`card-completed-${goal.id}`}>
                     <CardContent className="p-4">
                       <div className="flex items-center gap-3">
                         <TacticalIcon icon={IconComponent} variant="emerald" size="sm" showLabel={false} />
