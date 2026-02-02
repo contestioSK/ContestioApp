@@ -655,7 +655,7 @@ export default function WeatherForecast() {
                 {/* Top Row: Basic Info + Fish Activity in 2 columns */}
                 <div className="grid lg:grid-cols-2 gap-6">
                   {/* Detail Header */}
-                  <div className="p-4 md:p-6 rounded-lg border-2 space-y-4 bg-card border-border">
+                  <div className="p-4 md:p-6 rounded-lg border-2 space-y-4 bg-card dark:bg-slate-900 border-border">
                     <div className="flex items-start justify-between">
                       <div className="space-y-1">
                         <p className="text-sm text-muted-foreground capitalize">
@@ -686,13 +686,13 @@ export default function WeatherForecast() {
 
                   {/* PREMIUM: Fish Activity Index Widget */}
                   {isPremiumLoading ? (
-                    <div className="p-4 md:p-6 rounded-lg border-2 bg-card border-border">
+                    <div className="p-4 md:p-6 rounded-lg border-2 bg-card dark:bg-slate-900 border-border">
                       <Skeleton className="h-6 w-48 mb-4" />
                       <Skeleton className="h-12 w-full rounded-full mb-4" />
                       <Skeleton className="h-4 w-32" />
                     </div>
                   ) : isPremium ? (
-                    <div className="p-4 md:p-6 rounded-lg border-2 bg-card border-border">
+                    <div className="p-4 md:p-6 rounded-lg border-2 bg-card dark:bg-slate-900 border-border">
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-semibold flex items-center gap-2">
                           <Fish className="w-5 h-5" />
@@ -742,7 +742,7 @@ export default function WeatherForecast() {
                       })()}
                     </div>
                   ) : (
-                    <div className="p-4 md:p-6 rounded-lg border-2 text-center bg-card border-border">
+                    <div className="p-4 md:p-6 rounded-lg border-2 text-center bg-card dark:bg-slate-900 border-border">
                       <div className="flex justify-center mb-4">
                         <TacticalIcon icon={Fish} variant="neutral" size="lg" showLabel={false} />
                       </div>
@@ -762,7 +762,7 @@ export default function WeatherForecast() {
                 </div>
 
                 {/* Hourly Forecast Chart Widget */}
-                <div className="p-4 md:p-6 rounded-lg border-2 bg-card border-border">
+                <div className="p-4 md:p-6 rounded-lg border-2 bg-card dark:bg-slate-900 border-border">
                   <h3 className="text-lg font-semibold mb-4">Hodinová predpoveď</h3>
                   <ResponsiveContainer width="100%" height={300}>
                     <ComposedChart 
@@ -831,7 +831,7 @@ export default function WeatherForecast() {
                         return (
                           <div
                             key={index}
-                            className="flex-shrink-0 p-3 rounded-lg border-2 min-w-[100px] space-y-1.5 text-center bg-card border-border"
+                            className="flex-shrink-0 p-3 rounded-lg border-2 min-w-[100px] space-y-1.5 text-center bg-card dark:bg-slate-900 border-border"
                             data-testid={`hour-card-${index}`}
                           >
                             {/* Time */}
@@ -881,7 +881,7 @@ export default function WeatherForecast() {
                 </div>
 
                 {/* Detailed Conditions Widget */}
-                <div className="p-4 md:p-6 rounded-lg border-2 bg-card border-border">
+                <div className="p-4 md:p-6 rounded-lg border-2 bg-card dark:bg-slate-900 border-border">
                   <h3 className="text-lg font-semibold mb-4">Detailné podmienky</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     {/* Tlak */}
@@ -950,7 +950,7 @@ export default function WeatherForecast() {
         {forecast && selectedDay && (
           <div className="md:hidden space-y-4">
             {/* Current Temperature & Location */}
-            <div className="bg-card border-2 border-border rounded-lg p-4">
+            <div className="bg-card dark:bg-slate-900 border-2 border-border rounded-lg p-4">
               <h2 className="text-lg font-semibold mb-1">
                 {forecast.location.name}
                 {forecast.location.region && `, ${forecast.location.region}`}
@@ -991,7 +991,7 @@ export default function WeatherForecast() {
             </div>
 
             {/* Interactive Chart - Improved font size for mobile */}
-            <div className="bg-card border-2 border-border rounded-lg p-4">
+            <div className="bg-card dark:bg-slate-900 border-2 border-border rounded-lg p-4">
               <ResponsiveContainer width="100%" height={200}>
                 <ComposedChart 
                   data={filteredHours.map(h => ({
@@ -1047,7 +1047,7 @@ export default function WeatherForecast() {
             </div>
 
             {/* Hourly Forecast - Horizontal Scroll - Smart Time Filtering applied */}
-            <div className="bg-card border-2 border-border rounded-lg p-4">
+            <div className="bg-card dark:bg-slate-900 border-2 border-border rounded-lg p-4">
               <h3 className="text-sm font-semibold mb-3">Hodinová predpoveď</h3>
               <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent">
                 {filteredHours.map((hour, index) => {
@@ -1098,13 +1098,13 @@ export default function WeatherForecast() {
 
             {/* PREMIUM: Fish Activity Index */}
             {isPremiumLoading ? (
-              <div className="bg-card border-2 border-border rounded-lg p-4">
+              <div className="bg-card dark:bg-slate-900 border-2 border-border rounded-lg p-4">
                 <Skeleton className="h-5 w-32 mb-3" />
                 <Skeleton className="h-10 w-full rounded-full mb-3" />
                 <Skeleton className="h-4 w-24" />
               </div>
             ) : isPremium ? (
-              <div className="bg-card border-2 border-border rounded-lg p-4">
+              <div className="bg-card dark:bg-slate-900 border-2 border-border rounded-lg p-4">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-sm font-semibold flex items-center gap-2">
                     <Fish className="w-4 h-4" />
@@ -1151,7 +1151,7 @@ export default function WeatherForecast() {
             ) : null}
 
             {/* Detailed Conditions */}
-            <div className="bg-card border-2 border-border rounded-lg p-4">
+            <div className="bg-card dark:bg-slate-900 border-2 border-border rounded-lg p-4">
               <h3 className="text-sm font-semibold mb-3">Detailné podmienky</h3>
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex items-center gap-2">
@@ -1210,7 +1210,7 @@ export default function WeatherForecast() {
 
         {/* Empty State - shown when no forecast and initial load is complete */}
         {!loading && !forecast && !isInitialLoad && (
-          <Card className="border-dashed" data-testid="card-empty-state">
+          <Card className="border-dashed dark:bg-slate-900" data-testid="card-empty-state">
             <CardHeader className="text-center pb-4">
               <div className="flex justify-center mb-4">
                 <TacticalIcon icon={MapPin} variant="neutral" size="lg" showLabel={false} />
