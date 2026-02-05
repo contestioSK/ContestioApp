@@ -124,9 +124,11 @@ Note: `verifyCatch` and `updateWeight` endpoints don't exist - catches are verif
 - Prevents connection overload and simplifies debugging
 
 ## File Management
-- **Upload Handling**: Multer-based file upload with size (5MB limit) and type restrictions (JPEG, PNG, GIF).
-- **Storage Strategy**: Local file system storage for original files.
-- **Image Processing**: Robust background photo processing system (`PhotoJobQueue`, `ImageService`) creating WebP/JPEG variants (200w, 800w, 1920w) and storing them in `attached_assets/diary_photos/{userId}/`. Includes auto-recovery for stuck photos and frontend fallbacks.
+- **Upload Handling**: Multer-based file upload with size (5MB limit) and type restrictions (JPEG, PNG, GIF, HEIC).
+- **Storage Strategy**: Firebase Storage for persistent photo storage (survives redeployments).
+- **Image Processing**: Background photo processing system (`PhotoJobQueue`, `ImageService`) creating WebP/JPEG variants (200w, 800w, 1920w).
+- **Firebase Storage Structure**: `diary_photos/{userId}/{photoId}/original.{ext}` for originals, `diary_photos/{userId}/{photoId}/{filename}-{width}w.{format}` for variants.
+- **Photo Object Fields**: `url` (best variant), `originalUrl` (original in Firebase), `variants` (all Firebase URLs), `placeholder` (base64).
 
 ## Email System
 - Automated email flow for competitions: Registration Confirmation, Setup Reminder (24-48h after registration), and Day-Before Competition emails.
