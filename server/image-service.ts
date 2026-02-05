@@ -2,6 +2,7 @@ import sharp from "sharp";
 import path from "path";
 import fs from "fs/promises";
 import { existsSync } from "fs";
+import { uploadBufferToFirebase, isFirebaseConfigured } from "./firebase-storage";
 
 export interface ImageVariant {
   width: number;
@@ -28,13 +29,15 @@ export class ImageService {
     baseFilename: string,
     urlBasePath?: string
   ): Promise<ProcessedImageResult> {
-    // Create output directory if it doesn't exist
+    const useFirebase = isFirebaseConfigured();
     const outputDir = path.dirname(outputBasePath);
     
-    // Determine URL base path - detect from output directory if not provided
-    const effectiveUrlBase = urlBasePath || ImageService.detectUrlBase(outputDir);
-    if (!existsSync(outputDir)) {
-      await fs.mkdir(outputDir, { recursive: true });
+    // For local storage fallback, create output directory
+    if (!useFirebase) {
+      const effectiveUrlBase = urlBasePath || ImageService.detectUrlBase(outputDir);
+      if (!existsSync(outputDir)) {
+        await fs.mkdir(outputDir, { recursive: true });
+      }
     }
 
     // Get original image metadata
@@ -81,8 +84,7 @@ export class ImageService {
         variantPromises.push(
           (async () => {
             const filename = `${baseFilename}-${targetWidth}w.${format}`;
-            const outputPath = path.join(outputDir, filename);
-            const url = `${effectiveUrlBase}/${filename}`;
+            const contentType = format === 'webp' ? 'image/webp' : 'image/jpeg';
 
             try {
               let processedVariant = processedImage
@@ -108,17 +110,34 @@ export class ImageService {
                   break;
               }
 
-              await processedVariant.toFile(outputPath);
+              if (useFirebase) {
+                // Upload to Firebase Storage
+                const buffer = await processedVariant.toBuffer();
+                const storagePath = `diary_photos/${baseFilename}/${filename}`;
+                const result = await uploadBufferToFirebase(buffer, storagePath, contentType);
+                
+                return {
+                  width: targetWidth,
+                  format,
+                  url: result.publicUrl,
+                  size: buffer.length
+                };
+              } else {
+                // Fallback to local storage
+                const effectiveUrlBase = urlBasePath || ImageService.detectUrlBase(outputDir);
+                const localOutputPath = path.join(outputDir, filename);
+                const url = `${effectiveUrlBase}/${filename}`;
 
-              // Get file size for metadata
-              const stats = await fs.stat(outputPath);
-              
-              return {
-                width: targetWidth,
-                format,
-                url,
-                size: stats.size
-              };
+                await processedVariant.toFile(localOutputPath);
+                const stats = await fs.stat(localOutputPath);
+                
+                return {
+                  width: targetWidth,
+                  format,
+                  url,
+                  size: stats.size
+                };
+              }
             } catch (error) {
               console.warn(`Failed to process ${format} variant at ${targetWidth}w:`, error);
               return null;
