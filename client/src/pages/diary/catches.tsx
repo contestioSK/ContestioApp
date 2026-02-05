@@ -189,7 +189,7 @@ export default function DiaryCatches() {
   const [minWeight, setMinWeight] = useState<string>("");
   const [maxWeight, setMaxWeight] = useState<string>("");
   const [sortBy, setSortBy] = useState<string>("newest");
-  const [selectedSeason, setSelectedSeason] = useState<string>("2025");
+  const [selectedSeason, setSelectedSeason] = useState<string>("all");
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
   const [showCompetitionCatches, setShowCompetitionCatches] = useState<boolean>(false);
   
@@ -506,6 +506,18 @@ export default function DiaryCatches() {
   // Get unique techniques and spots for filter dropdowns
   const uniqueTechniques = Array.from(new Set(seasonFilteredCatches.map((c: any) => c.bait).filter(Boolean)));
   const uniqueSpots = Array.from(new Set(seasonFilteredCatches.map((c: any) => c.spot).filter(Boolean)));
+  
+  // Get unique seasons (years) from all catches where user has data (including historical)
+  const uniqueSeasons = useMemo(() => {
+    const years = new Set<number>();
+    (catches || []).forEach((c: any) => {
+      if (c.capturedAt) {
+        const year = new Date(c.capturedAt).getFullYear();
+        years.add(year);
+      }
+    });
+    return Array.from(years).sort((a, b) => b - a); // newest first
+  }, [catches]);
   
   // Count active filters for mobile badge
   const activeFilterCount = [
@@ -869,9 +881,9 @@ export default function DiaryCatches() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Všetky roky</SelectItem>
-                    <SelectItem value="2025">Sezóna 2025</SelectItem>
-                    <SelectItem value="2024">Sezóna 2024</SelectItem>
-                    <SelectItem value="2023">Sezóna 2023</SelectItem>
+                    {uniqueSeasons.map((year) => (
+                      <SelectItem key={year} value={year.toString()}>Sezóna {year}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -1113,9 +1125,9 @@ export default function DiaryCatches() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">Všetky roky</SelectItem>
-                        <SelectItem value="2025">Sezóna 2025</SelectItem>
-                        <SelectItem value="2024">Sezóna 2024</SelectItem>
-                        <SelectItem value="2023">Sezóna 2023</SelectItem>
+                        {uniqueSeasons.map((year) => (
+                          <SelectItem key={year} value={year.toString()}>Sezóna {year}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
