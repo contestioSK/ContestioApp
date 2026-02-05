@@ -346,6 +346,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
                   ...photo,
                   status: result.status,
                   url: result.url || photo.url,
+                  originalUrl: result.originalUrl || photo.originalUrl,
                   variants: result.variants || photo.variants,
                   placeholder: result.placeholder || photo.placeholder,
                   error: result.error
