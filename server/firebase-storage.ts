@@ -6,22 +6,24 @@ const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
 const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
 const storageBucket = process.env.FIREBASE_STORAGE_BUCKET;
 
+let bucket: any = null;
+
 if (!projectId || !clientEmail || !privateKey || !storageBucket) {
   console.warn('[Firebase] Missing Firebase credentials - photo storage will not work');
+} else {
+  if (getApps().length === 0) {
+    initializeApp({
+      credential: cert({
+        projectId,
+        clientEmail,
+        privateKey,
+      }),
+      storageBucket,
+    });
+  }
+  bucket = getStorage().bucket(storageBucket);
+  console.log(`[Firebase] Storage configured with bucket: ${storageBucket}`);
 }
-
-if (getApps().length === 0 && projectId && clientEmail && privateKey) {
-  initializeApp({
-    credential: cert({
-      projectId,
-      clientEmail,
-      privateKey,
-    }),
-    storageBucket,
-  });
-}
-
-const bucket = projectId && clientEmail && privateKey ? getStorage().bucket() : null;
 
 export interface UploadResult {
   publicUrl: string;
@@ -30,7 +32,8 @@ export interface UploadResult {
 
 export async function uploadToFirebase(
   localFilePath: string,
-  destinationPath: string
+  destinationPath: string,
+  contentType?: string
 ): Promise<UploadResult> {
   if (!bucket) {
     throw new Error('Firebase Storage not configured');
@@ -39,12 +42,24 @@ export async function uploadToFirebase(
   await bucket.upload(localFilePath, {
     destination: destinationPath,
     metadata: {
+      contentType: contentType || 'image/jpeg',
       cacheControl: 'public, max-age=31536000',
     },
+    public: true,
   });
 
   const file = bucket.file(destinationPath);
-  await file.makePublic();
+  
+  // Try to make public, but continue if bucket uses uniform access control
+  try {
+    await file.makePublic();
+  } catch (error: any) {
+    if (error?.code === 403 || error?.message?.includes('uniform bucket-level access')) {
+      console.log(`[Firebase] Bucket uses uniform access - skipping makePublic for ${destinationPath}`);
+    } else {
+      console.warn(`[Firebase] makePublic failed for ${destinationPath}:`, error?.message);
+    }
+  }
 
   const publicUrl = `https://storage.googleapis.com/${bucket.name}/${destinationPath}`;
 
@@ -70,9 +85,19 @@ export async function uploadBufferToFirebase(
       contentType,
       cacheControl: 'public, max-age=31536000',
     },
+    public: true,
   });
 
-  await file.makePublic();
+  // Try to make public, but continue if bucket uses uniform access control
+  try {
+    await file.makePublic();
+  } catch (error: any) {
+    if (error?.code === 403 || error?.message?.includes('uniform bucket-level access')) {
+      console.log(`[Firebase] Bucket uses uniform access - skipping makePublic for ${destinationPath}`);
+    } else {
+      console.warn(`[Firebase] makePublic failed for ${destinationPath}:`, error?.message);
+    }
+  }
 
   const publicUrl = `https://storage.googleapis.com/${bucket.name}/${destinationPath}`;
 

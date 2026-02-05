@@ -1,5 +1,6 @@
 import { EventEmitter } from 'events';
 import { ImageService } from './image-service';
+import { uploadToFirebase, isFirebaseConfigured } from './firebase-storage';
 import path from 'path';
 import { randomUUID } from 'crypto';
 
@@ -22,6 +23,7 @@ export interface PhotoProcessingResult {
   catchId: string;
   status: 'ready' | 'failed';
   url?: string;
+  originalUrl?: string; // Firebase URL of original photo
   variants?: Array<{width: number; format: string; url: string;}>;
   placeholder?: string;
   error?: string;
@@ -116,12 +118,42 @@ export class PhotoJobQueue extends EventEmitter {
   private async processPhoto(job: PhotoJob): Promise<PhotoProcessingResult> {
     try {
       const baseFilename = path.parse(job.originalFilename).name;
+      let originalUrl: string | undefined;
 
-      // Process image with ImageService
+      // Upload original to Firebase first for persistence (if Firebase is configured)
+      if (isFirebaseConfigured()) {
+        try {
+          const originalExt = path.extname(job.originalFilename).toLowerCase() || '.jpg';
+          const originalStoragePath = `diary_photos/${job.userId}/${job.photoId}/original${originalExt}`;
+          
+          // Detect content type based on extension
+          const contentTypeMap: Record<string, string> = {
+            '.jpg': 'image/jpeg',
+            '.jpeg': 'image/jpeg',
+            '.png': 'image/png',
+            '.gif': 'image/gif',
+            '.webp': 'image/webp',
+            '.heic': 'image/heic',
+            '.heif': 'image/heif',
+          };
+          const contentType = contentTypeMap[originalExt] || 'image/jpeg';
+          
+          const result = await uploadToFirebase(job.originalPath, originalStoragePath, contentType);
+          originalUrl = result.publicUrl;
+          console.log(`[PhotoQueue] Original uploaded to Firebase: ${originalStoragePath}`);
+        } catch (error) {
+          console.warn(`[PhotoQueue] Failed to upload original to Firebase, continuing with variants:`, error);
+        }
+      }
+
+      // Process image with ImageService (pass userId and photoId for Firebase path organization)
       const imageMetadata = await ImageService.processImage(
         job.originalPath,
         job.outputBasePath,
-        baseFilename
+        baseFilename,
+        undefined, // urlBasePath - auto-detected
+        job.userId,
+        job.photoId
       );
 
       // Get best variant (prefer WebP 800w)
@@ -129,7 +161,7 @@ export class PhotoJobQueue extends EventEmitter {
                           ImageService.getBestVariantForWidth(imageMetadata.variants, 800, 'jpeg') ||
                           imageMetadata.variants[0];
 
-      // Only clean up original AFTER variants are successfully created
+      // Only clean up local temp file AFTER Firebase upload and variants are successfully created
       if (imageMetadata.variants && imageMetadata.variants.length > 0) {
         await ImageService.cleanupTempFile(job.originalPath);
       } else {
@@ -141,6 +173,7 @@ export class PhotoJobQueue extends EventEmitter {
         catchId: job.catchId,
         status: 'ready',
         url: bestVariant?.url || '',
+        originalUrl,
         variants: imageMetadata.variants,
         placeholder: imageMetadata.placeholder
       };

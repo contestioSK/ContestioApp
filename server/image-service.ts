@@ -27,7 +27,9 @@ export class ImageService {
     inputPath: string,
     outputBasePath: string,
     baseFilename: string,
-    urlBasePath?: string
+    urlBasePath?: string,
+    userId?: string,
+    photoId?: string
   ): Promise<ProcessedImageResult> {
     const useFirebase = isFirebaseConfigured();
     const outputDir = path.dirname(outputBasePath);
@@ -111,9 +113,11 @@ export class ImageService {
               }
 
               if (useFirebase) {
-                // Upload to Firebase Storage
+                // Upload to Firebase Storage with userId/photoId path for organization
                 const buffer = await processedVariant.toBuffer();
-                const storagePath = `diary_photos/${baseFilename}/${filename}`;
+                const userPath = userId ? `diary_photos/${userId}` : 'diary_photos/unknown';
+                const photoPath = photoId || baseFilename;
+                const storagePath = `${userPath}/${photoPath}/${filename}`;
                 const result = await uploadBufferToFirebase(buffer, storagePath, contentType);
                 
                 return {
