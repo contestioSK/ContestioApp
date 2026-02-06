@@ -164,7 +164,7 @@ export default function VerifyEmailPage() {
             </CardTitle>
             <CardDescription className="text-slate-400">
               {status === "missing-token"
-                ? "V URL chýba overovací token. Použi odkaz z emailu."
+                ? "Odkaz nefunguje. Otvor ho priamo z e-mailu."
                 : "Odkaz už nie je platný. Pošli si nový."}
             </CardDescription>
           </CardHeader>
