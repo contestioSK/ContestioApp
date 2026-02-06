@@ -4,20 +4,19 @@ import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Loader2, CheckCircle, XCircle, FishIcon, Lock } from "lucide-react";
+import { Loader2, Lock, Eye, EyeOff, CheckCircle2, AlertTriangle, AlertCircle } from "lucide-react";
 import { Link } from "wouter";
 
 const resetPasswordSchema = z.object({
   password: z.string()
-    .min(7, "Heslo musí mať aspoň 7 znakov")
-    .regex(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/, "Heslo musí obsahovať aspoň jeden špeciálny znak"),
+    .min(7, "Minimálne 7 znakov")
+    .regex(/[^A-Za-z0-9]/, "Vyžaduje sa špeciálny znak (napr. !, ?, #, _)"),
   confirmPassword: z.string().min(1, "Potvrdenie hesla je povinné"),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Heslá sa nezhodujú",
@@ -26,10 +25,18 @@ const resetPasswordSchema = z.object({
 
 type ResetPasswordForm = z.infer<typeof resetPasswordSchema>;
 
+type StatusType = {
+  type: 'error' | 'success' | null;
+  message: string;
+  isTokenError?: boolean;
+};
+
 export default function ResetPasswordPage() {
   const [, setLocation] = useLocation();
-  const { toast } = useToast();
   const [token, setToken] = useState<string | null>(null);
+  const [status, setStatus] = useState<StatusType>({ type: null, message: "" });
+  const [showPass, setShowPass] = useState(false);
+  const [showConfirmPass, setShowConfirmPass] = useState(false);
   const [resetStatus, setResetStatus] = useState<"form" | "success" | "error" | "missing-token">("form");
 
   const form = useForm<ResetPasswordForm>({
@@ -41,23 +48,19 @@ export default function ResetPasswordPage() {
   });
 
   useEffect(() => {
-    // Extract token from URL params
     const urlParams = new URLSearchParams(window.location.search);
     const tokenParam = urlParams.get("token");
-    
     if (!tokenParam) {
       setResetStatus("missing-token");
       return;
     }
-    
     setToken(tokenParam);
   }, []);
 
   const resetMutation = useMutation({
     mutationFn: async (data: ResetPasswordForm) => {
-      if (!token) {
-        throw new Error("Token is missing");
-      }
+      if (!token) throw new Error("Token is missing");
+      setStatus({ type: null, message: "" });
       const response = await apiRequest("POST", "/api/auth/reset-password", {
         token,
         password: data.password,
@@ -66,157 +69,171 @@ export default function ResetPasswordPage() {
     },
     onSuccess: () => {
       setResetStatus("success");
-      toast({
-        title: "Heslo zmenené!",
-        description: "Tvoje heslo bolo úspešne zmenené. Môžeš sa teraz prihlásiť.",
-      });
     },
-    onError: (error: Error) => {
-      console.error("Password reset error:", error);
-      setResetStatus("error");
-      
-      let errorMessage = "Nastala chyba pri zmene hesla.";
-      if (error.message.includes("400")) {
-        errorMessage = "Neplatný alebo expirovaný reset kód.";
-      } else if (error.message.includes("Invalid or expired")) {
-        errorMessage = "Neplatný alebo expirovaný reset kód. Požiadajte o nový.";
+    onError: (err: Error) => {
+      let userMessage = "Niečo sa pokazilo. Skús to znova.";
+      let isTokenError = false;
+
+      if (err.message.includes("400") || err.message.includes("Invalid") || err.message.includes("expired") || err.message.includes("kód")) {
+        userMessage = "Reset odkaz je neplatný alebo expiroval.";
+        isTokenError = true;
+      } else if (err.message.includes("weak")) {
+        userMessage = "Heslo je príliš slabé.";
       }
-      
-      toast({
-        title: "Chyba zmeny hesla",
-        description: errorMessage,
-        variant: "destructive",
-      });
+
+      if (isTokenError) {
+        setResetStatus("error");
+      } else {
+        setStatus({ type: 'error', message: userMessage, isTokenError: false });
+      }
     },
   });
 
-  const onSubmit = (data: ResetPasswordForm) => {
-    resetMutation.mutate(data);
+  const StatusBox = ({ s }: { s: StatusType }) => {
+    if (!s.type) return null;
+    return (
+      <motion.div
+        initial={{ opacity: 0, height: 0 }}
+        animate={{ opacity: 1, height: "auto" }}
+        exit={{ opacity: 0, height: 0 }}
+        className={`text-xs text-center p-2 rounded-lg flex items-center justify-center gap-2 ${
+          s.type === 'error'
+            ? 'bg-red-500/10 text-red-400 border border-red-500/20'
+            : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+        }`}
+      >
+        {s.type === 'error' && <AlertCircle size={14} />}
+        {s.type === 'success' && <CheckCircle2 size={14} />}
+        {s.message}
+      </motion.div>
+    );
   };
 
-  if (resetStatus === "missing-token") {
-    return (
-      <div className="min-h-screen bg-background dark:bg-gray-950 flex items-center justify-center px-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="w-16 h-16 bg-destructive/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <XCircle className="w-8 h-8 text-destructive" />
+  const pageWrapper = (children: React.ReactNode) => (
+    <div className="min-h-screen bg-[#020617] flex items-center justify-center p-4 selection:bg-orange-500/30">
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-orange-500/5 rounded-full blur-[120px]" />
+      </div>
+      {children}
+    </div>
+  );
+
+  if (resetStatus === "missing-token" || resetStatus === "error") {
+    return pageWrapper(
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="w-full flex justify-center"
+      >
+        <Card className="w-full max-w-md bg-slate-900/60 border-slate-800 backdrop-blur-xl shadow-2xl relative z-10">
+          <CardHeader className="text-center pb-2 pt-6">
+            <div className="flex justify-center mb-4">
+              <div className="w-12 h-12 bg-slate-800/50 rounded-full flex items-center justify-center border border-slate-700">
+                <AlertTriangle className="text-red-500 w-6 h-6" />
+              </div>
             </div>
-            <CardTitle className="text-2xl font-bold text-destructive dark:text-red-400">
-              Chýbajúci reset kód
+            <CardTitle className="text-xl font-black text-white uppercase italic" data-testid="text-error-title">
+              {resetStatus === "missing-token" ? "Chýbajúci reset kód" : "Odkaz vypršal"}
             </CardTitle>
+            <CardDescription className="text-slate-400">
+              {resetStatus === "missing-token"
+                ? "V URL chýba reset token. Použi odkaz z emailu."
+                : "Pošli si nový reset odkaz."}
+            </CardDescription>
           </CardHeader>
-          <CardContent className="text-center space-y-4">
-            <Alert variant="destructive">
-              <AlertDescription>
-                V URL chýba reset token. Prosím, použite odkaz z emailu.
-              </AlertDescription>
-            </Alert>
-            <div className="space-y-2">
-              <Button asChild className="w-full" data-testid="button-go-to-login">
-                <Link href="/auth/login">
-                  Prejsť na prihlásenie
-                </Link>
-              </Button>
-            </div>
+          <CardContent className="space-y-4">
+            <Button
+              onClick={() => setLocation("/auth/forgot-password")}
+              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-12"
+            >
+              Poslať nový odkaz
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => setLocation("/auth/login")}
+              className="w-full text-slate-500 hover:text-white"
+              data-testid="button-go-to-login"
+            >
+              Späť na prihlásenie
+            </Button>
           </CardContent>
         </Card>
-      </div>
+      </motion.div>
     );
   }
 
   if (resetStatus === "success") {
-    return (
-      <div className="min-h-screen bg-background dark:bg-gray-950 flex items-center justify-center px-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="w-8 h-8 text-primary" />
-            </div>
-            <CardTitle className="text-2xl font-bold text-primary dark:text-blue-400" data-testid="text-success-title">
-              Heslo zmenené!
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-center space-y-4">
-            <p className="text-muted-foreground dark:text-gray-400">
-              Tvoje heslo bolo úspešne zmenené. Môžeš sa teraz prihlásiť s novým heslom.
-            </p>
-            <div className="pt-4">
-              <Button asChild className="w-full" data-testid="button-go-to-login">
-                <Link href="/auth/login">
-                  Prihlásiť sa
-                </Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (resetStatus === "error") {
-    return (
-      <div className="min-h-screen bg-background dark:bg-gray-950 flex items-center justify-center px-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="w-16 h-16 bg-destructive/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <XCircle className="w-8 h-8 text-destructive" />
-            </div>
-            <CardTitle className="text-2xl font-bold text-destructive dark:text-red-400" data-testid="text-error-title">
-              Chyba zmeny hesla
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-center space-y-4">
-            <Alert variant="destructive">
-              <AlertDescription>
-                Nepodarilo sa zmeniť heslo. Reset kód môže byť neplatný alebo expirovaný.
-              </AlertDescription>
-            </Alert>
-            <div className="space-y-2">
-              <Button asChild className="w-full" data-testid="button-try-login">
-                <Link href="/auth/login">
-                  Skúsiť prihlásenie
-                </Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-background dark:bg-gray-950 flex items-center justify-center px-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="flex items-center justify-center space-x-2 mb-4">
-            <FishIcon className="w-8 h-8 text-primary" />
-            <h1 className="text-2xl font-bold text-primary dark:text-blue-400">Contestio</h1>
+    return pageWrapper(
+      <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
+        <Card className="w-full max-w-md bg-slate-900/50 border-slate-800 text-center p-8 backdrop-blur-md relative z-10">
+          <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-emerald-500/20">
+            <CheckCircle2 className="w-8 h-8 text-emerald-500" />
           </div>
-          <CardTitle className="text-2xl font-bold dark:text-white">Resetovať heslo</CardTitle>
-          <CardDescription className="dark:text-gray-400">
-            Zadaj nové heslo pre tvoj účet
-          </CardDescription>
+          <h2 className="text-2xl font-black text-white uppercase italic mb-2" data-testid="text-success-title">
+            HOTOVO!
+          </h2>
+          <p className="text-slate-400 mb-6 text-sm">Tvoje heslo bolo úspešne zmenené.</p>
+          <Button
+            onClick={() => setLocation("/auth/login")}
+            className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold h-12"
+            data-testid="button-go-to-login"
+          >
+            Prihlásiť sa s novým heslom
+          </Button>
+        </Card>
+      </motion.div>
+    );
+  }
+
+  return pageWrapper(
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="w-full flex justify-center"
+    >
+      <Card className="w-full max-w-md bg-slate-900/60 border-slate-800 backdrop-blur-xl shadow-2xl relative z-10">
+        <CardHeader className="text-center pb-2 pt-6">
+          <div className="flex justify-center mb-4">
+            <div className="w-12 h-12 bg-slate-800/50 rounded-full flex items-center justify-center border border-slate-700">
+              <Lock className="text-orange-500 w-6 h-6" />
+            </div>
+          </div>
+          <CardTitle className="text-2xl font-black text-white uppercase italic">Nové heslo</CardTitle>
+          <CardDescription className="text-slate-400">Nastav si nové bezpečné heslo.</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit((d) => resetMutation.mutate(d))} className="space-y-4">
               <FormField
                 control={form.control}
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="dark:text-gray-200">Nové heslo</FormLabel>
+                    <FormLabel className="text-xs uppercase font-bold text-slate-400">Nové heslo</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="password" 
-                        placeholder="********" 
-                        {...field}
-                        data-testid="input-password"
-                        className="dark:bg-gray-800 dark:border-gray-700 dark:text-white"
-                      />
+                      <div className="relative">
+                        <Input
+                          {...field}
+                          type={showPass ? "text" : "password"}
+                          className="bg-slate-950 border-slate-700 text-white focus:border-orange-500/50 pr-10 h-11"
+                          placeholder="********"
+                          autoComplete="new-password"
+                          autoFocus
+                          data-testid="input-password"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPass(!showPass)}
+                          className="absolute right-3 top-3 text-slate-500 hover:text-white transition-colors"
+                        >
+                          {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
                     </FormControl>
-                    <FormMessage className="dark:text-red-400" />
+                    <p className="text-[10px] text-slate-500 mt-1">Min. 7 znakov, špeciálny znak</p>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -226,56 +243,57 @@ export default function ResetPasswordPage() {
                 name="confirmPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="dark:text-gray-200">Potvrdiť heslo</FormLabel>
+                    <FormLabel className="text-xs uppercase font-bold text-slate-400">Potvrdiť heslo</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="password" 
-                        placeholder="********" 
-                        {...field}
-                        data-testid="input-confirm-password"
-                        className="dark:bg-gray-800 dark:border-gray-700 dark:text-white"
-                      />
+                      <div className="relative">
+                        <Input
+                          {...field}
+                          type={showConfirmPass ? "text" : "password"}
+                          className="bg-slate-950 border-slate-700 text-white focus:border-orange-500/50 pr-10 h-11"
+                          placeholder="********"
+                          autoComplete="new-password"
+                          data-testid="input-confirm-password"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPass(!showConfirmPass)}
+                          className="absolute right-3 top-3 text-slate-500 hover:text-white transition-colors"
+                        >
+                          {showConfirmPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
                     </FormControl>
-                    <FormMessage className="dark:text-red-400" />
+                    <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <Alert className="dark:bg-gray-800 dark:border-gray-700">
-                <Lock className="h-4 w-4" />
-                <AlertDescription className="dark:text-gray-300">
-                  Heslo musí mať aspoň 7 znakov a obsahovať aspoň jeden špeciálny znak.
-                </AlertDescription>
-              </Alert>
+              <AnimatePresence>
+                {status.type === 'error' && <StatusBox s={status} />}
+              </AnimatePresence>
 
-              <Button 
-                type="submit" 
-                className="w-full" 
+              <Button
+                type="submit"
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-black uppercase tracking-widest h-12 rounded-xl shadow-[0_4px_14px_-4px_rgba(249,115,22,0.3)] transition-all active:scale-[0.98]"
                 disabled={resetMutation.isPending}
                 data-testid="button-reset-password"
               >
                 {resetMutation.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Resetujem heslo...
-                  </>
+                  <Loader2 className="animate-spin mr-2" />
                 ) : (
-                  "Resetovať heslo"
+                  "Uložiť nové heslo"
                 )}
               </Button>
             </form>
           </Form>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-muted-foreground dark:text-gray-400">
-              Spomínate si na heslo?{" "}
-              <Link href="/auth/login" className="text-primary hover:underline">
-                Prihlásiť sa
-              </Link>
-            </p>
+            <Link href="/auth/login" className="text-xs text-slate-500 hover:text-white inline-flex items-center gap-1 transition-colors">
+              Späť na prihlásenie
+            </Link>
           </div>
         </CardContent>
       </Card>
-    </div>
+    </motion.div>
   );
 }
