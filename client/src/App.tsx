@@ -68,6 +68,7 @@ import AuthRegister from "@/pages/auth/register";
 import AuthLogin from "@/pages/auth/login";
 import VerifyEmail from "@/pages/auth/verify-email";
 import ResetPassword from "@/pages/auth/reset-password";
+import ForgotPassword from "@/pages/auth/forgot-password";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Onboarding from "@/pages/onboarding";
 import { useEffect } from "react";
@@ -83,7 +84,7 @@ function Router() {
     if (isLoading || contextLoading) return;
     if (!user) return;
     
-    const exemptRoutes = ["/onboarding", "/auth/login", "/auth/register", "/auth/verify-email", "/auth/reset-password", "/reset-password", "/pricing", "/about-us", "/faq", "/contact", "/terms", "/privacy", "/register", "/select-role"];
+    const exemptRoutes = ["/onboarding", "/auth/login", "/auth/register", "/auth/verify-email", "/auth/reset-password", "/auth/forgot-password", "/reset-password", "/pricing", "/about-us", "/faq", "/contact", "/terms", "/privacy", "/register", "/select-role"];
     const exemptPrefixes = ["/competition/", "/team/", "/categories/"];
     
     const isExempt = exemptRoutes.includes(location) || 
@@ -113,6 +114,7 @@ function Router() {
       <Route path="/auth/register" component={AuthRegister} />
       <Route path="/auth/login" component={AuthLogin} />
       <Route path="/auth/verify-email" component={VerifyEmail} />
+      <Route path="/auth/forgot-password" component={ForgotPassword} />
       <Route path="/auth/reset-password" component={ResetPassword} />
       <Route path="/reset-password" component={ResetPassword} />
       <Route path="/onboarding" component={Onboarding} />
