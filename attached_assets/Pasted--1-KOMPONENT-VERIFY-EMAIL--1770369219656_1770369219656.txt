@@ -1,0 +1,131 @@
+// ==========================================
+// 1. KOMPONENT: VERIFY EMAIL
+// ==========================================
+function VerifyEmailContent({ onNavigate }) {
+    const { toast } = useToast();
+    const [status, setStatus] = useState("loading"); // loading | success | error
+    const [isResendSent, setIsResendSent] = useState(false);
+    const [cooldown, setCooldown] = useState(0);
+
+    useEffect(() => {
+        // Simulácia API volania po načítaní komponentu
+        const verifyToken = async () => {
+            try {
+                // Simulujeme API request
+                await apiRequest("GET", "/api/auth/verify-email?token=demo-token", null);
+                setStatus("success");
+            } catch (error) {
+                setStatus("error");
+            }
+        };
+        verifyToken();
+    }, []);
+
+    // Cooldown timer
+    useEffect(() => {
+        let interval;
+        if (cooldown > 0) interval = setInterval(() => setCooldown((p) => (p > 0 ? p - 1 : 0)), 1000);
+        return () => clearInterval(interval);
+    }, [cooldown]);
+
+    const handleResend = () => {
+        // Tu by bolo volanie API na resend
+        setIsResendSent(true);
+        setCooldown(60);
+    };
+
+    if (status === "loading") {
+        return (
+            <Card className="w-full max-w-md bg-slate-900/60 border-slate-800 backdrop-blur-xl shadow-2xl relative z-10">
+                <CardContent className="flex flex-col items-center justify-center p-12 text-center space-y-4">
+                    <Loader2 className="w-12 h-12 text-orange-500 animate-spin" />
+                    <div className="space-y-1">
+                        <h2 className="text-xl font-bold text-white">Aktivujeme účet...</h2>
+                        <p className="text-sm text-slate-400">Ešte chvíľu. Dokončujeme overenie.</p>
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
+
+    // 1. UX Improvement: Inline Success State pre Resend
+    if (isResendSent) {
+        return (
+            <Card className="w-full max-w-md bg-slate-900/60 border-slate-800 backdrop-blur-xl shadow-2xl relative z-10">
+                <CardHeader className="text-center pb-2 pt-6">
+                    <div className="flex justify-center mb-4">
+                         <div className="w-12 h-12 bg-emerald-500/10 rounded-full flex items-center justify-center border border-emerald-500/20">
+                            <Mail className="text-emerald-500 w-6 h-6" />
+                        </div>
+                    </div>
+                    <CardTitle className="text-xl font-black text-white uppercase italic">Odoslané</CardTitle>
+                    <CardDescription className="text-slate-400">Ak je tvoj email v systéme, nový odkaz je na ceste.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                     {/* 2. UX Improvement: SPAM Hint */}
+                    <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-800 text-center">
+                        <p className="text-xs text-slate-500">
+                            <span className="font-bold text-slate-400">Tip:</span> Skontroluj aj SPAM alebo Promo priečinky.
+                        </p>
+                    </div>
+
+                    <Button onClick={() => onNavigate('login')} className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold h-12 border border-slate-700">
+                        Späť na prihlásenie
+                    </Button>
+                    
+                    {/* 3. UX Improvement: Cooldown Feedback */}
+                    <div className="text-center">
+                        <button disabled className="text-[10px] text-slate-600 cursor-not-allowed">
+                            Poslať znova možné o {cooldown}s
+                        </button>
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
+
+    if (status === "error") {
+        return (
+            <Card className="w-full max-w-md bg-slate-900/60 border-slate-800 backdrop-blur-xl shadow-2xl relative z-10">
+                 <CardHeader className="text-center pb-2 pt-6">
+                    <div className="flex justify-center mb-4">
+                        <div className="w-12 h-12 bg-slate-800/50 rounded-full flex items-center justify-center border border-slate-700">
+                            <AlertTriangle className="text-red-500 w-6 h-6" />
+                        </div>
+                    </div>
+                    {/* UX Polish: Skrátený text */}
+                    <CardTitle className="text-xl font-black text-white uppercase italic">Odkaz vypršal</CardTitle>
+                    <CardDescription className="text-slate-400">Odkaz už nie je platný. Pošli si nový.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <Button onClick={handleResend} className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-12">
+                        Poslať nový aktivačný e-mail
+                    </Button>
+                    <Button variant="ghost" onClick={() => onNavigate('login')} className="w-full text-slate-500 hover:text-white">
+                        Späť na prihlásenie
+                    </Button>
+                </CardContent>
+            </Card>
+        );
+    }
+
+    // Success State
+    return (
+        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
+            <Card className="w-full max-w-md bg-slate-900/50 border-slate-800 text-center p-8 backdrop-blur-md">
+                <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+                    <ShieldCheck className="w-10 h-10 text-emerald-500" />
+                </div>
+                
+                <h2 className="text-2xl font-black text-white uppercase tracking-tight mb-2">Účet aktivovaný</h2>
+                <p className="text-slate-400 mb-8 leading-relaxed text-sm">
+                    Môžeš sa prihlásiť a vstúpiť do arény.
+                </p>
+                
+                <Button onClick={() => onNavigate('login')} className="w-full bg-orange-500 hover:bg-orange-600 text-white font-black uppercase tracking-widest h-12 rounded-xl shadow-[0_10px_40px_-10px_rgba(249,115,22,0.5)] transition-all active:scale-[0.98]">
+                    Prihlásiť sa
+                </Button>
+            </Card>
+        </motion.div>
+    );
+}
