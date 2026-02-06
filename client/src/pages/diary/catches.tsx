@@ -395,9 +395,7 @@ export default function DiaryCatches() {
         
         const catchDate = new Date(catch_.capturedAt);
         const seasonYear = parseInt(selectedSeason);
-        const seasonStart = new Date(`${seasonYear}-01-15`);
-        const seasonEnd = new Date(`${seasonYear + 1}-01-14`);
-        return catchDate >= seasonStart && catchDate <= seasonEnd;
+        return catchDate.getFullYear() === seasonYear;
       });
 
   // Apply filters to catches
