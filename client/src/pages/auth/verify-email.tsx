@@ -1,32 +1,45 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { useMutation } from "@tanstack/react-query";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { apiRequest } from "@/lib/queryClient";
-import { Loader2, CheckCircle, XCircle, Mail, FishIcon } from "lucide-react";
-import { Link } from "wouter";
+import { Input } from "@/components/ui/input";
+import { Loader2, ShieldCheck, AlertTriangle, Mail } from "lucide-react";
 
 export default function VerifyEmailPage() {
   const [, setLocation] = useLocation();
-  const { toast } = useToast();
   const [token, setToken] = useState<string | null>(null);
-  const [verificationStatus, setVerificationStatus] = useState<"loading" | "success" | "error" | "missing-token">("loading");
+  const [status, setStatus] = useState<"loading" | "success" | "error" | "missing-token">("loading");
+  const [isResendSent, setIsResendSent] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+  const [resendEmail, setResendEmail] = useState("");
+  const [hasEmailFromUrl, setHasEmailFromUrl] = useState(false);
 
   useEffect(() => {
-    // Extract token from URL params
     const urlParams = new URLSearchParams(window.location.search);
     const tokenParam = urlParams.get("token");
-    
+    const emailParam = urlParams.get("email");
+
+    if (emailParam) {
+      setResendEmail(decodeURIComponent(emailParam));
+      setHasEmailFromUrl(true);
+    }
+
     if (!tokenParam) {
-      setVerificationStatus("missing-token");
+      setStatus("missing-token");
       return;
     }
-    
+
     setToken(tokenParam);
   }, []);
+
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval>;
+    if (cooldown > 0) interval = setInterval(() => setCooldown((p) => (p > 0 ? p - 1 : 0)), 1000);
+    return () => clearInterval(interval);
+  }, [cooldown]);
 
   const verifyMutation = useMutation({
     mutationFn: async (verificationToken: string) => {
@@ -34,172 +47,187 @@ export default function VerifyEmailPage() {
       return response.json();
     },
     onSuccess: () => {
-      setVerificationStatus("success");
-      toast({
-        title: "Email overený!",
-        description: "Tvoj účet bol úspešne aktivovaný. Môžeš sa teraz prihlásiť.",
-      });
+      setStatus("success");
     },
-    onError: (error: Error) => {
-      console.error("Email verification error:", error);
-      setVerificationStatus("error");
-      
-      let errorMessage = "Nastala chyba pri overovaní emailu.";
-      if (error.message.includes("400")) {
-        errorMessage = "Neplatný alebo expirovaný overovací kód.";
-      } else if (error.message.includes("404")) {
-        errorMessage = "Používateľ nebol nájdený.";
-      }
-      
-      toast({
-        title: "Chyba overenia",
-        description: errorMessage,
-        variant: "destructive",
-      });
+    onError: () => {
+      setStatus("error");
     },
   });
 
-  // Auto-verify when token is available
   useEffect(() => {
-    if (token && verificationStatus === "loading") {
+    if (token && status === "loading") {
       verifyMutation.mutate(token);
     }
-  }, [token, verificationStatus]);
+  }, [token, status]);
 
-  const handleResendVerification = () => {
-    toast({
-      title: "Funkcia nedostupná",
-      description: "Ak potrebujete nový overovací email, kontaktujte podporu.",
-      variant: "destructive",
-    });
+  const resendMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/auth/resend-verification", { email: resendEmail });
+      return response.json();
+    },
+    onSuccess: () => {
+      setIsResendSent(true);
+      setCooldown(60);
+    },
+    onError: () => {
+      setIsResendSent(true);
+      setCooldown(60);
+    },
+  });
+
+  const handleResend = () => {
+    if (resendEmail) {
+      resendMutation.mutate();
+    }
   };
 
-  if (verificationStatus === "missing-token") {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="w-16 h-16 bg-destructive/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <XCircle className="w-8 h-8 text-destructive" />
-            </div>
-            <CardTitle className="text-2xl font-bold text-destructive">
-              Chýbajúci overovací kód
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-center space-y-4">
-            <Alert variant="destructive">
-              <AlertDescription>
-                V URL chýba overovací token. Prosím, použite odkaz z emailu.
-              </AlertDescription>
-            </Alert>
-            <div className="space-y-2">
-              <Button asChild className="w-full">
-                <Link href="/auth/login">
-                  Prejsť na prihlásenie
-                </Link>
-              </Button>
-              <Button asChild variant="outline" className="w-full">
-                <Link href="/auth/register">
-                  Zaregistrovať sa
-                </Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+  const pageWrapper = (children: React.ReactNode) => (
+    <div className="min-h-screen bg-[#020617] flex items-center justify-center p-4 selection:bg-orange-500/30">
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-orange-500/5 rounded-full blur-[120px]" />
       </div>
+      {children}
+    </div>
+  );
+
+  if (status === "loading" || verifyMutation.isPending) {
+    return pageWrapper(
+      <Card className="w-full max-w-md bg-slate-900/60 border-slate-800 backdrop-blur-xl shadow-2xl relative z-10">
+        <CardContent className="flex flex-col items-center justify-center p-12 text-center space-y-4">
+          <Loader2 className="w-12 h-12 text-orange-500 animate-spin" />
+          <div className="space-y-1">
+            <h2 className="text-xl font-bold text-white">Aktivujeme účet...</h2>
+            <p className="text-sm text-slate-400">Ešte chvíľu. Dokončujeme overenie.</p>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
-  if (verificationStatus === "loading" || verifyMutation.isPending) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="flex items-center justify-center space-x-2 mb-4">
-              <FishIcon className="w-8 h-8 text-primary" />
-              <h1 className="text-2xl font-bold text-primary">Contestio</h1>
+  if (isResendSent) {
+    return pageWrapper(
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
+        <Card className="w-full max-w-md bg-slate-900/60 border-slate-800 backdrop-blur-xl shadow-2xl relative z-10">
+          <CardHeader className="text-center pb-2 pt-6">
+            <div className="flex justify-center mb-4">
+              <div className="w-12 h-12 bg-emerald-500/10 rounded-full flex items-center justify-center border border-emerald-500/20">
+                <Mail className="text-emerald-500 w-6 h-6" />
+              </div>
             </div>
-            <CardTitle className="text-2xl font-bold" data-testid="text-verifying-title">
-              Overujeme tvoj email
-            </CardTitle>
+            <CardTitle className="text-xl font-black text-white uppercase italic">Odoslané</CardTitle>
+            <CardDescription className="text-slate-400">Ak je tvoj email v systéme, nový odkaz je na ceste.</CardDescription>
           </CardHeader>
-          <CardContent className="text-center space-y-4">
-            <div className="flex justify-center">
-              <Loader2 className="w-12 h-12 animate-spin text-primary" />
+          <CardContent className="space-y-4">
+            <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-800 text-center">
+              <p className="text-xs text-slate-500">
+                <span className="font-bold text-slate-400">Tip:</span> Skontroluj aj SPAM alebo Promo priečinky.
+              </p>
             </div>
-            <p className="text-muted-foreground">
-              Prosím, chvíľu čakajte...
-            </p>
+
+            <Button
+              onClick={() => setLocation("/auth/login")}
+              className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold h-12 border border-slate-700"
+            >
+              Späť na prihlásenie
+            </Button>
+
+            {cooldown > 0 && (
+              <div className="text-center">
+                <span className="text-[10px] text-slate-600">
+                  Poslať znova možné o {cooldown}s
+                </span>
+              </div>
+            )}
           </CardContent>
         </Card>
-      </div>
+      </motion.div>
     );
   }
 
-  if (verificationStatus === "success") {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="w-8 h-8 text-primary" />
+  if (status === "error" || status === "missing-token") {
+    return pageWrapper(
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="w-full flex justify-center"
+      >
+        <Card className="w-full max-w-md bg-slate-900/60 border-slate-800 backdrop-blur-xl shadow-2xl relative z-10">
+          <CardHeader className="text-center pb-2 pt-6">
+            <div className="flex justify-center mb-4">
+              <div className="w-12 h-12 bg-slate-800/50 rounded-full flex items-center justify-center border border-slate-700">
+                <AlertTriangle className="text-red-500 w-6 h-6" />
+              </div>
             </div>
-            <CardTitle className="text-2xl font-bold text-primary" data-testid="text-success-title">
-              Email overený!
+            <CardTitle className="text-xl font-black text-white uppercase italic" data-testid="text-error-title">
+              {status === "missing-token" ? "Chýbajúci kód" : "Odkaz vypršal"}
             </CardTitle>
+            <CardDescription className="text-slate-400">
+              {status === "missing-token"
+                ? "V URL chýba overovací token. Použi odkaz z emailu."
+                : "Odkaz už nie je platný. Pošli si nový."}
+            </CardDescription>
           </CardHeader>
-          <CardContent className="text-center space-y-4">
-            <p className="text-muted-foreground">
-              Tvoj účet bol úspešne aktivovaný. Môžeš sa teraz prihlásiť a začať používať Contestio.
-            </p>
-            <div className="pt-4">
-              <Button asChild className="w-full" data-testid="button-go-to-login">
-                <Link href="/auth/login">
-                  Prihlásiť sa
-                </Link>
-              </Button>
-            </div>
+          <CardContent className="space-y-4">
+            {status === "error" && (
+              <>
+                {!hasEmailFromUrl && (
+                  <Input
+                    type="email"
+                    placeholder="Zadaj svoj email"
+                    value={resendEmail}
+                    onChange={(e) => setResendEmail(e.target.value)}
+                    className="bg-slate-950 border-slate-700 text-white focus:border-orange-500/50 h-11"
+                  />
+                )}
+                <Button
+                  onClick={handleResend}
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-12"
+                  disabled={resendMutation.isPending || !resendEmail}
+                >
+                  {resendMutation.isPending ? (
+                    <Loader2 className="animate-spin mr-2 h-4 w-4" />
+                  ) : null}
+                  Poslať nový aktivačný e-mail
+                </Button>
+              </>
+            )}
+            <Button
+              variant="ghost"
+              onClick={() => setLocation("/auth/login")}
+              className="w-full text-slate-500 hover:text-white"
+              data-testid="button-go-to-login"
+            >
+              Späť na prihlásenie
+            </Button>
           </CardContent>
         </Card>
-      </div>
+      </motion.div>
     );
   }
 
-  if (verificationStatus === "error") {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="w-16 h-16 bg-destructive/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <XCircle className="w-8 h-8 text-destructive" />
-            </div>
-            <CardTitle className="text-2xl font-bold text-destructive" data-testid="text-error-title">
-              Chyba overenia
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-center space-y-4">
-            <Alert variant="destructive">
-              <AlertDescription>
-                Nepodarilo sa overiť tvoj email. Overovací kód môže byť neplatný alebo expirovaný.
-              </AlertDescription>
-            </Alert>
-            <div className="space-y-2">
-              <Button asChild className="w-full" data-testid="button-register-again">
-                <Link href="/auth/register">
-                  Zaregistrovať sa znovu
-                </Link>
-              </Button>
-              <Button asChild variant="outline" className="w-full" data-testid="button-try-login">
-                <Link href="/auth/login">
-                  Skúsiť prihlásenie
-                </Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  return pageWrapper(
+    <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
+      <Card className="w-full max-w-md bg-slate-900/50 border-slate-800 text-center p-8 backdrop-blur-md relative z-10">
+        <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+          <ShieldCheck className="w-10 h-10 text-emerald-500" />
+        </div>
 
-  return null;
+        <h2 className="text-2xl font-black text-white uppercase tracking-tight mb-2" data-testid="text-success-title">
+          Účet aktivovaný
+        </h2>
+        <p className="text-slate-400 mb-8 leading-relaxed text-sm">
+          Môžeš sa prihlásiť a vstúpiť do arény.
+        </p>
+
+        <Button
+          onClick={() => setLocation("/auth/login")}
+          className="w-full bg-orange-500 hover:bg-orange-600 text-white font-black uppercase tracking-widest h-12 rounded-xl shadow-[0_10px_40px_-10px_rgba(249,115,22,0.5)] transition-all active:scale-[0.98]"
+          data-testid="button-go-to-login"
+        >
+          Prihlásiť sa
+        </Button>
+      </Card>
+    </motion.div>
+  );
 }

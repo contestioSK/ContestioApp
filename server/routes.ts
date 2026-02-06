@@ -554,6 +554,42 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
+  app.post('/api/auth/resend-verification', passwordResetLimiter, async (req, res) => {
+    try {
+      const { email } = req.body;
+
+      if (!email || typeof email !== 'string') {
+        return res.status(200).json({ message: 'Ak je tvoj email v systéme, nový odkaz je na ceste.' });
+      }
+
+      const normalizedEmail = email.toLowerCase().trim();
+      const user = await storage.getUserByEmail(normalizedEmail);
+
+      if (!user || user.emailVerified) {
+        return res.status(200).json({ message: 'Ak je tvoj email v systéme, nový odkaz je na ceste.' });
+      }
+
+      const newToken = generateVerificationToken();
+      const newExpires = generateTokenExpiration();
+
+      await db.update(users).set({
+        verificationToken: newToken,
+        verificationTokenExpires: newExpires,
+      }).where(eq(users.id, user.id));
+
+      await emailService.sendVerificationEmail(
+        user.email!,
+        user.firstName || '',
+        newToken
+      );
+
+      res.status(200).json({ message: 'Ak je tvoj email v systéme, nový odkaz je na ceste.' });
+    } catch (error) {
+      console.error('[AUTH] Resend verification error:', error);
+      res.status(200).json({ message: 'Ak je tvoj email v systéme, nový odkaz je na ceste.' });
+    }
+  });
+
   // Reset password with token endpoint
   app.post('/api/auth/reset-password', passwordResetLimiter, async (req, res) => {
     try {
