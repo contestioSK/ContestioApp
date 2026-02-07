@@ -174,7 +174,7 @@ function CatchDetailModal({
           {isTopToday && (
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20">
               <Crown size={12} className="text-amber-500 fill-amber-500" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-amber-500">Top dnes</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-amber-500">Najväčšia</span>
             </div>
           )}
 
@@ -258,8 +258,23 @@ export default function CompetitionCatches() {
 
   const bigFishThreshold = competition?.bigFishThreshold ? parseFloat(String(competition.bigFishThreshold)) : 10;
 
-  const NOW_STR = new Date().toISOString().split('T')[0];
-  const YESTERDAY_STR = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+  const competitionDays = useMemo(() => {
+    if (!competition?.startDate || !competition?.endDate) return [];
+    const days: { key: string; label: string }[] = [];
+    const start = new Date(competition.startDate);
+    const end = new Date(competition.endDate);
+    let d = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+    const last = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+
+    while (d <= last) {
+      const key = d.toISOString().slice(0, 10);
+      const raw = d.toLocaleDateString('sk-SK', { weekday: 'long', day: 'numeric', month: 'numeric' });
+      const label = raw.charAt(0).toUpperCase() + raw.slice(1);
+      days.push({ key, label });
+      d.setDate(d.getDate() + 1);
+    }
+    return days;
+  }, [competition?.startDate, competition?.endDate]);
 
   const viewableCatches = useMemo(() => {
     if (!catches) return [];
@@ -268,14 +283,10 @@ export default function CompetitionCatches() {
     return sorted.filter(c => c.isVerified !== false);
   }, [catches, userRole]);
 
-  const topCatchTodayId = useMemo(() => {
-    const todays = viewableCatches.filter(c => {
-      const d = c.submittedAt ? new Date(c.submittedAt).toISOString().split('T')[0] : '';
-      return d === NOW_STR;
-    });
-    if (todays.length === 0) return null;
-    return todays.reduce((prev, curr) => (safeWeight(prev.weight) > safeWeight(curr.weight) ? prev : curr)).id;
-  }, [viewableCatches, NOW_STR]);
+  const topCatchOverallId = useMemo(() => {
+    if (viewableCatches.length === 0) return null;
+    return viewableCatches.reduce((prev, curr) => (safeWeight(prev.weight) > safeWeight(curr.weight) ? prev : curr)).id;
+  }, [viewableCatches]);
 
   const recentCatchIds = useMemo(() => {
     const threshold = Date.now() - (5 * 60 * 1000);
@@ -284,13 +295,15 @@ export default function CompetitionCatches() {
       .map(c => c.id);
   }, [viewableCatches]);
 
-  const { processedCatches, groupedCatches } = useMemo(() => {
+  const getCatchDateKey = (c: CatchWithDetails): string => {
+    if (!c.submittedAt) return '';
+    return new Date(c.submittedAt).toISOString().slice(0, 10);
+  };
+
+  const { processedCatches, groupedByDay } = useMemo(() => {
     const filtered = viewableCatches.filter(c => {
-      const date = c.submittedAt ? new Date(c.submittedAt).toISOString().split('T')[0] : '';
-      const matchesDate = 
-        selectedFilter === 'all' ? true :
-        selectedFilter === 'today' ? date === NOW_STR :
-        selectedFilter === 'yesterday' ? date === YESTERDAY_STR : true;
+      const dateKey = getCatchDateKey(c);
+      const matchesDate = selectedFilter === 'all' ? true : dateKey === selectedFilter;
 
       const q = searchQuery.toLowerCase();
       const matchesSearch = !q || 
@@ -302,16 +315,17 @@ export default function CompetitionCatches() {
       return matchesDate && matchesSearch;
     });
 
-    const groups: { today: CatchWithDetails[]; yesterday: CatchWithDetails[]; older: CatchWithDetails[] } = { today: [], yesterday: [], older: [] };
+    const dayMap: Record<string, CatchWithDetails[]> = {};
     filtered.forEach(c => {
-      const d = c.submittedAt ? new Date(c.submittedAt).toISOString().split('T')[0] : '';
-      if (d === NOW_STR) groups.today.push(c);
-      else if (d === YESTERDAY_STR) groups.yesterday.push(c);
-      else groups.older.push(c);
+      const key = getCatchDateKey(c);
+      if (!dayMap[key]) dayMap[key] = [];
+      dayMap[key].push(c);
     });
 
-    return { processedCatches: filtered, groupedCatches: groups };
-  }, [viewableCatches, selectedFilter, searchQuery, NOW_STR, YESTERDAY_STR]);
+    const orderedDays = Object.keys(dayMap).sort((a, b) => b.localeCompare(a));
+
+    return { processedCatches: filtered, groupedByDay: orderedDays.map(key => ({ key, catches: dayMap[key] })) };
+  }, [viewableCatches, selectedFilter, searchQuery]);
 
   const heroCatch = useMemo(() => {
     if (selectedFilter !== 'all' || searchQuery !== '') return null;
@@ -320,24 +334,30 @@ export default function CompetitionCatches() {
     const newest = processedCatches[0];
     const isNew = (Date.now() - safeTimestamp(newest.submittedAt)) < (2 * 60 * 1000);
     if (isNew) return newest;
-    if (topCatchTodayId) {
-      const top = processedCatches.find(c => c.id === topCatchTodayId);
+    if (topCatchOverallId) {
+      const top = processedCatches.find(c => c.id === topCatchOverallId);
       if (top) return top;
     }
     return newest;
-  }, [processedCatches, topCatchTodayId, selectedFilter, searchQuery]);
+  }, [processedCatches, topCatchOverallId, selectedFilter, searchQuery]);
 
   const isHeroVeryRecent = useMemo(() => {
     if (!heroCatch) return false;
     return (Date.now() - safeTimestamp(heroCatch.submittedAt)) < (2 * 60 * 1000);
   }, [heroCatch]);
 
+  const getDayLabel = (dateKey: string): string => {
+    const found = competitionDays.find(d => d.key === dateKey);
+    if (found) return found.label;
+    const d = new Date(dateKey + 'T00:00:00');
+    if (isNaN(d.getTime())) return dateKey;
+    const raw = d.toLocaleDateString('sk-SK', { weekday: 'long', day: 'numeric', month: 'numeric' });
+    return raw.charAt(0).toUpperCase() + raw.slice(1);
+  };
+
   const getFilterLabel = () => {
-    switch (selectedFilter) {
-      case 'today': return 'Dnes';
-      case 'yesterday': return 'Včera';
-      default: return 'Všetky dni';
-    }
+    if (selectedFilter === 'all') return 'Všetky dni';
+    return getDayLabel(selectedFilter);
   };
 
   const handleResetFilters = () => {
@@ -350,21 +370,11 @@ export default function CompetitionCatches() {
     return heroCatch ? list.filter(c => c.id !== heroCatch.id) : list;
   };
 
-  const todayTotalCount = useMemo(() => {
-    return viewableCatches.filter(c => {
-      const d = c.submittedAt ? new Date(c.submittedAt).toISOString().split('T')[0] : '';
-      return d === NOW_STR;
-    }).length;
-  }, [viewableCatches, NOW_STR]);
-
   const headerStatsText = useMemo(() => {
     if (searchQuery) return `Nájdené: ${processedCatches.length}`;
-    if (selectedFilter === 'today') return `Dnes: ${processedCatches.length}`;
-    if (selectedFilter === 'yesterday') return `Včera: ${processedCatches.length}`;
-    return todayTotalCount > 0 
-      ? `Dnes: ${todayTotalCount} · Spolu: ${viewableCatches.length}`
-      : `Spolu: ${viewableCatches.length}`;
-  }, [selectedFilter, searchQuery, processedCatches.length, todayTotalCount, viewableCatches.length]);
+    if (selectedFilter !== 'all') return `${getDayLabel(selectedFilter)}: ${processedCatches.length}`;
+    return `Spolu: ${viewableCatches.length}`;
+  }, [selectedFilter, searchQuery, processedCatches.length, viewableCatches.length, competitionDays]);
 
   if (isLoading) {
     return (
@@ -458,30 +468,35 @@ export default function CompetitionCatches() {
                 {isFilterOpen && (
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setIsFilterOpen(false)} />
-                    <div className="absolute top-full right-0 mt-2 w-48 bg-card border border-border rounded-lg shadow-xl z-20 py-1 overflow-hidden">
-                      {[
-                        { id: 'all', label: 'Všetky dni' },
-                        { id: 'today', label: 'Dnes' },
-                        { id: 'yesterday', label: 'Včera' }
-                      ].map((opt) => (
+                    <div className="absolute top-full right-0 mt-2 w-56 bg-card border border-border rounded-lg shadow-xl z-20 py-1 overflow-hidden max-h-[300px] overflow-y-auto">
+                      <button
+                        onClick={() => { setSelectedFilter('all'); setIsFilterOpen(false); }}
+                        className="w-full text-left px-4 py-2.5 text-sm text-foreground hover:bg-muted flex items-center justify-between transition-colors border-b border-border/50"
+                      >
+                        Všetky dni
+                        {selectedFilter === 'all' && <Check size={14} className="text-[#F97316]" />}
+                      </button>
+                      {competitionDays.map((day) => (
                         <button
-                          key={opt.id}
-                          onClick={() => { setSelectedFilter(opt.id); setIsFilterOpen(false); }}
+                          key={day.key}
+                          onClick={() => { setSelectedFilter(day.key); setIsFilterOpen(false); }}
                           className="w-full text-left px-4 py-2.5 text-sm text-foreground hover:bg-muted flex items-center justify-between transition-colors border-b border-border/50 last:border-0"
                         >
-                          {opt.label}
-                          {selectedFilter === opt.id && <Check size={14} className="text-[#F97316]" />}
+                          {day.label}
+                          {selectedFilter === day.key && <Check size={14} className="text-[#F97316]" />}
                         </button>
                       ))}
-                      <div className="bg-muted/30 p-1">
-                        <button 
-                          onClick={handleResetFilters}
-                          className="w-full text-left px-3 py-2 text-xs text-muted-foreground hover:text-[#F97316] font-medium flex items-center gap-2 hover:bg-muted rounded transition-colors"
-                        >
-                          <RotateCcw size={12} />
-                          Resetovať filtre
-                        </button>
-                      </div>
+                      {selectedFilter !== 'all' && (
+                        <div className="bg-muted/30 p-1">
+                          <button 
+                            onClick={handleResetFilters}
+                            className="w-full text-left px-3 py-2 text-xs text-muted-foreground hover:text-[#F97316] font-medium flex items-center gap-2 hover:bg-muted rounded transition-colors"
+                          >
+                            <RotateCcw size={12} />
+                            Resetovať filtre
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </>
                 )}
@@ -512,9 +527,9 @@ export default function CompetitionCatches() {
                     <span className="bg-[#F97316] text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded shadow-lg flex items-center gap-1">
                       Nový úlovok
                     </span>
-                  ) : heroCatch.id === topCatchTodayId ? (
+                  ) : heroCatch.id === topCatchOverallId ? (
                     <span className="bg-amber-500 text-slate-900 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded shadow-lg flex items-center gap-1">
-                      <Crown size={12} fill="currentColor" /> Top dnes
+                      <Crown size={12} fill="currentColor" /> Najväčšia
                     </span>
                   ) : (
                     <span className="bg-card border border-border text-foreground text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded shadow-lg">
@@ -543,8 +558,8 @@ export default function CompetitionCatches() {
                 <div>
                   <h3 className="text-xl font-bold text-foreground mb-1 group-hover:text-[#F97316] transition-colors flex items-center gap-2">
                     {heroCatch.team?.name || 'Neznámy tím'}
-                    {heroCatch.id === topCatchTodayId && <Crown size={18} className="text-amber-500 fill-amber-500" />}
-                    {recentCatchIds.includes(heroCatch.id) && heroCatch.id !== topCatchTodayId && <Sparkles size={18} className="text-blue-400 fill-blue-400" />}
+                    {heroCatch.id === topCatchOverallId && <Crown size={18} className="text-amber-500 fill-amber-500" />}
+                    {recentCatchIds.includes(heroCatch.id) && heroCatch.id !== topCatchOverallId && <Sparkles size={18} className="text-blue-400 fill-blue-400" />}
                   </h3>
                   <div className="flex items-center gap-3 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1 text-foreground/70 font-medium">Sektor {heroCatch.sector?.trim()}</span>
@@ -559,73 +574,31 @@ export default function CompetitionCatches() {
 
         {processedCatches.length > 0 ? (
           <div className="space-y-8">
-            
-            {getListWithoutHero(groupedCatches.today).length > 0 && (
-              <section>
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">Dnes</span>
-                  <span className="h-px flex-1 bg-border/50" />
-                </div>
-                <div className="space-y-2">
-                  {getListWithoutHero(groupedCatches.today).map(c => (
-                    <CatchRow 
-                      key={c.id} 
-                      data={c} 
-                      isTopToday={c.id === topCatchTodayId}
-                      isRecent={recentCatchIds.includes(c.id)}
-                      isBigFish={safeWeight(c.weight) >= bigFishThreshold}
-                      onClick={() => setSelectedCatch(c)} 
-                      userRole={userRole}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {getListWithoutHero(groupedCatches.yesterday).length > 0 && (
-              <section>
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">Včera</span>
-                  <span className="h-px flex-1 bg-border/50" />
-                </div>
-                <div className="space-y-2">
-                  {getListWithoutHero(groupedCatches.yesterday).map(c => (
-                    <CatchRow 
-                      key={c.id} 
-                      data={c} 
-                      isTopToday={false}
-                      isRecent={false}
-                      isBigFish={safeWeight(c.weight) >= bigFishThreshold}
-                      onClick={() => setSelectedCatch(c)} 
-                      userRole={userRole}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {getListWithoutHero(groupedCatches.older).length > 0 && (
-              <section>
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">Staršie</span>
-                  <span className="h-px flex-1 bg-border/50" />
-                </div>
-                <div className="space-y-2">
-                  {getListWithoutHero(groupedCatches.older).map(c => (
-                    <CatchRow 
-                      key={c.id} 
-                      data={c} 
-                      isTopToday={false}
-                      isRecent={false}
-                      isBigFish={safeWeight(c.weight) >= bigFishThreshold}
-                      onClick={() => setSelectedCatch(c)} 
-                      userRole={userRole}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
-
+            {groupedByDay.map(({ key: dayKey, catches: dayCatches }) => {
+              const displayList = getListWithoutHero(dayCatches);
+              if (displayList.length === 0) return null;
+              return (
+                <section key={dayKey}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">{getDayLabel(dayKey)}</span>
+                    <span className="h-px flex-1 bg-border/50" />
+                  </div>
+                  <div className="space-y-2">
+                    {displayList.map(c => (
+                      <CatchRow 
+                        key={c.id} 
+                        data={c} 
+                        isTopToday={c.id === topCatchOverallId}
+                        isRecent={recentCatchIds.includes(c.id)}
+                        isBigFish={safeWeight(c.weight) >= bigFishThreshold}
+                        onClick={() => setSelectedCatch(c)} 
+                        userRole={userRole}
+                      />
+                    ))}
+                  </div>
+                </section>
+              );
+            })}
           </div>
         ) : (
           <div className="py-20 text-center border border-dashed border-border rounded-xl bg-card/20">
@@ -654,7 +627,7 @@ export default function CompetitionCatches() {
           data={selectedCatch} 
           onClose={() => setSelectedCatch(null)} 
           userRole={userRole}
-          isTopToday={selectedCatch.id === topCatchTodayId}
+          isTopToday={selectedCatch.id === topCatchOverallId}
           isBigFish={safeWeight(selectedCatch.weight) >= bigFishThreshold}
         />
       )}
