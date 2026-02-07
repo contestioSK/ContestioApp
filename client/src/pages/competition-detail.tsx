@@ -269,7 +269,18 @@ export default function CompetitionDetail() {
         description: "Registrácia tvojho tímu čaká na schválenie organizátorom.",
       });
       setIsRegistrationDialogOpen(false);
-      form.reset();
+      form.reset({
+        name: "",
+        description: "",
+        members: [
+          {
+            name: `${user?.firstName || ""} ${user?.lastName || ""}`.trim(),
+            role: "captain",
+            email: user?.email || "",
+            phone: "",
+          },
+        ],
+      });
       queryClient.invalidateQueries({ queryKey: ["/api/competitions", id, "teams"] });
     },
     onError: (error: any) => {
@@ -458,7 +469,7 @@ export default function CompetitionDetail() {
       
       let timeComment = '';
       if (peakHour.hour) {
-        const hourNum = parseInt(peakHour.hour);
+        const hourNum = Number((peakHour.hour || "0").split(":")[0]);
         if (hourNum >= 18 || hourNum < 6) {
           timeComment = 'Ryby sa ozývajú hlavne večer a v noci.';
         } else if (hourNum >= 6 && hourNum < 12) {
@@ -484,15 +495,6 @@ export default function CompetitionDetail() {
     };
   }, [competition?.status, sectorStats, hourlyActivity, liveStats.totalFish]);
 
-  useEffect(() => {
-    const url = new URL(window.location.href);
-    if (url.searchParams.get("openReg") === "1" && isAuthenticated) {
-      setIsRegistrationDialogOpen(true);
-      url.searchParams.delete("openReg");
-      window.history.replaceState({}, "", url.toString());
-    }
-  }, [isAuthenticated]);
-
   const isRegistration = competition?.status === 'registration';
 
   const openRegistration = () => {
@@ -515,6 +517,22 @@ export default function CompetitionDetail() {
       team.members?.some(member => member.userId === user.id)
     ) || null;
   }, [teams, user?.id]);
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const shouldOpen = url.searchParams.get("openReg") === "1";
+    if (!shouldOpen) return;
+    if (!isAuthenticated) return;
+    if (teamsLoading) return;
+    if (userTeam) {
+      url.searchParams.delete("openReg");
+      window.history.replaceState({}, "", url.toString());
+      return;
+    }
+    setIsRegistrationDialogOpen(true);
+    url.searchParams.delete("openReg");
+    window.history.replaceState({}, "", url.toString());
+  }, [isAuthenticated, teamsLoading, userTeam]);
 
   // --- LOADING STATE ---
 
@@ -852,15 +870,26 @@ export default function CompetitionDetail() {
                 {form.watch("members").map((member, index) => (
                   <div key={index} className="space-y-4 p-4 border border-border rounded-lg mb-4">
                     <div className="flex items-center justify-between">
-                      <h4 className="font-medium">
-                        {index === 0 ? "Kapitán tímu" : `Člen ${index + 1}`}
-                      </h4>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-medium">
+                          {index === 0 ? "Kapitán tímu" : `Člen ${index + 1}`}
+                        </h4>
+                        {index === 0 && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 text-[11px] font-bold">
+                            <Crown size={12} />
+                            Kapitán
+                          </span>
+                        )}
+                      </div>
                       {index > 0 && (
                         <Button type="button" variant="ghost" size="sm" onClick={() => removeMember(index)}>
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       )}
                     </div>
+                    {index === 0 && (
+                      <p className="text-xs text-muted-foreground -mt-2">Tento člen komunikuje s organizátorom</p>
+                    )}
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
@@ -1259,7 +1288,7 @@ export default function CompetitionDetail() {
                       <div>
                         <div className="flex justify-between items-start mb-1">
                           <button 
-                            className="text-xs font-bold text-foreground truncate max-w-[140px] hover:text-cyan-500 transition-colors text-left"
+                            className="px-2 py-1 rounded-full bg-muted/40 hover:bg-muted text-xs font-bold text-foreground truncate max-w-[160px] transition-colors text-left"
                             onClick={(e) => {
                               e.stopPropagation();
                               const fullTeam = teams?.find(t => t.id === item.catchObj.teamId);
