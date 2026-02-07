@@ -75,58 +75,59 @@
 }
 
 .dark {
-  --background: #0c1f28;
-  --foreground: hsl(210, 17%, 82%);
+  /* Contestio Obsidian Ember v2.0 Dark Theme */
+  --background: #020617;
+  --foreground: #F8FAFC;
   
   /* Ember & Ash Brand Palette - Dark Mode */
-  --brand-primary: #f97316;
+  --brand-primary: #F97316;
   --brand-secondary: #818cf8;
   --brand-success: #4ade80;
   --brand-prestige: #d97706;
   --brand-danger: #ef4444;
   --brand-neutral: #94a3b8;
-  --card: hsl(210, 24%, 16%);
-  --card-foreground: hsl(210, 17%, 82%);
-  --popover: hsl(210, 24%, 16%);
-  --popover-foreground: hsl(210, 17%, 82%);
-  --primary: hsl(204, 88%, 53%);
-  --primary-foreground: hsl(0, 0%, 100%);
-  --secondary: hsl(195, 15%, 95%);
-  --secondary-foreground: hsl(222, 84%, 5%);
-  --muted: hsl(215, 14%, 28%);
-  --muted-foreground: hsl(215, 20%, 75%);
-  --accent: hsl(204, 30%, 25%);
-  --accent-foreground: hsl(204, 88%, 53%);
+  --card: #0F172A;
+  --card-foreground: #F8FAFC;
+  --popover: #0F172A;
+  --popover-foreground: #F8FAFC;
+  --primary: #F97316;
+  --primary-foreground: #FFFFFF;
+  --secondary: #1E293B;
+  --secondary-foreground: #F8FAFC;
+  --muted: #1E293B;
+  --muted-foreground: #94A3B8;
+  --accent: hsl(24, 80%, 12%);
+  --accent-foreground: #F97316;
   --destructive: hsl(0, 62%, 55%);
-  --destructive-foreground: hsl(0, 0%, 100%);
-  --border: hsl(214, 52%, 25%);
-  --input: hsl(210, 24%, 16%);
-  --ring: hsl(201, 96%, 32%);
-  --chart-1: hsl(201, 96%, 32%);
+  --destructive-foreground: #FFFFFF;
+  --border: #1E293B;
+  --input: #1E293B;
+  --ring: #F97316;
+  --chart-1: #F97316;
   --chart-2: hsl(142, 76%, 36%);
-  --chart-3: hsl(20, 90%, 48%);
+  --chart-3: hsl(201, 96%, 32%);
   --chart-4: hsl(147, 79%, 42%);
   --chart-5: hsl(341, 75%, 51%);
-  --sidebar: hsl(194, 96%, 11%);
-  --sidebar-foreground: hsl(210, 17%, 82%);
-  --sidebar-primary: hsl(204, 88%, 53%);
-  --sidebar-primary-foreground: hsl(0, 0%, 100%);
-  --sidebar-accent: hsl(210, 24%, 16%);
-  --sidebar-accent-foreground: hsl(204, 88%, 53%);
-  --sidebar-border: hsl(214, 52%, 25%);
-  --sidebar-ring: hsl(204, 88%, 53%);
+  --sidebar: #0B1221;
+  --sidebar-foreground: #F8FAFC;
+  --sidebar-primary: #F97316;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #1E293B;
+  --sidebar-accent-foreground: #F97316;
+  --sidebar-border: #1E293B;
+  --sidebar-ring: #F97316;
   --font-sans: Inter, system-ui, sans-serif;
   --font-serif: Georgia, serif;
   --font-mono: Roboto Mono, monospace;
   --radius: 0.75rem;
-  --shadow-2xs: 0px 2px 0px 0px hsl(201, 96%, 32%, 0.00);
-  --shadow-xs: 0px 2px 0px 0px hsl(201, 96%, 32%, 0.00);
-  --shadow-sm: 0px 2px 0px 0px hsl(201, 96%, 32%, 0.00), 0px 1px 2px -1px hsl(201, 96%, 32%, 0.00);
-  --shadow: 0px 2px 0px 0px hsl(201, 96%, 32%, 0.00), 0px 1px 2px -1px hsl(201, 96%, 32%, 0.00);
-  --shadow-md: 0px 2px 0px 0px hsl(201, 96%, 32%, 0.00), 0px 2px 4px -1px hsl(201, 96%, 32%, 0.00);
-  --shadow-lg: 0px 2px 0px 0px hsl(201, 96%, 32%, 0.00), 0px 4px 6px -1px hsl(201, 96%, 32%, 0.00);
-  --shadow-xl: 0px 2px 0px 0px hsl(201, 96%, 32%, 0.00), 0px 8px 10px -1px hsl(201, 96%, 32%, 0.00);
-  --shadow-2xl: 0px 2px 0px 0px hsl(201, 96%, 32%, 0.00);
+  --shadow-2xs: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-xs: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 2px 4px -1px rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.3);
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 6px 10px -2px rgba(0, 0, 0, 0.5), 0 3px 6px -3px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 20px -3px rgba(0, 0, 0, 0.6), 0 4px 8px -4px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 16px 32px -4px rgba(0, 0, 0, 0.6), 0 8px 16px -6px rgba(0, 0, 0, 0.5);
+  --shadow-2xl: 0 24px 48px -8px rgba(0, 0, 0, 0.7);
 }
 
 @layer base {
