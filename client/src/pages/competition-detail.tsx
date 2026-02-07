@@ -21,7 +21,8 @@ import {
   ChevronRight, Target, Crown, Share2, AlertCircle, Timer, 
   BarChart3, X, PieChart, ChevronDown, ChevronUp, Mic, 
   Heart, QrCode, ChevronLeft, LayoutList, UserPlus, Trash2, FileText,
-  MoreVertical, Link2
+  MoreVertical, Link2, Camera, Search, Calendar, Check, 
+  Sparkles, RotateCcw, Eye, CheckCircle2
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -31,7 +32,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import StatsDashboard from "@/components/stats-dashboard";
 import TeamOverviewContent from "@/components/TeamOverviewContent";
-import type { Competition, Team, Catch } from "@shared/schema";
+import type { Competition, Team, Catch, Referee } from "@shared/schema";
 import { useFavoriteCompetitions, useToggleFavoriteCompetition } from "@/hooks/useFavorites";
 import { QRShareDialog } from "@/components/QRShareDialog";
 import { useVisibilityAwarePolling, POLLING_INTERVALS, STALE_TIMES } from "@/hooks/usePolling";
@@ -154,6 +155,214 @@ const SectorTable = ({ sector, leaderboard }: { sector: string; leaderboard: any
   );
 };
 
+// --- CATCH FEED TYPES & COMPONENTS ---
+
+interface CatchWithDetails extends Catch {
+  team?: Team;
+  referee?: Referee;
+}
+
+const getRelativeTime = (dateString: any) => {
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '';
+  const now = Date.now();
+  const diffInSeconds = Math.floor((now - date.getTime()) / 1000);
+  if (diffInSeconds < 60) return 'Práve teraz';
+  if (diffInSeconds < 3600) return `pred ${Math.floor(diffInSeconds / 60)} min`;
+  if (diffInSeconds < 86400) return `pred ${Math.floor(diffInSeconds / 3600)} hod`;
+  return date.toLocaleDateString('sk-SK', { day: 'numeric', month: 'short' });
+};
+
+const getFishTypeLabel = (fishType: string) => {
+  switch (fishType) {
+    case 'scaly': return 'Šupináč';
+    case 'mirror': return 'Lysec';
+    default: return fishType;
+  }
+};
+
+const FishBadge = ({ type }: { type: string }) => {
+  const isMirror = type === 'mirror';
+  return (
+    <span className={`px-1.5 py-px rounded text-[10px] font-bold uppercase tracking-wide border ${
+      isMirror 
+        ? "bg-blue-500/10 text-blue-400 border-blue-500/20" 
+        : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+    }`}>
+      {isMirror ? 'Lysec' : 'Šupináč'}
+    </span>
+  );
+};
+
+function FeedCatchRow({ 
+  data, isTopToday, isRecent, isBigFish, onClick, userRole 
+}: { 
+  data: CatchWithDetails; 
+  isTopToday: boolean; 
+  isRecent: boolean; 
+  isBigFish: boolean;
+  onClick: () => void; 
+  userRole: string;
+}) {
+  const weight = parseFloat(String(data.weight ?? '0').replace(',', '.')) || 0;
+  
+  return (
+    <div 
+      onClick={onClick}
+      className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all hover:bg-muted/30 group
+        ${isBigFish ? 'border-amber-500/30 bg-amber-500/5' : 'border-border bg-card/50'}
+      `}
+    >
+      {data.photoUrl ? (
+        <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden shrink-0 bg-muted border border-border">
+          <img src={data.photoUrl} className="w-full h-full object-cover" alt="" />
+        </div>
+      ) : (
+        <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg bg-muted/50 border border-border flex items-center justify-center shrink-0">
+          <Camera size={18} className="text-muted-foreground" />
+        </div>
+      )}
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-0.5">
+          <span className="font-bold text-foreground text-sm truncate">
+            {data.team?.name || 'Neznámy tím'}
+          </span>
+          {isTopToday && <Crown size={14} className="text-amber-500 fill-amber-500 shrink-0" />}
+          {isRecent && !isTopToday && <Sparkles size={14} className="text-blue-400 fill-blue-400 shrink-0" />}
+        </div>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span className="font-medium text-foreground/70">Sektor {data.sector?.trim()}</span>
+          <span className="w-1 h-1 bg-border rounded-full" />
+          <FishBadge type={data.fishType} />
+          {['admin', 'referee'].includes(userRole) && data.referee && (
+            <>
+              <span className="w-1 h-1 bg-border rounded-full" />
+              <span className="text-muted-foreground truncate">Rozhodca S.{data.referee.assignedSector}</span>
+            </>
+          )}
+        </div>
+      </div>
+
+      <div className="text-right shrink-0">
+        <div className={`font-mono font-medium text-base ${isBigFish ? 'text-amber-500' : 'text-[#F97316]'}`}>
+          {weight.toFixed(2)}
+        </div>
+        <div className="text-[11px] text-muted-foreground">
+          {getRelativeTime(data.submittedAt)}
+        </div>
+        {['admin', 'referee', 'organizer'].includes(userRole) && data.isVerified === false && (
+          <span className="text-[9px] uppercase font-bold tracking-wider text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 mt-1 inline-block">
+            Neoverené
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function FeedCatchDetailModal({ 
+  data, onClose, userRole, isTopToday, isBigFish 
+}: { 
+  data: CatchWithDetails; 
+  onClose: () => void; 
+  userRole: string;
+  isTopToday: boolean;
+  isBigFish: boolean;
+}) {
+  const weight = parseFloat(String(data.weight ?? '0').replace(',', '.')) || 0;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-lg bg-card border border-border rounded-t-2xl sm:rounded-2xl max-h-[90vh] overflow-y-auto z-10">
+        <div className="sticky top-0 z-10 flex items-center justify-between p-4 bg-card/95 backdrop-blur-sm border-b border-border">
+          <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+            {isBigFish ? <Crown className="text-amber-500" size={20} /> : <Fish className="text-cyan-500" size={20} />}
+            Detail úlovku
+          </h2>
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+            <X size={18} />
+          </button>
+        </div>
+
+        {data.photoUrl && (
+          <div className="aspect-video bg-muted border-b border-border overflow-hidden">
+            <img src={data.photoUrl} className="w-full h-full object-cover" alt="Úlovok" />
+          </div>
+        )}
+
+        <div className="p-5 space-y-5">
+          <div className="flex items-baseline gap-2">
+            <span className={`text-5xl font-black italic tracking-tighter tabular-nums ${isBigFish ? 'text-amber-500' : 'text-foreground'}`}>
+              {weight.toFixed(2)}
+            </span>
+            <span className="text-xl font-bold text-muted-foreground">kg</span>
+          </div>
+
+          {isTopToday && (
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20">
+              <Crown size={12} className="text-amber-500 fill-amber-500" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-amber-500">Top dnes</span>
+            </div>
+          )}
+
+          <div className="space-y-3">
+            <div className="flex items-center gap-3 text-sm">
+              <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+                <Fish size={16} className="text-muted-foreground" />
+              </div>
+              <div>
+                <div className="text-muted-foreground text-xs">Druh ryby</div>
+                <div className="font-medium text-foreground">{getFishTypeLabel(data.fishType)}</div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 text-sm">
+              <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+                <MapPin size={16} className="text-muted-foreground" />
+              </div>
+              <div>
+                <div className="text-muted-foreground text-xs">Tím • Sektor</div>
+                <div className="font-medium text-foreground">
+                  {data.team?.name || 'Neznámy tím'} <span className="text-muted-foreground">•</span> Sektor {data.sector?.trim()}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 text-sm">
+              <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+                <Clock size={16} className="text-muted-foreground" />
+              </div>
+              <div>
+                <div className="text-muted-foreground text-xs">Čas nahlásenia</div>
+                <div className="font-medium text-foreground">
+                  {data.submittedAt ? new Date(data.submittedAt).toLocaleString('sk-SK', {
+                    day: 'numeric', month: 'long', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit'
+                  }) : 'Neznámy'}
+                </div>
+              </div>
+            </div>
+
+            {['admin', 'referee'].includes(userRole) && data.referee && (
+              <div className="flex items-center gap-3 text-sm">
+                <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+                  <Eye size={16} className="text-muted-foreground" />
+                </div>
+                <div>
+                  <div className="text-muted-foreground text-xs">Rozhodca</div>
+                  <div className="font-medium text-foreground">Sektor {data.referee.assignedSector}</div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // --- HELPER FUNCTIONS ---
 
 function formatTimeAgo(date: Date | string | null): string {
@@ -224,6 +433,10 @@ export default function CompetitionDetail() {
   }>({ view: null, team: null, catch_: null, previousView: null });
   const [leaderboardExpanded, setLeaderboardExpanded] = useState(false);
   const [statsTab, setStatsTab] = useState<'overview' | 'sectors' | 'analytics'>('overview');
+  const [feedSearchQuery, setFeedSearchQuery] = useState("");
+  const [feedSelectedFilter, setFeedSelectedFilter] = useState('all');
+  const [feedFilterOpen, setFeedFilterOpen] = useState(false);
+  const [selectedCatchDetail, setSelectedCatchDetail] = useState<CatchWithDetails | null>(null);
   
   // Favorite competitions
   const { data: favoriteCompetitions } = useFavoriteCompetitions();
@@ -433,6 +646,116 @@ export default function CompetitionDetail() {
     return [...catches]
       .sort((a, b) => safeTimestamp(b.submittedAt) - safeTimestamp(a.submittedAt));
   }, [catches]);
+
+  const userRole = user?.role || 'user';
+
+  const NOW_STR = new Date().toISOString().split('T')[0];
+  const YESTERDAY_STR = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+
+  const feedViewableCatches = useMemo(() => {
+    if (!catches) return [];
+    const sorted = [...catches].sort((a, b) => safeTimestamp(b.submittedAt) - safeTimestamp(a.submittedAt));
+    if (userRole === 'admin' || userRole === 'referee' || userRole === 'organizer') return sorted;
+    return sorted.filter(c => c.isVerified !== false);
+  }, [catches, userRole]);
+
+  const feedTopCatchTodayId = useMemo(() => {
+    const todays = feedViewableCatches.filter(c => {
+      const d = c.submittedAt ? new Date(c.submittedAt).toISOString().split('T')[0] : '';
+      return d === NOW_STR;
+    });
+    if (todays.length === 0) return null;
+    return todays.reduce((prev, curr) => (safeWeight(prev.weight) > safeWeight(curr.weight) ? prev : curr)).id;
+  }, [feedViewableCatches, NOW_STR]);
+
+  const feedRecentCatchIds = useMemo(() => {
+    const threshold = Date.now() - (5 * 60 * 1000);
+    return feedViewableCatches
+      .filter(c => safeTimestamp(c.submittedAt) > threshold)
+      .map(c => c.id);
+  }, [feedViewableCatches]);
+
+  const { feedProcessedCatches, feedGroupedCatches } = useMemo(() => {
+    const filtered = feedViewableCatches.filter(c => {
+      const date = c.submittedAt ? new Date(c.submittedAt).toISOString().split('T')[0] : '';
+      const matchesDate = 
+        feedSelectedFilter === 'all' ? true :
+        feedSelectedFilter === 'today' ? date === NOW_STR :
+        feedSelectedFilter === 'yesterday' ? date === YESTERDAY_STR : true;
+
+      const q = feedSearchQuery.toLowerCase();
+      const matchesSearch = !q || 
+        (c.team?.name || '').toLowerCase().includes(q) || 
+        (c.sector || '').toLowerCase().includes(q) ||
+        String(c.weight).includes(q) ||
+        getFishTypeLabel(c.fishType).toLowerCase().includes(q);
+      
+      return matchesDate && matchesSearch;
+    });
+
+    const groups: { today: CatchWithDetails[]; yesterday: CatchWithDetails[]; older: CatchWithDetails[] } = { today: [], yesterday: [], older: [] };
+    filtered.forEach(c => {
+      const d = c.submittedAt ? new Date(c.submittedAt).toISOString().split('T')[0] : '';
+      if (d === NOW_STR) groups.today.push(c);
+      else if (d === YESTERDAY_STR) groups.yesterday.push(c);
+      else groups.older.push(c);
+    });
+
+    return { feedProcessedCatches: filtered, feedGroupedCatches: groups };
+  }, [feedViewableCatches, feedSelectedFilter, feedSearchQuery, NOW_STR, YESTERDAY_STR]);
+
+  const feedHeroCatch = useMemo(() => {
+    if (feedSelectedFilter !== 'all' || feedSearchQuery !== '') return null;
+    if (feedProcessedCatches.length === 0) return null;
+
+    const newest = feedProcessedCatches[0];
+    const isNew = (Date.now() - safeTimestamp(newest.submittedAt)) < (2 * 60 * 1000);
+    if (isNew) return newest;
+    if (feedTopCatchTodayId) {
+      const top = feedProcessedCatches.find(c => c.id === feedTopCatchTodayId);
+      if (top) return top;
+    }
+    return newest;
+  }, [feedProcessedCatches, feedTopCatchTodayId, feedSelectedFilter, feedSearchQuery]);
+
+  const feedIsHeroVeryRecent = useMemo(() => {
+    if (!feedHeroCatch) return false;
+    return (Date.now() - safeTimestamp(feedHeroCatch.submittedAt)) < (2 * 60 * 1000);
+  }, [feedHeroCatch]);
+
+  const feedGetListWithoutHero = (list: CatchWithDetails[]) => {
+    return feedHeroCatch ? list.filter(c => c.id !== feedHeroCatch.id) : list;
+  };
+
+  const feedTodayTotalCount = useMemo(() => {
+    return feedViewableCatches.filter(c => {
+      const d = c.submittedAt ? new Date(c.submittedAt).toISOString().split('T')[0] : '';
+      return d === NOW_STR;
+    }).length;
+  }, [feedViewableCatches, NOW_STR]);
+
+  const feedHeaderStatsText = useMemo(() => {
+    if (feedSearchQuery) return `Nájdené: ${feedProcessedCatches.length}`;
+    if (feedSelectedFilter === 'today') return `Dnes: ${feedProcessedCatches.length}`;
+    if (feedSelectedFilter === 'yesterday') return `Včera: ${feedProcessedCatches.length}`;
+    return feedTodayTotalCount > 0 
+      ? `Dnes: ${feedTodayTotalCount} · Spolu: ${feedViewableCatches.length}`
+      : `Spolu: ${feedViewableCatches.length}`;
+  }, [feedSelectedFilter, feedSearchQuery, feedProcessedCatches.length, feedTodayTotalCount, feedViewableCatches.length]);
+
+  const feedGetFilterLabel = () => {
+    switch (feedSelectedFilter) {
+      case 'today': return 'Dnes';
+      case 'yesterday': return 'Včera';
+      default: return 'Všetky dni';
+    }
+  };
+
+  const feedHandleResetFilters = () => {
+    setFeedSelectedFilter('all');
+    setFeedSearchQuery("");
+    setFeedFilterOpen(false);
+  };
 
   const sectorStats = useMemo(() => {
     if (!catches || !teams) return [];
@@ -1003,7 +1326,7 @@ export default function CompetitionDetail() {
             </div>
             <div 
               className={`bg-card border border-border rounded-xl p-3 md:p-5 flex flex-col items-center text-center transition-all group ${biggestCatchObj ? 'cursor-pointer hover:border-amber-500/30' : ''}`}
-              onClick={() => biggestCatchObj && setEntityModal({ view: 'catch', team: null, catch_: biggestCatchObj, previousView: null })}
+              onClick={() => biggestCatchObj && setSelectedCatchDetail(biggestCatchObj as CatchWithDetails)}
             >
               <div className="p-2 md:p-3 bg-amber-500/10 rounded-xl text-amber-500 mb-2 md:mb-3 group-hover:scale-110 transition-transform"><Trophy size={18} className="md:hidden" /><Trophy size={22} className="hidden md:block" /></div>
               <div className="text-xl md:text-3xl font-mono font-medium text-[#F97316]">{liveStats.biggestFish.toFixed(1)} <span className="text-xs md:text-sm font-normal text-muted-foreground">kg</span></div>
@@ -1286,69 +1609,215 @@ export default function CompetitionDetail() {
                 </div>
               </div>
 
-              {/* LIVE FEED */}
-              <div className="bg-card border border-border rounded-xl overflow-hidden flex flex-col max-h-[600px]">
-                <div className="p-4 border-b border-border bg-muted/30 flex items-center justify-between sticky top-0 z-10">
-                  <h3 className="font-bold text-foreground text-sm uppercase tracking-wider">Čo sa deje pri vode</h3>
-                  <div className="flex items-center gap-2">
-                    <button 
-                      onClick={() => setEntityModal({ view: 'catches-list', team: null, catch_: null, previousView: null })}
-                      className="text-[10px] text-cyan-500 font-bold uppercase hover:underline"
-                    >
-                      Všetky úlovky
-                    </button>
-                    <span className={`flex items-center gap-1.5 text-[10px] font-bold uppercase px-2 py-1 rounded-full ${isLive ? 'text-emerald-500 bg-emerald-500/10' : 'text-slate-400 bg-slate-500/10'}`}>
-                      {isLive ? 'Live' : 'Archív'}
-                    </span>
+              {/* LIVE FEED - New Design */}
+              <div className="bg-card border border-border rounded-xl overflow-hidden flex flex-col">
+                <div className="p-4 border-b border-border bg-muted/30 sticky top-0 z-10 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-bold text-foreground text-sm uppercase tracking-wider">Úlovky</h3>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-muted-foreground font-medium">{feedHeaderStatsText}</span>
+                      <span className={`flex items-center gap-1.5 text-[10px] font-bold uppercase px-2 py-1 rounded-full ${isLive ? 'text-emerald-500 bg-emerald-500/10' : 'text-slate-400 bg-slate-500/10'}`}>
+                        {isLive ? 'Live' : 'Archív'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={14} />
+                      <input 
+                        type="text"
+                        placeholder="Hľadať tím, váhu..."
+                        value={feedSearchQuery}
+                        onChange={(e) => setFeedSearchQuery(e.target.value)}
+                        className="w-full bg-background border border-border rounded-lg py-2 pl-9 pr-8 text-sm text-foreground placeholder:text-muted-foreground/50 focus:ring-1 focus:ring-[#F97316] focus:border-[#F97316] transition-all outline-none"
+                      />
+                      {feedSearchQuery && (
+                        <button 
+                          onClick={() => setFeedSearchQuery("")}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          <X size={14} />
+                        </button>
+                      )}
+                    </div>
+                    <div className="relative">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => setFeedFilterOpen(!feedFilterOpen)}
+                        className="h-full gap-1 border-border bg-background text-muted-foreground px-2.5 py-0 justify-between hover:bg-muted"
+                      >
+                        <Calendar size={14} /> 
+                        <span className="text-xs hidden sm:inline">{feedGetFilterLabel()}</span>
+                        <ChevronDown size={12} className={`text-muted-foreground transition-transform ${feedFilterOpen ? 'rotate-180' : ''}`} />
+                      </Button>
+                      {feedFilterOpen && (
+                        <>
+                          <div className="fixed inset-0 z-10" onClick={() => setFeedFilterOpen(false)} />
+                          <div className="absolute top-full right-0 mt-2 w-44 bg-card border border-border rounded-lg shadow-xl z-20 py-1 overflow-hidden">
+                            {[
+                              { id: 'all', label: 'Všetky dni' },
+                              { id: 'today', label: 'Dnes' },
+                              { id: 'yesterday', label: 'Včera' }
+                            ].map((opt) => (
+                              <button
+                                key={opt.id}
+                                onClick={() => { setFeedSelectedFilter(opt.id); setFeedFilterOpen(false); }}
+                                className="w-full text-left px-4 py-2.5 text-sm text-foreground hover:bg-muted flex items-center justify-between transition-colors border-b border-border/50 last:border-0"
+                              >
+                                {opt.label}
+                                {feedSelectedFilter === opt.id && <Check size={14} className="text-[#F97316]" />}
+                              </button>
+                            ))}
+                            <div className="bg-muted/30 p-1">
+                              <button 
+                                onClick={feedHandleResetFilters}
+                                className="w-full text-left px-3 py-2 text-xs text-muted-foreground hover:text-[#F97316] font-medium flex items-center gap-2 hover:bg-muted rounded transition-colors"
+                              >
+                                <RotateCcw size={12} />
+                                Resetovať filtre
+                              </button>
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
-                <div className="p-4 space-y-6 overflow-y-auto">
-                  {liveFeed.map((item) => (
+
+                <div className="p-4 space-y-4 overflow-y-auto max-h-[700px]">
+                  {feedHeroCatch && (
                     <div 
-                      key={item.id} 
-                      className="relative pl-4"
+                      onClick={() => setSelectedCatchDetail(feedHeroCatch as CatchWithDetails)}
+                      className={`relative w-full overflow-hidden rounded-xl border bg-card/80 shadow-lg cursor-pointer group hover:border-[#F97316]/50 transition-all
+                        ${safeWeight(feedHeroCatch.weight) >= bigFishThreshold ? 'border-amber-500/30' : 'border-border'}
+                      `}
                     >
-                      <div className="absolute left-0 top-3 bottom-[-24px] w-[2px] bg-border last:hidden"></div>
-                      <div className={`absolute left-[-3px] top-3 w-2 h-2 rounded-full border border-card ${item.action === 'big_fish' ? 'bg-amber-500' : 'bg-cyan-500'}`}></div>
-                      <div>
-                        <div className="flex justify-between items-center mb-1">
-                          <button 
-                            className="px-2 py-1 rounded-full bg-muted/40 hover:bg-muted text-xs font-bold text-foreground truncate max-w-[160px] transition-colors text-left"
-                            onClick={() => {
-                              const fullTeam = teams?.find(t => t.id === item.catchObj.teamId);
-                              if (fullTeam) {
-                                setEntityModal({ view: 'team', team: fullTeam, catch_: null, previousView: null });
-                              }
-                            }}
-                          >
-                            {item.team}
-                          </button>
-                          <span className="text-[10px] text-muted-foreground font-mono">{item.time}</span>
+                      <div className="relative aspect-video overflow-hidden bg-muted">
+                        {feedHeroCatch.photoUrl ? (
+                          <img src={feedHeroCatch.photoUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-muted-foreground"><Camera size={40} /></div>
+                        )}
+                        <div className="absolute top-3 left-3">
+                          {feedIsHeroVeryRecent ? (
+                            <span className="bg-[#F97316] text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded shadow-lg flex items-center gap-1">
+                              Nový úlovok
+                            </span>
+                          ) : feedHeroCatch.id === feedTopCatchTodayId ? (
+                            <span className="bg-amber-500 text-slate-900 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded shadow-lg flex items-center gap-1">
+                              <Crown size={12} fill="currentColor" /> Top dnes
+                            </span>
+                          ) : (
+                            <span className="bg-card border border-border text-foreground text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded shadow-lg">
+                              Najnovšie
+                            </span>
+                          )}
                         </div>
-                        <button
-                          className="w-full text-left"
-                          onClick={() => setEntityModal({ view: 'catch', team: null, catch_: item.catchObj, previousView: null })}
-                        >
-                          <div className="flex items-center gap-2 bg-muted/30 p-2 rounded-lg border border-border hover:bg-muted/50 transition-colors cursor-pointer">
-                            {item.action === 'big_fish' ? (
-                              <div className="flex items-center gap-2 w-full">
-                                <Crown size={14} className="text-amber-500 shrink-0" />
-                                <span className="text-sm text-amber-500 font-bold">Padla veľká ryba! <span className="text-foreground font-black ml-1">{item.weight.toFixed(1)} kg</span></span>
-                              </div>
-                            ) : (
-                              <div className="text-sm text-muted-foreground w-full flex justify-between items-center">
-                                <span>{item.fish}</span>
-                                <span className="text-foreground font-black">{item.weight.toFixed(1)} kg</span>
-                              </div>
-                            )}
-                          </div>
-                        </button>
+                      </div>
+
+                      <div className="p-4">
+                        <div className="flex items-baseline gap-2 mb-2">
+                          <span className="text-3xl font-black italic text-foreground tracking-tighter tabular-nums">
+                            {safeWeight(feedHeroCatch.weight).toFixed(2)}
+                          </span>
+                          <span className="text-base font-bold text-muted-foreground">kg</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-foreground text-sm">{feedHeroCatch.team?.name || 'Neznámy tím'}</span>
+                          <span className="w-1 h-1 bg-border rounded-full" />
+                          <span className="text-xs text-muted-foreground">Sektor {feedHeroCatch.sector?.trim()}</span>
+                          <span className="w-1 h-1 bg-border rounded-full" />
+                          <FishBadge type={feedHeroCatch.fishType} />
+                        </div>
                       </div>
                     </div>
-                  ))}
-                  {liveFeed.length === 0 && (
-                    <div className="text-center text-muted-foreground py-8">
-                      Čakáme na prvý záber…
+                  )}
+
+                  {feedProcessedCatches.length > 0 ? (
+                    <div className="space-y-5">
+                      {feedGetListWithoutHero(feedGroupedCatches.today).length > 0 && (
+                        <section>
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">Dnes</span>
+                            <span className="h-px flex-1 bg-border/50" />
+                          </div>
+                          <div className="space-y-2">
+                            {feedGetListWithoutHero(feedGroupedCatches.today).map(c => (
+                              <FeedCatchRow 
+                                key={c.id} 
+                                data={c as CatchWithDetails} 
+                                isTopToday={c.id === feedTopCatchTodayId}
+                                isRecent={feedRecentCatchIds.includes(c.id)}
+                                isBigFish={safeWeight(c.weight) >= bigFishThreshold}
+                                onClick={() => setSelectedCatchDetail(c as CatchWithDetails)} 
+                                userRole={userRole}
+                              />
+                            ))}
+                          </div>
+                        </section>
+                      )}
+
+                      {feedGetListWithoutHero(feedGroupedCatches.yesterday).length > 0 && (
+                        <section>
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">Včera</span>
+                            <span className="h-px flex-1 bg-border/50" />
+                          </div>
+                          <div className="space-y-2">
+                            {feedGetListWithoutHero(feedGroupedCatches.yesterday).map(c => (
+                              <FeedCatchRow 
+                                key={c.id} 
+                                data={c as CatchWithDetails} 
+                                isTopToday={false}
+                                isRecent={false}
+                                isBigFish={safeWeight(c.weight) >= bigFishThreshold}
+                                onClick={() => setSelectedCatchDetail(c as CatchWithDetails)} 
+                                userRole={userRole}
+                              />
+                            ))}
+                          </div>
+                        </section>
+                      )}
+
+                      {feedGetListWithoutHero(feedGroupedCatches.older).length > 0 && (
+                        <section>
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">Staršie</span>
+                            <span className="h-px flex-1 bg-border/50" />
+                          </div>
+                          <div className="space-y-2">
+                            {feedGetListWithoutHero(feedGroupedCatches.older).map(c => (
+                              <FeedCatchRow 
+                                key={c.id} 
+                                data={c as CatchWithDetails} 
+                                isTopToday={false}
+                                isRecent={false}
+                                isBigFish={safeWeight(c.weight) >= bigFishThreshold}
+                                onClick={() => setSelectedCatchDetail(c as CatchWithDetails)} 
+                                userRole={userRole}
+                              />
+                            ))}
+                          </div>
+                        </section>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="py-12 text-center">
+                      <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mx-auto text-muted-foreground mb-3">
+                        <Fish size={20} />
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {feedSearchQuery || feedSelectedFilter !== 'all' ? 'Žiadne úlovky pre tento filter' : 'Čakáme na prvý záber…'}
+                      </p>
+                      {(feedSearchQuery || feedSelectedFilter !== 'all') && (
+                        <button 
+                          onClick={feedHandleResetFilters}
+                          className="mt-2 text-xs text-[#F97316] hover:underline font-medium"
+                        >
+                          Vymazať filter
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
@@ -1696,172 +2165,16 @@ export default function CompetitionDetail() {
           />
           <div className="relative w-full max-w-2xl max-h-[90vh] bg-card border border-border/50 rounded-xl shadow-2xl flex flex-col overflow-hidden z-10">
             
-            {/* CATCHES LIST VIEW */}
-            {entityModal.view === 'catches-list' && (
-              <>
-                <div className="p-6 border-b border-border flex items-center justify-between bg-muted/30">
-                  <div>
-                    <h2 className="text-xl font-black text-foreground flex items-center gap-3">
-                      <Fish className="text-cyan-500" />
-                      Všetky úlovky
-                    </h2>
-                    <p className="text-muted-foreground text-sm mt-1">{allCatchesSorted.length} úlovkov v preteku</p>
-                  </div>
-                  <button 
-                    onClick={() => setEntityModal({ view: null, team: null, catch_: null, previousView: null })}
-                    className="p-3 bg-muted/50 hover:bg-muted rounded-full transition-colors text-foreground"
-                  >
-                    <X size={24} />
-                  </button>
-                </div>
-                <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                  {allCatchesSorted.map((c) => (
-                    <div 
-                      key={c.id}
-                      className="bg-muted/30 border border-border rounded-xl p-4 cursor-pointer hover:bg-muted/50 transition-colors"
-                      onClick={() => setEntityModal({ view: 'catch', team: null, catch_: c, previousView: 'catches-list' })}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${safeWeight(c.weight) >= bigFishThreshold ? 'bg-amber-500/20 text-amber-500' : 'bg-cyan-500/20 text-cyan-500'}`}>
-                            {safeWeight(c.weight) >= bigFishThreshold ? <Crown size={18} /> : <Fish size={18} />}
-                          </div>
-                          <div>
-                            <button
-                              className="font-bold text-foreground hover:text-cyan-500 transition-colors text-left"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                const teamObj = teams?.find(t => t.id === c.teamId);
-                                if (teamObj) {
-                                  setEntityModal({ view: 'team', team: teamObj, catch_: null, previousView: 'catches-list' });
-                                }
-                              }}
-                            >
-                              {c.team?.name || 'Neznámy tím'}
-                            </button>
-                            <div className="text-xs text-muted-foreground">{c.fishType || 'Ryba'} • Sektor {c.team?.sector || '-'}</div>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-xl font-black text-foreground">{safeWeight(c.weight).toFixed(1)} kg</div>
-                          <div className="text-[10px] text-muted-foreground">
-                            {c.submittedAt ? formatDistanceToNow(new Date(c.submittedAt), { addSuffix: true, locale: sk }) : ''}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  {allCatchesSorted.length === 0 && (
-                    <div className="text-center py-12 text-muted-foreground">
-                      Čakáme na prvý záber…
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
-
-            {/* CATCH DETAIL VIEW */}
-            {entityModal.view === 'catch' && entityModal.catch_ && (
-              <>
-                <div className="p-6 border-b border-border flex items-center justify-between bg-muted/30">
-                  <div className="flex items-center gap-3">
-                    {entityModal.previousView && (
-                      <button 
-                        onClick={() => setEntityModal({ 
-                          view: entityModal.previousView!, 
-                          team: entityModal.team, 
-                          catch_: null, 
-                          previousView: null 
-                        })}
-                        className="p-2 bg-muted/50 hover:bg-muted rounded-full transition-colors text-foreground"
-                      >
-                        <ChevronLeft size={20} />
-                      </button>
-                    )}
-                    <div>
-                      <h2 className="text-xl font-black text-foreground flex items-center gap-3">
-                        {safeWeight(entityModal.catch_.weight) >= bigFishThreshold ? (
-                          <Crown className="text-amber-500" />
-                        ) : (
-                          <Fish className="text-cyan-500" />
-                        )}
-                        Detail úlovku
-                      </h2>
-                      <p className="text-muted-foreground text-sm mt-1">{entityModal.catch_.team?.name || 'Neznámy tím'}</p>
-                    </div>
-                  </div>
-                  <button 
-                    onClick={() => setEntityModal({ view: null, team: null, catch_: null, previousView: null })}
-                    className="p-3 bg-muted/50 hover:bg-muted rounded-full transition-colors text-foreground"
-                  >
-                    <X size={24} />
-                  </button>
-                </div>
-                <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                  <div className="text-center py-6 bg-muted/30 rounded-xl border border-border">
-                    <div className="text-5xl font-black text-foreground mb-1">{safeWeight(entityModal.catch_.weight).toFixed(1)}</div>
-                    <div className="text-lg text-muted-foreground">kilogramov</div>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-cyan-500/10 rounded-lg text-cyan-500"><Fish size={18} /></div>
-                      <div>
-                        <div className="text-xs text-muted-foreground">Druh ryby</div>
-                        <div className="font-bold text-foreground">{entityModal.catch_.fishType || 'Neuvedené'}</div>
-                      </div>
-                    </div>
-                    <div 
-                      className="flex items-center gap-3 cursor-pointer hover:bg-muted/30 -mx-2 px-2 py-1 rounded-lg transition-colors"
-                      onClick={() => {
-                        const teamObj = teams?.find(t => t.id === entityModal.catch_?.teamId);
-                        if (teamObj) {
-                          setEntityModal({ view: 'team', team: teamObj, catch_: null, previousView: 'catch' });
-                        }
-                      }}
-                    >
-                      <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-500"><Users size={18} /></div>
-                      <div className="flex-1">
-                        <div className="text-xs text-muted-foreground">Tím</div>
-                        <div className="font-bold text-foreground">{entityModal.catch_.team?.name || 'Neznámy tím'}</div>
-                      </div>
-                      <ChevronRight size={16} className="text-muted-foreground" />
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-purple-500/10 rounded-lg text-purple-500"><MapPin size={18} /></div>
-                      <div>
-                        <div className="text-xs text-muted-foreground">Sektor</div>
-                        <div className="font-bold text-foreground">{entityModal.catch_.team?.sector || '-'}</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-amber-500/10 rounded-lg text-amber-500"><Clock size={18} /></div>
-                      <div>
-                        <div className="text-xs text-muted-foreground">Čas úlovku</div>
-                        <div className="font-bold text-foreground">
-                          {entityModal.catch_.submittedAt 
-                            ? formatDistanceToNow(new Date(entityModal.catch_.submittedAt), { addSuffix: true, locale: sk })
-                            : 'Neuvedené'}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setEntityModal({ view: 'catches-list', team: null, catch_: null, previousView: null })}
-                    className="w-full py-3 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl font-bold transition-colors"
-                  >
-                    Pozrieť všetky úlovky preteku
-                  </button>
-                </div>
-              </>
-            )}
-
             {/* TEAM VIEW */}
             {entityModal.view === 'team' && entityModal.team && (
               <TeamOverviewContent
                 team={entityModal.team}
                 catches={catches || []}
                 rank={sortedLeaderboard.find(t => t.id === entityModal.team?.id)?.rank}
-                onCatchClick={(c) => setEntityModal({ view: 'catch', team: entityModal.team, catch_: { ...c, team: entityModal.team! }, previousView: 'team' })}
+                onCatchClick={(c) => {
+                  setEntityModal({ view: null, team: null, catch_: null, previousView: null });
+                  setSelectedCatchDetail({ ...c, team: entityModal.team! } as CatchWithDetails);
+                }}
                 onClose={() => {
                   if (entityModal.previousView) {
                     setEntityModal({ view: entityModal.previousView, team: null, catch_: null, previousView: null });
@@ -1873,6 +2186,16 @@ export default function CompetitionDetail() {
             )}
           </div>
         </div>
+      )}
+
+      {selectedCatchDetail && (
+        <FeedCatchDetailModal 
+          data={selectedCatchDetail} 
+          onClose={() => setSelectedCatchDetail(null)} 
+          userRole={userRole}
+          isTopToday={selectedCatchDetail.id === feedTopCatchTodayId}
+          isBigFish={safeWeight(selectedCatchDetail.weight) >= bigFishThreshold}
+        />
       )}
 
     </div>
