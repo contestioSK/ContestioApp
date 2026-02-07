@@ -1,0 +1,68 @@
+Replit ti odpovedal pravdivo v kontexte ich bežiaceho prostredia: “u nás to beží, logy sú čisté, requesty nepadajú”.
+
+Ale to nie je to isté ako “kód je plne funkčný” v absolútnom zmysle. Je to skôr: „v našom replit env a s našimi dátami to aktuálne funguje“.
+
+Sú výpočty nastavené správne?
+
+Áno – logika výpočtov je vo všeobecnosti správna. To, čo Replit vypísal (liveStats, leaderboard, feed, podium), sedí.
+
+Ale ak sa pýtaš “na 100% bez výnimiek”, tak tu sú miesta, kde sa to môže správať zle / nečakane, aj keď to “nepadá”:
+
+1) Triedenie úlovkov podľa submittedAt
+new Date(b.submittedAt || 0).getTime()
+
+
+Ak submittedAt príde ako neštandardný string (alebo prázdny), new Date("...") môže byť Invalid Date → getTime() je NaN a sorting je potom “random”. V replite to asi chodí v ISO, preto OK.
+
+2) parseFloat(String(c.weight))
+
+Je to “bezpečné” proti undefined, ale nie proti formátom typu:
+
+"10,5" (čiarka) → parseFloat("10,5") dá 10, nie 10.5
+
+"10 kg" → dá 10 (čo môže byť OK, ale je to tichá chyba)
+Ak backend garantuje číslo alebo ISO string s bodkou, v pohode.
+
+3) Leaderboard ignoruje všetkých okrem approved
+.filter(t => t.status === 'approved')
+
+
+To je zámer, ale potom:
+
+v prehľadoch sa nezobrazia pending tímy vôbec
+
+sortedLeaderboard.length môže byť 0 aj keď máš prihlásené tímy (pending)
+To nie je chyba výpočtu, len UX/produktové správanie.
+
+4) Remízy (rovnaká váha)
+.sort((a,b) => b.weight - a.weight)
+
+
+Pri remíze nemáš sekundárny sort (napr. viac rýb vyhráva / skorší posledný úlovok / abeceda). Poradie medzi tímami s rovnakou váhou bude nestabilné.
+
+5) Sektory a “uniqueSectors”
+
+Ty sektor vyrábaš takto:
+
+sector: team.sector || '-'
+uniqueSectors = ...filter(s => s !== '-')
+
+
+Keď je sektor prázdny, v sektore tabuľkách nič neuvidíš (OK). Ale ak má sektor napr. "A " s medzerou a druhý "A", bude to tváriť ako 2 sektory.
+
+6) “Pred {formatTimeAgo()}”
+
+formatTimeAgo používa formatDistanceToNow(..., { addSuffix: false }) a ty dáš Pred ... → OK.
+Ale inde používaš formatDistanceToNow(..., { addSuffix: true }) → tam už máš “pred 5 minútami” a neprefikuješ to. Tie texty sa môžu líšiť štýlom (nie výpočtom).
+
+Takže kto má “pravdu”?
+
+Replit: “Funguje to v našej runtime situácii + logy čisté” ✅
+
+Ja: “Nedá sa garantovať absolútne ‘plne funkčný’ len z kódu, lebo je závislý na dátach a prostredí” ✅
+
+Ak máš dnes stabilné API (ISO dátumy, váhy ako čísla/“10.5”, sector normalizovaný), tak:
+➡️ výpočty máš nastavené správne a bude to fungovať.
+
+Ak chceš ultrakrátku odpoveď na tvoju vetu “aj všetky výpočty sú nastavené správne??”
+➡️ Áno, sú – s jediným veľkým ALE: musí sedieť formát dát (submittedAt, weight, sector).
