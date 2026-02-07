@@ -250,12 +250,13 @@ export default function CompetitionDetail() {
 
   useEffect(() => {
     if (!user) return;
-    const members = form.getValues("members");
-    if (members?.length) {
-      form.setValue("members.0.name", `${user.firstName || ""} ${user.lastName || ""}`.trim());
-      form.setValue("members.0.email", user.email || "");
-    }
-  }, [user]);
+    const currentName = (form.getValues("members.0.name") || "").trim();
+    const currentEmail = (form.getValues("members.0.email") || "").trim();
+    const suggestedName = `${user.firstName || ""} ${user.lastName || ""}`.trim();
+    const suggestedEmail = (user.email || "").trim();
+    if (!currentName && suggestedName) form.setValue("members.0.name", suggestedName, { shouldDirty: true });
+    if (!currentEmail && suggestedEmail) form.setValue("members.0.email", suggestedEmail, { shouldDirty: true });
+  }, [user?.id]);
 
   // Team registration mutation
   const registerTeamMutation = useMutation({
@@ -483,12 +484,21 @@ export default function CompetitionDetail() {
     };
   }, [competition?.status, sectorStats, hourlyActivity, liveStats.totalFish]);
 
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("openReg") === "1" && isAuthenticated) {
+      setIsRegistrationDialogOpen(true);
+      url.searchParams.delete("openReg");
+      window.history.replaceState({}, "", url.toString());
+    }
+  }, [isAuthenticated]);
+
   const isRegistration = competition?.status === 'registration';
 
   const openRegistration = () => {
     if (!isAuthenticated) {
       toast({ title: "Najprv sa prihlás", description: "Registrácia tímu je dostupná len pre prihlásených." });
-      localStorage.setItem('contestio_returnTo', `/competitions/${id}`);
+      localStorage.setItem('contestio_returnTo', `/competitions/${id}?openReg=1`);
       navigate('/auth/login');
       return;
     }
@@ -964,7 +974,7 @@ export default function CompetitionDetail() {
           <div className="max-w-3xl mx-auto text-center space-y-8">
             <div className="p-8 rounded-xl bg-card border border-border relative overflow-hidden">
               <Timer className="w-16 h-16 text-emerald-500 mx-auto mb-4" />
-              <h2 className="text-3xl font-bold text-foreground mb-2">Registrácia Otvorená</h2>
+              <h2 className="text-3xl font-bold text-foreground mb-2">Registrácia otvorená</h2>
               <p className="text-muted-foreground mb-6">{competition.description}</p>
               <button 
                 onClick={openRegistration}
@@ -1148,14 +1158,21 @@ export default function CompetitionDetail() {
                           <td className="px-3 md:px-6 py-3 md:py-4 text-right font-mono font-medium text-[#F97316] text-base">{team.weight.toFixed(1)}</td>
                         </tr>
                       ))}
-                      {sortedLeaderboard.length === 0 && (teams?.length ?? 0) === 0 && (
+                      {teamsLoading && sortedLeaderboard.length === 0 && (
+                        <tr>
+                          <td colSpan={5} className="px-3 md:px-6 py-8 text-center text-muted-foreground">
+                            Načítavam tímy...
+                          </td>
+                        </tr>
+                      )}
+                      {!teamsLoading && sortedLeaderboard.length === 0 && (teams?.length ?? 0) === 0 && (
                         <tr>
                           <td colSpan={5} className="px-3 md:px-6 py-8 text-center text-muted-foreground">
                             Zatiaľ nie sú prihlásené žiadne tímy
                           </td>
                         </tr>
                       )}
-                      {sortedLeaderboard.length === 0 && (teams?.filter(t => t.status === 'pending')?.length ?? 0) > 0 && (
+                      {!teamsLoading && sortedLeaderboard.length === 0 && (teams?.filter(t => t.status === 'pending')?.length ?? 0) > 0 && (
                         <tr>
                           <td colSpan={5} className="px-3 md:px-6 py-8 text-center text-muted-foreground">
                             Tímy čakajú na schválenie organizátorom
