@@ -116,7 +116,11 @@ const VerticalBarChart = ({ data }: { data: { hour: string; val: number }[] }) =
 };
 
 const SectorTable = ({ sector, leaderboard }: { sector: string; leaderboard: any[] }) => {
-  const sectorTeams = leaderboard.filter(t => t.sector === sector).sort((a, b) => b.weight - a.weight);
+  const sectorTeams = leaderboard.filter(t => t.sector === sector).sort((a, b) => {
+    if (b.weight !== a.weight) return b.weight - a.weight;
+    if (b.fish !== a.fish) return b.fish - a.fish;
+    return (a.name || '').localeCompare(b.name || '', 'sk');
+  });
   return (
     <div className="bg-card/50 rounded-xl border border-border overflow-hidden mb-4">
       <div className="p-3 bg-muted/50 font-bold text-foreground text-sm flex justify-between">
@@ -343,6 +347,23 @@ export default function CompetitionDetail() {
     }
   });
 
+  // --- HELPERS ---
+
+  const safeWeight = (w: unknown): number => {
+    const s = String(w ?? '0').replace(',', '.');
+    const n = parseFloat(s);
+    return Number.isFinite(n) ? n : 0;
+  };
+
+  const safeTimestamp = (ts: unknown): number => {
+    if (!ts) return 0;
+    const d = new Date(ts as string);
+    const t = d.getTime();
+    return Number.isFinite(t) ? t : 0;
+  };
+
+  const bigFishThreshold = competition?.bigFishThreshold ? parseFloat(String(competition.bigFishThreshold)) : 10;
+
   // --- useMemo AGGREGATIONS ---
 
   const liveStats = useMemo(() => {
@@ -350,8 +371,8 @@ export default function CompetitionDetail() {
       return { totalFish: 0, totalWeight: 0, biggestFish: 0, avgWeight: 0 };
     }
     const totalFish = catches.length;
-    const totalWeight = catches.reduce((sum, c) => sum + (parseFloat(String(c.weight)) || 0), 0);
-    const biggestFish = Math.max(...catches.map(c => parseFloat(String(c.weight)) || 0));
+    const totalWeight = catches.reduce((sum, c) => sum + safeWeight(c.weight), 0);
+    const biggestFish = Math.max(...catches.map(c => safeWeight(c.weight)));
     const avgWeight = totalFish > 0 ? totalWeight / totalFish : 0;
     return { totalFish, totalWeight, biggestFish, avgWeight };
   }, [catches]);
@@ -359,9 +380,7 @@ export default function CompetitionDetail() {
   const biggestCatchObj = useMemo(() => {
     if (!catches || catches.length === 0) return null;
     return catches.reduce((max, c) => {
-      const weight = parseFloat(String(c.weight)) || 0;
-      const maxWeight = parseFloat(String(max?.weight)) || 0;
-      return weight > maxWeight ? c : max;
+      return safeWeight(c.weight) > safeWeight(max?.weight) ? c : max;
     }, catches[0]);
   }, [catches]);
 
@@ -372,7 +391,7 @@ export default function CompetitionDetail() {
       for (const c of catches) {
         const tid = c.teamId || '';
         if (!statsMap[tid]) statsMap[tid] = { weight: 0, fish: 0 };
-        statsMap[tid].weight += parseFloat(String(c.weight)) || 0;
+        statsMap[tid].weight += safeWeight(c.weight);
         statsMap[tid].fish += 1;
       }
     }
@@ -382,33 +401,37 @@ export default function CompetitionDetail() {
         ...team,
         weight: statsMap[team.id]?.weight || 0,
         fish: statsMap[team.id]?.fish || 0,
-        sector: team.sector || '-',
+        sector: (team.sector || '-').trim(),
       }))
-      .sort((a, b) => b.weight - a.weight)
+      .sort((a, b) => {
+        if (b.weight !== a.weight) return b.weight - a.weight;
+        if (b.fish !== a.fish) return b.fish - a.fish;
+        return (a.name || '').localeCompare(b.name || '', 'sk');
+      })
       .map((t, i) => ({ ...t, rank: i + 1 }));
   }, [teams, catches]);
 
   const liveFeed = useMemo(() => {
     if (!catches) return [];
     return [...catches]
-      .sort((a, b) => new Date(b.submittedAt || 0).getTime() - new Date(a.submittedAt || 0).getTime())
+      .sort((a, b) => safeTimestamp(b.submittedAt) - safeTimestamp(a.submittedAt))
       .slice(0, 10)
       .map(c => ({
         id: c.id,
         team: c.team?.name || 'Neznámy tím',
-        action: parseFloat(String(c.weight)) >= 10 ? 'big_fish' : 'catch',
-        weight: parseFloat(String(c.weight)) || 0,
+        action: safeWeight(c.weight) >= bigFishThreshold ? 'big_fish' : 'catch',
+        weight: safeWeight(c.weight),
         fish: c.fishType || 'Ryba',
         time: c.submittedAt ? `Pred ${formatTimeAgo(c.submittedAt)}` : '',
         sector: c.team?.sector || '-',
         catchObj: c,
       }));
-  }, [catches]);
+  }, [catches, bigFishThreshold]);
 
   const allCatchesSorted = useMemo(() => {
     if (!catches) return [];
     return [...catches]
-      .sort((a, b) => new Date(b.submittedAt || 0).getTime() - new Date(a.submittedAt || 0).getTime());
+      .sort((a, b) => safeTimestamp(b.submittedAt) - safeTimestamp(a.submittedAt));
   }, [catches]);
 
   const sectorStats = useMemo(() => {
@@ -420,7 +443,7 @@ export default function CompetitionDetail() {
       const sectorTeamIds = teams.filter(t => t.sector === sector).map(t => t.id);
       const weight = catches
         .filter(c => sectorTeamIds.includes(c.teamId || ''))
-        .reduce((sum, c) => sum + (parseFloat(String(c.weight)) || 0), 0);
+        .reduce((sum, c) => sum + safeWeight(c.weight), 0);
       return {
         name: `Sektor ${sector}`,
         weight,
@@ -1700,8 +1723,8 @@ export default function CompetitionDetail() {
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${parseFloat(String(c.weight)) >= 10 ? 'bg-amber-500/20 text-amber-500' : 'bg-cyan-500/20 text-cyan-500'}`}>
-                            {parseFloat(String(c.weight)) >= 10 ? <Crown size={18} /> : <Fish size={18} />}
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${safeWeight(c.weight) >= bigFishThreshold ? 'bg-amber-500/20 text-amber-500' : 'bg-cyan-500/20 text-cyan-500'}`}>
+                            {safeWeight(c.weight) >= bigFishThreshold ? <Crown size={18} /> : <Fish size={18} />}
                           </div>
                           <div>
                             <button
@@ -1720,7 +1743,7 @@ export default function CompetitionDetail() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-xl font-black text-foreground">{parseFloat(String(c.weight)).toFixed(1)} kg</div>
+                          <div className="text-xl font-black text-foreground">{safeWeight(c.weight).toFixed(1)} kg</div>
                           <div className="text-[10px] text-muted-foreground">
                             {c.submittedAt ? formatDistanceToNow(new Date(c.submittedAt), { addSuffix: true, locale: sk }) : ''}
                           </div>
@@ -1757,7 +1780,7 @@ export default function CompetitionDetail() {
                     )}
                     <div>
                       <h2 className="text-xl font-black text-foreground flex items-center gap-3">
-                        {parseFloat(String(entityModal.catch_.weight)) >= 10 ? (
+                        {safeWeight(entityModal.catch_.weight) >= bigFishThreshold ? (
                           <Crown className="text-amber-500" />
                         ) : (
                           <Fish className="text-cyan-500" />
@@ -1776,7 +1799,7 @@ export default function CompetitionDetail() {
                 </div>
                 <div className="flex-1 overflow-y-auto p-6 space-y-6">
                   <div className="text-center py-6 bg-muted/30 rounded-xl border border-border">
-                    <div className="text-5xl font-black text-foreground mb-1">{parseFloat(String(entityModal.catch_.weight)).toFixed(1)}</div>
+                    <div className="text-5xl font-black text-foreground mb-1">{safeWeight(entityModal.catch_.weight).toFixed(1)}</div>
                     <div className="text-lg text-muted-foreground">kilogramov</div>
                   </div>
                   <div className="space-y-4">
