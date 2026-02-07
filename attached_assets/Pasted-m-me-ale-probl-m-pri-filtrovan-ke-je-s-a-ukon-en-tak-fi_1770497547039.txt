@@ -1,0 +1,221 @@
+máme ale problém pri filtrovaní, keď je súťaž ukončená, tak filter, dnes, včera, nefunguje, musíma to tam zoradiť podľa reálneho dátumu, keď súťaž začína v nedeľu 10.7. tak tam musí byť tento dátum proste, nie žiadne dnes, včera zajtra
+
+Áno — “dnes / včera” je v ukončenej súťaži UX aj technicky zlé. Keď je event v minulosti, “dnes” už nemá s dátami nič spoločné, takže filter logicky „nefunguje“ (filtruje podľa dnešného reálneho dátumu, nie podľa dátumu súťaže).
+
+Čo má byť správne správanie
+
+Keď je súťaž ukončená (alebo keď si používateľ pozerá historické preteky), filter sa musí prepínať na absolútne dátumy súťaže, ideálne v časovej zóne súťaže.
+
+Namiesto:
+
+Dnes / Včera
+
+Použi:
+
+10.7. (Ne), 11.7. (Po), 12.7. (Ut) …
+alebo ak chceš “game feel”:
+
+Deň 1 (10.7.), Deň 2 (11.7.) …
+
+Najčistejšie UX riešenie (odporúčam)
+
+Filter = “Deň súťaže” (dropdown) + default “Všetky dni”.
+
+Live súťaž: môžeš mať “Dnes / Včera” len ako skratky, ale stále nech sa pod tým mapujú na dátumy súťaže.
+
+Finished súťaž: zobraz len dátumy (žiadne dnes/včera).
+
+Technický koreň problému (prečo sa to deje)
+
+Ty teraz porovnávaš submittedAt s TODAY_STR a YESTERDAY_STR, ktoré sa vyrábajú z new Date() (aktuálny deň). To je OK iba počas live eventu v rovnaký deň.
+
+Správna logika musí vychádzať z:
+
+competition.startAt
+
+competition.endAt
+
+competition.timezone (ak ju máš — ak nie, zavádzaš bugy)
+
+Implementačný návrh (prakticky)
+1) Generuj zoznam “event days”
+
+Zober startAt a endAt, vyrob pole dní:
+
+const buildEventDays = (startISO, endISO) => {
+  const days = [];
+  const start = new Date(startISO);
+  const end = new Date(endISO);
+  // normalizuj na polnoc (pozor na timezone, ideálne robiť cez date-fns-tz)
+  let d = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+  const last = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+
+  while (d <= last) {
+    const key = d.toISOString().slice(0,10); // YYYY-MM-DD
+    days.push({
+      key,
+      label: d.toLocaleDateString('sk-SK', { day:'numeric', month:'numeric' }), // 10.7.
+      weekday: d.toLocaleDateString('sk-SK', { weekday:'short' }), // ne
+    });
+    d.setDate(d.getDate() + 1);
+  }
+  return days;
+};
+
+2) Filter nech je podľa eventDayKey (YYYY-MM-DD), nie today/yesterday
+
+selectedFilter = 'all' | '2026-07-10' | '2026-07-11' ...
+
+const matchesDate =
+  selectedFilter === 'all'
+    ? true
+    : c.submittedAt.slice(0,10) === selectedFilter;
+
+3) UI: dropdown options podľa event days
+
+“Všetky dni”
+
+potom konkrétne dátumy
+
+Label napr:
+
+Ne 10.7. alebo 10.7. (Ne).
+
+Dôležitá UX pravda (nepríjemná, ale zásadná)
+
+“Dnes / Včera” v historických dátach je kognitívny odpad. Ľudia pri výsledkoch chcú vidieť kedy sa to stalo v rámci preteku, nie kedy je dnes.
+
+Ak chceš zachovať “Dnes/Včera” počas live súťaže, OK — ale len vtedy, keď:
+
+now spadá do intervalu súťaže
+
+a “dnes” znamená “dnes v rámci súťaže”, nie “dnes v kalendári”.
+
+Rýchly kompromis (ak nechceš prerábať filter UI)
+
+Nechaj texty “Dnes / Včera”, ale:
+
+“Dnes” = posledný deň súťaže, keď je súťaž ukončená (to ale zavádza a je to zlá semantika)
+
+toto by som nerobil, iba ak si pod tlakom.
+
+Ak mi pošleš, ako máš dostupné competition.startAt/endAt (a či riešiš timezone), poviem ti presne, ktorú variantu spraviť tak, aby si sa neodjebal na letnom čase a UTC posunoch.
+
+Ja by som tam dal celý názov dňa : Nedeľa 10.7.
+
+Áno. Toto je správne rozhodnutie.
+„Nedeľa 10.7.“ je najčitateľnejší, najprirodzenejší a najodolnejší formát, aký tam môžeš dať. Žiadne hacky, žiadne mentálne preklady.
+
+Teraz ti to rozsekám presne z UX aj technického pohľadu 👇
+
+Prečo je „Nedeľa 10.7.“ ideálne riešenie
+1️⃣ Mentálny model používateľa
+
+Rybár si pamätá:
+
+„V nedeľu ráno padla 21-ka.“
+
+Nie:
+
+„Včera… teda vlastne nie včera, ale druhý deň preteku.“
+
+Plný názov dňa:
+
+nevyžaduje kontext
+
+funguje rovnako pre live aj ukončené súťaže
+
+je čitateľný aj o rok
+
+2️⃣ UX: filter sa stáva archívom, nie hackom
+
+Filter:
+
+Všetky dni
+
+Nedeľa 10.7.
+
+Pondelok 11.7.
+
+Utorok 12.7.
+
+➡️ používateľ presne vie, čo filtruje
+➡️ nič sa “nepokazí” po skončení súťaže
+➡️ UI nemusí vedieť, čo je dnes
+
+3️⃣ Copy je správne „neviditeľné“
+
+„Nedeľa 10.7.“:
+
+nič nepredáva
+
+nič nevysvetľuje
+
+len slúži
+
+To je presne to, čo má filter robiť.
+
+Ako to implementovať správne (bez budúcich bugov)
+Základné pravidlo
+
+❌ NEPOUŽÍVAJ TODAY, YESTERDAY, new Date() ako zdroj pravdy
+✅ JEDINÁ pravda = dátum úlovku + dátum súťaže
+
+1️⃣ Vygeneruj dni súťaže
+const buildCompetitionDays = (startISO, endISO) => {
+  const days = [];
+  const start = new Date(startISO);
+  const end = new Date(endISO);
+
+  let d = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+  const last = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+
+  while (d <= last) {
+    days.push({
+      key: d.toISOString().slice(0,10), // 2026-07-10
+      label: d.toLocaleDateString('sk-SK', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'numeric',
+      }),
+    });
+    d.setDate(d.getDate() + 1);
+  }
+
+  return days;
+};
+
+
+Výsledok:
+
+[
+  { key: '2026-07-10', label: 'nedeľa 10.7.' },
+  { key: '2026-07-11', label: 'pondelok 11.7.' },
+]
+
+
+➡️ ak chceš kapitálky:
+
+label.charAt(0).toUpperCase() + label.slice(1)
+
+2️⃣ Filteruj striktne podľa dátumu úlovku
+const matchesDate =
+  selectedFilter === 'all'
+    ? true
+    : c.submittedAt.slice(0,10) === selectedFilter;
+
+
+Žiadne today/yesterday.
+Žiadne ify podľa stavu súťaže.
+Tento kód funguje vždy.
+
+3️⃣ UI dropdown (čistý a stabilný)
+<Button>Všetky dni</Button>
+{competitionDays.map(d => (
+  <Button key={d.key}>
+    {d.label}
+  </Button>
+))}
+
+
+Hotovo.
