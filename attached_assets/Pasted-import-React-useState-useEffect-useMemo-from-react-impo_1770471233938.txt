@@ -1,0 +1,406 @@
+import React, { useState, useEffect, useMemo } from "react";
+import { 
+  Trophy, Users, MapPin, Clock, Fish, TrendingUp, Activity, 
+  ChevronRight, Target, Crown, Share2, AlertCircle, Timer, 
+  BarChart3, X, PieChart, ChevronDown, ChevronUp, Mic, 
+  Heart, QrCode, ChevronLeft, LayoutList, UserPlus, Trash2, FileText,
+  MoreVertical, Link2, ExternalLink, Flame
+} from "lucide-react";
+
+// Mock implementation of UI components since we're in a single file
+const Button = ({ children, className = "", variant = "primary", size = "md", ...props }) => {
+  const baseStyles = "inline-flex items-center justify-center rounded-xl font-bold transition-all active:scale-95 disabled:opacity-50";
+  const variants = {
+    primary: "bg-orange-600/10 border border-orange-500/50 text-orange-500 hover:bg-orange-600 hover:text-white hover:shadow-[0_0_20px_rgba(249,115,22,0.2)]",
+    secondary: "bg-slate-900/80 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800",
+    ghost: "bg-transparent text-slate-500 hover:text-slate-200 hover:bg-slate-800/50",
+    emerald: "bg-emerald-600/10 border border-emerald-500/50 text-emerald-400 hover:bg-emerald-600 hover:text-white",
+    blue: "bg-blue-600/10 border border-blue-500/50 text-blue-400 hover:bg-blue-600 hover:text-white shadow-[0_0_15px_rgba(37,99,235,0.1)]"
+  };
+  const sizes = {
+    sm: "px-3 py-1.5 text-[11px]",
+    md: "px-5 py-2.5 text-xs",
+    lg: "px-8 py-3.5 text-sm uppercase tracking-wider"
+  };
+  return (
+    <button className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`} {...props}>
+      {children}
+    </button>
+  );
+};
+
+const Card = ({ children, className = "" }) => (
+  <div className={`bg-[#0B1221] border border-slate-800/60 rounded-2xl overflow-hidden shadow-xl ${className}`}>
+    {children}
+  </div>
+);
+
+// --- SUB-COMPONENTS ---
+
+const StatusBadge = ({ status }) => {
+  const configs = {
+    live: {
+      bg: "bg-red-500/10 border-red-500/30 text-red-500",
+      label: "LIVE: PRETEK PREBIEHA",
+      dot: "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]"
+    },
+    registration: {
+      bg: "bg-emerald-500/10 border-emerald-500/30 text-emerald-400",
+      label: "REGISTRÁCIA OTVORENÁ",
+      dot: "bg-emerald-500"
+    },
+    finished: {
+      bg: "bg-slate-800 border-slate-700 text-slate-400",
+      label: "PRETEK UKONČENÝ",
+      dot: "bg-slate-600"
+    }
+  };
+  const config = configs[status] || configs.finished;
+  return (
+    <div className={`flex items-center gap-2 border ${config.bg} px-3 py-1 rounded-full`}>
+      <span className={`relative flex h-2 w-2`}>
+        {status === 'live' && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>}
+        <span className={`relative inline-flex rounded-full h-2 w-2 ${config.dot}`}></span>
+      </span>
+      <span className="text-[10px] font-black uppercase tracking-[0.1em]">{config.label}</span>
+    </div>
+  );
+};
+
+const HorizontalBarChart = ({ data }) => {
+  const max = Math.max(...data.map(d => d.weight), 1);
+  return (
+    <div className="space-y-4">
+      {data.map((d, i) => (
+        <div key={i}>
+          <div className="flex justify-between text-[11px] mb-1.5">
+            <span className="text-slate-300 font-bold">{d.name}</span>
+            <span className="text-orange-500 font-mono font-bold">{d.weight.toFixed(1)} kg</span>
+          </div>
+          <div className="h-2 bg-slate-950 rounded-full overflow-hidden border border-slate-900">
+            <div 
+              className={`h-full transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(0,0,0,0.5)] ${d.color}`} 
+              style={{ width: `${(d.weight / max) * 100}%` }}
+            ></div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// --- MAIN PAGE ---
+
+export default function App() {
+  const [showStats, setShowStats] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const competition = {
+    id: "demo-123",
+    name: "Carp Cup Zemplínska Šírava 2026",
+    location: "Zemplínska Šírava, Paľkov",
+    status: "live",
+    endDate: new Date(Date.now() + 100000000).toISOString(),
+    description: "Najprestížnejší pretek sezóny na východnom pobreží.",
+    imageUrl: "https://images.unsplash.com/photo-1544767331-158282494541?auto=format&fit=crop&w=800&q=80"
+  };
+
+  const sortedLeaderboard = [
+    { rank: 1, name: "CT Michalovce", sector: "A1", fish: 14, weight: 156.4, id: '1' },
+    { rank: 2, name: "Fish Hunters SK", sector: "B4", fish: 11, weight: 124.8, id: '2' },
+    { rank: 3, name: "Carp Marauders", sector: "C2", fish: 9, weight: 102.1, id: '3' },
+    { rank: 4, name: "Liptovskí Vlci", sector: "A2", fish: 7, weight: 88.5, id: '4' },
+    { rank: 5, name: "Team Fox Slovakia", sector: "B1", fish: 6, weight: 72.3, id: '5' },
+  ];
+
+  const liveFeed = [
+    { id: 'c1', team: "CT Michalovce", weight: 14.5, type: "Kapor", time: "Pred 2 minútami", big: true },
+    { id: 'c2', team: "Fish Hunters SK", weight: 6.2, type: "Amur", time: "Pred 12 minútami", big: false },
+    { id: 'c3', team: "Carp Marauders", weight: 4.8, type: "Kapor", time: "Pred 25 minútami", big: false },
+  ];
+
+  const sectorStats = [
+    { name: "Sektor A", weight: 244.9, color: "bg-cyan-500" },
+    { name: "Sektor B", weight: 197.1, color: "bg-purple-500" },
+    { name: "Sektor C", weight: 102.1, color: "bg-emerald-500" },
+  ];
+
+  return (
+    <div className="min-h-screen bg-[#020617] text-slate-200 font-sans pb-24 selection:bg-orange-500/30">
+      
+      {/* 1. ATMOSPHERIC HEADER */}
+      <header className="relative border-b border-slate-800/60 bg-[#0B1221]/50 backdrop-blur-md pt-8 pb-10 overflow-hidden">
+        {/* Ambient background glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-4xl bg-orange-600/5 blur-[120px] pointer-events-none rounded-full" />
+        
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <StatusBadge status={competition.status} />
+                <div className="flex items-center gap-2 text-slate-500 text-[11px] font-bold uppercase tracking-widest">
+                  <Clock size={14} className="text-orange-500" /> Do konca zostáva 1d 14h
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-5">
+                <div className="w-14 h-14 md:w-20 md:h-20 bg-slate-900 border border-slate-800 rounded-2xl p-3 flex items-center justify-center shadow-2xl">
+                  <Trophy size={40} className="text-orange-500" />
+                </div>
+                <div>
+                  <h1 className="text-3xl md:text-5xl font-black text-white tracking-tighter leading-none mb-3">
+                    {competition.name}
+                  </h1>
+                  <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-slate-500 uppercase tracking-widest">
+                    <span className="flex items-center gap-2"><MapPin size={14} className="text-cyan-500" /> {competition.location}</span>
+                    <span className="flex items-center gap-2"><Users size={14} className="text-emerald-500" /> 30 Tímov na vode</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Button variant="secondary" size="md" onClick={() => setIsFavorite(!isFavorite)}>
+                <Heart size={18} className={isFavorite ? "fill-red-500 text-red-500" : ""} />
+              </Button>
+              <Button variant="secondary" size="md">
+                <Share2 size={18} />
+              </Button>
+              <Button variant="blue" size="md">
+                Môj Tím
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* 2. LIVE DASHBOARD CARDS */}
+      <div className="max-w-7xl mx-auto px-6 -mt-6 relative z-20">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { label: "Celková váha", val: "624.5", unit: "kg", icon: Activity, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+            { label: "Najväčšia ryba", val: "22.4", unit: "kg", icon: Crown, color: "text-amber-500", bg: "bg-amber-500/10" },
+            { label: "Počet úlovkov", val: "84", unit: "ks", icon: Fish, color: "text-cyan-500", bg: "bg-cyan-500/10" },
+            { label: "Priemer", val: "7.4", unit: "kg", icon: TrendingUp, color: "text-purple-500", bg: "bg-purple-500/10" },
+          ].map((kpi, i) => (
+            <Card key={i} className="p-5 border-slate-800/80 hover:border-slate-700 transition-all group">
+              <div className="flex justify-between items-start mb-3">
+                <div className={`p-2 rounded-xl ${kpi.bg} ${kpi.color} group-hover:scale-110 transition-transform`}>
+                  <kpi.icon size={20} />
+                </div>
+                <div className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">{kpi.label}</div>
+              </div>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-2xl md:text-3xl font-black text-white tabular-nums">{kpi.val}</span>
+                <span className="text-xs font-bold text-slate-600 uppercase">{kpi.unit}</span>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      <main className="max-w-7xl mx-auto px-6 py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+          
+          {/* LEADERBOARD (8/12) */}
+          <div className="lg:col-span-8 space-y-8">
+            
+            {/* PODIUM - REWORKED VISUAL */}
+            <div className="grid grid-cols-3 gap-3 md:gap-6 items-end pb-4">
+              {/* 2nd place */}
+              <div className="flex flex-col items-center group">
+                <div className="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center font-black text-slate-400 mb-3 border-2 border-slate-700 group-hover:border-slate-500 transition-colors">2</div>
+                <div className="w-full bg-[#0B1221] border border-slate-800 rounded-2xl p-4 text-center space-y-1">
+                  <div className="text-[10px] font-bold text-slate-500 uppercase">Striebro</div>
+                  <div className="font-bold text-slate-200 text-xs md:text-sm truncate px-1">{sortedLeaderboard[1].name}</div>
+                  <div className="text-lg md:text-2xl font-black text-white">{sortedLeaderboard[1].weight}</div>
+                </div>
+              </div>
+
+              {/* 1st place */}
+              <div className="flex flex-col items-center group relative">
+                <div className="absolute -top-10 animate-bounce">
+                  <Crown size={32} className="text-amber-500 drop-shadow-[0_0_15px_rgba(245,158,11,0.5)]" />
+                </div>
+                <div className="w-16 h-16 bg-amber-500/10 rounded-full flex items-center justify-center font-black text-amber-500 mb-3 border-2 border-amber-500/50 shadow-[0_0_20px_rgba(245,158,11,0.2)]">1</div>
+                <div className="w-full bg-slate-900 border-2 border-amber-500/30 rounded-3xl p-6 text-center space-y-1 shadow-2xl relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
+                  <div className="text-[11px] font-black text-amber-500 uppercase tracking-[0.2em] mb-1">Líder preteku</div>
+                  <div className="font-black text-white text-sm md:text-lg tracking-tight truncate">{sortedLeaderboard[0].name}</div>
+                  <div className="text-3xl md:text-5xl font-black text-white tracking-tighter">{sortedLeaderboard[0].weight}</div>
+                  <div className="text-[10px] font-bold text-slate-500 uppercase pt-2">Sektor {sortedLeaderboard[0].sector}</div>
+                </div>
+              </div>
+
+              {/* 3rd place */}
+              <div className="flex flex-col items-center group">
+                <div className="w-12 h-12 bg-orange-900/20 rounded-full flex items-center justify-center font-black text-orange-700 mb-3 border-2 border-orange-800/30 group-hover:border-orange-700/50 transition-colors">3</div>
+                <div className="w-full bg-[#0B1221] border border-slate-800 rounded-2xl p-4 text-center space-y-1">
+                  <div className="text-[10px] font-bold text-slate-500 uppercase">Bronz</div>
+                  <div className="font-bold text-slate-200 text-xs md:text-sm truncate px-1">{sortedLeaderboard[2].name}</div>
+                  <div className="text-lg md:text-2xl font-black text-white">{sortedLeaderboard[2].weight}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* MAIN TABLE */}
+            <Card className="border-slate-800/60 bg-[#0B1221]/80 shadow-2xl">
+              <div className="p-6 border-b border-slate-800/60 flex justify-between items-center bg-slate-900/20">
+                <div className="flex items-center gap-3">
+                   <LayoutList size={18} className="text-slate-600" />
+                   <h3 className="text-sm font-black text-white uppercase tracking-widest">Aktuálne poradie</h3>
+                </div>
+                <span className="text-[10px] font-bold text-slate-500 uppercase">Aktualizované pred 1 min.</span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead className="text-[10px] font-black text-slate-600 uppercase tracking-[0.15em] bg-slate-950/50">
+                    <tr>
+                      <th className="px-6 py-4 w-16">Rank</th>
+                      <th className="px-6 py-4">Tím</th>
+                      <th className="px-6 py-4 text-center">Sektor</th>
+                      <th className="px-6 py-4 text-center">Ryby</th>
+                      <th className="px-6 py-4 text-right">Hmotnosť</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/40">
+                    {sortedLeaderboard.map((team, idx) => (
+                      <tr key={team.id} className="group hover:bg-slate-800/20 transition-all cursor-pointer">
+                        <td className="px-6 py-5">
+                          <span className={`font-mono font-black text-base ${idx === 0 ? 'text-amber-500' : 'text-slate-500'}`}>{team.rank}.</span>
+                        </td>
+                        <td className="px-6 py-5">
+                          <div className="font-bold text-slate-200 group-hover:text-white transition-colors">{team.name}</div>
+                          <div className="text-[10px] font-medium text-slate-600 group-hover:text-slate-400">Posledná ryba: 12.4kg</div>
+                        </td>
+                        <td className="px-6 py-5 text-center text-slate-400 font-bold">{team.sector}</td>
+                        <td className="px-6 py-5 text-center text-slate-500 font-mono">{team.fish}</td>
+                        <td className="px-6 py-5 text-right">
+                          <div className="text-lg font-black text-orange-500 tabular-nums">{team.weight.toFixed(1)} <span className="text-[10px] text-slate-700">kg</span></div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="p-4 bg-slate-950/30 text-center">
+                <button className="text-[11px] font-black text-slate-500 hover:text-orange-500 uppercase tracking-widest transition-colors flex items-center justify-center gap-2 w-full">
+                  Zobraziť všetkých 30 tímov <ChevronDown size={14} />
+                </button>
+              </div>
+            </Card>
+          </div>
+
+          {/* SIDE FEED (4/12) */}
+          <div className="lg:col-span-4 space-y-6">
+            
+            {/* BREAKING NEWS: COMMENTARY */}
+            <div className="bg-blue-600/5 border border-blue-500/20 rounded-3xl p-6 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-16 bg-blue-500/10 blur-[80px] pointer-events-none rounded-full" />
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-4">
+                   <div className="p-1.5 bg-blue-500 rounded-lg text-white shadow-[0_0_15px_rgba(59,130,246,0.5)] animate-pulse">
+                     <Mic size={14} />
+                   </div>
+                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400">Hlas od vody</span>
+                </div>
+                <p className="text-white text-lg font-bold leading-tight mb-6">
+                  "Ryby začali brať hlavne v plytkej vode sektora A. Michalovčania hlásia ďalší záber!"
+                </p>
+                <Button variant="blue" className="w-full" onClick={() => setShowStats(true)}>
+                   Kompletné štatistiky
+                </Button>
+              </div>
+            </div>
+
+            {/* LIVE FEED REWORKED */}
+            <Card className="flex flex-col border-slate-800/60 max-h-[600px]">
+              <div className="p-5 border-b border-slate-800/60 flex items-center justify-between bg-slate-950/50">
+                <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Denník úlovkov</h4>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                  <span className="text-[10px] font-bold text-emerald-500 uppercase">Live</span>
+                </div>
+              </div>
+              <div className="p-4 space-y-5 overflow-y-auto">
+                {liveFeed.map((item) => (
+                  <div key={item.id} className="relative pl-6 group cursor-pointer">
+                    <div className="absolute left-0 top-0 bottom-[-20px] w-px bg-slate-800 group-last:bg-transparent" />
+                    <div className={`absolute left-[-4px] top-1 w-2 h-2 rounded-full border border-[#0B1221] ${item.big ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]' : 'bg-cyan-500'}`} />
+                    
+                    <div className="flex justify-between items-start mb-1">
+                      <span className="text-[11px] font-black text-slate-200 group-hover:text-white">{item.team}</span>
+                      <span className="text-[9px] font-medium text-slate-600">{item.time}</span>
+                    </div>
+                    
+                    <div className={`p-3 rounded-xl border transition-all ${item.big ? 'bg-amber-500/5 border-amber-500/20' : 'bg-slate-950 border-slate-800 group-hover:border-slate-700'}`}>
+                      <div className="flex justify-between items-center">
+                        <span className={`text-[10px] font-bold uppercase tracking-wider ${item.big ? 'text-amber-500' : 'text-slate-500'}`}>
+                          {item.big ? '🔥 PORIADNY KUS' : item.type}
+                        </span>
+                        <span className={`text-sm font-black tabular-nums ${item.big ? 'text-amber-500' : 'text-slate-100'}`}>
+                          {item.weight.toFixed(1)} kg
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="p-3 bg-slate-950/50 border-t border-slate-800/60">
+                 <Button variant="ghost" className="w-full text-[10px] font-black uppercase">Všetky úlovky preteku</Button>
+              </div>
+            </Card>
+
+            {/* SECONDARY TOOLS */}
+            <div className="grid grid-cols-2 gap-3">
+              <button className="flex flex-col gap-2 p-5 rounded-3xl bg-[#0B1221] border border-slate-800 hover:border-slate-600 transition-all group text-left">
+                <MapPin size={20} className="text-cyan-500 group-hover:scale-110 transition-transform" />
+                <span className="text-xs font-black text-white uppercase tracking-wider">Mapa Sektorov</span>
+              </button>
+              <button className="flex flex-col gap-2 p-5 rounded-3xl bg-[#0B1221] border border-slate-800 hover:border-slate-600 transition-all group text-left">
+                <FileText size={20} className="text-purple-500 group-hover:scale-110 transition-transform" />
+                <span className="text-xs font-black text-white uppercase tracking-wider">Pravidlá</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </main>
+
+      {/* 3. STATS MODAL (Simplified logic) */}
+      {showStats && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 backdrop-blur-xl bg-black/80">
+          <Card className="w-full max-w-2xl bg-[#020617] border-slate-800 p-8 relative">
+            <button onClick={() => setShowStats(false)} className="absolute top-6 right-6 p-2 text-slate-500 hover:text-white">
+              <X size={24} />
+            </button>
+            <h2 className="text-2xl font-black text-white mb-8 flex items-center gap-3">
+              <PieChart className="text-orange-500" /> Analýza aktuálneho preteku
+            </h2>
+            <div className="space-y-10">
+              <div>
+                <h3 className="text-xs font-black text-slate-600 uppercase tracking-widest mb-4">Hmotnosť rýb podľa sektorov</h3>
+                <HorizontalBarChart data={sectorStats} />
+              </div>
+              <div className="bg-slate-900/50 p-6 rounded-3xl border border-slate-800">
+                <div className="flex gap-4 items-start">
+                   <Flame className="text-orange-500 shrink-0" />
+                   <div>
+                     <h4 className="text-sm font-bold text-white mb-1">Horúci sektor: Sektor A</h4>
+                     <p className="text-xs text-slate-500">Za posledné 2 hodiny tu bolo nahlásených 6 úlovkov v celkovej váhe 48kg.</p>
+                   </div>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* MOBILE BAR - Floating Bottom Registration CTA */}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-full max-w-xs px-4 md:hidden">
+        <Button variant="primary" size="lg" className="w-full shadow-2xl py-4 bg-orange-600 text-white border-none">
+          Môj Profil Tímu
+        </Button>
+      </div>
+    </div>
+  );
+}
