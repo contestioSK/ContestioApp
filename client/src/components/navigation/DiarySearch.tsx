@@ -152,7 +152,7 @@ export default function DiarySearch({ className = "", isMobile = false, onClose 
                         <Fish className="h-4 w-4 text-cyan-500 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">
-                            {c.fishType} – {parseFloat(c.weight).toFixed(1)} kg
+                            {c.fishType === 'mirror' ? 'Lysec' : c.fishType === 'scaly' ? 'Šupináč' : c.fishType} – {parseFloat(c.weight).toFixed(1)} kg
                           </p>
                           {c.spot && (
                             <p className="text-xs text-muted-foreground truncate">{c.spot}</p>
@@ -271,7 +271,7 @@ export default function DiarySearch({ className = "", isMobile = false, onClose 
                       <Fish className="h-4 w-4 text-cyan-500 flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">
-                          {c.fishType} – {parseFloat(c.weight).toFixed(1)} kg
+                          {c.fishType === 'mirror' ? 'Lysec' : c.fishType === 'scaly' ? 'Šupináč' : c.fishType} – {parseFloat(c.weight).toFixed(1)} kg
                         </p>
                         {c.spot && (
                           <p className="text-xs text-muted-foreground truncate">{c.spot}</p>

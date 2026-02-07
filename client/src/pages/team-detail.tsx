@@ -489,7 +489,7 @@ export default function TeamDetail() {
                       {selectedPhoto.teamName}
                     </DialogTitle>
                     <p id="catch-photo-description" className="text-sm text-muted-foreground mb-2">
-                      Váha: {selectedPhoto.weight} • Typ: {selectedPhoto.fishType}
+                      Váha: {selectedPhoto.weight} • Typ: {selectedPhoto.fishType === 'mirror' ? 'Lysec' : selectedPhoto.fishType === 'scaly' ? 'Šupináč' : selectedPhoto.fishType}
                     </p>
                   </DialogHeader>
                 </div>

@@ -245,7 +245,7 @@ export default function CatchTimeline({ catches, isLoading, competitionId }: Cat
                         {selectedPhoto.weight}
                       </div>
                       <Badge variant="outline" className="text-base px-3 py-1">
-                        {selectedPhoto.fishType}
+                        {selectedPhoto.fishType === 'mirror' ? 'Lysec' : selectedPhoto.fishType === 'scaly' ? 'Šupináč' : selectedPhoto.fishType}
                       </Badge>
                     </div>
                   </DialogHeader>

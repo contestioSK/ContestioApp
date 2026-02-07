@@ -187,7 +187,7 @@ export default function TeamOverviewContent({
                           {parseFloat(String(c.weight)) >= 10 ? <Crown size={14} /> : <Fish size={14} />}
                         </div>
                         <div>
-                          <div className="font-bold text-foreground text-sm">{c.fishType || 'Ryba'}</div>
+                          <div className="font-bold text-foreground text-sm">{c.fishType === 'mirror' ? 'Lysec' : c.fishType === 'scaly' ? 'Šupináč' : (c.fishType || 'Ryba')}</div>
                           <div className="text-[10px] text-muted-foreground flex items-center gap-1">
                             <Clock size={10} />
                             {c.submittedAt ? formatDistanceToNow(new Date(c.submittedAt), { addSuffix: true, locale: sk }) : ''}

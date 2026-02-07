@@ -156,6 +156,14 @@ const SectorTable = ({ sector, leaderboard }: { sector: string; leaderboard: any
 
 // --- HELPER FUNCTIONS ---
 
+function getFishTypeLabel(type: string): string {
+  switch (type) {
+    case 'scaly': return 'Šupináč';
+    case 'mirror': return 'Lysec';
+    default: return type;
+  }
+}
+
 function formatTimeAgo(date: Date | string | null): string {
   if (!date) return '';
   try {
@@ -421,7 +429,7 @@ export default function CompetitionDetail() {
         team: c.team?.name || 'Neznámy tím',
         action: safeWeight(c.weight) >= bigFishThreshold ? 'big_fish' : 'catch',
         weight: safeWeight(c.weight),
-        fish: c.fishType || 'Ryba',
+        fish: getFishTypeLabel(c.fishType) || 'Ryba',
         time: c.submittedAt ? `Pred ${formatTimeAgo(c.submittedAt)}` : '',
         sector: c.team?.sector || '-',
         catchObj: c,
@@ -1739,7 +1747,7 @@ export default function CompetitionDetail() {
                             >
                               {c.team?.name || 'Neznámy tím'}
                             </button>
-                            <div className="text-xs text-muted-foreground">{c.fishType || 'Ryba'} • Sektor {c.team?.sector || '-'}</div>
+                            <div className="text-xs text-muted-foreground">{getFishTypeLabel(c.fishType) || 'Ryba'} • Sektor {c.team?.sector || '-'}</div>
                           </div>
                         </div>
                         <div className="text-right">
@@ -1807,7 +1815,7 @@ export default function CompetitionDetail() {
                       <div className="p-2 bg-cyan-500/10 rounded-lg text-cyan-500"><Fish size={18} /></div>
                       <div>
                         <div className="text-xs text-muted-foreground">Druh ryby</div>
-                        <div className="font-bold text-foreground">{entityModal.catch_.fishType || 'Neuvedené'}</div>
+                        <div className="font-bold text-foreground">{getFishTypeLabel(entityModal.catch_.fishType) || 'Neuvedené'}</div>
                       </div>
                     </div>
                     <div 

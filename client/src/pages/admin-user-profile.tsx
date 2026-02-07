@@ -417,7 +417,7 @@ export default function AdminUserProfile() {
                             </div>
                           )}
                           <div className="flex-1">
-                            <p className="font-medium text-foreground">{catch_.fishType}</p>
+                            <p className="font-medium text-foreground">{catch_.fishType === 'mirror' ? 'Lysec' : catch_.fishType === 'scaly' ? 'Šupináč' : catch_.fishType}</p>
                             <p className="text-sm text-muted-foreground">
                               {catch_.weight} kg
                               {catch_.lengthCm && ` • ${catch_.lengthCm} cm`}
