@@ -1,0 +1,187 @@
+OK, toto je už reálne použiteľná obrazovka. Ale keď sa na to pozriem ako UX/UI dizajnér (a trochu aj ako človek čo musí túto vec udržiavať), tak ti poviem narovinu: UX je silné, kód/architektúra začína byť riziko a pár detailov ti môže robiť bordel v používaní aj výkone.
+
+Nižšie máš najdôležitejšie veci, čo by som opravil v poradí dopadu.
+
+1) Najväčší UX problém: klikateľné vnorené prvky
+
+V Live feede máš celý item klikateľný (otvorí catch) a zároveň je v ňom klikateľný tím button (otvorí team) – to si riešil stopPropagation(). Funguje to, ale UX je stále “minové pole”:
+
+user klikne “tím” → otvorí tím (OK)
+
+user klikne vedľa → otvorí úlovok (OK)
+
+ale na mobile to často trafí zle, lebo tap targety sú tesné a celé to má hover-styling, ktorý na mobile nič nerieši.
+
+Odporúčanie:
+
+sprav v iteme jedno primárne kliknutie (napr. otvor catch)
+
+“tím” daj ako sekundárnu akciu (malý chip vpravo, alebo “…” menu)
+
+alebo naopak: otvor team a detail catch cez “Pozrieť detail”.
+
+Toto je presne typ miesta, kde rastie počet misclickov, keď je feed rýchly.
+
+2) “Môj tím” štatistiky sú pravdepodobne zlé
+
+V sortedLeaderboard si dopočítavaš fish a weight z catches. Ale v My Team overlay používaš userTeam.fishCount a userTeam.totalWeight.
+
+Problém: userTeam je z teams query, kde tie polia možno nie sú aktualizované tak ako leaderboard. Výsledok:
+
+leaderboard ukáže, že tím má napr. 6 rýb / 42 kg
+
+“Môj tím” ukáže 0 / 0 alebo staré čísla
+
+Fix (bez diskusie):
+
+v My Team overlay zobraz to isté, čo má leaderboard:
+
+nájdi team v sortedLeaderboard podľa id a zobraz fish a weight
+
+alebo udržuj agregáciu konzistentne z jedného zdroja.
+
+Toto je UX “trust” bomba: ak to nesedí, user prestáva veriť appke.
+
+3) Dve vrstvy “real-time” refreshu = zbytočný load
+
+Máš:
+
+refetchInterval polling (visibility aware)
+
+a ešte aj useWebSocket() invalidate
+
+Keď ide WS spoľahlivo, polling je často zbytočný a preťažuje backend aj klienta.
+
+Praktický kompromis:
+
+keď je WS pripojený → polling daj na pomalší interval alebo vypni
+
+keď WS nie je pripojený → polling nech beží rýchlejšie
+
+Inak to bude “žerie to batériu” na mobile.
+
+4) Overlay / modal stack je už na hrane
+
+Máš 4–5 typov overlayov:
+
+Stats overlay
+
+Rules overlay
+
+My team overlay
+
+Entity modal (team/catch/list)
+
+Dialog registrácie
+
+To už je slušný “modal hell”.
+
+Riziká:
+
+ESC / back button / klik mimo = nekonzistentné správanie
+
+focus trap & accessibility
+
+scroll lock konflikty
+
+zacyklený návrat (ty riešiš previousView, ale to je krehké)
+
+Odporúčanie:
+
+zjednoť to cez 1 modal shell a vnútri switchuj views
+
+alebo pre entity “team/catch/list” sprav drawer na mobile, modal na desktope
+
+Stats/Rules nech sú samostatné (OK), ale entity veci by mali byť jednotné.
+
+5) Copy / microcopy: je to dobré, ale pár slov je mimo reality
+Status badge
+
+“PRETEK PREBIEHA” OK
+
+“REGISTRÁCIA OTVORENÁ” OK
+
+“PRETEK UKONČENÝ” OK
+
+Teaser “Správy od vody”
+
+Super nápad, ale:
+
+text “Kde a kedy berú” je skvelý hook, už si to zjemnil podnadpisom (top)
+
+len pozor: keď ešte nie sú dáta (0 úlovkov), “Správy od vody” pôsobí hlúpo, lebo tam máš: „Zatiaľ žiadne dáta.“
+
+Lepšie fallbacky:
+
+short: „Čakáme na prvý záber…“
+
+full: „Zatiaľ nepadol žiadny úlovok. Prvé dáta sa objavia hneď po overení úlovku.“
+
+Znie to živšie a nie “systémovo”.
+
+6) Data edge cases: sektorStats a hourlyActivity sa môžu správať divne
+
+sectorStats berie sektory z teams ktoré majú sector, ale leaderboard ukazuje len approved. Keď bude veľa pending tímov so sektorom, sektorStats bude rátať aj ich sektor (ale úlovky sa viažu na approved/pending?).
+
+hourlyActivity používa lokálny čas z new Date(submittedAt). Ak submittedAt je UTC a user je v inom timezone, graf “kedy berú” môže byť posunutý.
+
+Fix:
+
+filtrovať teams na approved aj v sectorStats (ak úlovky uznávaš len approved tímom)
+
+ujasniť timezone (server posiela ISO s timezone?).
+
+7) Kódové veci, ktoré ťa dobehnú (a nie sú maličkosti)
+
+Toto už nie je len “komponent”, toto je mini aplikácia v jednom súbore.
+
+Najväčšie riziká:
+
+obrovský component → ťažké debugovať, dlhé rerendery
+
+veľa inline funkcií a JSX blokov → zvyšuje to šancu regresie
+
+useEffect([user?.id]) používa form bez dependency, ale je to ok len preto, že RHF referencie sú stabilné… krehké.
+
+Odporúčanie (praktické):
+Rozsekať na:
+
+CompetitionHeader
+
+CompetitionCTA
+
+StatsCards
+
+Podium
+
+LeaderboardTable
+
+RightRail (commentary + feed + rules button)
+
+StatsOverlay, RulesOverlay, MyTeamOverlay, EntityModal
+
+A hlavne: entityModal logiku daj do vlastného hooku (useEntityModal()).
+
+8) Rýchly UX audit: čo je fakt výborné
+
+Aby som bol férový:
+
+Mobil/desktop layout je premyslený
+
+“Môj tím” CTA je správne priorizované
+
+Stats overlay s tabmi je skvelý pattern
+
+“Všetky úlovky” + návrat šípkou je správne (mini navigácia v modale)
+
+Zdieľanie + kopírovanie odkazu je UX win
+
+Moja tvrdá priorita (čo sprav najskôr)
+
+Ak máš urobiť iba 3 veci:
+
+Zjednoť štatistiky Môj tím vs leaderboard (jediný zdroj pravdy).
+
+Zjednoť entity modaly (team/catch/list do jedného shellu; znížiš bugy).
+
+Oprav klikacie zóny v live feede (jedno primárne kliknutie + sekundárna akcia).
