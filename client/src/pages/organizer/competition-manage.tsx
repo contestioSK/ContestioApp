@@ -95,26 +95,15 @@ function Stepper({ currentStatus }: { currentStatus: string }) {
   );
 }
 
-function getStartAt(dateISO: string, timeHHMM?: string | null) {
-  const d = new Date(dateISO);
-  if (!timeHHMM) return d;
-  const [hh, mm] = timeHHMM.split(":").map(Number);
-  d.setHours(hh || 0, mm || 0, 0, 0);
-  return d;
-}
-
-function Countdown({ targetDate }: { targetDate: string | Date | number }) {
+function Countdown({ targetDate }: { targetDate: Date | string }) {
   const [timeLeft, setTimeLeft] = useState("");
-  const [finished, setFinished] = useState(false);
   useEffect(() => {
-    setFinished(false);
+    const target = targetDate instanceof Date ? targetDate : new Date(targetDate);
     const update = () => {
       const now = new Date();
-      const target = targetDate instanceof Date ? targetDate : new Date(targetDate);
       const diff = Math.floor((target.getTime() - now.getTime()) / 1000);
       if (diff <= 0) {
         setTimeLeft("Prebieha");
-        setFinished(true);
         return false;
       }
       const d = Math.floor(diff / (3600 * 24));
@@ -129,7 +118,7 @@ function Countdown({ targetDate }: { targetDate: string | Date | number }) {
     }, 1000);
     return () => clearInterval(timer);
   }, [targetDate]);
-  return <span className={`text-2xl font-bold tabular-nums ${finished ? 'text-emerald-400' : 'text-white'}`}>{timeLeft}</span>;
+  return <span className="text-2xl font-bold tabular-nums text-white">{timeLeft}</span>;
 }
 
 export default function CompetitionManage() {
@@ -160,6 +149,7 @@ export default function CompetitionManage() {
   const [showRejectTeamDialog, setShowRejectTeamDialog] = useState(false);
   const [rejectingTeamId, setRejectingTeamId] = useState<string | null>(null);
   const [rejectingTeamName, setRejectingTeamName] = useState("");
+  const [processingTeamId, setProcessingTeamId] = useState<string | null>(null);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(searchString);
@@ -272,12 +262,22 @@ export default function CompetitionManage() {
     mutationFn: async ({ teamId, status }: { teamId: string; status: string }) => {
       return apiRequest('PATCH', `/api/teams/${teamId}/status`, { status });
     },
+    onMutate: ({ teamId }) => {
+      setProcessingTeamId(teamId);
+    },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['/api/competitions', competitionId, 'teams'] });
-      const action = variables.status === 'approved' ? 'schválený' : 'zamietnutý';
-      toast({ title: `Tím ${action}`, description: `Stav tímu bol úspešne zmenený.` });
+      if (variables.status === 'approved') {
+        toast({ title: "Tím schválený", description: "Tím môže nastúpiť do súťaže." });
+      } else {
+        toast({ title: "Tím zamietnutý", description: "Tím bol vyradený z registrácie." });
+      }
       setShowRejectTeamDialog(false);
       setRejectingTeamId(null);
+      setRejectingTeamName("");
+    },
+    onSettled: () => {
+      setProcessingTeamId(null);
     },
     onError: (error: any) => {
       toast({ title: "Chyba", description: error.message || "Nepodarilo sa zmeniť stav tímu.", variant: "destructive" });
@@ -556,7 +556,7 @@ export default function CompetitionManage() {
               <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-2">
                 {competition.status === 'live' ? 'Do konca' : 'Čas do štartu'}
               </p>
-              <Countdown targetDate={competition.status === 'live' ? competition.endDate : getStartAt(competition.startDate)} />
+              <Countdown targetDate={competition.status === 'live' ? competition.endDate : competition.startDate} />
               <span className="text-[11px] text-slate-600 mt-1 block">
                 {format(new Date(competition.startDate), "d.M.yyyy", { locale: sk })}
               </span>
@@ -675,15 +675,16 @@ export default function CompetitionManage() {
                             size="icon"
                             className="h-8 w-8 bg-emerald-600/10 hover:bg-emerald-600 text-emerald-500 hover:text-white transition-all border border-emerald-500/20"
                             onClick={(e) => { e.stopPropagation(); updateTeamStatusMutation.mutate({ teamId: team.id, status: 'approved' }); }}
-                            disabled={updateTeamStatusMutation.isPending}
+                            disabled={processingTeamId === team.id}
                           >
-                            <Check size={14} />
+                            {processingTeamId === team.id ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
                           </Button>
                           <Button
                             size="icon"
                             variant="ghost"
                             className="h-8 w-8 text-slate-600 hover:text-red-400 hover:bg-red-400/10"
                             onClick={(e) => { e.stopPropagation(); setRejectingTeamId(team.id); setRejectingTeamName(team.name); setShowRejectTeamDialog(true); }}
+                            disabled={processingTeamId === team.id}
                           >
                             <X size={14} />
                           </Button>
@@ -1072,7 +1073,10 @@ export default function CompetitionManage() {
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={showRejectTeamDialog} onOpenChange={setShowRejectTeamDialog}>
+      <AlertDialog open={showRejectTeamDialog} onOpenChange={(open) => {
+        setShowRejectTeamDialog(open);
+        if (!open) { setRejectingTeamId(null); setRejectingTeamName(""); }
+      }}>
         <AlertDialogContent className="bg-[#0B1221] border-slate-800 text-slate-200">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-white">Zamietnuť tím?</AlertDialogTitle>
