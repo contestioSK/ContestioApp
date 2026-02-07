@@ -2490,11 +2490,11 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
           // Get competition for email
           const existingCompetition = await storage.getCompetition(competitionId);
           
-          // Update competition status and payment
+          // Update competition status and payment - set to 'registration' so organizer can invite teams
           const updatedCompetition = await storage.updateCompetition(competitionId, {
             planTier: planTier as any,
             paymentStatus: 'paid',
-            status: 'ready'
+            status: 'registration'
           });
           
           // Broadcast update
@@ -2665,13 +2665,13 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
 
       // Validate status transitions using Zod
       const statusSchema = z.object({
-        status: z.enum(['draft', 'ready', 'live', 'finished'])
+        status: z.enum(['draft', 'ready', 'registration', 'live', 'finished'])
       });
       
       const validationResult = statusSchema.safeParse(req.body);
       if (!validationResult.success) {
         return res.status(400).json({ 
-          message: "Invalid status. Must be: registration, live, or finished",
+          message: "Invalid status. Must be: draft, ready, registration, live, or finished",
           errors: validationResult.error.errors 
         });
       }
