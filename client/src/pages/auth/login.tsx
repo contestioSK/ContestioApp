@@ -75,7 +75,10 @@ export default function LoginPage() {
         description: "Vitajte späť v Contestio.",
       });
       
-      window.location.href = "/diary";
+      const returnTo = localStorage.getItem('contestio_returnTo');
+      localStorage.removeItem('contestio_returnTo');
+      const safeReturn = returnTo && returnTo.startsWith('/') && !returnTo.startsWith('//') ? returnTo : null;
+      window.location.href = safeReturn || "/diary";
     },
     onError: (error: Error) => {
       console.error("Login error:", error);

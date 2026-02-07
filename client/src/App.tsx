@@ -83,6 +83,15 @@ function Router() {
   useEffect(() => {
     if (isLoading || contextLoading) return;
     if (!user) return;
+
+    if (location === "/") {
+      const returnTo = localStorage.getItem('contestio_returnTo');
+      if (returnTo && returnTo.startsWith('/') && !returnTo.startsWith('//')) {
+        localStorage.removeItem('contestio_returnTo');
+        setLocation(returnTo);
+        return;
+      }
+    }
     
     const exemptRoutes = ["/onboarding", "/auth/login", "/auth/register", "/auth/verify-email", "/auth/reset-password", "/auth/forgot-password", "/reset-password", "/pricing", "/about-us", "/faq", "/contact", "/terms", "/privacy", "/register", "/select-role"];
     const exemptPrefixes = ["/competition/", "/team/", "/categories/"];
