@@ -170,8 +170,18 @@ function getRemainingTime(endDate: Date | string | null): string {
     if (diff <= 0) return 'Ukončené';
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    if (days > 0) return `${days} ${days === 1 ? 'deň' : days < 5 ? 'dni' : 'dní'}`;
-    return `${hours} ${hours === 1 ? 'hodina' : hours < 5 ? 'hodiny' : 'hodín'}`;
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    if (days > 0) {
+      const dayStr = `${days} ${days === 1 ? 'deň' : days < 5 ? 'dni' : 'dní'}`;
+      if (hours > 0) return `${dayStr} ${hours}h`;
+      return dayStr;
+    }
+    if (hours > 0) {
+      const hourStr = `${hours} ${hours === 1 ? 'hodina' : hours < 5 ? 'hodiny' : 'hodín'}`;
+      if (minutes > 0) return `${hourStr} ${minutes}min`;
+      return hourStr;
+    }
+    return `${minutes} ${minutes === 1 ? 'minúta' : minutes < 5 ? 'minúty' : 'minút'}`;
   } catch {
     return '';
   }
@@ -284,8 +294,9 @@ export default function CompetitionDetail() {
     enabled: !!id,
   });
 
-  const isLive = competition?.status === 'live';
-  const isEnded = competition?.status === 'ended';
+  const status = competition?.status;
+  const isLive = status === 'live';
+  const isEnded = ['ended', 'completed', 'finished'].includes(status || '');
   const livePollingInterval = useVisibilityAwarePolling(POLLING_INTERVALS.COMPETITION_LIVE);
 
   const { data: teams, isLoading: teamsLoading } = useQuery<(Team & { members?: any[] })[]>({
@@ -335,19 +346,23 @@ export default function CompetitionDetail() {
 
   const sortedLeaderboard = useMemo(() => {
     if (!teams) return [];
+    const statsMap: Record<string, { weight: number; fish: number }> = {};
+    if (catches) {
+      for (const c of catches) {
+        const tid = c.teamId || '';
+        if (!statsMap[tid]) statsMap[tid] = { weight: 0, fish: 0 };
+        statsMap[tid].weight += parseFloat(String(c.weight)) || 0;
+        statsMap[tid].fish += 1;
+      }
+    }
     return teams
       .filter(t => t.status === 'approved')
-      .map(team => {
-        const teamCatches = catches?.filter(c => c.teamId === team.id) || [];
-        const weight = teamCatches.reduce((sum, c) => sum + (parseFloat(String(c.weight)) || 0), 0);
-        const fish = teamCatches.length;
-        return {
-          ...team,
-          weight,
-          fish,
-          sector: team.sector || '-',
-        };
-      })
+      .map(team => ({
+        ...team,
+        weight: statsMap[team.id]?.weight || 0,
+        fish: statsMap[team.id]?.fish || 0,
+        sector: team.sector || '-',
+      }))
       .sort((a, b) => b.weight - a.weight)
       .map((t, i) => ({ ...t, rank: i + 1 }));
   }, [teams, catches]);
@@ -459,6 +474,15 @@ export default function CompetitionDetail() {
   }, [competition?.status, sectorStats, hourlyActivity]);
 
   const isRegistration = competition?.status === 'registration';
+
+  const openRegistration = () => {
+    if (!isAuthenticated) {
+      toast({ title: "Najprv sa prihlás", description: "Registrácia tímu je dostupná len pre prihlásených." });
+      return;
+    }
+    setIsRegistrationDialogOpen(true);
+  };
+
   const visibleLeaderboard = leaderboardExpanded ? sortedLeaderboard : sortedLeaderboard.slice(0, 10);
   const uniqueSectors = Array.from(new Set(sortedLeaderboard.map(t => t.sector).filter(s => s !== '-')));
 
@@ -713,11 +737,11 @@ export default function CompetitionDetail() {
               {/* Registration Button - show only during registration when user doesn't have a team */}
               {isRegistration && !userTeam && (
                 <button 
-                  onClick={() => setIsRegistrationDialogOpen(true)}
+                  onClick={openRegistration}
                   className="bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-emerald-900/20 flex items-center gap-2 transition-all hover:scale-105"
                 >
                   <UserPlus size={20} />
-                  <span>Registrovať tím</span>
+                  <span>{isAuthenticated ? 'Registrovať tím' : 'Prihlásiť sa a registrovať'}</span>
                 </button>
               )}
             </div>
@@ -740,11 +764,11 @@ export default function CompetitionDetail() {
             )}
             {isRegistration && !userTeam && (
               <button 
-                onClick={() => setIsRegistrationDialogOpen(true)}
+                onClick={openRegistration}
                 className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl font-bold shadow-lg shadow-emerald-900/20 flex items-center justify-center gap-2 transition-all"
               >
                 <UserPlus size={18} />
-                <span>Registrovať tím</span>
+                <span>{isAuthenticated ? 'Registrovať tím' : 'Prihlásiť sa'}</span>
               </button>
             )}
           </div>
@@ -837,44 +861,44 @@ export default function CompetitionDetail() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Email (voliteľné)</FormLabel>
-                                      <FormControl>
-                                        <Input type="email" placeholder="clen@email.com" {...field} />
-                                      </FormControl>
-                                      <FormMessage />
-                                    </FormItem>
-                                  )}
-                                />
-                              </div>
-                              
-                              <FormField
-                                control={form.control}
-                                name={`members.${index}.phone`}
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Telefón (voliteľné)</FormLabel>
-                                    <FormControl>
-                                      <Input placeholder="Telefónne číslo" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                            </div>
-                          ))}
-                        </div>
+                            <FormControl>
+                              <Input type="email" placeholder="clen@email.com" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <FormField
+                      control={form.control}
+                      name={`members.${index}.phone`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Telefón (voliteľné)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Telefónne číslo" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                ))}
+              </div>
 
-                        <div className="bg-muted/20 p-4 rounded-lg">
-                          <h4 className="font-medium mb-2">Informácie o registrácii</h4>
-                          <div className="space-y-1 text-sm text-muted-foreground">
-                            {competition.registrationFee && (
-                              <p>Štartovné na tím: ${parseFloat(competition.registrationFee)}</p>
-                            )}
-                            {competition.maxTeams && (
-                              <p>Maximálny počet tímov: {competition.maxTeams}</p>
-                            )}
-                            <p>Registrácia čaká na schválenie organizátorom</p>
-                          </div>
-                        </div>
+              <div className="bg-muted/20 p-4 rounded-lg">
+                <h4 className="font-medium mb-2">Informácie o registrácii</h4>
+                <div className="space-y-1 text-sm text-muted-foreground">
+                  {competition.registrationFee && (
+                    <p>Štartovné na tím: {parseFloat(competition.registrationFee)}€</p>
+                  )}
+                  {competition.maxTeams && (
+                    <p>Maximálny počet tímov: {competition.maxTeams}</p>
+                  )}
+                  <p>Registrácia čaká na schválenie organizátorom</p>
+                </div>
+              </div>
 
               <div className="flex justify-end space-x-2">
                 <Button type="button" variant="outline" onClick={() => setIsRegistrationDialogOpen(false)}>
@@ -931,10 +955,10 @@ export default function CompetitionDetail() {
               <h2 className="text-3xl font-bold text-foreground mb-2">Registrácia Otvorená</h2>
               <p className="text-muted-foreground mb-6">{competition.description}</p>
               <button 
-                onClick={() => setIsRegistrationDialogOpen(true)}
+                onClick={openRegistration}
                 className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-4 rounded-xl font-bold text-lg shadow-xl shadow-emerald-900/20 transition-all"
               >
-                Vyplniť Prihlášku
+                {isAuthenticated ? 'Vyplniť Prihlášku' : 'Prihlásiť sa a registrovať'}
               </button>
             </div>
           </div>
@@ -1115,6 +1139,13 @@ export default function CompetitionDetail() {
                       {sortedLeaderboard.length === 0 && (
                         <tr>
                           <td colSpan={5} className="px-3 md:px-6 py-8 text-center text-muted-foreground">
+                            Žiadne registrované tímy
+                          </td>
+                        </tr>
+                      )}
+                      {sortedLeaderboard.length > 0 && liveStats.totalFish === 0 && (
+                        <tr>
+                          <td colSpan={5} className="px-3 md:px-6 py-4 text-center text-muted-foreground text-sm">
                             Zatiaľ nebol zaznamenaný žiadny úlovok
                           </td>
                         </tr>
@@ -1229,18 +1260,11 @@ export default function CompetitionDetail() {
                 </div>
               </div>
 
-              {/* MAP & RULES BUTTONS */}
-              <div className="grid grid-cols-2 gap-3">
-                <button className="p-4 rounded-xl bg-card border border-border hover:border-cyan-500/30 hover:bg-muted/20 transition-all text-left group">
-                  <div className="p-2 bg-cyan-500/10 rounded-lg w-fit mb-2 group-hover:scale-110 transition-transform">
-                    <MapPin size={18} strokeWidth={1.75} className="text-cyan-500" />
-                  </div>
-                  <div className="text-sm font-bold text-foreground">Rozmiestnenie tímov</div>
-                  <div className="text-[10px] text-muted-foreground">Mapa sektorov</div>
-                </button>
+              {/* RULES BUTTON */}
+              <div>
                 <button 
                   onClick={() => setShowRulesOverlay(true)}
-                  className="p-4 rounded-xl bg-card border border-border hover:border-cyan-500/30 hover:bg-muted/20 transition-all text-left group"
+                  className="w-full p-4 rounded-xl bg-card border border-border hover:border-cyan-500/30 hover:bg-muted/20 transition-all text-left group"
                 >
                   <div className="p-2 bg-cyan-500/10 rounded-lg w-fit mb-2 group-hover:scale-110 transition-transform">
                     <FileText size={18} strokeWidth={1.75} className="text-cyan-500" />
