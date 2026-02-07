@@ -1168,11 +1168,12 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
 
         const outputBasePath = path.join(userDir, `profile-${Date.now()}`);
         
-        // Process image with ImageService for optimization
         imageMetadata = await ImageService.processImage(
           req.file.path,
           outputBasePath,
-          `profile-${Date.now()}`
+          `profile-${Date.now()}`,
+          undefined, undefined, undefined,
+          `user_avatars/${userId}`
         );
         
         // Use the best WebP variant for profile images, fall back to JPEG
@@ -1849,7 +1850,9 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
           imageMetadata = await ImageService.processImage(
             req.file.path,
             outputBasePath,
-            `logo-${Date.now()}`
+            `logo-${Date.now()}`,
+            undefined, undefined, undefined,
+            `competition_photos/${req.params.id}`
           );
           
           // Use the best WebP variant for the database URL, fall back to JPEG
@@ -3256,10 +3259,27 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     { name: 'memberPhoto_5', maxCount: 1 },
   ]), async (req: any, res) => {
     try {
-      // Handle team photo upload
       let teamPhotoUrl = null;
       if (req.files && req.files.teamPhoto && req.files.teamPhoto[0]) {
-        teamPhotoUrl = `/uploads/${req.files.teamPhoto[0].filename}`;
+        try {
+          const file = req.files.teamPhoto[0];
+          const photoId = `team-${Date.now()}`;
+          const imageMetadata = await ImageService.processImage(
+            file.path,
+            path.join('uploads', 'teams', photoId),
+            photoId,
+            undefined, undefined, undefined,
+            `competition_photos/${req.params.id}/teams`
+          );
+          const bestVariant = ImageService.getBestVariantForWidth(imageMetadata.variants, 400, 'webp') ||
+                              ImageService.getBestVariantForWidth(imageMetadata.variants, 400, 'jpeg') ||
+                              imageMetadata.variants[0];
+          teamPhotoUrl = bestVariant?.url || `/uploads/${file.filename}`;
+          await ImageService.cleanupTempFile(file.path);
+        } catch (error) {
+          console.error("Error processing team photo:", error);
+          teamPhotoUrl = `/uploads/${req.files.teamPhoto[0].filename}`;
+        }
       }
 
       const teamData = insertTeamSchema.parse({
@@ -3270,15 +3290,31 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       
       const team = await storage.createTeam(teamData);
       
-      // Add team members
       if (req.body.members && Array.isArray(req.body.members)) {
         for (let index = 0; index < req.body.members.length; index++) {
           const memberData = req.body.members[index];
           
-          // Handle member photo upload
           let memberPhotoUrl = null;
           if (req.files && req.files[`memberPhoto_${index}`] && req.files[`memberPhoto_${index}`][0]) {
-            memberPhotoUrl = `/uploads/${req.files[`memberPhoto_${index}`][0].filename}`;
+            try {
+              const file = req.files[`memberPhoto_${index}`][0];
+              const photoId = `member-${index}-${Date.now()}`;
+              const imageMetadata = await ImageService.processImage(
+                file.path,
+                path.join('uploads', 'members', photoId),
+                photoId,
+                undefined, undefined, undefined,
+                `competition_photos/${req.params.id}/members`
+              );
+              const bestVariant = ImageService.getBestVariantForWidth(imageMetadata.variants, 200, 'webp') ||
+                                  ImageService.getBestVariantForWidth(imageMetadata.variants, 200, 'jpeg') ||
+                                  imageMetadata.variants[0];
+              memberPhotoUrl = bestVariant?.url || `/uploads/${file.filename}`;
+              await ImageService.cleanupTempFile(file.path);
+            } catch (error) {
+              console.error("Error processing member photo:", error);
+              memberPhotoUrl = `/uploads/${req.files[`memberPhoto_${index}`][0].filename}`;
+            }
           }
           
           const member = insertTeamMemberSchema.parse({
@@ -3756,8 +3792,24 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
 
       let photoUrl = null;
       if (req.file) {
-        // In production, you'd upload to S3 or similar
-        photoUrl = `/uploads/${req.file.filename}`;
+        try {
+          const photoId = `catch-${Date.now()}`;
+          const imageMetadata = await ImageService.processImage(
+            req.file.path,
+            path.join('uploads', 'catches', photoId),
+            photoId,
+            undefined, undefined, undefined,
+            `competition_photos/${req.body.competitionId}/catches`
+          );
+          const bestVariant = ImageService.getBestVariantForWidth(imageMetadata.variants, 800, 'webp') ||
+                              ImageService.getBestVariantForWidth(imageMetadata.variants, 800, 'jpeg') ||
+                              imageMetadata.variants[0];
+          photoUrl = bestVariant?.url || `/uploads/${req.file.filename}`;
+          await ImageService.cleanupTempFile(req.file.path);
+        } catch (error) {
+          console.error("Error processing catch photo:", error);
+          photoUrl = `/uploads/${req.file.filename}`;
+        }
       }
 
       // Use server-side referee assignment for sector (security measure)
@@ -3931,7 +3983,24 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         return res.status(400).json({ message: "Žiaden súbor nebol nahratý" });
       }
 
-      const logoUrl = `/uploads/${req.file.filename}`;
+      let logoUrl = `/uploads/${req.file.filename}`;
+      try {
+        const photoId = `sponsor-logo-${Date.now()}`;
+        const imageMetadata = await ImageService.processImage(
+          req.file.path,
+          path.join('uploads', 'sponsors', photoId),
+          photoId,
+          undefined, undefined, undefined,
+          'sponsor_logos'
+        );
+        const bestVariant = ImageService.getBestVariantForWidth(imageMetadata.variants, 400, 'webp') ||
+                            ImageService.getBestVariantForWidth(imageMetadata.variants, 400, 'jpeg') ||
+                            imageMetadata.variants[0];
+        logoUrl = bestVariant?.url || logoUrl;
+        await ImageService.cleanupTempFile(req.file.path);
+      } catch (error) {
+        console.error("Error processing sponsor logo:", error);
+      }
       res.json({ logoUrl });
     } catch (error) {
       console.error("Error uploading sponsor logo:", error);
@@ -5287,10 +5356,26 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
   // Competition registration routes
   app.post('/api/competition-registrations', upload.single('competitionLogo'), async (req: any, res) => {
     try {
-      // Handle competition logo upload
       let imageUrl = null;
       if (req.file) {
-        imageUrl = `/uploads/${req.file.filename}`;
+        try {
+          const photoId = `comp-logo-${Date.now()}`;
+          const imageMetadata = await ImageService.processImage(
+            req.file.path,
+            path.join('uploads', 'competition-logos', photoId),
+            photoId,
+            undefined, undefined, undefined,
+            'competition_logos'
+          );
+          const bestVariant = ImageService.getBestVariantForWidth(imageMetadata.variants, 640, 'webp') ||
+                              ImageService.getBestVariantForWidth(imageMetadata.variants, 640, 'jpeg') ||
+                              imageMetadata.variants[0];
+          imageUrl = bestVariant?.url || `/uploads/${req.file.filename}`;
+          await ImageService.cleanupTempFile(req.file.path);
+        } catch (error) {
+          console.error("Error processing competition logo:", error);
+          imageUrl = `/uploads/${req.file.filename}`;
+        }
       }
 
       // Parse complex fields
@@ -6968,7 +7053,25 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         return res.status(400).json({ message: "No image file uploaded" });
       }
 
-      const coverImageUrl = `/uploads/${req.file.filename}`;
+      const userId = getUserId(req);
+      let coverImageUrl = `/uploads/${req.file.filename}`;
+      try {
+        const photoId = `trip-cover-${Date.now()}`;
+        const imageMetadata = await ImageService.processImage(
+          req.file.path,
+          path.join('uploads', 'trip-covers', photoId),
+          photoId,
+          undefined, undefined, undefined,
+          `diary_photos/${userId}/trip_covers`
+        );
+        const bestVariant = ImageService.getBestVariantForWidth(imageMetadata.variants, 800, 'webp') ||
+                            ImageService.getBestVariantForWidth(imageMetadata.variants, 800, 'jpeg') ||
+                            imageMetadata.variants[0];
+        coverImageUrl = bestVariant?.url || coverImageUrl;
+        await ImageService.cleanupTempFile(req.file.path);
+      } catch (error) {
+        console.error("Error processing trip cover image:", error);
+      }
       res.json({ coverImageUrl });
     } catch (error) {
       console.error("Error uploading trip cover image:", error);
@@ -7514,13 +7617,30 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         });
       }
       
-      // Process uploaded photos
       const photos: Array<{ id: string; url: string; status: 'ready' }> = [];
       if (req.files && Array.isArray(req.files)) {
-        for (const file of req.files) {
+        for (const file of req.files as any[]) {
+          const photoId = `photo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          let photoUrl = `/uploads/${file.filename}`;
+          try {
+            const imageMetadata = await ImageService.processImage(
+              file.path,
+              path.join('uploads', 'historical', photoId),
+              photoId,
+              undefined, undefined, undefined,
+              `diary_photos/${userId}/historical`
+            );
+            const bestVariant = ImageService.getBestVariantForWidth(imageMetadata.variants, 800, 'webp') ||
+                                ImageService.getBestVariantForWidth(imageMetadata.variants, 800, 'jpeg') ||
+                                imageMetadata.variants[0];
+            photoUrl = bestVariant?.url || photoUrl;
+            await ImageService.cleanupTempFile(file.path);
+          } catch (error) {
+            console.error("Error processing historical catch photo:", error);
+          }
           photos.push({
-            id: `photo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            url: `/uploads/${file.filename}`,
+            id: photoId,
+            url: photoUrl,
             status: 'ready' as const
           });
         }
