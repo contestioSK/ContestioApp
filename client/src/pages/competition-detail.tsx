@@ -248,6 +248,15 @@ export default function CompetitionDetail() {
     },
   });
 
+  useEffect(() => {
+    if (!user) return;
+    const members = form.getValues("members");
+    if (members?.length) {
+      form.setValue("members.0.name", `${user.firstName || ""} ${user.lastName || ""}`.trim());
+      form.setValue("members.0.email", user.email || "");
+    }
+  }, [user]);
+
   // Team registration mutation
   const registerTeamMutation = useMutation({
     mutationFn: async (data: TeamRegistrationForm) => {
@@ -438,7 +447,8 @@ export default function CompetitionDetail() {
         return 'Pretek nám ešte nezačal.';
       }
 
-      if (!sectorStats.length && !hourlyActivity.length) {
+      const hasAnyCatches = (liveStats.totalFish ?? 0) > 0;
+      if (!hasAnyCatches) {
         return type === 'short' ? 'Zatiaľ žiadne dáta.' : 'Čakáme na prvé úlovky...';
       }
 
@@ -471,13 +481,15 @@ export default function CompetitionDetail() {
       
       return fullComment || 'Pretek práve prebieha, sledujte aktuálne výsledky.';
     };
-  }, [competition?.status, sectorStats, hourlyActivity]);
+  }, [competition?.status, sectorStats, hourlyActivity, liveStats.totalFish]);
 
   const isRegistration = competition?.status === 'registration';
 
   const openRegistration = () => {
     if (!isAuthenticated) {
       toast({ title: "Najprv sa prihlás", description: "Registrácia tímu je dostupná len pre prihlásených." });
+      localStorage.setItem('contestio_returnTo', `/competitions/${id}`);
+      navigate('/auth/login');
       return;
     }
     setIsRegistrationDialogOpen(true);
@@ -768,7 +780,7 @@ export default function CompetitionDetail() {
                 className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl font-bold shadow-lg shadow-emerald-900/20 flex items-center justify-center gap-2 transition-all"
               >
                 <UserPlus size={18} />
-                <span>{isAuthenticated ? 'Registrovať tím' : 'Prihlásiť sa'}</span>
+                <span>{isAuthenticated ? 'Registrovať tím' : 'Prihlásiť sa a registrovať'}</span>
               </button>
             )}
           </div>
@@ -1136,10 +1148,17 @@ export default function CompetitionDetail() {
                           <td className="px-3 md:px-6 py-3 md:py-4 text-right font-mono font-medium text-[#F97316] text-base">{team.weight.toFixed(1)}</td>
                         </tr>
                       ))}
-                      {sortedLeaderboard.length === 0 && (
+                      {sortedLeaderboard.length === 0 && (teams?.length ?? 0) === 0 && (
                         <tr>
                           <td colSpan={5} className="px-3 md:px-6 py-8 text-center text-muted-foreground">
-                            Žiadne registrované tímy
+                            Zatiaľ nie sú prihlásené žiadne tímy
+                          </td>
+                        </tr>
+                      )}
+                      {sortedLeaderboard.length === 0 && (teams?.filter(t => t.status === 'pending')?.length ?? 0) > 0 && (
+                        <tr>
+                          <td colSpan={5} className="px-3 md:px-6 py-8 text-center text-muted-foreground">
+                            Tímy čakajú na schválenie organizátorom
                           </td>
                         </tr>
                       )}
@@ -1206,8 +1225,8 @@ export default function CompetitionDetail() {
                     >
                       Všetky úlovky
                     </button>
-                    <span className="flex items-center gap-1.5 text-[10px] text-emerald-500 font-bold uppercase bg-emerald-500/10 px-2 py-1 rounded-full">
-                      Online
+                    <span className={`flex items-center gap-1.5 text-[10px] font-bold uppercase px-2 py-1 rounded-full ${isLive ? 'text-emerald-500 bg-emerald-500/10' : 'text-slate-400 bg-slate-500/10'}`}>
+                      {isLive ? 'Live' : 'Archív'}
                     </span>
                   </div>
                 </div>
@@ -1411,9 +1430,9 @@ export default function CompetitionDetail() {
               )}
 
               {/* TAB 3: ANALYTICS */}
-              {statsTab === 'analytics' && (
+              {statsTab === 'analytics' && id && (
                 <div className="space-y-6">
-                  <StatsDashboard competitionId={id!} />
+                  <StatsDashboard competitionId={id} />
                 </div>
               )}
 
