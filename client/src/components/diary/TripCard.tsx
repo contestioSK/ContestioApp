@@ -142,7 +142,7 @@ export function TripCard({ trip, catchCount = 0, biggestCatch, onClick, isLocked
               <span className="font-mono font-medium text-[#F97316] text-lg" data-testid={`trip-biggest-${trip.id}`}>
                 {biggestCatch.weight} kg
               </span>
-              <span className="text-sm text-slate-300">{biggestCatch.fishType}</span>
+              <span className="text-sm text-slate-300">{biggestCatch.fishType === 'mirror' ? 'Lysec' : biggestCatch.fishType === 'scaly' ? 'Šupináč' : biggestCatch.fishType}</span>
             </div>
           )}
         </div>

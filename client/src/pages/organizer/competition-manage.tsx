@@ -729,7 +729,7 @@ export default function CompetitionManage() {
                       {catches.slice(0, 5).map(c => (
                         <div key={c.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-slate-900/50 border border-slate-800/30">
                           <div className="min-w-0">
-                            <span className="text-sm text-slate-200 font-medium">{c.fishType || 'Neznámy druh'}</span>
+                            <span className="text-sm text-slate-200 font-medium">{c.fishType === 'mirror' ? 'Lysec' : c.fishType === 'scaly' ? 'Šupináč' : (c.fishType || 'Neznámy druh')}</span>
                           </div>
                           <span className="text-sm font-mono font-medium text-orange-500">{c.weight ? `${c.weight}g` : '-'}</span>
                         </div>

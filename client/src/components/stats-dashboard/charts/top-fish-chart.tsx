@@ -56,7 +56,7 @@ export function TopFishChart({ data }: TopFishChartProps) {
                       return item ? (
                         <div className="space-y-1">
                           <div className="font-medium">{item.teamName}</div>
-                          <div className="text-sm text-muted-foreground">{item.fishType}</div>
+                          <div className="text-sm text-muted-foreground">{item.fishType === 'mirror' ? 'Lysec' : item.fishType === 'scaly' ? 'Šupináč' : item.fishType}</div>
                           <div className="text-xs text-muted-foreground">
                             {new Date(item.catchTime).toLocaleString('sk-SK')}
                           </div>
