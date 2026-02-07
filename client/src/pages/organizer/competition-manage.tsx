@@ -95,24 +95,41 @@ function Stepper({ currentStatus }: { currentStatus: string }) {
   );
 }
 
-function Countdown({ targetDate }: { targetDate: string | Date }) {
+function getStartAt(dateISO: string, timeHHMM?: string | null) {
+  const d = new Date(dateISO);
+  if (!timeHHMM) return d;
+  const [hh, mm] = timeHHMM.split(":").map(Number);
+  d.setHours(hh || 0, mm || 0, 0, 0);
+  return d;
+}
+
+function Countdown({ targetDate }: { targetDate: string | Date | number }) {
   const [timeLeft, setTimeLeft] = useState("");
+  const [finished, setFinished] = useState(false);
   useEffect(() => {
+    setFinished(false);
     const update = () => {
       const now = new Date();
-      const target = new Date(targetDate);
+      const target = targetDate instanceof Date ? targetDate : new Date(targetDate);
       const diff = Math.floor((target.getTime() - now.getTime()) / 1000);
-      if (diff <= 0) { setTimeLeft("0d 0h 0m"); return; }
+      if (diff <= 0) {
+        setTimeLeft("Prebieha");
+        setFinished(true);
+        return false;
+      }
       const d = Math.floor(diff / (3600 * 24));
       const h = Math.floor((diff % (3600 * 24)) / 3600);
       const m = Math.floor((diff % 3600) / 60);
       setTimeLeft(`${d}d ${h}h ${m}m`);
+      return true;
     };
-    update();
-    const timer = setInterval(update, 1000);
+    if (!update()) return;
+    const timer = setInterval(() => {
+      if (!update()) clearInterval(timer);
+    }, 1000);
     return () => clearInterval(timer);
   }, [targetDate]);
-  return <span className="text-2xl font-bold text-white tabular-nums">{timeLeft}</span>;
+  return <span className={`text-2xl font-bold tabular-nums ${finished ? 'text-emerald-400' : 'text-white'}`}>{timeLeft}</span>;
 }
 
 export default function CompetitionManage() {
@@ -140,6 +157,9 @@ export default function CompetitionManage() {
   const [teamsFilter, setTeamsFilter] = useState<'all' | 'pending'>('all');
   const [teamsSearch, setTeamsSearch] = useState("");
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [showRejectTeamDialog, setShowRejectTeamDialog] = useState(false);
+  const [rejectingTeamId, setRejectingTeamId] = useState<string | null>(null);
+  const [rejectingTeamName, setRejectingTeamName] = useState("");
 
   useEffect(() => {
     const urlParams = new URLSearchParams(searchString);
@@ -245,6 +265,22 @@ export default function CompetitionManage() {
     },
     onError: (error: any) => {
       toast({ title: "Chyba", description: error.message || "Nepodarilo sa vytvoriť oznam.", variant: "destructive" });
+    },
+  });
+
+  const updateTeamStatusMutation = useMutation({
+    mutationFn: async ({ teamId, status }: { teamId: string; status: string }) => {
+      return apiRequest('PATCH', `/api/teams/${teamId}/status`, { status });
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/competitions', competitionId, 'teams'] });
+      const action = variables.status === 'approved' ? 'schválený' : 'zamietnutý';
+      toast({ title: `Tím ${action}`, description: `Stav tímu bol úspešne zmenený.` });
+      setShowRejectTeamDialog(false);
+      setRejectingTeamId(null);
+    },
+    onError: (error: any) => {
+      toast({ title: "Chyba", description: error.message || "Nepodarilo sa zmeniť stav tímu.", variant: "destructive" });
     },
   });
 
@@ -415,7 +451,11 @@ export default function CompetitionManage() {
 
   const actionState = getActionState();
   const ActionIcon = actionState?.Icon;
-  const inviteMessage = `Ahojte, spúšťame registráciu na ${competition.name}. Prihlásiť sa môžete tu: ${window.location.origin}/competition/${competition.id}`;
+  const locationLine = competition.location ? `\n📍 ${competition.location}` : '';
+  const dateLine = `\n📅 ${format(new Date(competition.startDate), "d. MMMM yyyy", { locale: sk })}`;
+  const inviteMessage = competition.status === 'live' || competition.status === 'finished'
+    ? `${competition.name}${locationLine}${dateLine}\nVýsledky: ${window.location.origin}/competition/${competition.id}`
+    : `Ahojte! Registrácia na ${competition.name} je otvorená.${locationLine}${dateLine}\nPrihlásenie: ${window.location.origin}/competition/${competition.id}`;
 
   return (
     <div className="min-h-screen bg-[#020617] text-slate-200 font-sans pb-20">
@@ -516,7 +556,7 @@ export default function CompetitionManage() {
               <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-2">
                 {competition.status === 'live' ? 'Do konca' : 'Čas do štartu'}
               </p>
-              <Countdown targetDate={competition.status === 'live' ? competition.endDate : competition.startDate} />
+              <Countdown targetDate={competition.status === 'live' ? competition.endDate : getStartAt(competition.startDate)} />
               <span className="text-[11px] text-slate-600 mt-1 block">
                 {format(new Date(competition.startDate), "d.M.yyyy", { locale: sk })}
               </span>
@@ -631,14 +671,22 @@ export default function CompetitionManage() {
                       </Button>
                       {team.status === 'pending' && (
                         <div className="flex gap-1 sm:gap-2">
-                          <Button size="icon" className="h-8 w-8 bg-emerald-600/10 hover:bg-emerald-600 text-emerald-500 hover:text-white transition-all border border-emerald-500/20">
+                          <Button
+                            size="icon"
+                            className="h-8 w-8 bg-emerald-600/10 hover:bg-emerald-600 text-emerald-500 hover:text-white transition-all border border-emerald-500/20"
+                            onClick={(e) => { e.stopPropagation(); updateTeamStatusMutation.mutate({ teamId: team.id, status: 'approved' }); }}
+                            disabled={updateTeamStatusMutation.isPending}
+                          >
                             <Check size={14} />
                           </Button>
-                          <AlertDialog>
-                            <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-600 hover:text-red-400 hover:bg-red-400/10" asChild>
-                              <span><X size={14} /></span>
-                            </Button>
-                          </AlertDialog>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8 text-slate-600 hover:text-red-400 hover:bg-red-400/10"
+                            onClick={(e) => { e.stopPropagation(); setRejectingTeamId(team.id); setRejectingTeamName(team.name); setShowRejectTeamDialog(true); }}
+                          >
+                            <X size={14} />
+                          </Button>
                         </div>
                       )}
                     </div>
@@ -1023,6 +1071,26 @@ export default function CompetitionManage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={showRejectTeamDialog} onOpenChange={setShowRejectTeamDialog}>
+        <AlertDialogContent className="bg-[#0B1221] border-slate-800 text-slate-200">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">Zamietnuť tím?</AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-400">
+              Tím "{rejectingTeamName}" bude zamietnutý a nebude sa môcť zúčastniť súťaže. Túto akciu je možné vrátiť späť schválením tímu.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-transparent border-slate-700 text-slate-300 hover:bg-slate-800">Zrušiť</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => { if (rejectingTeamId) updateTeamStatusMutation.mutate({ teamId: rejectingTeamId, status: 'rejected' }); }}
+              className="bg-red-600 hover:bg-red-700 text-white border-none"
+            >
+              <X className="w-4 h-4 mr-1" /> Zamietnuť
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
