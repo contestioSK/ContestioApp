@@ -53,6 +53,7 @@ export function getSideCompetitionLabel(id: string): string {
     "first-fish-over-20kg": "Prvá ryba nad 20 kg",
     "first-fish-over-25kg": "Prvá ryba nad 25 kg",
     // Wizard competition codes
+    "firstOver15": "Prvá ryba nad 15 kg",
     "firstOver20": "Prvá ryba nad 20 kg",
     "firstOver25": "Prvá ryba nad 25 kg",
     "firstOver30": "Prvá ryba nad 30 kg",
@@ -60,6 +61,11 @@ export function getSideCompetitionLabel(id: string): string {
     "biggestScaly": "Najväčší šupináč",
     "biggestMirror": "Najväčší lysec",
     "dailyBigFish": "Najväčšia ryba dňa",
+    "firstCatch": "Prvý úlovok",
+    "lastCatch": "Posledný úlovok",
+    "mostCatches": "Najviac úlovkov",
+    "best3": "Priemer 3 najťažších",
+    "best5": "Priemer 5 najťažších",
   };
   
   return sideCompetitionLabels[id] || id;
