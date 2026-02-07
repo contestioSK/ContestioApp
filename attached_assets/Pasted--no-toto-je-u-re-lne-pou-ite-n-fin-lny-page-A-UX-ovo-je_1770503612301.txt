@@ -1,0 +1,79 @@
+Áno — toto je už reálne použiteľný finálny page. A UX-ovo je to veľmi slušné. Ale dám ti tvrdý review, aby si to nasadil bez skrytých mín.
+
+Top veci, ktoré sú fakt dobré
+
+Hierarchia (header → stats → grid → súpiska) drží a číta sa rýchlo.
+
+Grid úlovkov je správny formát pre verejnosť (emočný dôkaz, nie tabuľka).
+
+Modal má „trophy moment“ – váha + typ + dátum, to je presne čo ľudia chcú ukazovať.
+
+Sorting úlovkov je správne (najnovšie hore).
+
+Problémy, ktoré by som nenechal tak (nie sú kozmetika)
+1) Kritický bug v modale: používaš photoUrl, ale v gride renderuješ photoUrl a “no photo” fallback — OK.
+
+Lenže v modale máš:
+
+{selectedPhoto && selectedPhoto.photoUrl && ( <img src={selectedPhoto.photoUrl} ... /> )}
+
+
+Ak bude úlovok bez fotky, modal sa otvorí, ale bude prázdny (iba overlay a close). To je UX fail.
+
+Fix: v modale sprav fallback ako v gride:
+
+ak photoUrl nie je → zobraz “Bez fotky” placeholder a text.
+
+2) aria-label v CatchGridItem je zavádzajúci
+
+Máš:
+
+aria-label={`Zobraziť detail úlovku: ${data.weight} kg`}
+
+
+Ak je data.weight string, môže to byť “21.50” (OK), ale ak príde null/undefined (reálne sa stane pri bordeli v DB), budeš mať “detail úlovku: undefined kg”.
+
+Fix: bezpečný label:
+
+Number(data.weight || 0).toFixed(2) alebo podmienka.
+
+3) sortedCatches a dátumy: fallback || 0 je tichý klam
+new Date(b.submittedAt || 0)
+
+
+To ti pre nevalidné dátumy hodí 1970 a ešte to ticho presortuje. Keď sa v DB objaví bordel, výsledok bude “random”.
+
+Fix (lepší):
+
+filtruj úlovky s validným submittedAt a tie bez dátumu daj na koniec.
+
+4) Kontrast a čitateľnosť: “text-foreground/80” pri menách v súpiske
+
+Na niektorých témach (dark/light) to môže byť slabé. Použil by som radšej:
+
+text-foreground a sekundárny text nech je tlmenejší.
+
+5) Status tímu v headeri – verejnosť to nezaujíma
+
+Je to ok, že tam je, ale:
+
+pre verejnosť je to šum
+
+pre admina dôležité
+
+Odporúčanie: podmieniť zobrazenie podľa roly alebo aspoň spraviť “approved” nenápadný a “pending/rejected” výrazný.
+
+Najväčšia UX príležitosť (ak chceš page posunúť level vyššie)
+
+Do gridu úlovkov by som dal ešte 1 mikro-info:
+
+čas už máš
+
+chýba “kde” (sektor) síce v rohu je, ale je to len text
+
+Stačí drobnosť: sektor ako badge s lepším kontrastom, nech je to okamžite čitateľné.
+
+Verdikt
+
+Áno, je to OK na nasadenie.
+Ale modal fallback + dátumové triedenie by som opravil ešte predtým, lebo to sú veci, ktoré ti budú robiť hanbu hneď, ako sa objavia reálne dáta.
