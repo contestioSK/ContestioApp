@@ -77,7 +77,6 @@ export default function CompetitionSetup() {
   const [isSaving, setIsSaving] = useState(false);
 
   const urlParams = new URLSearchParams(window.location.search);
-  const isDemoMode = id === 'demo';
   const urlPlan = urlParams.get('plan') as PlanTier | null;
   const validUrlPlan = urlPlan && ['basic', 'pro', 'premium', 'enterprise'].includes(urlPlan) ? urlPlan : null;
 
@@ -109,7 +108,7 @@ export default function CompetitionSetup() {
 
   const { data: registration, isLoading } = useQuery<CompetitionRegistration>({
     queryKey: ['/api/competition-registrations', id],
-    enabled: !!id && !isDemoMode,
+    enabled: !!id,
   });
 
   const selectedPlan = (validUrlPlan || cachedPlan || registration?.selectedPlan || 'basic') as PlanTier;
@@ -238,15 +237,6 @@ export default function CompetitionSetup() {
       return;
     }
 
-    if (isDemoMode) {
-      toast({
-        title: "Demo ukážka dokončená",
-        description: "Toto bola len ukážka wizardu. Pre registráciu skutočnej súťaže vyber balík na stránke cenníka.",
-      });
-      setLocation("/pricing");
-      return;
-    }
-
     setIsSaving(true);
     try {
       const formData = basicsForm.getValues();
@@ -303,7 +293,21 @@ export default function CompetitionSetup() {
     }
   };
 
-  if (isLoading && !isDemoMode) {
+  if (!id || (!registration && !isLoading)) {
+    return (
+      <div className="min-h-screen bg-[#020617] flex items-center justify-center p-4">
+        <div className="bg-[#0B1221] border border-slate-800 rounded-2xl p-8 max-w-md w-full text-center">
+          <h2 className="text-xl font-bold text-white mb-2">Súťaž nenájdená</h2>
+          <p className="text-slate-400 mb-6">Táto súťaž neexistuje alebo bol použitý neplatný odkaz.</p>
+          <Button onClick={() => setLocation("/")} className="bg-orange-500 hover:bg-orange-600 text-white font-bold w-full h-12 rounded-xl">
+            Späť na hlavnú stránku
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-[#020617] flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
@@ -338,14 +342,6 @@ export default function CompetitionSetup() {
             </span>
           </div>
         </div>
-
-        {isDemoMode && (
-          <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl">
-            <p className="text-sm text-amber-400 font-medium">
-              Demo režim - zmeny sa neuložia.
-            </p>
-          </div>
-        )}
 
         <StepIndicator currentStep={currentStep} steps={STEPS} />
 

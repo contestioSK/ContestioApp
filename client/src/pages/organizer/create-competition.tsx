@@ -133,11 +133,17 @@ export default function CreateCompetition() {
     const params = new URLSearchParams(searchString);
     return params.get('id');
   }, [searchString]);
+
+  const urlPlan = useMemo(() => {
+    const params = new URLSearchParams(searchString);
+    const p = params.get('plan');
+    return p && ['basic', 'pro', 'premium'].includes(p) ? p : null;
+  }, [searchString]);
   
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(urlPlan ? 2 : 1);
   const [competitionId, setCompetitionId] = useState<string | null>(editId);
   const competitionIdRef = useRef<string | null>(editId);
-  const [selectedPlan, setSelectedPlan] = useState<string>('pro');
+  const [selectedPlan, setSelectedPlan] = useState<string>(urlPlan || 'pro');
   const [hasSectors, setHasSectors] = useState(false);
   const [sectorPlaces, setSectorPlaces] = useState<Array<{ sectorName: string; places: string[] }>>([]);
   const [sideCompetitions, setSideCompetitions] = useState<string[]>([]);
