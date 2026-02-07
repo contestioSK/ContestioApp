@@ -461,7 +461,7 @@ export default function CompetitionDetail() {
 
       const hasAnyCatches = (liveStats.totalFish ?? 0) > 0;
       if (!hasAnyCatches) {
-        return type === 'short' ? 'Zatiaľ žiadne dáta.' : 'Čakáme na prvé úlovky...';
+        return type === 'short' ? 'Čakáme na prvý záber…' : 'Zatiaľ nepadol žiadny úlovok. Prvé dáta sa objavia hneď po overení úlovku.';
       }
 
       const peakHour = hourlyActivity.reduce((max, h) => h.val > max.val ? h : max, { hour: '', val: 0 });
@@ -1283,17 +1283,15 @@ export default function CompetitionDetail() {
                   {liveFeed.map((item) => (
                     <div 
                       key={item.id} 
-                      className="relative pl-4 cursor-pointer hover:bg-muted/20 -mx-2 px-2 py-1 rounded-lg transition-colors"
-                      onClick={() => setEntityModal({ view: 'catch', team: null, catch_: item.catchObj, previousView: null })}
+                      className="relative pl-4"
                     >
                       <div className="absolute left-0 top-3 bottom-[-24px] w-[2px] bg-border last:hidden"></div>
                       <div className={`absolute left-[-3px] top-3 w-2 h-2 rounded-full border border-card ${item.action === 'big_fish' ? 'bg-amber-500' : 'bg-cyan-500'}`}></div>
                       <div>
-                        <div className="flex justify-between items-start mb-1">
+                        <div className="flex justify-between items-center mb-1">
                           <button 
                             className="px-2 py-1 rounded-full bg-muted/40 hover:bg-muted text-xs font-bold text-foreground truncate max-w-[160px] transition-colors text-left"
-                            onClick={(e) => {
-                              e.stopPropagation();
+                            onClick={() => {
                               const fullTeam = teams?.find(t => t.id === item.catchObj.teamId);
                               if (fullTeam) {
                                 setEntityModal({ view: 'team', team: fullTeam, catch_: null, previousView: null });
@@ -1304,25 +1302,30 @@ export default function CompetitionDetail() {
                           </button>
                           <span className="text-[10px] text-muted-foreground font-mono">{item.time}</span>
                         </div>
-                        <div className="flex items-center gap-2 bg-muted/30 p-2 rounded-lg border border-border">
-                          {item.action === 'big_fish' ? (
-                            <div className="flex items-center gap-2 w-full">
-                              <Crown size={14} className="text-amber-500 shrink-0" />
-                              <span className="text-sm text-amber-500 font-bold">Padla veľká ryba! <span className="text-foreground font-black ml-1">{item.weight.toFixed(1)} kg</span></span>
-                            </div>
-                          ) : (
-                            <div className="text-sm text-muted-foreground w-full flex justify-between items-center">
-                              <span>{item.fish}</span>
-                              <span className="text-foreground font-black">{item.weight.toFixed(1)} kg</span>
-                            </div>
-                          )}
-                        </div>
+                        <button
+                          className="w-full text-left"
+                          onClick={() => setEntityModal({ view: 'catch', team: null, catch_: item.catchObj, previousView: null })}
+                        >
+                          <div className="flex items-center gap-2 bg-muted/30 p-2 rounded-lg border border-border hover:bg-muted/50 transition-colors cursor-pointer">
+                            {item.action === 'big_fish' ? (
+                              <div className="flex items-center gap-2 w-full">
+                                <Crown size={14} className="text-amber-500 shrink-0" />
+                                <span className="text-sm text-amber-500 font-bold">Padla veľká ryba! <span className="text-foreground font-black ml-1">{item.weight.toFixed(1)} kg</span></span>
+                              </div>
+                            ) : (
+                              <div className="text-sm text-muted-foreground w-full flex justify-between items-center">
+                                <span>{item.fish}</span>
+                                <span className="text-foreground font-black">{item.weight.toFixed(1)} kg</span>
+                              </div>
+                            )}
+                          </div>
+                        </button>
                       </div>
                     </div>
                   ))}
                   {liveFeed.length === 0 && (
                     <div className="text-center text-muted-foreground py-8">
-                      Zatiaľ bez úlovkov
+                      Čakáme na prvý záber…
                     </div>
                   )}
                 </div>
@@ -1349,7 +1352,12 @@ export default function CompetitionDetail() {
 
       {/* --- STATS OVERLAY (MODAL) WITH TABS --- */}
       {showStatsOverlay && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8"
+          onKeyDown={(e) => e.key === 'Escape' && setShowStatsOverlay(false)}
+          tabIndex={-1}
+          ref={(el) => el?.focus()}
+        >
           <div 
             className="absolute inset-0 bg-background/90 backdrop-blur-md"
             onClick={() => setShowStatsOverlay(false)}
@@ -1492,7 +1500,12 @@ export default function CompetitionDetail() {
 
       {/* --- RULES OVERLAY (MODAL) --- */}
       {showRulesOverlay && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8"
+          onKeyDown={(e) => e.key === 'Escape' && setShowRulesOverlay(false)}
+          tabIndex={-1}
+          ref={(el) => el?.focus()}
+        >
           <div 
             className="absolute inset-0 bg-background/90 backdrop-blur-md"
             onClick={() => setShowRulesOverlay(false)}
@@ -1537,7 +1550,12 @@ export default function CompetitionDetail() {
 
       {/* --- MY TEAM OVERLAY (MODAL) --- */}
       {showMyTeamOverlay && userTeam && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8"
+          onKeyDown={(e) => e.key === 'Escape' && setShowMyTeamOverlay(false)}
+          tabIndex={-1}
+          ref={(el) => el?.focus()}
+        >
           <div 
             className="absolute inset-0 bg-background/90 backdrop-blur-md"
             onClick={() => setShowMyTeamOverlay(false)}
@@ -1578,19 +1596,26 @@ export default function CompetitionDetail() {
             {/* Modal Content */}
             <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-background space-y-6">
               
-              {/* Team Stats */}
-              {userTeam.status === 'approved' && (isLive || isEnded) && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-card border border-border rounded-xl p-4 text-center">
-                    <div className="text-2xl font-black text-foreground">{userTeam.fishCount || 0}</div>
-                    <div className="text-xs text-muted-foreground">Úlovkov</div>
+              {/* Team Stats - from leaderboard (single source of truth) */}
+              {userTeam.status === 'approved' && (isLive || isEnded) && (() => {
+                const lb = sortedLeaderboard.find(t => t.id === userTeam.id);
+                return (
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="bg-card border border-border rounded-xl p-4 text-center">
+                      <div className="text-2xl font-black text-foreground">{lb?.fish ?? 0}</div>
+                      <div className="text-xs text-muted-foreground">Úlovkov</div>
+                    </div>
+                    <div className="bg-card border border-border rounded-xl p-4 text-center">
+                      <div className="text-2xl font-black text-foreground">{(lb?.weight ?? 0).toFixed(1)} kg</div>
+                      <div className="text-xs text-muted-foreground">Celková váha</div>
+                    </div>
+                    <div className="bg-card border border-border rounded-xl p-4 text-center">
+                      <div className="text-2xl font-black text-[#F97316]">{lb?.rank ? `#${lb.rank}` : '-'}</div>
+                      <div className="text-xs text-muted-foreground">Poradie</div>
+                    </div>
                   </div>
-                  <div className="bg-card border border-border rounded-xl p-4 text-center">
-                    <div className="text-2xl font-black text-foreground">{parseFloat(String(userTeam.totalWeight || 0)).toFixed(2)} kg</div>
-                    <div className="text-xs text-muted-foreground">Celková váha</div>
-                  </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* Team Members */}
               <div>
@@ -1632,7 +1657,16 @@ export default function CompetitionDetail() {
 
       {/* --- UNIFIED ENTITY MODAL --- */}
       {entityModal.view && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8"
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              setEntityModal({ view: null, team: null, catch_: null, previousView: null });
+            }
+          }}
+          tabIndex={-1}
+          ref={(el) => el?.focus()}
+        >
           <div 
             className="absolute inset-0 bg-background/90 backdrop-blur-md" 
             onClick={() => setEntityModal({ view: null, team: null, catch_: null, previousView: null })} 
@@ -1696,7 +1730,7 @@ export default function CompetitionDetail() {
                   ))}
                   {allCatchesSorted.length === 0 && (
                     <div className="text-center py-12 text-muted-foreground">
-                      Zatiaľ bez úlovkov
+                      Čakáme na prvý záber…
                     </div>
                   )}
                 </div>
