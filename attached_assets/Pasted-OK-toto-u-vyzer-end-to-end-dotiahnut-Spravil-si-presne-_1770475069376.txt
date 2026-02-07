@@ -1,0 +1,110 @@
+OK — toto už vyzerá end-to-end dotiahnuté. Spravil si presne tie dva kľúčové kroky:
+
+neprepisuješ kapitána, 2) returnTo + openReg funguje a ešte aj čistí URL. ✅
+
+Teraz ti poviem, čo by som ešte upratal, lebo sú tam 3 technické riziká a 2 UX drobnosti, ktoré časom urobia bordel.
+
+1) useForm defaultValues s user je pasca (a ty ju tam stále máš)
+
+Toto je nenápadné, ale dôležité: defaultValues sa berú len pri inicializácii formu.
+Ty tam síce dávaš user?.firstName..., ale keď user ešte nie je načítaný, defaulty budú prázdne. Potom to opravuješ effectom (čo je OK), ale…
+
+Problém: po form.reset() v onSuccess sa ti form resetne na pôvodné defaultValues, ktoré môžu byť prázdne (ak sa user načítal neskôr). A tvoj useEffect([user?.id]) sa už nespustí, lebo user.id sa nezmení.
+
+➡️ Výsledok: po úspešnej registrácii otvoríš dialóg znova a kapitán môže byť prázdny.
+
+Fix (najlepší): reset s explicitnými hodnotami
+
+V onSuccess namiesto form.reset():
+
+form.reset({
+  name: "",
+  description: "",
+  members: [
+    {
+      name: `${user?.firstName || ""} ${user?.lastName || ""}`.trim(),
+      role: "captain",
+      email: user?.email || "",
+      phone: "",
+    },
+  ],
+});
+
+
+Tým pádom máš deterministiku a nespoliehaš sa na “defaultValues moment v čase”.
+
+2) openReg effect sa môže spustiť ešte pred tým, než je “ready” userTeam
+
+Teraz máš:
+
+if (openReg === "1" && isAuthenticated) setIsRegistrationDialogOpen(true)
+
+
+Lenže isAuthenticated môže byť true skôr než dobehnú teams → userTeam.
+A ty následne aj tak v UI ukazuješ “Registrovať tím” len keď !userTeam, ale modal sa otvorí aj keď už tím existuje (len ešte neprišiel z API).
+
+➡️ To spôsobí blikanie / zbytočný modal moment.
+
+Fix: otvor registráciu až keď vieš, či userTeam existuje
+useEffect(() => {
+  const url = new URL(window.location.href);
+  const shouldOpen = url.searchParams.get("openReg") === "1";
+
+  if (!shouldOpen) return;
+  if (!isAuthenticated) return;
+  if (teamsLoading) return;      // počkaj na userTeam rozhodnutie
+  if (userTeam) {                // už má tím → neotváraj
+    url.searchParams.delete("openReg");
+    window.history.replaceState({}, "", url.toString());
+    return;
+  }
+
+  setIsRegistrationDialogOpen(true);
+  url.searchParams.delete("openReg");
+  window.history.replaceState({}, "", url.toString());
+}, [isAuthenticated, teamsLoading, userTeam]);
+
+
+Toto je “clean”.
+
+3) parseInt("06:00") síce funguje, ale je to špinavé a krehké
+
+V getCommentary:
+
+const hourNum = parseInt(peakHour.hour);
+
+
+parseInt("06:00") dá 6, ale je to implicitné správanie. Stačí zmeniť formát na 6:00 alebo 06.00 a už si v riti.
+
+Fix: ukladaj si hodinu ako číslo (alebo to rozsekaj)
+
+Najjednoduchšie:
+
+const hourNum = Number((peakHour.hour || "0").split(":")[0]);
+
+4) UX: registrácia dialóg – chýba “kapitán = role” v UI
+
+Schema má role, ale v UI rolu nikde nezobrazuješ ani nemeníš. Pre člena ok, ale pre kapitána by som dal aspoň “badge” aby user chápal, prečo prvý riadok je špeciálny.
+
+Minimálna UX drobnosť: vedľa “Kapitán tímu” chip:
+
+“Kapitán” (ikonka Crown alebo Users)
+
+a “Tento člen komunikuje s organizátorom” (helper text)
+
+5) UX: Live Feed – tím name je stále príliš “link-like” a ľahko sa netrafí
+
+Toto som ti písal už minule: ten button na názov tímu je na mobile tenký target.
+Sprav z toho pill:
+
+<button className="px-2 py-1 rounded-full bg-muted/40 hover:bg-muted text-xs font-bold ...">
+  {item.team}
+</button>
+
+
+Je to maličkosť, ale brutálne to zníži omyly.
+
+Verdikt (pravda bez cukru)
+
+Toto je už takmer produkčné.
+Najväčšia reálna chyba, ktorá ti ostala, je reset formu po úspechu (bod 1). To ti urobí “random” prázdneho kapitána a budeš to debugovať zbytočne dlho.
