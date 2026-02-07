@@ -27,6 +27,10 @@ export default function ProtectedRoute({ children, roles, redirectTo }: Protecte
   // If user is not authenticated, redirect or show landing page
   if (!user) {
     if (redirectTo) {
+      const currentPath = window.location.pathname + window.location.search;
+      if (currentPath !== '/' && currentPath !== redirectTo) {
+        localStorage.setItem('contestio_returnTo', currentPath);
+      }
       return <Redirect to={redirectTo} />;
     }
     return <Landing />;
