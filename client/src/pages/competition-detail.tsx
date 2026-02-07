@@ -419,6 +419,10 @@ export default function CompetitionDetail() {
 
   const getCommentary = useMemo(() => {
     return (type: 'short' | 'full') => {
+      if (competition?.status === 'registration' || competition?.status === 'setup') {
+        return 'Pretek nám ešte nezačal.';
+      }
+
       if (!sectorStats.length && !hourlyActivity.length) {
         return type === 'short' ? 'Zatiaľ žiadne dáta.' : 'Čakáme na prvé úlovky...';
       }
@@ -452,7 +456,7 @@ export default function CompetitionDetail() {
       
       return fullComment || 'Pretek práve prebieha, sledujte aktuálne výsledky.';
     };
-  }, [sectorStats, hourlyActivity]);
+  }, [competition?.status, sectorStats, hourlyActivity]);
 
   const isRegistration = competition?.status === 'registration';
   const visibleLeaderboard = leaderboardExpanded ? sortedLeaderboard : sortedLeaderboard.slice(0, 10);
