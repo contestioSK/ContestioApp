@@ -140,6 +140,33 @@
   }
 }
 
+/* Crown bounce animation for podium winner */
+@keyframes crown-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+.animate-crown-bounce {
+  animation: crown-bounce 2s ease-in-out infinite;
+}
+
+/* Orange glow effect for header */
+.header-glow {
+  box-shadow: 0 4px 40px -8px rgba(249, 115, 22, 0.15), 0 0 80px -20px rgba(249, 115, 22, 0.08);
+}
+
+/* Blue glow card effect */
+.blue-glow-card {
+  box-shadow: 0 0 30px -5px rgba(59, 130, 246, 0.15);
+}
+.blue-glow-card:hover {
+  box-shadow: 0 0 40px -5px rgba(59, 130, 246, 0.25);
+}
+
+/* Amber glow for winner card */
+.amber-glow {
+  box-shadow: 0 0 40px -8px rgba(245, 158, 11, 0.2);
+}
+
 /* Live pulse animation for real-time indicators */
 .live-pulse {
   animation: pulse 2s infinite;
