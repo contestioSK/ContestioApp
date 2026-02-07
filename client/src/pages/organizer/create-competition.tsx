@@ -9,46 +9,38 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { getSideCompetitionLabel } from "@/lib/utils";
 import OrganizerLayout from "@/components/OrganizerLayout";
+import { StepIndicator, PrizeInput, LogoUpload, SectorGrid, SideCompetitionsSection } from "@/components/competition-form-shared";
+import type { StepDef } from "@/components/competition-form-shared";
 import { 
   ArrowLeft, 
   ArrowRight, 
   Check, 
   Loader2, 
-  Plus, 
-  Trash2,
-  X,
   FileText,
   MapPin,
   Trophy,
   Settings,
   Save,
-  Calendar,
   Info,
   CreditCard,
   Star,
   Crown,
   Zap,
   Lock,
-  Medal,
-  Flag,
-  BarChart3,
   Gift,
   Phone,
   Mail,
   Banknote,
   Users,
-  Eye,
-  EyeOff,
   ChevronRight
 } from "lucide-react";
 import { DateTimePicker } from "@/components/ui/datetime-picker";
 import { z } from "zod";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 
 const PLANS = [
   {
@@ -87,7 +79,7 @@ const PLANS = [
   },
 ];
 
-const STEPS = [
+const STEPS: StepDef[] = [
   { id: 1, title: "Balík", icon: CreditCard, description: "Vyber si plán" },
   { id: 2, title: "Základy", icon: FileText, description: "Názov, miesto a dátumy" },
   { id: 3, title: "Pravidlá", icon: Settings, description: "Bodovanie a nastavenia" },
@@ -131,59 +123,6 @@ const fullSchema = step1Schema.merge(step2Schema).refine((data) => {
 
 type FormData = z.infer<typeof fullSchema>;
 
-const StepIndicator = ({ currentStep }: { currentStep: number }) => (
-  <div className="flex items-center justify-between mb-8 relative max-w-3xl mx-auto px-2 mt-8">
-    <div className="absolute left-0 right-0 top-[20px] h-0.5 bg-slate-800 -z-10" />
-    <motion.div
-      className="absolute left-0 top-[20px] h-0.5 bg-orange-500 -z-10"
-      initial={{ width: "0%" }}
-      animate={{ width: `${STEPS.length > 1 ? ((currentStep - 1) / (STEPS.length - 1)) * 100 : 0}%` }}
-      transition={{ duration: 0.5, ease: "easeInOut" }}
-    />
-    {STEPS.map((step) => {
-      const isActive = currentStep === step.id;
-      const isCompleted = currentStep > step.id;
-      return (
-        <div key={step.id} className="flex flex-col items-center gap-3 relative">
-          <motion.div
-            initial={false}
-            animate={{
-              scale: isActive ? 1.1 : 1,
-              backgroundColor: isActive ? "#F97316" : isCompleted ? "#10B981" : "#0F172A",
-              borderColor: isActive ? "#F97316" : isCompleted ? "#10B981" : "#334155"
-            }}
-            className={`w-10 h-10 rounded-xl flex items-center justify-center border-2 shadow-lg z-10 transition-colors duration-300 ${isActive ? 'shadow-orange-500/30' : ''}`}
-          >
-            {isCompleted ? <Check size={20} className="text-white" /> : <step.icon size={20} className={isActive || isCompleted ? "text-white" : "text-slate-500"} />}
-          </motion.div>
-          <div className="absolute top-12 w-20 text-center hidden md:block">
-            <span className={`text-[9px] uppercase font-black tracking-widest block mb-0.5 transition-colors duration-300 ${isActive ? 'text-white' : 'text-slate-500'}`}>
-              {step.title}
-            </span>
-          </div>
-        </div>
-      );
-    })}
-  </div>
-);
-
-const PrizeInput = ({ rank, value, onChange, placeholder }: { rank: string, value: string, onChange: (v: string) => void, placeholder: string }) => (
-  <div className="relative group">
-    <div className={`absolute -left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black border-2 z-10 shadow-lg transform group-hover:scale-110 transition-transform
-      ${rank === '1' ? 'bg-yellow-500 border-yellow-400 text-black shadow-yellow-500/20' :
-        rank === '2' ? 'bg-slate-300 border-slate-200 text-black shadow-slate-500/20' :
-        'bg-orange-700 border-orange-600 text-white shadow-orange-900/20'}`}>
-      {rank}
-    </div>
-    <Input
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="pl-8 bg-slate-950 border-slate-800 focus:border-orange-500 text-white placeholder:text-slate-600 h-12 rounded-xl transition-all hover:border-slate-700"
-      placeholder={placeholder}
-    />
-  </div>
-);
-
 export default function CreateCompetition() {
   const { user, isLoading: authLoading } = useAuth();
   const [, setLocation] = useLocation();
@@ -203,6 +142,8 @@ export default function CreateCompetition() {
   const [sectorPlaces, setSectorPlaces] = useState<Array<{ sectorName: string; places: string[] }>>([]);
   const [sideCompetitions, setSideCompetitions] = useState<string[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [competitionLogo, setCompetitionLogo] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
   
   const currentPlanLimits = useMemo(() => {
     return PLANS.find(p => p.id === selectedPlan) || PLANS[1];
@@ -296,6 +237,21 @@ export default function CreateCompetition() {
     }
   }, [hasSectors]);
 
+  const handleLogoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setCompetitionLogo(file);
+      const reader = new FileReader();
+      reader.onload = (ev) => setLogoPreview(ev.target?.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeLogo = () => {
+    setCompetitionLogo(null);
+    setLogoPreview(null);
+  };
+
   const createMutation = useMutation({
     mutationFn: async (data: FormData) => {
       const response = await apiRequest('POST', '/api/competitions', {
@@ -372,11 +328,7 @@ export default function CreateCompetition() {
 
   const handleNext = async () => {
     if (currentStep > 2 && !competitionIdRef.current) {
-      toast({
-        title: "Chyba",
-        description: "Najprv vytvor súťaž v kroku 2",
-        variant: "destructive",
-      });
+      toast({ title: "Chyba", description: "Najprv vytvor súťaž v kroku 2", variant: "destructive" });
       setCurrentStep(2);
       return;
     }
@@ -385,16 +337,10 @@ export default function CreateCompetition() {
     
     if (currentStep === 1) {
       if (!selectedPlan) {
-        toast({
-          title: "Vyber balík",
-          description: "Pre pokračovanie musíš vybrať cenový balík.",
-          variant: "destructive",
-        });
+        toast({ title: "Vyber balík", description: "Pre pokračovanie musíš vybrať cenový balík.", variant: "destructive" });
         return;
       }
-      if (selectedPlan === 'basic') {
-        setHasSectors(false);
-      }
+      if (selectedPlan === 'basic') setHasSectors(false);
       setCurrentStep(2);
       return;
     }
@@ -416,118 +362,58 @@ export default function CreateCompetition() {
       }
     } else if (currentStep === 3) {
       isValid = await form.trigger(['description', 'rules', 'scoringType', 'minWeight', 'resultBlocking']);
-      
       const maxTeamsValue = form.getValues('maxTeams');
       if (maxTeamsValue && currentPlanLimits.maxTeams !== null && maxTeamsValue > currentPlanLimits.maxTeams) {
-        form.setError('maxTeams', {
-          type: 'manual',
-          message: `Balík ${currentPlanLimits.name} povoľuje maximálne ${currentPlanLimits.maxTeams} tímov`
-        });
+        form.setError('maxTeams', { type: 'manual', message: `Balík ${currentPlanLimits.name} povoľuje maximálne ${currentPlanLimits.maxTeams} tímov` });
         isValid = false;
       }
-      
-      if (isValid && competitionIdRef.current) {
-        await saveProgress();
-      }
+      if (isValid && competitionIdRef.current) await saveProgress();
     } else if (currentStep === 4) {
       if (hasSectors) {
         const isSectorsValid = sectorPlaces.every(s => s.sectorName.trim() !== "" && s.places.length > 0);
         if (!isSectorsValid) {
-          toast({
-            title: "Chýbajúce údaje",
-            description: "Všetky sektory musia mať názov a aspoň jedno miesto.",
-            variant: "destructive",
-          });
+          toast({ title: "Chýbajúce údaje", description: "Všetky sektory musia mať názov a aspoň jedno miesto.", variant: "destructive" });
           return;
         }
       }
       isValid = true;
-      if (competitionIdRef.current) {
-        await saveProgress();
-      }
+      if (competitionIdRef.current) await saveProgress();
     } else if (currentStep === 5) {
       isValid = true;
-      if (competitionIdRef.current) {
-        await saveProgress();
-      }
+      if (competitionIdRef.current) await saveProgress();
     } else {
       isValid = true;
     }
 
-    if (isValid && currentStep < STEPS.length) {
-      setCurrentStep(currentStep + 1);
-    }
+    if (isValid && currentStep < STEPS.length) setCurrentStep(currentStep + 1);
   };
 
   const handleBack = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
+    if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
   const handleFinish = async () => {
     await saveProgress();
     const compId = competitionIdRef.current;
     if (compId) {
-      toast({
-        title: "Súťaž uložená!",
-        description: "Teraz dokončite registráciu platbou.",
-        className: "bg-emerald-500 border-none text-white"
-      });
+      toast({ title: "Súťaž uložená!", description: "Teraz dokončite registráciu platbou.", className: "bg-emerald-500 border-none text-white" });
       setLocation(`/organizer/competition/${compId}/checkout`);
     } else {
-      toast({
-        title: "Súťaž uložená!",
-        description: "Súťaž je uložená ako rozpracovaná.",
-        className: "bg-emerald-500 border-none text-white"
-      });
+      toast({ title: "Súťaž uložená!", description: "Súťaž je uložená ako rozpracovaná.", className: "bg-emerald-500 border-none text-white" });
       setLocation('/organizer');
     }
   };
 
   const addSector = () => {
-    const newSector = {
+    setSectorPlaces([...sectorPlaces, {
       sectorName: `Sektor ${String.fromCharCode(65 + sectorPlaces.length)}`,
       places: ["Stanovište 1", "Stanovište 2", "Stanovište 3", "Stanovište 4"]
-    };
-    setSectorPlaces([...sectorPlaces, newSector]);
-  };
-
-  const removeSector = (index: number) => {
-    setSectorPlaces(sectorPlaces.filter((_, i) => i !== index));
-  };
-
-  const updateSectorName = (index: number, name: string) => {
-    const updated = [...sectorPlaces];
-    updated[index].sectorName = name;
-    setSectorPlaces(updated);
-  };
-
-  const updatePlaceName = (sectorIndex: number, placeIndex: number, name: string) => {
-    const updated = [...sectorPlaces];
-    updated[sectorIndex].places[placeIndex] = name;
-    setSectorPlaces(updated);
-  };
-
-  const addPlace = (sectorIndex: number) => {
-    const updated = [...sectorPlaces];
-    updated[sectorIndex].places.push(`Stanovište ${updated[sectorIndex].places.length + 1}`);
-    setSectorPlaces(updated);
-  };
-
-  const removePlace = (sectorIndex: number, placeIndex: number) => {
-    const updated = [...sectorPlaces];
-    updated[sectorIndex].places = updated[sectorIndex].places.filter((_, i) => i !== placeIndex);
-    setSectorPlaces(updated);
+    }]);
   };
 
   const toggleSideCompetition = (comp: string) => {
     if (isConflict(comp)) {
-      toast({
-        variant: "destructive",
-        title: "Konflikt nastavenia",
-        description: "Táto kategória je už nastavená ako hlavné bodovanie súťaže.",
-      });
+      toast({ variant: "destructive", title: "Konflikt nastavenia", description: "Táto kategória je už nastavená ako hlavné bodovanie súťaže." });
       return;
     }
     if (sideCompetitions.includes(comp)) {
@@ -595,12 +481,7 @@ export default function CreateCompetition() {
 
             <div className="flex items-center gap-3">
               {competitionId && currentStep > 1 && currentStep < STEPS.length && (
-                <Button
-                  variant="ghost"
-                  onClick={saveProgress}
-                  disabled={isSaving}
-                  className="text-slate-500 hover:text-white hover:bg-slate-900 h-10 rounded-xl"
-                >
+                <Button variant="ghost" onClick={saveProgress} disabled={isSaving} className="text-slate-500 hover:text-white hover:bg-slate-900 h-10 rounded-xl">
                   {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
                   Uložiť
                 </Button>
@@ -614,7 +495,7 @@ export default function CreateCompetition() {
             </div>
           </div>
 
-          <StepIndicator currentStep={currentStep} />
+          <StepIndicator currentStep={currentStep} steps={STEPS} />
 
           <div className="mt-8 bg-[#0B1221] border border-slate-800/60 rounded-2xl shadow-2xl overflow-hidden relative min-h-[500px]">
             <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 blur-[100px] pointer-events-none" />
@@ -623,11 +504,7 @@ export default function CreateCompetition() {
             <AnimatePresence mode="wait">
 
               {currentStep === 1 && (
-                <motion.div
-                  key="step1"
-                  initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
-                  className="p-8 md:p-12"
-                >
+                <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="p-8 md:p-12">
                   <div className="border-b border-slate-800 pb-6 mb-8">
                     <h2 className="text-xl font-bold text-white mb-1">Vyber cenový balík</h2>
                     <p className="text-sm text-slate-500">Balík určuje limity a funkcie pre tvoju súťaž. Platba bude až na konci.</p>
@@ -652,7 +529,6 @@ export default function CreateCompetition() {
                               Odporúčané
                             </div>
                           )}
-
                           <div className="flex items-center gap-4 mb-5">
                             <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${isSelected ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30' : 'bg-slate-900 text-slate-400 border border-slate-800'}`}>
                               <Icon className="w-6 h-6" />
@@ -662,9 +538,7 @@ export default function CreateCompetition() {
                               <p className="text-2xl font-mono font-medium text-orange-500">{plan.price}€</p>
                             </div>
                           </div>
-
                           <p className="text-sm text-slate-400 mb-5">{plan.description}</p>
-
                           <ul className="space-y-2">
                             {plan.features.map((feature, i) => (
                               <li key={i} className="flex items-center gap-2.5 text-sm">
@@ -673,13 +547,8 @@ export default function CreateCompetition() {
                               </li>
                             ))}
                           </ul>
-
                           {isSelected && (
-                            <motion.div
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              className="absolute top-4 right-4 w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center"
-                            >
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute top-4 right-4 w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
                               <Check size={14} className="text-white" />
                             </motion.div>
                           )}
@@ -701,110 +570,72 @@ export default function CreateCompetition() {
               )}
 
               {currentStep === 2 && (
-                <motion.div
-                  key="step2"
-                  initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
-                  className="p-8 md:p-12 space-y-8"
-                >
+                <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="p-8 md:p-12 space-y-10">
                   <div className="border-b border-slate-800 pb-6 mb-6">
                     <h2 className="text-xl font-bold text-white mb-1">Základné informácie</h2>
                     <p className="text-sm text-slate-500">Tieto údaje vidia súťažiaci v detaile súťaže.</p>
                   </div>
 
-                  <div className="space-y-6">
-                    <div className="space-y-2">
-                      <label className="text-xs text-slate-400 font-bold ml-1">Názov súťaže *</label>
-                      <div className="relative">
-                        <Trophy size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                        <Input
-                          {...form.register("name")}
-                          className="pl-9 bg-slate-950 border-slate-800 focus:border-orange-500 text-white h-12 rounded-xl"
-                          placeholder="napr. Jarný kaprový maratón 2025"
-                        />
-                      </div>
-                      {form.formState.errors.name && (
-                        <p className="text-red-500 text-[10px] pl-1">{form.formState.errors.name.message}</p>
-                      )}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                    <div className="lg:col-span-4">
+                      <LogoUpload logoPreview={logoPreview} onSelect={handleLogoSelect} onRemove={removeLogo} />
                     </div>
 
-                    <div className="space-y-2">
-                      <label className="text-xs text-slate-400 font-bold ml-1">Miesto konania *</label>
-                      <div className="relative">
-                        <MapPin size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                        <Input
-                          {...form.register("location")}
-                          className="pl-9 bg-slate-950 border-slate-800 focus:border-orange-500 text-white h-12 rounded-xl"
-                          placeholder="napr. Vodná nádrž Domaša"
-                        />
-                      </div>
-                      {form.formState.errors.location && (
-                        <p className="text-red-500 text-[10px] pl-1">{form.formState.errors.location.message}</p>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <label className="text-xs text-slate-400 font-bold ml-1">Začiatok súťaže *</label>
-                        <div className="[&_input]:bg-slate-950 [&_input]:border-slate-800 [&_input]:text-white [&_input]:h-12 [&_input]:rounded-xl [&_button]:bg-slate-950 [&_button]:border-slate-800 [&_button]:text-white [&_button]:h-12 [&_button]:rounded-xl">
-                          <DateTimePicker
-                            value={form.watch("startDate")}
-                            onChange={(v) => form.setValue("startDate", v)}
-                            placeholder="Vyber dátum a čas začiatku"
-                          />
-                        </div>
-                        {form.formState.errors.startDate && (
-                          <p className="text-red-500 text-[10px] pl-1">{form.formState.errors.startDate.message}</p>
-                        )}
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="text-xs text-slate-400 font-bold ml-1">Koniec súťaže *</label>
-                        <div className="[&_input]:bg-slate-950 [&_input]:border-slate-800 [&_input]:text-white [&_input]:h-12 [&_input]:rounded-xl [&_button]:bg-slate-950 [&_button]:border-slate-800 [&_button]:text-white [&_button]:h-12 [&_button]:rounded-xl">
-                          <DateTimePicker
-                            value={form.watch("endDate")}
-                            onChange={(v) => form.setValue("endDate", v)}
-                            placeholder="Vyber dátum a čas konca"
-                          />
-                        </div>
-                        {form.formState.errors.endDate && (
-                          <p className="text-red-500 text-[10px] pl-1">{form.formState.errors.endDate.message}</p>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="pt-6 border-t border-slate-800/50">
-                      <h3 className="text-xs font-black uppercase text-slate-500 tracking-widest mb-4">Kontaktné údaje organizátora</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                          <label className="text-xs text-slate-400 font-bold ml-1">Kontaktný email *</label>
-                          <div className="relative">
-                            <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                            <Input
-                              type="email"
-                              {...form.register("contactEmail")}
-                              className="pl-9 bg-slate-950 border-slate-800 focus:border-orange-500 text-white h-12 rounded-xl"
-                              placeholder="info@vasasutaz.sk"
-                            />
+                    <div className="lg:col-span-8 space-y-8">
+                      <div className="space-y-4">
+                        <h3 className="text-xs font-black uppercase text-slate-500 tracking-widest">Základné informácie</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-2 md:col-span-2">
+                            <label className="text-xs text-slate-400 font-bold ml-1">Názov súťaže *</label>
+                            <div className="relative">
+                              <Trophy size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                              <Input {...form.register("name")} className="pl-9 bg-slate-950 border-slate-800 focus:border-orange-500 text-white h-12 rounded-xl" placeholder="napr. Jarný kaprový maratón 2025" />
+                            </div>
+                            {form.formState.errors.name && <p className="text-red-500 text-[10px] pl-1">{form.formState.errors.name.message}</p>}
                           </div>
-                          {form.formState.errors.contactEmail && (
-                            <p className="text-red-500 text-[10px] pl-1">{form.formState.errors.contactEmail.message}</p>
-                          )}
-                        </div>
 
-                        <div className="space-y-2">
-                          <label className="text-xs text-slate-400 font-bold ml-1">Kontaktný telefón *</label>
-                          <div className="relative">
-                            <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                            <Input
-                              type="tel"
-                              {...form.register("contactPhone")}
-                              className="pl-9 bg-slate-950 border-slate-800 focus:border-orange-500 text-white h-12 rounded-xl"
-                              placeholder="+421 900 123 456"
-                            />
+                          <div className="space-y-2">
+                            <label className="text-xs text-slate-400 font-bold ml-1">Miesto konania *</label>
+                            <div className="relative">
+                              <MapPin size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                              <Input {...form.register("location")} className="pl-9 bg-slate-950 border-slate-800 focus:border-orange-500 text-white h-12 rounded-xl" placeholder="napr. Vodná nádrž Domaša" />
+                            </div>
+                            {form.formState.errors.location && <p className="text-red-500 text-[10px] pl-1">{form.formState.errors.location.message}</p>}
                           </div>
-                          {form.formState.errors.contactPhone && (
-                            <p className="text-red-500 text-[10px] pl-1">{form.formState.errors.contactPhone.message}</p>
-                          )}
+
+                          <div className="space-y-2">
+                            <label className="text-xs text-slate-400 font-bold ml-1">Kontaktný telefón *</label>
+                            <div className="relative">
+                              <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                              <Input type="tel" {...form.register("contactPhone")} className="pl-9 bg-slate-950 border-slate-800 focus:border-orange-500 text-white h-12 rounded-xl" placeholder="+421 900 123 456" />
+                            </div>
+                            {form.formState.errors.contactPhone && <p className="text-red-500 text-[10px] pl-1">{form.formState.errors.contactPhone.message}</p>}
+                          </div>
+
+                          <div className="space-y-2">
+                            <label className="text-xs text-slate-400 font-bold ml-1">Začiatok súťaže *</label>
+                            <div className="[&_input]:bg-slate-950 [&_input]:border-slate-800 [&_input]:text-white [&_input]:h-12 [&_input]:rounded-xl [&_button]:bg-slate-950 [&_button]:border-slate-800 [&_button]:text-white [&_button]:h-12 [&_button]:rounded-xl">
+                              <DateTimePicker value={form.watch("startDate")} onChange={(v) => form.setValue("startDate", v)} placeholder="Vyber dátum a čas začiatku" />
+                            </div>
+                            {form.formState.errors.startDate && <p className="text-red-500 text-[10px] pl-1">{form.formState.errors.startDate.message}</p>}
+                          </div>
+
+                          <div className="space-y-2">
+                            <label className="text-xs text-slate-400 font-bold ml-1">Koniec súťaže *</label>
+                            <div className="[&_input]:bg-slate-950 [&_input]:border-slate-800 [&_input]:text-white [&_input]:h-12 [&_input]:rounded-xl [&_button]:bg-slate-950 [&_button]:border-slate-800 [&_button]:text-white [&_button]:h-12 [&_button]:rounded-xl">
+                              <DateTimePicker value={form.watch("endDate")} onChange={(v) => form.setValue("endDate", v)} placeholder="Vyber dátum a čas konca" />
+                            </div>
+                            {form.formState.errors.endDate && <p className="text-red-500 text-[10px] pl-1">{form.formState.errors.endDate.message}</p>}
+                          </div>
+
+                          <div className="space-y-2 md:col-span-2">
+                            <label className="text-xs text-slate-400 font-bold ml-1">Kontaktný email *</label>
+                            <div className="relative">
+                              <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                              <Input type="email" {...form.register("contactEmail")} className="pl-9 bg-slate-950 border-slate-800 focus:border-orange-500 text-white h-12 rounded-xl" placeholder="info@vasasutaz.sk" />
+                            </div>
+                            {form.formState.errors.contactEmail && <p className="text-red-500 text-[10px] pl-1">{form.formState.errors.contactEmail.message}</p>}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -813,11 +644,7 @@ export default function CreateCompetition() {
               )}
 
               {currentStep === 3 && (
-                <motion.div
-                  key="step3"
-                  initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
-                  className="p-8 md:p-12 space-y-8"
-                >
+                <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="p-8 md:p-12 space-y-8">
                   <div className="border-b border-slate-800 pb-6 mb-6">
                     <h2 className="text-xl font-bold text-white mb-1">Pravidlá a bodovanie</h2>
                     <p className="text-sm text-slate-500">Nastav typ bodovania, váhu a pravidlá súťaže.</p>
@@ -825,32 +652,19 @@ export default function CreateCompetition() {
 
                   <div className="space-y-2">
                     <label className="text-xs text-slate-400 font-bold ml-1">Popis súťaže</label>
-                    <Textarea
-                      {...form.register("description")}
-                      className="bg-slate-950 border-slate-800 text-white min-h-[100px] rounded-xl focus:border-orange-500 p-4 leading-relaxed text-sm"
-                      placeholder="Stručný popis súťaže pre účastníkov..."
-                    />
+                    <Textarea {...form.register("description")} className="bg-slate-950 border-slate-800 text-white min-h-[100px] rounded-xl focus:border-orange-500 p-4 leading-relaxed text-sm" placeholder="Stručný popis súťaže pre účastníkov..." />
                   </div>
 
                   <div className="space-y-2">
                     <label className="text-xs text-slate-400 font-bold ml-1">Pravidlá</label>
-                    <Textarea
-                      {...form.register("rules")}
-                      className="bg-slate-950 border-slate-800 text-white min-h-[120px] rounded-xl focus:border-orange-500 p-4 leading-relaxed font-mono text-sm"
-                      placeholder="Čo sa boduje, povolené nástrahy, povinná výbava, spôsob váženia, penalizácie..."
-                    />
+                    <Textarea {...form.register("rules")} className="bg-slate-950 border-slate-800 text-white min-h-[120px] rounded-xl focus:border-orange-500 p-4 leading-relaxed font-mono text-sm" placeholder="Čo sa boduje, povolené nástrahy, povinná výbava, spôsob váženia, penalizácie..." />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-slate-800/50">
                     <div className="space-y-2">
                       <label className="text-xs font-black uppercase text-slate-500 tracking-widest">Typ Bodovania</label>
-                      <Select
-                        value={form.watch("scoringType")}
-                        onValueChange={(v) => form.setValue("scoringType", v as any)}
-                      >
-                        <SelectTrigger className="bg-slate-950 border-slate-800 text-white h-12 rounded-xl hover:border-slate-700 transition-colors">
-                          <SelectValue />
-                        </SelectTrigger>
+                      <Select value={form.watch("scoringType")} onValueChange={(v) => form.setValue("scoringType", v as any)}>
+                        <SelectTrigger className="bg-slate-950 border-slate-800 text-white h-12 rounded-xl hover:border-slate-700 transition-colors"><SelectValue /></SelectTrigger>
                         <SelectContent className="bg-slate-900 border-slate-800 text-white">
                           <SelectItem value="total">Celková váha (Maratón)</SelectItem>
                           <SelectItem value="avg3">Priemer 3 najťažších rýb</SelectItem>
@@ -860,24 +674,22 @@ export default function CreateCompetition() {
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-black uppercase text-slate-500 tracking-widest">Min. váha (kg)</label>
-                      <Input
-                        type="number"
-                        {...form.register("minWeight", { valueAsNumber: true })}
-                        className="bg-slate-950 border-slate-800 text-white h-12 rounded-xl focus:border-orange-500 font-mono text-lg"
-                        min={1}
-                        max={15}
-                        step={0.5}
-                      />
+                      <Input type="number" {...form.register("minWeight", { valueAsNumber: true })} className="bg-slate-950 border-slate-800 text-white h-12 rounded-xl focus:border-orange-500 font-mono text-lg" min={1} max={15} step={0.5} />
                     </div>
                     <div className="space-y-2">
+                      <label className="text-xs font-black uppercase text-slate-500 tracking-widest">Štartovné</label>
+                      <div className="relative">
+                        <Banknote size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                        <Input {...form.register("registrationFee")} className="pl-9 bg-slate-950 border-slate-800 text-white h-12 rounded-xl focus:border-orange-500 font-mono text-lg" placeholder="Napr. 150 €" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-slate-800/50">
+                    <div className="space-y-2">
                       <label className="text-xs font-black uppercase text-slate-500 tracking-widest">Skrytie výsledkov</label>
-                      <Select
-                        value={form.watch("resultBlocking")}
-                        onValueChange={(v) => form.setValue("resultBlocking", v as any)}
-                      >
-                        <SelectTrigger className="bg-slate-950 border-slate-800 text-white h-12 rounded-xl hover:border-slate-700 transition-colors">
-                          <SelectValue />
-                        </SelectTrigger>
+                      <Select value={form.watch("resultBlocking")} onValueChange={(v) => form.setValue("resultBlocking", v as any)}>
+                        <SelectTrigger className="bg-slate-950 border-slate-800 text-white h-12 rounded-xl hover:border-slate-700 transition-colors"><SelectValue /></SelectTrigger>
                         <SelectContent className="bg-slate-900 border-slate-800 text-white">
                           <SelectItem value="none">Žiadne</SelectItem>
                           <SelectItem value="12h">Posledných 12h</SelectItem>
@@ -886,40 +698,20 @@ export default function CreateCompetition() {
                       </Select>
                       <p className="text-[10px] text-slate-600 pl-1">Zamrazí tabuľku pre divákov pred koncom súťaže.</p>
                     </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-slate-800/50">
-                    <div className="space-y-2">
-                      <label className="text-xs font-black uppercase text-slate-500 tracking-widest">Štartovné</label>
-                      <div className="relative">
-                        <Banknote size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                        <Input
-                          {...form.register("registrationFee")}
-                          className="pl-9 bg-slate-950 border-slate-800 text-white h-12 rounded-xl focus:border-orange-500 font-mono"
-                          placeholder="napr. 50€ / tím"
-                        />
-                      </div>
-                    </div>
                     <div className="space-y-2">
                       <label className="text-xs font-black uppercase text-slate-500 tracking-widest">Max. počet tímov</label>
                       <div className="relative">
                         <Users size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
                         <Input
-                          type="number"
-                          min={2}
-                          max={currentPlanLimits.maxTeams ?? undefined}
+                          type="number" min={2} max={currentPlanLimits.maxTeams ?? undefined}
                           placeholder={currentPlanLimits.maxTeams ? `max ${currentPlanLimits.maxTeams}` : "neobmedzené"}
                           value={form.watch("maxTeams") || ''}
                           onChange={(e) => form.setValue("maxTeams", e.target.value ? parseInt(e.target.value) : undefined)}
                           className="pl-9 bg-slate-950 border-slate-800 text-white h-12 rounded-xl focus:border-orange-500 font-mono"
                         />
                       </div>
-                      {currentPlanLimits.maxTeams !== null && (
-                        <p className="text-[10px] text-slate-600 pl-1">Balík {currentPlanLimits.name} povoľuje max. {currentPlanLimits.maxTeams} tímov</p>
-                      )}
-                      {form.formState.errors.maxTeams && (
-                        <p className="text-red-500 text-[10px] pl-1">{form.formState.errors.maxTeams.message}</p>
-                      )}
+                      {currentPlanLimits.maxTeams !== null && <p className="text-[10px] text-slate-600 pl-1">Balík {currentPlanLimits.name} povoľuje max. {currentPlanLimits.maxTeams} tímov</p>}
+                      {form.formState.errors.maxTeams && <p className="text-red-500 text-[10px] pl-1">{form.formState.errors.maxTeams.message}</p>}
                     </div>
                   </div>
 
@@ -937,206 +729,49 @@ export default function CreateCompetition() {
               )}
 
               {currentStep === 4 && (
-                <motion.div
-                  key="step4"
-                  initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
-                  className="p-8 md:p-12 space-y-8"
-                >
+                <motion.div key="step4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="p-8 md:p-12 space-y-8">
                   <div className="border-b border-slate-800 pb-6 mb-6">
                     <h2 className="text-xl font-bold text-white mb-1">Sektory a miesta</h2>
                     <p className="text-sm text-slate-500">Použi len ak chceš, aby mal každý sektor vlastné poradie.</p>
                   </div>
 
-                  {selectedPlan === 'basic' ? (
-                    <div className="flex flex-col items-center justify-center p-12 border border-dashed border-slate-800 rounded-2xl bg-slate-900/30 text-center animate-in fade-in zoom-in duration-300">
-                      <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mb-6">
-                        <Lock className="w-8 h-8 text-slate-500" />
-                      </div>
-                      <h3 className="text-xl font-bold text-white mb-2">Sektory sú zamknuté</h3>
-                      <p className="text-slate-400 text-sm max-w-md">
-                        Pre oddelené poradie sektorov potrebujete balík <strong className="text-orange-500">PRO</strong> alebo vyšší.
-                      </p>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="flex flex-col gap-2">
-                        <div className="flex items-center justify-between bg-slate-950 p-6 rounded-2xl border border-slate-800">
-                          <div>
-                            <h3 className="font-black text-white text-base uppercase">Aktivovať Sektory</h3>
-                            <p className="text-sm text-slate-500">Každý sektor bude mať vlastné poradie.</p>
-                          </div>
-                          <Switch checked={hasSectors} onCheckedChange={setHasSectors} />
-                        </div>
-                        {!hasSectors && sectorPlaces.length > 0 && (
-                          <p className="text-[10px] text-slate-500 pl-4 flex items-center gap-1">
-                            <Info size={10} />
-                            Nastavené sektory sú zachované v pamäti.
-                          </p>
-                        )}
-                      </div>
-
-                      {hasSectors && (
-                        <div className="space-y-6 animate-in slide-in-from-top-4 duration-300">
-                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            {sectorPlaces.map((sector, sIdx) => (
-                              <div key={sIdx} className="bg-slate-950/50 border border-slate-800 rounded-2xl p-6 hover:border-slate-700 transition-colors">
-                                <div className="flex items-center justify-between mb-4">
-                                  <Input
-                                    value={sector.sectorName}
-                                    onChange={(e) => updateSectorName(sIdx, e.target.value)}
-                                    className="bg-transparent border-transparent text-lg font-black text-white px-0 h-auto focus-visible:ring-0"
-                                  />
-                                  <Button variant="ghost" size="sm" onClick={() => removeSector(sIdx)} className="text-red-500 hover:bg-red-500/10">
-                                    <Trash2 size={16} />
-                                  </Button>
-                                </div>
-                                <div className="grid grid-cols-2 gap-2">
-                                  {sector.places.map((place, pIdx) => (
-                                    <div key={pIdx} className="flex gap-1 group">
-                                      <Input
-                                        value={place}
-                                        onChange={(e) => updatePlaceName(sIdx, pIdx, e.target.value)}
-                                        className="bg-slate-900 border-slate-800 text-xs h-8 text-slate-300 focus:text-white rounded-lg"
-                                      />
-                                      <button onClick={() => removePlace(sIdx, pIdx)} className="text-slate-600 hover:text-red-500 px-1 opacity-0 group-hover:opacity-100 transition-opacity"><X size={12} /></button>
-                                    </div>
-                                  ))}
-                                  <Button variant="outline" size="sm" onClick={() => addPlace(sIdx)} className="h-8 border-dashed border-slate-800 text-slate-500 text-xs hover:text-orange-500 hover:border-orange-500/50 rounded-lg">
-                                    <Plus size={12} className="mr-1" /> Stanovište
-                                  </Button>
-                                </div>
-                              </div>
-                            ))}
-
-                            <Button variant="outline" onClick={addSector} className="h-full min-h-[150px] border-dashed border-slate-800 text-slate-500 hover:text-orange-500 hover:border-orange-500/50 bg-transparent flex flex-col gap-2 rounded-2xl">
-                              <Plus size={24} />
-                              <span className="uppercase font-bold text-xs">Pridať sektor</span>
-                            </Button>
-                          </div>
-                        </div>
-                      )}
-
-                      {!hasSectors && sectorPlaces.length === 0 && (
-                        <div className="text-center py-12 text-slate-600">
-                          <MapPin className="w-12 h-12 mx-auto mb-4 opacity-30" />
-                          <p className="text-sm">Zapni prepínač vyššie, ak chceš rozdeliť súťaž na sektory.</p>
-                        </div>
-                      )}
-                    </>
-                  )}
+                  <SectorGrid
+                    hasSectors={hasSectors}
+                    setHasSectors={setHasSectors}
+                    sectorPlaces={sectorPlaces}
+                    onAddSector={addSector}
+                    onRemoveSector={(idx) => setSectorPlaces(sectorPlaces.filter((_, i) => i !== idx))}
+                    onUpdateSectorName={(idx, name) => { const u = [...sectorPlaces]; u[idx].sectorName = name; setSectorPlaces(u); }}
+                    onAddPlace={(sIdx) => { const u = [...sectorPlaces]; u[sIdx].places.push(`Stanovište ${u[sIdx].places.length + 1}`); setSectorPlaces(u); }}
+                    onRemovePlace={(sIdx, pIdx) => { const u = [...sectorPlaces]; u[sIdx].places = u[sIdx].places.filter((_, i) => i !== pIdx); setSectorPlaces(u); }}
+                    onUpdatePlace={(sIdx, pIdx, name) => { const u = [...sectorPlaces]; u[sIdx].places[pIdx] = name; setSectorPlaces(u); }}
+                    isLocked={selectedPlan === 'basic'}
+                  />
                 </motion.div>
               )}
 
               {currentStep === 5 && (
-                <motion.div
-                  key="step5"
-                  initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
-                  className="p-8 md:p-12"
-                >
+                <motion.div key="step5" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="p-8 md:p-12">
                   <div className="border-b border-slate-800 pb-6 mb-6">
                     <h2 className="text-xl font-bold text-white mb-1">Špeciálne súťaže</h2>
                     <p className="text-sm text-slate-500">Tieto trofeje a poradia systém počíta automaticky.</p>
                   </div>
 
-                  <div className="space-y-12">
-                    <section className="space-y-4">
-                      <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
-                        <Medal size={16} className="text-orange-500" />
-                        Hlavné Trofeje
-                      </h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {TROPHY_COMPETITIONS.map((comp) => {
-                          const isSelected = sideCompetitions.includes(comp);
-                          return (
-                            <div
-                              key={comp}
-                              onClick={() => toggleSideCompetition(comp)}
-                              className={`p-5 rounded-2xl border cursor-pointer transition-all flex items-center gap-4 ${isSelected ? 'bg-orange-500/10 border-orange-500' : 'bg-slate-950 border-slate-800 hover:border-slate-600'}`}
-                            >
-                              <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${isSelected ? 'bg-orange-500 border-orange-500' : 'border-slate-600'}`}>
-                                {isSelected && <Check size={12} className="text-white" />}
-                              </div>
-                              <span className={`font-bold text-sm ${isSelected ? 'text-white' : 'text-slate-400'}`}>{getSideCompetitionLabel(comp)}</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </section>
-
-                    <section className="space-y-4">
-                      <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
-                        <Flag size={16} className="text-blue-500" />
-                        Míľniky
-                      </h3>
-                      <p className="text-xs text-slate-500 -mt-2 mb-2">Ocenenia za prvý/posledný úlovok a prvé prekročenie váhy.</p>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {MILESTONE_COMPETITIONS.map((comp) => {
-                          const isSelected = sideCompetitions.includes(comp);
-                          return (
-                            <div
-                              key={comp}
-                              onClick={() => toggleSideCompetition(comp)}
-                              className={`p-5 rounded-2xl border cursor-pointer transition-all flex items-center gap-4 ${isSelected ? 'bg-blue-500/10 border-blue-500' : 'bg-slate-950 border-slate-800 hover:border-slate-600'}`}
-                            >
-                              <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${isSelected ? 'bg-blue-500 border-blue-500' : 'border-slate-600'}`}>
-                                {isSelected && <Check size={12} className="text-white" />}
-                              </div>
-                              <span className={`font-bold text-sm ${isSelected ? 'text-white' : 'text-slate-400'}`}>{getSideCompetitionLabel(comp)}</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </section>
-
-                    <section className="space-y-4">
-                      <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2 group cursor-help" title="Tieto poradia sú navyše. Hlavné bodovanie je nastavené v kroku Pravidlá.">
-                        <BarChart3 size={16} className="text-purple-500" />
-                        Doplnkové Rebríčky
-                        <Info size={12} className="text-slate-600 group-hover:text-slate-400 transition-colors" />
-                      </h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {STATS_COMPETITIONS.map((comp) => {
-                          const isSelected = sideCompetitions.includes(comp);
-                          const conflict = isConflict(comp);
-                          return (
-                            <div
-                              key={comp}
-                              onClick={() => toggleSideCompetition(comp)}
-                              className={`p-5 rounded-2xl border transition-all flex flex-col justify-center gap-1 relative overflow-hidden h-[72px] ${
-                                conflict
-                                  ? 'bg-slate-900/30 border-slate-800/50 cursor-not-allowed hover:bg-red-900/10 hover:border-red-900/30'
-                                  : 'cursor-pointer ' + (isSelected ? 'bg-purple-500/10 border-purple-500' : 'bg-slate-950 border-slate-800 hover:border-slate-600')
-                              }`}
-                            >
-                              <div className="flex items-center gap-4">
-                                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors shrink-0 ${isSelected ? 'bg-purple-500 border-purple-500' : conflict ? 'border-slate-700 bg-slate-800' : 'border-slate-600'}`}>
-                                  {isSelected && <Check size={12} className="text-white" />}
-                                  {conflict && <Lock size={10} className="text-slate-500" />}
-                                </div>
-                                <span className={`font-bold text-sm ${isSelected ? 'text-white' : conflict ? 'text-slate-500' : 'text-slate-400'}`}>
-                                  {getSideCompetitionLabel(comp)}
-                                </span>
-                              </div>
-                              {conflict && (
-                                <div className="absolute right-2 top-2">
-                                  <span className="text-[9px] font-black uppercase bg-slate-800 text-slate-500 px-1.5 py-0.5 rounded border border-slate-700">Nedostupné</span>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </section>
-                  </div>
+                  <SideCompetitionsSection
+                    sideCompetitions={sideCompetitions}
+                    onToggle={toggleSideCompetition}
+                    isConflict={isConflict}
+                    isLocked={selectedPlan === 'basic'}
+                    trophyCompetitions={TROPHY_COMPETITIONS}
+                    milestoneCompetitions={MILESTONE_COMPETITIONS}
+                    statsCompetitions={STATS_COMPETITIONS}
+                    getLabelFn={getSideCompetitionLabel}
+                  />
                 </motion.div>
               )}
 
               {currentStep === 6 && (
-                <motion.div
-                  key="step6"
-                  initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
-                  className="p-8 md:p-12"
-                >
+                <motion.div key="step6" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="p-8 md:p-12">
                   <div className="border-b border-slate-800 pb-6 mb-8">
                     <h2 className="text-xl font-bold text-white mb-1">Súhrn súťaže</h2>
                     <p className="text-sm text-slate-500">Skontroluj údaje pred uložením a platbou.</p>
@@ -1150,23 +785,17 @@ export default function CreateCompetition() {
                         </div>
                         <div>
                           <p className="text-xs text-slate-400 font-bold uppercase">Vybraný balík</p>
-                          <p className="font-black text-white text-lg uppercase tracking-wide">
-                            {PLANS.find(p => p.id === selectedPlan)?.name}
-                          </p>
+                          <p className="font-black text-white text-lg uppercase tracking-wide">{PLANS.find(p => p.id === selectedPlan)?.name}</p>
                         </div>
                       </div>
-                      <p className="text-3xl font-mono font-medium text-orange-500">
-                        {PLANS.find(p => p.id === selectedPlan)?.price}€
-                      </p>
+                      <p className="text-3xl font-mono font-medium text-orange-500">{PLANS.find(p => p.id === selectedPlan)?.price}€</p>
                     </div>
 
                     <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-5 flex items-start gap-3">
                       <Info className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
                       <div>
                         <h4 className="font-bold text-emerald-300 text-sm">Ďalší krok: Platba</h4>
-                        <p className="text-sm text-emerald-400/70 mt-1">
-                          Po kliknutí na "Pokračovať" budeš presmerovaný na platobnú stránku kde dokončíš registráciu súťaže.
-                        </p>
+                        <p className="text-sm text-emerald-400/70 mt-1">Po kliknutí na "Pokračovať" budeš presmerovaný na platobnú stránku kde dokončíš registráciu súťaže.</p>
                       </div>
                     </div>
 
@@ -1182,19 +811,11 @@ export default function CreateCompetition() {
                         </div>
                         <div className="space-y-1">
                           <p className="text-xs text-slate-500 font-bold uppercase">Začiatok</p>
-                          <p className="text-white font-medium">
-                            {form.getValues('startDate') 
-                              ? new Date(form.getValues('startDate')).toLocaleString('sk-SK')
-                              : '—'}
-                          </p>
+                          <p className="text-white font-medium">{form.getValues('startDate') ? new Date(form.getValues('startDate')).toLocaleString('sk-SK') : '—'}</p>
                         </div>
                         <div className="space-y-1">
                           <p className="text-xs text-slate-500 font-bold uppercase">Koniec</p>
-                          <p className="text-white font-medium">
-                            {form.getValues('endDate')
-                              ? new Date(form.getValues('endDate')).toLocaleString('sk-SK')
-                              : '—'}
-                          </p>
+                          <p className="text-white font-medium">{form.getValues('endDate') ? new Date(form.getValues('endDate')).toLocaleString('sk-SK') : '—'}</p>
                         </div>
                         <div className="space-y-1">
                           <p className="text-xs text-slate-500 font-bold uppercase">Bodovanie</p>
@@ -1206,29 +827,15 @@ export default function CreateCompetition() {
                         </div>
                         <div className="space-y-1">
                           <p className="text-xs text-slate-500 font-bold uppercase">Skrytie výsledkov</p>
-                          <p className="text-white font-medium">
-                            {form.getValues('resultBlocking') === 'none' ? 'Nie' :
-                             form.getValues('resultBlocking') === '12h' ? 'Posledných 12h' :
-                             'Posledných 24h'}
-                          </p>
+                          <p className="text-white font-medium">{form.getValues('resultBlocking') === 'none' ? 'Nie' : form.getValues('resultBlocking') === '12h' ? 'Posledných 12h' : 'Posledných 24h'}</p>
                         </div>
                         <div className="space-y-1">
                           <p className="text-xs text-slate-500 font-bold uppercase">Sektory</p>
-                          <p className="text-white font-medium">
-                            {hasSectors ? (
-                              <span className="text-emerald-400 flex items-center gap-1">
-                                <Check size={12} /> {sectorPlaces.length} sektorov
-                              </span>
-                            ) : (
-                              <span className="text-slate-500">Vypnuté</span>
-                            )}
-                          </p>
+                          <p className="text-white font-medium">{hasSectors ? <span className="text-emerald-400 flex items-center gap-1"><Check size={12} /> {sectorPlaces.length} sektorov</span> : <span className="text-slate-500">Vypnuté</span>}</p>
                         </div>
                         <div className="space-y-1">
                           <p className="text-xs text-slate-500 font-bold uppercase">Špeciálne súťaže</p>
-                          <p className="text-white font-medium">
-                            {sideCompetitions.length > 0 ? `${sideCompetitions.length} aktívnych` : <span className="text-slate-500">Žiadne</span>}
-                          </p>
+                          <p className="text-white font-medium">{sideCompetitions.length > 0 ? `${sideCompetitions.length} aktívnych` : <span className="text-slate-500">Žiadne</span>}</p>
                         </div>
                         {form.getValues('registrationFee') && (
                           <div className="space-y-1">
@@ -1245,33 +852,17 @@ export default function CreateCompetition() {
             </AnimatePresence>
 
             <div className="bg-[#020617] p-8 border-t border-slate-800 flex justify-between items-center relative z-20">
-              <Button
-                variant="ghost"
-                disabled={currentStep === 1}
-                onClick={handleBack}
-                className="text-slate-500 hover:text-white hover:bg-slate-900 px-6 h-12 rounded-xl disabled:opacity-30"
-              >
+              <Button variant="ghost" disabled={currentStep === 1} onClick={handleBack} className="text-slate-500 hover:text-white hover:bg-slate-900 px-6 h-12 rounded-xl disabled:opacity-30">
                 <ArrowLeft className="w-4 h-4 mr-2" /> Späť
               </Button>
-
               <div className="flex gap-4">
                 {currentStep < STEPS.length ? (
-                  <Button
-                    onClick={handleNext}
-                    disabled={isSaving || createMutation.isPending || updateMutation.isPending}
-                    className="bg-orange-500 hover:bg-orange-600 text-white font-black uppercase tracking-widest h-12 px-8 rounded-xl transition-transform active:scale-95"
-                  >
-                    {(isSaving || createMutation.isPending || updateMutation.isPending) && (
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    )}
+                  <Button onClick={handleNext} disabled={isSaving || createMutation.isPending || updateMutation.isPending} className="bg-orange-500 hover:bg-orange-600 text-white font-black uppercase tracking-widest h-12 px-8 rounded-xl transition-transform active:scale-95">
+                    {(isSaving || createMutation.isPending || updateMutation.isPending) && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                     Ďalej <ArrowRight size={16} className="ml-2" />
                   </Button>
                 ) : (
-                  <Button
-                    onClick={handleFinish}
-                    disabled={isSaving}
-                    className="bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase tracking-widest h-12 px-10 rounded-xl shadow-[0_10px_40px_-10px_rgba(16,185,129,0.3)] transition-all hover:scale-105 active:scale-95"
-                  >
+                  <Button onClick={handleFinish} disabled={isSaving} className="bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase tracking-widest h-12 px-10 rounded-xl shadow-[0_10px_40px_-10px_rgba(16,185,129,0.3)] transition-all hover:scale-105 active:scale-95">
                     {isSaving ? <Loader2 className="animate-spin" /> : <ChevronRight size={18} className="mr-2" />}
                     Pokračovať na platbu
                   </Button>
