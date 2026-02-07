@@ -1252,10 +1252,13 @@ export default function CompetitionDetail() {
                   </p>
                   <button 
                     onClick={() => setShowStatsOverlay(true)}
-                    className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-blue-600/20 transition-all flex items-center justify-center gap-2 hover:shadow-blue-600/30"
+                    className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-blue-600/20 transition-all flex flex-col items-center justify-center gap-1 hover:shadow-blue-600/30"
                   >
-                    <PieChart size={16} />
-                    Kde a kedy berú
+                    <span className="flex items-center gap-2">
+                      <PieChart size={16} />
+                      Kde a kedy berú
+                    </span>
+                    <span className="text-[10px] font-normal text-blue-200">Analýza úlovkov a štatistík súťaže</span>
                   </button>
                 </div>
               </div>
