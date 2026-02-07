@@ -1,0 +1,142 @@
+OK, toto už je “produkčný draft” – a úprimne: vizuálne je to veľmi slušné. Ale máš tam pár UX a logických mín, ktoré ti v ostrej prevádzke narobia bordel (a pár čisto technických bugov).
+
+Nižšie máš najdôležitejšie fixy v poradí priority (bez omáčky).
+
+1) Najväčší problém: registrácia nie je gated na prihlásenie
+
+Momentálne môže neprihlásený:
+
+kliknúť Vyplniť prihlášku
+
+otvoriť dialog
+
+dokonca submitnúť (API to možno zablokuje, ale UX je zlé)
+
+Fix (UX aj logika):
+
+ak !isAuthenticated → CTA zmeníš na “Prihlásiť sa a registrovať” a klik presmeruje na login, nie na dialog.
+
+dialóg nech sa vôbec neotvorí pre neprihlásených.
+
+Prakticky:
+
+const openRegistration = () => {
+  if (!isAuthenticated) {
+    toast({ title: "Najprv sa prihlás", description: "Registrácia tímu je dostupná len pre prihlásených." });
+    navigate("/auth"); // alebo tvoj route
+    return;
+  }
+  setIsRegistrationDialogOpen(true);
+};
+
+
+A všetky onClick={() => setIsRegistrationDialogOpen(true)} nahradiť openRegistration.
+
+2) Máš rozbitý JSX vo formulári (reálne to vyzerá na zle “zlepený” kód)
+
+V časti registrácie členov je vidno, že tagy a uzatvárania sú rozhádzané (napr. FormField pre email sa zrazu uzatvára a pokračuje telefón mimo gridu). Toto nie je UX vec – toto ti bude robiť:
+
+render bugy
+
+rozbitú validáciu
+
+alebo rovno build error
+
+Fix: skontroluj a uprac members.map(...) blok tak, aby:
+
+grid obsahoval name + email
+
+mimo gridu bol phone (alebo všetko v grid)
+
+a všetky FormItem/FormField boli správne uzavreté
+
+Keď chceš, napíš a ja ti ten blok prepíšem “čisto” (len tú časť), lebo z tejto paste je to fakt rozsekané.
+
+3) Inkonzistentné statusy: badge pozná “finished/completed”, logika nie
+
+StatusBadge rieši: ended | completed | finished
+
+ty používaš:
+
+isEnded = competition?.status === 'ended'
+
+isLive = competition?.status === 'live'
+
+Fix: urob si helper:
+
+const status = competition?.status;
+const isLive = status === "live";
+const isRegistration = status === "registration";
+const isEnded = ["ended","completed","finished"].includes(status || "");
+
+
+A používať to všade rovnako.
+
+4) “Zatiaľ nebol zaznamenaný žiadny úlovok” sa v praxi skoro nikdy nezobrazí
+
+Pretože sortedLeaderboard vzniká z approved tímov a aj keď nemajú ryby, stále tam budú (váha 0). Takže sortedLeaderboard.length === 0 je zlá podmienka.
+
+Fix (UX):
+
+Ak chceš hlášku “bez úlovkov”, podmienka má byť liveStats.totalFish === 0.
+
+Ak chceš hlášku “žiadne tímy”, podmienka je approvedTeamsCount === 0.
+
+Dve rôzne situácie, dve hlášky.
+
+5) Copy: čas do konca je neúplný a občas zavádzajúci
+
+getRemainingTime() vracia len dni alebo len hodiny. Keď ostáva napr. 1 deň 2 hodiny, user to chce vidieť. A keď ostáva menej než hodina, ukážeš “0 hodín” (to je UX fail).
+
+Fix (minimum):
+
+vráť Xd Yh (alebo “1 deň 2 hodiny”)
+
+keď < 1h, zobraz minúty
+
+6) Dvojité CTA na mobile: header menu + CTA block + v registration ešte veľké tlačidlo
+
+Na mobile máš:
+
+CTA block pod headerom (OK)
+
+v registration móde ešte veľké tlačidlo “Vyplniť prihlášku” (tiež OK)
+
+ale reálne to znamená 2–3 miesta, kde user môže spraviť to isté
+
+Fix (UX disciplína):
+
+v registration móde si nechaj jedno primárne CTA (to veľké v obsahu) a ten CTA block pod headerom kľudne skry:
+
+{!isRegistration && (userTeam || (...)) && <MobileCTA/>}
+
+
+Registration page má byť “landing”, nie “dashboard + landing”.
+
+7) “Rozmiestnenie tímov” tlačidlo nič nerobí
+
+Toto je malá vec, ale je to presne ten detail, čo zabíja dôveryhodnosť: user klikne a nič.
+
+Fix: buď:
+
+disable + “Pripravujeme”
+
+alebo otvor overlay s placeholderom (aj s jednou vetou)
+
+8) Mikrocopy, ktoré by som upravil hneď
+
+“Čo sa deje pri vode” je super.
+
+“Online” badge v live feede je fajn, ale je to trochu fake, ak to len znamená “polling”.
+
+radšej “Live” / “Aktualizuje sa” (a ukáž “naposledy aktualizované pred X”)
+
+“Kde a kedy berú” je výborný názov. Drž sa toho.
+
+9) Výkon: sortedLeaderboard je O(n*m) cez filter catches pre každý tím
+
+Tu je riziko, že pri 30 tímoch a stovkách úlovkov je to OK, ale pri 200+ to začne byť cítiť.
+
+Fix (easy):
+
+urob mapu teamId -> {weight, fish} jedným prechodom cez catches a potom len lookup.
