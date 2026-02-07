@@ -1,99 +1,381 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Link } from "wouter";
-import { ArrowLeft, Fish, Calendar, Weight, Clock, User, Camera, X } from "lucide-react";
-import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
+import { 
+  ArrowLeft, Fish, Calendar, Clock, Camera, X, Search, 
+  MapPin, CheckCircle2, Timer, ChevronDown, Check, 
+  Sparkles, RotateCcw, Crown, Eye
+} from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 import type { Catch, Team, Referee, Competition } from "@shared/schema";
-import { format } from "date-fns";
-import { sk } from "date-fns/locale";
-import { getCountryFlag } from "@/lib/countries";
 
 interface CatchWithDetails extends Catch {
   team?: Team;
   referee?: Referee;
 }
 
+const safeWeight = (w: any): number => {
+  if (w === null || w === undefined) return 0;
+  const parsed = parseFloat(String(w).replace(',', '.'));
+  return isFinite(parsed) ? parsed : 0;
+};
+
+const safeTimestamp = (d: any): number => {
+  if (!d) return 0;
+  const t = new Date(d).getTime();
+  return isFinite(t) ? t : 0;
+};
+
+const getRelativeTime = (dateString: any) => {
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '';
+  const now = Date.now();
+  const diffInSeconds = Math.floor((now - date.getTime()) / 1000);
+  if (diffInSeconds < 60) return 'Práve teraz';
+  if (diffInSeconds < 3600) return `pred ${Math.floor(diffInSeconds / 60)} min`;
+  if (diffInSeconds < 86400) return `pred ${Math.floor(diffInSeconds / 3600)} hod`;
+  return date.toLocaleDateString('sk-SK', { day: 'numeric', month: 'short' });
+};
+
+const getTimeString = (dateString: any) => {
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '';
+  return date.toLocaleTimeString('sk-SK', { hour: '2-digit', minute: '2-digit' });
+};
+
+const getFishTypeLabel = (fishType: string) => {
+  switch (fishType) {
+    case 'scaly': return 'Šupináč';
+    case 'mirror': return 'Lysec';
+    default: return fishType;
+  }
+};
+
+const FishBadge = ({ type }: { type: string }) => {
+  const isMirror = type === 'mirror';
+  return (
+    <span className={`px-1.5 py-px rounded text-[10px] font-bold uppercase tracking-wide border ${
+      isMirror 
+        ? "bg-blue-500/10 text-blue-400 border-blue-500/20" 
+        : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+    }`}>
+      {isMirror ? 'Lysec' : 'Šupináč'}
+    </span>
+  );
+};
+
+function CatchRow({ 
+  data, isTopToday, isRecent, isBigFish, onClick, userRole 
+}: { 
+  data: CatchWithDetails; 
+  isTopToday: boolean; 
+  isRecent: boolean; 
+  isBigFish: boolean;
+  onClick: () => void; 
+  userRole: string;
+}) {
+  const weight = safeWeight(data.weight);
+  
+  return (
+    <div 
+      onClick={onClick}
+      className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all hover:bg-muted/30 group
+        ${isBigFish ? 'border-amber-500/30 bg-amber-500/5' : 'border-border bg-card/50'}
+      `}
+    >
+      {data.photoUrl ? (
+        <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden shrink-0 bg-muted border border-border">
+          <img src={data.photoUrl} className="w-full h-full object-cover" alt="" />
+        </div>
+      ) : (
+        <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg bg-muted/50 border border-border flex items-center justify-center shrink-0">
+          <Camera size={18} className="text-muted-foreground" />
+        </div>
+      )}
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-0.5">
+          <span className="font-bold text-foreground text-sm truncate">
+            {data.team?.name || 'Neznámy tím'}
+          </span>
+          {isTopToday && <Crown size={14} className="text-amber-500 fill-amber-500 shrink-0" />}
+          {isRecent && !isTopToday && <Sparkles size={14} className="text-blue-400 fill-blue-400 shrink-0" />}
+        </div>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span className="font-medium text-foreground/70">Sektor {data.sector?.trim()}</span>
+          <span className="w-1 h-1 bg-border rounded-full" />
+          <FishBadge type={data.fishType} />
+          {['admin', 'referee'].includes(userRole) && data.referee && (
+            <>
+              <span className="w-1 h-1 bg-border rounded-full" />
+              <span className="text-muted-foreground truncate">Rozhodca S.{data.referee.assignedSector}</span>
+            </>
+          )}
+        </div>
+      </div>
+
+      <div className="text-right shrink-0">
+        <div className={`font-mono font-medium text-base ${isBigFish ? 'text-amber-500' : 'text-[#F97316]'}`}>
+          {weight.toFixed(2)}
+        </div>
+        <div className="text-[11px] text-muted-foreground">
+          {getRelativeTime(data.submittedAt)}
+        </div>
+        {['admin', 'referee', 'organizer'].includes(userRole) && data.isVerified === false && (
+          <span className="text-[9px] uppercase font-bold tracking-wider text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 mt-1 inline-block">
+            Neoverené
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function CatchDetailModal({ 
+  data, onClose, userRole, isTopToday, isBigFish 
+}: { 
+  data: CatchWithDetails; 
+  onClose: () => void; 
+  userRole: string;
+  isTopToday: boolean;
+  isBigFish: boolean;
+}) {
+  const weight = safeWeight(data.weight);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-lg bg-card border border-border rounded-t-2xl sm:rounded-2xl max-h-[90vh] overflow-y-auto z-10">
+        <div className="sticky top-0 z-10 flex items-center justify-between p-4 bg-card/95 backdrop-blur-sm border-b border-border">
+          <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+            {isBigFish ? <Crown className="text-amber-500" size={20} /> : <Fish className="text-cyan-500" size={20} />}
+            Detail úlovku
+          </h2>
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+            <X size={18} />
+          </button>
+        </div>
+
+        {data.photoUrl && (
+          <div className="aspect-video bg-muted border-b border-border overflow-hidden">
+            <img src={data.photoUrl} className="w-full h-full object-cover" alt="Úlovok" />
+          </div>
+        )}
+
+        <div className="p-5 space-y-5">
+          <div className="flex items-baseline gap-2">
+            <span className={`text-5xl font-black italic tracking-tighter tabular-nums ${isBigFish ? 'text-amber-500' : 'text-foreground'}`}>
+              {weight.toFixed(2)}
+            </span>
+            <span className="text-xl font-bold text-muted-foreground">kg</span>
+          </div>
+
+          {isTopToday && (
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20">
+              <Crown size={12} className="text-amber-500 fill-amber-500" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-amber-500">Top dnes</span>
+            </div>
+          )}
+
+          <div className="space-y-3">
+            <div className="flex items-center gap-3 text-sm">
+              <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+                <Fish size={16} className="text-muted-foreground" />
+              </div>
+              <div>
+                <div className="text-muted-foreground text-xs">Druh ryby</div>
+                <div className="font-medium text-foreground">{getFishTypeLabel(data.fishType)}</div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 text-sm">
+              <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+                <MapPin size={16} className="text-muted-foreground" />
+              </div>
+              <div>
+                <div className="text-muted-foreground text-xs">Tím • Sektor</div>
+                <div className="font-medium text-foreground">
+                  {data.team?.name || 'Neznámy tím'} <span className="text-muted-foreground">•</span> Sektor {data.sector?.trim()}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 text-sm">
+              <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+                <Clock size={16} className="text-muted-foreground" />
+              </div>
+              <div>
+                <div className="text-muted-foreground text-xs">Čas nahlásenia</div>
+                <div className="font-medium text-foreground">
+                  {data.submittedAt ? new Date(data.submittedAt).toLocaleString('sk-SK', {
+                    day: 'numeric', month: 'long', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit'
+                  }) : 'Neznámy'}
+                </div>
+              </div>
+            </div>
+
+            {['admin', 'referee'].includes(userRole) && data.referee && (
+              <div className="flex items-center gap-3 text-sm">
+                <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+                  <Eye size={16} className="text-muted-foreground" />
+                </div>
+                <div>
+                  <div className="text-muted-foreground text-xs">Rozhodca</div>
+                  <div className="font-medium text-foreground">Sektor {data.referee.assignedSector}</div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function CompetitionCatches() {
   const { id } = useParams();
   const [, navigate] = useLocation();
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [selectedPhoto, setSelectedPhoto] = useState<{ url: string; teamName: string; weight: string; fishType: string } | null>(null);
+  const { user } = useAuth();
+  const userRole = user?.role || 'user';
 
-  // Fetch competition details
-  const { data: competition, isLoading: competitionLoading } = useQuery<Competition>({
+  const [selectedFilter, setSelectedFilter] = useState('all');
+  const [selectedCatch, setSelectedCatch] = useState<CatchWithDetails | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  const { data: competition } = useQuery<Competition>({
     queryKey: ['/api/competitions', id],
     enabled: !!id,
   });
 
-  // Fetch all catches for the competition
-  const { data: catches, isLoading: catchesLoading } = useQuery<CatchWithDetails[]>({
+  const { data: catches, isLoading } = useQuery<CatchWithDetails[]>({
     queryKey: ['/api/competitions', id, 'catches'],
     enabled: !!id,
+    refetchInterval: competition?.status === 'live' ? 10000 : false,
   });
 
-  // Group catches by date
-  const groupedCatches = catches?.reduce((groups, catch_) => {
-    const submittedDate = catch_.submittedAt ? new Date(catch_.submittedAt) : null;
-    if (!submittedDate || isNaN(submittedDate.getTime())) {
-      // Skip catches with invalid dates
-      return groups;
+  const bigFishThreshold = competition?.bigFishThreshold ? parseFloat(String(competition.bigFishThreshold)) : 10;
+
+  const NOW_STR = new Date().toISOString().split('T')[0];
+  const YESTERDAY_STR = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+
+  const viewableCatches = useMemo(() => {
+    if (!catches) return [];
+    const sorted = [...catches].sort((a, b) => safeTimestamp(b.submittedAt) - safeTimestamp(a.submittedAt));
+    if (userRole === 'admin' || userRole === 'referee' || userRole === 'organizer') return sorted;
+    return sorted.filter(c => c.isVerified !== false);
+  }, [catches, userRole]);
+
+  const topCatchTodayId = useMemo(() => {
+    const todays = viewableCatches.filter(c => {
+      const d = c.submittedAt ? new Date(c.submittedAt).toISOString().split('T')[0] : '';
+      return d === NOW_STR;
+    });
+    if (todays.length === 0) return null;
+    return todays.reduce((prev, curr) => (safeWeight(prev.weight) > safeWeight(curr.weight) ? prev : curr)).id;
+  }, [viewableCatches, NOW_STR]);
+
+  const recentCatchIds = useMemo(() => {
+    const threshold = Date.now() - (5 * 60 * 1000);
+    return viewableCatches
+      .filter(c => safeTimestamp(c.submittedAt) > threshold)
+      .map(c => c.id);
+  }, [viewableCatches]);
+
+  const { processedCatches, groupedCatches } = useMemo(() => {
+    const filtered = viewableCatches.filter(c => {
+      const date = c.submittedAt ? new Date(c.submittedAt).toISOString().split('T')[0] : '';
+      const matchesDate = 
+        selectedFilter === 'all' ? true :
+        selectedFilter === 'today' ? date === NOW_STR :
+        selectedFilter === 'yesterday' ? date === YESTERDAY_STR : true;
+
+      const q = searchQuery.toLowerCase();
+      const matchesSearch = !q || 
+        (c.team?.name || '').toLowerCase().includes(q) || 
+        (c.sector || '').toLowerCase().includes(q) ||
+        String(c.weight).includes(q) ||
+        getFishTypeLabel(c.fishType).toLowerCase().includes(q);
+      
+      return matchesDate && matchesSearch;
+    });
+
+    const groups: { today: CatchWithDetails[]; yesterday: CatchWithDetails[]; older: CatchWithDetails[] } = { today: [], yesterday: [], older: [] };
+    filtered.forEach(c => {
+      const d = c.submittedAt ? new Date(c.submittedAt).toISOString().split('T')[0] : '';
+      if (d === NOW_STR) groups.today.push(c);
+      else if (d === YESTERDAY_STR) groups.yesterday.push(c);
+      else groups.older.push(c);
+    });
+
+    return { processedCatches: filtered, groupedCatches: groups };
+  }, [viewableCatches, selectedFilter, searchQuery, NOW_STR, YESTERDAY_STR]);
+
+  const heroCatch = useMemo(() => {
+    if (selectedFilter !== 'all' || searchQuery !== '') return null;
+    if (processedCatches.length === 0) return null;
+
+    const newest = processedCatches[0];
+    const isNew = (Date.now() - safeTimestamp(newest.submittedAt)) < (2 * 60 * 1000);
+    if (isNew) return newest;
+    if (topCatchTodayId) {
+      const top = processedCatches.find(c => c.id === topCatchTodayId);
+      if (top) return top;
     }
-    const date = format(submittedDate, 'yyyy-MM-dd');
-    if (!groups[date]) {
-      groups[date] = [];
-    }
-    groups[date].push(catch_);
-    return groups;
-  }, {} as Record<string, CatchWithDetails[]>) || {};
+    return newest;
+  }, [processedCatches, topCatchTodayId, selectedFilter, searchQuery]);
 
-  // Get unique dates sorted by most recent first
-  const availableDates = Object.keys(groupedCatches).sort((a, b) => b.localeCompare(a));
+  const isHeroVeryRecent = useMemo(() => {
+    if (!heroCatch) return false;
+    return (Date.now() - safeTimestamp(heroCatch.submittedAt)) < (2 * 60 * 1000);
+  }, [heroCatch]);
 
-  // Filter catches by selected date or show all
-  const filteredCatches = selectedDate 
-    ? groupedCatches[selectedDate] || []
-    : catches || [];
-
-  const getFishTypeLabel = (fishType: string) => {
-    switch (fishType) {
-      case 'scaly': return 'Šupináč';
-      case 'mirror': return 'Lysec';
-      default: return fishType;
+  const getFilterLabel = () => {
+    switch (selectedFilter) {
+      case 'today': return 'Dnes';
+      case 'yesterday': return 'Včera';
+      default: return 'Všetky dni';
     }
   };
 
-  const getSectorBadgeColor = (sector: string) => {
-    const colors = {
-      'A': 'bg-primary/10 text-primary',
-      'B': 'bg-secondary/10 text-secondary', 
-      'C': 'bg-accent/10 text-accent',
-    };
-    return colors[sector as keyof typeof colors] || 'bg-muted/50';
+  const handleResetFilters = () => {
+    setSelectedFilter('all');
+    setSearchQuery("");
+    setIsFilterOpen(false);
   };
 
-  const getFishTypeBadgeColor = (fishType: string) => {
-    const colors = {
-      'scaly': 'bg-emerald-500 text-white', // Šupináč - zelená
-      'mirror': 'bg-blue-500 text-white',   // Lysec - modrá
-    };
-    return colors[fishType as keyof typeof colors] || 'bg-gray-500 text-white';
+  const getListWithoutHero = (list: CatchWithDetails[]) => {
+    return heroCatch ? list.filter(c => c.id !== heroCatch.id) : list;
   };
 
-  if (competitionLoading || catchesLoading) {
+  const todayTotalCount = useMemo(() => {
+    return viewableCatches.filter(c => {
+      const d = c.submittedAt ? new Date(c.submittedAt).toISOString().split('T')[0] : '';
+      return d === NOW_STR;
+    }).length;
+  }, [viewableCatches, NOW_STR]);
+
+  const headerStatsText = useMemo(() => {
+    if (searchQuery) return `Nájdené: ${processedCatches.length}`;
+    if (selectedFilter === 'today') return `Dnes: ${processedCatches.length}`;
+    if (selectedFilter === 'yesterday') return `Včera: ${processedCatches.length}`;
+    return todayTotalCount > 0 
+      ? `Dnes: ${todayTotalCount} · Spolu: ${viewableCatches.length}`
+      : `Spolu: ${viewableCatches.length}`;
+  }, [selectedFilter, searchQuery, processedCatches.length, todayTotalCount, viewableCatches.length]);
+
+  if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-muted rounded w-1/3"></div>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="h-32 bg-muted rounded"></div>
+      <div className="min-h-screen bg-background">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+          <div className="animate-pulse space-y-4">
+            <div className="h-6 bg-muted rounded w-1/4" />
+            <div className="h-48 bg-muted rounded-xl" />
+            <div className="space-y-3">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-20 bg-muted rounded-xl" />
               ))}
             </div>
           </div>
@@ -103,269 +385,279 @@ export default function CompetitionCatches() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto">
-          
-          {/* Header */}
-          <div className="mb-8">
+    <div className="min-h-screen bg-background text-foreground pb-20">
+      
+      <header className="bg-background/80 border-b border-border pt-6 pb-4 sticky top-0 z-40 backdrop-blur-xl">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+          <div className="flex items-center gap-2 mb-4">
             <Button 
               variant="ghost" 
-              className="mb-4 hover:bg-primary/10"
+              size="sm" 
+              className="pl-0 hover:bg-transparent text-muted-foreground hover:text-foreground group transition-colors"
               onClick={() => navigate(`/competition/${id}`)}
-              data-testid="button-back-to-competition"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" strokeWidth={1.75} />
-              Späť na súťaž
+              <ArrowLeft className="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" /> Späť
             </Button>
-            
-            <div className="space-y-2">
-              <h1 className="text-3xl font-bold text-foreground" data-testid="text-page-title">
-                Všetky úlovky
-              </h1>
-              {competition && (
-                <p className="text-xl text-muted-foreground" data-testid="text-competition-name">
-                  {competition.name}
-                </p>
-              )}
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <TacticalIconInline icon={Fish} variant="cyan" size="sm" />
-                <span data-testid="text-total-catches">
-                  Celkom úlovkov: {catches?.length || 0}
+          </div>
+          
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="space-y-1">
+              <div className="flex items-center gap-3">
+                <h1 className="text-2xl md:text-3xl font-black italic text-foreground tracking-tighter uppercase">
+                  Úlovky
+                </h1>
+                {competition?.status === 'live' && (
+                  <span className="text-[10px] font-bold bg-red-500 text-white px-2 py-0.5 rounded uppercase tracking-wider shadow-[0_0_10px_rgba(239,68,68,0.4)]">
+                    LIVE
+                  </span>
+                )}
+              </div>
+              
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-muted-foreground">
+                <span className="font-medium text-muted-foreground/70">{competition?.name}</span>
+                <span className="text-muted-foreground">
+                  · {headerStatsText}
                 </span>
               </div>
             </div>
-          </div>
 
-          {/* Date Filter Buttons */}
-          {availableDates.length > 1 && (
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TacticalIconInline icon={Calendar} variant="indigo" size="md" />
-                  Filtrovať podľa dňa
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    variant={selectedDate === null ? "default" : "outline"}
-                    onClick={() => setSelectedDate(null)}
-                    data-testid="button-filter-all"
+            <div className="flex gap-2 w-full md:w-auto">
+              <div className="relative flex-1 md:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={14} />
+                <input 
+                  type="text"
+                  placeholder="Hľadať tím, sektor, váhu..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-card border border-border rounded-lg py-2.5 pl-9 pr-8 text-sm text-foreground placeholder:text-muted-foreground/50 focus:ring-1 focus:ring-[#F97316] focus:border-[#F97316] transition-all outline-none"
+                />
+                {searchQuery && (
+                  <button 
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    Všetky dni ({catches?.length || 0})
-                  </Button>
-                  {availableDates.map(date => (
-                    <Button
-                      key={date}
-                      variant={selectedDate === date ? "default" : "outline"}
-                      onClick={() => setSelectedDate(date)}
-                      data-testid={`button-filter-date-${date}`}
-                    >
-                      {format(new Date(date), 'd. MMMM yyyy', { locale: sk })} ({groupedCatches[date].length})
-                    </Button>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Catches Table */}
-          {filteredCatches.length > 0 ? (
-            <Card className="overflow-hidden shadow-sm border border-border bg-card">
-              <Table data-testid="table-catches">
-                <TableHeader>
-                  <TableRow className="bg-muted/30 border-b border-border">
-                    <TableHead className="w-[140px] font-bold text-foreground py-4">Hmotnosť</TableHead>
-                    <TableHead className="font-bold text-foreground py-4">Druh</TableHead>
-                    <TableHead className="font-bold text-foreground py-4">Tím</TableHead>
-                    <TableHead className="font-bold text-foreground py-4">Sektor</TableHead>
-                    <TableHead className="font-bold text-foreground py-4">Čas úlovku</TableHead>
-                    <TableHead className="font-bold text-foreground py-4">Fotografia</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredCatches.map((catch_, index) => (
-                    <TableRow 
-                      key={catch_.id} 
-                      className={`
-                        ${index % 2 === 0 ? 'bg-background' : 'bg-muted/30'}
-                        hover:bg-muted/50
-                        transition-colors duration-200
-                        border-b border-border/50
-                      `}
-                      data-testid={`row-catch-${catch_.id}`}
-                    >
-                      <TableCell className="py-4">
-                        <div className="flex items-center gap-1">
-                          <Weight className="w-4 h-4 text-muted-foreground" strokeWidth={1.75} />
-                          <span data-testid={`text-catch-weight-${catch_.id}`} className="font-mono font-medium text-[#F97316]">
-                            {catch_.weight} kg
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="py-4">
-                        <Badge 
-                          className={`${getFishTypeBadgeColor(catch_.fishType)} font-semibold px-3 py-1 rounded-full shadow-sm hover:shadow-md transition-shadow`}
-                          data-testid={`badge-fish-type-${catch_.id}`}
-                        >
-                          {getFishTypeLabel(catch_.fishType)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="py-4">
-                        {catch_.team ? (
-                          <Link href={`/team/${catch_.team.id}`} data-testid={`link-catch-team-${catch_.id}`}>
-                            <div className="group flex items-center gap-2 p-2 rounded-lg hover:bg-accent/10 transition-all duration-200">
-                              <img 
-                                src={getCountryFlag(catch_.team.country || 'SK')} 
-                                alt={`Vlajka ${catch_.team.country || 'SK'}`}
-                                className="w-6 h-4 object-cover rounded-sm border border-gray-200"
-                                title={`Krajina: ${catch_.team.country || 'SK'}`}
-                                onError={(e) => {
-                                  // Fallback to emoji if image fails to load
-                                  e.currentTarget.style.display = 'none';
-                                  const span = document.createElement('span');
-                                  span.textContent = '🏳️';
-                                  span.className = 'text-lg';
-                                  e.currentTarget.parentNode?.insertBefore(span, e.currentTarget);
-                                }}
-                              />
-                              <span className="font-semibold group-hover:text-accent cursor-pointer transition-colors">
-                                {catch_.team.name}
-                              </span>
-                            </div>
-                          </Link>
-                        ) : (
-                          <span className="text-muted-foreground italic">Neznámy tím</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="py-4">
-                        <Link href={`/competition/${id}/sector/${catch_.sector}`} data-testid={`link-catch-sector-${catch_.id}`}>
-                          <Badge className={`${getSectorBadgeColor(catch_.sector)} hover:scale-105 cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md font-bold px-4 py-2 rounded-full border-2 border-current/20`}>
-                            Sektor {catch_.sector}
-                          </Badge>
-                        </Link>
-                      </TableCell>
-                      <TableCell className="py-4">
-                        <div className="flex items-center gap-2 p-2 bg-muted/20 rounded-lg">
-                          <Clock className="w-4 h-4 text-muted-foreground" strokeWidth={1.75} />
-                          <span data-testid={`text-catch-time-${catch_.id}`} className="text-sm font-medium">
-                            {(() => {
-                              const submittedDate = catch_.submittedAt ? new Date(catch_.submittedAt) : null;
-                              if (!submittedDate || isNaN(submittedDate.getTime())) {
-                                return 'Neznámy čas';
-                              }
-                              return format(submittedDate, 'HH:mm:ss, d.M.yyyy', { locale: sk });
-                            })()}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="py-4">
-                        {catch_.photoUrl ? (
-                          <div className="flex items-center gap-2">
-                            <div
-                              className="relative w-12 h-12 rounded-xl overflow-hidden cursor-pointer hover:ring-4 hover:ring-primary/30 transition-all duration-300 transform hover:scale-110 shadow-lg hover:shadow-xl group"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                setSelectedPhoto({
-                                  url: catch_.photoUrl!,
-                                  teamName: catch_.team?.name || 'Neznámy tím',
-                                  weight: `${catch_.weight} kg`,
-                                  fishType: getFishTypeLabel(catch_.fishType)
-                                });
-                              }}
-                              data-testid={`img-catch-photo-${catch_.id}`}
-                            >
-                              <img 
-                                src={catch_.photoUrl} 
-                                alt="Úlovok" 
-                                className="w-full h-full object-cover pointer-events-none group-hover:scale-110 transition-transform duration-300"
-                              />
-                              <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                            </div>
-                            <Camera className="w-5 h-5 text-muted-foreground" strokeWidth={1.75} />
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-2 p-2 bg-muted/30 rounded-lg">
-                            <Camera className="w-4 h-4 text-muted-foreground" strokeWidth={1.75} />
-                            <span className="text-xs text-muted-foreground">Bez fotografie</span>
-                          </div>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </Card>
-          ) : (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <div className="flex justify-center mb-4">
-                  <TacticalIcon icon={Fish} variant="neutral" size="lg" showLabel={false} />
-                </div>
-                <h3 className="text-lg font-medium text-foreground mb-2">
-                  {selectedDate ? "Žiadne úlovky v tento deň" : "Zatiaľ žiadne úlovky"}
-                </h3>
-                <p className="text-muted-foreground">
-                  {selectedDate 
-                    ? `V dňoch ${format(new Date(selectedDate), 'd. MMMM yyyy', { locale: sk })} neboli zaznamenané žiadne úlovky.`
-                    : "Počkajte na prvé úlovky od účastníkov súťaže."
-                  }
-                </p>
-              </CardContent>
-            </Card>
-          )}
-
-        </div>
-
-        {/* Photo Modal */}
-        <Dialog open={!!selectedPhoto} onOpenChange={() => setSelectedPhoto(null)}>
-          <DialogContent className="max-w-4xl max-h-[90vh] p-0" aria-describedby="catch-photo-description">
-            <div className="relative">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="absolute top-4 right-4 z-50 bg-black/20 text-white hover:bg-black/40"
-                onClick={() => setSelectedPhoto(null)}
-              >
-                <X className="w-4 h-4" strokeWidth={1.75} />
-              </Button>
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
               
-              {selectedPhoto && (
-                <div className="flex flex-col">
-                  <div className="relative">
-                    <img 
-                      src={selectedPhoto.url}
-                      alt="Zväčšená fotografia úlovku"
-                      className="w-full h-auto max-h-[70vh] object-contain"
-                    />
-                  </div>
-                  
-                  <div className="p-6 bg-background border-t">
-                    <DialogHeader>
-                      <DialogTitle className="text-xl font-bold text-foreground">
-                        {selectedPhoto.teamName}
-                      </DialogTitle>
-                      <p id="catch-photo-description" className="text-sm text-muted-foreground mb-2">
-                        Detail úlovku s váhou a typom ryby
-                      </p>
-                      <div className="flex items-center space-x-4 mt-2">
-                        <div className="font-mono font-medium text-[#F97316] text-2xl">
-                          {selectedPhoto.weight}
-                        </div>
-                        <Badge variant="outline" className="text-base px-3 py-1">
-                          {selectedPhoto.fishType}
-                        </Badge>
+              <div className="relative">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setIsFilterOpen(!isFilterOpen)}
+                  className="h-full gap-2 border-border bg-card text-muted-foreground px-3 py-0 min-w-[130px] justify-between hover:bg-muted"
+                >
+                  <span className="flex items-center gap-2 text-xs font-medium">
+                    <Calendar size={14} /> 
+                    {getFilterLabel()}
+                  </span>
+                  <ChevronDown size={14} className={`text-muted-foreground transition-transform ${isFilterOpen ? 'rotate-180' : ''}`} />
+                </Button>
+
+                {isFilterOpen && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={() => setIsFilterOpen(false)} />
+                    <div className="absolute top-full right-0 mt-2 w-48 bg-card border border-border rounded-lg shadow-xl z-20 py-1 overflow-hidden">
+                      {[
+                        { id: 'all', label: 'Všetky dni' },
+                        { id: 'today', label: 'Dnes' },
+                        { id: 'yesterday', label: 'Včera' }
+                      ].map((opt) => (
+                        <button
+                          key={opt.id}
+                          onClick={() => { setSelectedFilter(opt.id); setIsFilterOpen(false); }}
+                          className="w-full text-left px-4 py-2.5 text-sm text-foreground hover:bg-muted flex items-center justify-between transition-colors border-b border-border/50 last:border-0"
+                        >
+                          {opt.label}
+                          {selectedFilter === opt.id && <Check size={14} className="text-[#F97316]" />}
+                        </button>
+                      ))}
+                      <div className="bg-muted/30 p-1">
+                        <button 
+                          onClick={handleResetFilters}
+                          className="w-full text-left px-3 py-2 text-xs text-muted-foreground hover:text-[#F97316] font-medium flex items-center gap-2 hover:bg-muted rounded transition-colors"
+                        >
+                          <RotateCcw size={12} />
+                          Resetovať filtre
+                        </button>
                       </div>
-                    </DialogHeader>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
+        
+        {heroCatch && (
+          <div 
+            onClick={() => setSelectedCatch(heroCatch)}
+            className={`mb-8 relative w-full overflow-hidden rounded-xl border bg-card shadow-lg cursor-pointer group hover:border-[#F97316]/50 transition-all
+              ${safeWeight(heroCatch.weight) >= bigFishThreshold ? 'border-amber-500/30' : 'border-border'}
+            `}
+          >
+            <div className="flex flex-col md:flex-row">
+              <div className="w-full md:w-5/12 aspect-video relative overflow-hidden bg-muted border-b md:border-b-0 md:border-r border-border">
+                {heroCatch.photoUrl ? (
+                  <img src={heroCatch.photoUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-muted-foreground"><Camera size={48} /></div>
+                )}
+                <div className="absolute top-3 left-3">
+                  {isHeroVeryRecent ? (
+                    <span className="bg-[#F97316] text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded shadow-lg flex items-center gap-1">
+                      Nový úlovok
+                    </span>
+                  ) : heroCatch.id === topCatchTodayId ? (
+                    <span className="bg-amber-500 text-slate-900 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded shadow-lg flex items-center gap-1">
+                      <Crown size={12} fill="currentColor" /> Top dnes
+                    </span>
+                  ) : (
+                    <span className="bg-card border border-border text-foreground text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded shadow-lg">
+                      Najnovšie
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex-1 p-5 md:p-6 flex flex-col justify-center relative z-10">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="text-xs font-bold text-muted-foreground uppercase">
+                    {getRelativeTime(heroCatch.submittedAt)}
                   </div>
                 </div>
-              )}
+
+                <div className="mb-3">
+                  <div className="flex items-baseline gap-2">
+                    <h2 className="text-5xl font-black italic text-foreground tracking-tighter tabular-nums leading-none">
+                      {safeWeight(heroCatch.weight).toFixed(2)}
+                    </h2>
+                    <span className="text-xl font-bold text-muted-foreground">kg</span>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-xl font-bold text-foreground mb-1 group-hover:text-[#F97316] transition-colors flex items-center gap-2">
+                    {heroCatch.team?.name || 'Neznámy tím'}
+                    {heroCatch.id === topCatchTodayId && <Crown size={18} className="text-amber-500 fill-amber-500" />}
+                    {recentCatchIds.includes(heroCatch.id) && heroCatch.id !== topCatchTodayId && <Sparkles size={18} className="text-blue-400 fill-blue-400" />}
+                  </h3>
+                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <span className="flex items-center gap-1 text-foreground/70 font-medium">Sektor {heroCatch.sector?.trim()}</span>
+                    <span className="w-1 h-1 bg-border rounded-full" />
+                    <FishBadge type={heroCatch.fishType} />
+                  </div>
+                </div>
+              </div>
             </div>
-          </DialogContent>
-        </Dialog>
-      </div>
+          </div>
+        )}
+
+        {processedCatches.length > 0 ? (
+          <div className="space-y-8">
+            
+            {getListWithoutHero(groupedCatches.today).length > 0 && (
+              <section>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">Dnes</span>
+                  <span className="h-px flex-1 bg-border/50" />
+                </div>
+                <div className="space-y-2">
+                  {getListWithoutHero(groupedCatches.today).map(c => (
+                    <CatchRow 
+                      key={c.id} 
+                      data={c} 
+                      isTopToday={c.id === topCatchTodayId}
+                      isRecent={recentCatchIds.includes(c.id)}
+                      isBigFish={safeWeight(c.weight) >= bigFishThreshold}
+                      onClick={() => setSelectedCatch(c)} 
+                      userRole={userRole}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {getListWithoutHero(groupedCatches.yesterday).length > 0 && (
+              <section>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">Včera</span>
+                  <span className="h-px flex-1 bg-border/50" />
+                </div>
+                <div className="space-y-2">
+                  {getListWithoutHero(groupedCatches.yesterday).map(c => (
+                    <CatchRow 
+                      key={c.id} 
+                      data={c} 
+                      isTopToday={false}
+                      isRecent={false}
+                      isBigFish={safeWeight(c.weight) >= bigFishThreshold}
+                      onClick={() => setSelectedCatch(c)} 
+                      userRole={userRole}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {getListWithoutHero(groupedCatches.older).length > 0 && (
+              <section>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">Staršie</span>
+                  <span className="h-px flex-1 bg-border/50" />
+                </div>
+                <div className="space-y-2">
+                  {getListWithoutHero(groupedCatches.older).map(c => (
+                    <CatchRow 
+                      key={c.id} 
+                      data={c} 
+                      isTopToday={false}
+                      isRecent={false}
+                      isBigFish={safeWeight(c.weight) >= bigFishThreshold}
+                      onClick={() => setSelectedCatch(c)} 
+                      userRole={userRole}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+          </div>
+        ) : (
+          <div className="py-20 text-center border border-dashed border-border rounded-xl bg-card/20">
+            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto text-muted-foreground mb-4">
+              <Fish size={24} />
+            </div>
+            <h3 className="text-base font-semibold text-foreground">
+              {searchQuery || selectedFilter !== 'all' ? 'Žiadne úlovky pre tento filter' : 'Zatiaľ žiadne úlovky'}
+            </h3>
+            <p className="text-muted-foreground text-sm mt-1">
+              {searchQuery || selectedFilter !== 'all' 
+                ? 'Skús zmeniť deň alebo vymazať vyhľadávanie.' 
+                : 'Počkajte na prvé úlovky od účastníkov súťaže.'}
+            </p>
+            {(searchQuery || selectedFilter !== 'all') && (
+              <Button variant="outline" className="mt-4" onClick={handleResetFilters}>
+                Vymazať filter
+              </Button>
+            )}
+          </div>
+        )}
+      </main>
+
+      {selectedCatch && (
+        <CatchDetailModal 
+          data={selectedCatch} 
+          onClose={() => setSelectedCatch(null)} 
+          userRole={userRole}
+          isTopToday={selectedCatch.id === topCatchTodayId}
+          isBigFish={safeWeight(selectedCatch.weight) >= bigFishThreshold}
+        />
+      )}
     </div>
   );
 }
