@@ -1,0 +1,584 @@
+import React, { useState, useMemo } from "react";
+import { 
+  ArrowLeft, Fish, Calendar, Clock, User, 
+  Camera, X, Search, MapPin, CheckCircle2, 
+  AlertCircle, XCircle, Timer, ChevronDown, Check, Sparkles, RotateCcw, Activity, Crown, Gavel, Eye
+} from "lucide-react";
+
+// --- CONFIGURATION ---
+const USER_ROLE = 'admin'; // 'viewer' | 'participant' | 'admin' | 'referee'
+const COMPETITION_STATUS = 'live'; 
+
+// --- UTILS & COMPONENTS ---
+
+const Button = ({ children, className = "", variant = "primary", size = "md", active = false, ...props }) => {
+  const baseStyles = "inline-flex items-center justify-center rounded-lg font-bold tracking-wide transition-all active:scale-95 disabled:opacity-50 whitespace-nowrap";
+  
+  const variants = {
+    primary: "bg-[#F97316] text-white hover:bg-orange-600 shadow-sm border border-orange-500/20 shadow-[0_0_15px_rgba(249,115,22,0.15)]",
+    secondary: "bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 border border-slate-700",
+    ghost: "bg-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800",
+    outline: "bg-transparent border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500",
+    success: "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border border-emerald-500/20",
+    danger: "bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20"
+  };
+  
+  const sizes = {
+    xs: "px-2 py-1 text-[10px]",
+    sm: "px-3 py-1.5 text-xs",
+    md: "px-4 py-2.5 text-sm",
+    lg: "px-6 py-3 text-base"
+  };
+
+  const variantClass = variants[variant] || variants.primary;
+
+  return (
+    <button className={`${baseStyles} ${variantClass} ${sizes[size]} ${className}`} {...props}>
+      {children}
+    </button>
+  );
+};
+
+const StatusBadge = ({ status }) => {
+  const config = {
+    verified: { icon: CheckCircle2, text: "Potvrdené", mobileText: "OK", color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
+    pending: { icon: Timer, text: "Čaká na rozhodcu", mobileText: "Čaká", color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/20" },
+    rejected: { icon: XCircle, text: "Vrátené na opravu", mobileText: "Vrátené", color: "text-red-400", bg: "bg-red-500/10 border-red-500/20" },
+  };
+  
+  const current = config[status] || config.pending;
+  const Icon = current.icon;
+
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${current.bg} ${current.color}`}>
+      <Icon size={12} strokeWidth={2.5} />
+      <span className="hidden sm:inline">{current.text}</span>
+      <span className="sm:hidden">{current.mobileText}</span>
+    </span>
+  );
+};
+
+const FishBadge = ({ type }) => {
+  const isMirror = type === 'mirror';
+  return (
+    <span className={`px-1.5 py-px rounded text-[10px] font-bold uppercase tracking-wide border ${
+      isMirror 
+        ? "bg-blue-500/10 text-blue-400 border-blue-500/20" 
+        : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+    }`}>
+      {isMirror ? 'Lysec' : 'Šupináč'}
+    </span>
+  );
+};
+
+const getRelativeTime = (dateString) => {
+  const date = new Date(dateString);
+  const now = new Date(); 
+  const diffInSeconds = Math.floor((now - date) / 1000);
+
+  if (diffInSeconds < 60) return 'Práve teraz';
+  if (diffInSeconds < 3600) return `pred ${Math.floor(diffInSeconds / 60)} min`;
+  if (diffInSeconds < 86400) return `pred ${Math.floor(diffInSeconds / 3600)} hod`;
+  return date.toLocaleDateString('sk-SK', { day: 'numeric', month: 'short' });
+};
+
+// --- MOCK DATA ---
+const NOW = new Date();
+const TODAY_STR = NOW.toISOString().split('T')[0];
+const YESTERDAY_STR = new Date(NOW - 86400000).toISOString().split('T')[0];
+
+const RECENT_CATCH_TIME = new Date(NOW - 1 * 60000).toISOString(); // Changed to 1 min for demo purposes
+const OLDER_CATCH_TIME = new Date(NOW - 45 * 60000).toISOString(); 
+
+const MOCK_CATCHES = [
+  { 
+    id: '1', 
+    weight: 18.42, 
+    fishType: 'mirror', 
+    team: 'CT Michalovce', 
+    sector: 'A1', 
+    submittedAt: RECENT_CATCH_TIME, 
+    photo: 'https://images.unsplash.com/photo-1544767331-158282494541?w=400', 
+    status: 'verified',
+    referee: 'M. Kováč',
+    rejectionReason: null
+  },
+  { 
+    id: '2', 
+    weight: 12.10, 
+    fishType: 'scaly', 
+    team: 'Fish Hunters SK', 
+    sector: 'B4', 
+    submittedAt: OLDER_CATCH_TIME, 
+    photo: 'https://images.unsplash.com/photo-1516246843873-9d12356b6fab?w=400', 
+    status: 'pending',
+    referee: null,
+    rejectionReason: null
+  },
+  { 
+    id: '3', 
+    weight: 21.05, 
+    fishType: 'mirror', 
+    team: 'Carp Marauders', 
+    sector: 'C2', 
+    submittedAt: `${YESTERDAY_STR}T23:15:22`, 
+    photo: 'https://images.unsplash.com/photo-1499242015907-fd91d5d02f13?w=400', 
+    status: 'verified',
+    referee: 'M. Kováč',
+    rejectionReason: null
+  },
+  { 
+    id: '4', 
+    weight: 9.80, 
+    fishType: 'scaly', 
+    team: 'Liptovskí Vlci', 
+    sector: 'A2', 
+    submittedAt: `${YESTERDAY_STR}T09:30:15`, 
+    photo: null, 
+    status: 'rejected',
+    referee: 'P. Horváth',
+    rejectionReason: "Nečitateľná váha na fotografii."
+  },
+  { 
+    id: '5', 
+    weight: 15.60, 
+    fishType: 'mirror', 
+    team: 'Team Fox Slovakia', 
+    sector: 'B1', 
+    submittedAt: `${YESTERDAY_STR}T08:44:12`, 
+    photo: 'https://images.unsplash.com/photo-1544767331-158282494541?w=400', 
+    status: 'verified',
+    referee: 'J. Nagy',
+    rejectionReason: null
+  },
+];
+
+export default function CompetitionCatches() {
+  const [selectedFilter, setSelectedFilter] = useState('all'); 
+  const [selectedCatch, setSelectedCatch] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  // 1. DATA PIPELINE
+  
+  // Sorting & Basic Visibility Logic
+  const viewableCatches = useMemo(() => {
+    // NOTE: In production, `MOCK_CATCHES` would be a prop or store selector.
+    // The dependency array is empty here because MOCK_CATCHES is a file-level constant.
+    const sorted = [...MOCK_CATCHES].sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+    
+    return sorted.filter(c => {
+      if (USER_ROLE === 'admin' || USER_ROLE === 'referee') return true;
+      if (USER_ROLE === 'viewer') return c.status === 'verified';
+      return c.status === 'verified';
+    });
+  }, []); 
+
+  // --- DYNAMIC MOMENTS LOGIC ---
+
+  // A) Find Top Catch of TODAY (Dynamic, no fixed threshold)
+  const topCatchTodayId = useMemo(() => {
+    const todays = viewableCatches.filter(c => {
+       const d = new Date(c.submittedAt).toISOString().split('T')[0];
+       return d === TODAY_STR && c.status === 'verified';
+    });
+    if (todays.length === 0) return null;
+    return todays.reduce((prev, curr) => (prev.weight > curr.weight ? prev : curr)).id;
+  }, [viewableCatches]);
+
+  // B) Identify Recent Catches (Stricter Windows)
+  const recentCatchIds = useMemo(() => {
+    // 5 mins for "Recently" sparkle (reduced from 15)
+    const threshold = Date.now() - (5 * 60 * 1000);
+    return viewableCatches
+      .filter(c => new Date(c.submittedAt).getTime() > threshold)
+      .map(c => c.id);
+  }, [viewableCatches]);
+
+  // C) Filtering & Grouping
+  const { processedCatches, groupedCatches } = useMemo(() => {
+    const filtered = viewableCatches.filter(c => {
+      const date = c.submittedAt.split('T')[0];
+      const matchesDate = 
+        selectedFilter === 'all' ? true :
+        selectedFilter === 'today' ? date === TODAY_STR :
+        selectedFilter === 'yesterday' ? date === YESTERDAY_STR : true; 
+
+      const q = searchQuery.toLowerCase();
+      const matchesSearch = 
+        c.team.toLowerCase().includes(q) || 
+        c.sector.toLowerCase().includes(q) ||
+        c.weight.toString().includes(q);
+      
+      return matchesDate && matchesSearch;
+    });
+
+    // Grouping Logic
+    const groups = { today: [], yesterday: [], older: [] };
+    filtered.forEach(c => {
+       const d = new Date(c.submittedAt).toISOString().split('T')[0];
+       if (d === TODAY_STR) groups.today.push(c);
+       else if (d === YESTERDAY_STR) groups.yesterday.push(c);
+       else groups.older.push(c);
+    });
+
+    return { processedCatches: filtered, groupedCatches: groups };
+  }, [viewableCatches, selectedFilter, searchQuery]);
+
+
+  // D) Smart Hero Logic
+  // Priority: 1. New Catch (<2 min) -> 2. Top Today -> 3. Newest
+  const heroCatch = useMemo(() => {
+    if (selectedFilter !== 'all' || searchQuery !== '') return null; // Only on dashboard view
+    if (processedCatches.length === 0) return null;
+
+    const newest = processedCatches[0];
+    // Strict "New Catch" window: 2 minutes
+    const isNew = (Date.now() - new Date(newest.submittedAt).getTime()) < (2 * 60 * 1000);
+    
+    if (isNew) return newest;
+    
+    // If no breaking news, show Top of Day if it exists
+    if (topCatchTodayId) {
+       const top = processedCatches.find(c => c.id === topCatchTodayId);
+       if (top) return top;
+    }
+
+    // Fallback to newest
+    return newest;
+  }, [processedCatches, topCatchTodayId, selectedFilter, searchQuery]);
+
+
+  const getFilterLabel = () => {
+    switch(selectedFilter) {
+      case 'today': return 'Dnes';
+      case 'yesterday': return 'Včera';
+      default: return 'Všetky dni';
+    }
+  };
+
+  const handleResetFilters = () => {
+    setSelectedFilter('all');
+    setSearchQuery("");
+    setIsFilterOpen(false);
+  };
+
+  // Helper to remove Hero from list
+  const getListWithoutHero = (list) => {
+      return heroCatch ? list.filter(c => c.id !== heroCatch.id) : list;
+  };
+
+  // Helper for Hero Badge logic
+  const isHeroVeryRecent = useMemo(() => {
+    if (!heroCatch) return false;
+    const catchTime = new Date(heroCatch.submittedAt).getTime();
+    return (Date.now() - catchTime) < (2 * 60 * 1000); // less than 2 mins
+  }, [heroCatch]);
+
+  // NEW: Calculate today's total count for Header
+  const todayTotalCount = useMemo(() => {
+    return viewableCatches.filter(c => c.submittedAt.startsWith(TODAY_STR)).length;
+  }, [viewableCatches]);
+
+  // NEW: Context-aware Header Stats Text
+  const headerStatsText = useMemo(() => {
+    if (searchQuery) return `Nájdené: ${processedCatches.length}`;
+    
+    if (selectedFilter === 'today') return `Dnes: ${processedCatches.length}`;
+    if (selectedFilter === 'yesterday') return `Včera: ${processedCatches.length}`;
+    
+    // Default 'all' view
+    return todayTotalCount > 0 
+      ? `Dnes: ${todayTotalCount} • Spolu: ${viewableCatches.length}`
+      : `Spolu: ${viewableCatches.length}`;
+  }, [selectedFilter, searchQuery, processedCatches.length, todayTotalCount, viewableCatches.length]);
+
+  return (
+    <div className="min-h-screen bg-slate-950 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-slate-950 text-slate-200 font-sans pb-20 selection:bg-orange-500/30">
+      
+      {/* HEADER SECTION */}
+      <header className="bg-slate-950/80 border-b border-slate-800/80 pt-6 pb-4 sticky top-0 z-40 backdrop-blur-xl">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+          <div className="flex items-center gap-2 mb-4">
+             <Button variant="ghost" size="sm" className="pl-0 hover:bg-transparent text-slate-500 hover:text-white group transition-colors">
+                <ArrowLeft className="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" /> Späť
+             </Button>
+          </div>
+          
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="space-y-1">
+              <div className="flex items-center gap-3">
+                <h1 className="text-2xl md:text-3xl font-black italic text-white tracking-tighter uppercase">
+                  Úlovky
+                </h1>
+                {COMPETITION_STATUS === 'live' && (
+                  <span className="text-[10px] font-bold bg-red-500 text-white px-2 py-0.5 rounded uppercase tracking-wider shadow-[0_0_10px_rgba(239,68,68,0.4)]">
+                    LIVE
+                  </span>
+                )}
+              </div>
+              
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-slate-400">
+                <span className="font-medium text-slate-500">Zemplínska Šírava</span>
+                
+                {/* CONTEXT AWARE HEADER COUNT */}
+                <span className="text-slate-500">
+                  • {headerStatsText}
+                </span>
+
+                {/* Removed redundant secondary indicator, as main header now handles context */}
+              </div>
+            </div>
+
+            <div className="flex gap-2 w-full md:w-auto">
+              <div className="relative flex-1 md:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={14} />
+                <input 
+                  type="text"
+                  placeholder="Hľadať tím, sektor, váhu..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-700/50 rounded-lg py-2.5 pl-9 pr-8 text-sm text-white placeholder:text-slate-600 focus:ring-1 focus:ring-[#F97316] focus:border-[#F97316] transition-all outline-none"
+                />
+                {searchQuery && (
+                  <button 
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+              
+              <div className="relative">
+                <Button 
+                  variant="secondary" 
+                  size="sm" 
+                  onClick={() => setIsFilterOpen(!isFilterOpen)}
+                  className="h-full gap-2 border-slate-700/50 bg-slate-900 text-slate-300 px-3 py-0 min-w-[130px] justify-between hover:bg-slate-800"
+                >
+                  <span className="flex items-center gap-2 text-xs font-medium">
+                    <Calendar size={14} /> 
+                    {getFilterLabel()}
+                  </span>
+                  <ChevronDown size={14} className={`text-slate-500 transition-transform ${isFilterOpen ? 'rotate-180' : ''}`} />
+                </Button>
+
+                {isFilterOpen && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={() => setIsFilterOpen(false)} />
+                    <div className="absolute top-full right-0 mt-2 w-48 bg-[#0B1120] border border-slate-700 rounded-lg shadow-xl shadow-black/50 z-20 py-1 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+                      {[
+                        { id: 'all', label: 'Všetky dni' },
+                        { id: 'today', label: 'Dnes' },
+                        { id: 'yesterday', label: 'Včera' }
+                      ].map((opt) => (
+                        <button
+                          key={opt.id}
+                          onClick={() => { setSelectedFilter(opt.id); setIsFilterOpen(false); }}
+                          className="w-full text-left px-4 py-2.5 text-sm text-slate-300 hover:bg-slate-800 hover:text-white flex items-center justify-between group transition-colors border-b border-slate-800/50 last:border-0"
+                        >
+                          {opt.label}
+                          {selectedFilter === opt.id && <Check size={14} className="text-[#F97316]" />}
+                        </button>
+                      ))}
+                      <div className="bg-slate-900/50 p-1">
+                        <button 
+                          onClick={handleResetFilters}
+                          className="w-full text-left px-3 py-2 text-xs text-slate-500 hover:text-[#F97316] font-medium flex items-center gap-2 hover:bg-slate-800 rounded transition-colors"
+                        >
+                          <RotateCcw size={12} />
+                          Resetovať filtre
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
+        
+        {/* HERO CARD - Intelligent Selection */}
+        {heroCatch && (
+          <div 
+            onClick={() => setSelectedCatch(heroCatch)}
+            className={`mb-8 relative w-full overflow-hidden rounded-xl border bg-gradient-to-br from-[#1c1917] to-slate-950 shadow-2xl shadow-orange-900/10 cursor-pointer group hover:border-orange-500/50 transition-all ring-1 ring-white/5
+              ${heroCatch.status === 'pending' ? 'border-amber-500/30' : heroCatch.status === 'rejected' ? 'border-red-500/30' : 'border-orange-500/30'}
+            `}
+          >
+             <div className="flex flex-col md:flex-row">
+                {/* Hero Photo */}
+                <div className="w-full md:w-5/12 aspect-video relative overflow-hidden bg-slate-900 border-b md:border-b-0 md:border-r border-slate-800">
+                   {heroCatch.photo ? (
+                      <img src={heroCatch.photo} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Hero Catch" />
+                   ) : (
+                      <div className="w-full h-full flex items-center justify-center text-slate-600"><Camera size={48} /></div>
+                   )}
+                   {/* Dynamic Hero Badge - Strict Priority Order */}
+                   <div className="absolute top-3 left-3">
+                      {isHeroVeryRecent ? (
+                         <span className={`${heroCatch.status === 'pending' ? 'bg-amber-500 text-slate-900' : 'bg-[#F97316] text-white'} text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded shadow-lg flex items-center gap-1`}>
+                           {heroCatch.status === 'pending' ? (
+                             <>Nové hlásenie</>
+                           ) : (
+                             <>Nový úlovok</>
+                           )}
+                         </span>
+                      ) : heroCatch.id === topCatchTodayId ? (
+                         <span className="bg-amber-500 text-[#0F172A] text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded shadow-lg flex items-center gap-1">
+                           <Crown size={12} fill="currentColor" /> Top dnes
+                         </span>
+                      ) : (
+                         <span className="bg-slate-800 border border-slate-700 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded shadow-lg">
+                           Najnovšie
+                         </span>
+                      )}
+                   </div>
+                </div>
+
+                {/* Hero Info */}
+                <div className="flex-1 p-5 md:p-6 flex flex-col justify-center relative z-10">
+                   {/* REMOVED STATUS BADGE FROM HERE */}
+                   <div className="flex items-center justify-between mb-3">
+                      <div className="text-xs font-bold text-slate-500 uppercase">
+                         {getRelativeTime(heroCatch.submittedAt)}
+                      </div>
+                      {/* Subtly indicate status for Admin only if needed, but visually removed for clean feed */}
+                      {['admin', 'referee'].includes(USER_ROLE) && heroCatch.status !== 'verified' && (
+                         <span className={`text-[9px] uppercase font-bold tracking-widest px-1.5 py-0.5 rounded border 
+                           ${heroCatch.status === 'pending' ? 'text-amber-500 border-amber-500/20 bg-amber-500/5' : 'text-red-500 border-red-500/20 bg-red-500/5'}`}>
+                            {heroCatch.status === 'pending' ? 'Čaká' : 'Vrátené'}
+                         </span>
+                      )}
+                   </div>
+
+                   <div className="mb-3">
+                      <div className="flex items-baseline gap-2">
+                        <h2 className="text-5xl font-black italic text-white tracking-tighter tabular-nums leading-none">
+                          {heroCatch.weight.toFixed(2)}
+                        </h2>
+                        <span className="text-xl font-bold text-slate-500">kg</span>
+                      </div>
+                   </div>
+
+                   <div>
+                      <h3 className="text-xl font-bold text-white mb-1 group-hover:text-[#F97316] transition-colors flex items-center gap-2">
+                        {heroCatch.team}
+                        {/* Dynamic Icon Indicator */}
+                        {heroCatch.id === topCatchTodayId && <Crown size={18} className="text-amber-500 fill-amber-500" />}
+                        {recentCatchIds.includes(heroCatch.id) && heroCatch.id !== topCatchTodayId && <Sparkles size={18} className="text-blue-400 fill-blue-400" />}
+                      </h3>
+                      <div className="flex items-center gap-3 text-sm text-slate-400">
+                         <span className="flex items-center gap-1 text-slate-300 font-medium">Sektor {heroCatch.sector}</span>
+                         <span className="w-1 h-1 bg-slate-700 rounded-full"></span>
+                         <FishBadge type={heroCatch.fishType} />
+                      </div>
+                   </div>
+                </div>
+             </div>
+          </div>
+        )}
+
+        {/* CATCH LIST - GROUPED */}
+        {processedCatches.length > 0 ? (
+          <div className="space-y-8">
+            
+            {/* GROUP: TODAY */}
+            {getListWithoutHero(groupedCatches.today).length > 0 && (
+              <section>
+                 <div className="flex items-center gap-2 mb-3">
+                    <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Dnes</span>
+                    <span className="h-px flex-1 bg-slate-800/50"></span>
+                 </div>
+                 <div className="space-y-2">
+                    {getListWithoutHero(groupedCatches.today).map(c => (
+                      <CatchRow 
+                        key={c.id} 
+                        data={c} 
+                        isTopToday={c.id === topCatchTodayId}
+                        isRecent={recentCatchIds.includes(c.id)}
+                        onClick={() => setSelectedCatch(c)} 
+                        userRole={USER_ROLE}
+                      />
+                    ))}
+                 </div>
+              </section>
+            )}
+
+            {/* GROUP: YESTERDAY */}
+            {getListWithoutHero(groupedCatches.yesterday).length > 0 && (
+              <section>
+                 <div className="flex items-center gap-2 mb-3">
+                    <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Včera</span>
+                    <span className="h-px flex-1 bg-slate-800/50"></span>
+                 </div>
+                 <div className="space-y-2">
+                    {getListWithoutHero(groupedCatches.yesterday).map(c => (
+                      <CatchRow 
+                        key={c.id} 
+                        data={c} 
+                        isTopToday={false} // Yesterday can't be top of "today"
+                        isRecent={false}
+                        onClick={() => setSelectedCatch(c)} 
+                        userRole={USER_ROLE}
+                      />
+                    ))}
+                 </div>
+              </section>
+            )}
+
+            {/* GROUP: OLDER */}
+            {getListWithoutHero(groupedCatches.older).length > 0 && (
+              <section>
+                 <div className="flex items-center gap-2 mb-3">
+                    <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Staršie</span>
+                    <span className="h-px flex-1 bg-slate-800/50"></span>
+                 </div>
+                 <div className="space-y-2">
+                    {getListWithoutHero(groupedCatches.older).map(c => (
+                      <CatchRow 
+                        key={c.id} 
+                        data={c} 
+                        isTopToday={false}
+                        isRecent={false}
+                        onClick={() => setSelectedCatch(c)} 
+                        userRole={USER_ROLE}
+                      />
+                    ))}
+                 </div>
+              </section>
+            )}
+
+          </div>
+        ) : (
+          <div className="py-20 text-center border border-dashed border-slate-800 rounded-xl bg-slate-900/20">
+            <div className="w-16 h-16 bg-slate-900 rounded-full flex items-center justify-center mx-auto text-slate-600 mb-4">
+              <Filter size={24} />
+            </div>
+            <h3 className="text-base font-semibold text-white">Žiadne úlovky pre tento filter</h3>
+            <p className="text-slate-500 text-sm mt-1">
+              Skús zmeniť deň alebo vymazať vyhľadávanie.
+            </p>
+            <Button variant="secondary" className="mt-4" onClick={handleResetFilters}>
+              Vymazať filter
+            </Button>
+          </div>
+        )}
+      </main>
+
+      {/* DETAIL MODAL */}
+      {selectedCatch && (
+        <CatchDetailModal 
+           data={selectedCatch} 
+           onClose={() => setSelectedCatch(null)} 
+           userRole={USER_ROLE}
+           isTopToday={selectedCatch.id === topCatchTodayId}
+        />
+      )}
+    </div>
+  );
+}
