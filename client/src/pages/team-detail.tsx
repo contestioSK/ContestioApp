@@ -246,7 +246,7 @@ export default function TeamDetail() {
 
         <div className="grid lg:grid-cols-3 gap-10">
 
-          <div className="lg:col-span-2 space-y-6">
+          <div className="order-2 lg:order-1 lg:col-span-2 space-y-6">
             <div className="flex items-center justify-between border-b border-border pb-4">
               <h2 className="text-xl font-black italic text-foreground uppercase tracking-wide flex items-center gap-2">
                 <Fish className="text-[#F97316]" size={24} /> Úlovky tímu
@@ -277,7 +277,7 @@ export default function TeamDetail() {
             )}
           </div>
 
-          <div className="space-y-6">
+          <div className="order-1 lg:order-2 space-y-6">
             <div className="flex items-center justify-between border-b border-border pb-4">
               <h2 className="text-xl font-black italic text-foreground uppercase tracking-wide flex items-center gap-2">
                 <Users className="text-muted-foreground" size={24} /> Súpiska
