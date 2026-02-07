@@ -508,14 +508,15 @@ export default function CompetitionDetail() {
     <div className="min-h-screen bg-background text-foreground pb-24">
       
       {/* 1. ATMOSPHERIC HEADER */}
-      <header className="relative overflow-hidden border-b border-border bg-card">
+      <header className="relative overflow-hidden border-b border-border/50 bg-card/80 backdrop-blur-xl header-glow">
         {/* Blur Background */}
         {competition.imageUrl && (
-          <div className="absolute inset-0 opacity-20 pointer-events-none">
-            <img src={competition.imageUrl} className="w-full h-full object-cover blur-3xl scale-110" alt="" />
+          <div className="absolute inset-0 opacity-15 pointer-events-none">
+            <img src={competition.imageUrl} className="w-full h-full object-cover blur-3xl scale-125" alt="" />
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-card/40 via-card/60 to-background"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-orange-500/30 to-transparent"></div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6 pt-6 pb-6">
           {/* MOBILE: Nav Row with Back + Overflow */}
@@ -884,33 +885,33 @@ export default function CompetitionDetail() {
         </DialogContent>
       </Dialog>
 
-      {/* 2. STATS CARDS GRID (2x2 mobile, 4 cols desktop) */}
+      {/* 2. STATS CARDS GRID (2x2 mobile, 4 cols desktop) - overlaps header */}
       {!isRegistration && (
-        <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-6">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 -mt-4 md:-mt-6 relative z-20">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
-            <div className="bg-card border border-border rounded-lg md:rounded-xl p-2.5 md:p-4 flex flex-col items-center text-center">
-              <div className="p-1.5 md:p-2 bg-cyan-500/10 rounded-lg md:rounded-xl text-cyan-500 mb-1.5 md:mb-2"><Fish size={16} className="md:hidden" /><Fish size={20} className="hidden md:block" /></div>
-              <div className="text-lg md:text-3xl font-black text-foreground">{liveStats.totalFish} <span className="text-xs md:text-sm font-normal text-muted-foreground">ks</span></div>
-              <div className="text-[9px] md:text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Úlovky spolu</div>
+            <div className="bg-card border border-border rounded-xl p-3 md:p-5 flex flex-col items-center text-center hover:border-cyan-500/30 transition-all group">
+              <div className="p-2 md:p-3 bg-cyan-500/10 rounded-xl text-cyan-500 mb-2 md:mb-3 group-hover:scale-110 transition-transform"><Fish size={18} className="md:hidden" /><Fish size={22} className="hidden md:block" /></div>
+              <div className="text-xl md:text-3xl font-mono font-medium text-[#F97316]">{liveStats.totalFish} <span className="text-xs md:text-sm font-normal text-muted-foreground">ks</span></div>
+              <div className="text-[9px] md:text-[10px] text-muted-foreground uppercase font-bold tracking-wider mt-1">Úlovky spolu</div>
             </div>
-            <div className="bg-card border border-border rounded-lg md:rounded-xl p-2.5 md:p-4 flex flex-col items-center text-center">
-              <div className="p-1.5 md:p-2 bg-emerald-500/10 rounded-lg md:rounded-xl text-emerald-500 mb-1.5 md:mb-2"><Activity size={16} className="md:hidden" /><Activity size={20} className="hidden md:block" /></div>
-              <div className="text-lg md:text-3xl font-black text-foreground">{liveStats.totalWeight.toFixed(1)} <span className="text-xs md:text-sm font-normal text-muted-foreground">kg</span></div>
-              <div className="text-[9px] md:text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Celková váha</div>
+            <div className="bg-card border border-border rounded-xl p-3 md:p-5 flex flex-col items-center text-center hover:border-emerald-500/30 transition-all group">
+              <div className="p-2 md:p-3 bg-emerald-500/10 rounded-xl text-emerald-500 mb-2 md:mb-3 group-hover:scale-110 transition-transform"><Activity size={18} className="md:hidden" /><Activity size={22} className="hidden md:block" /></div>
+              <div className="text-xl md:text-3xl font-mono font-medium text-[#F97316]">{liveStats.totalWeight.toFixed(1)} <span className="text-xs md:text-sm font-normal text-muted-foreground">kg</span></div>
+              <div className="text-[9px] md:text-[10px] text-muted-foreground uppercase font-bold tracking-wider mt-1">Celková váha</div>
             </div>
             <div 
-              className={`bg-card border border-border rounded-lg md:rounded-xl p-2.5 md:p-4 flex flex-col items-center text-center ${biggestCatchObj ? 'cursor-pointer hover:bg-muted/50 hover:border-amber-500/30 transition-all' : ''}`}
+              className={`bg-card border border-border rounded-xl p-3 md:p-5 flex flex-col items-center text-center transition-all group ${biggestCatchObj ? 'cursor-pointer hover:border-amber-500/30' : ''}`}
               onClick={() => biggestCatchObj && setEntityModal({ view: 'catch', team: null, catch_: biggestCatchObj, previousView: null })}
             >
-              <div className="p-1.5 md:p-2 bg-amber-500/10 rounded-lg md:rounded-xl text-amber-500 mb-1.5 md:mb-2"><Trophy size={16} className="md:hidden" /><Trophy size={20} className="hidden md:block" /></div>
-              <div className="text-lg md:text-3xl font-black text-foreground">{liveStats.biggestFish.toFixed(1)} <span className="text-xs md:text-sm font-normal text-muted-foreground">kg</span></div>
-              <div className="text-[9px] md:text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Najväčšia ryba</div>
-              {biggestCatchObj && <div className="text-[8px] md:text-[9px] text-amber-500 mt-0.5 md:mt-1">Klikni pre detail</div>}
+              <div className="p-2 md:p-3 bg-amber-500/10 rounded-xl text-amber-500 mb-2 md:mb-3 group-hover:scale-110 transition-transform"><Trophy size={18} className="md:hidden" /><Trophy size={22} className="hidden md:block" /></div>
+              <div className="text-xl md:text-3xl font-mono font-medium text-[#F97316]">{liveStats.biggestFish.toFixed(1)} <span className="text-xs md:text-sm font-normal text-muted-foreground">kg</span></div>
+              <div className="text-[9px] md:text-[10px] text-muted-foreground uppercase font-bold tracking-wider mt-1">Najväčšia ryba</div>
+              {biggestCatchObj && <div className="text-[8px] md:text-[9px] text-amber-500/70 mt-1">Klikni pre detail</div>}
             </div>
-            <div className="bg-card border border-border rounded-lg md:rounded-xl p-2.5 md:p-4 flex flex-col items-center text-center">
-              <div className="p-1.5 md:p-2 bg-purple-500/10 rounded-lg md:rounded-xl text-purple-500 mb-1.5 md:mb-2"><TrendingUp size={16} className="md:hidden" /><TrendingUp size={20} className="hidden md:block" /></div>
-              <div className="text-lg md:text-3xl font-black text-foreground">{liveStats.avgWeight.toFixed(1)} <span className="text-xs md:text-sm font-normal text-muted-foreground">kg</span></div>
-              <div className="text-[9px] md:text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Priemerná váha</div>
+            <div className="bg-card border border-border rounded-xl p-3 md:p-5 flex flex-col items-center text-center hover:border-purple-500/30 transition-all group">
+              <div className="p-2 md:p-3 bg-purple-500/10 rounded-xl text-purple-500 mb-2 md:mb-3 group-hover:scale-110 transition-transform"><TrendingUp size={18} className="md:hidden" /><TrendingUp size={22} className="hidden md:block" /></div>
+              <div className="text-xl md:text-3xl font-mono font-medium text-[#F97316]">{liveStats.avgWeight.toFixed(1)} <span className="text-xs md:text-sm font-normal text-muted-foreground">kg</span></div>
+              <div className="text-[9px] md:text-[10px] text-muted-foreground uppercase font-bold tracking-wider mt-1">Priemerná váha</div>
             </div>
           </div>
         </div>
@@ -950,7 +951,7 @@ export default function CompetitionDetail() {
                   <div className="grid grid-cols-3 items-end gap-2">
                     {/* 2nd Place - left */}
                     <div className="flex flex-col items-center">
-                      <div className="w-8 h-8 bg-muted-foreground rounded-full flex items-center justify-center font-bold text-background text-sm mb-2">2</div>
+                      <div className="w-9 h-9 bg-slate-500 rounded-full flex items-center justify-center font-bold text-white text-sm mb-2 border-2 border-slate-400/30">2</div>
                       <div className="text-center w-full">
                         <button
                           className="font-bold text-foreground text-xs truncate px-1 hover:text-cyan-500 transition-colors"
@@ -959,15 +960,15 @@ export default function CompetitionDetail() {
                             if (fullTeam) setEntityModal({ view: 'team', team: fullTeam, catch_: null, previousView: null });
                           }}
                         >{sortedLeaderboard[1]?.name}</button>
-                        <div className="text-lg font-black text-muted-foreground">{sortedLeaderboard[1]?.weight?.toFixed(1) ?? '-'}</div>
+                        <div className="text-lg font-mono font-medium text-[#F97316]">{sortedLeaderboard[1]?.weight?.toFixed(1) ?? '-'}</div>
                         <div className="text-[10px] text-muted-foreground">{sortedLeaderboard[1]?.fish ?? 0} rýb</div>
                       </div>
                     </div>
 
                     {/* Winner - center, taller */}
                     <div className="flex flex-col items-center -mt-4">
-                      <div className="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center mb-2 shadow-lg shadow-amber-500/30">
-                        <Crown size={18} className="text-black" />
+                      <div className="w-11 h-11 bg-amber-500 rounded-full flex items-center justify-center mb-2 shadow-lg shadow-amber-500/40 animate-crown-bounce border-2 border-amber-400/50">
+                        <Crown size={20} className="text-black" />
                       </div>
                       <span className="text-[8px] font-black uppercase tracking-wider text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full mb-1">LÍDER</span>
                       <div className="text-center w-full">
@@ -978,14 +979,14 @@ export default function CompetitionDetail() {
                             if (fullTeam) setEntityModal({ view: 'team', team: fullTeam, catch_: null, previousView: null });
                           }}
                         >{sortedLeaderboard[0]?.name}</button>
-                        <div className="text-2xl font-black text-foreground">{sortedLeaderboard[0]?.weight?.toFixed(1) ?? '-'}</div>
+                        <div className="text-2xl font-mono font-medium text-[#F97316]">{sortedLeaderboard[0]?.weight?.toFixed(1) ?? '-'}</div>
                         <div className="text-xs text-muted-foreground">{sortedLeaderboard[0]?.fish ?? 0} rýb</div>
                       </div>
                     </div>
 
                     {/* 3rd Place - right */}
                     <div className="flex flex-col items-center">
-                      <div className="w-8 h-8 bg-orange-800 rounded-full flex items-center justify-center font-bold text-white text-sm mb-2">3</div>
+                      <div className="w-9 h-9 bg-orange-800 rounded-full flex items-center justify-center font-bold text-white text-sm mb-2 border-2 border-orange-700/50">3</div>
                       <div className="text-center w-full">
                         <button
                           className="font-bold text-foreground text-xs truncate px-1 hover:text-cyan-500 transition-colors"
@@ -994,7 +995,7 @@ export default function CompetitionDetail() {
                             if (fullTeam) setEntityModal({ view: 'team', team: fullTeam, catch_: null, previousView: null });
                           }}
                         >{sortedLeaderboard[2]?.name}</button>
-                        <div className="text-lg font-black text-orange-200/60">{sortedLeaderboard[2]?.weight?.toFixed(1) ?? '-'}</div>
+                        <div className="text-lg font-mono font-medium text-[#F97316]/60">{sortedLeaderboard[2]?.weight?.toFixed(1) ?? '-'}</div>
                         <div className="text-[10px] text-muted-foreground">{sortedLeaderboard[2]?.fish ?? 0} rýb</div>
                       </div>
                     </div>
@@ -1006,8 +1007,8 @@ export default function CompetitionDetail() {
               {sortedLeaderboard.length >= 3 && (
                 <div className="hidden md:grid md:grid-cols-3 gap-4 items-end">
                   {/* 2nd Place */}
-                  <div className="bg-card border border-border rounded-xl p-4 flex flex-col items-center justify-end h-48 relative">
-                    <div className="absolute -top-4 w-10 h-10 bg-muted-foreground rounded-full flex items-center justify-center font-bold text-background border-4 border-background shadow-lg">2</div>
+                  <div className="bg-card border border-border hover:border-slate-500/40 rounded-xl p-4 flex flex-col items-center justify-end h-48 relative transition-all">
+                    <div className="absolute -top-4 w-11 h-11 bg-slate-500 rounded-full flex items-center justify-center font-bold text-white text-lg border-4 border-background shadow-lg">2</div>
                     <div className="text-center w-full">
                       <button
                         className="font-bold text-foreground mb-1 truncate px-2 hover:text-cyan-500 transition-colors"
@@ -1022,12 +1023,12 @@ export default function CompetitionDetail() {
                   </div>
 
                   {/* Winner */}
-                  <div className="bg-card border border-amber-500/30 rounded-xl p-4 flex flex-col items-center justify-end h-56 relative shadow-[0_0_30px_rgba(245,158,11,0.1)] z-10">
-                    <div className="absolute -top-6 w-14 h-14 bg-amber-500 rounded-full flex items-center justify-center font-black text-black text-xl border-4 border-background shadow-lg shadow-amber-500/20">
+                  <div className="bg-card border border-amber-500/30 rounded-xl p-4 flex flex-col items-center justify-end h-56 relative amber-glow z-10">
+                    <div className="absolute -top-6 w-14 h-14 bg-amber-500 rounded-full flex items-center justify-center font-black text-black text-xl border-4 border-background shadow-lg shadow-amber-500/30 animate-crown-bounce">
                       <Crown size={24} />
                     </div>
                     <div className="absolute top-3 left-1/2 -translate-x-1/2">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-amber-500 bg-amber-500/10 px-2 py-1 rounded-full">LÍDER PRETEKU</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-amber-500 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">LÍDER PRETEKU</span>
                     </div>
                     <div className="text-center w-full mb-2">
                       <button
@@ -1040,14 +1041,14 @@ export default function CompetitionDetail() {
                       <div className="text-4xl font-mono font-medium text-[#F97316]">{sortedLeaderboard[0]?.weight?.toFixed(1) ?? '-'}</div>
                       <div className="text-sm text-muted-foreground font-mono">{sortedLeaderboard[0]?.fish ?? 0} rýb</div>
                     </div>
-                    <div className="w-full bg-muted/50 rounded-lg py-1 text-center text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
+                    <div className="w-full bg-amber-500/5 border border-amber-500/10 rounded-lg py-1 text-center text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
                       Lovia v sektore {sortedLeaderboard[0]?.sector}
                     </div>
                   </div>
 
                   {/* 3rd Place */}
-                  <div className="bg-card border border-border rounded-xl p-4 flex flex-col items-center justify-end h-48 relative">
-                    <div className="absolute -top-4 w-10 h-10 bg-orange-800 rounded-full flex items-center justify-center font-bold text-white border-4 border-background shadow-lg">3</div>
+                  <div className="bg-card border border-border hover:border-orange-800/40 rounded-xl p-4 flex flex-col items-center justify-end h-48 relative transition-all">
+                    <div className="absolute -top-4 w-11 h-11 bg-orange-800 rounded-full flex items-center justify-center font-bold text-white text-lg border-4 border-background shadow-lg">3</div>
                     <div className="text-center w-full">
                       <button
                         className="font-bold text-foreground mb-1 truncate px-2 hover:text-cyan-500 transition-colors"
@@ -1064,16 +1065,17 @@ export default function CompetitionDetail() {
               )}
 
               {/* LEADERBOARD TABLE */}
-              <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
-                <div className="p-5 border-b border-border flex justify-between items-center bg-muted/30">
+              <div className="bg-card border border-border rounded-xl overflow-hidden">
+                <div className="p-5 border-b border-border flex justify-between items-center bg-muted/50">
                   <h3 className="font-bold text-foreground flex items-center gap-2">
                     <Trophy size={16} strokeWidth={1.75} className="text-muted-foreground" />
                     Aktuálne poradie tímov
                   </h3>
+                  <span className="text-xs text-muted-foreground font-mono">{sortedLeaderboard.length} tímov</span>
                 </div>
                 <div className="md:overflow-x-auto">
                   <table className="w-full text-sm text-left">
-                    <thead className="text-xs text-muted-foreground uppercase bg-muted/20 font-bold tracking-wider">
+                    <thead className="text-xs text-muted-foreground uppercase bg-muted/40 font-bold tracking-wider">
                       <tr>
                         <th className="px-3 md:px-6 py-3 md:py-4 w-10 md:w-16">#</th>
                         <th className="px-3 md:px-6 py-3 md:py-4">Tím</th>
@@ -1082,10 +1084,10 @@ export default function CompetitionDetail() {
                         <th className="px-3 md:px-6 py-3 md:py-4 text-right">kg</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-border">
+                    <tbody className="divide-y divide-border/50">
                       {visibleLeaderboard.map((team, index) => (
-                        <tr key={team.id} className={`hover:bg-muted/30 transition-colors ${index < 3 ? 'bg-muted/10' : ''}`}>
-                          <td className={`px-3 md:px-6 py-3 md:py-4 font-mono font-bold ${index === 0 ? 'text-amber-500' : index === 1 ? 'text-muted-foreground' : index === 2 ? 'text-orange-400' : 'text-muted-foreground'}`}>
+                        <tr key={team.id} className={`hover:bg-muted/20 transition-colors ${index < 3 ? 'bg-muted/10' : ''}`}>
+                          <td className={`px-3 md:px-6 py-3 md:py-4 font-mono font-bold ${index === 0 ? 'text-amber-500' : index === 1 ? 'text-slate-400' : index === 2 ? 'text-orange-700' : 'text-muted-foreground'}`}>
                             {team.rank}.
                           </td>
                           <td className="px-3 md:px-6 py-3 md:py-4">
@@ -1118,7 +1120,7 @@ export default function CompetitionDetail() {
                 </div>
                 
                 {sortedLeaderboard.length > 10 && (
-                  <div className="p-2 bg-muted/30 border-t border-border">
+                  <div className="p-2 bg-muted/40 border-t border-border">
                     <button 
                       onClick={() => setLeaderboardExpanded(!leaderboardExpanded)}
                       className="w-full py-3 flex items-center justify-center gap-2 text-muted-foreground text-xs font-bold uppercase tracking-widest hover:text-foreground transition-colors"
@@ -1138,8 +1140,8 @@ export default function CompetitionDetail() {
             <div className="lg:col-span-4 space-y-6">
               
               {/* COMMENTATOR TEASER */}
-              <div className="bg-card border border-border rounded-xl p-6 relative overflow-hidden group hover:border-blue-500/30 transition-colors">
-                <div className="absolute top-0 right-0 p-20 bg-blue-500/10 blur-3xl rounded-full group-hover:bg-blue-500/20 transition-colors pointer-events-none"></div>
+              <div className="bg-card border border-blue-500/20 rounded-xl p-6 relative overflow-hidden group hover:border-blue-500/40 transition-all blue-glow-card">
+                <div className="absolute top-0 right-0 w-40 h-40 bg-blue-500/10 blur-3xl rounded-full group-hover:bg-blue-500/15 transition-colors pointer-events-none"></div>
                 <div className="relative z-10">
                   <div className="flex items-center gap-2 mb-3 text-amber-500">
                     <Mic size={14} className="animate-pulse" />
@@ -1150,7 +1152,7 @@ export default function CompetitionDetail() {
                   </p>
                   <button 
                     onClick={() => setShowStatsOverlay(true)}
-                    className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-blue-900/20 transition-all flex items-center justify-center gap-2"
+                    className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-blue-600/20 transition-all flex items-center justify-center gap-2 hover:shadow-blue-600/30"
                   >
                     <PieChart size={16} />
                     Kde a kedy berú
@@ -1225,16 +1227,20 @@ export default function CompetitionDetail() {
 
               {/* MAP & RULES BUTTONS */}
               <div className="grid grid-cols-2 gap-3">
-                <button className="p-4 rounded-xl bg-card border border-border hover:bg-muted/30 transition-colors text-left group">
-                  <MapPin size={20} strokeWidth={1.75} className="text-muted-foreground group-hover:text-cyan-500 mb-2 transition-colors" />
+                <button className="p-4 rounded-xl bg-card border border-border hover:border-cyan-500/30 hover:bg-muted/20 transition-all text-left group">
+                  <div className="p-2 bg-cyan-500/10 rounded-lg w-fit mb-2 group-hover:scale-110 transition-transform">
+                    <MapPin size={18} strokeWidth={1.75} className="text-cyan-500" />
+                  </div>
                   <div className="text-sm font-bold text-foreground">Rozmiestnenie tímov</div>
                   <div className="text-[10px] text-muted-foreground">Mapa sektorov</div>
                 </button>
                 <button 
                   onClick={() => setShowRulesOverlay(true)}
-                  className="p-4 rounded-xl bg-card border border-border hover:bg-muted/30 transition-colors text-left group"
+                  className="p-4 rounded-xl bg-card border border-border hover:border-cyan-500/30 hover:bg-muted/20 transition-all text-left group"
                 >
-                  <FileText size={20} strokeWidth={1.75} className="text-muted-foreground group-hover:text-cyan-500 mb-2 transition-colors" />
+                  <div className="p-2 bg-cyan-500/10 rounded-lg w-fit mb-2 group-hover:scale-110 transition-transform">
+                    <FileText size={18} strokeWidth={1.75} className="text-cyan-500" />
+                  </div>
                   <div className="text-sm font-bold text-foreground">Pravidlá preteku</div>
                   <div className="text-[10px] text-muted-foreground">Čo platí na tomto preteku</div>
                 </button>
@@ -1249,11 +1255,11 @@ export default function CompetitionDetail() {
       {showStatsOverlay && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8">
           <div 
-            className="absolute inset-0 bg-background/95 backdrop-blur-sm"
+            className="absolute inset-0 bg-background/90 backdrop-blur-md"
             onClick={() => setShowStatsOverlay(false)}
           ></div>
 
-          <div className="relative z-10 bg-card border border-border w-full max-w-5xl max-h-[90vh] rounded-xl overflow-hidden flex flex-col shadow-2xl">
+          <div className="relative z-10 bg-card border border-blue-500/20 w-full max-w-5xl max-h-[90vh] rounded-xl overflow-hidden flex flex-col shadow-2xl blue-glow-card">
             
             {/* Modal Header */}
             <div className="p-6 md:p-8 border-b border-border flex flex-col md:flex-row md:items-center justify-between gap-4 bg-muted/30">
@@ -1392,11 +1398,11 @@ export default function CompetitionDetail() {
       {showRulesOverlay && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8">
           <div 
-            className="absolute inset-0 bg-background/95 backdrop-blur-sm"
+            className="absolute inset-0 bg-background/90 backdrop-blur-md"
             onClick={() => setShowRulesOverlay(false)}
           ></div>
 
-          <div className="relative z-10 bg-card border border-border w-full max-w-3xl max-h-[90vh] rounded-xl overflow-hidden flex flex-col shadow-2xl">
+          <div className="relative z-10 bg-card border border-cyan-500/20 w-full max-w-3xl max-h-[90vh] rounded-xl overflow-hidden flex flex-col shadow-2xl">
             
             {/* Modal Header */}
             <div className="p-6 md:p-8 border-b border-border flex items-center justify-between bg-muted/30">
@@ -1437,11 +1443,11 @@ export default function CompetitionDetail() {
       {showMyTeamOverlay && userTeam && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8">
           <div 
-            className="absolute inset-0 bg-background/95 backdrop-blur-sm"
+            className="absolute inset-0 bg-background/90 backdrop-blur-md"
             onClick={() => setShowMyTeamOverlay(false)}
           ></div>
 
-          <div className="relative z-10 bg-card border border-border w-full max-w-2xl max-h-[90vh] rounded-xl overflow-hidden flex flex-col shadow-2xl">
+          <div className="relative z-10 bg-card border border-blue-500/20 w-full max-w-2xl max-h-[90vh] rounded-xl overflow-hidden flex flex-col shadow-2xl">
             
             {/* Modal Header */}
             <div className="p-6 md:p-8 border-b border-border flex items-center justify-between bg-muted/30">
@@ -1532,10 +1538,10 @@ export default function CompetitionDetail() {
       {entityModal.view && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8">
           <div 
-            className="absolute inset-0 bg-black/80 backdrop-blur-sm" 
+            className="absolute inset-0 bg-background/90 backdrop-blur-md" 
             onClick={() => setEntityModal({ view: null, team: null, catch_: null, previousView: null })} 
           />
-          <div className="relative w-full max-w-2xl max-h-[90vh] bg-card border border-border rounded-xl shadow-2xl flex flex-col overflow-hidden z-10">
+          <div className="relative w-full max-w-2xl max-h-[90vh] bg-card border border-border/50 rounded-xl shadow-2xl flex flex-col overflow-hidden z-10">
             
             {/* CATCHES LIST VIEW */}
             {entityModal.view === 'catches-list' && (
