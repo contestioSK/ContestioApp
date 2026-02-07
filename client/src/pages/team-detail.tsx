@@ -2,15 +2,12 @@ import { useState } from "react";
 import { useParams, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, Users, Trophy, Fish, MapPin, Camera, X, Heart } from "lucide-react";
-import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ArrowLeft, Users, Trophy, Fish, MapPin, Camera, X, Heart, Scale, Ruler, Calendar, Anchor } from "lucide-react";
 import { Team, TeamMember, Catch } from "@shared/schema";
-import { formatSectorPlace, getSectorLetter } from "@/lib/utils";
 import { useFavoriteTeams, useToggleFavoriteTeam } from "@/hooks/useFavorites";
 
 type TeamWithDetails = Team & {
@@ -18,22 +15,107 @@ type TeamWithDetails = Team & {
   catches?: Catch[];
 };
 
+const formatDateTime = (dateString: string | Date | null, variant: 'grid' | 'full' | 'short' = 'short') => {
+  if (!dateString) return "Neznámy dátum";
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "Neznámy dátum";
+
+  const time = date.toLocaleTimeString('sk-SK', { hour: '2-digit', minute: '2-digit' });
+  const day = date.toLocaleDateString('sk-SK', { day: 'numeric', month: 'short' });
+  const fullDate = date.toLocaleDateString('sk-SK', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  if (variant === 'grid') return `${time} • ${day}`;
+  if (variant === 'full') return `${fullDate} • ${time}`;
+  return day;
+};
+
+const getFishTypeLabel = (type: string) => {
+  if (type === 'scaly') return 'Šupináč';
+  if (type === 'mirror') return 'Lysec';
+  return type;
+};
+
+const StatCard = ({ label, value, unit, icon: Icon }: { label: string; value: string | number; unit?: string; icon: any }) => (
+  <div className="bg-card border border-border p-4 md:p-5 rounded-xl flex items-center justify-between group hover:border-slate-700 transition-colors relative overflow-hidden">
+    <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-slate-800/20 rounded-full blur-2xl group-hover:bg-[#F97316]/10 transition-colors" />
+    <div className="relative z-10">
+      <div className="text-[10px] uppercase tracking-[0.2em] font-bold text-muted-foreground mb-1">{label}</div>
+      <div className="flex items-baseline gap-1">
+        <span className="text-2xl md:text-3xl font-black italic text-foreground tracking-tighter tabular-nums">{value}</span>
+        {unit && <span className="text-xs md:text-sm font-bold text-muted-foreground uppercase">{unit}</span>}
+      </div>
+    </div>
+    <div className="relative z-10 w-10 h-10 rounded-full bg-background flex items-center justify-center text-muted-foreground group-hover:text-[#F97316] transition-colors border border-border shadow-sm">
+      <Icon size={18} strokeWidth={1.75} />
+    </div>
+  </div>
+);
+
+const CatchGridItem = ({ data, onClick }: { data: Catch; onClick: (c: Catch) => void }) => (
+  <button
+    onClick={() => onClick(data)}
+    className="group relative w-full aspect-[4/3] bg-card rounded-xl overflow-hidden border border-border cursor-pointer hover:border-[#F97316]/50 transition-all hover:shadow-[0_0_20px_rgba(249,115,22,0.15)] text-left focus:outline-none focus:ring-2 focus:ring-[#F97316] focus:ring-offset-2 focus:ring-offset-background"
+    aria-label={`Zobraziť detail úlovku: ${data.weight} kg`}
+  >
+    {data.photoUrl ? (
+      <img
+        src={data.photoUrl}
+        alt={`Úlovok ${data.weight}kg`}
+        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-70 group-hover:opacity-100"
+        loading="lazy"
+      />
+    ) : (
+      <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground gap-2 bg-card">
+        <Camera size={32} strokeWidth={1.5} />
+        <span className="text-[10px] font-bold uppercase tracking-widest opacity-50">Bez fotky</span>
+      </div>
+    )}
+
+    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent opacity-90" />
+
+    <div className="absolute top-3 left-3 z-10">
+      <span className="bg-[#F97316] text-white text-xs font-black px-2 py-0.5 rounded shadow-lg flex items-center gap-1">
+        <Scale size={10} />
+        {Number(data.weight).toFixed(2)}
+      </span>
+    </div>
+
+    <div className="absolute bottom-3 left-3 right-3 z-10">
+      <div className="flex items-center justify-between mb-1">
+        <div className="text-xs font-bold text-white uppercase flex items-center gap-1.5 drop-shadow-md">
+          <Fish size={12} className={data.fishType === 'mirror' ? "text-blue-400" : "text-emerald-400"} />
+          {getFishTypeLabel(data.fishType)}
+        </div>
+      </div>
+      <div className="flex justify-between items-end border-t border-white/10 pt-2 mt-1">
+        <div className="text-[10px] text-slate-400 font-mono">
+          {formatDateTime(data.submittedAt, 'grid')}
+        </div>
+        {data.sector && (
+          <div className="text-[10px] text-slate-300 font-bold bg-black/40 px-1.5 rounded">
+            {data.sector}
+          </div>
+        )}
+      </div>
+    </div>
+  </button>
+);
+
 export default function TeamDetail() {
   const { teamId } = useParams();
-  const [selectedPhoto, setSelectedPhoto] = useState<{ url: string; teamName: string; weight: string; fishType: string } | null>(null);
+  const [selectedPhoto, setSelectedPhoto] = useState<Catch | null>(null);
 
   const { data: teamData, isLoading } = useQuery<TeamWithDetails>({
     queryKey: ["/api/teams", teamId],
     enabled: !!teamId,
   });
-  
-  // Favorite teams (only for authenticated users)
+
   const { data: favoriteTeams } = useFavoriteTeams();
   const { addFavorite, removeFavorite, isAdding, isRemoving } = useToggleFavoriteTeam();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
-  
+
   const isFavorite = isAuthenticated && favoriteTeams?.some(fav => fav.teamId === teamId);
-  
+
   const handleToggleFavorite = () => {
     if (!isAuthenticated || !teamId) return;
     if (isFavorite) {
@@ -43,47 +125,30 @@ export default function TeamDetail() {
     }
   };
 
+  const sortedCatches = teamData?.catches
+    ? [...teamData.catches].sort((a, b) => new Date(b.submittedAt || 0).getTime() - new Date(a.submittedAt || 0).getTime())
+    : [];
+
+  const totalWeight = sortedCatches.reduce((sum, c) => sum + Number(c.weight), 0);
+  const catchCount = sortedCatches.length;
+  const averageWeight = catchCount > 0 ? totalWeight / catchCount : 0;
+
+  const biggestCatch = sortedCatches.length > 0
+    ? sortedCatches.reduce((max, curr) => Number(curr.weight) > Number(max.weight) ? curr : max, sortedCatches[0])
+    : null;
+
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-8">
-          <div className="mb-6">
-            <Skeleton className="h-10 w-40 mb-4" />
-            <Skeleton className="h-8 w-60" />
+      <div className="min-h-screen bg-background p-8 space-y-8">
+        <div className="flex gap-6 items-center">
+          <Skeleton className="w-24 h-24 rounded-2xl bg-muted" />
+          <div className="space-y-3">
+            <Skeleton className="w-64 h-10 bg-muted" />
+            <Skeleton className="w-32 h-6 bg-muted" />
           </div>
-          
-          <div className="grid gap-6 md:grid-cols-3">
-            <div className="md:col-span-1">
-              <Card>
-                <CardHeader>
-                  <Skeleton className="h-6 w-32" />
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-4 w-1/2" />
-                </CardContent>
-              </Card>
-            </div>
-            
-            <div className="md:col-span-2">
-              <Card>
-                <CardHeader>
-                  <Skeleton className="h-6 w-32" />
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {[...Array(5)].map((_, i) => (
-                      <div key={i} className="flex items-center justify-between p-3 border rounded-lg">
-                        <Skeleton className="h-4 w-1/3" />
-                        <Skeleton className="h-4 w-20" />
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24 bg-muted rounded-xl" />)}
         </div>
       </div>
     );
@@ -91,410 +156,215 @@ export default function TeamDetail() {
 
   if (!teamData) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold mb-2">Tím nebol nájdený</h2>
-          <p className="text-muted-foreground mb-4">Zadaný tím neexistuje alebo bol odstránený.</p>
-          <Link href="/">
-            <Button>
-              <ArrowLeft className="w-4 h-4 mr-2" strokeWidth={1.75} />
-              Späť na hlavnú stránku
-            </Button>
-          </Link>
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 text-center">
+        <div className="w-20 h-20 bg-card rounded-full flex items-center justify-center mb-6 text-muted-foreground border border-border">
+          <Anchor size={32} />
         </div>
+        <h2 className="text-2xl font-black text-foreground uppercase mb-2">Mimo radar</h2>
+        <p className="text-muted-foreground mb-8 max-w-xs mx-auto">Tento tím sa v našich vodách nenachádza. Skúste ich pohľadať v celkovom rebríčku.</p>
+        <Link href="/">
+          <Button variant="outline" className="border-border text-muted-foreground">Späť na prehľad</Button>
+        </Link>
       </div>
     );
   }
 
-  const getSectorBadge = (team: Team) => {
-    const sectorPlace = formatSectorPlace(team);
-    if (!sectorPlace) return null;
-    
-    const sectorLetter = getSectorLetter(team);
-    if (!sectorLetter || !team.competitionId) {
-      return (
-        <Badge className={`text-sm font-medium bg-muted/50`}>
-          {sectorPlace}
-        </Badge>
-      );
-    }
-    
-    const colors = {
-      'A': 'bg-primary/10 text-primary border-primary',
-      'B': 'bg-secondary/10 text-secondary border-secondary',
-      'C': 'bg-accent/10 text-accent border-accent',
-    };
-    
-    return (
-      <Link href={`/competition/${team.competitionId}/sector/${sectorLetter}`} data-testid={`link-team-sector-${sectorLetter}`}>
-        <Badge className={`text-sm font-medium cursor-pointer hover:bg-primary/20 transition-colors ${colors[sectorLetter as keyof typeof colors] || 'bg-muted/50'}`}>
-          {sectorPlace}
-        </Badge>
-      </Link>
-    );
-  };
-
-  const getStatusBadge = (status: string) => {
-    const colors = {
-      'pending': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300',
-      'approved': 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300',
-      'rejected': 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300',
-    };
-    
-    const labels = {
-      'pending': 'Čaká na schválenie',
-      'approved': 'Schválený',
-      'rejected': 'Zamietnutý',
-    };
-    
-    return (
-      <Badge className={colors[status as keyof typeof colors] || 'bg-gray-100 text-gray-800'}>
-        {labels[status as keyof typeof labels] || status}
-      </Badge>
-    );
-  };
-
-  const formatDateTime = (dateString: string | Date) => {
-    const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
-    return date.toLocaleDateString('sk-SK') + ' ' + date.toLocaleTimeString('sk-SK', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
-  };
-
-  const getFishTypeLabel = (fishType: string) => {
-    return fishType === 'scaly' ? 'Šupináč' : 'Lysec';
-  };
-
-  // Calculate team statistics
-  const totalWeight = teamData.catches?.reduce((sum: number, catch_: any) => sum + parseFloat(catch_.weight), 0) || 0;
-  const catchCount = teamData.catches?.length || 0;
-  const averageWeight = catchCount > 0 ? totalWeight / catchCount : 0;
-  const biggestCatch = teamData.catches?.reduce((max: any, current: any) => 
-    parseFloat(current.weight) > parseFloat(max?.weight || '0') ? current : max, null);
-
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-6">
+    <div className="min-h-screen bg-background text-foreground pb-20 font-sans selection:bg-orange-500/30">
+
+      <div className="border-b border-border bg-background/95 backdrop-blur sticky top-0 z-40">
+        <div className="container mx-auto px-4 py-4">
           <Link href={teamData.competitionId ? `/competition/${teamData.competitionId}` : '/'}>
-            <Button variant="ghost" className="mb-4" data-testid="button-back">
-              <ArrowLeft className="w-4 h-4 mr-2" strokeWidth={1.75} />
-              Späť na súťaž
-            </Button>
+            <button className="group flex items-center text-xs font-bold text-muted-foreground hover:text-foreground uppercase tracking-wider mb-4 transition-colors">
+              <ArrowLeft className="w-3 h-3 mr-1 group-hover:-translate-x-1 transition-transform" /> Späť na súťaž
+            </button>
           </Link>
-          
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground mb-2" data-testid="text-team-name">
-                {teamData.name}
-              </h1>
-              <div className="flex items-center space-x-3">
-                {getSectorBadge(teamData)}
-                {getStatusBadge(teamData.status)}
+
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="flex items-center gap-6">
+              <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-card border border-border overflow-hidden shadow-2xl relative group ring-1 ring-white/5">
+                {teamData.photoUrl ? (
+                  <img src={teamData.photoUrl} alt={teamData.name} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                    <Anchor size={32} />
+                  </div>
+                )}
+                {teamData.status === 'approved' && (
+                  <div className="absolute bottom-0 inset-x-0 h-1 bg-emerald-500 shadow-[0_0_10px_#10B981]" />
+                )}
+              </div>
+
+              <div>
+                <div className="flex items-center gap-3 mb-1">
+                  <h1 className="text-3xl md:text-5xl font-black italic text-foreground uppercase tracking-tighter leading-none drop-shadow-lg">
+                    {teamData.name}
+                  </h1>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3 text-sm font-medium text-muted-foreground">
+                  {teamData.sector && (
+                    <Badge variant="outline" className="bg-card border-border text-foreground/80">
+                      <MapPin size={12} className="mr-1 text-[#F97316]" /> Sektor {teamData.sector}
+                    </Badge>
+                  )}
+                  {teamData.createdAt && (
+                    <span className="flex items-center gap-1.5 text-xs text-muted-foreground uppercase font-bold tracking-wider">
+                      <Calendar size={12} /> Reg: {formatDateTime(teamData.createdAt)}
+                    </span>
+                  )}
+                  <Badge className={teamData.status === 'approved' ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-card text-muted-foreground"}>
+                    {teamData.status === 'approved' ? 'Schválený' : teamData.status === 'rejected' ? 'Zamietnutý' : 'Čaká na schválenie'}
+                  </Badge>
+                </div>
               </div>
             </div>
-            
-            {/* Favorite Button */}
+
             {isAuthenticated && !authLoading && (
-              <Button 
+              <Button
                 variant={isFavorite ? "default" : "outline"}
                 onClick={handleToggleFavorite}
                 disabled={isAdding || isRemoving}
-                data-testid="button-toggle-favorite-team"
-                className={isFavorite ? "bg-red-500 hover:bg-red-600 text-white" : ""}
+                className={`min-w-[140px] shadow-none ${isFavorite ? "bg-[#F97316] hover:bg-orange-600 text-white" : "border-border text-muted-foreground hover:text-foreground"}`}
               >
-                <Heart className={`w-4 h-4 mr-2 ${isFavorite ? "fill-current" : ""}`} strokeWidth={1.75} />
-                {isFavorite ? "Obľúbené" : "Pridať do obľúbených"}
+                <Heart className={`w-4 h-4 mr-2 ${isFavorite ? "fill-white" : ""}`} />
+                {isFavorite ? "Sleduješ" : "Sledovať tím"}
               </Button>
             )}
           </div>
         </div>
+      </div>
 
-        <div className="grid gap-6 md:grid-cols-3">
-          {/* Left Column: Team Info */}
-          <div className="md:col-span-1 space-y-6">
-            
-            {/* Team Information */}
-            <Card data-testid="card-team-info">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <TacticalIconInline icon={Users} variant="orange" size="md" />
-                  <span>Informácie o tíme</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                
-                {/* Team Photo/Logo */}
-                {teamData.photoUrl && (
-                  <div className="mb-4">
-                    <h4 className="font-medium text-foreground mb-2">Logo tímu:</h4>
-                    <div className="flex justify-center">
-                      <img 
-                        src={teamData.photoUrl} 
-                        alt={`Logo tímu ${teamData.name}`}
-                        className="w-32 h-32 object-cover rounded-lg border-2 border-muted"
-                        data-testid="img-team-logo"
-                      />
-                    </div>
-                  </div>
-                )}
+      <div className="container mx-auto px-4 py-8">
 
-                <div>
-                  <h4 className="font-medium text-foreground mb-2">Členovia tímu:</h4>
-                  <div className="space-y-3">
-                    {teamData.members?.map((member: any, index: number) => (
-                      <div 
-                        key={index} 
-                        className="flex items-center space-x-3 p-3 bg-muted/20 rounded-lg"
-                        data-testid={`member-${index}`}
-                      >
-                        {/* Member Photo */}
-                        <div className="flex-shrink-0">
-                          {member.photoUrl ? (
-                            <img 
-                              src={member.photoUrl} 
-                              alt={`Fotka ${member.name}`}
-                              className="w-12 h-12 object-cover rounded-full border-2 border-muted"
-                              data-testid={`img-member-${index}`}
-                            />
-                          ) : (
-                            <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center">
-                              <Users className="w-6 h-6 text-muted-foreground" strokeWidth={1.75} />
-                            </div>
-                          )}
-                        </div>
-                        
-                        {/* Member Info */}
-                        <div className="flex-1">
-                          <div className="font-medium text-foreground">{member.name}</div>
-                          {member.email && (
-                            <div className="text-xs text-muted-foreground">{member.email}</div>
-                          )}
-                        </div>
-                        
-                        {/* Role Badge */}
-                        {member.role === 'captain' && (
-                          <Badge variant="secondary" className="text-xs">Kapitán</Badge>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                
-                <div className="text-xs text-muted-foreground">
-                  <div>Registrovaný: {teamData.createdAt ? formatDateTime(teamData.createdAt) : 'Neznámy dátum'}</div>
-                </div>
-              </CardContent>
-            </Card>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+          <StatCard label="Celková váha" value={totalWeight.toFixed(2)} unit="kg" icon={Scale} />
+          <StatCard label="Počet rýb" value={catchCount} unit="ks" icon={Fish} />
+          <StatCard label="Priemer" value={averageWeight.toFixed(2)} unit="kg" icon={Ruler} />
+          <StatCard label="Big Fish" value={biggestCatch ? Number(biggestCatch.weight).toFixed(2) : "-"} unit="kg" icon={Trophy} />
+        </div>
 
-            {/* Team Statistics */}
-            <Card data-testid="card-team-stats">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <TacticalIconInline icon={Trophy} variant="amber" size="md" />
-                  <span>Štatistiky</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Celková váha:</span>
-                  <span className="font-mono font-medium text-[#F97316] text-lg" data-testid="stat-total-weight">
-                    {totalWeight.toFixed(2)} kg
-                  </span>
+        <div className="grid lg:grid-cols-3 gap-10">
+
+          <div className="lg:col-span-2 space-y-6">
+            <div className="flex items-center justify-between border-b border-border pb-4">
+              <h2 className="text-xl font-black italic text-foreground uppercase tracking-wide flex items-center gap-2">
+                <Fish className="text-[#F97316]" size={24} /> Úlovky tímu
+              </h2>
+              <Badge variant="secondary" className="bg-[#F97316]/10 text-[#F97316] border-[#F97316]/20 font-bold">
+                {catchCount} ks SPOLU
+              </Badge>
+            </div>
+
+            {catchCount === 0 ? (
+              <div className="border border-dashed border-border rounded-2xl p-12 text-center bg-card/30">
+                <div className="w-16 h-16 bg-card rounded-full flex items-center justify-center mx-auto mb-4 text-muted-foreground">
+                  <Fish size={32} />
                 </div>
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Počet rýb:</span>
-                  <span className="font-mono font-medium text-[#F97316]" data-testid="stat-fish-count">
-                    {catchCount}
-                  </span>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Priemerná váha:</span>
-                  <span className="font-mono font-medium text-[#F97316]" data-testid="stat-average-weight">
-                    {averageWeight.toFixed(2)} kg
-                  </span>
-                </div>
-                
-                {biggestCatch && (
-                  <div className="pt-3 border-t border-border">
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Najväčší úlovok:</span>
-                      <span className="font-mono font-medium text-[#F97316]" data-testid="stat-biggest-catch">
-                        {parseFloat(biggestCatch.weight).toFixed(2)} kg
-                      </span>
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      {getFishTypeLabel(biggestCatch.fishType)} • {formatDateTime(biggestCatch.submittedAt)}
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                <h3 className="text-foreground font-bold uppercase mb-1">Žiadne úlovky</h3>
+                <p className="text-muted-foreground text-sm">Tím zatiaľ neprekabátil žiadnu rybu.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {sortedCatches.map((c) => (
+                  <CatchGridItem
+                    key={c.id}
+                    data={c}
+                    onClick={(d) => setSelectedPhoto(d)}
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Right Column: Catches Table */}
-          <div className="md:col-span-2">
-            <Card data-testid="card-catches-table">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <TacticalIconInline icon={Fish} variant="cyan" size="md" />
-                  <span>Všetky úlovky ({catchCount})</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {catchCount === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <div className="flex justify-center mb-3">
-                      <TacticalIcon icon={Fish} variant="neutral" size="lg" showLabel={false} />
+          <div className="space-y-6">
+            <div className="flex items-center justify-between border-b border-border pb-4">
+              <h2 className="text-xl font-black italic text-foreground uppercase tracking-wide flex items-center gap-2">
+                <Users className="text-muted-foreground" size={24} /> Súpiska
+              </h2>
+            </div>
+
+            <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
+              {teamData.members?.map((member, i) => (
+                <div key={i} className="p-4 border-b border-border last:border-0 flex items-center gap-4 hover:bg-muted/30 transition-colors group">
+                  <div className="w-10 h-10 rounded-lg bg-background border border-border overflow-hidden flex-shrink-0 group-hover:border-slate-600 transition-colors">
+                    {member.photoUrl ? (
+                      <img src={member.photoUrl} className="w-full h-full object-cover" alt={member.name} />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs font-black">
+                        {member.name.charAt(0)}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-foreground/80 text-sm truncate group-hover:text-foreground transition-colors">{member.name}</span>
+                      {member.role === 'captain' && (
+                        <Badge className="bg-[#F97316]/10 text-[#F97316] border-[#F97316]/20 px-1 py-0 text-[9px] h-4">C</Badge>
+                      )}
                     </div>
-                    <p>Tento tím zatiaľ nemá žiadne úlovky.</p>
+                    {member.email && (
+                      <div className="text-xs text-muted-foreground truncate">{member.email}</div>
+                    )}
                   </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b border-border">
-                          <th className="text-left p-3 font-medium text-muted-foreground">#</th>
-                          <th className="text-left p-3 font-medium text-muted-foreground">Čas</th>
-                          <th className="text-left p-3 font-medium text-muted-foreground">Typ</th>
-                          <th className="text-right p-3 font-medium text-muted-foreground">Váha</th>
-                          <th className="text-center p-3 font-medium text-muted-foreground">Sektor</th>
-                          <th className="text-center p-3 font-medium text-muted-foreground">Foto</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {teamData.catches?.map((catch_: any, index: number) => (
-                          <tr 
-                            key={catch_.id} 
-                            className="border-b border-border hover:bg-muted/20 transition-colors"
-                            data-testid={`catch-row-${index}`}
-                          >
-                            <td className="p-3">
-                              <div className="w-6 h-6 bg-muted/50 text-muted-foreground rounded-full flex items-center justify-center text-xs font-bold">
-                                {index + 1}
-                              </div>
-                            </td>
-                            <td className="p-3">
-                              <div className="font-medium text-foreground">
-                                {formatDateTime(catch_.submittedAt)}
-                              </div>
-                            </td>
-                            <td className="p-3">
-                              <Badge variant="outline" className="text-xs">
-                                {getFishTypeLabel(catch_.fishType)}
-                              </Badge>
-                            </td>
-                            <td className="p-3 text-right">
-                              <span className="font-mono font-medium text-[#F97316]">
-                                {parseFloat(catch_.weight).toFixed(2)} kg
-                              </span>
-                            </td>
-                            <td className="p-3 text-center">
-                              {(formatSectorPlace(teamData) || (catch_.sector && `Sektor ${catch_.sector}`)) && (
-                                (() => {
-                                  const sectorLetter = getSectorLetter(teamData);
-                                  const displayText = formatSectorPlace(teamData) || `Sektor ${catch_.sector}`;
-                                  
-                                  if (sectorLetter && teamData.competitionId) {
-                                    return (
-                                      <Link href={`/competition/${teamData.competitionId}/sector/${sectorLetter}`} data-testid={`link-catch-sector-${index}`}>
-                                        <Badge className="text-sm font-medium bg-muted/50 cursor-pointer hover:bg-primary/20 transition-colors">
-                                          {displayText}
-                                        </Badge>
-                                      </Link>
-                                    );
-                                  } else {
-                                    return (
-                                      <Badge className="text-sm font-medium bg-muted/50">
-                                        {displayText}
-                                      </Badge>
-                                    );
-                                  }
-                                })()
-                              )}
-                            </td>
-                            <td className="p-3 text-center">
-                              {catch_.photoUrl ? (
-                                <div className="flex items-center justify-center">
-                                  <div
-                                    className="w-8 h-8 rounded overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all transform hover:scale-110"
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      e.stopPropagation();
-                                      setSelectedPhoto({
-                                        url: catch_.photoUrl!,
-                                        teamName: teamData.name,
-                                        weight: `${parseFloat(catch_.weight).toFixed(2)} kg`,
-                                        fishType: getFishTypeLabel(catch_.fishType)
-                                      });
-                                    }}
-                                    data-testid={`img-catch-photo-${index}`}
-                                  >
-                                    <img 
-                                      src={catch_.photoUrl} 
-                                      alt="Úlovok" 
-                                      className="w-full h-full object-cover pointer-events-none"
-                                    />
-                                  </div>
-                                </div>
-                              ) : (
-                                <div className="flex items-center justify-center">
-                                  <Camera className="w-4 h-4 text-muted-foreground" strokeWidth={1.75} />
-                                  <span className="text-xs text-muted-foreground ml-1">Bez fotografie</span>
-                                </div>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                </div>
+              ))}
+            </div>
+
+            {teamData.sector && (
+              <div className="bg-card/50 border border-border rounded-xl p-4 text-center">
+                <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">Poloha tímu</div>
+                <div className="bg-background rounded h-32 flex items-center justify-center border border-border/50">
+                  <div className="text-center">
+                    <MapPin className="text-muted-foreground mx-auto mb-2" size={32} />
+                    <span className="text-sm font-bold text-foreground/80">Sektor {teamData.sector}</span>
                   </div>
-                )}
-              </CardContent>
-            </Card>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Photo Modal */}
       <Dialog open={!!selectedPhoto} onOpenChange={() => setSelectedPhoto(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] p-0" aria-describedby="catch-photo-description">
-          <div className="relative">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="absolute top-4 right-4 z-50 bg-black/20 text-white hover:bg-black/40"
-              onClick={() => setSelectedPhoto(null)}
-            >
-              <X className="w-4 h-4" strokeWidth={1.75} />
-            </Button>
-            
-            {selectedPhoto && (
-              <div className="flex flex-col">
-                <div className="relative">
-                  <img 
-                    src={selectedPhoto.url}
-                    alt="Zväčšená fotografia úlovku"
-                    className="w-full h-auto max-h-[70vh] object-contain"
-                  />
-                </div>
-                
-                <div className="p-6 bg-background border-t">
-                  <DialogHeader>
-                    <DialogTitle className="text-xl font-bold text-foreground">
-                      {selectedPhoto.teamName}
-                    </DialogTitle>
-                    <p id="catch-photo-description" className="text-sm text-muted-foreground mb-2">
-                      Váha: {selectedPhoto.weight} • Typ: {selectedPhoto.fishType === 'mirror' ? 'Lysec' : selectedPhoto.fishType === 'scaly' ? 'Šupináč' : selectedPhoto.fishType}
-                    </p>
-                  </DialogHeader>
-                </div>
+        <DialogContent className="max-w-5xl p-0 overflow-hidden bg-black/95 border-border backdrop-blur-xl [&>button]:hidden" aria-describedby="catch-photo-description">
+          <div className="relative h-[80vh] flex flex-col">
+
+            <div className="absolute top-0 inset-x-0 p-4 flex justify-between items-start z-50 bg-gradient-to-b from-black/80 to-transparent pointer-events-none">
+              <div className="text-white pointer-events-auto">
+                {selectedPhoto && (
+                  <div>
+                    <div className="text-3xl font-black italic uppercase tracking-tighter drop-shadow-md">
+                      {Number(selectedPhoto.weight).toFixed(2)} kg
+                    </div>
+                    <div className="flex items-center gap-3 text-sm font-bold text-slate-300 mt-1">
+                      <span className="bg-[#F97316] text-white px-2 py-0.5 rounded text-[10px] uppercase shadow-sm">
+                        {getFishTypeLabel(selectedPhoto.fishType)}
+                      </span>
+                      <span className="opacity-80" id="catch-photo-description">
+                        {formatDateTime(selectedPhoto.submittedAt, 'full')}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
+              <button
+                onClick={() => setSelectedPhoto(null)}
+                className="bg-black/50 hover:bg-white hover:text-black text-white p-2 rounded-full transition-all border border-white/10 pointer-events-auto backdrop-blur-md"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="flex-1 flex items-center justify-center p-0 md:p-4">
+              {selectedPhoto && selectedPhoto.photoUrl && (
+                <img
+                  src={selectedPhoto.photoUrl}
+                  alt="Detail"
+                  className="max-h-full max-w-full object-contain md:rounded-lg shadow-2xl"
+                />
+              )}
+            </div>
           </div>
         </DialogContent>
       </Dialog>

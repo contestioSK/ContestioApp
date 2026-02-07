@@ -30,7 +30,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import StatsDashboard from "@/components/stats-dashboard";
-import TeamOverviewContent from "@/components/TeamOverviewContent";
 import type { Competition, Team, Catch } from "@shared/schema";
 import { useFavoriteCompetitions, useToggleFavoriteCompetition } from "@/hooks/useFavorites";
 import { QRShareDialog } from "@/components/QRShareDialog";
@@ -225,10 +224,10 @@ export default function CompetitionDetail() {
   const [showRulesOverlay, setShowRulesOverlay] = useState(false);
   const [showMyTeamOverlay, setShowMyTeamOverlay] = useState(false);
   const [entityModal, setEntityModal] = useState<{
-    view: 'team' | 'catch' | 'catches-list' | null;
+    view: 'catch' | 'catches-list' | null;
     team: (Team & { members?: any[] }) | null;
     catch_: (Catch & { team?: Team }) | null;
-    previousView?: 'team' | 'catch' | 'catches-list' | null;
+    previousView?: 'catch' | 'catches-list' | null;
   }>({ view: null, team: null, catch_: null, previousView: null });
   const [leaderboardExpanded, setLeaderboardExpanded] = useState(false);
   const [statsTab, setStatsTab] = useState<'overview' | 'sectors' | 'analytics'>('overview');
@@ -1066,8 +1065,7 @@ export default function CompetitionDetail() {
                         <button
                           className="font-bold text-foreground text-xs truncate px-1 hover:text-cyan-500 transition-colors"
                           onClick={() => {
-                            const fullTeam = teams?.find(t => t.id === sortedLeaderboard[1]?.id);
-                            if (fullTeam) setEntityModal({ view: 'team', team: fullTeam, catch_: null, previousView: null });
+                            if (sortedLeaderboard[1]?.id) navigate(`/team/${sortedLeaderboard[1].id}`);
                           }}
                         >{sortedLeaderboard[1]?.name}</button>
                         <div className="text-lg font-mono font-medium text-[#F97316]">{sortedLeaderboard[1]?.weight?.toFixed(1) ?? '-'}</div>
@@ -1085,8 +1083,7 @@ export default function CompetitionDetail() {
                         <button
                           className="font-bold text-amber-500 text-sm truncate px-1 hover:underline"
                           onClick={() => {
-                            const fullTeam = teams?.find(t => t.id === sortedLeaderboard[0]?.id);
-                            if (fullTeam) setEntityModal({ view: 'team', team: fullTeam, catch_: null, previousView: null });
+                            if (sortedLeaderboard[0]?.id) navigate(`/team/${sortedLeaderboard[0].id}`);
                           }}
                         >{sortedLeaderboard[0]?.name}</button>
                         <div className="text-2xl font-mono font-medium text-[#F97316]">{sortedLeaderboard[0]?.weight?.toFixed(1) ?? '-'}</div>
@@ -1101,8 +1098,7 @@ export default function CompetitionDetail() {
                         <button
                           className="font-bold text-foreground text-xs truncate px-1 hover:text-cyan-500 transition-colors"
                           onClick={() => {
-                            const fullTeam = teams?.find(t => t.id === sortedLeaderboard[2]?.id);
-                            if (fullTeam) setEntityModal({ view: 'team', team: fullTeam, catch_: null, previousView: null });
+                            if (sortedLeaderboard[2]?.id) navigate(`/team/${sortedLeaderboard[2].id}`);
                           }}
                         >{sortedLeaderboard[2]?.name}</button>
                         <div className="text-lg font-mono font-medium text-[#F97316]/60">{sortedLeaderboard[2]?.weight?.toFixed(1) ?? '-'}</div>
@@ -1123,8 +1119,7 @@ export default function CompetitionDetail() {
                       <button
                         className="font-bold text-foreground mb-1 truncate px-2 hover:text-cyan-500 transition-colors"
                         onClick={() => {
-                          const fullTeam = teams?.find(t => t.id === sortedLeaderboard[1]?.id);
-                          if (fullTeam) setEntityModal({ view: 'team', team: fullTeam, catch_: null, previousView: null });
+                          if (sortedLeaderboard[1]?.id) navigate(`/team/${sortedLeaderboard[1].id}`);
                         }}
                       >{sortedLeaderboard[1]?.name}</button>
                       <div className="text-2xl font-mono font-medium text-[#F97316]">{sortedLeaderboard[1]?.weight?.toFixed(1) ?? '-'}</div>
@@ -1144,8 +1139,7 @@ export default function CompetitionDetail() {
                       <button
                         className="font-bold text-amber-500 mb-1 text-lg px-2 truncate hover:underline"
                         onClick={() => {
-                          const fullTeam = teams?.find(t => t.id === sortedLeaderboard[0]?.id);
-                          if (fullTeam) setEntityModal({ view: 'team', team: fullTeam, catch_: null, previousView: null });
+                          if (sortedLeaderboard[0]?.id) navigate(`/team/${sortedLeaderboard[0].id}`);
                         }}
                       >{sortedLeaderboard[0]?.name}</button>
                       <div className="text-4xl font-mono font-medium text-[#F97316]">{sortedLeaderboard[0]?.weight?.toFixed(1) ?? '-'}</div>
@@ -1163,8 +1157,7 @@ export default function CompetitionDetail() {
                       <button
                         className="font-bold text-foreground mb-1 truncate px-2 hover:text-cyan-500 transition-colors"
                         onClick={() => {
-                          const fullTeam = teams?.find(t => t.id === sortedLeaderboard[2]?.id);
-                          if (fullTeam) setEntityModal({ view: 'team', team: fullTeam, catch_: null, previousView: null });
+                          if (sortedLeaderboard[2]?.id) navigate(`/team/${sortedLeaderboard[2].id}`);
                         }}
                       >{sortedLeaderboard[2]?.name}</button>
                       <div className="text-2xl font-mono font-medium text-[#F97316]">{sortedLeaderboard[2]?.weight?.toFixed(1) ?? '-'}</div>
@@ -1204,10 +1197,7 @@ export default function CompetitionDetail() {
                             <button
                               className="font-bold text-foreground hover:text-cyan-500 transition-colors text-left text-sm md:text-base"
                               onClick={() => {
-                                const fullTeam = teams?.find(t => t.id === team.id);
-                                if (fullTeam) {
-                                  setEntityModal({ view: 'team', team: fullTeam, catch_: null, previousView: null });
-                                }
+                                navigate(`/team/${team.id}`);
                               }}
                             >
                               {team.name}
@@ -1323,10 +1313,7 @@ export default function CompetitionDetail() {
                           <button 
                             className="px-2 py-1 rounded-full bg-muted/40 hover:bg-muted text-xs font-bold text-foreground truncate max-w-[160px] transition-colors text-left"
                             onClick={() => {
-                              const fullTeam = teams?.find(t => t.id === item.catchObj.teamId);
-                              if (fullTeam) {
-                                setEntityModal({ view: 'team', team: fullTeam, catch_: null, previousView: null });
-                              }
+                              if (item.catchObj.teamId) navigate(`/team/${item.catchObj.teamId}`);
                             }}
                           >
                             {item.team}
@@ -1739,10 +1726,7 @@ export default function CompetitionDetail() {
                               className="font-bold text-foreground hover:text-cyan-500 transition-colors text-left"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                const teamObj = teams?.find(t => t.id === c.teamId);
-                                if (teamObj) {
-                                  setEntityModal({ view: 'team', team: teamObj, catch_: null, previousView: 'catches-list' });
-                                }
+                                if (c.teamId) navigate(`/team/${c.teamId}`);
                               }}
                             >
                               {c.team?.name || 'Neznámy tím'}
@@ -1821,10 +1805,7 @@ export default function CompetitionDetail() {
                     <div 
                       className="flex items-center gap-3 cursor-pointer hover:bg-muted/30 -mx-2 px-2 py-1 rounded-lg transition-colors"
                       onClick={() => {
-                        const teamObj = teams?.find(t => t.id === entityModal.catch_?.teamId);
-                        if (teamObj) {
-                          setEntityModal({ view: 'team', team: teamObj, catch_: null, previousView: 'catch' });
-                        }
+                        if (entityModal.catch_?.teamId) navigate(`/team/${entityModal.catch_.teamId}`);
                       }}
                     >
                       <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-500"><Users size={18} /></div>
@@ -1863,22 +1844,6 @@ export default function CompetitionDetail() {
               </>
             )}
 
-            {/* TEAM VIEW */}
-            {entityModal.view === 'team' && entityModal.team && (
-              <TeamOverviewContent
-                team={entityModal.team}
-                catches={catches || []}
-                rank={sortedLeaderboard.find(t => t.id === entityModal.team?.id)?.rank}
-                onCatchClick={(c) => setEntityModal({ view: 'catch', team: entityModal.team, catch_: { ...c, team: entityModal.team! }, previousView: 'team' })}
-                onClose={() => {
-                  if (entityModal.previousView) {
-                    setEntityModal({ view: entityModal.previousView, team: null, catch_: null, previousView: null });
-                  } else {
-                    setEntityModal({ view: null, team: null, catch_: null, previousView: null });
-                  }
-                }}
-              />
-            )}
           </div>
         </div>
       )}
