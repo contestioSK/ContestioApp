@@ -55,7 +55,7 @@ const CatchGridItem = ({ data, onClick }: { data: Catch; onClick: (c: Catch) => 
   <button
     onClick={() => onClick(data)}
     className="group relative w-full aspect-[4/3] bg-card rounded-xl overflow-hidden border border-border cursor-pointer hover:border-[#F97316]/50 transition-all hover:shadow-[0_0_20px_rgba(249,115,22,0.15)] text-left focus:outline-none focus:ring-2 focus:ring-[#F97316] focus:ring-offset-2 focus:ring-offset-background"
-    aria-label={`Zobraziť detail úlovku: ${data.weight} kg`}
+    aria-label={`Zobraziť detail úlovku: ${Number(data.weight || 0).toFixed(2)} kg`}
   >
     {data.photoUrl ? (
       <img
@@ -126,7 +126,16 @@ export default function TeamDetail() {
   };
 
   const sortedCatches = teamData?.catches
-    ? [...teamData.catches].sort((a, b) => new Date(b.submittedAt || 0).getTime() - new Date(a.submittedAt || 0).getTime())
+    ? [...teamData.catches].sort((a, b) => {
+        const dateA = a.submittedAt ? new Date(a.submittedAt).getTime() : 0;
+        const dateB = b.submittedAt ? new Date(b.submittedAt).getTime() : 0;
+        const validA = dateA > 0 && !isNaN(dateA);
+        const validB = dateB > 0 && !isNaN(dateB);
+        if (validA && !validB) return -1;
+        if (!validA && validB) return 1;
+        if (!validA && !validB) return 0;
+        return dateB - dateA;
+      })
     : [];
 
   const totalWeight = sortedCatches.reduce((sum, c) => sum + Number(c.weight), 0);
@@ -213,9 +222,6 @@ export default function TeamDetail() {
                       <Calendar size={12} /> Reg: {formatDateTime(teamData.createdAt)}
                     </span>
                   )}
-                  <Badge className={teamData.status === 'approved' ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-card text-muted-foreground"}>
-                    {teamData.status === 'approved' ? 'Schválený' : teamData.status === 'rejected' ? 'Zamietnutý' : 'Čaká na schválenie'}
-                  </Badge>
                 </div>
               </div>
             </div>
@@ -298,7 +304,7 @@ export default function TeamDetail() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-foreground/80 text-sm truncate group-hover:text-foreground transition-colors">{member.name}</span>
+                      <span className="font-bold text-foreground text-sm truncate">{member.name}</span>
                       {member.role === 'captain' && (
                         <Badge className="bg-[#F97316]/10 text-[#F97316] border-[#F97316]/20 px-1 py-0 text-[9px] h-4">C</Badge>
                       )}
@@ -346,13 +352,20 @@ export default function TeamDetail() {
             </div>
 
             <div className="flex-1 flex items-center justify-center p-0 md:p-4">
-              {selectedPhoto && selectedPhoto.photoUrl && (
+              {selectedPhoto && selectedPhoto.photoUrl ? (
                 <img
                   src={selectedPhoto.photoUrl}
                   alt="Detail"
                   className="max-h-full max-w-full object-contain md:rounded-lg shadow-2xl"
                 />
-              )}
+              ) : selectedPhoto ? (
+                <div className="flex flex-col items-center justify-center text-center p-8">
+                  <div className="w-24 h-24 bg-card rounded-full flex items-center justify-center mb-4 border border-border">
+                    <Camera size={40} className="text-muted-foreground" />
+                  </div>
+                  <p className="text-muted-foreground font-bold uppercase text-sm">Bez fotky</p>
+                </div>
+              ) : null}
             </div>
           </div>
         </DialogContent>
