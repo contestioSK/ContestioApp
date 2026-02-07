@@ -1,27 +1,14 @@
 import { useState, useEffect } from "react";
 import { useParams, useLocation } from "wouter";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Progress } from "@/components/ui/progress";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest, queryClient } from "@/lib/queryClient";
 import { getSideCompetitionLabel } from "@/lib/utils";
 import { canUseFeature, PlanTier } from "@shared/plan-capabilities";
 import { 
@@ -34,87 +21,147 @@ import {
   Plus, 
   Trash2,
   FileText,
-  Users,
   Trophy,
   Gift,
-  MapPin
+  MapPin,
+  Save,
+  Lock,
+  Medal,
+  Flag,
+  BarChart3,
+  Info,
+  Calendar,
+  Clock,
+  Phone,
+  Banknote
 } from "lucide-react";
-import { TacticalIconInline } from "@/components/ui/tactical-icon";
 import { z } from "zod";
+import { motion, AnimatePresence } from "framer-motion";
 import type { CompetitionRegistration } from "@shared/schema";
 
 const STEPS = [
-  { id: 1, title: "Základy", icon: FileText, description: "Logo, popis, pravidlá a bodovanie" },
-  { id: 2, title: "Sektory", icon: MapPin, description: "Rozdelenie na sektory a miesta" },
-  { id: 3, title: "Špeciálne súťaže", icon: Trophy, description: "Doplnkové kategórie" },
-  { id: 4, title: "Sponzori", icon: Gift, description: "Sponzori a ceny" },
-  { id: 5, title: "Rozhodcovia", icon: Users, description: "Pridanie rozhodcov" },
+  { id: 1, title: "Základy", icon: FileText, description: "Toto vidia súťažiaci v detaile." },
+  { id: 2, title: "Sektory", icon: MapPin, description: "Použi len ak chceš poradie aj podľa sektorov." },
+  { id: 3, title: "Špeciálne súťaže", icon: Trophy, description: "Tieto trofeje sa rátajú automaticky." },
 ];
 
-const SIDE_COMPETITIONS = [
-  "firstOver20",
-  "firstOver25", 
-  "firstOver30",
-  "biggestFish",
-  "biggestScaly",
-  "biggestMirror",
-  "dailyBigFish",
-];
+const TROPHY_COMPETITIONS = ["biggestFish", "biggestScaly", "biggestMirror", "dailyBigFish"];
+const MILESTONE_COMPETITIONS = ["firstCatch", "lastCatch", "firstOver15", "firstOver20", "firstOver25"];
+const STATS_COMPETITIONS = ["mostCatches", "best3", "best5"];
 
 const basicsSchema = z.object({
-  description: z.string().max(500).optional(),
+  location: z.string().min(2, "Zadajte lokalitu"),
+  startDate: z.string().min(1, "Zadajte dátum začiatku"),
+  endDate: z.string().min(1, "Zadajte dátum konca"),
+  startTime: z.string().min(1, "Zadajte čas začiatku"),
+  contact: z.string().min(2, "Zadajte kontakt"),
   rules: z.string().optional(),
   scoringType: z.enum(["total", "avg3", "avg5"]).default("total"),
-  minWeight: z.number().min(2).max(15).default(2),
+  minWeight: z.number().min(0).max(100).default(2),
+  entryFee: z.string().min(1, "Zadajte výšku štartovného"),
   firstPlacePrize: z.string().optional(),
   secondPlacePrize: z.string().optional(),
   thirdPlacePrize: z.string().optional(),
+}).refine((data) => {
+  if (!data.startDate || !data.endDate) return true;
+  return new Date(data.startDate) <= new Date(data.endDate);
+}, {
+  message: "Dátum konca musí byť neskôr ako začiatok",
+  path: ["endDate"],
 });
 
 type BasicsForm = z.infer<typeof basicsSchema>;
+
+const StepIndicator = ({ currentStep }: { currentStep: number }) => (
+  <div className="flex items-center justify-between mb-8 relative max-w-2xl mx-auto px-4 mt-8">
+    <div className="absolute left-0 right-0 top-[20px] h-0.5 bg-slate-800 -z-10" />
+    <motion.div
+      className="absolute left-0 top-[20px] h-0.5 bg-orange-500 -z-10"
+      initial={{ width: "0%" }}
+      animate={{ width: `${STEPS.length > 1 ? ((currentStep - 1) / (STEPS.length - 1)) * 100 : 0}%` }}
+      transition={{ duration: 0.5, ease: "easeInOut" }}
+    />
+    {STEPS.map((step) => {
+      const isActive = currentStep === step.id;
+      const isCompleted = currentStep > step.id;
+      return (
+        <div key={step.id} className="flex flex-col items-center gap-3 relative">
+          <motion.div
+            initial={false}
+            animate={{
+              scale: isActive ? 1.1 : 1,
+              backgroundColor: isActive ? "#F97316" : isCompleted ? "#10B981" : "#0F172A",
+              borderColor: isActive ? "#F97316" : isCompleted ? "#10B981" : "#334155"
+            }}
+            className={`w-10 h-10 rounded-xl flex items-center justify-center border-2 shadow-lg z-10 transition-colors duration-300 ${isActive ? 'shadow-orange-500/30' : ''}`}
+          >
+            {isCompleted ? <Check size={20} className="text-white" /> : <step.icon size={20} className={isActive || isCompleted ? "text-white" : "text-slate-500"} />}
+          </motion.div>
+          <div className="absolute top-12 w-32 text-center hidden md:block">
+            <span className={`text-[10px] uppercase font-black tracking-widest block mb-0.5 transition-colors duration-300 ${isActive ? 'text-white' : 'text-slate-500'}`}>
+              {step.title}
+            </span>
+          </div>
+        </div>
+      );
+    })}
+  </div>
+);
+
+const PrizeInput = ({ rank, form, name, placeholder }: { rank: string, form: any, name: string, placeholder: string }) => (
+  <div className="relative group">
+    <div className={`absolute -left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black border-2 z-10 shadow-lg transform group-hover:scale-110 transition-transform
+      ${rank === '1' ? 'bg-yellow-500 border-yellow-400 text-black shadow-yellow-500/20' :
+        rank === '2' ? 'bg-slate-300 border-slate-200 text-black shadow-slate-500/20' :
+        'bg-orange-700 border-orange-600 text-white shadow-orange-900/20'}`}>
+      {rank}
+    </div>
+    <div className="relative">
+      <Input
+        {...form.register(name)}
+        className="pl-8 bg-slate-950 border-slate-800 focus:border-orange-500 text-white placeholder:text-slate-600 h-12 rounded-xl transition-all hover:border-slate-700"
+        placeholder={placeholder}
+      />
+    </div>
+  </div>
+);
 
 export default function CompetitionSetup() {
   const { id } = useParams<{ id: string }>();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+
   const [currentStep, setCurrentStep] = useState(1);
   const [competitionLogo, setCompetitionLogo] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [hasSectors, setHasSectors] = useState(false);
-  const [numSectors, setNumSectors] = useState(2);
   const [sectorPlaces, setSectorPlaces] = useState<Array<{ sectorName: string; places: string[] }>>([]);
   const [sideCompetitions, setSideCompetitions] = useState<string[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Read plan and setup token from URL query parameter (passed from registration)
   const urlParams = new URLSearchParams(window.location.search);
   const isDemoMode = id === 'demo';
   const urlPlan = urlParams.get('plan') as PlanTier | null;
   const validUrlPlan = urlPlan && ['basic', 'pro', 'premium', 'enterprise'].includes(urlPlan) ? urlPlan : null;
-  
-  // Security token for updates - check URL first, then localStorage
+
   const [setupToken] = useState<string | null>(() => {
     const urlToken = urlParams.get('token');
     if (urlToken && id) {
-      // Save token to localStorage for page refresh
       localStorage.setItem(`competition_token_${id}`, urlToken);
       return urlToken;
     }
-    // Try to get from localStorage
     if (id) {
       return localStorage.getItem(`competition_token_${id}`);
     }
     return null;
   });
-  
-  // Persist plan in localStorage so it survives navigation/refresh
-  const [cachedPlan, setCachedPlan] = useState<PlanTier | null>(() => {
+
+  const [cachedPlan] = useState<PlanTier | null>(() => {
     if (typeof window !== 'undefined' && id) {
-      // Check URL param first, save to localStorage
       if (validUrlPlan) {
         localStorage.setItem(`competition_plan_${id}`, validUrlPlan);
         return validUrlPlan;
       }
-      // Otherwise load from localStorage
       const stored = localStorage.getItem(`competition_plan_${id}`);
       if (stored && ['basic', 'pro', 'premium', 'enterprise'].includes(stored)) {
         return stored as PlanTier;
@@ -125,64 +172,91 @@ export default function CompetitionSetup() {
 
   const { data: registration, isLoading } = useQuery<CompetitionRegistration>({
     queryKey: ['/api/competition-registrations', id],
-    enabled: !!id && !isDemoMode, // Always fetch to get contactEmail for verification
+    enabled: !!id && !isDemoMode,
   });
 
-  // Priority: URL param > cached > API response > default basic
   const selectedPlan = (validUrlPlan || cachedPlan || registration?.selectedPlan || 'basic') as PlanTier;
 
   const basicsForm = useForm<BasicsForm>({
     resolver: zodResolver(basicsSchema),
     defaultValues: {
-      description: "",
+      location: "",
+      startDate: "",
+      endDate: "",
+      startTime: "",
+      contact: "",
       rules: "",
       scoringType: "total",
       minWeight: 2,
+      entryFee: "",
       firstPlacePrize: "",
       secondPlacePrize: "",
       thirdPlacePrize: "",
     },
   });
 
-  // Load saved registration data into the form when available
+  const scoringType = basicsForm.watch("scoringType");
+  const minWeight = basicsForm.watch("minWeight");
+
+  const isConflict = (comp: string) => {
+    if (comp === 'best3' && scoringType === 'avg3') return true;
+    if (comp === 'best5' && scoringType === 'avg5') return true;
+    return false;
+  };
+
+  useEffect(() => {
+    if (scoringType === 'avg3') setSideCompetitions(prev => prev.filter(c => c !== 'best3'));
+    if (scoringType === 'avg5') setSideCompetitions(prev => prev.filter(c => c !== 'best5'));
+  }, [scoringType]);
+
   useEffect(() => {
     if (registration) {
-      // Populate form fields with saved data
+      const startDateStr = registration.startDate ? new Date(registration.startDate).toISOString().split('T')[0] : "";
+      const endDateStr = registration.endDate ? new Date(registration.endDate).toISOString().split('T')[0] : "";
+
       basicsForm.reset({
-        description: registration.description || "",
+        location: registration.location || "",
+        startDate: startDateStr,
+        endDate: endDateStr,
+        startTime: "",
+        contact: registration.contactPhone || registration.contactEmail || "",
         rules: registration.rules || "",
         scoringType: (registration.scoringType as "total" | "avg3" | "avg5") || "total",
         minWeight: registration.minWeight ? parseFloat(registration.minWeight) : 2,
+        entryFee: registration.registrationFee || "",
         firstPlacePrize: registration.firstPlacePrize || "",
         secondPlacePrize: registration.secondPlacePrize || "",
         thirdPlacePrize: registration.thirdPlacePrize || "",
       });
-      
-      // Populate sectors state - always sync with saved data
+
       setHasSectors(!!registration.hasSectors);
       if (registration.hasSectors && registration.sectorPlaces && Array.isArray(registration.sectorPlaces)) {
         setSectorPlaces(registration.sectorPlaces);
-        setNumSectors(registration.sectorPlaces.length);
       } else if (!registration.hasSectors) {
         setSectorPlaces([]);
-        setNumSectors(2);
       }
-      
-      // Populate side competitions state
+
       if (registration.sideCompetitions && Array.isArray(registration.sideCompetitions)) {
         setSideCompetitions(registration.sideCompetitions);
       }
     }
   }, [registration]);
 
+  useEffect(() => {
+    if (hasSectors && sectorPlaces.length === 0) {
+      setSectorPlaces([
+        { sectorName: 'Sektor A', places: ['Stanovište 1', 'Stanovište 2', 'Stanovište 3', 'Stanovište 4'] },
+        { sectorName: 'Sektor B', places: ['Stanovište 1', 'Stanovište 2', 'Stanovište 3', 'Stanovište 4'] }
+      ]);
+    }
+  }, [hasSectors]);
+
   const handleLogoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setCompetitionLogo(file);
       const reader = new FileReader();
-      reader.onload = (e) => {
-        setLogoPreview(e.target?.result as string);
-      };
+      reader.onload = (e) => setLogoPreview(e.target?.result as string);
       reader.readAsDataURL(file);
     }
   };
@@ -192,21 +266,10 @@ export default function CompetitionSetup() {
     setLogoPreview(null);
   };
 
-  const generateSectors = (count: number) => {
-    const newSectors = [];
-    for (let i = 0; i < count; i++) {
-      newSectors.push({
-        sectorName: `Sektor ${String.fromCharCode(65 + i)}`,
-        places: ["Miesto 1", "Miesto 2", "Miesto 3", "Miesto 4"]
-      });
-    }
-    setSectorPlaces(newSectors);
-  };
-
   const addSector = () => {
-    const newSector = { 
-      sectorName: `Sektor ${String.fromCharCode(65 + sectorPlaces.length)}`, 
-      places: ["Miesto 1", "Miesto 2", "Miesto 3", "Miesto 4"] 
+    const newSector = {
+      sectorName: `Sektor ${String.fromCharCode(65 + sectorPlaces.length)}`,
+      places: ["Stanovište 1", "Stanovište 2", "Stanovište 3", "Stanovište 4"]
     };
     setSectorPlaces([...sectorPlaces, newSector]);
   };
@@ -223,7 +286,7 @@ export default function CompetitionSetup() {
 
   const addPlace = (sectorIndex: number) => {
     const updated = [...sectorPlaces];
-    updated[sectorIndex].places.push(`Miesto ${updated[sectorIndex].places.length + 1}`);
+    updated[sectorIndex].places.push(`Stanovište ${updated[sectorIndex].places.length + 1}`);
     setSectorPlaces(updated);
   };
 
@@ -240,6 +303,14 @@ export default function CompetitionSetup() {
   };
 
   const toggleSideCompetition = (comp: string) => {
+    if (isConflict(comp)) {
+      toast({
+        variant: "destructive",
+        title: "Konflikt nastavenia",
+        description: "Táto kategória je už nastavená ako hlavné bodovanie súťaže.",
+      });
+      return;
+    }
     if (sideCompetitions.includes(comp)) {
       setSideCompetitions(sideCompetitions.filter(c => c !== comp));
     } else {
@@ -247,25 +318,27 @@ export default function CompetitionSetup() {
     }
   };
 
-  const nextStep = () => {
-    if (currentStep < STEPS.length) {
-      setCurrentStep(currentStep + 1);
+  const getScoringLabel = (type: string) => {
+    switch (type) {
+      case 'total': return 'Celková váha (Maratón)';
+      case 'avg3': return 'Priemer 3 najťažších';
+      case 'avg5': return 'Priemer 5 najťažších';
+      default: return type;
     }
   };
-
-  const prevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
-  const skipStep = () => {
-    nextStep();
-  };
-
-  const [isSaving, setIsSaving] = useState(false);
 
   const handleFinish = async () => {
+    const valid = await basicsForm.trigger();
+    if (!valid) {
+      toast({
+        variant: "destructive",
+        title: "Chýbajúce údaje",
+        description: "Prosím skontrolujte červené polia v prvom kroku.",
+      });
+      setCurrentStep(1);
+      return;
+    }
+
     if (isDemoMode) {
       toast({
         title: "Demo ukážka dokončená",
@@ -274,32 +347,33 @@ export default function CompetitionSetup() {
       setLocation("/pricing");
       return;
     }
-    
-    // Save all data to registration before finishing
+
     setIsSaving(true);
     try {
       const formData = basicsForm.getValues();
-      
+      const finalSectorPlaces = hasSectors ? sectorPlaces : [];
+
       const updatePayload = {
-        description: formData.description || null,
+        location: formData.location || null,
+        startDate: formData.startDate ? new Date(formData.startDate).toISOString() : null,
+        endDate: formData.endDate ? new Date(formData.endDate).toISOString() : null,
+        contactPhone: formData.contact || null,
+        registrationFee: formData.entryFee || null,
         rules: formData.rules || null,
         scoringType: formData.scoringType || "total",
         minWeight: String(formData.minWeight || 2),
         hasSectors: hasSectors,
-        sectorPlaces: hasSectors ? sectorPlaces : [],
+        sectorPlaces: finalSectorPlaces,
         sideCompetitions: sideCompetitions,
         firstPlacePrize: formData.firstPlacePrize || null,
         secondPlacePrize: formData.secondPlacePrize || null,
         thirdPlacePrize: formData.thirdPlacePrize || null,
-        // Security token for unauthenticated users (from URL)
         setupToken: setupToken,
       };
 
       const response = await fetch(`/api/competition-registrations/${id}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatePayload),
       });
 
@@ -308,7 +382,6 @@ export default function CompetitionSetup() {
         throw new Error(error.message || 'Failed to save registration');
       }
 
-      // Clear cached data from localStorage
       if (id) {
         localStorage.removeItem(`competition_plan_${id}`);
         localStorage.removeItem(`competition_token_${id}`);
@@ -316,7 +389,8 @@ export default function CompetitionSetup() {
 
       toast({
         title: "Nastavenie dokončené!",
-        description: "Vaša súťaž bola úspešne nakonfigurovaná. Čaká na schválenie administrátorom.",
+        description: "Vaša súťaž bola úspešne nakonfigurovaná. Čaká na schválenie.",
+        className: "bg-emerald-500 border-none text-white"
       });
       setLocation("/");
     } catch (error: any) {
@@ -330,489 +404,520 @@ export default function CompetitionSetup() {
     }
   };
 
-  const progress = (currentStep / STEPS.length) * 100;
-
   if (isLoading && !isDemoMode) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="min-h-screen bg-[#020617] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <Button 
-            variant="ghost" 
-            onClick={() => setLocation("/")}
-            className="mb-4"
-            data-testid="button-back-home"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Späť na domovskú stránku
-          </Button>
-          
-          <h1 className="text-3xl font-bold text-foreground">Nastavenie súťaže</h1>
-          {registration?.name && (
-            <p className="text-lg font-medium text-primary mt-1">
-              {registration.name}
-            </p>
-          )}
-          <p className="text-muted-foreground mt-2">
-            Nakonfiguruj detaily svojej súťaže krok za krokom.
-          </p>
-          
-          {/* Demo Mode Banner */}
-          {isDemoMode && (
-            <div className="mt-4 p-4 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg">
-              <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
-                <span className="text-xl">👁️</span>
-                <span className="font-medium">
-                  Demo režim - balík {selectedPlan.toUpperCase()}
-                </span>
-              </div>
-              <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
-                Prezeráte si ukážku wizardu. Zmeny sa neuložia.
+    <div className="min-h-screen bg-[#020617] text-slate-200 py-12 selection:bg-orange-500/30 font-sans">
+      <div className="max-w-5xl mx-auto px-6">
+
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-6">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" onClick={() => setLocation("/")} className="text-slate-500 hover:text-white pl-0 hover:bg-transparent group">
+              <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+            </Button>
+            <div>
+              <h1 className="text-2xl font-black italic uppercase text-white tracking-tighter">
+                {registration?.name || "Nastavenie súťaže"}
+              </h1>
+              <p className="text-xs text-slate-500 flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Ukladá sa priebežne...
               </p>
             </div>
-          )}
-        </div>
-
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            {STEPS.map((step) => {
-              const Icon = step.icon;
-              const isActive = currentStep === step.id;
-              const isCompleted = currentStep > step.id;
-              
-              return (
-                <div 
-                  key={step.id}
-                  className={`flex flex-col items-center ${isActive ? 'text-primary' : isCompleted ? 'text-green-500' : 'text-muted-foreground'}`}
-                >
-                  <div className={`
-                    w-10 h-10 rounded-full flex items-center justify-center mb-2
-                    ${isActive ? 'bg-primary text-primary-foreground' : 
-                      isCompleted ? 'bg-green-500 text-white' : 'bg-muted'}
-                  `}>
-                    {isCompleted ? <Check className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
-                  </div>
-                  <span className="text-xs font-medium hidden sm:block">{step.title}</span>
-                </div>
-              );
-            })}
           </div>
-          <Progress value={progress} className="h-2" />
+
+          <div className="flex items-center bg-slate-900/50 rounded-full border border-slate-800 p-1 pl-4 pr-4">
+            <span className="text-[10px] uppercase font-bold text-slate-500 mr-2 tracking-wide">Balík</span>
+            <span className={`text-xs font-black uppercase ${selectedPlan !== 'basic' ? 'text-orange-500' : 'text-white'}`}>
+              {selectedPlan}
+            </span>
+          </div>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              {(() => {
-                const Icon = STEPS[currentStep - 1].icon;
-                return <Icon className="w-5 h-5" />;
-              })()}
-              {STEPS[currentStep - 1].title}
-            </CardTitle>
-            <CardDescription>{STEPS[currentStep - 1].description}</CardDescription>
-          </CardHeader>
-          <CardContent>
+        {isDemoMode && (
+          <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl">
+            <p className="text-sm text-amber-400 font-medium">
+              Demo režim - zmeny sa neuložia.
+            </p>
+          </div>
+        )}
+
+        <StepIndicator currentStep={currentStep} />
+
+        <div className="mt-8 bg-[#0B1221] border border-slate-800/60 rounded-2xl shadow-2xl overflow-hidden relative min-h-[500px]">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 blur-[100px] pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/5 blur-[100px] pointer-events-none" />
+
+          <AnimatePresence mode="wait">
+
             {currentStep === 1 && (
-              <Form {...basicsForm}>
-                <div className="space-y-6">
-                  <div>
-                    <FormLabel>Logo súťaže (voliteľné)</FormLabel>
-                    <div className="mt-2">
+              <motion.div
+                key="step1"
+                initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                className="p-8 md:p-12 space-y-10"
+              >
+                <div className="border-b border-slate-800 pb-6 mb-6">
+                  <h2 className="text-xl font-bold text-white mb-1">Základy súťaže</h2>
+                  <p className="text-sm text-slate-500">Základné údaje pre vytvorenie verejného profilu súťaže.</p>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                  <div className="lg:col-span-4 space-y-4">
+                    <label className="text-xs font-black uppercase text-slate-500 tracking-widest flex items-center gap-2">
+                      <Camera size={14} /> Logo súťaže
+                    </label>
+                    <div className="relative group">
                       {logoPreview ? (
-                        <div className="flex items-center justify-between p-4 border-2 border-dashed border-muted rounded-lg bg-muted/10">
-                          <div className="flex items-center space-x-3">
-                            <img src={logoPreview} alt="Logo" className="w-16 h-16 object-cover rounded" />
-                            <span className="text-sm text-muted-foreground">{competitionLogo?.name}</span>
-                          </div>
-                          <Button variant="ghost" size="icon" onClick={removeLogo}>
-                            <X className="w-4 h-4" />
-                          </Button>
+                        <div className="aspect-square rounded-2xl border-2 border-dashed border-orange-500/50 overflow-hidden relative">
+                          <img src={logoPreview} className="w-full h-full object-cover" alt="Logo" />
+                          <button onClick={removeLogo} className="absolute top-2 right-2 bg-black/50 p-2 rounded-full text-white hover:bg-red-500 transition-colors">
+                            <Trash2 size={16} />
+                          </button>
                         </div>
                       ) : (
-                        <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-muted rounded-lg cursor-pointer hover:border-primary/50 transition-colors">
-                          <Camera className="w-8 h-8 text-muted-foreground mb-2" />
-                          <span className="text-sm text-muted-foreground">Kliknite pre nahratie loga</span>
-                          <input type="file" accept="image/*" onChange={handleLogoSelect} className="hidden" />
+                        <label className="aspect-square rounded-2xl border-2 border-dashed border-slate-800 hover:border-slate-600 hover:bg-slate-900 cursor-pointer flex flex-col items-center justify-center transition-all">
+                          <div className="w-16 h-16 bg-slate-900 rounded-full flex items-center justify-center mb-4 border border-slate-800 shadow-inner">
+                            <Trophy className="w-6 h-6 opacity-50 text-slate-400" />
+                          </div>
+                          <span className="text-[10px] uppercase font-bold text-slate-500 tracking-widest">Nahrať Logo</span>
+                          <input type="file" className="hidden" accept="image/*" onChange={handleLogoSelect} />
                         </label>
                       )}
                     </div>
                   </div>
 
-                  <FormField
-                    control={basicsForm.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Popis súťaže</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Stručný popis súťaže (max. 500 znakov)" 
-                            maxLength={500}
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          {field.value?.length || 0}/500 znakov
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <div className="lg:col-span-8 space-y-8">
 
-                  <FormField
-                    control={basicsForm.control}
-                    name="rules"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Pravidlá súťaže</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Pravidlá a nariadenia súťaže"
-                            className="min-h-[120px]"
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                      control={basicsForm.control}
-                      name="scoringType"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Typ bodovania</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Vyber typ" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="total">Celková váha</SelectItem>
-                              <SelectItem value="avg3">Priemer 3 najväčších</SelectItem>
-                              <SelectItem value="avg5">Priemer 5 najväčších</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={basicsForm.control}
-                      name="minWeight"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Minimálna váha (kg)</FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="number" 
-                              min={2} 
-                              max={15}
-                              {...field} 
-                              onChange={e => field.onChange(parseFloat(e.target.value))}
+                    <div className="space-y-4">
+                      <h3 className="text-xs font-black uppercase text-slate-500 tracking-widest">Základné informácie</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <label className="text-xs text-slate-400 font-bold ml-1">Lokalita (Revír)</label>
+                          <div className="relative">
+                            <MapPin size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                            <Input
+                              {...basicsForm.register("location")}
+                              className="pl-9 bg-slate-950 border-slate-800 focus:border-orange-500 text-white h-12 rounded-xl"
+                              placeholder="Napr. Zemplínska Šírava"
                             />
-                          </FormControl>
-                          <FormDescription>Minimálna váha pre započítanie úlovku</FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                          </div>
+                          {basicsForm.formState.errors.location && (
+                            <p className="text-red-500 text-[10px] pl-1">{basicsForm.formState.errors.location.message}</p>
+                          )}
+                        </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <FormField
-                      control={basicsForm.control}
-                      name="firstPlacePrize"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>1. miesto (€)</FormLabel>
-                          <FormControl>
-                            <Input type="text" placeholder="1000" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={basicsForm.control}
-                      name="secondPlacePrize"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>2. miesto (€)</FormLabel>
-                          <FormControl>
-                            <Input type="text" placeholder="500" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={basicsForm.control}
-                      name="thirdPlacePrize"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>3. miesto (€)</FormLabel>
-                          <FormControl>
-                            <Input type="text" placeholder="250" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-              </Form>
-            )}
+                        <div className="space-y-2">
+                          <label className="text-xs text-slate-400 font-bold ml-1">Dátum začiatku</label>
+                          <div className="relative">
+                            <Calendar size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                            <Input
+                              type="date"
+                              {...basicsForm.register("startDate")}
+                              className="pl-9 bg-slate-950 border-slate-800 focus:border-orange-500 text-white h-12 rounded-xl [color-scheme:dark]"
+                            />
+                          </div>
+                          {basicsForm.formState.errors.startDate && (
+                            <p className="text-red-500 text-[10px] pl-1">{basicsForm.formState.errors.startDate.message}</p>
+                          )}
+                        </div>
 
-            {currentStep === 2 && (
-              <div className="space-y-6">
-                {!canUseFeature(selectedPlan, 'sectors') ? (
-                  <div className="p-6 bg-muted/30 rounded-lg text-center">
-                    <p className="text-muted-foreground">
-                      Sektory nie sú dostupné v tvojom balíku. Upgraduj na Pro alebo vyšší.
-                    </p>
-                  </div>
-                ) : (
-                  <>
-                    <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-                      <div>
-                        <h4 className="font-medium">Rozdeliť súťaž do sektorov</h4>
-                        <p className="text-sm text-muted-foreground">
-                          Povoľte ak chcete mať samostatné rebríčky pre každý sektor
-                        </p>
+                        <div className="space-y-2">
+                          <label className="text-xs text-slate-400 font-bold ml-1">Dátum konca</label>
+                          <div className="relative">
+                            <Calendar size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                            <Input
+                              type="date"
+                              {...basicsForm.register("endDate")}
+                              className="pl-9 bg-slate-950 border-slate-800 focus:border-orange-500 text-white h-12 rounded-xl [color-scheme:dark]"
+                            />
+                          </div>
+                          {basicsForm.formState.errors.endDate && (
+                            <p className="text-red-500 text-[10px] pl-1">{basicsForm.formState.errors.endDate.message}</p>
+                          )}
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="text-xs text-slate-400 font-bold ml-1">Začiatok pretekov</label>
+                          <div className="relative">
+                            <Clock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                            <Input
+                              {...basicsForm.register("startTime")}
+                              className="pl-9 bg-slate-950 border-slate-800 focus:border-orange-500 text-white h-12 rounded-xl"
+                              placeholder="Napr. 12:00"
+                            />
+                          </div>
+                          {basicsForm.formState.errors.startTime && (
+                            <p className="text-red-500 text-[10px] pl-1">{basicsForm.formState.errors.startTime.message}</p>
+                          )}
+                        </div>
+
+                        <div className="space-y-2 md:col-span-2">
+                          <label className="text-xs text-slate-400 font-bold ml-1">Kontakt</label>
+                          <div className="relative">
+                            <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                            <Input
+                              {...basicsForm.register("contact")}
+                              className="pl-9 bg-slate-950 border-slate-800 focus:border-orange-500 text-white h-12 rounded-xl"
+                              placeholder="+421 9xx xxx xxx"
+                            />
+                          </div>
+                        </div>
                       </div>
-                      <Switch 
-                        checked={hasSectors} 
-                        onCheckedChange={(checked) => {
-                          setHasSectors(checked);
-                          if (checked && sectorPlaces.length === 0) {
-                            generateSectors(2);
-                          }
-                        }} 
+                    </div>
+
+                    <div className="space-y-3 pt-4 border-t border-slate-800/50">
+                      <label className="text-xs font-black uppercase text-slate-500 tracking-widest">Pravidlá</label>
+                      <Textarea
+                        {...basicsForm.register("rules")}
+                        className="bg-slate-950 border-slate-800 text-white min-h-[120px] rounded-xl focus:border-orange-500 p-4 leading-relaxed font-mono text-sm"
+                        placeholder="Čo sa boduje, povolené nástrahy, povinná výbava, spôsob váženia, penalizácie..."
                       />
                     </div>
 
-                    {hasSectors && (
-                      <>
-                        <div className="flex items-center gap-4">
-                          <label className="text-sm font-medium">Počet sektorov:</label>
-                          <Select 
-                            value={numSectors.toString()} 
-                            onValueChange={(v) => {
-                              const count = parseInt(v);
-                              setNumSectors(count);
-                              generateSectors(count);
-                            }}
-                          >
-                            <SelectTrigger className="w-24">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {[2, 3, 4, 5, 6, 8, 10].map(n => (
-                                <SelectItem key={n} value={n.toString()}>{n}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <Button variant="outline" size="sm" onClick={() => generateSectors(numSectors)}>
-                            Vygenerovať
-                          </Button>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-slate-800/50">
+                      <div className="space-y-2">
+                        <label className="text-xs font-black uppercase text-slate-500 tracking-widest">Typ Bodovania</label>
+                        <Select
+                          value={basicsForm.watch("scoringType")}
+                          onValueChange={(v) => basicsForm.setValue("scoringType", v as any)}
+                        >
+                          <SelectTrigger className="bg-slate-950 border-slate-800 text-white h-12 rounded-xl hover:border-slate-700 transition-colors">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-slate-900 border-slate-800 text-white">
+                            <SelectItem value="total">Celková váha (Maratón)</SelectItem>
+                            <SelectItem value="avg3">Priemer 3 najťažších rýb</SelectItem>
+                            <SelectItem value="avg5">Priemer 5 najťažších rýb</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs font-black uppercase text-slate-500 tracking-widest">Min. váha (kg)</label>
+                        <Input
+                          type="number"
+                          {...basicsForm.register("minWeight", { valueAsNumber: true })}
+                          className="bg-slate-950 border-slate-800 text-white h-12 rounded-xl focus:border-orange-500 font-mono text-lg"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs font-black uppercase text-slate-500 tracking-widest">Štartovné</label>
+                        <div className="relative">
+                          <Banknote size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                          <Input
+                            {...basicsForm.register("entryFee")}
+                            className="pl-9 bg-slate-950 border-slate-800 text-white h-12 rounded-xl focus:border-orange-500 font-mono text-lg"
+                            placeholder="Napr. 150 €"
+                          />
                         </div>
+                        {basicsForm.formState.errors.entryFee && (
+                          <p className="text-red-500 text-[10px] pl-1">{basicsForm.formState.errors.entryFee.message}</p>
+                        )}
+                      </div>
+                    </div>
 
-                        <div className="space-y-4">
-                          {sectorPlaces.map((sector, sectorIndex) => (
-                            <Card key={sectorIndex} className="bg-muted/10">
-                              <CardContent className="pt-4">
-                                <div className="flex items-center justify-between mb-4">
-                                  <Input
-                                    value={sector.sectorName}
-                                    onChange={(e) => updateSector(sectorIndex, { sectorName: e.target.value })}
-                                    className="max-w-[200px] font-medium"
-                                  />
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    onClick={() => removeSector(sectorIndex)}
-                                    className="text-destructive"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </Button>
-                                </div>
-                                <p className="text-xs text-muted-foreground mb-2">
-                                  Kliknite na názov miesta pre úpravu
-                                </p>
-                                <div className="flex flex-wrap gap-2">
-                                  {sector.places.map((place, placeIndex) => (
-                                    <div key={placeIndex} className="flex items-center gap-1 bg-background rounded border px-1 py-1">
-                                      <Input
-                                        value={place}
-                                        onChange={(e) => updatePlace(sectorIndex, placeIndex, e.target.value)}
-                                        className="h-7 w-24 text-sm border-0 p-1 focus-visible:ring-0"
-                                        data-testid={`input-place-${sectorIndex}-${placeIndex}`}
-                                      />
-                                      <Button 
-                                        variant="ghost" 
-                                        size="icon" 
-                                        className="h-5 w-5"
-                                        onClick={() => removePlace(sectorIndex, placeIndex)}
-                                      >
-                                        <X className="w-3 h-3" />
-                                      </Button>
-                                    </div>
-                                  ))}
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm" 
-                                    onClick={() => addPlace(sectorIndex)}
-                                  >
-                                    <Plus className="w-3 h-3 mr-1" />
-                                    Miesto
-                                  </Button>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          ))}
-                          <Button variant="outline" onClick={addSector}>
-                            <Plus className="w-4 h-4 mr-2" />
-                            Pridať sektor
-                          </Button>
-                        </div>
-                      </>
-                    )}
-                  </>
-                )}
-              </div>
+                    <div className="space-y-4 pt-6 border-t border-slate-800/50">
+                      <label className="text-xs font-black uppercase text-orange-500 tracking-widest flex items-center gap-2 mb-4">
+                        <Gift size={14} /> Ceny pre víťazov
+                      </label>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <PrizeInput rank="1" form={basicsForm} name="firstPlacePrize" placeholder="Napr. 1000 €" />
+                        <PrizeInput rank="2" form={basicsForm} name="secondPlacePrize" placeholder="Napr. 500 €" />
+                        <PrizeInput rank="3" form={basicsForm} name="thirdPlacePrize" placeholder="Napr. 250 €" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
             )}
 
-            {currentStep === 3 && (
-              <div className="space-y-6">
-                {!canUseFeature(selectedPlan, 'sideCompetitions') ? (
-                  <div className="p-6 bg-muted/30 rounded-lg text-center">
-                    <p className="text-muted-foreground">
-                      Špeciálne súťaže nie sú dostupné v tvojom balíku. Upgraduj na Pro alebo vyšší.
+            {currentStep === 2 && (
+              <motion.div
+                key="step2"
+                initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                className="p-8 md:p-12 space-y-8"
+              >
+                <div className="border-b border-slate-800 pb-6 mb-6">
+                  <h2 className="text-xl font-bold text-white mb-1">Sektory a miesta</h2>
+                  <p className="text-sm text-slate-500">Použi len ak chceš, aby mal každý sektor vlastné poradie.</p>
+                </div>
+
+                {!canUseFeature(selectedPlan, 'sectors') ? (
+                  <div className="flex flex-col items-center justify-center p-12 border border-dashed border-slate-800 rounded-2xl bg-slate-900/30 text-center animate-in fade-in zoom-in duration-300">
+                    <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mb-6">
+                      <Lock className="w-8 h-8 text-slate-500" />
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2">Sektory sú zamknuté</h3>
+                    <p className="text-slate-400 text-sm max-w-md">
+                      Pre oddelené poradie sektorov potrebujete balík <strong className="text-orange-500">PRO</strong> alebo vyšší.
                     </p>
                   </div>
                 ) : (
                   <>
-                    <p className="text-muted-foreground">
-                      Vyber doplnkové súťaže, ktoré chceš zahrnúť:
-                    </p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {SIDE_COMPETITIONS.map((comp) => (
-                        <div 
-                          key={comp}
-                          className={`
-                            flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all
-                            ${sideCompetitions.includes(comp) 
-                              ? 'border-primary bg-primary/5' 
-                              : 'border-border hover:border-primary/50'}
-                          `}
-                          onClick={() => toggleSideCompetition(comp)}
-                        >
-                          <Checkbox checked={sideCompetitions.includes(comp)} />
-                          <div>
-                            <span className="font-medium">{getSideCompetitionLabel(comp)}</span>
-                          </div>
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center justify-between bg-slate-950 p-6 rounded-2xl border border-slate-800">
+                        <div>
+                          <h3 className="font-black text-white text-base uppercase">Aktivovať Sektory</h3>
+                          <p className="text-sm text-slate-500">Každý sektor bude mať vlastné poradie.</p>
                         </div>
-                      ))}
+                        <Switch checked={hasSectors} onCheckedChange={setHasSectors} />
+                      </div>
+                      {!hasSectors && sectorPlaces.length > 0 && (
+                        <p className="text-[10px] text-slate-500 pl-4 flex items-center gap-1">
+                          <Info size={10} />
+                          Nastavené sektory sú zachované v pamäti.
+                        </p>
+                      )}
                     </div>
+
+                    {hasSectors && (
+                      <div className="space-y-6 animate-in slide-in-from-top-4 duration-300">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                          {sectorPlaces.map((sector, sIdx) => (
+                            <div key={sIdx} className="bg-slate-950/50 border border-slate-800 rounded-2xl p-6 hover:border-slate-700 transition-colors">
+                              <div className="flex items-center justify-between mb-4">
+                                <Input
+                                  value={sector.sectorName}
+                                  onChange={(e) => updateSector(sIdx, { sectorName: e.target.value })}
+                                  className="bg-transparent border-transparent text-lg font-black text-white px-0 h-auto focus-visible:ring-0"
+                                />
+                                <Button variant="ghost" size="sm" onClick={() => removeSector(sIdx)} className="text-red-500 hover:bg-red-500/10">
+                                  <Trash2 size={16} />
+                                </Button>
+                              </div>
+                              <div className="grid grid-cols-2 gap-2">
+                                {sector.places.map((place, pIdx) => (
+                                  <div key={pIdx} className="flex gap-1 group">
+                                    <Input
+                                      value={place}
+                                      onChange={(e) => updatePlace(sIdx, pIdx, e.target.value)}
+                                      className="bg-slate-900 border-slate-800 text-xs h-8 text-slate-300 focus:text-white rounded-lg"
+                                    />
+                                    <button onClick={() => removePlace(sIdx, pIdx)} className="text-slate-600 hover:text-red-500 px-1 opacity-0 group-hover:opacity-100 transition-opacity"><X size={12} /></button>
+                                  </div>
+                                ))}
+                                <Button variant="outline" size="sm" onClick={() => addPlace(sIdx)} className="h-8 border-dashed border-slate-800 text-slate-500 text-xs hover:text-orange-500 hover:border-orange-500/50 rounded-lg">
+                                  <Plus size={12} className="mr-1" /> Stanovište
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+
+                          <Button variant="outline" onClick={addSector} className="h-full min-h-[150px] border-dashed border-slate-800 text-slate-500 hover:text-orange-500 hover:border-orange-500/50 bg-transparent flex flex-col gap-2 rounded-2xl">
+                            <Plus size={24} />
+                            <span className="uppercase font-bold text-xs">Pridať sektor</span>
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </>
                 )}
-              </div>
+              </motion.div>
             )}
 
-            {currentStep === 4 && (
-              <div className="space-y-6">
-                <div className="p-8 bg-muted/30 rounded-lg text-center">
-                  <Gift className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                  <h4 className="font-medium mb-2">Správa sponzorov</h4>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Sponzorov a ich ceny budeš môcť pridať po schválení súťaže.
-                  </p>
-                  {!canUseFeature(selectedPlan, 'sponsors') && (
-                    <p className="text-xs text-orange-500">
-                      Sponzori nie sú dostupní v tvojom balíku. Upgraduj na Pro alebo vyšší.
-                    </p>
-                  )}
+            {currentStep === 3 && (
+              <motion.div
+                key="step3"
+                initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                className="p-8 md:p-12"
+              >
+                <div className="border-b border-slate-800 pb-6 mb-6">
+                  <h2 className="text-xl font-bold text-white mb-1">Špeciálne súťaže</h2>
+                  <p className="text-sm text-slate-500">Tieto trofeje a poradia systém počíta automaticky.</p>
                 </div>
-              </div>
-            )}
 
-            {currentStep === 5 && (
-              <div className="space-y-6">
-                <div className="p-8 bg-muted/30 rounded-lg text-center">
-                  <div className="flex justify-center mb-4">
-                    <TacticalIconInline icon={Users} variant="orange" size="lg" />
+                <div className="flex flex-col lg:flex-row gap-12">
+
+                  <div className="flex-1 space-y-12">
+                    {!canUseFeature(selectedPlan, 'sideCompetitions') ? (
+                      <div className="flex flex-col items-center justify-center p-12 border border-dashed border-slate-800 rounded-2xl bg-slate-900/30 text-center">
+                        <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mb-6">
+                          <Lock className="w-8 h-8 text-slate-500" />
+                        </div>
+                        <h3 className="text-xl font-bold text-white mb-2">Špeciálne súťaže sú zamknuté</h3>
+                        <p className="text-slate-400 text-sm max-w-md">
+                          Pre doplnkové kategórie potrebujete balík <strong className="text-orange-500">PRO</strong> alebo vyšší.
+                        </p>
+                      </div>
+                    ) : (
+                      <>
+                        <section className="space-y-4">
+                          <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
+                            <Medal size={16} className="text-orange-500" />
+                            Hlavné Trofeje
+                          </h3>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {TROPHY_COMPETITIONS.map((comp) => {
+                              const isSelected = sideCompetitions.includes(comp);
+                              return (
+                                <div
+                                  key={comp}
+                                  onClick={() => toggleSideCompetition(comp)}
+                                  className={`p-5 rounded-2xl border cursor-pointer transition-all flex items-center gap-4 ${isSelected ? 'bg-orange-500/10 border-orange-500' : 'bg-slate-950 border-slate-800 hover:border-slate-600'}`}
+                                >
+                                  <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${isSelected ? 'bg-orange-500 border-orange-500' : 'border-slate-600'}`}>
+                                    {isSelected && <Check size={12} className="text-white" />}
+                                  </div>
+                                  <span className={`font-bold text-sm ${isSelected ? 'text-white' : 'text-slate-400'}`}>{getSideCompetitionLabel(comp)}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </section>
+
+                        <section className="space-y-4">
+                          <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
+                            <Flag size={16} className="text-blue-500" />
+                            Míľniky
+                          </h3>
+                          <p className="text-xs text-slate-500 -mt-2 mb-2">Ocenenia za prvý/posledný úlovok a prvé prekročenie váhy.</p>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {MILESTONE_COMPETITIONS.map((comp) => {
+                              const isSelected = sideCompetitions.includes(comp);
+                              return (
+                                <div
+                                  key={comp}
+                                  onClick={() => toggleSideCompetition(comp)}
+                                  className={`p-5 rounded-2xl border cursor-pointer transition-all flex items-center gap-4 ${isSelected ? 'bg-blue-500/10 border-blue-500' : 'bg-slate-950 border-slate-800 hover:border-slate-600'}`}
+                                >
+                                  <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${isSelected ? 'bg-blue-500 border-blue-500' : 'border-slate-600'}`}>
+                                    {isSelected && <Check size={12} className="text-white" />}
+                                  </div>
+                                  <span className={`font-bold text-sm ${isSelected ? 'text-white' : 'text-slate-400'}`}>{getSideCompetitionLabel(comp)}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </section>
+
+                        <section className="space-y-4">
+                          <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2 group cursor-help" title="Tieto poradia sú navyše. Hlavné bodovanie je nastavené v kroku Základy.">
+                            <BarChart3 size={16} className="text-purple-500" />
+                            Doplnkové Rebríčky
+                            <Info size={12} className="text-slate-600 group-hover:text-slate-400 transition-colors" />
+                          </h3>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {STATS_COMPETITIONS.map((comp) => {
+                              const isSelected = sideCompetitions.includes(comp);
+                              const conflict = isConflict(comp);
+                              return (
+                                <div
+                                  key={comp}
+                                  onClick={() => toggleSideCompetition(comp)}
+                                  className={`p-5 rounded-2xl border transition-all flex flex-col justify-center gap-1 relative overflow-hidden h-[72px] ${
+                                    conflict
+                                      ? 'bg-slate-900/30 border-slate-800/50 cursor-not-allowed hover:bg-red-900/10 hover:border-red-900/30'
+                                      : 'cursor-pointer ' + (isSelected ? 'bg-purple-500/10 border-purple-500' : 'bg-slate-950 border-slate-800 hover:border-slate-600')
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-4">
+                                    <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors shrink-0 ${isSelected ? 'bg-purple-500 border-purple-500' : conflict ? 'border-slate-700 bg-slate-800' : 'border-slate-600'}`}>
+                                      {isSelected && <Check size={12} className="text-white" />}
+                                      {conflict && <Lock size={10} className="text-slate-500" />}
+                                    </div>
+                                    <span className={`font-bold text-sm ${isSelected ? 'text-white' : conflict ? 'text-slate-500' : 'text-slate-400'}`}>
+                                      {getSideCompetitionLabel(comp)}
+                                    </span>
+                                  </div>
+                                  {conflict && (
+                                    <div className="absolute right-2 top-2">
+                                      <span className="text-[9px] font-black uppercase bg-slate-800 text-slate-500 px-1.5 py-0.5 rounded border border-slate-700">Nedostupné</span>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </section>
+                      </>
+                    )}
                   </div>
-                  <h4 className="font-medium mb-2">Pridávanie rozhodcov</h4>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Rozhodcov budeš môcť pridať po schválení súťaže administrátorom.
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Tvoj balík ({selectedPlan}) povoľuje maximálne {selectedPlan === 'basic' ? '2' : selectedPlan === 'pro' ? '5' : 'neobmedzený počet'} rozhodcov.
-                  </p>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
 
-        <div className="flex justify-between mt-8">
-          <Button 
-            variant="outline" 
-            onClick={prevStep} 
-            disabled={currentStep === 1}
-            data-testid="button-prev-step"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Späť
-          </Button>
-          
-          <div className="flex gap-3">
-            {currentStep < STEPS.length && (
-              <Button 
-                variant="ghost" 
-                onClick={skipStep}
-                data-testid="button-skip-step"
-              >
-                Preskočiť
-              </Button>
+                  <div className="lg:w-80 relative">
+                    <div className="sticky top-8 space-y-4">
+                      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                        <h3 className="text-sm font-black text-white uppercase tracking-widest mb-4 flex items-center gap-2">
+                          <FileText size={14} className="text-emerald-500" />
+                          Sumár nastavenia
+                        </h3>
+
+                        <div className="space-y-4 text-sm">
+                          <div>
+                            <p className="text-xs text-slate-500 font-bold uppercase">Hlavné bodovanie</p>
+                            <p className="text-white font-medium">{getScoringLabel(scoringType)}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-slate-500 font-bold uppercase">Minimálna váha</p>
+                            <p className="text-white font-medium">{minWeight} kg</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-slate-500 font-bold uppercase">Sektory</p>
+                            <p className="text-white font-medium">
+                              {hasSectors ? (
+                                <span className="text-emerald-400 flex items-center gap-1">
+                                  <Check size={12} /> Zapnuté ({sectorPlaces.length})
+                                </span>
+                              ) : (
+                                <span className="text-slate-500">Vypnuté</span>
+                              )}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-slate-500 font-bold uppercase">Špeciály</p>
+                            <p className="text-white font-medium">{sideCompetitions.length} aktívnych</p>
+                          </div>
+                          <div className="pt-4 border-t border-slate-800">
+                            <p className="text-xs text-slate-500 font-bold uppercase">Balík</p>
+                            <p className="text-orange-500 font-black uppercase">{selectedPlan}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </motion.div>
             )}
-            
-            {currentStep < STEPS.length ? (
-              <Button 
-                onClick={nextStep}
-                data-testid="button-next-step"
-              >
-                Ďalej
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            ) : (
-              <Button 
-                onClick={handleFinish}
-                disabled={isSaving}
-                data-testid="button-finish-setup"
-              >
-                {isSaving ? (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                ) : (
-                  <Check className="w-4 h-4 mr-2" />
-                )}
-                {isSaving ? "Ukladám..." : "Dokončiť nastavenie"}
-              </Button>
-            )}
+
+          </AnimatePresence>
+
+          <div className="bg-[#020617] p-8 border-t border-slate-800 flex justify-between items-center relative z-20">
+            <Button
+              variant="ghost"
+              disabled={currentStep === 1}
+              onClick={() => setCurrentStep(p => p - 1)}
+              className="text-slate-500 hover:text-white hover:bg-slate-900 px-6 h-12 rounded-xl disabled:opacity-30"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" /> Späť
+            </Button>
+
+            <div className="flex gap-4">
+              {currentStep < 3 ? (
+                <Button
+                  onClick={() => setCurrentStep(p => p + 1)}
+                  className="bg-orange-500 hover:bg-orange-600 text-white font-black uppercase tracking-widest h-12 px-8 rounded-xl transition-transform active:scale-95"
+                >
+                  Ďalej <ArrowRight size={16} className="ml-2" />
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleFinish}
+                  disabled={isSaving}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase tracking-widest h-12 px-10 rounded-xl shadow-[0_10px_40px_-10px_rgba(16,185,129,0.3)] transition-all hover:scale-105 active:scale-95"
+                >
+                  {isSaving ? <Loader2 className="animate-spin" /> : <Save size={18} className="mr-2" />}
+                  Dokončiť
+                </Button>
+              )}
+            </div>
           </div>
         </div>
+
       </div>
     </div>
   );
