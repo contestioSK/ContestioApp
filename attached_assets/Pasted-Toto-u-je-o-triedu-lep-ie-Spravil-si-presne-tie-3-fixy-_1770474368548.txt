@@ -1,0 +1,118 @@
+Toto už je o triedu lepšie. Spravil si presne tie 3 fixy s najvyšším ROI a je to cítiť.
+
+Ale. Ešte ti tam zostali 4 veci, ktoré by som nenechal tak, lebo buď časom urobia bug, alebo UX bude “meh”.
+
+1) useEffect na doplnenie kapitána – teraz prepisuje aj userovi ručné úpravy
+
+Aktuálne: keď sa user object zmení (alebo sa refreshne), ty mu prepíšeš members.0.name/email bez ohľadu na to, či už niečo vyplnil.
+
+Fix (len ak je pole prázdne alebo rovnaké ako starý default)
+useEffect(() => {
+  if (!user) return;
+
+  const namePath = "members.0.name" as const;
+  const emailPath = "members.0.email" as const;
+
+  const currentName = (form.getValues(namePath) || "").trim();
+  const currentEmail = (form.getValues(emailPath) || "").trim();
+
+  const suggestedName = `${user.firstName || ""} ${user.lastName || ""}`.trim();
+  const suggestedEmail = (user.email || "").trim();
+
+  // neprepisuj, ak už user niečo vyplnil
+  if (!currentName && suggestedName) form.setValue(namePath, suggestedName, { shouldDirty: true });
+  if (!currentEmail && suggestedEmail) form.setValue(emailPath, suggestedEmail, { shouldDirty: true });
+}, [user?.id]);
+
+
+Poznámka: dávam dependency user?.id, nie celý user, aby sa efekt nespúšťal pri každom refetchi.
+
+2) localStorage contestio_returnTo – fajn, ale musíš to aj “dočítať” po logine
+
+Toto riešenie je OK, len je “polovičné”, ak na login stránke nemáš handler.
+Na /auth/login po úspešnom logine sprav:
+
+const returnTo = localStorage.getItem("contestio_returnTo");
+if (returnTo) {
+  localStorage.removeItem("contestio_returnTo");
+  navigate(returnTo);
+} else {
+  navigate("/");
+}
+
+
+Ak to tam nemáš, tak je to len pekná nálepka.
+
+UX detail: keď user prišiel cez CTA “Prihlásiť sa a registrovať”, tak po návrate by si mal rovno otvoriť registráciu.
+To spravíš tak, že uložíš aj flag:
+
+localStorage.setItem("contestio_returnTo", `/competitions/${id}?openReg=1`);
+
+
+A v CompetitionDetail:
+
+useEffect(() => {
+  const url = new URL(window.location.href);
+  if (url.searchParams.get("openReg") === "1" && isAuthenticated) {
+    setIsRegistrationDialogOpen(true);
+    url.searchParams.delete("openReg");
+    window.history.replaceState({}, "", url.toString());
+  }
+}, [isAuthenticated]);
+
+
+To je “wow” moment. User sa vráti a hneď vidí formulár.
+
+3) Leaderboard empty stavy – poradie podmienok je zlé
+
+Ty máš:
+
+teams.length === 0 → “Zatiaľ nie sú prihlásené žiadne tímy”
+
+pending > 0 → “Tímy čakajú…”
+
+Ale keď pending > 0, tak teams.length === 0 nebude true, takže OK.
+Problém je inde: ak sú teams undefined (fetch ešte ide, ale ty už nerenderuješ skeleton, lebo competitionLoading/authLoading skončili), tak tie stavy môžu blikať.
+
+Fix: pridaj teamsLoading podmienku v tabuľke
+
+Napr. do <tbody> na začiatok:
+
+{teamsLoading && (
+  <tr>
+    <td colSpan={5} className="px-3 md:px-6 py-8 text-center text-muted-foreground">
+      Načítavam tímy...
+    </td>
+  </tr>
+)}
+
+
+A ostatné empty stavy daj až keď !teamsLoading.
+
+4) Live feed: klik na “tím” vs klik na kartu – teraz je to OK, ale stále máš UX mini bug
+
+V live feed máš wrapper div s onClick (otvára catch), a vo vnútri button, ktorý otvára tím a stopuje propagáciu. To je správne.
+
+Lenže klikateľná plocha na mobile je malá a user bude často “trafiť” tím, ale otvorí catch.
+Odporúčam urobiť to jasné: pridaj mini “chip” pre tím (alebo šípku) a zvyšok nech je catch.
+
+Napr.: tím ako pill button:
+
+viac “touch friendly”
+
+menej omylov
+
+Bonus: 2 copy úpravy (malé, ale zlepšia dojem)
+
+“Registrácia Otvorená” → “Registrácia otvorená” (Title Case tu pôsobí divne)
+
+“Správy od vody” je super, ale text buttonu:
+
+“Kde a kedy berú” je OK
+
+alternatíva ešte jasnejšia: “Analýza záberov” (kratšie, menej slangové)
+
+Verdikt
+
+✅ Funkčne a UX-ovo si spravil dobrý skok.
+❗ Najväčší risk teraz je prepisovanie kapitána v useEffect a “returnTo” flow bez auto-open registrácie.
