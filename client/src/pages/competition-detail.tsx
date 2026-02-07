@@ -1,4 +1,4 @@
-import { useParams, useLocation } from "wouter";
+import { useParams, useLocation, Link } from "wouter";
 import { useEffect, useState, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -138,7 +138,9 @@ const SectorTable = ({ sector, leaderboard }: { sector: string; leaderboard: any
           {sectorTeams.slice(0, 5).map((t, i) => (
             <tr key={i} className="hover:bg-muted/30">
               <td className="px-4 py-2 font-mono text-muted-foreground">{i + 1}.</td>
-              <td className="px-4 py-2 text-foreground font-medium">{t.name}</td>
+              <td className="px-4 py-2 text-foreground font-medium">
+                <Link href={`/team/${t.id}`} className="hover:text-orange-500 transition-colors cursor-pointer">{t.name}</Link>
+              </td>
               <td className="px-4 py-2 text-right text-foreground font-bold">{t.weight.toFixed(1)}</td>
             </tr>
           ))}
