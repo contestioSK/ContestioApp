@@ -1,0 +1,119 @@
+Toto je už o dosť lepšie. Vidno, že si opravil presne tie 1–4 body: gating, statusy, empty stavy, výkon leaderboardu + getRemainingTime() upgrade. 👍
+Ale stále tam máš pár vecí, ktoré ti v praxi spravia zbytočné UX prúsery alebo bugy.
+
+1) Gating registrácie: teraz je to “polovičné”
+
+openRegistration() pre neprihlásených len hodí toast a nič viac. To je slepá ulička.
+
+Fix (UX): toast + navigácia na login a po logine návrat späť.
+
+const openRegistration = () => {
+  if (!isAuthenticated) {
+    toast({ title: "Najprv sa prihlás", description: "Registrácia tímu je dostupná len pre prihlásených." });
+    navigate(`/auth?next=/competitions/${id}`); // uprav route
+    return;
+  }
+  setIsRegistrationDialogOpen(true);
+};
+
+
+Bez toho user skončí v frustrácii: “OK, mám sa prihlásiť… ale kam?”
+
+2) DefaultValues v registrácii tímu sa ti neaktualizujú po načítaní usera
+
+useForm({ defaultValues: { members: [{ name: user?.firstName ... }]}}) sa nastaví iba raz pri inicializácii. Keď user príde async, kapitán ostane prázdny.
+
+Fix:
+
+useEffect(() => {
+  if (!user) return;
+  const members = form.getValues("members");
+  if (members?.length) {
+    form.setValue("members.0.name", `${user.firstName || ""} ${user.lastName || ""}`.trim());
+    form.setValue("members.0.email", user.email || "");
+  }
+}, [user]);
+
+
+Toto je taký “tichý bug” – nič nepadne, ale ľudia budú prepisovať meno stále.
+
+3) “Žiadne registrované tímy” v leaderboarde je logicky sporné
+
+sortedLeaderboard = len approved tímy. Ak sú tímy pending, zobrazíš “Žiadne registrované tímy”, čo je lož.
+
+Fix (copy + logika):
+
+počítaj:
+
+const approvedTeams = teams?.filter(t => t.status === "approved") || [];
+const pendingTeams = teams?.filter(t => t.status === "pending") || [];
+
+
+a v tabuľke:
+
+ak approvedTeams.length === 0 && pendingTeams.length > 0 → “Tímy čakajú na schválenie organizátorom.”
+
+ak teams.length === 0 → “Zatiaľ nie sú prihlásené žiadne tímy.”
+
+Toto je presne ten detail, čo robí app “dospelou”.
+
+4) getCommentary() má zlé podmienky pre “žiadne dáta”
+
+Teraz kontroluješ !sectorStats.length && !hourlyActivity.length.
+Lenže hourlyActivity vždy vracia 8 slotov (val=0), takže hourlyActivity.length je vždy true → nikdy sa nedostaneš do “Čakáme na prvé úlovky...”.
+
+Fix:
+
+const hasAnyCatches = (liveStats.totalFish ?? 0) > 0;
+
+if (!hasAnyCatches) {
+  return type === 'short' ? 'Zatiaľ žiadne dáta.' : 'Čakáme na prvé úlovky...';
+}
+
+
+Tým pádom komentár nebude klamať v nule.
+
+5) Live feed “Online” je stále fake badge
+
+Ak to nie je reálny socket status, tak to nedávaj ako fakt. Radšej:
+
+“Live” (ak isLive)
+
+alebo “Aktualizuje sa” + “naposledy pred X” (super dôveryhodné)
+
+Minimal fix:
+
+<span className="...">
+  {isLive ? "Live" : "Archiv"}
+</span>
+
+6) StatsDashboard competitionId={id!} – risk pádu
+
+Používaš non-null assertion. V praxi to asi bude OK, ale keď route zlyhá alebo id je undefined krátko, vieš si odpáliť render.
+
+Fix: podmieň render:
+
+{statsTab === 'analytics' && id && <StatsDashboard competitionId={id} />}
+
+7) Copy drobnosť: “Prihlásiť sa” vs “Prihlásiť sa a registrovať”
+
+V mobile CTA máš pri neprihlásenom len “Prihlásiť sa” – to je fajn, ale na stránke registration módu máš “Prihlásiť sa a registrovať”.
+Zjednoť to. User má cítiť konzistenciu.
+
+Zhrnutie: čo je už dobré
+
+✅ getRemainingTime() teraz konečne neklame a dáva minúty/hodiny/dni rozumne
+
+✅ leaderboard výkon výrazne lepší (statsMap)
+
+✅ empty states v tabuľke už dávajú zmysel (aspoň základne)
+
+✅ gating CTA textom je správny smer
+
+3 fixy, ktoré by som spravil hneď teraz (najvyšší ROI)
+
+openRegistration → presmerovať na login (next=)
+
+useEffect na doplnenie kapitána po načítaní usera
+
+opraviť getCommentary “žiadne dáta” cez liveStats.totalFish === 0
