@@ -1292,7 +1292,7 @@ export default function CompetitionDetail() {
                   <h3 className="font-bold text-foreground text-sm uppercase tracking-wider">Čo sa deje pri vode</h3>
                   <div className="flex items-center gap-2">
                     <button 
-                      onClick={() => setEntityModal({ view: 'catches-list', team: null, catch_: null, previousView: null })}
+                      onClick={() => navigate(`/competition/${id}/catches`)}
                       className="text-[10px] text-cyan-500 font-bold uppercase hover:underline"
                     >
                       Všetky úlovky
@@ -1846,7 +1846,7 @@ export default function CompetitionDetail() {
                     </div>
                   </div>
                   <button
-                    onClick={() => setEntityModal({ view: 'catches-list', team: null, catch_: null, previousView: null })}
+                    onClick={() => navigate(`/competition/${id}/catches`)}
                     className="w-full py-3 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl font-bold transition-colors"
                   >
                     Pozrieť všetky úlovky preteku
