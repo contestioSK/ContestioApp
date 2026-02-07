@@ -1,0 +1,94 @@
+Toto je už výrazne lepšie. Vyriešil si presne tie dve “hanby” (rozbitý reject + invite message) a countdown si spravil technicky dosť čisto. 👌
+Ale ešte ti tam ostali 3 tvrdé chyby/UX dlhy, ktoré by som pred releasom neignoroval.
+
+1) Countdown: stále ignoruješ startTime
+
+Máš helper getStartAt(dateISO, timeHHMM), ale v UI ho voláš takto:
+
+<Countdown targetDate={competition.status === 'live' ? competition.endDate : getStartAt(competition.startDate)} />
+
+
+Tým pádom je štart vždy 00:00 v lokálnom čase. Ak reálne štartuješ napr. 12:00, KPI “Čas do štartu” bude klamať o pol dňa.
+
+Fix:
+
+<Countdown
+  targetDate={
+    competition.status === 'live'
+      ? getStartAt(competition.endDate, competition.endTime)
+      : getStartAt(competition.startDate, competition.startTime)
+  }
+/>
+
+
+Ak endTime nemáš, tak aspoň startTime.
+
+2) Schváliť/Zamietnuť: blokuješ celý zoznam jedným isPending
+
+Teraz:
+
+disabled={updateTeamStatusMutation.isPending}
+
+
+To zablokuje všetkým tímom akúkoľvek akciu, aj keď schvaľuješ len jeden. UX: “kliknem schváliť na tím A → tím B sa tiež zamrzne”.
+
+Lepšie: trackni práve spracovávaný tím
+
+const [processingTeamId, setProcessingTeamId] = useState<string | null>(null);
+
+const updateTeamStatusMutation = useMutation({
+  mutationFn: async ({ teamId, status }) => apiRequest('PATCH', `/api/teams/${teamId}/status`, { status }),
+  onMutate: ({ teamId }) => setProcessingTeamId(teamId),
+  onSettled: () => setProcessingTeamId(null),
+  ...
+});
+
+
+A v UI:
+
+const isThisTeamBusy = processingTeamId === team.id;
+
+<Button disabled={isThisTeamBusy}>...</Button>
+
+
+Bonus: daj do tlačidla loader (mini Loader2), nech je jasné že sa niečo deje.
+
+3) Reject modal: keď ho zavrieš, nechávaš tam starý tím (stale state)
+
+Klikneš X na tím A → otvorí sa modal. Zavrieš bez akcie → otvoríš X na tím B → je šanca, že sa ti tam ešte mihne starý názov/id, lebo reset nerobíš pri close.
+
+Fix: reset na close
+
+<AlertDialog
+  open={showRejectTeamDialog}
+  onOpenChange={(open) => {
+    setShowRejectTeamDialog(open);
+    if (!open) {
+      setRejectingTeamId(null);
+      setRejectingTeamName("");
+    }
+  }}
+>
+
+Mini UX/Copy “ošetrenia”, ktoré by som pridal (nie nutné, ale lacné a zlepší to produkt)
+A) “Prebieha” v countdowne je OK, ale farba zelená je zavádzajúca
+
+Zelená = úspech. “Prebieha” nie je úspech, je stav. Skôr neutrál (white) alebo info (blue).
+Ak to necháš zelené, ľudia budú mať mentálny model “hotovo”.
+
+B) Toasty pri approve/reject sú rovnaké
+
+Teraz máš:
+
+“Tím schválený / zamietnutý” + “Stav tímu bol úspešne zmenený.”
+
+Môže byť konkrétnejšie:
+
+Schválený: “Tím môže nastúpiť do súťaže.”
+
+Zamietnutý: “Tím bol vyradený z registrácie.”
+
+Verdikt
+
+✅ Toto už je “release candidate”.
+❌ Ale bez bodu (1) bude KPI countdown klamať a to je presne tá vec, ktorú organizátori sledujú najviac.
