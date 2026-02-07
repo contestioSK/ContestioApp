@@ -1,0 +1,155 @@
+OK, toto už vyzerá ako “reálny produkt”, nie len pekná maketa. Ale stále ti tam ostali 3 veci, ktoré ti v praxi urobia hanbu (a Replit ich “nevyrieši”, lebo sú to logické chyby / UX debt).
+
+Nižšie máš tvrdú, konkrétnu revíziu + presné opravy.
+
+1) Countdown je stále časová bomba (timezone + interval + “Prebieha”)
+
+Teraz robíš:
+
+const target = new Date(targetDate);
+
+
+Ak competition.startDate prichádza zo servera ako ISO bez timezone (alebo ako string typu 2026-02-07), prehliadače to interpretujú rôzne. Výsledok: odpočet môže byť posunutý o hodinu/dve (DST, locale parsing), a to je presne ten typ bugu, čo sa objaví u niekoho iného než u teba.
+
+Fix (minimálny):
+
+donúť backend posielať vždy plný ISO s timezone Z alebo offsetom.
+
+alebo na FE vždy skladaj startAt z dátumu + času.
+
+Patch: urob si helper getStartAt()
+function getStartAt(dateISO: string, timeHHMM?: string) {
+  // dateISO očakávaj ako ISO date alebo ISO datetime
+  const d = new Date(dateISO);
+
+  // ak už dateISO obsahuje čas (nie je midnight), nechaj tak
+  if (!timeHHMM) return d;
+
+  const [hh, mm] = timeHHMM.split(":").map(Number);
+  // nastav lokálny čas organizátora (ak chcete, môžete to držať striktne v UTC)
+  d.setHours(hh || 0, mm || 0, 0, 0);
+  return d;
+}
+
+
+A potom:
+
+<Countdown targetDate={competition.status === 'live'
+  ? competition.endDate
+  : getStartAt(competition.startDate, competition.startTime)
+} />
+
+Fix “diff <= 0”
+
+Teraz keď diff <= 0, stále beží interval a každú sekundu setuje state. To je zbytočné.
+
+if (diff <= 0) { setTimeLeft("0d 0h 0m"); return; }
+
+
+Lepšie:
+
+nastav "Prebieha"
+
+clear interval
+
+Najjednoduchšie: v update() vráť boolean a v effecte keď false → clear.
+
+2) Najväčší bug v UI: tlačidlo “Zamietnuť” nič nerobí
+
+V pending teame máš:
+
+<AlertDialog>
+  <Button ... asChild>
+    <span><X /></span>
+  </Button>
+</AlertDialog>
+
+
+To je len wrapper bez AlertDialogTrigger, bez contentu. UX: používateľ klikne X a… nič.
+Toto je critical.
+
+Fix:
+Použi presne to čo si mal predtým – AlertDialogTrigger + AlertDialogContent.
+
+A ak chceš byť brutálne praktický: X = okamžitý “Reject” je risky. Daj confirmation (máš to inde spravené dobre).
+
+3) Copy to clipboard je OK, ale inviteMessage je slabý a nekonzistentný
+
+Invite message:
+
+Ahojte, spúšťame registráciu... ${origin}/competition/${id}
+
+
+To je fajn, ale:
+
+“spúšťame registráciu” je nepresné, keď je súťaž v stave live alebo finished
+
+chýba ti info o dátume/mieste (to ľudia reálne chcú)
+
+nie je to skenovateľné (jedna veta bez štruktúry)
+
+Lepšia verzia (copywriting):
+
+const inviteMessage =
+`Ahojte! Registrácia na ${competition.name} je otvorená.
+📍 ${competition.location}
+📅 ${format(new Date(competition.startDate), "d. MMMM yyyy", { locale: sk })}
+Prihlásenie: ${window.location.origin}/competition/${competition.id}`;
+
+
+Je to o triedu lepšie a stále krátke.
+
+4) Statusy: už je to lepšie, ale “ready vs registration” stále nie je čisté
+
+Máš:
+
+draft → ready (prepare)
+
+ready + unpaid → pay
+
+ready + paid / registration → start
+
+Ale v stepperi ukazuješ ready = Pripravená a zároveň texty hovoria “aktivovaná”.
+Tu buď:
+
+ready = pripravené (všetko vyplnené), ale ešte nie zaplatené
+
+registration = zaplatené + registrácia otvorená
+
+To znamená, že po platbe by si mal prepínať na registration automaticky.
+Teraz po “payment success” iba invaliduješ query a toastuješ, ale nenútiš status. Spoliehaš sa, že backend to nastaví.
+
+Minimálne odporúčanie: uisti sa, že backend po úspešnej platbe prehodí status na registration. Inak budeš mať “paid + ready” a stepper bude klamať.
+
+5) Malý UX detail, ale stojí za to: “Upraviť” link vedie raz sem, raz tam
+
+Toto:
+
+competition.status === 'draft'
+  ? `/organizer/create?id=...`
+  : `/competition/${id}/setup`
+
+
+Je to kognitívne mätúce: “Upraviť” má vždy viesť na jedno miesto, len na inom tabu/sekcii.
+
+Sprav jednotný edit route: napr. /organizer/competition/${id}/edit a vnútri rozhodni sekciu.
+
+Čo je za mňa “OK na release” a čo nie
+
+✅ OK:
+
+Topbar + primary CTA logika (už dáva zmysel)
+
+KPI cards + readiness percent (super, rýchlo čitateľné)
+
+Teams filter + search (praktické)
+
+Payment success flow (dobré)
+
+❌ Nie OK (musí sa opraviť):
+
+Countdown časová logika (startAt vs startDate)
+
+Zamietnutie pending tímu (AlertDialog je rozbitý)
+
+Status po platbe / registration (aby stepper neklamal)
