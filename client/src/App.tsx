@@ -122,7 +122,9 @@ function Router() {
       
       <Route path="/register-competition">
         {() => {
-          window.location.href = '/organizer/create';
+          const params = new URLSearchParams(window.location.search);
+          const plan = params.get('plan');
+          window.location.href = plan ? `/organizer/create?plan=${plan}` : '/organizer/create';
           return null;
         }}
       </Route>
