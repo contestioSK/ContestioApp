@@ -54,7 +54,7 @@ export function DailyBigFishChart({ data }: DailyBigFishChartProps) {
                           <div className="font-medium">Najväčšia ryba dňa</div>
                           <div>Tím: {payload.teamName}</div>
                           <div>Váha: {payload.weight} kg</div>
-                          <div>Typ: {payload.fishType}</div>
+                          <div>Typ: {payload.fishType === 'mirror' ? 'Lysec' : payload.fishType === 'scaly' ? 'Šupináč' : payload.fishType}</div>
                           <div>Dátum: {new Date(payload.day).toLocaleDateString('sk-SK')}</div>
                         </div>
                       ];
