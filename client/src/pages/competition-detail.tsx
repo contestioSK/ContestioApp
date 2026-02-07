@@ -1126,10 +1126,10 @@ export default function CompetitionDetail() {
 
                   {/* Winner */}
                   <div className="bg-card border border-amber-500/30 rounded-xl p-4 flex flex-col items-center justify-end h-56 relative amber-glow z-10">
-                    <div className="absolute -top-6 w-14 h-14 bg-amber-500 rounded-full flex items-center justify-center font-black text-black text-xl border-4 border-background shadow-lg shadow-amber-500/30 animate-crown-bounce">
+                    <div className="absolute -top-10 w-14 h-14 bg-amber-500 rounded-full flex items-center justify-center font-black text-black text-xl border-4 border-background shadow-lg shadow-amber-500/30 animate-crown-bounce">
                       <Crown size={24} />
                     </div>
-                    <div className="absolute top-3 left-1/2 -translate-x-1/2">
+                    <div className="absolute top-2 left-1/2 -translate-x-1/2">
                       <span className="text-[10px] font-black uppercase tracking-widest text-amber-500 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">LÍDER PRETEKU</span>
                     </div>
                     <div className="text-center w-full mb-2">
