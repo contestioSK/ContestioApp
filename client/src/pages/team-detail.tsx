@@ -311,17 +311,6 @@ export default function TeamDetail() {
               ))}
             </div>
 
-            {teamData.sector && (
-              <div className="bg-card/50 border border-border rounded-xl p-4 text-center">
-                <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">Poloha tímu</div>
-                <div className="bg-background rounded h-32 flex items-center justify-center border border-border/50">
-                  <div className="text-center">
-                    <MapPin className="text-muted-foreground mx-auto mb-2" size={32} />
-                    <span className="text-sm font-bold text-foreground/80">Sektor {teamData.sector}</span>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
