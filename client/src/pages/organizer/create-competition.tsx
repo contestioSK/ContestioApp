@@ -106,6 +106,7 @@ const step2Schema = z.object({
   rules: z.string().optional(),
   scoringType: z.enum(["total", "avg3", "avg5"]).default("total"),
   minWeight: z.coerce.number().min(1).max(15).default(2),
+  bigFishThreshold: z.coerce.number().min(1).max(50).default(10),
   resultBlocking: z.enum(["none", "12h", "24h"]).default("none"),
   firstPlacePrize: z.string().optional(),
   secondPlacePrize: z.string().optional(),
@@ -168,6 +169,7 @@ export default function CreateCompetition() {
       rules: "",
       scoringType: "total",
       minWeight: 2,
+      bigFishThreshold: 10,
       resultBlocking: "none",
       firstPlacePrize: "",
       secondPlacePrize: "",
@@ -212,6 +214,7 @@ export default function CreateCompetition() {
         rules: existingCompetition.rules || "",
         scoringType: (existingCompetition.scoringType as "total" | "avg3" | "avg5") || "total",
         minWeight: existingCompetition.minWeight ? parseFloat(existingCompetition.minWeight) : 2,
+        bigFishThreshold: existingCompetition.bigFishThreshold ? parseFloat(existingCompetition.bigFishThreshold) : 10,
         resultBlocking: (existingCompetition.resultBlocking as "none" | "12h" | "24h") || "none",
         firstPlacePrize: existingCompetition.firstPlacePrize || "",
         secondPlacePrize: existingCompetition.secondPlacePrize || "",
@@ -367,7 +370,7 @@ export default function CreateCompetition() {
         return;
       }
     } else if (currentStep === 3) {
-      isValid = await form.trigger(['description', 'rules', 'scoringType', 'minWeight', 'resultBlocking']);
+      isValid = await form.trigger(['description', 'rules', 'scoringType', 'minWeight', 'bigFishThreshold', 'resultBlocking']);
       const maxTeamsValue = form.getValues('maxTeams');
       if (maxTeamsValue && currentPlanLimits.maxTeams !== null && maxTeamsValue > currentPlanLimits.maxTeams) {
         form.setError('maxTeams', { type: 'manual', message: `Balík ${currentPlanLimits.name} povoľuje maximálne ${currentPlanLimits.maxTeams} tímov` });
@@ -686,6 +689,11 @@ export default function CreateCompetition() {
                       <Input type="number" {...form.register("minWeight", { valueAsNumber: true })} className="bg-slate-950 border-slate-800 text-white h-12 rounded-xl focus:border-orange-500 font-mono text-lg" min={1} max={15} step={0.5} />
                     </div>
                     <div className="space-y-2">
+                      <label className="text-xs font-black uppercase text-slate-500 tracking-widest">Veľká ryba od (kg)</label>
+                      <Input type="number" {...form.register("bigFishThreshold", { valueAsNumber: true })} className="bg-slate-950 border-slate-800 text-white h-12 rounded-xl focus:border-orange-500 font-mono text-lg" min={1} max={50} step={0.5} />
+                      <p className="text-[10px] text-slate-600">Úlovky nad touto váhou budú zvýraznené v live feede</p>
+                    </div>
+                    <div className="space-y-2">
                       <label className="text-xs font-black uppercase text-slate-500 tracking-widest">Štartovné</label>
                       <div className="relative">
                         <Banknote size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
@@ -833,6 +841,10 @@ export default function CreateCompetition() {
                         <div className="space-y-1">
                           <p className="text-xs text-slate-500 font-bold uppercase">Min. váha</p>
                           <p className="text-white font-medium font-mono">{form.getValues('minWeight')} kg</p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-xs text-slate-500 font-bold uppercase">Veľká ryba od</p>
+                          <p className="text-white font-medium font-mono">{form.getValues('bigFishThreshold')} kg</p>
                         </div>
                         <div className="space-y-1">
                           <p className="text-xs text-slate-500 font-bold uppercase">Skrytie výsledkov</p>

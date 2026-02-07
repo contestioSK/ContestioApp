@@ -95,6 +95,7 @@ export const competitions = pgTable("competitions", {
   hasSectors: boolean("has_sectors").notNull().default(false), // Whether competition is divided into sectors
   scoringType: varchar("scoring_type").notNull().default("total"), // "total", "avg3", "avg5"
   minWeight: decimal("min_weight", { precision: 10, scale: 2 }).notNull().default("2.00"), // minimum weight for scoring in kg
+  bigFishThreshold: decimal("big_fish_threshold", { precision: 10, scale: 2 }).notNull().default("10.00"), // threshold in kg for "big fish" highlight in live feed
   
   // Contact information
   contactEmail: varchar("contact_email", { length: 255 }),
@@ -786,6 +787,7 @@ export const insertCompetitionSchema = createInsertSchema(competitions).omit({
     subdomain: z.string().optional(),
   }).nullable().optional(),
   minWeight: z.string().or(z.number().transform(val => val.toString())).default("2.00"),
+  bigFishThreshold: z.string().or(z.number().transform(val => val.toString())).default("10.00"),
   organizerEmail: z.string().email().optional().nullable(),
   // Numeric fields with proper empty string handling
   firstPlacePrize: optionalDecimalField,
