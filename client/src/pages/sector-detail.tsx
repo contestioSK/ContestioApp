@@ -73,6 +73,13 @@ export default function SectorDetail() {
     enabled: !!competitionId && !!sector,
   });
 
+  const { data: competition } = useQuery<{ status: string }>({
+    queryKey: ["/api/competitions", competitionId],
+    enabled: !!competitionId,
+  });
+
+  const isEnded = ['ended', 'completed', 'finished'].includes(competition?.status || '');
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -175,7 +182,7 @@ export default function SectorDetail() {
 
         <div className="flex items-center justify-between px-2 mb-4">
           <h2 className="text-sm font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-            <Trophy size={14} /> Rebríček
+            <Trophy size={14} /> {isEnded ? 'Konečné poradie sektora' : 'Rebríček'}
           </h2>
           <span className="text-xs text-muted-foreground font-mono">{sortedTeams.length} tímov</span>
         </div>
