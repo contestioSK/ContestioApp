@@ -173,6 +173,94 @@ export default function SectorDetail() {
           />
         </div>
 
+        {sortedTeams.length >= 3 && (
+          <div className="mb-8">
+            <div className="md:hidden bg-card border border-border rounded-xl p-4">
+              <div className="text-xs font-bold uppercase text-muted-foreground mb-4 flex items-center gap-2">
+                <Trophy size={14} className="text-amber-500" />
+                Pódium sektora
+              </div>
+              <div className="grid grid-cols-3 items-end gap-2">
+                <div className="flex flex-col items-center">
+                  <div className="w-9 h-9 bg-slate-500 rounded-full flex items-center justify-center font-bold text-white text-sm mb-2 border-2 border-slate-400/30">2</div>
+                  <div className="text-center w-full">
+                    <Link href={`/team/${sortedTeams[1]?.id}`}>
+                      <span className="font-bold text-foreground text-xs truncate block px-1 hover:text-cyan-500 transition-colors">{sortedTeams[1]?.name}</span>
+                    </Link>
+                    <div className="text-lg font-mono font-medium text-[#F97316]">{parseFloat(sortedTeams[1]?.totalWeight || '0').toFixed(1)}</div>
+                    <div className="text-[10px] text-muted-foreground">{sortedTeams[1]?.fishCount ?? 0} rýb</div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col items-center -mt-4">
+                  <div className="w-11 h-11 bg-amber-500 rounded-full flex items-center justify-center mb-2 shadow-lg shadow-amber-500/40 animate-crown-bounce border-2 border-amber-400/50">
+                    <Crown size={20} className="text-black" />
+                  </div>
+                  <span className="text-[8px] font-black uppercase tracking-wider text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full mb-1">LÍDER</span>
+                  <div className="text-center w-full">
+                    <Link href={`/team/${sortedTeams[0]?.id}`}>
+                      <span className="font-bold text-amber-500 text-sm truncate block px-1 hover:underline">{sortedTeams[0]?.name}</span>
+                    </Link>
+                    <div className="text-2xl font-mono font-medium text-[#F97316]">{parseFloat(sortedTeams[0]?.totalWeight || '0').toFixed(1)}</div>
+                    <div className="text-xs text-muted-foreground">{sortedTeams[0]?.fishCount ?? 0} rýb</div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col items-center">
+                  <div className="w-9 h-9 bg-orange-800 rounded-full flex items-center justify-center font-bold text-white text-sm mb-2 border-2 border-orange-700/50">3</div>
+                  <div className="text-center w-full">
+                    <Link href={`/team/${sortedTeams[2]?.id}`}>
+                      <span className="font-bold text-foreground text-xs truncate block px-1 hover:text-cyan-500 transition-colors">{sortedTeams[2]?.name}</span>
+                    </Link>
+                    <div className="text-lg font-mono font-medium text-[#F97316]/60">{parseFloat(sortedTeams[2]?.totalWeight || '0').toFixed(1)}</div>
+                    <div className="text-[10px] text-muted-foreground">{sortedTeams[2]?.fishCount ?? 0} rýb</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="hidden md:grid md:grid-cols-3 gap-4 items-end">
+              <div className="bg-card border border-border hover:border-slate-500/40 rounded-xl p-4 flex flex-col items-center justify-end h-48 relative transition-all">
+                <div className="absolute -top-4 w-11 h-11 bg-slate-500 rounded-full flex items-center justify-center font-bold text-white text-lg border-4 border-background shadow-lg">2</div>
+                <div className="text-center w-full">
+                  <Link href={`/team/${sortedTeams[1]?.id}`}>
+                    <span className="font-bold text-foreground mb-1 block truncate px-2 hover:text-cyan-500 transition-colors">{sortedTeams[1]?.name}</span>
+                  </Link>
+                  <div className="text-2xl font-mono font-medium text-[#F97316]">{parseFloat(sortedTeams[1]?.totalWeight || '0').toFixed(1)}</div>
+                  <div className="text-xs text-muted-foreground font-mono">{sortedTeams[1]?.fishCount ?? 0} rýb</div>
+                </div>
+              </div>
+
+              <div className="bg-card border border-amber-500/30 rounded-xl p-4 flex flex-col items-center justify-end h-56 relative amber-glow z-10">
+                <div className="absolute -top-10 w-14 h-14 bg-amber-500 rounded-full flex items-center justify-center font-black text-black text-xl border-4 border-background shadow-lg shadow-amber-500/30 animate-crown-bounce">
+                  <Crown size={24} />
+                </div>
+                <div className="absolute top-2 left-1/2 -translate-x-1/2">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-amber-500 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">LÍDER SEKTORA</span>
+                </div>
+                <div className="text-center w-full mb-2">
+                  <Link href={`/team/${sortedTeams[0]?.id}`}>
+                    <span className="font-bold text-amber-500 mb-1 text-lg block px-2 truncate hover:underline">{sortedTeams[0]?.name}</span>
+                  </Link>
+                  <div className="text-4xl font-mono font-medium text-[#F97316]">{parseFloat(sortedTeams[0]?.totalWeight || '0').toFixed(1)}</div>
+                  <div className="text-sm text-muted-foreground font-mono">{sortedTeams[0]?.fishCount ?? 0} rýb</div>
+                </div>
+              </div>
+
+              <div className="bg-card border border-border hover:border-orange-800/40 rounded-xl p-4 flex flex-col items-center justify-end h-48 relative transition-all">
+                <div className="absolute -top-4 w-11 h-11 bg-orange-800 rounded-full flex items-center justify-center font-bold text-white text-lg border-4 border-background shadow-lg">3</div>
+                <div className="text-center w-full">
+                  <Link href={`/team/${sortedTeams[2]?.id}`}>
+                    <span className="font-bold text-foreground mb-1 block truncate px-2 hover:text-cyan-500 transition-colors">{sortedTeams[2]?.name}</span>
+                  </Link>
+                  <div className="text-2xl font-mono font-medium text-[#F97316]">{parseFloat(sortedTeams[2]?.totalWeight || '0').toFixed(1)}</div>
+                  <div className="text-xs text-muted-foreground font-mono">{sortedTeams[2]?.fishCount ?? 0} rýb</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="space-y-4">
           <div className="flex items-center justify-between px-2">
             <h2 className="text-sm font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
