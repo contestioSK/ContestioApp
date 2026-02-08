@@ -1060,6 +1060,14 @@ export default function CompetitionDetail() {
             
             {/* --- LEFT COLUMN: LEADERBOARD & PODIUM (8/12) --- */}
             <div className="lg:col-span-8 space-y-8">
+
+              <div className="flex justify-between items-center px-1">
+                <h3 className="font-bold text-foreground flex items-center gap-2">
+                  <Trophy size={16} strokeWidth={1.75} className="text-muted-foreground" />
+                  Aktuálne poradie tímov
+                </h3>
+                <span className="text-xs text-muted-foreground font-mono">{sortedLeaderboard.length} tímov</span>
+              </div>
               
               {/* PODIUM - MOBILE COMPACT (jedna karta, 3 stĺpce: 2-1-3) */}
               {sortedLeaderboard.length >= 3 && (
@@ -1180,13 +1188,6 @@ export default function CompetitionDetail() {
 
               {/* LEADERBOARD TABLE */}
               <div className="bg-card border border-border rounded-xl overflow-hidden">
-                <div className="p-5 border-b border-border flex justify-between items-center bg-muted/50">
-                  <h3 className="font-bold text-foreground flex items-center gap-2">
-                    <Trophy size={16} strokeWidth={1.75} className="text-muted-foreground" />
-                    Aktuálne poradie tímov
-                  </h3>
-                  <span className="text-xs text-muted-foreground font-mono">{sortedLeaderboard.length} tímov</span>
-                </div>
                 <div className="md:overflow-x-auto">
                   <table className="w-full text-sm text-left">
                     <thead className="text-xs text-muted-foreground uppercase bg-muted/40 font-bold tracking-wider">
