@@ -173,13 +173,16 @@ export default function SectorDetail() {
           />
         </div>
 
+        <div className="flex items-center justify-between px-2 mb-4">
+          <h2 className="text-sm font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+            <Trophy size={14} /> Rebríček
+          </h2>
+          <span className="text-xs text-muted-foreground font-mono">{sortedTeams.length} tímov</span>
+        </div>
+
         {sortedTeams.length >= 3 && (
-          <div className="mb-8">
+          <div className="mb-4">
             <div className="md:hidden bg-card border border-border rounded-xl p-4">
-              <div className="text-xs font-bold uppercase text-muted-foreground mb-4 flex items-center gap-2">
-                <Trophy size={14} className="text-amber-500" />
-                Pódium sektora
-              </div>
               <div className="grid grid-cols-3 items-end gap-2">
                 <div className="flex flex-col items-center">
                   <div className="w-9 h-9 bg-slate-500 rounded-full flex items-center justify-center font-bold text-white text-sm mb-2 border-2 border-slate-400/30">2</div>
@@ -261,15 +264,7 @@ export default function SectorDetail() {
           </div>
         )}
 
-        <div className="space-y-4">
-          <div className="flex items-center justify-between px-2">
-            <h2 className="text-sm font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-              <Trophy size={14} /> Rebríček
-            </h2>
-            <span className="text-xs text-muted-foreground font-mono">{sortedTeams.length} tímov</span>
-          </div>
-
-          <div className="space-y-2">
+        <div className="space-y-2">
             {(sortedTeams.length >= 3 ? sortedTeams.slice(3) : sortedTeams).map((team, index) => {
               const rank = sortedTeams.length >= 3 ? index + 4 : index + 1;
               const memberNames = (team.members || []).map(m => m.name);
@@ -328,7 +323,6 @@ export default function SectorDetail() {
                 <p className="text-muted-foreground text-sm">Všetky tímy sú na pódiu.</p>
               </div>
             )}
-          </div>
         </div>
 
       </div>
