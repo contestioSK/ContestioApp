@@ -546,7 +546,9 @@ export default function CompetitionDetail() {
     setIsRegistrationDialogOpen(true);
   };
 
-  const visibleLeaderboard = leaderboardExpanded ? sortedLeaderboard : sortedLeaderboard.slice(0, 10);
+  const hasPodium = sortedLeaderboard.length >= 3;
+  const leaderboardAfterPodium = hasPodium ? sortedLeaderboard.slice(3) : sortedLeaderboard;
+  const visibleLeaderboard = leaderboardExpanded ? leaderboardAfterPodium : leaderboardAfterPodium.slice(0, 10);
   const uniqueSectors = Array.from(new Set(sortedLeaderboard.map(t => t.sector).filter(s => s !== '-')));
 
   // Find user's team in this competition
@@ -1197,9 +1199,9 @@ export default function CompetitionDetail() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border/50">
-                      {visibleLeaderboard.map((team, index) => (
-                        <tr key={team.id} className={`hover:bg-muted/20 transition-colors ${index < 3 ? 'bg-muted/10' : ''}`}>
-                          <td className={`px-3 md:px-6 py-3 md:py-4 font-mono font-bold ${index === 0 ? 'text-amber-500' : index === 1 ? 'text-slate-400' : index === 2 ? 'text-orange-700' : 'text-muted-foreground'}`}>
+                      {visibleLeaderboard.map((team) => (
+                        <tr key={team.id} className="hover:bg-muted/20 transition-colors">
+                          <td className="px-3 md:px-6 py-3 md:py-4 font-mono font-bold text-muted-foreground">
                             {team.rank}.
                           </td>
                           <td className="px-3 md:px-6 py-3 md:py-4">
@@ -1223,6 +1225,13 @@ export default function CompetitionDetail() {
                         <tr>
                           <td colSpan={5} className="px-3 md:px-6 py-8 text-center text-muted-foreground">
                             Načítavam tímy...
+                          </td>
+                        </tr>
+                      )}
+                      {!teamsLoading && hasPodium && leaderboardAfterPodium.length === 0 && (
+                        <tr>
+                          <td colSpan={5} className="px-3 md:px-6 py-8 text-center text-muted-foreground text-sm">
+                            Všetky tímy sú na pódiu.
                           </td>
                         </tr>
                       )}
@@ -1251,7 +1260,7 @@ export default function CompetitionDetail() {
                   </table>
                 </div>
                 
-                {sortedLeaderboard.length > 10 && (
+                {leaderboardAfterPodium.length > 10 && (
                   <div className="p-2 bg-muted/40 border-t border-border">
                     <button 
                       onClick={() => setLeaderboardExpanded(!leaderboardExpanded)}
