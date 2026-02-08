@@ -98,24 +98,75 @@ const HorizontalBarChart = ({ data, competitionId }: { data: { name: string; wei
   );
 };
 
-const VerticalBarChart = ({ data }: { data: { hour: string; val: number }[] }) => {
+const HOUR_COLORS = [
+  '#3B82F6','#3B82F6','#2563EB','#2563EB','#1D4ED8','#3B82F6',
+  '#2563EB','#3B82F6','#06B6D4','#22D3EE','#06B6D4','#14B8A6',
+  '#F59E0B','#10B981','#22C55E','#84CC16','#A3E635','#EAB308',
+  '#F59E0B','#F97316','#EA580C','#F97316','#3B82F6','#3B82F6',
+];
+
+const HourlyBarChart = ({ data, onBarClick }: { data: { hour: string; val: number }[]; onBarClick?: (hour: string, val: number) => void }) => {
   const max = Math.max(...data.map(d => d.val), 1);
+  const yTicks = [];
+  for (let i = 0; i <= max; i += Math.max(1, Math.ceil(max / 5))) {
+    yTicks.push(i);
+  }
+  if (yTicks[yTicks.length - 1] < max) yTicks.push(max);
+
   return (
-    <div className="h-40 flex items-end justify-between gap-1 sm:gap-2 mt-4 min-w-0">
-      {data.map((d, i) => (
-        <div key={i} className="flex flex-col items-center flex-1 min-w-0 h-full justify-end group">
-          <div className="relative w-full h-full flex items-end">
-            <div 
-              className={`w-full rounded-t-sm transition-all duration-500 ${d.val === max ? 'bg-amber-500' : 'bg-muted-foreground/30 group-hover:bg-muted-foreground/50'}`}
-              style={{ height: `${(d.val / max) * 100}%` }}
-            />
-            <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-popover text-popover-foreground text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 border border-border">
-              {d.val} ks
-            </div>
-          </div>
-          <span className="text-[8px] sm:text-[10px] text-muted-foreground mt-1 sm:mt-2 font-mono truncate w-full text-center">{d.hour}</span>
+    <div className="overflow-x-auto -mx-2 px-2">
+      <div className="flex min-w-[600px]" style={{ minHeight: '220px' }}>
+        <div className="flex flex-col justify-between pr-2 pb-6 text-[10px] text-muted-foreground font-mono items-end shrink-0 w-8">
+          {[...yTicks].reverse().map((t, i) => (
+            <span key={i}>{t}</span>
+          ))}
         </div>
-      ))}
+        <div className="flex-1 relative">
+          <div className="absolute inset-0 bottom-6 flex flex-col justify-between pointer-events-none">
+            {[...yTicks].reverse().map((_, i) => (
+              <div key={i} className="border-t border-dashed border-border/40 w-full" />
+            ))}
+          </div>
+          <div className="flex items-end h-full gap-[2px] relative z-10 pb-6" style={{ height: '220px' }}>
+            {data.map((d, i) => {
+              const barHeight = max > 0 ? (d.val / max) * 100 : 0;
+              return (
+                <div
+                  key={i}
+                  className="flex flex-col items-center flex-1 h-full justify-end group cursor-pointer"
+                  onClick={() => onBarClick?.(d.hour, d.val)}
+                >
+                  <div className="relative w-full h-full flex items-end">
+                    {d.val > 0 && (
+                      <div
+                        className="w-full rounded-t-sm transition-all duration-500 hover:opacity-80"
+                        style={{
+                          height: `${barHeight}%`,
+                          backgroundColor: HOUR_COLORS[i % 24],
+                          minHeight: d.val > 0 ? '4px' : '0px',
+                        }}
+                      />
+                    )}
+                    {d.val > 0 && (
+                      <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-popover text-popover-foreground text-[10px] py-0.5 px-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 border border-border font-mono">
+                        {d.val}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="flex gap-[2px]">
+            {data.map((d, i) => (
+              <div key={i} className="flex-1 text-center">
+                <span className="text-[8px] sm:text-[9px] text-muted-foreground font-mono leading-none">{d.hour}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="text-[10px] text-muted-foreground font-mono pl-8 -mt-1 italic">Počet úlovkov</div>
     </div>
   );
 };
@@ -470,21 +521,15 @@ export default function CompetitionDetail() {
 
   const hourlyActivity = useMemo(() => {
     if (!catches) return [];
+    const hourSlots = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, '0')}:00`);
     const hours: { [key: string]: number } = {};
-    const hourSlots = ['06:00', '09:00', '12:00', '15:00', '18:00', '21:00', '00:00', '03:00'];
     hourSlots.forEach(h => hours[h] = 0);
     
     catches.forEach(c => {
       if (!c.submittedAt) return;
       const hour = new Date(c.submittedAt).getHours();
-      if (hour >= 6 && hour < 9) hours['06:00']++;
-      else if (hour >= 9 && hour < 12) hours['09:00']++;
-      else if (hour >= 12 && hour < 15) hours['12:00']++;
-      else if (hour >= 15 && hour < 18) hours['15:00']++;
-      else if (hour >= 18 && hour < 21) hours['18:00']++;
-      else if (hour >= 21 && hour < 24) hours['21:00']++;
-      else if (hour >= 0 && hour < 3) hours['00:00']++;
-      else hours['03:00']++;
+      const key = `${String(hour).padStart(2, '0')}:00`;
+      if (hours[key] !== undefined) hours[key]++;
     });
     
     return hourSlots.map(hour => ({ hour, val: hours[hour] }));
@@ -1464,12 +1509,12 @@ export default function CompetitionDetail() {
                   </div>
 
                   <div className="bg-card p-4 sm:p-6 rounded-xl border border-border overflow-hidden">
-                    <h3 className="text-lg font-bold text-foreground mb-2 flex items-center gap-2">
+                    <h3 className="text-lg font-bold text-foreground mb-1 flex items-center gap-2">
                       <Clock size={18} strokeWidth={1.75} className="text-muted-foreground" />
-                      Kedy ryby berú najviac
+                      Úlovky podľa hodín
                     </h3>
-                    <p className="text-xs text-muted-foreground mb-4 sm:mb-6">Časy, kedy sa ryby najčastejšie hlásia</p>
-                    <VerticalBarChart data={hourlyActivity} />
+                    <p className="text-xs text-muted-foreground mb-4 sm:mb-6">Rozdelenie úlovkov podľa hodín dňa. Klikni na stĺpec pre detail.</p>
+                    <HourlyBarChart data={hourlyActivity} />
                   </div>
 
                   <div className="bg-card p-6 rounded-xl border border-border">
