@@ -1,13 +1,12 @@
+import { useState } from "react";
 import { useParams, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Users, Trophy, Fish, MapPin, Target, Scale, TrendingUp } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TacticalIconInline } from "@/components/ui/tactical-icon";
+import { ArrowLeft, Users, Trophy, Fish, X, Activity, TrendingUp, Crown, Camera } from "lucide-react";
 import { Team, TeamMember, Catch } from "@shared/schema";
-import { formatSectorPlace, getSectorLetter } from "@/lib/utils";
 
 type SectorStatistics = {
   teams: (Team & { members: TeamMember[] })[];
@@ -17,8 +16,50 @@ type SectorStatistics = {
   averageWeight: number;
 };
 
+const StatCard = ({ label, value, unit, icon: Icon, iconColor, onClick }: {
+  label: string; value: string | number; unit?: string; icon: any; iconColor: string; onClick?: () => void;
+}) => (
+  <div
+    onClick={onClick}
+    className={`
+      bg-card border border-border rounded-xl p-6
+      flex flex-col items-center justify-center text-center
+      h-full transition-all duration-200 shadow-sm
+      ${onClick ? 'cursor-pointer hover:border-slate-700 hover:bg-card/80 group' : ''}
+    `}
+  >
+    <div className="w-12 h-12 rounded-2xl bg-background border border-border/50 flex items-center justify-center mb-4 shadow-inner">
+      <Icon size={22} className={iconColor} strokeWidth={2} />
+    </div>
+    <div className="flex items-baseline gap-1.5 mb-2">
+      <span className="text-3xl lg:text-4xl font-black text-[#F97316] tracking-tight tabular-nums leading-none">
+        {value}
+      </span>
+      <span className="text-sm font-bold text-muted-foreground uppercase">{unit}</span>
+    </div>
+    <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+      {label}
+    </div>
+    {onClick && (
+      <div className="h-0 overflow-hidden group-hover:h-auto group-hover:mt-2 transition-all">
+        <span className="text-[9px] text-[#F97316] font-medium opacity-0 group-hover:opacity-100 transition-opacity delay-75">
+          Klikni pre detail
+        </span>
+      </div>
+    )}
+  </div>
+);
+
+const RankBadge = ({ rank }: { rank: number }) => {
+  if (rank === 1) return <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-300 to-yellow-600 flex items-center justify-center text-yellow-950 font-black text-sm shadow-[0_0_15px_rgba(234,179,8,0.4)]">1</div>;
+  if (rank === 2) return <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-200 to-slate-400 flex items-center justify-center text-slate-800 font-black text-sm shadow-[0_0_15px_rgba(148,163,184,0.3)]">2</div>;
+  if (rank === 3) return <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-300 to-orange-500 flex items-center justify-center text-orange-900 font-black text-sm shadow-[0_0_15px_rgba(249,115,22,0.3)]">3</div>;
+  return <div className="w-8 h-8 rounded-full bg-slate-800 border border-border flex items-center justify-center text-muted-foreground font-bold text-sm">{rank}</div>;
+};
+
 export default function SectorDetail() {
   const { competitionId, sector } = useParams();
+  const [selectedPhoto, setSelectedPhoto] = useState<Catch | null>(null);
 
   const { data: sectorStats, isLoading } = useQuery<SectorStatistics>({
     queryKey: ["/api/competitions", competitionId, "sectors", sector, "statistics"],
@@ -28,25 +69,18 @@ export default function SectorDetail() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-8">
-          <div className="mb-6">
-            <Skeleton className="h-10 w-40 mb-4" />
-            <Skeleton className="h-8 w-60" />
+        <div className="border-b border-border bg-background/95 backdrop-blur sticky top-0 z-40">
+          <div className="container mx-auto px-4 py-4">
+            <Skeleton className="h-4 w-32 mb-3" />
+            <Skeleton className="h-10 w-48" />
           </div>
-          
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {[...Array(6)].map((_, i) => (
-              <Card key={i}>
-                <CardHeader>
-                  <Skeleton className="h-6 w-32" />
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-4 w-1/2" />
-                </CardContent>
-              </Card>
-            ))}
+        </div>
+        <div className="container mx-auto px-4 py-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+            {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-40 rounded-xl" />)}
+          </div>
+          <div className="space-y-2">
+            {[1, 2, 3].map(i => <Skeleton key={i} className="h-24 rounded-xl" />)}
           </div>
         </div>
       </div>
@@ -55,202 +89,199 @@ export default function SectorDetail() {
 
   if (!sectorStats) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold mb-2">Sektor nebol nájdený</h2>
-          <p className="text-muted-foreground mb-4">Zadaný sektor neexistuje.</p>
-          <Link href={`/competition/${competitionId}`}>
-            <Button>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Späť na súťaž
-            </Button>
-          </Link>
-        </div>
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+        <h2 className="text-foreground text-xl font-bold">Sektor nenájdený</h2>
+        <Link href={`/competition/${competitionId}`}>
+          <Button variant="outline" className="mt-4">
+            <ArrowLeft className="w-4 h-4 mr-2" /> Späť na súťaž
+          </Button>
+        </Link>
       </div>
     );
   }
 
-  const sectorName = `Sektor ${sector?.toUpperCase()}`;
+  const sortedTeams = [...sectorStats.teams].sort((a, b) => parseFloat(b.totalWeight || '0') - parseFloat(a.totalWeight || '0'));
+  const sectorName = sector ? `Sektor ${sector.toUpperCase()}` : "Sektor ?";
+
+  const sectorTotalWeight = sectorStats.teams.reduce((sum, t) => sum + parseFloat(t.totalWeight || '0'), 0);
+  const sectorFishCount = sectorStats.teams.reduce((sum, t) => sum + (Number(t.fishCount) || 0), 0);
+
+  const biggestFishWeight = sectorStats.biggestFish ? parseFloat(String(sectorStats.biggestFish.weight)) : 0;
+  const biggestFishDisplay = biggestFishWeight > 0 ? biggestFishWeight.toFixed(2) : "—";
+  const biggestFishUnit = biggestFishWeight > 0 ? "kg" : "";
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-6">
+    <div className="min-h-screen bg-background text-foreground font-sans pb-20">
+
+      <div className="border-b border-border bg-background/95 backdrop-blur sticky top-0 z-40">
+        <div className="container mx-auto px-4 py-4">
           <Link href={`/competition/${competitionId}`}>
-            <Button variant="ghost" className="mb-4" data-testid="button-back-to-competition">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Späť na súťaž
-            </Button>
+            <button className="flex items-center text-xs font-bold text-muted-foreground hover:text-foreground uppercase tracking-wider mb-2 transition-colors">
+              <ArrowLeft className="w-3 h-3 mr-1" /> Späť na súťaž
+            </button>
           </Link>
-          <h1 className="text-3xl font-bold mb-2" data-testid="text-sector-title">
-            {sectorName}
-          </h1>
-          <p className="text-muted-foreground">Výsledky a štatistiky sektora</p>
+          <div className="flex items-end justify-between">
+            <h1 className="text-3xl md:text-5xl font-black italic text-foreground uppercase tracking-tighter leading-none drop-shadow-lg">
+              {sectorName}
+            </h1>
+            <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 font-bold hidden md:flex">
+              LIVE
+            </Badge>
+          </div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-8">
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+          <StatCard
+            label="Úlovky Spolu"
+            value={sectorFishCount}
+            unit="ks"
+            icon={Fish}
+            iconColor="text-blue-400"
+          />
+          <StatCard
+            label="Celková Váha"
+            value={sectorTotalWeight.toFixed(2)}
+            unit="kg"
+            icon={Activity}
+            iconColor="text-emerald-400"
+          />
+          <StatCard
+            label="Najväčšia Ryba"
+            value={biggestFishDisplay}
+            unit={biggestFishUnit}
+            icon={Trophy}
+            iconColor="text-yellow-400"
+            onClick={sectorStats.biggestFish ? () => setSelectedPhoto(sectorStats.biggestFish) : undefined}
+          />
+          <StatCard
+            label="Priemerná Váha"
+            value={sectorStats.averageWeight.toFixed(1)}
+            unit="kg"
+            icon={TrendingUp}
+            iconColor="text-purple-400"
+          />
         </div>
 
-        {/* Sector Statistics Bar */}
-        <div className="mb-6 border-0 shadow-md bg-gradient-to-r from-background to-muted/20 rounded-lg p-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {/* Total Weight */}
-            <div className="text-center" data-testid="stat-sector-total-weight">
-              <div className="w-8 h-8 bg-gradient-to-br from-accent/20 to-accent/10 rounded-lg flex items-center justify-center mx-auto mb-2">
-                <Scale className="w-4 h-4 text-accent" />
+        <div className="space-y-4">
+          <div className="flex items-center justify-between px-2">
+            <h2 className="text-sm font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+              <Trophy size={14} /> Rebríček
+            </h2>
+            <span className="text-xs text-muted-foreground font-mono">{sortedTeams.length} tímov</span>
+          </div>
+
+          <div className="space-y-2">
+            {sortedTeams.map((team, index) => {
+              const rank = index + 1;
+              const isTop3 = rank <= 3;
+
+              const memberNames = (team.members || []).map(m => m.name);
+              const membersDisplay = memberNames.length > 0
+                ? memberNames.slice(0, 2).join(', ') + (memberNames.length > 2 ? ` +${memberNames.length - 2}` : '')
+                : "Bez členov";
+
+              const fishCount = Number(team.fishCount || 0);
+              const fishCountDisplay = fishCount > 0 ? `${fishCount} KS` : "Bez úlovku";
+
+              return (
+                <Link key={team.id} href={`/team/${team.id}`}>
+                  <div className={`
+                    relative overflow-hidden rounded-xl border p-4 transition-all cursor-pointer group
+                    ${isTop3 ? 'bg-card' : 'bg-background hover:bg-card'}
+                    ${rank === 1 ? 'border-yellow-500/30 shadow-[0_0_20px_rgba(234,179,8,0.1)]' :
+                      rank === 2 ? 'border-slate-500/30' :
+                      rank === 3 ? 'border-orange-500/30' : 'border-border'}
+                  `}>
+                    <div className="absolute -right-4 -bottom-6 text-[80px] font-black italic text-slate-800/20 z-0 pointer-events-none select-none">
+                      {rank}
+                    </div>
+
+                    <div className="relative z-10 flex items-center gap-4">
+                      <div className="flex-shrink-0">
+                        <RankBadge rank={rank} />
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className={`font-bold text-lg truncate flex items-center gap-2 ${rank === 1 ? 'text-yellow-400' : 'text-foreground group-hover:text-foreground'}`}>
+                          {team.name}
+                          {rank === 1 && <Crown size={14} className="text-yellow-500 fill-yellow-500 animate-pulse" />}
+                        </div>
+                        <div className="text-xs text-muted-foreground truncate flex items-center gap-1.5">
+                          <Users size={12} />
+                          {membersDisplay}
+                        </div>
+                      </div>
+
+                      <div className="text-right flex-shrink-0">
+                        <div className="font-black text-xl md:text-2xl italic tracking-tighter text-foreground tabular-nums">
+                          {parseFloat(team.totalWeight || '0').toFixed(2)}
+                          <span className="text-xs font-bold text-muted-foreground ml-1 not-italic">KG</span>
+                        </div>
+                        <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                          {fishCountDisplay}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+
+            {sortedTeams.length === 0 && (
+              <div className="text-center py-12 border border-dashed border-border rounded-xl">
+                <p className="text-muted-foreground">Zatiaľ žiadne tímy v sektore.</p>
               </div>
-              <p className="text-xs text-muted-foreground mb-1">Celková váha</p>
-              <p className="text-lg font-bold text-foreground">
-                {sectorStats.teams.reduce((sum, team) => sum + parseFloat(team.totalWeight || '0'), 0).toFixed(2)} kg
-              </p>
-            </div>
-            
-            {/* Fish Count */}
-            <div className="text-center" data-testid="stat-sector-fish-count">
-              <div className="w-8 h-8 bg-gradient-to-br from-cyan-500/20 to-cyan-500/10 rounded-lg flex items-center justify-center mx-auto mb-2">
-                <TacticalIconInline icon={Fish} variant="cyan" size="sm" />
-              </div>
-              <p className="text-xs text-muted-foreground mb-1">Počet rýb</p>
-              <p className="text-lg font-bold text-foreground">
-                {sectorStats.teams.reduce((sum, team) => sum + (parseInt(team.fishCount?.toString() || '0') || 0), 0)}
-              </p>
-            </div>
-            
-            {/* Biggest Fish */}
-            <div className="text-center" data-testid="stat-sector-biggest-fish">
-              <div className="w-8 h-8 bg-gradient-to-br from-amber-500/20 to-amber-500/10 rounded-lg flex items-center justify-center mx-auto mb-2">
-                <TacticalIconInline icon={Trophy} variant="amber" size="sm" />
-              </div>
-              <p className="text-xs text-muted-foreground mb-1">Najväčšia ryba</p>
-              <p className="text-lg font-bold text-foreground">
-                {sectorStats.biggestFish ? Number(sectorStats.biggestFish.weight).toFixed(2) : '0.00'} kg
-              </p>
-            </div>
-            
-            {/* Average Weight */}
-            <div className="text-center" data-testid="stat-sector-average-weight">
-              <div className="w-8 h-8 bg-gradient-to-br from-green-500/20 to-green-500/10 rounded-lg flex items-center justify-center mx-auto mb-2">
-                <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />
-              </div>
-              <p className="text-xs text-muted-foreground mb-1">Priemerná váha</p>
-              <p className="text-lg font-bold text-foreground">
-                {sectorStats.averageWeight.toFixed(2)} kg
-              </p>
-            </div>
+            )}
           </div>
         </div>
 
-        {/* Sector Leaderboard */}
-        <div className="mb-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TacticalIconInline icon={Trophy} variant="amber" size="md" />
-                Priebežné poradie v sektore {sector?.toUpperCase()}
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">Tímy zoradené podľa celkovej váhy úlovkov</p>
-            </CardHeader>
-            <CardContent className="p-0">
-              {sectorStats.teams.length === 0 ? (
-                <div className="text-center py-12 px-6">
-                  <p className="text-muted-foreground text-lg">Žiadne tímy v tomto sektore</p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-muted/20">
-                      <tr>
-                        <th className="text-left p-4 text-sm font-medium text-muted-foreground">Poradie</th>
-                        <th className="text-left p-4 text-sm font-medium text-muted-foreground">Tím</th>
-                        <th className="text-left p-4 text-sm font-medium text-muted-foreground">Členovia</th>
-                        <th className="text-right p-4 text-sm font-medium text-muted-foreground">Celková váha</th>
-                        <th className="text-right p-4 text-sm font-medium text-muted-foreground">Počet rýb</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {sectorStats.teams
-                        .sort((a, b) => parseFloat(b.totalWeight || '0') - parseFloat(a.totalWeight || '0'))
-                        .map((team, index) => {
-                          const getRankRowStyle = (rank: number) => {
-                            if (rank === 1) return "border-b border-border hover:bg-amber-50 dark:hover:bg-amber-900/20 bg-gradient-to-r from-amber-50/30 to-amber-100/30 dark:from-amber-900/10 dark:to-amber-800/10 transition-colors cursor-pointer group";
-                            if (rank === 2) return "border-b border-border hover:bg-slate-50 dark:hover:bg-slate-900/20 bg-gradient-to-r from-slate-50/30 to-slate-100/30 dark:from-slate-900/10 dark:to-slate-800/10 transition-colors cursor-pointer group";
-                            if (rank === 3) return "border-b border-border hover:bg-orange-50 dark:hover:bg-orange-900/20 bg-gradient-to-r from-orange-50/30 to-orange-100/30 dark:from-orange-900/10 dark:to-orange-800/10 transition-colors cursor-pointer group";
-                            return "border-b border-border hover:bg-muted/20 transition-colors cursor-pointer group";
-                          };
-
-                          const getRankBadge = (rank: number) => {
-                            if (rank === 1) {
-                              return (
-                                <div className="w-7 h-7 bg-gradient-to-br from-amber-400 to-amber-600 text-amber-950 rounded-full flex items-center justify-center text-sm font-bold shadow-lg ring-2 ring-amber-300">
-                                  🥇
-                                </div>
-                              );
-                            }
-                            if (rank === 2) {
-                              return (
-                                <div className="w-7 h-7 bg-gradient-to-br from-slate-300 to-slate-500 text-slate-900 rounded-full flex items-center justify-center text-sm font-bold shadow-lg ring-2 ring-slate-200">
-                                  🥈
-                                </div>
-                              );
-                            }
-                            if (rank === 3) {
-                              return (
-                                <div className="w-7 h-7 bg-gradient-to-br from-orange-400 to-orange-600 text-orange-950 rounded-full flex items-center justify-center text-sm font-bold shadow-lg ring-2 ring-orange-300">
-                                  🥉
-                                </div>
-                              );
-                            }
-                            return (
-                              <div className="w-6 h-6 bg-muted/50 text-muted-foreground rounded-full flex items-center justify-center text-xs font-bold">
-                                {rank}
-                              </div>
-                            );
-                          };
-
-                          return (
-                            <tr 
-                              key={team.id}
-                              className={getRankRowStyle(index + 1)}
-                              data-testid={`row-sector-leaderboard-${team.id}`}
-                            >
-                              <td className="p-4">
-                                {getRankBadge(index + 1)}
-                              </td>
-                              <td className="p-4">
-                                <Link href={`/team/${team.id}`}>
-                                  <div className="font-medium text-foreground group-hover:text-primary transition-colors" data-testid={`text-sector-team-name-${team.id}`}>
-                                    {team.name}
-                                  </div>
-                                </Link>
-                              </td>
-                              <td className="p-4">
-                                <div className="text-sm text-muted-foreground">
-                                  {(team.members || []).slice(0, 2).map(m => m.name).join(', ')}
-                                  {(team.members || []).length > 2 && ` +${(team.members || []).length - 2} ďalších`}
-                                </div>
-                              </td>
-                              <td className="p-4 text-right">
-                                <div className="font-bold text-foreground" data-testid={`text-sector-weight-${team.id}`}>
-                                  {parseFloat(team.totalWeight || '0').toFixed(2)} kg
-                                </div>
-                                {index === 0 && parseFloat(team.totalWeight || '0') > 0 && (
-                                  <div className="text-xs text-secondary">Vedie sektor</div>
-                                )}
-                              </td>
-                              <td className="p-4 text-right">
-                                <span className="font-medium text-foreground" data-testid={`text-sector-fish-count-${team.id}`}>
-                                  {team.fishCount || 0}
-                                </span>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
       </div>
+
+      <Dialog open={!!selectedPhoto} onOpenChange={() => setSelectedPhoto(null)}>
+        <DialogContent className="max-w-4xl p-0 overflow-hidden bg-black/95 border-border backdrop-blur-xl [&>button]:hidden" aria-describedby="sector-photo-description">
+          <div className="relative h-[80vh] flex flex-col">
+            <div className="absolute top-0 inset-x-0 p-4 flex justify-between items-start z-50 bg-gradient-to-b from-black/80 to-transparent pointer-events-none">
+              <div className="text-white pointer-events-auto">
+                {selectedPhoto && (
+                  <div>
+                    <div className="text-3xl font-black italic uppercase tracking-tighter drop-shadow-md text-white">
+                      Najväčšia ryba sektora
+                    </div>
+                    <div className="text-2xl font-bold mt-1" id="sector-photo-description">
+                      {Number(selectedPhoto.weight).toFixed(2)} kg
+                    </div>
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={() => setSelectedPhoto(null)}
+                className="bg-black/50 hover:bg-white hover:text-black text-white p-2 rounded-full transition-all border border-white/10 pointer-events-auto backdrop-blur-md"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="flex-1 flex items-center justify-center p-0 md:p-4">
+              {selectedPhoto && selectedPhoto.photoUrl ? (
+                <img
+                  src={selectedPhoto.photoUrl}
+                  alt="Detail"
+                  className="max-h-full max-w-full object-contain md:rounded-lg shadow-2xl"
+                />
+              ) : selectedPhoto ? (
+                <div className="flex flex-col items-center justify-center text-center p-8">
+                  <div className="w-24 h-24 bg-card rounded-full flex items-center justify-center mb-4 border border-border">
+                    <Camera size={40} className="text-muted-foreground" />
+                  </div>
+                  <p className="text-muted-foreground font-bold uppercase text-sm">Bez fotky</p>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
