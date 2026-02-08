@@ -1463,28 +1463,26 @@ export default function CompetitionDetail() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <div className="bg-card p-6 rounded-xl border border-border">
-                      <h3 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2">
-                        <MapPin size={18} strokeWidth={1.75} className="text-muted-foreground" />
-                        Kde ryby berú najviac
-                      </h3>
-                      <HorizontalBarChart data={sectorStats} competitionId={id} />
-                      {sectorStats.length > 0 && (
-                        <p className="text-xs text-muted-foreground mt-6 leading-relaxed bg-muted/30 p-3 rounded-lg">
-                          {sectorStats[0]?.name} vedie s váhou {sectorStats[0]?.weight.toFixed(1)} kg.
-                        </p>
-                      )}
-                    </div>
+                  <div className="bg-card p-4 sm:p-6 rounded-xl border border-border overflow-hidden">
+                    <h3 className="text-lg font-bold text-foreground mb-2 flex items-center gap-2">
+                      <Clock size={18} strokeWidth={1.75} className="text-muted-foreground" />
+                      Kedy ryby berú najviac
+                    </h3>
+                    <p className="text-xs text-muted-foreground mb-4 sm:mb-6">Časy, kedy sa ryby najčastejšie hlásia</p>
+                    <VerticalBarChart data={hourlyActivity} />
+                  </div>
 
-                    <div className="bg-card p-4 sm:p-6 rounded-xl border border-border overflow-hidden">
-                      <h3 className="text-lg font-bold text-foreground mb-2 flex items-center gap-2">
-                        <Clock size={18} strokeWidth={1.75} className="text-muted-foreground" />
-                        Kedy ryby berú najviac
-                      </h3>
-                      <p className="text-xs text-muted-foreground mb-4 sm:mb-6">Časy, kedy sa ryby najčastejšie hlásia</p>
-                      <VerticalBarChart data={hourlyActivity} />
-                    </div>
+                  <div className="bg-card p-6 rounded-xl border border-border">
+                    <h3 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2">
+                      <MapPin size={18} strokeWidth={1.75} className="text-muted-foreground" />
+                      Kde ryby berú najviac
+                    </h3>
+                    <HorizontalBarChart data={sectorStats} competitionId={id} />
+                    {sectorStats.length > 0 && (
+                      <p className="text-xs text-muted-foreground mt-6 leading-relaxed bg-muted/30 p-3 rounded-lg">
+                        {sectorStats[0]?.name} vedie s váhou {sectorStats[0]?.weight.toFixed(1)} kg.
+                      </p>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
