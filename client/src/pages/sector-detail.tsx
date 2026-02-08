@@ -25,10 +25,10 @@ const StatCard = ({ label, value, unit, icon: Icon, iconColor, onClick }: {
         <Icon size={22} className={iconColor} strokeWidth={2} />
       </div>
       <div className="flex items-baseline gap-1.5 mb-2">
-        <span className="text-3xl lg:text-4xl font-black text-[#F97316] tracking-tight tabular-nums leading-none">
+        <span className="text-xl md:text-3xl font-mono font-medium text-[#F97316]">
           {value}
         </span>
-        <span className="text-sm font-bold text-muted-foreground uppercase">{unit}</span>
+        <span className="text-xs md:text-sm font-normal text-muted-foreground">{unit}</span>
       </div>
       <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
         {label}
