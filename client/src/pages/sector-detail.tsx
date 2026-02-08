@@ -18,37 +18,51 @@ type SectorStatistics = {
 
 const StatCard = ({ label, value, unit, icon: Icon, iconColor, onClick }: {
   label: string; value: string | number; unit?: string; icon: any; iconColor: string; onClick?: () => void;
-}) => (
-  <div
-    onClick={onClick}
-    className={`
-      bg-card border border-border rounded-xl p-6
-      flex flex-col items-center justify-center text-center
-      h-full transition-all duration-200 shadow-sm
-      ${onClick ? 'cursor-pointer hover:border-slate-700 hover:bg-card/80 group' : ''}
-    `}
-  >
-    <div className="w-12 h-12 rounded-2xl bg-background border border-border/50 flex items-center justify-center mb-4 shadow-inner">
-      <Icon size={22} className={iconColor} strokeWidth={2} />
-    </div>
-    <div className="flex items-baseline gap-1.5 mb-2">
-      <span className="text-3xl lg:text-4xl font-black text-[#F97316] tracking-tight tabular-nums leading-none">
-        {value}
-      </span>
-      <span className="text-sm font-bold text-muted-foreground uppercase">{unit}</span>
-    </div>
-    <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-      {label}
-    </div>
-    {onClick && (
-      <div className="h-0 overflow-hidden group-hover:h-auto group-hover:mt-2 transition-all">
-        <span className="text-[9px] text-[#F97316] font-medium opacity-0 group-hover:opacity-100 transition-opacity delay-75">
-          Klikni pre detail
-        </span>
+}) => {
+  const content = (
+    <>
+      <div className="w-12 h-12 rounded-2xl bg-background border border-border/50 flex items-center justify-center mb-4 shadow-inner">
+        <Icon size={22} className={iconColor} strokeWidth={2} />
       </div>
-    )}
-  </div>
-);
+      <div className="flex items-baseline gap-1.5 mb-2">
+        <span className="text-3xl lg:text-4xl font-black text-[#F97316] tracking-tight tabular-nums leading-none">
+          {value}
+        </span>
+        <span className="text-sm font-bold text-muted-foreground uppercase">{unit}</span>
+      </div>
+      <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+        {label}
+      </div>
+      {onClick && (
+        <div className="mt-2">
+          <span className="text-[9px] text-[#F97316] font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+            Klikni pre detail
+          </span>
+        </div>
+      )}
+    </>
+  );
+
+  const baseClass = `
+    bg-card border border-border rounded-xl p-6
+    flex flex-col items-center justify-center text-center
+    h-full transition-all duration-200 shadow-sm
+  `;
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className={`${baseClass} cursor-pointer hover:border-slate-700 hover:bg-card/80 group w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F97316] focus-visible:ring-offset-2 focus-visible:ring-offset-background`}
+      >
+        {content}
+      </button>
+    );
+  }
+
+  return <div className={baseClass}>{content}</div>;
+};
 
 const RankBadge = ({ rank }: { rank: number }) => {
   if (rank === 1) return <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-300 to-yellow-600 flex items-center justify-center text-yellow-950 font-black text-sm shadow-[0_0_15px_rgba(234,179,8,0.4)]">1</div>;
@@ -106,9 +120,10 @@ export default function SectorDetail() {
   const sectorTotalWeight = sectorStats.teams.reduce((sum, t) => sum + parseFloat(t.totalWeight || '0'), 0);
   const sectorFishCount = sectorStats.teams.reduce((sum, t) => sum + (Number(t.fishCount) || 0), 0);
 
-  const biggestFishWeight = sectorStats.biggestFish ? parseFloat(String(sectorStats.biggestFish.weight)) : 0;
-  const biggestFishDisplay = biggestFishWeight > 0 ? biggestFishWeight.toFixed(2) : "—";
-  const biggestFishUnit = biggestFishWeight > 0 ? "kg" : "";
+  const biggestFishWeight = Number(sectorStats.biggestFish?.weight);
+  const hasBiggest = Number.isFinite(biggestFishWeight) && biggestFishWeight > 0;
+  const biggestFishDisplay = hasBiggest ? biggestFishWeight.toFixed(2) : "—";
+  const biggestFishUnit = hasBiggest ? "kg" : "";
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans pb-20">
@@ -135,7 +150,7 @@ export default function SectorDetail() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
           <StatCard
-            label="Úlovky Spolu"
+            label="Počet úlovkov"
             value={sectorFishCount}
             unit="ks"
             icon={Fish}
@@ -154,7 +169,7 @@ export default function SectorDetail() {
             unit={biggestFishUnit}
             icon={Trophy}
             iconColor="text-yellow-400"
-            onClick={sectorStats.biggestFish ? () => setSelectedPhoto(sectorStats.biggestFish) : undefined}
+            onClick={hasBiggest ? () => setSelectedPhoto(sectorStats.biggestFish) : undefined}
           />
           <StatCard
             label="Priemerná Váha"
@@ -185,15 +200,16 @@ export default function SectorDetail() {
 
               const fishCount = Number(team.fishCount || 0);
               const fishCountDisplay = fishCount > 0 ? `${fishCount} KS` : "Bez úlovku";
+              const isEmpty = parseFloat(team.totalWeight || "0") === 0 && fishCount === 0;
 
               return (
                 <Link key={team.id} href={`/team/${team.id}`}>
                   <div className={`
                     relative overflow-hidden rounded-xl border p-4 transition-all cursor-pointer group
-                    ${isTop3 ? 'bg-card' : 'bg-background hover:bg-card'}
-                    ${rank === 1 ? 'border-yellow-500/30 shadow-[0_0_20px_rgba(234,179,8,0.1)]' :
-                      rank === 2 ? 'border-slate-500/30' :
-                      rank === 3 ? 'border-orange-500/30' : 'border-border'}
+                    ${isTop3 && !isEmpty ? 'bg-card' : 'bg-background hover:bg-card'}
+                    ${rank === 1 && !isEmpty ? 'border-yellow-500/30 shadow-[0_0_20px_rgba(234,179,8,0.1)]' :
+                      rank === 2 && !isEmpty ? 'border-slate-500/30' :
+                      rank === 3 && !isEmpty ? 'border-orange-500/30' : 'border-border'}
                   `}>
                     <div className="absolute -right-4 -bottom-6 text-[80px] font-black italic text-slate-800/20 z-0 pointer-events-none select-none">
                       {rank}
@@ -205,9 +221,9 @@ export default function SectorDetail() {
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <div className={`font-bold text-lg truncate flex items-center gap-2 ${rank === 1 ? 'text-yellow-400' : 'text-foreground group-hover:text-foreground'}`}>
+                        <div className={`font-bold text-lg truncate flex items-center gap-2 ${isEmpty ? 'text-muted-foreground' : rank === 1 ? 'text-yellow-400' : 'text-foreground group-hover:text-foreground'}`}>
                           {team.name}
-                          {rank === 1 && <Crown size={14} className="text-yellow-500 fill-yellow-500 animate-pulse" />}
+                          {rank === 1 && !isEmpty && <Crown size={14} className="text-yellow-500 fill-yellow-500 animate-pulse" />}
                         </div>
                         <div className="text-xs text-muted-foreground truncate flex items-center gap-1.5">
                           <Users size={12} />
@@ -216,7 +232,7 @@ export default function SectorDetail() {
                       </div>
 
                       <div className="text-right flex-shrink-0">
-                        <div className="font-black text-xl md:text-2xl italic tracking-tighter text-foreground tabular-nums">
+                        <div className={`font-black text-xl md:text-2xl italic tracking-tighter tabular-nums ${isEmpty ? 'text-muted-foreground' : 'text-foreground'}`}>
                           {parseFloat(team.totalWeight || '0').toFixed(2)}
                           <span className="text-xs font-bold text-muted-foreground ml-1 not-italic">KG</span>
                         </div>
