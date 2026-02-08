@@ -270,10 +270,8 @@ export default function SectorDetail() {
           </div>
 
           <div className="space-y-2">
-            {sortedTeams.map((team, index) => {
-              const rank = index + 1;
-              const isTop3 = rank <= 3;
-
+            {(sortedTeams.length >= 3 ? sortedTeams.slice(3) : sortedTeams).map((team, index) => {
+              const rank = sortedTeams.length >= 3 ? index + 4 : index + 1;
               const memberNames = (team.members || []).map(m => m.name);
               const membersDisplay = memberNames.length > 0
                 ? memberNames.slice(0, 2).join(', ') + (memberNames.length > 2 ? ` +${memberNames.length - 2}` : '')
@@ -285,13 +283,7 @@ export default function SectorDetail() {
 
               return (
                 <Link key={team.id} href={`/team/${team.id}`}>
-                  <div className={`
-                    relative overflow-hidden rounded-xl border p-4 transition-all cursor-pointer group
-                    ${isTop3 && !isEmpty ? 'bg-card' : 'bg-background hover:bg-card'}
-                    ${rank === 1 && !isEmpty ? 'border-yellow-500/30 shadow-[0_0_20px_rgba(234,179,8,0.1)]' :
-                      rank === 2 && !isEmpty ? 'border-slate-500/30' :
-                      rank === 3 && !isEmpty ? 'border-orange-500/30' : 'border-border'}
-                  `}>
+                  <div className="relative overflow-hidden rounded-xl border border-border p-4 transition-all cursor-pointer group bg-background hover:bg-card">
                     <div className="absolute -right-4 -bottom-6 text-[80px] font-black italic text-slate-800/20 z-0 pointer-events-none select-none">
                       {rank}
                     </div>
@@ -302,9 +294,8 @@ export default function SectorDetail() {
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <div className={`font-bold text-lg truncate flex items-center gap-2 ${isEmpty ? 'text-muted-foreground' : rank === 1 ? 'text-yellow-400' : 'text-foreground group-hover:text-foreground'}`}>
+                        <div className={`font-bold text-lg truncate flex items-center gap-2 ${isEmpty ? 'text-muted-foreground' : 'text-foreground group-hover:text-foreground'}`}>
                           {team.name}
-                          {rank === 1 && !isEmpty && <Crown size={14} className="text-yellow-500 fill-yellow-500 animate-pulse" />}
                         </div>
                         <div className="text-xs text-muted-foreground truncate flex items-center gap-1.5">
                           <Users size={12} />
@@ -330,6 +321,11 @@ export default function SectorDetail() {
             {sortedTeams.length === 0 && (
               <div className="text-center py-12 border border-dashed border-border rounded-xl">
                 <p className="text-muted-foreground">Zatiaľ žiadne tímy v sektore.</p>
+              </div>
+            )}
+            {sortedTeams.length === 3 && (
+              <div className="text-center py-8 border border-dashed border-border rounded-xl">
+                <p className="text-muted-foreground text-sm">Všetky tímy sú na pódiu.</p>
               </div>
             )}
           </div>
