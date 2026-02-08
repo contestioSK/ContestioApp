@@ -83,7 +83,7 @@ export default function SectorDetail() {
           </div>
         </div>
         <div className="container mx-auto px-4 py-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
             {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-40 rounded-xl" />)}
           </div>
           <div className="space-y-2">
@@ -141,7 +141,7 @@ export default function SectorDetail() {
 
       <div className="container mx-auto px-4 py-8">
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
           <StatCard
             label="Počet úlovkov"
             value={sectorFishCount}
