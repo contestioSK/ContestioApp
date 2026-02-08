@@ -33,13 +33,6 @@ const StatCard = ({ label, value, unit, icon: Icon, iconColor, onClick }: {
       <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
         {label}
       </div>
-      {onClick && (
-        <div className="mt-2">
-          <span className="text-[9px] text-[#F97316] font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-            Klikni pre detail
-          </span>
-        </div>
-      )}
     </>
   );
 
