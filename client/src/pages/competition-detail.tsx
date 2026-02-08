@@ -149,7 +149,7 @@ const HourlyChart = ({ data }: { data: HourlyBar[] }) => {
                 className="w-full rounded-t-sm transition-all duration-500"
                 style={{
                   height: d.count > 0 ? `${Math.max((d.count / max) * 100, 4)}%` : '0%',
-                  backgroundColor: d.count === max && d.count > 0 ? '#F97316' : getChartColorByIndex(isMobile ? i + 1 : d.hour),
+                  backgroundColor: d.count === max && d.count > 0 ? '#F97316' : getChartColorByIndex(isMobile ? i : d.hour),
                   opacity: d.count === 0 ? 0.15 : d.count === max ? 1 : 0.7,
                 }}
               />
