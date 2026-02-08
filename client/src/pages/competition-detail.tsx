@@ -73,14 +73,20 @@ const StatusBadge = ({ status }: { status: string }) => {
   );
 };
 
-const HorizontalBarChart = ({ data }: { data: { name: string; weight: number; color: string }[] }) => {
+const HorizontalBarChart = ({ data, competitionId }: { data: { name: string; weight: number; color: string; sector?: string }[]; competitionId?: string }) => {
   const max = Math.max(...data.map(d => d.weight), 1);
   return (
     <div className="space-y-4">
       {data.map((d, i) => (
         <div key={i}>
           <div className="flex justify-between text-xs mb-1">
-            <span className="text-foreground font-bold">{d.name}</span>
+            {competitionId && d.sector ? (
+              <Link href={`/competition/${competitionId}/sector/${d.sector}`}>
+                <span className="text-foreground font-bold hover:text-[#F97316] transition-colors cursor-pointer">{d.name}</span>
+              </Link>
+            ) : (
+              <span className="text-foreground font-bold">{d.name}</span>
+            )}
             <span className="text-muted-foreground">{d.weight.toFixed(1)} kg</span>
           </div>
           <div className="h-3 bg-muted rounded-full overflow-hidden">
@@ -455,6 +461,7 @@ export default function CompetitionDetail() {
         .reduce((sum, c) => sum + safeWeight(c.weight), 0);
       return {
         name: `Sektor ${sector}`,
+        sector,
         weight,
         color: sectorColors[i % sectorColors.length],
       };
@@ -1452,7 +1459,7 @@ export default function CompetitionDetail() {
                         <MapPin size={18} strokeWidth={1.75} className="text-muted-foreground" />
                         Kde ryby berú najviac
                       </h3>
-                      <HorizontalBarChart data={sectorStats} />
+                      <HorizontalBarChart data={sectorStats} competitionId={id} />
                       {sectorStats.length > 0 && (
                         <p className="text-xs text-muted-foreground mt-6 leading-relaxed bg-muted/30 p-3 rounded-lg">
                           {sectorStats[0]?.name} vedie s váhou {sectorStats[0]?.weight.toFixed(1)} kg.
