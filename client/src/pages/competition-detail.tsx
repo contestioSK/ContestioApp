@@ -32,6 +32,7 @@ import {
 import StatsDashboard from "@/components/stats-dashboard";
 import type { Competition, Team, Catch } from "@shared/schema";
 import { useFavoriteCompetitions, useToggleFavoriteCompetition } from "@/hooks/useFavorites";
+import { getChartColorByIndex } from "@/lib/colors";
 import { QRShareDialog } from "@/components/QRShareDialog";
 import { useVisibilityAwarePolling, POLLING_INTERVALS, STALE_TIMES } from "@/hooks/usePolling";
 
@@ -98,23 +99,6 @@ const HorizontalBarChart = ({ data, competitionId }: { data: { name: string; wei
   );
 };
 
-const getHourColor = (hour: number) => {
-  if (hour >= 0 && hour <= 5) return 'hsl(220, 70%, 60%)';
-  if (hour >= 6 && hour <= 11) {
-    const p = (hour - 6) / 5;
-    return `hsl(${220 - 60 * p}, 70%, 55%)`;
-  }
-  if (hour >= 12 && hour <= 17) {
-    const p = (hour - 12) / 5;
-    return `hsl(${160 - 80 * p}, 70%, 50%)`;
-  }
-  if (hour >= 18 && hour <= 23) {
-    const p = (hour - 18) / 5;
-    return `hsl(${40 - 40 * p}, 70%, 60%)`;
-  }
-  return 'hsl(220, 70%, 60%)';
-};
-
 type HourlyBar = { hour: number; label: string; count: number; totalWeight: number };
 
 const HourlyChart = ({ data }: { data: HourlyBar[] }) => {
@@ -165,7 +149,7 @@ const HourlyChart = ({ data }: { data: HourlyBar[] }) => {
                 className="w-full rounded-t-sm transition-all duration-500"
                 style={{
                   height: d.count > 0 ? `${Math.max((d.count / max) * 100, 4)}%` : '0%',
-                  backgroundColor: d.count === max && d.count > 0 ? '#F97316' : getHourColor(d.hour),
+                  backgroundColor: d.count === max && d.count > 0 ? '#F97316' : getChartColorByIndex(d.hour),
                   opacity: d.count === 0 ? 0.15 : d.count === max ? 1 : 0.7,
                 }}
               />
