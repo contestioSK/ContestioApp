@@ -1,0 +1,93 @@
+Toto je už použiteľné. Vizuálne čisto, hierarchia sedí, leaderboard je čitateľný, “Najväčšia ryba” je správne spravená ako stat + klik do modalu (presne tak, ako si chcel namiesto hero). 👍
+
+Ale mám pár vecí, ktoré by som ti bez servítky upravil, lebo inak si koleduješ o bugy alebo “divné” UX.
+
+1) LIVE badge je stále lož (kým to nie je live)
+
+Keď to nie je napojené na realtime/refresh, LIVE je zavádzajúce. Zmeň na:
+
+„PRIEBEŽNE“ alebo
+
+„AKTÍVNE“ (ak súťaž beží)
+
+alebo to skry podľa competition.status
+
+Minimálne:
+
+<Badge className="...">PRIEBEŽNE</Badge>
+
+2) StatCard “Klikni pre detail” – dobrý nápad, zlé vykonanie (layout jump)
+
+Tým že máš h-0 -> h-auto, karta bude pri hoveri meniť výšku (hlavne v gride). To pôsobí lacno.
+
+Fix: nech je text vždy tam, len nech sa mení opacity (bez zmeny výšky):
+
+{onClick && (
+  <div className="mt-2">
+    <span className="text-[9px] text-[#F97316] font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+      Klikni pre detail
+    </span>
+  </div>
+)}
+
+
+A zároveň daj group aj keď je clickable (už máš).
+
+3) StatCard je div s onClick → accessibility fail
+
+Klikateľná karta má byť button alebo aspoň role="button" + tabIndex + key handler. Aktuálne to nie je ovládateľné klávesnicou.
+
+Najčistejšie: ak onClick, renderuj button, inak div.
+
+Praktický kompromis (minimum zásahov):
+
+<div
+  role={onClick ? "button" : undefined}
+  tabIndex={onClick ? 0 : undefined}
+  onKeyDown={(e) => {
+    if (!onClick) return;
+    if (e.key === "Enter" || e.key === " ") onClick();
+  }}
+  ...
+/>
+
+4) Výpočet biggestFishWeight je zbytočne riskantný
+
+parseFloat(String(...)) je ok, ale keď weight príde ako null/undefined, nechcem aby to robilo “NaN” ticho.
+
+Sprav to bezpečne:
+
+const biggestFishWeight = Number(sectorStats.biggestFish?.weight);
+const hasBiggest = Number.isFinite(biggestFishWeight) && biggestFishWeight > 0;
+const biggestFishDisplay = hasBiggest ? biggestFishWeight.toFixed(2) : "—";
+const biggestFishUnit = hasBiggest ? "kg" : "";
+
+5) “Bez úlovku” vs “0 KS” – super, ale nech je konzistentné
+
+V rebríčku ukazuješ “Bez úlovku”, ale váha stále ukáže 0.00 KG. To je OK, len to vyzerá ako “mŕtvy” tím.
+
+UX tip: pre nula tímy zjemni vizuál:
+
+text muted
+
+menšie číslo
+
+alebo badge “Bez úlovku”
+
+Rýchly fix (len štýl):
+
+const isEmpty = parseFloat(team.totalWeight || "0") === 0 && fishCount === 0;
+...
+<div className={`font-black ... ${isEmpty ? "text-muted-foreground" : "text-foreground"}`}>
+
+6) Link wrapper + clickable card: OK, ale pozor na nested interakcie
+
+Zatiaľ v row nemáš buttony, takže je to safe. Ak tam neskôr pridáš (napr. ⭐), budeš musieť riešiť stopPropagation.
+
+7) Copy: “Úlovky Spolu” → “Počet úlovkov”
+
+“Úlovky Spolu” je ok, ale pôsobí ako preklad. “Počet úlovkov” je prirodzenejšie.
+
+Verdikt
+
+Áno — mimo “LIVE” a pár technických drobností je to dobré a použiteľné. Toto už vyzerá ako normálna produkčná stránka, nie demo.
