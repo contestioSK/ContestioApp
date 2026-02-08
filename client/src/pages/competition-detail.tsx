@@ -32,7 +32,6 @@ import {
 import StatsDashboard from "@/components/stats-dashboard";
 import type { Competition, Team, Catch } from "@shared/schema";
 import { useFavoriteCompetitions, useToggleFavoriteCompetition } from "@/hooks/useFavorites";
-import { getChartColorByIndex } from "@/lib/colors";
 import { QRShareDialog } from "@/components/QRShareDialog";
 import { useVisibilityAwarePolling, POLLING_INTERVALS, STALE_TIMES } from "@/hooks/usePolling";
 
@@ -99,101 +98,25 @@ const HorizontalBarChart = ({ data, competitionId }: { data: { name: string; wei
   );
 };
 
-type HourlyBar = { hour: number; label: string; count: number; totalWeight: number };
-
-const HourlyChart = ({ data }: { data: HourlyBar[] }) => {
-  const [selected, setSelected] = useState<HourlyBar | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 640);
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
-  }, []);
-
-  const displayData = useMemo(() => {
-    if (!isMobile) return data;
-    const slots = [
-      { label: '00-03', hours: [0, 1, 2] },
-      { label: '03-06', hours: [3, 4, 5] },
-      { label: '06-09', hours: [6, 7, 8] },
-      { label: '09-12', hours: [9, 10, 11] },
-      { label: '12-15', hours: [12, 13, 14] },
-      { label: '15-18', hours: [15, 16, 17] },
-      { label: '18-21', hours: [18, 19, 20] },
-      { label: '21-00', hours: [21, 22, 23] },
-    ];
-    return slots.map(s => ({
-      hour: s.hours[0],
-      label: s.label,
-      count: data.filter(d => s.hours.includes(d.hour)).reduce((sum, d) => sum + d.count, 0),
-      totalWeight: data.filter(d => s.hours.includes(d.hour)).reduce((sum, d) => sum + d.totalWeight, 0),
-    }));
-  }, [data, isMobile]);
-
-  const max = Math.max(...displayData.map(d => d.count), 1);
-  const totalCatches = data.reduce((sum, d) => sum + d.count, 0);
-
+const VerticalBarChart = ({ data }: { data: { hour: string; val: number }[] }) => {
+  const max = Math.max(...data.map(d => d.val), 1);
   return (
-    <>
-      <div className="h-44 flex items-end gap-[2px] sm:gap-1 mt-4 min-w-0">
-        {displayData.map((d, i) => (
-          <div
-            key={i}
-            className="flex flex-col items-center flex-1 min-w-0 h-full justify-end group cursor-pointer"
-            onClick={() => d.count > 0 && setSelected(d)}
-          >
-            <div className="relative w-full h-full flex items-end">
-              <div
-                className="w-full rounded-t-sm transition-all duration-500"
-                style={{
-                  height: d.count > 0 ? `${Math.max((d.count / max) * 100, 4)}%` : '0%',
-                  backgroundColor: d.count === max && d.count > 0 ? '#F97316' : getChartColorByIndex(d.hour),
-                  opacity: d.count === 0 ? 0.15 : d.count === max ? 1 : 0.7,
-                }}
-              />
-              {d.count > 0 && (
-                <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-popover text-popover-foreground text-[10px] py-0.5 px-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 border border-border font-mono">
-                  {d.count} ks
-                </div>
-              )}
+    <div className="h-40 flex items-end justify-between gap-1 sm:gap-2 mt-4 min-w-0">
+      {data.map((d, i) => (
+        <div key={i} className="flex flex-col items-center flex-1 min-w-0 h-full justify-end group">
+          <div className="relative w-full h-full flex items-end">
+            <div 
+              className={`w-full rounded-t-sm transition-all duration-500 ${d.val === max ? 'bg-amber-500' : 'bg-muted-foreground/30 group-hover:bg-muted-foreground/50'}`}
+              style={{ height: `${(d.val / max) * 100}%` }}
+            />
+            <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-popover text-popover-foreground text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 border border-border">
+              {d.val} ks
             </div>
-            <span className="text-[7px] sm:text-[9px] text-muted-foreground mt-1 font-mono truncate w-full text-center">{d.label}</span>
           </div>
-        ))}
-      </div>
-
-      <Dialog open={!!selected} onOpenChange={() => setSelected(null)}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-foreground">
-              <Clock className="w-5 h-5 text-muted-foreground" strokeWidth={1.75} />
-              {selected?.label}
-            </DialogTitle>
-          </DialogHeader>
-          {selected && (
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded-xl bg-muted/30 text-center border border-border">
-                  <Fish className="w-5 h-5 mx-auto mb-1 text-muted-foreground" strokeWidth={1.75} />
-                  <p className="text-xl font-mono font-medium text-[#F97316]">{selected.count}</p>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Úlovkov</p>
-                </div>
-                <div className="p-3 rounded-xl bg-muted/30 text-center border border-border">
-                  <TrendingUp className="w-5 h-5 mx-auto mb-1 text-muted-foreground" strokeWidth={1.75} />
-                  <p className="text-xl font-mono font-medium text-[#F97316]">{selected.totalWeight.toFixed(1)} kg</p>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Celková váha</p>
-                </div>
-              </div>
-              <div className="p-2 rounded-lg bg-muted/10 text-center text-xs text-muted-foreground">
-                Podiel: <span className="font-mono font-medium text-foreground">{totalCatches > 0 ? ((selected.count / totalCatches) * 100).toFixed(1) : 0}%</span> z celkového počtu
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-    </>
+          <span className="text-[8px] sm:text-[10px] text-muted-foreground mt-1 sm:mt-2 font-mono truncate w-full text-center">{d.hour}</span>
+        </div>
+      ))}
+    </div>
   );
 };
 
@@ -545,23 +468,26 @@ export default function CompetitionDetail() {
     }).sort((a, b) => b.weight - a.weight);
   }, [catches, teams]);
 
-  const hourlyActivity = useMemo((): HourlyBar[] => {
-    const hourData: { count: number; weight: number }[] = Array.from({ length: 24 }, () => ({ count: 0, weight: 0 }));
-    if (!catches) return hourData.map((d, i) => ({ hour: i, label: `${String(i).padStart(2, '0')}:00`, count: 0, totalWeight: 0 }));
-
+  const hourlyActivity = useMemo(() => {
+    if (!catches) return [];
+    const hours: { [key: string]: number } = {};
+    const hourSlots = ['06:00', '09:00', '12:00', '15:00', '18:00', '21:00', '00:00', '03:00'];
+    hourSlots.forEach(h => hours[h] = 0);
+    
     catches.forEach(c => {
       if (!c.submittedAt) return;
-      const h = new Date(c.submittedAt).getHours();
-      hourData[h].count++;
-      hourData[h].weight += Number(c.weight) || 0;
+      const hour = new Date(c.submittedAt).getHours();
+      if (hour >= 6 && hour < 9) hours['06:00']++;
+      else if (hour >= 9 && hour < 12) hours['09:00']++;
+      else if (hour >= 12 && hour < 15) hours['12:00']++;
+      else if (hour >= 15 && hour < 18) hours['15:00']++;
+      else if (hour >= 18 && hour < 21) hours['18:00']++;
+      else if (hour >= 21 && hour < 24) hours['21:00']++;
+      else if (hour >= 0 && hour < 3) hours['00:00']++;
+      else hours['03:00']++;
     });
-
-    return hourData.map((d, i) => ({
-      hour: i,
-      label: `${String(i).padStart(2, '0')}:00`,
-      count: d.count,
-      totalWeight: Math.round(d.weight * 10) / 10,
-    }));
+    
+    return hourSlots.map(hour => ({ hour, val: hours[hour] }));
   }, [catches]);
 
   // --- DYNAMIC COMMENTARY ---
@@ -577,12 +503,12 @@ export default function CompetitionDetail() {
         return type === 'short' ? 'Čakáme na prvý záber…' : 'Zatiaľ nepadol žiadny úlovok. Prvé dáta sa objavia hneď po overení úlovku.';
       }
 
-      const peakHour = hourlyActivity.reduce((max, h) => h.count > max.count ? h : max, { hour: -1, label: '', count: 0, totalWeight: 0 });
+      const peakHour = hourlyActivity.reduce((max, h) => h.val > max.val ? h : max, { hour: '', val: 0 });
       const topSector = sectorStats[0];
       
       let timeComment = '';
-      if (peakHour.count > 0) {
-        const hourNum = peakHour.hour;
+      if (peakHour.hour) {
+        const hourNum = Number((peakHour.hour || "0").split(":")[0]);
         if (hourNum >= 18 || hourNum < 6) {
           timeComment = 'Ryby sa ozývajú hlavne večer a v noci.';
         } else if (hourNum >= 6 && hourNum < 12) {
@@ -600,8 +526,8 @@ export default function CompetitionDetail() {
       if (topSector && topSector.weight > 0) {
         fullComment = `Najviac záberov je v ${topSector.name.toLowerCase()} s celkovou váhou ${topSector.weight.toFixed(1)} kg. `;
       }
-      if (peakHour.count > 0) {
-        fullComment += `Najaktívnejšie obdobie je okolo ${peakHour.label}.`;
+      if (peakHour.hour && peakHour.val > 0) {
+        fullComment += `Najaktívnejšie obdobie je okolo ${peakHour.hour}.`;
       }
       
       return fullComment || 'Pretek práve prebieha, sledujte aktuálne výsledky.';
@@ -1554,10 +1480,10 @@ export default function CompetitionDetail() {
                     <div className="bg-card p-4 sm:p-6 rounded-xl border border-border overflow-hidden">
                       <h3 className="text-lg font-bold text-foreground mb-2 flex items-center gap-2">
                         <Clock size={18} strokeWidth={1.75} className="text-muted-foreground" />
-                        Úlovky podľa hodín
+                        Kedy ryby berú najviac
                       </h3>
-                      <p className="text-xs text-muted-foreground mb-2">Rozdelenie úlovkov podľa hodín dňa. Klikni na stĺpec pre detail.</p>
-                      <HourlyChart data={hourlyActivity} />
+                      <p className="text-xs text-muted-foreground mb-4 sm:mb-6">Časy, kedy sa ryby najčastejšie hlásia</p>
+                      <VerticalBarChart data={hourlyActivity} />
                     </div>
                   </div>
 
