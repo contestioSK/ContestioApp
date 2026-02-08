@@ -101,9 +101,9 @@ const HorizontalBarChart = ({ data, competitionId }: { data: { name: string; wei
 const VerticalBarChart = ({ data }: { data: { hour: string; val: number }[] }) => {
   const max = Math.max(...data.map(d => d.val), 1);
   return (
-    <div className="h-40 flex items-end justify-between gap-2 mt-4">
+    <div className="h-40 flex items-end justify-between gap-1 sm:gap-2 mt-4 min-w-0">
       {data.map((d, i) => (
-        <div key={i} className="flex flex-col items-center flex-1 h-full justify-end group">
+        <div key={i} className="flex flex-col items-center flex-1 min-w-0 h-full justify-end group">
           <div className="relative w-full h-full flex items-end">
             <div 
               className={`w-full rounded-t-sm transition-all duration-500 ${d.val === max ? 'bg-amber-500' : 'bg-muted-foreground/30 group-hover:bg-muted-foreground/50'}`}
@@ -113,7 +113,7 @@ const VerticalBarChart = ({ data }: { data: { hour: string; val: number }[] }) =
               {d.val} ks
             </div>
           </div>
-          <span className="text-[10px] text-muted-foreground mt-2 font-mono">{d.hour}</span>
+          <span className="text-[8px] sm:text-[10px] text-muted-foreground mt-1 sm:mt-2 font-mono truncate w-full text-center">{d.hour}</span>
         </div>
       ))}
     </div>
@@ -1477,12 +1477,12 @@ export default function CompetitionDetail() {
                       )}
                     </div>
 
-                    <div className="bg-card p-6 rounded-xl border border-border">
+                    <div className="bg-card p-4 sm:p-6 rounded-xl border border-border overflow-hidden">
                       <h3 className="text-lg font-bold text-foreground mb-2 flex items-center gap-2">
                         <Clock size={18} strokeWidth={1.75} className="text-muted-foreground" />
                         Kedy ryby berú najviac
                       </h3>
-                      <p className="text-xs text-muted-foreground mb-6">Časy, kedy sa ryby najčastejšie hlásia</p>
+                      <p className="text-xs text-muted-foreground mb-4 sm:mb-6">Časy, kedy sa ryby najčastejšie hlásia</p>
                       <VerticalBarChart data={hourlyActivity} />
                     </div>
                   </div>
