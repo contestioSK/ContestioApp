@@ -114,7 +114,7 @@ const VerticalBarChart = ({ data }: { data: { hour: string; val: number }[] }) =
   );
 };
 
-const SectorTable = ({ sector, leaderboard }: { sector: string; leaderboard: any[] }) => {
+const SectorTable = ({ sector, leaderboard, competitionId }: { sector: string; leaderboard: any[]; competitionId: string }) => {
   const sectorTeams = leaderboard.filter(t => t.sector === sector).sort((a, b) => {
     if (b.weight !== a.weight) return b.weight - a.weight;
     if (b.fish !== a.fish) return b.fish - a.fish;
@@ -123,7 +123,7 @@ const SectorTable = ({ sector, leaderboard }: { sector: string; leaderboard: any
   return (
     <div className="bg-card/50 rounded-xl border border-border overflow-hidden mb-4">
       <div className="p-3 bg-muted/50 font-bold text-foreground text-sm flex justify-between">
-        <span>Sektor {sector}</span>
+        <Link href={`/competition/${competitionId}/sector/${sector}`} className="hover:text-orange-500 transition-colors">Sektor {sector}</Link>
         <span className="text-muted-foreground text-xs font-normal">Top 5 tímov</span>
       </div>
       <table className="w-full text-xs text-left">
@@ -1147,9 +1147,9 @@ export default function CompetitionDetail() {
                       <div className="text-4xl font-mono font-medium text-[#F97316]">{sortedLeaderboard[0]?.weight?.toFixed(1) ?? '-'}</div>
                       <div className="text-sm text-muted-foreground font-mono">{sortedLeaderboard[0]?.fish ?? 0} rýb</div>
                     </div>
-                    <div className="w-full bg-amber-500/5 border border-amber-500/10 rounded-lg py-1 text-center text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
+                    <Link href={`/competition/${id}/sector/${sortedLeaderboard[0]?.sector}`} className="block w-full bg-amber-500/5 border border-amber-500/10 rounded-lg py-1 text-center text-[10px] text-muted-foreground uppercase font-bold tracking-wider hover:text-orange-500 transition-colors">
                       Lovia v sektore {sortedLeaderboard[0]?.sector}
-                    </div>
+                    </Link>
                   </div>
 
                   {/* 3rd Place */}
@@ -1205,7 +1205,9 @@ export default function CompetitionDetail() {
                               {team.name}
                             </button>
                           </td>
-                          <td className="hidden md:table-cell px-6 py-4 text-center text-muted-foreground">{team.sector}</td>
+                          <td className="hidden md:table-cell px-6 py-4 text-center text-muted-foreground">
+                            <Link href={`/competition/${id}/sector/${team.sector}`} className="hover:text-orange-500 transition-colors">{team.sector}</Link>
+                          </td>
                           <td className="hidden md:table-cell px-6 py-4 text-right text-muted-foreground font-mono">{team.fish}</td>
                           <td className="px-3 md:px-6 py-3 md:py-4 text-right font-mono font-medium text-[#F97316] text-base">{team.weight.toFixed(1)}</td>
                         </tr>
@@ -1495,7 +1497,7 @@ export default function CompetitionDetail() {
                   <h3 className="text-foreground font-bold text-lg mb-4">Poradie v sektoroch</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {uniqueSectors.map(sector => (
-                      <SectorTable key={sector} sector={sector} leaderboard={sortedLeaderboard} />
+                      <SectorTable key={sector} sector={sector} leaderboard={sortedLeaderboard} competitionId={id!} />
                     ))}
                     {uniqueSectors.length === 0 && (
                       <div className="col-span-full text-center text-muted-foreground py-8">
@@ -1817,12 +1819,18 @@ export default function CompetitionDetail() {
                       </div>
                       <ChevronRight size={16} className="text-muted-foreground" />
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div
+                      className="flex items-center gap-3 cursor-pointer hover:bg-muted/30 rounded-lg transition-colors"
+                      onClick={() => {
+                        if (entityModal.catch_?.team?.sector) navigate(`/competition/${id}/sector/${entityModal.catch_.team.sector}`);
+                      }}
+                    >
                       <div className="p-2 bg-purple-500/10 rounded-lg text-purple-500"><MapPin size={18} /></div>
-                      <div>
+                      <div className="flex-1">
                         <div className="text-xs text-muted-foreground">Sektor</div>
                         <div className="font-bold text-foreground">{entityModal.catch_.team?.sector || '-'}</div>
                       </div>
+                      {entityModal.catch_.team?.sector && <ChevronRight size={16} className="text-muted-foreground" />}
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-amber-500/10 rounded-lg text-amber-500"><Clock size={18} /></div>
