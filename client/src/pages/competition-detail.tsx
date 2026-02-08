@@ -1064,7 +1064,7 @@ export default function CompetitionDetail() {
               <div className="flex justify-between items-center px-1">
                 <h3 className="font-bold text-foreground flex items-center gap-2">
                   <Trophy size={16} strokeWidth={1.75} className="text-muted-foreground" />
-                  Aktuálne poradie tímov
+                  {isEnded ? 'Konečné poradie preteku' : 'Aktuálne poradie tímov'}
                 </h3>
                 <span className="text-xs text-muted-foreground font-mono">{sortedLeaderboard.length} tímov</span>
               </div>
