@@ -714,79 +714,75 @@ export default function Profile() {
                 
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    {/* First Name */}
-                    <FormField
-                      control={form.control}
-                      name="firstName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Meno</FormLabel>
-                          <FormControl>
-                            <Input 
-                              placeholder="Tvoje meno"
-                              data-testid="input-first-name"
-                              disabled={!isEditing}
-                              {...field}
-                              value={field.value || ""}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="firstName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Meno</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="Tvoje meno"
+                                data-testid="input-first-name"
+                                disabled={!isEditing}
+                                {...field}
+                                value={field.value || ""}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="lastName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Priezvisko</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="Tvoje priezvisko"
+                                data-testid="input-last-name"
+                                disabled={!isEditing}
+                                {...field}
+                                value={field.value || ""}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
 
-                    {/* Last Name */}
-                    <FormField
-                      control={form.control}
-                      name="lastName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Priezvisko</FormLabel>
-                          <FormControl>
-                            <Input 
-                              placeholder="Tvoje priezvisko"
-                              data-testid="input-last-name"
-                              disabled={!isEditing}
-                              {...field}
-                              value={field.value || ""}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    {/* Nickname */}
-                    <FormField
-                      control={form.control}
-                      name="nickname"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Prezývka</FormLabel>
-                          <FormControl>
-                            <Input 
-                              placeholder="Vaša prezývka"
-                              data-testid="input-nickname"
-                              disabled={!isEditing}
-                              {...field}
-                              value={field.value || ""}
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Nepovinná prezývka, ktorú budú vidieť ostatní rybári
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    {/* Email - Read Only */}
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <FormLabel className="text-sm font-medium">Email</FormLabel>
-                        <Lock className="w-3 h-3 text-muted-foreground" />
-                      </div>
-                      <div className="flex items-center gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="nickname"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Prezývka</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="Vaša prezývka"
+                                data-testid="input-nickname"
+                                disabled={!isEditing}
+                                {...field}
+                                value={field.value || ""}
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Nepovinná prezývka viditeľná ostatným
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <FormLabel className="text-sm font-medium">Email</FormLabel>
+                          <Lock className="w-3 h-3 text-muted-foreground" />
+                        </div>
                         <Input 
                           type="email"
                           value={user.email || ""}
@@ -794,13 +790,13 @@ export default function Profile() {
                           className="bg-muted"
                           data-testid="input-email"
                         />
+                        <p className="text-xs text-muted-foreground">
+                          {isPremium 
+                            ? "Pre zmenu kontaktujte podporu"
+                            : "Zmena len pre PREMIUM používateľov"
+                          }
+                        </p>
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        {isPremium 
-                          ? "Pre zmenu emailu kontaktujte podporu"
-                          : "Zmenu emailu umožňujeme iba PREMIUM používateľom z bezpečnostných dôvodov."
-                        }
-                      </p>
                     </div>
 
                     <Separator />
