@@ -7,7 +7,7 @@ import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import type { Team, TeamMember } from "@shared/schema";
-import { getCountryFlag } from "@/lib/countries";
+import { TeamFlag } from "@/components/team-flag";
 
 interface SectorLeaderboardsProps {
   competitionId: string;
@@ -182,21 +182,7 @@ export default function SectorLeaderboards({ competitionId }: SectorLeaderboards
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
-                              <img 
-                                src={getCountryFlag(team.country || 'SK')} 
-                                alt={`Vlajka ${team.country || 'SK'}`}
-                                className="w-5 h-4 object-cover rounded-sm border border-gray-200"
-                                title={`Krajina: ${team.country || 'SK'}`}
-                                data-testid={`flag-${team.id}`}
-                                onError={(e) => {
-                                  // Fallback to emoji if image fails to load
-                                  e.currentTarget.style.display = 'none';
-                                  const span = document.createElement('span');
-                                  span.textContent = '🏳️';
-                                  span.className = 'text-sm';
-                                  e.currentTarget.parentNode?.insertBefore(span, e.currentTarget);
-                                }}
-                              />
+                              <TeamFlag country={team.country} size="sm" />
                               <Link href={`/team/${team.id}`} className="font-medium text-foreground hover:text-primary transition-colors" data-testid={`text-team-name-${team.id}`}>
                                 {team.name}
                               </Link>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useParams, Link } from "wouter";
+import { TeamFlag } from "@/components/team-flag";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -206,6 +207,7 @@ export default function TeamDetail() {
 
               <div>
                 <div className="flex items-center gap-3 mb-1">
+                  <TeamFlag country={teamData.country} size="md" />
                   <h1 className="text-3xl md:text-5xl font-black italic text-foreground uppercase tracking-tighter leading-none drop-shadow-lg">
                     {teamData.name}
                   </h1>

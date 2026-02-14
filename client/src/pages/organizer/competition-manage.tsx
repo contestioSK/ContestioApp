@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, Fragment } from "react";
 import { useRoute, useLocation, useSearch } from "wouter";
+import { TeamFlag } from "@/components/team-flag";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -653,7 +654,7 @@ export default function CompetitionManage() {
                     <div className="flex items-center gap-4 cursor-pointer min-w-0" onClick={() => setLocation(`/team/${team.id}`)}>
                       <div className={`w-2 h-2 rounded-full flex-shrink-0 ${team.status === 'approved' ? 'bg-emerald-500' : 'bg-orange-500 animate-pulse shadow-[0_0_8px_rgba(249,115,22,0.4)]'}`} />
                       <div className="min-w-0">
-                        <h4 className="text-sm font-bold text-slate-100 group-hover:text-white truncate">{team.name}</h4>
+                        <h4 className="text-sm font-bold text-slate-100 group-hover:text-white truncate flex items-center gap-1.5"><TeamFlag country={team.country} size="xs" />{team.name}</h4>
                         <p className="text-[11px] text-slate-500 flex items-center gap-2">
                           {team.sector ? `Sektor ${team.sector}` : 'Sektor nepridelený'}
                         </p>
