@@ -34,7 +34,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, ComposedChart } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, ComposedChart, Cell, ReferenceLine } from 'recharts';
 import { TacticalIcon } from "@/components/ui/tactical-icon";
 
 interface ForecastDay {
@@ -472,8 +472,36 @@ export default function WeatherForecast() {
     });
   };
 
+  const getChartData = (hours: ForecastDay['hour'], dayDate: string) => {
+    const today = new Date();
+    const selectedDate = new Date(dayDate);
+    const isToday = today.toDateString() === selectedDate.toDateString();
+    const currentHour = today.getHours();
+
+    return hours.map(h => {
+      const hourTime = new Date(h.time).getHours();
+      return {
+        time: format(new Date(h.time), 'HH:mm'),
+        teplota: Math.round(h.temp_c),
+        zrážky: h.precip_mm,
+        isPast: isToday && hourTime < currentHour,
+        isCurrent: isToday && hourTime === currentHour,
+      };
+    });
+  };
+
   const selectedDay = forecast?.forecast.forecastday[selectedDayIndex];
   const filteredHours = selectedDay ? getFilteredHours(selectedDay.hour, selectedDay.date) : [];
+  const chartData = selectedDay ? getChartData(selectedDay.hour, selectedDay.date) : [];
+  const currentHourLabel = (() => {
+    const now = new Date();
+    if (selectedDay && now.toDateString() === new Date(selectedDay.date).toDateString()) {
+      const rounded = new Date(now);
+      rounded.setMinutes(0, 0, 0);
+      return format(rounded, 'HH:mm');
+    }
+    return null;
+  })();
 
   return (
     <DiaryLayout>
@@ -766,11 +794,7 @@ export default function WeatherForecast() {
                   <h3 className="text-lg font-semibold mb-4">Hodinová predpoveď</h3>
                   <ResponsiveContainer width="100%" height={300}>
                     <ComposedChart 
-                      data={selectedDay.hour.map(h => ({
-                        time: format(new Date(h.time), 'HH:mm'),
-                        teplota: Math.round(h.temp_c),
-                        zrážky: h.precip_mm
-                      }))}
+                      data={chartData}
                       margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
                     >
                       <CartesianGrid strokeDasharray="3 3" stroke="#1e3a5f" />
@@ -793,6 +817,9 @@ export default function WeatherForecast() {
                         tick={{ fill: '#94a3b8', fontSize: 12 }}
                         label={{ value: 'Zrážky (mm)', angle: 90, position: 'insideRight', fill: '#94a3b8' }}
                       />
+                      {currentHourLabel && (
+                        <ReferenceLine yAxisId="left" x={currentHourLabel} stroke="#f97316" strokeDasharray="4 4" strokeWidth={1.5} label={{ value: 'Teraz', position: 'top', fill: '#f97316', fontSize: 11 }} />
+                      )}
                       <Tooltip 
                         contentStyle={{ 
                           backgroundColor: 'hsl(var(--muted))', 
@@ -810,16 +837,34 @@ export default function WeatherForecast() {
                         dataKey="teplota" 
                         stroke="#f59e0b" 
                         strokeWidth={2}
-                        dot={{ fill: '#f59e0b', r: 3 }}
+                        dot={(props: any) => {
+                          const { cx, cy, index } = props;
+                          const entry = chartData[index];
+                          if (!entry) return <circle key={index} cx={cx} cy={cy} r={0} />;
+                          return (
+                            <circle
+                              key={index}
+                              cx={cx}
+                              cy={cy}
+                              r={entry.isCurrent ? 5 : 3}
+                              fill={entry.isCurrent ? '#f97316' : '#f59e0b'}
+                              opacity={entry.isPast ? 0.35 : 1}
+                              stroke={entry.isCurrent ? '#fff' : 'none'}
+                              strokeWidth={entry.isCurrent ? 2 : 0}
+                            />
+                          );
+                        }}
                         name="Teplota (°C)"
                       />
                       <Bar 
                         yAxisId="right"
                         dataKey="zrážky" 
-                        fill="#3b82f6" 
-                        opacity={0.6}
                         name="Zrážky (mm)"
-                      />
+                      >
+                        {chartData.map((entry, index) => (
+                          <Cell key={index} fill="#3b82f6" opacity={entry.isPast ? 0.2 : 0.6} />
+                        ))}
+                      </Bar>
                     </ComposedChart>
                   </ResponsiveContainer>
 
@@ -992,33 +1037,32 @@ export default function WeatherForecast() {
 
             {/* Interactive Chart - Improved font size for mobile */}
             <div className="bg-card dark:bg-slate-900 border-2 border-border rounded-lg p-4">
-              <ResponsiveContainer width="100%" height={200}>
+              <ResponsiveContainer width="100%" height={220}>
                 <ComposedChart 
-                  data={filteredHours.map(h => ({
-                    time: format(new Date(h.time), 'HH:mm'),
-                    teplota: Math.round(h.temp_c),
-                    zrážky: h.precip_mm
-                  }))}
+                  data={chartData}
                   margin={{ top: 5, right: 5, left: -15, bottom: 5 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="#1e3a5f" opacity={0.3} />
                   <XAxis 
                     dataKey="time" 
                     stroke="#94a3b8"
-                    tick={{ fill: '#94a3b8', fontSize: 11 }}
-                    interval={4}
+                    tick={{ fill: '#94a3b8', fontSize: 10 }}
+                    interval={3}
                   />
                   <YAxis 
                     yAxisId="left"
                     stroke="#94a3b8"
-                    tick={{ fill: '#94a3b8', fontSize: 11 }}
+                    tick={{ fill: '#94a3b8', fontSize: 10 }}
                   />
                   <YAxis 
                     yAxisId="right"
                     orientation="right"
                     stroke="#94a3b8"
-                    tick={{ fill: '#94a3b8', fontSize: 11 }}
+                    tick={{ fill: '#94a3b8', fontSize: 10 }}
                   />
+                  {currentHourLabel && (
+                    <ReferenceLine yAxisId="left" x={currentHourLabel} stroke="#f97316" strokeDasharray="4 4" strokeWidth={1.5} label={{ value: 'Teraz', position: 'top', fill: '#f97316', fontSize: 10 }} />
+                  )}
                   <Tooltip 
                     contentStyle={{ 
                       backgroundColor: 'hsl(var(--muted))', 
@@ -1028,20 +1072,43 @@ export default function WeatherForecast() {
                       fontSize: '12px'
                     }}
                   />
+                  <Legend 
+                    wrapperStyle={{ color: '#94a3b8', fontSize: '11px' }}
+                  />
                   <Line 
                     yAxisId="left"
                     type="monotone" 
                     dataKey="teplota" 
                     stroke="#f59e0b" 
                     strokeWidth={2}
-                    dot={{ fill: '#f59e0b', r: 2 }}
+                    dot={(props: any) => {
+                      const { cx, cy, index } = props;
+                      const entry = chartData[index];
+                      if (!entry) return <circle key={index} cx={cx} cy={cy} r={0} />;
+                      return (
+                        <circle
+                          key={index}
+                          cx={cx}
+                          cy={cy}
+                          r={entry.isCurrent ? 4 : 2}
+                          fill={entry.isCurrent ? '#f97316' : '#f59e0b'}
+                          opacity={entry.isPast ? 0.35 : 1}
+                          stroke={entry.isCurrent ? '#fff' : 'none'}
+                          strokeWidth={entry.isCurrent ? 2 : 0}
+                        />
+                      );
+                    }}
+                    name="Teplota (°C)"
                   />
                   <Bar 
                     yAxisId="right"
                     dataKey="zrážky" 
-                    fill="#3b82f6" 
-                    opacity={0.5}
-                  />
+                    name="Zrážky (mm)"
+                  >
+                    {chartData.map((entry, index) => (
+                      <Cell key={index} fill="#3b82f6" opacity={entry.isPast ? 0.15 : 0.5} />
+                    ))}
+                  </Bar>
                 </ComposedChart>
               </ResponsiveContainer>
             </div>
