@@ -1006,7 +1006,7 @@ export default function DiaryTrips() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
                 <Input
                   type="text"
-                  placeholder="Hľadať výpravu..."
+                  placeholder="Hľadať výpravu podľa názvu, lokality..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
