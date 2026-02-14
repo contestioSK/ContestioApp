@@ -463,18 +463,24 @@ export default function WeatherForecast() {
   const getFilteredHours = (hours: ForecastDay['hour'], dayDate: string): ForecastDay['hour'] => {
     const today = new Date();
     const selectedDate = new Date(dayDate);
-    
-    // Check if selected day is today
     const isToday = today.toDateString() === selectedDate.toDateString();
-    
+
     if (!isToday) return hours;
-    
-    // For today, filter out past hours (show only current hour and future)
+
     const currentHour = today.getHours();
-    return hours.filter(hour => {
+    const todayRemaining = hours.filter(hour => {
       const hourTime = new Date(hour.time);
       return hourTime.getHours() >= currentHour;
     });
+
+    const nextDayData = forecast?.forecast.forecastday[selectedDayIndex + 1];
+    if (nextDayData && todayRemaining.length < 24) {
+      const needed = Math.max(0, 24 - todayRemaining.length);
+      const tomorrowHours = nextDayData.hour.slice(0, needed);
+      return [...todayRemaining, ...tomorrowHours];
+    }
+
+    return todayRemaining;
   };
 
   const getChartData = (hours: ForecastDay['hour'], dayDate: string) => {
@@ -796,7 +802,7 @@ export default function WeatherForecast() {
 
                 {/* Hourly Forecast Chart Widget */}
                 <div className="p-4 md:p-6 rounded-lg border-2 bg-card dark:bg-slate-900 border-border">
-                  <h3 className="text-lg font-semibold mb-4">Hodinová predpoveď</h3>
+                  <h3 className="text-lg font-semibold mb-4">Detailná predpoveď na 24h</h3>
                   <ResponsiveContainer width="100%" height={300}>
                     <ComposedChart 
                       data={chartData}
@@ -1134,7 +1140,7 @@ export default function WeatherForecast() {
 
             {/* Hourly Forecast - Horizontal Scroll - Smart Time Filtering applied */}
             <div className="bg-card dark:bg-slate-900 border-2 border-border rounded-lg p-4">
-              <h3 className="text-sm font-semibold mb-3">Hodinová predpoveď</h3>
+              <h3 className="text-sm font-semibold mb-3">Detailná predpoveď na 24h</h3>
               <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent">
                 {filteredHours.map((hour, index) => {
                   const pressureInfo = getPressureTrendColor(hour.pressure_mb, index, filteredHours);
