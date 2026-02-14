@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ArrowLeft, Grid3x3, ChevronLeft, ChevronRight, X, Search, Fish, Calendar, SlidersHorizontal } from "lucide-react";
+import { ArrowLeft, Grid3x3, ChevronLeft, ChevronRight, Search, Fish, Calendar, SlidersHorizontal } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import DiaryLayout from "@/components/DiaryLayout";
@@ -333,20 +333,9 @@ export default function TripGallery() {
 
       {/* Lightbox Slideshow with Backdrop Blur */}
       <Dialog open={selectedPhotoIndex !== null} onOpenChange={() => setSelectedPhotoIndex(null)}>
-        <DialogContent className="max-w-[100vw] max-h-[100vh] w-full h-full p-0 bg-black/90 backdrop-blur-xl border-0">
+        <DialogContent className="max-w-[100vw] max-h-[100vh] w-full h-full p-0 bg-black/90 backdrop-blur-xl border-0 [&>button]:text-white [&>button]:opacity-100 [&>button]:hover:opacity-80 [&>button]:top-4 [&>button]:right-4 [&>button]:h-10 [&>button]:w-10 [&>button]:rounded-full [&>button]:bg-black/30 [&>button]:flex [&>button]:items-center [&>button]:justify-center [&>button]:[&>svg]:h-6 [&>button]:[&>svg]:w-6">
           {selectedPhotoIndex !== null && filteredPhotos[selectedPhotoIndex] && (
             <div className="relative w-full h-full flex items-center justify-center">
-              {/* Close button - larger touch target */}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setSelectedPhotoIndex(null)}
-                className="absolute top-3 right-3 md:top-4 md:right-4 z-20 text-white hover:bg-white/20 h-12 w-12 md:h-10 md:w-10 rounded-full bg-black/30"
-                aria-label="Zavrieť galériu"
-                data-testid="button-close-lightbox"
-              >
-                <X className="h-6 w-6" />
-              </Button>
 
               {/* Desktop Navigation buttons - sides */}
               {filteredPhotos.length > 1 && (
