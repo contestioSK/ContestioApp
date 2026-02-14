@@ -193,7 +193,7 @@ export default function DiaryStats() {
             <div className="space-y-1">
               <div className="flex items-center gap-4">
                 <TacticalIcon icon={BarChart3} variant="orange" size="lg" showLabel={false} />
-                <h1 className="text-4xl md:text-5xl font-black italic tracking-tighter uppercase text-foreground leading-none">Sezóna {selectedYear}</h1>
+                <h1 className="text-4xl md:text-5xl font-black italic tracking-tighter uppercase text-foreground leading-none">Sezóna {selectedYear} v číslach</h1>
               </div>
               <p className="text-sm font-medium text-muted-foreground italic tracking-tight pl-0.5">Tvoje ryby premenené na prehľad</p>
             </div>
