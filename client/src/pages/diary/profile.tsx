@@ -900,7 +900,8 @@ export default function Profile() {
             </Card>
           </div>
 
-          {/* Competition History Section */}
+          {/* Competition History & Catches - only shown if user has competition participation */}
+          {!isHistoryLoading && competitionHistory.length > 0 && (<>
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -1177,6 +1178,7 @@ export default function Profile() {
               )}
             </CardContent>
           </Card>
+          </>)}
 
           {/* Diary Settings Section */}
           <Card>
