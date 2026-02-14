@@ -1356,7 +1356,7 @@ export default function CompetitionDetail() {
               {/* LIVE FEED */}
               <div className="bg-card border border-border rounded-xl overflow-hidden flex flex-col max-h-[600px]">
                 <div className="px-3 py-2.5 border-b border-border bg-muted/30 flex items-center justify-between sticky top-0 z-10">
-                  <h3 className="font-bold text-foreground text-sm uppercase tracking-wider">Čo sa deje pri vode</h3>
+                  <h3 className="font-bold text-foreground text-sm uppercase tracking-wider">Posledné úlovky</h3>
                   <div className="flex items-center gap-2">
                     <button 
                       onClick={() => navigate(`/competition/${id}/catches`)}
