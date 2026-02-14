@@ -34,7 +34,8 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, ComposedChart, Cell, ReferenceLine } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, BarChart, Bar, ComposedChart, Cell, ReferenceLine } from 'recharts';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { TacticalIcon } from "@/components/ui/tactical-icon";
 
 interface ForecastDay {
@@ -67,6 +68,9 @@ interface ForecastDay {
       text: string;
       icon: string;
     };
+    feelslike_c: number;
+    chance_of_rain: number;
+    cloud: number;
     wind_kph: number;
     wind_dir: string;
     gust_kph: number;
@@ -820,7 +824,7 @@ export default function WeatherForecast() {
                       {currentHourLabel && (
                         <ReferenceLine yAxisId="left" x={currentHourLabel} stroke="#f97316" strokeDasharray="4 4" strokeWidth={1.5} label={{ value: 'Teraz', position: 'top', fill: '#f97316', fontSize: 11 }} />
                       )}
-                      <Tooltip 
+                      <RechartsTooltip 
                         contentStyle={{ 
                           backgroundColor: 'hsl(var(--muted))', 
                           border: '1px solid hsl(var(--border))',
@@ -879,51 +883,55 @@ export default function WeatherForecast() {
                       {filteredHours.map((hour, index) => {
                         const pressureInfo = getPressureTrendColor(hour.pressure_mb, index, filteredHours);
                         return (
-                          <div
-                            key={index}
-                            className="flex-shrink-0 p-3 rounded-lg border-2 min-w-[100px] space-y-1.5 text-center bg-card dark:bg-slate-900 border-border"
-                            data-testid={`hour-card-${index}`}
-                          >
-                            {/* Time */}
-                            <p className="text-sm font-bold text-foreground">
-                              {format(new Date(hour.time), 'HH:mm')}
-                            </p>
-
-                            {/* Weather Icon */}
-                            <img
-                              src={`https:${hour.condition.icon}`}
-                              alt={hour.condition.text}
-                              className="w-10 h-10 mx-auto"
-                              data-testid={`weather-icon-${index}`}
-                            />
-
-                            {/* Temperature */}
-                            <p className="text-2xl font-bold text-foreground">
-                              {Math.round(hour.temp_c)}°
-                            </p>
-
-                            {/* Wind with direction arrow */}
-                            <div className="flex items-center justify-center gap-1">
-                              <ArrowUp
-                                className="w-4 h-4 text-blue-400"
-                                style={{ transform: `rotate(${getWindRotation(hour.wind_dir)}deg)` }}
-                              />
-                              <span className="text-sm font-semibold">{convertKphToMs(hour.wind_kph)}</span>
-                            </div>
-
-                            {/* Gust - compact */}
-                            <p className="text-xs text-muted-foreground">
-                              ↑{convertKphToMs(hour.gust_kph || hour.wind_kph)} m/s
-                            </p>
-
-                            {/* Pressure with color coding */}
-                            <div className={`flex items-center justify-center gap-1 ${pressureInfo.color}`}>
-                              {pressureInfo.trend === 'up' && <TrendingUp className="w-3 h-3" />}
-                              {pressureInfo.trend === 'down' && <TrendingDown className="w-3 h-3" />}
-                              {pressureInfo.trend === 'stable' && <Minus className="w-3 h-3" />}
-                              <span className="text-xs font-semibold">{hour.pressure_mb}</span>
-                            </div>
-                          </div>
+                          <TooltipProvider key={index} delayDuration={200}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div
+                                  className="flex-shrink-0 p-3 rounded-lg border-2 min-w-[100px] space-y-1.5 text-center bg-card dark:bg-slate-900 border-border cursor-default"
+                                  data-testid={`hour-card-${index}`}
+                                >
+                                  <p className="text-sm font-bold text-foreground">
+                                    {format(new Date(hour.time), 'HH:mm')}
+                                  </p>
+                                  <img
+                                    src={`https:${hour.condition.icon}`}
+                                    alt={hour.condition.text}
+                                    className="w-10 h-10 mx-auto"
+                                    data-testid={`weather-icon-${index}`}
+                                  />
+                                  <p className="text-2xl font-bold text-foreground">
+                                    {Math.round(hour.temp_c)}°
+                                  </p>
+                                  <div className="flex items-center justify-center gap-1">
+                                    <ArrowUp
+                                      className="w-4 h-4 text-blue-400"
+                                      style={{ transform: `rotate(${getWindRotation(hour.wind_dir)}deg)` }}
+                                    />
+                                    <span className="text-sm font-semibold">{convertKphToMs(hour.wind_kph)}</span>
+                                  </div>
+                                  <p className="text-xs text-muted-foreground">
+                                    ↑{convertKphToMs(hour.gust_kph || hour.wind_kph)} m/s
+                                  </p>
+                                  <div className={`flex items-center justify-center gap-1 ${pressureInfo.color}`}>
+                                    {pressureInfo.trend === 'up' && <TrendingUp className="w-3 h-3" />}
+                                    {pressureInfo.trend === 'down' && <TrendingDown className="w-3 h-3" />}
+                                    {pressureInfo.trend === 'stable' && <Minus className="w-3 h-3" />}
+                                    <span className="text-xs font-semibold">{hour.pressure_mb}</span>
+                                  </div>
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent side="bottom" className="max-w-[220px] space-y-1 text-xs">
+                                <p className="font-bold text-sm">{hour.condition.text}</p>
+                                <p>Pocitová teplota: <span className="font-mono font-medium text-orange-400">{Math.round(hour.feelslike_c)}°C</span></p>
+                                <p>Vlhkosť: <span className="font-mono font-medium text-orange-400">{hour.humidity}%</span></p>
+                                <p>Šanca na dážď: <span className="font-mono font-medium text-orange-400">{hour.chance_of_rain}%</span></p>
+                                <p>Oblačnosť: <span className="font-mono font-medium text-orange-400">{hour.cloud}%</span></p>
+                                <p>Vietor: <span className="font-mono font-medium text-orange-400">{convertKphToMs(hour.wind_kph)} m/s {hour.wind_dir}</span></p>
+                                <p>Nárazy: <span className="font-mono font-medium text-orange-400">{convertKphToMs(hour.gust_kph || hour.wind_kph)} m/s</span></p>
+                                <p>Tlak: <span className="font-mono font-medium text-orange-400">{hour.pressure_mb} mb</span> ({pressureInfo.trend === 'up' ? 'stúpa' : pressureInfo.trend === 'down' ? 'klesá' : 'stabilný'})</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         );
                       })}
                     </div>
@@ -1068,7 +1076,7 @@ export default function WeatherForecast() {
                   {currentHourLabel && (
                     <ReferenceLine yAxisId="left" x={currentHourLabel} stroke="#f97316" strokeDasharray="4 4" strokeWidth={1.5} label={{ value: 'Teraz', position: 'top', fill: '#f97316', fontSize: 10 }} />
                   )}
-                  <Tooltip 
+                  <RechartsTooltip 
                     contentStyle={{ 
                       backgroundColor: 'hsl(var(--muted))', 
                       border: '1px solid hsl(var(--border))',
@@ -1130,44 +1138,56 @@ export default function WeatherForecast() {
                 {filteredHours.map((hour, index) => {
                   const pressureInfo = getPressureTrendColor(hour.pressure_mb, index, filteredHours);
                   return (
-                    <div
-                      key={index}
-                      className="flex-shrink-0 p-2 rounded-lg border border-border min-w-[88px] space-y-1 text-center bg-card/50"
-                      data-testid={`hour-mobile-card-${index}`}
-                    >
-                      <p className="text-xs font-bold">
-                        {format(new Date(hour.time), 'HH:mm')}
-                      </p>
-                      <img
-                        src={`https:${hour.condition.icon}`}
-                        alt={hour.condition.text}
-                        className="w-9 h-9 mx-auto"
-                      />
-                      <p className="text-xl font-bold">
-                        {Math.round(hour.temp_c)}°
-                      </p>
-                      {/* Wind with arrow */}
-                      <div className="flex items-center justify-center gap-0.5">
-                        <ArrowUp
-                          className="w-3 h-3 text-blue-400"
-                          style={{ transform: `rotate(${getWindRotation(hour.wind_dir)}deg)` }}
-                        />
-                        <span className="text-xs text-blue-400 font-semibold">
-                          {convertKphToMs(hour.wind_kph)}
-                        </span>
-                      </div>
-                      {/* Gust */}
-                      <p className="text-[10px] text-muted-foreground">
-                        ↑{convertKphToMs(hour.gust_kph || hour.wind_kph)}
-                      </p>
-                      {/* Pressure with color */}
-                      <div className={`flex items-center justify-center gap-0.5 ${pressureInfo.color}`}>
-                        {pressureInfo.trend === 'up' && <TrendingUp className="w-2.5 h-2.5" />}
-                        {pressureInfo.trend === 'down' && <TrendingDown className="w-2.5 h-2.5" />}
-                        {pressureInfo.trend === 'stable' && <Minus className="w-2.5 h-2.5" />}
-                        <span className="text-[10px] font-semibold">{hour.pressure_mb}</span>
-                      </div>
-                    </div>
+                    <TooltipProvider key={index} delayDuration={200}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div
+                            className="flex-shrink-0 p-2 rounded-lg border border-border min-w-[88px] space-y-1 text-center bg-card/50 cursor-default"
+                            data-testid={`hour-mobile-card-${index}`}
+                          >
+                            <p className="text-xs font-bold">
+                              {format(new Date(hour.time), 'HH:mm')}
+                            </p>
+                            <img
+                              src={`https:${hour.condition.icon}`}
+                              alt={hour.condition.text}
+                              className="w-9 h-9 mx-auto"
+                            />
+                            <p className="text-xl font-bold">
+                              {Math.round(hour.temp_c)}°
+                            </p>
+                            <div className="flex items-center justify-center gap-0.5">
+                              <ArrowUp
+                                className="w-3 h-3 text-blue-400"
+                                style={{ transform: `rotate(${getWindRotation(hour.wind_dir)}deg)` }}
+                              />
+                              <span className="text-xs text-blue-400 font-semibold">
+                                {convertKphToMs(hour.wind_kph)}
+                              </span>
+                            </div>
+                            <p className="text-[10px] text-muted-foreground">
+                              ↑{convertKphToMs(hour.gust_kph || hour.wind_kph)}
+                            </p>
+                            <div className={`flex items-center justify-center gap-0.5 ${pressureInfo.color}`}>
+                              {pressureInfo.trend === 'up' && <TrendingUp className="w-2.5 h-2.5" />}
+                              {pressureInfo.trend === 'down' && <TrendingDown className="w-2.5 h-2.5" />}
+                              {pressureInfo.trend === 'stable' && <Minus className="w-2.5 h-2.5" />}
+                              <span className="text-[10px] font-semibold">{hour.pressure_mb}</span>
+                            </div>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" className="max-w-[200px] space-y-1 text-xs">
+                          <p className="font-bold text-sm">{hour.condition.text}</p>
+                          <p>Pocitová teplota: <span className="font-mono font-medium text-orange-400">{Math.round(hour.feelslike_c)}°C</span></p>
+                          <p>Vlhkosť: <span className="font-mono font-medium text-orange-400">{hour.humidity}%</span></p>
+                          <p>Šanca na dážď: <span className="font-mono font-medium text-orange-400">{hour.chance_of_rain}%</span></p>
+                          <p>Oblačnosť: <span className="font-mono font-medium text-orange-400">{hour.cloud}%</span></p>
+                          <p>Vietor: <span className="font-mono font-medium text-orange-400">{convertKphToMs(hour.wind_kph)} m/s {hour.wind_dir}</span></p>
+                          <p>Nárazy: <span className="font-mono font-medium text-orange-400">{convertKphToMs(hour.gust_kph || hour.wind_kph)} m/s</span></p>
+                          <p>Tlak: <span className="font-mono font-medium text-orange-400">{hour.pressure_mb} mb</span> ({pressureInfo.trend === 'up' ? 'stúpa' : pressureInfo.trend === 'down' ? 'klesá' : 'stabilný'})</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   );
                 })}
               </div>
