@@ -215,7 +215,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
           <div className="p-4 pt-0 space-y-4">
             {/* Main Section - Denník (blue) */}
             <div>
-              <div className="space-y-1">
+              <div className="space-y-0">
                 {(() => {
                   const isActive = isActivePath(mainItem.href);
                   return (
@@ -253,7 +253,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
               <p className="text-[10px] font-bold text-cyan-600 dark:text-cyan-500 uppercase tracking-widest mb-2 pl-3">
                 Môj rybársky život
               </p>
-              <div className="space-y-1">
+              <div className="space-y-0">
                 {fishingLifeItems.map((item) => {
                   const isActive = isActivePath(item.href);
                   return (
@@ -292,7 +292,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
               <p className="text-[10px] font-bold text-amber-600 dark:text-amber-500 uppercase tracking-widest mb-2 pl-3">
                 Súťaže & Komunita
               </p>
-              <div className="space-y-1">
+              <div className="space-y-0">
                 {communityItems.map((item) => {
                   const isActive = isActivePath(item.href);
                   return (
