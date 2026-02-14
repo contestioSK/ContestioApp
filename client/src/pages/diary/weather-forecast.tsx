@@ -36,6 +36,7 @@ import { format } from "date-fns";
 import { sk } from "date-fns/locale";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, BarChart, Bar, ComposedChart, Cell, ReferenceLine } from 'recharts';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { TacticalIcon } from "@/components/ui/tactical-icon";
 
 interface ForecastDay {
@@ -1138,56 +1139,54 @@ export default function WeatherForecast() {
                 {filteredHours.map((hour, index) => {
                   const pressureInfo = getPressureTrendColor(hour.pressure_mb, index, filteredHours);
                   return (
-                    <TooltipProvider key={index} delayDuration={200}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div
-                            className="flex-shrink-0 p-2 rounded-lg border border-border min-w-[88px] space-y-1 text-center bg-card/50 cursor-default"
-                            data-testid={`hour-mobile-card-${index}`}
-                          >
-                            <p className="text-xs font-bold">
-                              {format(new Date(hour.time), 'HH:mm')}
-                            </p>
-                            <img
-                              src={`https:${hour.condition.icon}`}
-                              alt={hour.condition.text}
-                              className="w-9 h-9 mx-auto"
+                    <Popover key={index}>
+                      <PopoverTrigger asChild>
+                        <div
+                          className="flex-shrink-0 p-2 rounded-lg border border-border min-w-[88px] space-y-1 text-center bg-card/50 cursor-pointer active:scale-95 transition-transform"
+                          data-testid={`hour-mobile-card-${index}`}
+                        >
+                          <p className="text-xs font-bold">
+                            {format(new Date(hour.time), 'HH:mm')}
+                          </p>
+                          <img
+                            src={`https:${hour.condition.icon}`}
+                            alt={hour.condition.text}
+                            className="w-9 h-9 mx-auto"
+                          />
+                          <p className="text-xl font-bold">
+                            {Math.round(hour.temp_c)}°
+                          </p>
+                          <div className="flex items-center justify-center gap-0.5">
+                            <ArrowUp
+                              className="w-3 h-3 text-blue-400"
+                              style={{ transform: `rotate(${getWindRotation(hour.wind_dir)}deg)` }}
                             />
-                            <p className="text-xl font-bold">
-                              {Math.round(hour.temp_c)}°
-                            </p>
-                            <div className="flex items-center justify-center gap-0.5">
-                              <ArrowUp
-                                className="w-3 h-3 text-blue-400"
-                                style={{ transform: `rotate(${getWindRotation(hour.wind_dir)}deg)` }}
-                              />
-                              <span className="text-xs text-blue-400 font-semibold">
-                                {convertKphToMs(hour.wind_kph)}
-                              </span>
-                            </div>
-                            <p className="text-[10px] text-muted-foreground">
-                              ↑{convertKphToMs(hour.gust_kph || hour.wind_kph)}
-                            </p>
-                            <div className={`flex items-center justify-center gap-0.5 ${pressureInfo.color}`}>
-                              {pressureInfo.trend === 'up' && <TrendingUp className="w-2.5 h-2.5" />}
-                              {pressureInfo.trend === 'down' && <TrendingDown className="w-2.5 h-2.5" />}
-                              {pressureInfo.trend === 'stable' && <Minus className="w-2.5 h-2.5" />}
-                              <span className="text-[10px] font-semibold">{hour.pressure_mb}</span>
-                            </div>
+                            <span className="text-xs text-blue-400 font-semibold">
+                              {convertKphToMs(hour.wind_kph)}
+                            </span>
                           </div>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom" className="max-w-[200px] space-y-1 text-xs">
-                          <p className="font-bold text-sm">{hour.condition.text}</p>
-                          <p>Pocitová teplota: <span className="font-mono font-medium text-orange-400">{Math.round(hour.feelslike_c)}°C</span></p>
-                          <p>Vlhkosť: <span className="font-mono font-medium text-orange-400">{hour.humidity}%</span></p>
-                          <p>Šanca na dážď: <span className="font-mono font-medium text-orange-400">{hour.chance_of_rain}%</span></p>
-                          <p>Oblačnosť: <span className="font-mono font-medium text-orange-400">{hour.cloud}%</span></p>
-                          <p>Vietor: <span className="font-mono font-medium text-orange-400">{convertKphToMs(hour.wind_kph)} m/s {hour.wind_dir}</span></p>
-                          <p>Nárazy: <span className="font-mono font-medium text-orange-400">{convertKphToMs(hour.gust_kph || hour.wind_kph)} m/s</span></p>
-                          <p>Tlak: <span className="font-mono font-medium text-orange-400">{hour.pressure_mb} mb</span> ({pressureInfo.trend === 'up' ? 'stúpa' : pressureInfo.trend === 'down' ? 'klesá' : 'stabilný'})</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                          <p className="text-[10px] text-muted-foreground">
+                            ↑{convertKphToMs(hour.gust_kph || hour.wind_kph)}
+                          </p>
+                          <div className={`flex items-center justify-center gap-0.5 ${pressureInfo.color}`}>
+                            {pressureInfo.trend === 'up' && <TrendingUp className="w-2.5 h-2.5" />}
+                            {pressureInfo.trend === 'down' && <TrendingDown className="w-2.5 h-2.5" />}
+                            {pressureInfo.trend === 'stable' && <Minus className="w-2.5 h-2.5" />}
+                            <span className="text-[10px] font-semibold">{hour.pressure_mb}</span>
+                          </div>
+                        </div>
+                      </PopoverTrigger>
+                      <PopoverContent side="bottom" align="center" className="w-[220px] p-3 space-y-1 text-xs">
+                        <p className="font-bold text-sm">{hour.condition.text}</p>
+                        <p>Pocitová teplota: <span className="font-mono font-medium text-orange-400">{Math.round(hour.feelslike_c)}°C</span></p>
+                        <p>Vlhkosť: <span className="font-mono font-medium text-orange-400">{hour.humidity}%</span></p>
+                        <p>Šanca na dážď: <span className="font-mono font-medium text-orange-400">{hour.chance_of_rain}%</span></p>
+                        <p>Oblačnosť: <span className="font-mono font-medium text-orange-400">{hour.cloud}%</span></p>
+                        <p>Vietor: <span className="font-mono font-medium text-orange-400">{convertKphToMs(hour.wind_kph)} m/s {hour.wind_dir}</span></p>
+                        <p>Nárazy: <span className="font-mono font-medium text-orange-400">{convertKphToMs(hour.gust_kph || hour.wind_kph)} m/s</span></p>
+                        <p>Tlak: <span className="font-mono font-medium text-orange-400">{hour.pressure_mb} mb</span> ({pressureInfo.trend === 'up' ? 'stúpa' : pressureInfo.trend === 'down' ? 'klesá' : 'stabilný'})</p>
+                      </PopoverContent>
+                    </Popover>
                   );
                 })}
               </div>
