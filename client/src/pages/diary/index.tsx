@@ -535,7 +535,7 @@ export default function DiaryIndex() {
                   {(() => {
                     const onboardingCompleted = user?.preferences?.onboardingCompleted;
                     const hasCatches = diaryStats.totalCatches > 0;
-                    const displayName = user?.firstName || user?.lastName || '';
+                    const displayName = user?.nickname || user?.firstName || user?.lastName || '';
                     
                     if (!onboardingCompleted) {
                       return "Vitaj";
