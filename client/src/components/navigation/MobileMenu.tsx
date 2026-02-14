@@ -104,7 +104,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent side="left" className="w-[85vw] max-w-sm p-0 flex flex-col bg-slate-50 dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800">
-        <SheetHeader className="p-6 pb-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 flex flex-row items-center justify-between shrink-0">
+        <SheetHeader className="p-4 pb-3 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 flex flex-row items-center justify-between shrink-0">
           <div className="flex flex-col gap-1">
             <SheetTitle className="sr-only">Menu</SheetTitle>
             <img 
@@ -123,8 +123,8 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
 
         <div className="overflow-y-auto flex-1 bg-slate-50/50 dark:bg-slate-950">
           {hasMultipleRoles && (
-            <div className="p-4">
-              <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3 pl-1">
+            <div className="p-4 pb-2">
+              <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 pl-1">
                 Režim aplikácie
               </p>
               <div className="grid grid-cols-1 gap-2">
@@ -212,7 +212,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
             </div>
           )}
 
-          <div className="p-4 pt-0 space-y-6">
+          <div className="p-4 pt-0 space-y-4">
             {/* Main Section - Denník (blue) */}
             <div>
               <div className="space-y-1">
@@ -222,19 +222,19 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                     <button
                       onClick={() => handleNavigation(mainItem.href)}
                       className={cn(
-                        "group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200",
+                        "group w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200",
                         isActive 
                           ? "bg-white dark:bg-slate-900 shadow-sm border border-blue-200 dark:border-blue-800/50" 
                           : "hover:bg-white/60 dark:hover:bg-slate-900/60 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 border border-transparent"
                       )}
                     >
                       <div className={cn(
-                        "h-9 w-9 rounded-lg flex items-center justify-center transition-colors",
+                        "h-8 w-8 rounded-lg flex items-center justify-center transition-colors",
                         isActive 
                           ? "bg-blue-600 text-white shadow-md shadow-blue-500/20" 
                           : "bg-slate-100 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 group-hover:text-blue-500 dark:group-hover:text-blue-400 group-hover:bg-blue-500/10 dark:group-hover:bg-blue-900/20"
                       )}>
-                        <mainItem.icon className="h-5 w-5" />
+                        <mainItem.icon className="h-4 w-4" />
                       </div>
                       <span className={cn(
                         "text-sm font-medium",
@@ -261,19 +261,19 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                       key={item.href}
                       onClick={() => handleNavigation(item.href)}
                       className={cn(
-                        "group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200",
+                        "group w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200",
                         isActive 
                           ? "bg-white dark:bg-slate-900 shadow-sm border border-cyan-200 dark:border-cyan-800/50" 
                           : "hover:bg-white/60 dark:hover:bg-slate-900/60 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 border border-transparent"
                       )}
                     >
                       <div className={cn(
-                        "h-9 w-9 rounded-lg flex items-center justify-center transition-colors",
+                        "h-8 w-8 rounded-lg flex items-center justify-center transition-colors",
                         isActive 
                           ? "bg-cyan-600 text-white shadow-md shadow-cyan-500/20" 
                           : "bg-slate-100 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 group-hover:text-cyan-500 dark:group-hover:text-cyan-400 group-hover:bg-cyan-500/10 dark:group-hover:bg-cyan-900/20"
                       )}>
-                        <item.icon className="h-5 w-5" />
+                        <item.icon className="h-4 w-4" />
                       </div>
                       <span className={cn(
                         "text-sm font-medium",
@@ -300,19 +300,19 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                       key={item.href}
                       onClick={() => handleNavigation(item.href)}
                       className={cn(
-                        "group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200",
+                        "group w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200",
                         isActive 
                           ? "bg-white dark:bg-slate-900 shadow-sm border border-amber-200 dark:border-amber-800/50" 
                           : "hover:bg-white/60 dark:hover:bg-slate-900/60 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 border border-transparent"
                       )}
                     >
                       <div className={cn(
-                        "h-9 w-9 rounded-lg flex items-center justify-center transition-colors",
+                        "h-8 w-8 rounded-lg flex items-center justify-center transition-colors",
                         isActive 
                           ? "bg-amber-600 text-white shadow-md shadow-amber-500/20" 
                           : "bg-slate-100 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 group-hover:text-amber-500 dark:group-hover:text-amber-400 group-hover:bg-amber-500/10 dark:group-hover:bg-amber-900/20"
                       )}>
-                        <item.icon className="h-5 w-5" />
+                        <item.icon className="h-4 w-4" />
                       </div>
                       <span className={cn(
                         "text-sm font-medium",
@@ -346,7 +346,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                       key={item.href}
                       onClick={() => handleNavigation(item.href)}
                       className={cn(
-                        "group flex flex-col items-center justify-center gap-2 p-3 rounded-xl transition-all duration-200 border",
+                        "group flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-xl transition-all duration-200 border",
                         isActive 
                           ? "bg-white dark:bg-slate-900 shadow-sm border-orange-200 dark:border-orange-800/50" 
                           : "bg-white/40 dark:bg-slate-900/40 border-transparent dark:border-slate-800/30 hover:bg-white dark:hover:bg-slate-900 hover:shadow-sm"
@@ -374,13 +374,13 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
           </div>
         </div>
 
-        <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shrink-0">
+        <div className="p-3 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shrink-0">
           <button
             onClick={() => handleNavigation('/categories/live')}
             className="relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 p-[1px] shadow-lg shadow-emerald-500/20 group transition-all hover:shadow-emerald-500/30 hover:scale-[1.01]"
           >
-            <div className="relative flex items-center gap-3 bg-white dark:bg-slate-950/90 rounded-[11px] p-3 transition-colors group-hover:bg-opacity-90">
-              <div className="h-10 w-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400 animate-pulse">
+            <div className="relative flex items-center gap-3 bg-white dark:bg-slate-950/90 rounded-[11px] p-2.5 transition-colors group-hover:bg-opacity-90">
+              <div className="h-9 w-9 rounded-lg bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400 animate-pulse">
                 <Trophy className="h-5 w-5" />
               </div>
               <div className="flex-1 text-left">
