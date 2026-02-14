@@ -181,7 +181,6 @@ export default function DiaryCatches() {
   const [isSyncing, setIsSyncing] = useState(false);
 
   // Filters state
-  const [selectedTechnique, setSelectedTechnique] = useState<string>("all");
   const [selectedFishType, setSelectedFishType] = useState<string>("all");
   const [selectedSpot, setSelectedSpot] = useState<string>("all");
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
@@ -406,11 +405,6 @@ export default function DiaryCatches() {
         return false;
       }
       
-      // Filter by technique
-      if (selectedTechnique !== "all" && catch_.bait !== selectedTechnique) {
-        return false;
-      }
-      
       // Filter by fish type
       if (selectedFishType !== "all" && catch_.fishType !== selectedFishType) {
         return false;
@@ -501,8 +495,7 @@ export default function DiaryCatches() {
       }
     });
 
-  // Get unique techniques and spots for filter dropdowns
-  const uniqueTechniques = Array.from(new Set(seasonFilteredCatches.map((c: any) => c.bait).filter(Boolean)));
+  // Get unique spots for filter dropdowns
   const uniqueSpots = Array.from(new Set(seasonFilteredCatches.map((c: any) => c.spot).filter(Boolean)));
   
   // Get unique seasons (years) from all catches where user has data (including historical)
@@ -519,7 +512,6 @@ export default function DiaryCatches() {
   
   // Count active filters for mobile badge
   const activeFilterCount = [
-    selectedTechnique !== "all",
     selectedFishType !== "all", 
     selectedSpot !== "all",
     dateRange?.from,
@@ -527,7 +519,7 @@ export default function DiaryCatches() {
   ].filter(Boolean).length;
 
   // Check if any filters are active (for reset button visibility)
-  const hasActiveFilters = selectedTechnique !== "all" || selectedFishType !== "all" || 
+  const hasActiveFilters = selectedFishType !== "all" || 
     selectedSpot !== "all" || dateRange?.from || searchQuery || minWeight || maxWeight;
 
   // Timeline grouping by month for Gallery view
@@ -889,20 +881,6 @@ export default function DiaryCatches() {
 
             {/* Desktop Filter Controls - Hidden on mobile */}
             <div className="hidden md:flex flex-wrap gap-3">
-              <Select value={selectedTechnique} onValueChange={setSelectedTechnique}>
-                <SelectTrigger className="w-full sm:w-[180px] bg-muted dark:bg-slate-700/50 border text-foreground dark:text-white" data-testid="filter-technique">
-                  <SelectValue placeholder="Všetky Techniky" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Všetky Techniky</SelectItem>
-                  {uniqueTechniques.map((technique: string) => (
-                    <SelectItem key={technique} value={technique}>
-                      {technique}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
               <Select value={selectedFishType} onValueChange={setSelectedFishType}>
                 <SelectTrigger className="w-full sm:w-[180px] bg-muted dark:bg-slate-700/50 border text-foreground dark:text-white" data-testid="filter-fish-type">
                   <SelectValue placeholder="Všetky Druhy" />
@@ -1008,15 +986,6 @@ export default function DiaryCatches() {
                   />
                 </Badge>
               )}
-              {selectedTechnique !== "all" && (
-                <Badge variant="secondary" className="gap-1" data-testid="badge-technique-active">
-                  {selectedTechnique}
-                  <X 
-                    className="w-3 h-3 cursor-pointer hover:text-destructive" 
-                    onClick={() => setSelectedTechnique("all")}
-                  />
-                </Badge>
-              )}
               {selectedFishType !== "all" && (
                 <Badge variant="secondary" className="gap-1" data-testid="badge-fish-type-active">
                   {getFishTypeLabel(selectedFishType)}
@@ -1064,12 +1033,11 @@ export default function DiaryCatches() {
               )}
 
               {/* Clear all filters button */}
-              {(selectedTechnique !== "all" || selectedFishType !== "all" || selectedSpot !== "all" || dateRange?.from || searchQuery || minWeight || maxWeight) && (
+              {(selectedFishType !== "all" || selectedSpot !== "all" || dateRange?.from || searchQuery || minWeight || maxWeight) && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => {
-                    setSelectedTechnique("all");
                     setSelectedFishType("all");
                     setSelectedSpot("all");
                     setDateRange(undefined);
@@ -1146,23 +1114,6 @@ export default function DiaryCatches() {
                   </div>
                 </div>
 
-                <div>
-                  <label className="text-sm text-muted-foreground dark:text-slate-400 mb-2 block">Technika</label>
-                  <Select value={selectedTechnique} onValueChange={setSelectedTechnique}>
-                    <SelectTrigger className="w-full bg-muted dark:bg-slate-700/50 border text-foreground dark:text-white">
-                      <SelectValue placeholder="Všetky Techniky" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Všetky Techniky</SelectItem>
-                      {uniqueTechniques.map((technique: string) => (
-                        <SelectItem key={technique} value={technique}>
-                          {technique}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
                 <div>
                   <label className="text-sm text-muted-foreground dark:text-slate-400 mb-2 block">Druh ryby</label>
                   <Select value={selectedFishType} onValueChange={setSelectedFishType}>
@@ -1244,7 +1195,6 @@ export default function DiaryCatches() {
                       setSearchQuery("");
                       setSelectedSeason("2025");
                       setSortBy("newest");
-                      setSelectedTechnique("all");
                       setSelectedFishType("all");
                       setSelectedSpot("all");
                       setMinWeight("");
@@ -1471,7 +1421,6 @@ export default function DiaryCatches() {
               ) : hasActiveFilters && (
                 <Button
                   onClick={() => {
-                    setSelectedTechnique("all");
                     setSelectedFishType("all");
                     setSelectedSpot("all");
                     setDateRange(undefined);
