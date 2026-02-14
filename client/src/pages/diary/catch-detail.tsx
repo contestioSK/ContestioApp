@@ -4,6 +4,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
 import { useState, useEffect } from "react";
+import { PhotoLightbox } from "@/components/diary/PhotoLightbox";
 import { 
   ChevronLeft, ChevronDown, ChevronUp, X, 
   MapPin, Calendar, Thermometer, Wind, Droplets, Gauge,
@@ -69,7 +70,7 @@ export default function CatchDetail() {
   const [activeImage, setActiveImage] = useState(0);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [storyExpanded, setStoryExpanded] = useState(false);
-  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [lightboxState, setLightboxState] = useState<{ photos: string[], currentIndex: number } | null>(null);
   const [copied, setCopied] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   
@@ -145,17 +146,6 @@ export default function CatchDetail() {
     }
   };
 
-  // Keyboard navigation for Lightbox
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isLightboxOpen) return;
-      if (e.key === "Escape") setIsLightboxOpen(false);
-      if (e.key === "ArrowRight") nextImage();
-      if (e.key === "ArrowLeft") prevImage();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isLightboxOpen, photoUrls.length]);
 
   // Build share text based on privacy settings
   const buildShareText = (overrides: typeof shareOverrides, catchData: DiaryCatch) => {
@@ -211,7 +201,7 @@ export default function CatchDetail() {
       {/* --- HERO SECTION --- */}
       <div
         className="relative h-[500px] md:h-[650px] bg-slate-900 group cursor-zoom-in"
-        onClick={() => photoUrls.length > 0 && setIsLightboxOpen(true)}
+        onClick={() => photoUrls.length > 0 && setLightboxState({ photos: photoUrls, currentIndex: activeImage })}
       >
         {/* Back Button - Glassmorphism */}
         <div className="fixed top-6 left-4 z-50" onClick={(e) => e.stopPropagation()}>
@@ -599,56 +589,16 @@ export default function CatchDetail() {
         </div>
       </div>
 
-      {/* --- LIGHTBOX OVERLAY --- */}
-      {isLightboxOpen && photoUrls.length > 0 && (
-        <div 
-          className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center cursor-default"
-          onClick={() => setIsLightboxOpen(false)}
-        >
-          {/* Close button */}
-          <button 
-            onClick={() => setIsLightboxOpen(false)} 
-            className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-md z-50 transition-colors"
-          >
-            <X size={24} strokeWidth={2} />
-          </button>
-
-          {/* Navigation arrows */}
-          {photoUrls.length > 1 && (
-            <>
-              <button
-                onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                className="absolute left-4 top-1/2 -translate-y-1/2 p-2 text-white z-50 transition-opacity hover:opacity-80 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
-              >
-                <ChevronLeft size={32} strokeWidth={2.5} />
-              </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-white z-50 transition-opacity hover:opacity-80 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
-              >
-                <ChevronLeft size={32} strokeWidth={2.5} className="rotate-180" />
-              </button>
-            </>
-          )}
-
-          {/* Image counter */}
-          {photoUrls.length > 1 && (
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 bg-white/10 backdrop-blur-md rounded-full text-white text-sm font-medium">
-              {activeImage + 1} / {photoUrls.length}
-            </div>
-          )}
-
-          {/* Main image */}
-          <div className="w-full h-full flex items-center justify-center p-4 md:p-10">
-            <img
-              key={activeImage}
-              src={photoUrls[activeImage]}
-              alt={`${getFishTypeLabel(catch_.fishType)} - foto ${activeImage + 1}`}
-              className="max-h-full max-w-full object-contain shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
-            />
-          </div>
-        </div>
+      {lightboxState && (
+        <PhotoLightbox
+          photos={lightboxState.photos}
+          currentIndex={lightboxState.currentIndex}
+          onClose={() => setLightboxState(null)}
+          onNavigate={(newIndex) => {
+            setLightboxState(prev => prev ? { ...prev, currentIndex: newIndex } : null);
+            setActiveImage(newIndex);
+          }}
+        />
       )}
 
       {/* --- SHARE PRIVACY DIALOG --- */}

@@ -4,6 +4,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { format, isPast, isToday } from "date-fns";
 import { sk } from "date-fns/locale";
 import { ArrowLeft, MapPin, Calendar as CalendarIcon, Fish, Weight, Trophy, FileText, Medal, Ruler, Target, Cloud, Thermometer, Wind, Gauge, XCircle, Download, Grid3x3, MoreHorizontal, Share2, ChevronRight, X, ZoomIn } from "lucide-react";
+import { PhotoLightbox } from "@/components/diary/PhotoLightbox";
 import { TacticalIconInline } from "@/components/ui/tactical-icon";
 import html2canvas from "html2canvas";
 import contestioLogo from "@assets/contestio logo_1760283270014.png";
@@ -61,7 +62,7 @@ export default function TripDetail() {
   const [showAllCatches, setShowAllCatches] = useState(false);
   const [showEndTripDialog, setShowEndTripDialog] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-  const [lightboxPhoto, setLightboxPhoto] = useState<string | null>(null);
+  const [lightboxState, setLightboxState] = useState<{ photos: string[], currentIndex: number } | null>(null);
   const exportCardRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -667,20 +668,16 @@ export default function TripDetail() {
                   <div 
                     className="rounded-lg overflow-hidden bg-muted relative group cursor-pointer"
                     onClick={() => {
-                      const photoUrl = typeof selectedCatch.photos![0] === 'string' 
-                        ? selectedCatch.photos![0] 
-                        : selectedCatch.photos![0].url;
-                      setLightboxPhoto(photoUrl);
+                      const photos = selectedCatch.photos!.map((p: any) => typeof p === 'string' ? p : p.url).filter(Boolean);
+                      if (photos.length > 0) setLightboxState({ photos, currentIndex: 0 });
                     }}
                     role="button"
                     tabIndex={0}
                     aria-label="Zobraziť fotografiu na celú obrazovku"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
-                        const photoUrl = typeof selectedCatch.photos![0] === 'string' 
-                          ? selectedCatch.photos![0] 
-                          : selectedCatch.photos![0].url;
-                        setLightboxPhoto(photoUrl);
+                        const photos = selectedCatch.photos!.map((p: any) => typeof p === 'string' ? p : p.url).filter(Boolean);
+                        if (photos.length > 0) setLightboxState({ photos, currentIndex: 0 });
                       }
                     }}
                     data-testid="button-photo-zoom"
@@ -963,39 +960,13 @@ export default function TripDetail() {
         </div>
       </div>
 
-      {/* Fullscreen Photo Lightbox */}
-      {lightboxPhoto && (
-        <div 
-          className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-200"
-          onClick={() => setLightboxPhoto(null)}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Zobrazenie fotografie na celú obrazovku"
-          data-testid="lightbox-overlay"
-        >
-          {/* Close button */}
-          <button
-            onClick={() => setLightboxPhoto(null)}
-            className="absolute top-4 right-4 z-10 h-14 w-14 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-            aria-label="Zavrieť"
-            data-testid="button-close-lightbox"
-          >
-            <X className="w-7 h-7 text-white" />
-          </button>
-
-          {/* Photo */}
-          <img
-            src={lightboxPhoto}
-            alt="Fotka úlovku v plnej veľkosti"
-            className="max-w-[95vw] max-h-[90vh] object-contain rounded-lg shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          />
-
-          {/* Hint at bottom */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/60 text-sm">
-            Kliknite kdekoľvek pre zatvorenie
-          </div>
-        </div>
+      {lightboxState && (
+        <PhotoLightbox
+          photos={lightboxState.photos}
+          currentIndex={lightboxState.currentIndex}
+          onClose={() => setLightboxState(null)}
+          onNavigate={(newIndex) => setLightboxState(prev => prev ? { ...prev, currentIndex: newIndex } : null)}
+        />
       )}
     </DiaryLayout>
   );
