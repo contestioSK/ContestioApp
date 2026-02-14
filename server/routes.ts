@@ -1160,50 +1160,61 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       let imageMetadata: ProcessedImageResult | null = null;
 
       try {
-        // Create user directory if it doesn't exist
         const userDir = path.join("uploads", "users", userId);
         if (!fs.existsSync(userDir)) {
           fs.mkdirSync(userDir, { recursive: true });
         }
 
-        const outputBasePath = path.join(userDir, `profile-${Date.now()}`);
+        const timestamp = Date.now();
+        const ext = path.extname(req.file.originalname).toLowerCase() || '.jpg';
+        const outputBasePath = path.join(userDir, `profile-${timestamp}`);
         
         imageMetadata = await ImageService.processImage(
           req.file.path,
           outputBasePath,
-          `profile-${Date.now()}`,
+          `profile-${timestamp}`,
           undefined, undefined, undefined,
           `user_avatars/${userId}`
         );
         
-        // Use the best WebP variant for profile images, fall back to JPEG
         const bestVariant = ImageService.getBestVariantForWidth(imageMetadata.variants, 320, 'webp') ||
                             ImageService.getBestVariantForWidth(imageMetadata.variants, 320, 'jpeg') ||
                             imageMetadata.variants[0];
         
-        imageUrl = bestVariant?.url || `/uploads/${req.file.filename}`;
+        if (bestVariant?.url) {
+          imageUrl = bestVariant.url;
+          await ImageService.cleanupTempFile(req.file.path);
+        } else {
+          const localFilename = `profile-${timestamp}${ext}`;
+          const localPath = path.join(userDir, localFilename);
+          fs.copyFileSync(req.file.path, localPath);
+          imageUrl = `/uploads/users/${userId}/${localFilename}`;
+          await ImageService.cleanupTempFile(req.file.path);
+          console.log(`[AVATAR] Firebase unavailable, saved locally: ${imageUrl}`);
+        }
         
-        // Update user profile with new image URL
         const updatedUser = await storage.updateUserProfile(userId, {
           profileImageUrl: imageUrl
         });
         
-        // Clean up the original uploaded file
-        await ImageService.cleanupTempFile(req.file.path);
-        
-        // Remove sensitive data
         const { password: _, verificationToken: __, verificationTokenExpires: ___, ...safeUser } = updatedUser;
         res.json(safeUser);
       } catch (error) {
         console.error("Error processing profile image:", error);
-        // Clean up temp file on error
-        if (req.file?.path) {
-          await ImageService.cleanupTempFile(req.file.path);
+        const ext = path.extname(req.file.originalname).toLowerCase() || '.jpg';
+        const localFilename = `profile-fallback-${Date.now()}${ext}`;
+        const userDir = path.join("uploads", "users", userId);
+        if (!fs.existsSync(userDir)) {
+          fs.mkdirSync(userDir, { recursive: true });
         }
-        // Fall back to original file if processing fails
-        imageUrl = `/uploads/${req.file.filename}`;
+        try {
+          fs.copyFileSync(req.file.path, path.join(userDir, localFilename));
+          imageUrl = `/uploads/users/${userId}/${localFilename}`;
+        } catch {
+          imageUrl = `/uploads/${req.file.filename}`;
+        }
+        await ImageService.cleanupTempFile(req.file.path);
         
-        // Still try to update the user profile
         const updatedUser = await storage.updateUserProfile(userId, {
           profileImageUrl: imageUrl
         });
