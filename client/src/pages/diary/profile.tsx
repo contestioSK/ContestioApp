@@ -573,7 +573,9 @@ export default function Profile() {
                 </div>
                 <CardTitle className="text-xl">
                   {user.firstName && user.lastName 
-                    ? `${user.firstName} ${user.lastName}`
+                    ? user.nickname
+                      ? <>{user.firstName} <span className="text-orange-500 font-mono">&ldquo;{user.nickname}&rdquo;</span> {user.lastName}</>
+                      : `${user.firstName} ${user.lastName}`
                     : user.email
                   }
                 </CardTitle>
