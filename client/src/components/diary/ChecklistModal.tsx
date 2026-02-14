@@ -15,7 +15,6 @@ import {
   Plus, 
   RotateCcw, 
   Save, 
-  Trash2, 
   FileText,
   Briefcase,
   Tent,
@@ -344,7 +343,7 @@ export function ChecklistModal({ isOpen, onClose }: ChecklistModalProps) {
     });
   };
 
-  const removeCustomItem = (categoryId: string, itemId: string) => {
+  const removeItem = (categoryId: string, itemId: string) => {
     setCategories(prev => prev.map(cat => {
       if (cat.id === categoryId) {
         return {
@@ -585,20 +584,18 @@ export function ChecklistModal({ isOpen, onClose }: ChecklistModalProps) {
                         )}>
                           {item.name}
                         </span>
-                        {item.isCustom && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              removeCustomItem(category.id, item.id);
-                            }}
-                            data-testid={`delete-${item.id}`}
-                          >
-                            <Trash2 className="h-4 w-4" strokeWidth={1.75} />
-                          </Button>
-                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive shrink-0"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeItem(category.id, item.id);
+                          }}
+                          data-testid={`delete-${item.id}`}
+                        >
+                          <X className="h-4 w-4" strokeWidth={1.75} />
+                        </Button>
                       </div>
                     ))}
                   </div>
