@@ -829,9 +829,11 @@ export default function WeatherForecast() {
                         }}
                       />
                       <Legend 
-                        formatter={(value: string) => (
-                          <span style={{ color: value === 'Teplota (°C)' ? '#f59e0b' : '#22d3ee' }}>{value}</span>
-                        )}
+                        payload={[
+                          { value: 'Teplota (°C)', type: 'line', color: '#f59e0b' },
+                          { value: 'Zrážky (mm)', type: 'square', color: '#22d3ee' },
+                        ]}
+                        wrapperStyle={{ color: '#94a3b8' }}
                       />
                       <Line 
                         yAxisId="left"
@@ -861,6 +863,7 @@ export default function WeatherForecast() {
                       <Bar 
                         yAxisId="right"
                         dataKey="zrážky" 
+                        fill="#22d3ee"
                         name="Zrážky (mm)"
                       >
                         {chartData.map((entry, index) => (
@@ -1075,9 +1078,11 @@ export default function WeatherForecast() {
                     }}
                   />
                   <Legend 
-                    formatter={(value: string) => (
-                      <span style={{ color: value === 'Teplota (°C)' ? '#f59e0b' : '#22d3ee', fontSize: '11px' }}>{value}</span>
-                    )}
+                    payload={[
+                      { value: 'Teplota (°C)', type: 'line', color: '#f59e0b' },
+                      { value: 'Zrážky (mm)', type: 'square', color: '#22d3ee' },
+                    ]}
+                    wrapperStyle={{ color: '#94a3b8', fontSize: '11px' }}
                   />
                   <Line 
                     yAxisId="left"
@@ -1107,10 +1112,11 @@ export default function WeatherForecast() {
                   <Bar 
                     yAxisId="right"
                     dataKey="zrážky" 
+                    fill="#22d3ee"
                     name="Zrážky (mm)"
                   >
                     {chartData.map((entry, index) => (
-                      <Cell key={index} fill="#3b82f6" opacity={entry.isPast ? 0.15 : 0.5} />
+                      <Cell key={index} fill="#22d3ee" opacity={entry.isPast ? 0.15 : 0.5} />
                     ))}
                   </Bar>
                 </ComposedChart>
