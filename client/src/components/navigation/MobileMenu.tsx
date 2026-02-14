@@ -127,12 +127,12 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
               <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 pl-1">
                 Režim aplikácie
               </p>
-              <div className="grid grid-cols-1 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 {availableRoles.includes('user') && (
                   <button
                     onClick={() => handleModeChange('user')}
                     className={cn(
-                      "w-full flex items-center gap-3 p-3 rounded-xl transition-all border",
+                      "w-full flex flex-col items-center gap-1.5 p-2.5 rounded-xl transition-all border",
                       activeMode === 'user' 
                         ? "bg-white dark:bg-slate-900 border-blue-200 dark:border-blue-800/60 shadow-sm ring-1 ring-blue-500/20" 
                         : "bg-white/50 dark:bg-slate-900/40 border-transparent dark:border-slate-800/50 hover:bg-white dark:hover:bg-slate-900 hover:shadow-sm"
@@ -144,14 +144,11 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                     )}>
                       <BookOpen className="h-4 w-4" />
                     </div>
-                    <div className="flex-1 text-left">
-                      <span className={cn(
-                        "text-sm font-bold block", 
-                        activeMode === 'user' ? "text-slate-900 dark:text-slate-100" : "text-slate-500 dark:text-slate-400"
-                      )}>Rybár</span>
-                      {activeMode === 'user' && <span className="text-[10px] text-blue-600 dark:text-blue-400 font-medium">Aktívny</span>}
-                    </div>
-                    {activeMode === 'user' && <div className="h-2 w-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />}
+                    <span className={cn(
+                      "text-xs font-bold", 
+                      activeMode === 'user' ? "text-slate-900 dark:text-slate-100" : "text-slate-500 dark:text-slate-400"
+                    )}>Rybár</span>
+                    {activeMode === 'user' && <div className="h-1.5 w-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />}
                   </button>
                 )}
 
@@ -159,7 +156,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                   <button
                     onClick={() => handleModeChange('referee', refereeCompetitions[0]?.id)}
                     className={cn(
-                      "w-full flex items-center gap-3 p-3 rounded-xl transition-all border",
+                      "w-full flex flex-col items-center gap-1.5 p-2.5 rounded-xl transition-all border",
                       activeMode === 'referee'
                         ? "bg-white dark:bg-slate-900 border-orange-200 dark:border-orange-800/60 shadow-sm ring-1 ring-orange-500/20" 
                         : "bg-white/50 dark:bg-slate-900/40 border-transparent dark:border-slate-800/50 hover:bg-white dark:hover:bg-slate-900 hover:shadow-sm"
@@ -171,14 +168,11 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                     )}>
                       <Shield className="h-4 w-4" />
                     </div>
-                    <div className="flex-1 text-left">
-                      <span className={cn(
-                        "text-sm font-bold block", 
-                        activeMode === 'referee' ? "text-slate-900 dark:text-slate-100" : "text-slate-500 dark:text-slate-400"
-                      )}>Rozhodca</span>
-                      {activeMode === 'referee' && <span className="text-[10px] text-orange-600 dark:text-orange-400 font-medium">Aktívny</span>}
-                    </div>
-                    {activeMode === 'referee' && <div className="h-2 w-2 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.5)]" />}
+                    <span className={cn(
+                      "text-xs font-bold", 
+                      activeMode === 'referee' ? "text-slate-900 dark:text-slate-100" : "text-slate-500 dark:text-slate-400"
+                    )}>Rozhodca</span>
+                    {activeMode === 'referee' && <div className="h-1.5 w-1.5 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.5)]" />}
                   </button>
                 )}
 
@@ -186,7 +180,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                   <button
                     onClick={() => handleModeChange('organizer')}
                     className={cn(
-                      "w-full flex items-center gap-3 p-3 rounded-xl transition-all border",
+                      "w-full flex flex-col items-center gap-1.5 p-2.5 rounded-xl transition-all border",
                       activeMode === 'organizer'
                         ? "bg-white dark:bg-slate-900 border-purple-200 dark:border-purple-800/60 shadow-sm ring-1 ring-purple-500/20" 
                         : "bg-white/50 dark:bg-slate-900/40 border-transparent dark:border-slate-800/50 hover:bg-white dark:hover:bg-slate-900 hover:shadow-sm"
@@ -198,14 +192,11 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                     )}>
                       <Building2 className="h-4 w-4" />
                     </div>
-                    <div className="flex-1 text-left">
-                      <span className={cn(
-                        "text-sm font-bold block", 
-                        activeMode === 'organizer' ? "text-slate-900 dark:text-slate-100" : "text-slate-500 dark:text-slate-400"
-                      )}>Organizátor</span>
-                      {activeMode === 'organizer' && <span className="text-[10px] text-purple-600 dark:text-purple-400 font-medium">Aktívny</span>}
-                    </div>
-                    {activeMode === 'organizer' && <div className="h-2 w-2 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.5)]" />}
+                    <span className={cn(
+                      "text-xs font-bold", 
+                      activeMode === 'organizer' ? "text-slate-900 dark:text-slate-100" : "text-slate-500 dark:text-slate-400"
+                    )}>Organizátor</span>
+                    {activeMode === 'organizer' && <div className="h-1.5 w-1.5 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.5)]" />}
                   </button>
                 )}
               </div>
