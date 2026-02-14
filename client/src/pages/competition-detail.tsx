@@ -1057,29 +1057,29 @@ export default function CompetitionDetail() {
       {!isRegistration && (
         <div className="max-w-7xl mx-auto px-4 md:px-6 -mt-4 md:-mt-6 relative z-20">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
-            <div className="bg-card border border-border rounded-xl p-3 md:p-5 flex flex-col items-center text-center hover:border-cyan-500/30 transition-all group">
-              <div className="p-2 md:p-3 bg-cyan-500/10 rounded-xl text-cyan-500 mb-2 md:mb-3 group-hover:scale-110 transition-transform"><Fish size={18} className="md:hidden" /><Fish size={22} className="hidden md:block" /></div>
-              <div className="text-xl md:text-3xl font-mono font-medium text-[#F97316]">{liveStats.totalFish} <span className="text-xs md:text-sm font-normal text-muted-foreground">ks</span></div>
-              <div className="text-[9px] md:text-[10px] text-muted-foreground uppercase font-bold tracking-wider mt-1">Úlovky spolu</div>
+            <div className="bg-card border border-border rounded-xl p-2 md:p-5 flex flex-col items-center text-center hover:border-cyan-500/30 transition-all group">
+              <div className="p-1.5 md:p-3 bg-cyan-500/10 rounded-lg md:rounded-xl text-cyan-500 mb-1 md:mb-3 group-hover:scale-110 transition-transform"><Fish size={16} className="md:hidden" /><Fish size={22} className="hidden md:block" /></div>
+              <div className="text-lg md:text-3xl font-mono font-medium text-[#F97316]">{liveStats.totalFish} <span className="text-[10px] md:text-sm font-normal text-muted-foreground">ks</span></div>
+              <div className="text-[8px] md:text-[10px] text-muted-foreground uppercase font-bold tracking-wider mt-0.5 md:mt-1">Úlovky spolu</div>
             </div>
-            <div className="bg-card border border-border rounded-xl p-3 md:p-5 flex flex-col items-center text-center hover:border-emerald-500/30 transition-all group">
-              <div className="p-2 md:p-3 bg-emerald-500/10 rounded-xl text-emerald-500 mb-2 md:mb-3 group-hover:scale-110 transition-transform"><Activity size={18} className="md:hidden" /><Activity size={22} className="hidden md:block" /></div>
-              <div className="text-xl md:text-3xl font-mono font-medium text-[#F97316]">{liveStats.totalWeight.toFixed(1)} <span className="text-xs md:text-sm font-normal text-muted-foreground">kg</span></div>
-              <div className="text-[9px] md:text-[10px] text-muted-foreground uppercase font-bold tracking-wider mt-1">Celková váha</div>
+            <div className="bg-card border border-border rounded-xl p-2 md:p-5 flex flex-col items-center text-center hover:border-emerald-500/30 transition-all group">
+              <div className="p-1.5 md:p-3 bg-emerald-500/10 rounded-lg md:rounded-xl text-emerald-500 mb-1 md:mb-3 group-hover:scale-110 transition-transform"><Activity size={16} className="md:hidden" /><Activity size={22} className="hidden md:block" /></div>
+              <div className="text-lg md:text-3xl font-mono font-medium text-[#F97316]">{liveStats.totalWeight.toFixed(1)} <span className="text-[10px] md:text-sm font-normal text-muted-foreground">kg</span></div>
+              <div className="text-[8px] md:text-[10px] text-muted-foreground uppercase font-bold tracking-wider mt-0.5 md:mt-1">Celková váha</div>
             </div>
             <div 
-              className={`bg-card border border-border rounded-xl p-3 md:p-5 flex flex-col items-center text-center transition-all group ${biggestCatchObj ? 'cursor-pointer hover:border-amber-500/30' : ''}`}
+              className={`bg-card border border-border rounded-xl p-2 md:p-5 flex flex-col items-center text-center transition-all group ${biggestCatchObj ? 'cursor-pointer hover:border-amber-500/30' : ''}`}
               onClick={() => biggestCatchObj && setEntityModal({ view: 'catch', team: null, catch_: biggestCatchObj, previousView: null })}
             >
-              <div className="p-2 md:p-3 bg-amber-500/10 rounded-xl text-amber-500 mb-2 md:mb-3 group-hover:scale-110 transition-transform"><Trophy size={18} className="md:hidden" /><Trophy size={22} className="hidden md:block" /></div>
-              <div className="text-xl md:text-3xl font-mono font-medium text-[#F97316]">{liveStats.biggestFish.toFixed(1)} <span className="text-xs md:text-sm font-normal text-muted-foreground">kg</span></div>
-              <div className="text-[9px] md:text-[10px] text-muted-foreground uppercase font-bold tracking-wider mt-1">Najväčšia ryba</div>
-              {biggestCatchObj && <div className="text-[8px] md:text-[9px] text-amber-500/70 mt-1">Klikni pre detail</div>}
+              <div className="p-1.5 md:p-3 bg-amber-500/10 rounded-lg md:rounded-xl text-amber-500 mb-1 md:mb-3 group-hover:scale-110 transition-transform"><Trophy size={16} className="md:hidden" /><Trophy size={22} className="hidden md:block" /></div>
+              <div className="text-lg md:text-3xl font-mono font-medium text-[#F97316]">{liveStats.biggestFish.toFixed(1)} <span className="text-[10px] md:text-sm font-normal text-muted-foreground">kg</span></div>
+              <div className="text-[8px] md:text-[10px] text-muted-foreground uppercase font-bold tracking-wider mt-0.5 md:mt-1">Najväčšia ryba</div>
+              {biggestCatchObj && <div className="text-[8px] md:text-[9px] text-amber-500/70 mt-0.5 md:mt-1">Klikni pre detail</div>}
             </div>
-            <div className="bg-card border border-border rounded-xl p-3 md:p-5 flex flex-col items-center text-center hover:border-purple-500/30 transition-all group">
-              <div className="p-2 md:p-3 bg-purple-500/10 rounded-xl text-purple-500 mb-2 md:mb-3 group-hover:scale-110 transition-transform"><TrendingUp size={18} className="md:hidden" /><TrendingUp size={22} className="hidden md:block" /></div>
-              <div className="text-xl md:text-3xl font-mono font-medium text-[#F97316]">{liveStats.avgWeight.toFixed(1)} <span className="text-xs md:text-sm font-normal text-muted-foreground">kg</span></div>
-              <div className="text-[9px] md:text-[10px] text-muted-foreground uppercase font-bold tracking-wider mt-1">Priemerná váha</div>
+            <div className="bg-card border border-border rounded-xl p-2 md:p-5 flex flex-col items-center text-center hover:border-purple-500/30 transition-all group">
+              <div className="p-1.5 md:p-3 bg-purple-500/10 rounded-lg md:rounded-xl text-purple-500 mb-1 md:mb-3 group-hover:scale-110 transition-transform"><TrendingUp size={16} className="md:hidden" /><TrendingUp size={22} className="hidden md:block" /></div>
+              <div className="text-lg md:text-3xl font-mono font-medium text-[#F97316]">{liveStats.avgWeight.toFixed(1)} <span className="text-[10px] md:text-sm font-normal text-muted-foreground">kg</span></div>
+              <div className="text-[8px] md:text-[10px] text-muted-foreground uppercase font-bold tracking-wider mt-0.5 md:mt-1">Priemerná váha</div>
             </div>
           </div>
         </div>
