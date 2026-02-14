@@ -1404,6 +1404,14 @@ export default function CompetitionDetail() {
                       Čakáme na prvý záber…
                     </div>
                   )}
+                  {liveFeed.length > 0 && (
+                    <button
+                      onClick={() => navigate(`/competition/${id}/catches`)}
+                      className="w-full mt-1 py-2 text-xs font-bold uppercase text-cyan-500 hover:text-cyan-400 hover:bg-muted/30 rounded-lg transition-colors"
+                    >
+                      Zobraziť všetky úlovky
+                    </button>
+                  )}
                 </div>
               </div>
 
