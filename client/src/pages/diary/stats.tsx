@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
@@ -6,6 +6,7 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 import { 
   Fish, 
@@ -79,8 +80,10 @@ export default function DiaryStats() {
   const isDark = theme === 'dark';
   const [, setLocation] = useLocation();
   const selectedPeriodMonths: 3 | 6 | 12 | 24 = 12;
+  const currentYear = new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = useState<number>(currentYear);
 
-  const { data: trips = [] } = useQuery<DiaryTrip[]>({
+  const { data: allTrips = [] } = useQuery<DiaryTrip[]>({
     queryKey: ["/api/diary/trips"],
     enabled: !!user
   });
@@ -89,8 +92,32 @@ export default function DiaryStats() {
     queryKey: ["/api/diary/catches", "all"],
     enabled: !!user
   });
-  
-  const catches = useMemo(() => allCatches.filter(c => !c.isHistorical), [allCatches]);
+
+  const availableYears = useMemo(() => {
+    const years = new Set<number>();
+    years.add(currentYear);
+    allCatches.forEach(c => {
+      if (c.capturedAt) {
+        years.add(new Date(c.capturedAt).getFullYear());
+      }
+    });
+    allTrips.forEach(t => {
+      if (t.startDate) {
+        years.add(new Date(t.startDate).getFullYear());
+      }
+    });
+    return Array.from(years).sort((a, b) => b - a);
+  }, [allCatches, allTrips, currentYear]);
+
+  const catches = useMemo(() => allCatches.filter(c => {
+    if (!c.capturedAt) return false;
+    return new Date(c.capturedAt).getFullYear() === selectedYear;
+  }), [allCatches, selectedYear]);
+
+  const trips = useMemo(() => allTrips.filter(t => {
+    if (!t.startDate) return false;
+    return new Date(t.startDate).getFullYear() === selectedYear;
+  }), [allTrips, selectedYear]);
 
   const { data: premiumStatus } = useQuery<PremiumStatus>({
     queryKey: ["/api/auth/premium-status"],
@@ -166,13 +193,24 @@ export default function DiaryStats() {
             <div className="space-y-1">
               <div className="flex items-center gap-4">
                 <TacticalIcon icon={BarChart3} variant="orange" size="lg" showLabel={false} />
-                <h1 className="text-4xl md:text-5xl font-black italic tracking-tighter uppercase text-foreground leading-none">Sezóna v číslach</h1>
+                <h1 className="text-4xl md:text-5xl font-black italic tracking-tighter uppercase text-foreground leading-none">Sezóna {selectedYear}</h1>
               </div>
               <p className="text-sm font-medium text-muted-foreground italic tracking-tight pl-0.5">Tvoje ryby premenené na prehľad</p>
             </div>
           </div>
-          <div className="hidden md:block text-xs text-muted-foreground font-mono uppercase">
-            Posledná aktualizácia: Dnes
+          <div className="flex items-center gap-4">
+            <Select value={String(selectedYear)} onValueChange={(v) => setSelectedYear(Number(v))}>
+              <SelectTrigger className="w-[120px] bg-card dark:bg-slate-900 border-border">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {availableYears.map(year => (
+                  <SelectItem key={year} value={String(year)}>
+                    {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </header>
 
