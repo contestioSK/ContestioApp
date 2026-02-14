@@ -421,68 +421,65 @@ export function ChecklistModal({ isOpen, onClose }: ChecklistModalProps) {
 
   const allTemplates = [...DEFAULT_TEMPLATES, ...customTemplates];
 
-  // Progress Ring Component
-  const ProgressRing = () => {
-    const radius = 45;
-    const stroke = 8;
-    const normalizedRadius = radius - stroke / 2;
-    const circumference = normalizedRadius * 2 * Math.PI;
-    const strokeDashoffset = circumference - (progressPercent / 100) * circumference;
-    
-    const ringColor = progressPercent === 100 
-      ? "text-green-500" 
-      : progressPercent >= 50 
-        ? "text-yellow-500" 
-        : "text-blue-500";
+  const radius = 45;
+  const stroke = 8;
+  const normalizedRadius = radius - stroke / 2;
+  const circumference = normalizedRadius * 2 * Math.PI;
+  const strokeDashoffset = circumference - (progressPercent / 100) * circumference;
+  
+  const ringColor = progressPercent === 100 
+    ? "text-green-500" 
+    : progressPercent >= 50 
+      ? "text-yellow-500" 
+      : "text-blue-500";
 
-    return (
-      <div className="flex flex-col items-center gap-2">
-        <div className="relative">
-          <svg height={radius * 2} width={radius * 2} className="transform -rotate-90">
-            <circle
-              stroke="currentColor"
-              fill="transparent"
-              strokeWidth={stroke}
-              r={normalizedRadius}
-              cx={radius}
-              cy={radius}
-              className="text-muted"
-            />
-            <circle
-              stroke="currentColor"
-              fill="transparent"
-              strokeWidth={stroke}
-              strokeDasharray={circumference + ' ' + circumference}
-              style={{ strokeDashoffset }}
-              strokeLinecap="round"
-              r={normalizedRadius}
-              cx={radius}
-              cy={radius}
-              className={cn("transition-all duration-300", ringColor)}
-            />
-          </svg>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className={cn("text-lg font-bold", ringColor)}>{progressPercent}%</span>
-          </div>
+  const progressRing = (
+    <div className="flex flex-col items-center gap-2">
+      <div className="relative">
+        <svg height={radius * 2} width={radius * 2} className="transform -rotate-90">
+          <circle
+            stroke="currentColor"
+            fill="transparent"
+            strokeWidth={stroke}
+            r={normalizedRadius}
+            cx={radius}
+            cy={radius}
+            className="text-muted"
+          />
+          <circle
+            stroke="currentColor"
+            fill="transparent"
+            strokeWidth={stroke}
+            strokeDasharray={circumference + ' ' + circumference}
+            style={{ strokeDashoffset }}
+            strokeLinecap="round"
+            r={normalizedRadius}
+            cx={radius}
+            cy={radius}
+            className={cn("transition-all duration-300", ringColor)}
+          />
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className={cn("text-lg font-bold", ringColor)}>{progressPercent}%</span>
         </div>
-        <p className="text-sm text-muted-foreground">
-          {packedItems} / {totalItems} položiek
-        </p>
-        {progressPercent === 100 && (
-          <Badge className="bg-green-500 text-white rounded-lg">
-            <Check className="h-4 w-4 mr-1" strokeWidth={1.75} />
-            Všetko zbalené!
-          </Badge>
-        )}
       </div>
-    );
-  };
+      <p className="text-sm text-muted-foreground">
+        {packedItems} / {totalItems} položiek
+      </p>
+      {progressPercent === 100 && (
+        <Badge className="bg-green-500 text-white rounded-lg">
+          <Check className="h-4 w-4 mr-1" strokeWidth={1.75} />
+          Všetko zbalené!
+        </Badge>
+      )}
+    </div>
+  );
 
-  const Content = () => (
+  const content = (
     <div className="flex flex-col h-full max-h-[80vh] md:max-h-[85vh]">
       {/* Header with Progress */}
       <div className="flex flex-col sm:flex-row items-center gap-4 p-4 border-b border-border">
-        <ProgressRing />
+        {progressRing}
         
         <div className="flex-1 w-full sm:w-auto space-y-2">
           <div className="flex flex-wrap gap-2">
@@ -745,7 +742,7 @@ export function ChecklistModal({ isOpen, onClose }: ChecklistModalProps) {
               </Button>
             </div>
           </DrawerHeader>
-          <Content />
+          {content}
         </DrawerContent>
       </Drawer>
     );
@@ -760,7 +757,7 @@ export function ChecklistModal({ isOpen, onClose }: ChecklistModalProps) {
             Mám všetko zbalené?
           </DialogTitle>
         </DialogHeader>
-        <Content />
+        {content}
       </DialogContent>
     </Dialog>
   );
