@@ -5,6 +5,7 @@ import { useLocation } from "wouter";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 
 import { 
   Fish, 
@@ -181,54 +182,61 @@ export default function DiaryStats() {
           <div className="md:col-span-8 space-y-8">
 
             {/* Sezónny prehľad - 4 karty */}
-            <section className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div className="bg-card dark:bg-slate-900 border border-border/50 p-5 rounded-xl flex flex-col justify-between h-32 hover:border-border transition-colors">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Ulovil si</span>
-                  <Fish className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} />
-                </div>
-                <div>
-                  <span className="text-4xl font-mono font-medium text-[#F97316] tracking-tighter">{basicStats.totalCatches}</span>
-                  <span className="text-sm text-muted-foreground ml-1">{getFishDeclension(basicStats.totalCatches)}</span>
-                </div>
-              </div>
+            <section className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <Card className="bg-card dark:bg-slate-900 border border-border rounded-xl shadow-sm transition-all duration-200 hover:shadow-md hover:border-border/80">
+                <CardContent className="p-4 md:p-6">
+                  <div className="flex items-center gap-3 md:gap-4">
+                    <TacticalIcon icon={Fish} variant="cyan" size="sm" showLabel={false} />
+                    <div className="flex-1">
+                      <div className="text-xs md:text-sm text-muted-foreground mb-1">Ulovil si</div>
+                      <div className="text-xl md:text-2xl font-mono font-medium text-[#F97316]">{basicStats.totalCatches} {getFishDeclension(basicStats.totalCatches)}</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
               
-              <div 
-                className={`bg-card dark:bg-slate-900 border border-border/50 p-5 rounded-xl flex flex-col justify-between h-32 transition-colors ${
-                  personalRecords.heaviestCatch ? 'hover:border-amber-500/50 cursor-pointer' : 'hover:border-border'
+              <Card 
+                className={`bg-card dark:bg-slate-900 border border-border rounded-xl shadow-sm transition-all duration-200 hover:shadow-md hover:border-border/80 ${
+                  personalRecords.heaviestCatch ? 'cursor-pointer hover:scale-[1.02]' : ''
                 }`}
                 onClick={() => personalRecords.heaviestCatch && setLocation(`/diary/catches/${personalRecords.heaviestCatch.id}`)}
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Najväčšia ryba</span>
-                  <Trophy className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} />
-                </div>
-                <div>
-                  <span className="text-4xl font-mono font-medium text-[#F97316] tracking-tighter">
-                    {personalRecords.heaviestCatch ? parseFloat(personalRecords.heaviestCatch.weight).toFixed(1) : basicStats.biggestCatch.toFixed(1)}
-                  </span>
-                  <span className="text-sm text-muted-foreground ml-1">kg</span>
-                </div>
-              </div>
+                <CardContent className="p-4 md:p-6">
+                  <div className="flex items-center gap-3 md:gap-4">
+                    <TacticalIcon icon={Trophy} variant="amber" size="sm" showLabel={false} />
+                    <div className="flex-1">
+                      <div className="text-xs md:text-sm text-muted-foreground mb-1">Najväčšia ryba</div>
+                      <div className="text-xl md:text-2xl font-mono font-medium text-[#F97316]">
+                        {personalRecords.heaviestCatch ? parseFloat(personalRecords.heaviestCatch.weight).toFixed(1) : basicStats.biggestCatch.toFixed(1)} kg
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-              <div className="bg-card dark:bg-slate-900 border border-border/50 p-5 rounded-xl flex flex-col justify-between h-32 hover:border-border transition-colors">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Výpravy</span>
-                  <Map className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} />
-                </div>
-                <span className="text-4xl font-mono font-medium text-[#F97316] tracking-tighter">{basicStats.totalTrips}</span>
-              </div>
+              <Card className="bg-card dark:bg-slate-900 border border-border rounded-xl shadow-sm transition-all duration-200 hover:shadow-md hover:border-border/80">
+                <CardContent className="p-4 md:p-6">
+                  <div className="flex items-center gap-3 md:gap-4">
+                    <TacticalIcon icon={Map} variant="indigo" size="sm" showLabel={false} />
+                    <div className="flex-1">
+                      <div className="text-xs md:text-sm text-muted-foreground mb-1">Výpravy</div>
+                      <div className="text-xl md:text-2xl font-mono font-medium text-[#F97316]">{basicStats.totalTrips}</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-              <div className="bg-card dark:bg-slate-900 border border-border/50 p-5 rounded-xl flex flex-col justify-between h-32 hover:border-border transition-colors">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Priemer / Lov</span>
-                  <Weight className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} />
-                </div>
-                <div>
-                  <span className="text-4xl font-mono font-medium text-[#F97316] tracking-tighter">{basicStats.successRate.toFixed(1)}</span>
-                  <span className="text-sm text-muted-foreground ml-1">kg</span>
-                </div>
-              </div>
+              <Card className="bg-card dark:bg-slate-900 border border-border rounded-xl shadow-sm transition-all duration-200 hover:shadow-md hover:border-border/80">
+                <CardContent className="p-4 md:p-6">
+                  <div className="flex items-center gap-3 md:gap-4">
+                    <TacticalIcon icon={Weight} variant="purple" size="sm" showLabel={false} />
+                    <div className="flex-1">
+                      <div className="text-xs md:text-sm text-muted-foreground mb-1">Priemer / Lov</div>
+                      <div className="text-xl md:text-2xl font-mono font-medium text-[#F97316]">{basicStats.successRate.toFixed(1)} kg</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </section>
 
             {/* Hero Catch - len ak má fotku */}
