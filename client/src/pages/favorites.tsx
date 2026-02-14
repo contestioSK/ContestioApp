@@ -1,4 +1,5 @@
 import { Link } from "wouter";
+import { TeamFlag } from "@/components/team-flag";
 import { useFavoriteCompetitions, useFavoriteTeams } from "@/hooks/useFavorites";
 import { useToggleFavoriteCompetition, useToggleFavoriteTeam } from "@/hooks/useFavorites";
 import NavigationHeader from "@/components/navigation-header";
@@ -189,8 +190,8 @@ export default function Favorites() {
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <Link href={`/team/${favorite.teamId}`}>
-                          <CardTitle className="hover:text-primary cursor-pointer line-clamp-2">
-                            {favorite.team?.name || "Tím"}
+                          <CardTitle className="hover:text-primary cursor-pointer line-clamp-2 flex items-center gap-2">
+                            <TeamFlag country={favorite.team?.country} size="sm" />{favorite.team?.name || "Tím"}
                           </CardTitle>
                         </Link>
                       </div>

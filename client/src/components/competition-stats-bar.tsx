@@ -7,6 +7,7 @@ import { Link } from "wouter";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
 import type { Catch, Team } from "@shared/schema";
+import { TeamFlag } from "@/components/team-flag";
 
 type ModalType = "weight" | "count" | "heaviest" | "average" | null;
 
@@ -155,8 +156,8 @@ export default function CompetitionStatsBar({ catches, isLoading, enableCatchDet
                 {(Number(heaviestFish.weight) || 0).toFixed(2)} kg
               </p>
               {heaviestFish.team && (
-                <p className="text-xs text-muted-foreground mt-0.5" data-testid="heaviest-fish-team">
-                  {heaviestFish.team.name}
+                <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1" data-testid="heaviest-fish-team">
+                  <TeamFlag country={heaviestFish.team.country} size="xs" />{heaviestFish.team.name}
                 </p>
               )}
             </button>
@@ -196,7 +197,7 @@ export default function CompetitionStatsBar({ catches, isLoading, enableCatchDet
                     <span className="text-sm font-bold text-muted-foreground w-6">{i + 1}.</span>
                     <div>
                       <p className="font-medium">{Number(c.weight).toFixed(2)} kg</p>
-                      <p className="text-xs text-muted-foreground">{c.team?.name || 'Neznámy tím'}</p>
+                      <p className="text-xs text-muted-foreground flex items-center gap-1"><TeamFlag country={c.team?.country} size="xs" />{c.team?.name || 'Neznámy tím'}</p>
                     </div>
                   </div>
                   <span className="text-xs text-muted-foreground">{getFishTypeLabel(c.fishType)}</span>
@@ -227,7 +228,7 @@ export default function CompetitionStatsBar({ catches, isLoading, enableCatchDet
                 <div key={c.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/30">
                   <div>
                     <p className="font-medium">{Number(c.weight).toFixed(2)} kg - {getFishTypeLabel(c.fishType)}</p>
-                    <p className="text-xs text-muted-foreground">{c.team?.name || 'Neznámy tím'}</p>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1"><TeamFlag country={c.team?.country} size="xs" />{c.team?.name || 'Neznámy tím'}</p>
                   </div>
                   {c.submittedAt && (
                     <span className="text-xs text-muted-foreground">
@@ -283,10 +284,10 @@ export default function CompetitionStatsBar({ catches, isLoading, enableCatchDet
                       className="font-semibold text-secondary hover:underline"
                       onClick={() => setActiveModal(null)}
                     >
-                      {heaviestFish.team.name}
+                      <span className="inline-flex items-center gap-1"><TeamFlag country={heaviestFish.team.country} size="xs" />{heaviestFish.team.name}</span>
                     </Link>
                   ) : (
-                    <p className="font-semibold">{heaviestFish.team.name}</p>
+                    <p className="font-semibold flex items-center gap-1"><TeamFlag country={heaviestFish.team.country} size="xs" />{heaviestFish.team.name}</p>
                   )}
                 </div>
               )}
@@ -331,7 +332,7 @@ export default function CompetitionStatsBar({ catches, isLoading, enableCatchDet
                     <span className="text-sm font-bold text-muted-foreground w-6">{i + 1}.</span>
                     <span className="font-medium">{Number(c.weight).toFixed(2)} kg</span>
                   </div>
-                  <span className="text-xs text-muted-foreground">{c.team?.name}</span>
+                  <span className="text-xs text-muted-foreground flex items-center gap-1"><TeamFlag country={c.team?.country} size="xs" />{c.team?.name}</span>
                 </div>
               ))}
             </div>

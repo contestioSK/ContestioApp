@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation, Link } from "wouter";
+import { TeamFlag } from "@/components/team-flag";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -5689,8 +5690,8 @@ export default function AdminPanel() {
                                   )}
                                   <div className="flex-1">
                                     <div className="flex items-center space-x-3">
-                                      <h4 className="text-base font-medium text-foreground" data-testid={`text-team-name-${team.id}`}>
-                                        {team.name}
+                                      <h4 className="text-base font-medium text-foreground flex items-center gap-1.5" data-testid={`text-team-name-${team.id}`}>
+                                        <TeamFlag country={team.country} size="sm" />{team.name}
                                       </h4>
                                       <Badge 
                                         variant={team.status === 'approved' ? 'default' : team.status === 'pending' ? 'secondary' : 'destructive'}

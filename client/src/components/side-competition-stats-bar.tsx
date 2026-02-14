@@ -7,6 +7,7 @@ import { Link } from "wouter";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
 import type { Catch, Team, Competition } from "@shared/schema";
+import { TeamFlag } from "@/components/team-flag";
 import SideCompetitionExport from "./side-competition-export";
 
 function getCompetitionFishTypeLabel(fishType: string): string {
@@ -120,14 +121,14 @@ export default function SideCompetitionStatsBar({
                 {result.teamName && effectiveTeamId ? (
                   <Link 
                     href={`/team/${effectiveTeamId}`}
-                    className="text-xs text-muted-foreground mt-0.5 hover:text-secondary transition-colors cursor-pointer underline decoration-dotted underline-offset-2 block"
+                    className="text-xs text-muted-foreground mt-0.5 hover:text-secondary transition-colors cursor-pointer underline decoration-dotted underline-offset-2 flex items-center gap-1"
                     data-testid={`team-${sideCompetitionId}`}
                   >
-                    {result.teamName}
+                    <TeamFlag country={result.winningCatch?.team?.country} size="xs" />{result.teamName}
                   </Link>
                 ) : result.teamName && (
-                  <p className="text-xs text-muted-foreground mt-0.5" data-testid={`team-${sideCompetitionId}`}>
-                    {result.teamName}
+                  <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1" data-testid={`team-${sideCompetitionId}`}>
+                    <TeamFlag country={result.winningCatch?.team?.country} size="xs" />{result.teamName}
                   </p>
                 )}
                 {result.winningCatch && (isOrganizer || (userTeamId && result.winningCatch.teamId === userTeamId)) && (
@@ -177,10 +178,10 @@ export default function SideCompetitionStatsBar({
                     <p className="text-muted-foreground">Tím</p>
                     <Link 
                       href={`/team/${selectedCatch.teamId}`}
-                      className="font-semibold text-secondary hover:underline"
+                      className="font-semibold text-secondary hover:underline flex items-center gap-1"
                       onClick={() => setSelectedCatch(null)}
                     >
-                      {selectedCatch.team.name}
+                      <TeamFlag country={selectedCatch.team.country} size="xs" />{selectedCatch.team.name}
                     </Link>
                   </div>
                 )}

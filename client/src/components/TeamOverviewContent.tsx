@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { Users, Trophy, Fish, Crown, Clock, MapPin, ChevronDown, ChevronUp } from "lucide-react";
 import { Team, TeamMember, Catch } from "@shared/schema";
+import { TeamFlag } from "@/components/team-flag";
 import { formatDistanceToNow } from "date-fns";
 import { sk } from "date-fns/locale";
 
@@ -65,7 +66,7 @@ export default function TeamOverviewContent({
           <div>
             <h2 className="text-xl font-bold text-foreground flex items-center gap-3">
               <Users className="h-5 w-5 text-muted-foreground" strokeWidth={1.75} />
-              {team.name}
+              <TeamFlag country={team.country} size="sm" />{team.name}
             </h2>
             <div className="flex items-center gap-2 mt-2">
               {team.sector && (
