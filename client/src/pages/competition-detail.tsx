@@ -1,4 +1,5 @@
 import { useParams, useLocation, Link } from "wouter";
+import { TeamFlag } from "@/components/team-flag";
 import { useEffect, useState, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -196,7 +197,7 @@ const SectorTable = ({ sector, leaderboard, competitionId }: { sector: string; l
             <tr key={i} className="hover:bg-muted/30">
               <td className="px-4 py-2 font-mono text-muted-foreground">{i + 1}.</td>
               <td className="px-4 py-2 text-foreground font-medium">
-                <Link href={`/team/${t.id}`} className="hover:text-orange-500 transition-colors cursor-pointer">{t.name}</Link>
+                <Link href={`/team/${t.id}`} className="hover:text-orange-500 transition-colors cursor-pointer flex items-center gap-1.5"><TeamFlag country={t.country} size="xs" />{t.name}</Link>
               </td>
               <td className="px-4 py-2 text-right text-foreground font-bold">{t.weight.toFixed(1)}</td>
             </tr>
@@ -485,6 +486,7 @@ export default function CompetitionDetail() {
       .map(c => ({
         id: c.id,
         team: c.team?.name || 'Neznámy tím',
+        teamCountry: c.team?.country || 'SK',
         action: safeWeight(c.weight) >= bigFishThreshold ? 'big_fish' : 'catch',
         weight: safeWeight(c.weight),
         fish: getFishTypeLabel(c.fishType) || 'Ryba',
@@ -1131,7 +1133,7 @@ export default function CompetitionDetail() {
                           onClick={() => {
                             if (sortedLeaderboard[1]?.id) navigate(`/team/${sortedLeaderboard[1].id}`);
                           }}
-                        >{sortedLeaderboard[1]?.name}</button>
+                        ><span className="flex items-center justify-center gap-1"><TeamFlag country={sortedLeaderboard[1]?.country} size="xs" />{sortedLeaderboard[1]?.name}</span></button>
                         <div className="text-lg font-mono font-medium text-[#F97316]">{sortedLeaderboard[1]?.weight?.toFixed(1) ?? '-'}</div>
                         <div className="text-[10px] text-muted-foreground">{sortedLeaderboard[1]?.fish ?? 0} rýb</div>
                       </div>
@@ -1149,7 +1151,7 @@ export default function CompetitionDetail() {
                           onClick={() => {
                             if (sortedLeaderboard[0]?.id) navigate(`/team/${sortedLeaderboard[0].id}`);
                           }}
-                        >{sortedLeaderboard[0]?.name}</button>
+                        ><span className="flex items-center justify-center gap-1"><TeamFlag country={sortedLeaderboard[0]?.country} size="xs" />{sortedLeaderboard[0]?.name}</span></button>
                         <div className="text-2xl font-mono font-medium text-[#F97316]">{sortedLeaderboard[0]?.weight?.toFixed(1) ?? '-'}</div>
                         <div className="text-xs text-muted-foreground">{sortedLeaderboard[0]?.fish ?? 0} rýb</div>
                       </div>
@@ -1164,7 +1166,7 @@ export default function CompetitionDetail() {
                           onClick={() => {
                             if (sortedLeaderboard[2]?.id) navigate(`/team/${sortedLeaderboard[2].id}`);
                           }}
-                        >{sortedLeaderboard[2]?.name}</button>
+                        ><span className="flex items-center justify-center gap-1"><TeamFlag country={sortedLeaderboard[2]?.country} size="xs" />{sortedLeaderboard[2]?.name}</span></button>
                         <div className="text-lg font-mono font-medium text-[#F97316]/60">{sortedLeaderboard[2]?.weight?.toFixed(1) ?? '-'}</div>
                         <div className="text-[10px] text-muted-foreground">{sortedLeaderboard[2]?.fish ?? 0} rýb</div>
                       </div>
@@ -1185,7 +1187,7 @@ export default function CompetitionDetail() {
                         onClick={() => {
                           if (sortedLeaderboard[1]?.id) navigate(`/team/${sortedLeaderboard[1].id}`);
                         }}
-                      >{sortedLeaderboard[1]?.name}</button>
+                      ><span className="flex items-center justify-center gap-1.5"><TeamFlag country={sortedLeaderboard[1]?.country} size="sm" />{sortedLeaderboard[1]?.name}</span></button>
                       <div className="text-2xl font-mono font-medium text-[#F97316]">{sortedLeaderboard[1]?.weight?.toFixed(1) ?? '-'}</div>
                       <div className="text-xs text-muted-foreground font-mono">{sortedLeaderboard[1]?.fish ?? 0} rýb</div>
                     </div>
@@ -1205,7 +1207,7 @@ export default function CompetitionDetail() {
                         onClick={() => {
                           if (sortedLeaderboard[0]?.id) navigate(`/team/${sortedLeaderboard[0].id}`);
                         }}
-                      >{sortedLeaderboard[0]?.name}</button>
+                      ><span className="flex items-center justify-center gap-1.5"><TeamFlag country={sortedLeaderboard[0]?.country} size="sm" />{sortedLeaderboard[0]?.name}</span></button>
                       <div className="text-4xl font-mono font-medium text-[#F97316]">{sortedLeaderboard[0]?.weight?.toFixed(1) ?? '-'}</div>
                       <div className="text-sm text-muted-foreground font-mono">{sortedLeaderboard[0]?.fish ?? 0} rýb</div>
                     </div>
@@ -1223,7 +1225,7 @@ export default function CompetitionDetail() {
                         onClick={() => {
                           if (sortedLeaderboard[2]?.id) navigate(`/team/${sortedLeaderboard[2].id}`);
                         }}
-                      >{sortedLeaderboard[2]?.name}</button>
+                      ><span className="flex items-center justify-center gap-1.5"><TeamFlag country={sortedLeaderboard[2]?.country} size="sm" />{sortedLeaderboard[2]?.name}</span></button>
                       <div className="text-2xl font-mono font-medium text-[#F97316]">{sortedLeaderboard[2]?.weight?.toFixed(1) ?? '-'}</div>
                       <div className="text-xs text-muted-foreground font-mono">{sortedLeaderboard[2]?.fish ?? 0} rýb</div>
                     </div>
@@ -1252,12 +1254,12 @@ export default function CompetitionDetail() {
                           </td>
                           <td className="px-3 md:px-6 py-3 md:py-4">
                             <button
-                              className="font-bold text-foreground hover:text-cyan-500 transition-colors text-left text-sm md:text-base"
+                              className="font-bold text-foreground hover:text-cyan-500 transition-colors text-left text-sm md:text-base flex items-center gap-1.5"
                               onClick={() => {
                                 navigate(`/team/${team.id}`);
                               }}
                             >
-                              {team.name}
+                              <TeamFlag country={team.country} size="xs" />{team.name}
                             </button>
                           </td>
                           <td className="hidden md:table-cell px-6 py-4 text-center text-muted-foreground">
@@ -1377,12 +1379,12 @@ export default function CompetitionDetail() {
                       <div>
                         <div className="flex justify-between items-center mb-1">
                           <button 
-                            className="px-2 py-1 rounded-full bg-muted/40 hover:bg-muted text-xs font-bold text-foreground truncate max-w-[160px] transition-colors text-left"
+                            className="px-2 py-1 rounded-full bg-muted/40 hover:bg-muted text-xs font-bold text-foreground truncate max-w-[180px] transition-colors text-left flex items-center gap-1.5"
                             onClick={() => {
                               if (item.catchObj.teamId) navigate(`/team/${item.catchObj.teamId}`);
                             }}
                           >
-                            {item.team}
+                            <TeamFlag country={item.teamCountry} size="xs" />{item.team}
                           </button>
                           <span className="text-[10px] text-muted-foreground font-mono">{item.time}</span>
                         </div>

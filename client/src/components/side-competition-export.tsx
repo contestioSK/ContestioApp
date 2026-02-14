@@ -5,6 +5,7 @@ import { Download, Share2, Trophy, Fish, Crown, Target, Medal } from "lucide-rea
 import { getSideCompetitionLabel } from "@/lib/utils";
 import html2canvas from "html2canvas";
 import type { Competition, Catch, Team } from "@shared/schema";
+import { TeamFlag } from "@/components/team-flag";
 
 interface SideCompetitionExportProps {
   competition: Competition;
@@ -144,8 +145,8 @@ export default function SideCompetitionExport({
           <div className="bg-white/10 rounded-lg p-4">
             <div className="flex items-center justify-between mb-2">
               <span className="text-white/80 text-sm">Tím</span>
-              <span className="text-white font-semibold">
-                {winningCatch.team?.name || 'Neznámy tím'}
+              <span className="text-white font-semibold flex items-center gap-1">
+                <TeamFlag country={winningCatch.team?.country} size="xs" />{winningCatch.team?.name || 'Neznámy tím'}
               </span>
             </div>
             <div className="flex items-center justify-between mb-2">

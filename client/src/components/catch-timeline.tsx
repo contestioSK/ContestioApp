@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Clock, X, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Catch, Team, Referee } from "@shared/schema";
-import { getCountryFlag } from "@/lib/countries";
+import { TeamFlag } from "@/components/team-flag";
 
 interface CatchTimelineProps {
   catches: (Catch & { team: Team; referee: Referee })[];
@@ -178,9 +178,9 @@ export default function CatchTimeline({ catches, isLoading, competitionId }: Cat
                       <div data-testid={`catch-team-${catch_.id}`}>
                         <Link 
                           href={catch_.teamId ? `/team/${catch_.teamId}` : '#'} 
-                          className="font-medium text-foreground text-sm hover:text-primary transition-colors"
+                          className="font-medium text-foreground text-sm hover:text-primary transition-colors flex items-center gap-1.5"
                         >
-                          {catch_.team?.name || 'Neznámy tím'}
+                          <TeamFlag country={catch_.team?.country} size="xs" />{catch_.team?.name || 'Neznámy tím'}
                         </Link>
                       </div>
                     </td>

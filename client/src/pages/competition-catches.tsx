@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useParams, useLocation } from "wouter";
+import { TeamFlag } from "@/components/team-flag";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { 
@@ -96,8 +97,8 @@ function CatchRow({
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-0.5">
-          <span className="font-bold text-foreground text-sm truncate">
-            {data.team?.name || 'Neznámy tím'}
+          <span className="font-bold text-foreground text-sm truncate flex items-center gap-1.5">
+            <TeamFlag country={data.team?.country} size="xs" />{data.team?.name || 'Neznámy tím'}
           </span>
           {isTopToday && <Crown size={14} className="text-amber-500 fill-amber-500 shrink-0" />}
           {isRecent && !isTopToday && <Sparkles size={14} className="text-blue-400 fill-blue-400 shrink-0" />}
@@ -196,7 +197,7 @@ function CatchDetailModal({
               <div>
                 <div className="text-muted-foreground text-xs">Tím • Sektor</div>
                 <div className="font-medium text-foreground">
-                  {data.team?.name || 'Neznámy tím'} <span className="text-muted-foreground">•</span> Sektor {data.sector?.trim()}
+                  <span className="inline-flex items-center gap-1"><TeamFlag country={data.team?.country} size="xs" />{data.team?.name || 'Neznámy tím'}</span> <span className="text-muted-foreground">•</span> Sektor {data.sector?.trim()}
                 </div>
               </div>
             </div>
@@ -557,7 +558,7 @@ export default function CompetitionCatches() {
 
                 <div>
                   <h3 className="text-xl font-bold text-foreground mb-1 group-hover:text-[#F97316] transition-colors flex items-center gap-2">
-                    {heroCatch.team?.name || 'Neznámy tím'}
+                    <TeamFlag country={heroCatch.team?.country} size="sm" />{heroCatch.team?.name || 'Neznámy tím'}
                     {heroCatch.id === topCatchOverallId && <Crown size={18} className="text-amber-500 fill-amber-500" />}
                     {recentCatchIds.includes(heroCatch.id) && heroCatch.id !== topCatchOverallId && <Sparkles size={18} className="text-blue-400 fill-blue-400" />}
                   </h3>

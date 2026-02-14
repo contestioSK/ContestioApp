@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Plus, Minus, RotateCcw } from "lucide-react";
 import type { Team, TeamMember } from "@shared/schema";
+import { TeamFlag } from "@/components/team-flag";
 import { formatSectorPlace, getSectorLetter } from "@/lib/utils";
 
 interface CompetitionMapProps {
@@ -111,7 +112,7 @@ export default function CompetitionMap({ competitionId, teams }: CompetitionMapP
                       {sectorTeams.map((team) => (
                         <div key={team.id} className="text-xs">
                           <div className="flex justify-between">
-                            <span className="text-foreground font-medium">{team.name}</span>
+                            <span className="text-foreground font-medium flex items-center gap-1"><TeamFlag country={team.country} size="xs" />{team.name}</span>
                             <span className="font-mono text-accent">
                               {parseFloat(team.totalWeight || '0').toFixed(1)} kg
                             </span>

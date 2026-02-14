@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Link } from "wouter";
+import { TeamFlag } from "@/components/team-flag";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -291,7 +292,7 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
                             data-testid={`quick-select-team-${team.id}`}
                           >
                             <div className="truncate">
-                              <div className="font-medium">{team.name}</div>
+                              <div className="font-medium flex items-center gap-1.5"><TeamFlag country={team.country} size="xs" />{team.name}</div>
                               <div className="text-xs opacity-80">{formatSectorPlace(team) || `Sektor ${team.sector}`}</div>
                             </div>
                           </Button>
@@ -317,7 +318,7 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
                       <SelectContent>
                         {sectorTeams.map((team: Team) => (
                           <SelectItem key={team.id} value={team.id} className="h-14 text-lg font-medium py-4">
-                            {team.name} - {formatSectorPlace(team) || `Sektor ${team.sector}`}
+                            <span className="inline-flex items-center gap-1.5"><TeamFlag country={team.country} size="xs" />{team.name}</span> - {formatSectorPlace(team) || `Sektor ${team.sector}`}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -1036,7 +1037,7 @@ export default function RefereeInterface() {
                 {recentCatches.slice(0, 5).map((catch_: Catch & { team: Team }) => (
                   <div key={catch_.id} className="flex items-center justify-between text-sm" data-testid={`catch-${catch_.id}`}>
                     <span className="text-muted-foreground">
-                      {catch_.team?.name} - <span className="font-mono font-medium text-[#F97316]">{catch_.weight}kg</span>
+                      <span className="inline-flex items-center gap-1"><TeamFlag country={catch_.team?.country} size="xs" />{catch_.team?.name}</span> - <span className="font-mono font-medium text-[#F97316]">{catch_.weight}kg</span>
                     </span>
                     <Badge className="bg-secondary text-secondary-foreground">
                       <Check className="w-3 h-3 mr-1" strokeWidth={1.75} />

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useParams, Link } from "wouter";
+import { TeamFlag } from "@/components/team-flag";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -195,7 +196,7 @@ export default function SectorDetail() {
                   <div className="w-9 h-9 bg-slate-500 rounded-full flex items-center justify-center font-bold text-white text-sm mb-2 border-2 border-slate-400/30">2</div>
                   <div className="text-center w-full">
                     <Link href={`/team/${sortedTeams[1]?.id}`}>
-                      <span className="font-bold text-foreground text-xs truncate block px-1 hover:text-cyan-500 transition-colors">{sortedTeams[1]?.name}</span>
+                      <span className="font-bold text-foreground text-xs truncate px-1 hover:text-cyan-500 transition-colors flex items-center justify-center gap-1"><TeamFlag country={sortedTeams[1]?.country} size="xs" />{sortedTeams[1]?.name}</span>
                     </Link>
                     <div className="text-lg font-mono font-medium text-[#F97316]">{parseFloat(sortedTeams[1]?.totalWeight || '0').toFixed(1)}</div>
                     <div className="text-[10px] text-muted-foreground">{sortedTeams[1]?.fishCount ?? 0} rýb</div>
@@ -209,7 +210,7 @@ export default function SectorDetail() {
                   <span className="text-[8px] font-black uppercase tracking-wider text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full mb-1">LÍDER</span>
                   <div className="text-center w-full">
                     <Link href={`/team/${sortedTeams[0]?.id}`}>
-                      <span className="font-bold text-amber-500 text-sm truncate block px-1 hover:underline">{sortedTeams[0]?.name}</span>
+                      <span className="font-bold text-amber-500 text-sm truncate px-1 hover:underline flex items-center justify-center gap-1"><TeamFlag country={sortedTeams[0]?.country} size="xs" />{sortedTeams[0]?.name}</span>
                     </Link>
                     <div className="text-2xl font-mono font-medium text-[#F97316]">{parseFloat(sortedTeams[0]?.totalWeight || '0').toFixed(1)}</div>
                     <div className="text-xs text-muted-foreground">{sortedTeams[0]?.fishCount ?? 0} rýb</div>
@@ -220,7 +221,7 @@ export default function SectorDetail() {
                   <div className="w-9 h-9 bg-orange-800 rounded-full flex items-center justify-center font-bold text-white text-sm mb-2 border-2 border-orange-700/50">3</div>
                   <div className="text-center w-full">
                     <Link href={`/team/${sortedTeams[2]?.id}`}>
-                      <span className="font-bold text-foreground text-xs truncate block px-1 hover:text-cyan-500 transition-colors">{sortedTeams[2]?.name}</span>
+                      <span className="font-bold text-foreground text-xs truncate px-1 hover:text-cyan-500 transition-colors flex items-center justify-center gap-1"><TeamFlag country={sortedTeams[2]?.country} size="xs" />{sortedTeams[2]?.name}</span>
                     </Link>
                     <div className="text-lg font-mono font-medium text-[#F97316]/60">{parseFloat(sortedTeams[2]?.totalWeight || '0').toFixed(1)}</div>
                     <div className="text-[10px] text-muted-foreground">{sortedTeams[2]?.fishCount ?? 0} rýb</div>
@@ -234,7 +235,7 @@ export default function SectorDetail() {
                 <div className="absolute -top-4 w-11 h-11 bg-slate-500 rounded-full flex items-center justify-center font-bold text-white text-lg border-4 border-background shadow-lg">2</div>
                 <div className="text-center w-full">
                   <Link href={`/team/${sortedTeams[1]?.id}`}>
-                    <span className="font-bold text-foreground mb-1 block truncate px-2 hover:text-cyan-500 transition-colors">{sortedTeams[1]?.name}</span>
+                    <span className="font-bold text-foreground mb-1 truncate px-2 hover:text-cyan-500 transition-colors flex items-center justify-center gap-1.5"><TeamFlag country={sortedTeams[1]?.country} size="sm" />{sortedTeams[1]?.name}</span>
                   </Link>
                   <div className="text-2xl font-mono font-medium text-[#F97316]">{parseFloat(sortedTeams[1]?.totalWeight || '0').toFixed(1)}</div>
                   <div className="text-xs text-muted-foreground font-mono">{sortedTeams[1]?.fishCount ?? 0} rýb</div>
@@ -250,7 +251,7 @@ export default function SectorDetail() {
                 </div>
                 <div className="text-center w-full mb-2">
                   <Link href={`/team/${sortedTeams[0]?.id}`}>
-                    <span className="font-bold text-amber-500 mb-1 text-lg block px-2 truncate hover:underline">{sortedTeams[0]?.name}</span>
+                    <span className="font-bold text-amber-500 mb-1 text-lg truncate px-2 hover:underline flex items-center justify-center gap-1.5"><TeamFlag country={sortedTeams[0]?.country} size="sm" />{sortedTeams[0]?.name}</span>
                   </Link>
                   <div className="text-4xl font-mono font-medium text-[#F97316]">{parseFloat(sortedTeams[0]?.totalWeight || '0').toFixed(1)}</div>
                   <div className="text-sm text-muted-foreground font-mono">{sortedTeams[0]?.fishCount ?? 0} rýb</div>
@@ -261,7 +262,7 @@ export default function SectorDetail() {
                 <div className="absolute -top-4 w-11 h-11 bg-orange-800 rounded-full flex items-center justify-center font-bold text-white text-lg border-4 border-background shadow-lg">3</div>
                 <div className="text-center w-full">
                   <Link href={`/team/${sortedTeams[2]?.id}`}>
-                    <span className="font-bold text-foreground mb-1 block truncate px-2 hover:text-cyan-500 transition-colors">{sortedTeams[2]?.name}</span>
+                    <span className="font-bold text-foreground mb-1 truncate px-2 hover:text-cyan-500 transition-colors flex items-center justify-center gap-1.5"><TeamFlag country={sortedTeams[2]?.country} size="sm" />{sortedTeams[2]?.name}</span>
                   </Link>
                   <div className="text-2xl font-mono font-medium text-[#F97316]">{parseFloat(sortedTeams[2]?.totalWeight || '0').toFixed(1)}</div>
                   <div className="text-xs text-muted-foreground font-mono">{sortedTeams[2]?.fishCount ?? 0} rýb</div>
@@ -297,7 +298,7 @@ export default function SectorDetail() {
 
                       <div className="flex-1 min-w-0">
                         <div className={`font-bold text-lg truncate flex items-center gap-2 ${isEmpty ? 'text-muted-foreground' : 'text-foreground group-hover:text-foreground'}`}>
-                          {team.name}
+                          <TeamFlag country={team.country} size="sm" />{team.name}
                         </div>
                         <div className="text-xs text-muted-foreground truncate flex items-center gap-1.5">
                           <Users size={12} />
