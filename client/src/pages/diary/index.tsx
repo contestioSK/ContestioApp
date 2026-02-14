@@ -377,8 +377,9 @@ export default function DiaryIndex() {
     return true;
   });
 
-  // Check if any filters are active
-  const hasActiveFilters = selectedTechnique !== "all" || selectedFishType !== "all" || selectedSpot !== "all" || dateRange?.from !== undefined;
+  // Check if any filters are active and count them
+  const activeFilterCount = [selectedTechnique !== "all", selectedFishType !== "all", selectedSpot !== "all", dateRange?.from !== undefined].filter(Boolean).length;
+  const hasActiveFilters = activeFilterCount > 0;
 
   // Display catches: show top 5 when no filters are active, otherwise show all filtered results
   const displayedCatches = hasActiveFilters ? filteredCatches : filteredCatches.slice(0, 4);
@@ -533,17 +534,8 @@ export default function DiaryIndex() {
                 <TacticalIcon icon={BookOpen} variant="orange" size="lg" showLabel={false} />
                 <h1 className="text-4xl md:text-5xl font-black italic tracking-tighter uppercase text-foreground leading-none">
                   {(() => {
-                    const onboardingCompleted = user?.preferences?.onboardingCompleted;
-                    const hasCatches = diaryStats.totalCatches > 0;
                     const displayName = user?.nickname || user?.firstName || user?.lastName || '';
-                    
-                    if (!onboardingCompleted) {
-                      return "Vitaj";
-                    } else if (!hasCatches) {
-                      return "Vitaj";
-                    } else {
-                      return displayName ? `Vitaj, ${displayName}` : "Vitaj";
-                    }
+                    return displayName ? `Vitaj, ${displayName}` : "Vitaj";
                   })()}
                 </h1>
               </div>
@@ -698,7 +690,7 @@ export default function DiaryIndex() {
             </span>
             {hasActiveFilters && (
               <span className="bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full">
-                Aktívne
+                {activeFilterCount} aktívne
               </span>
             )}
           </Button>
@@ -949,8 +941,9 @@ export default function DiaryIndex() {
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                 ) : (
-                  <div className="h-full w-full flex items-center justify-center text-slate-300 dark:text-slate-600 bg-slate-50 dark:bg-slate-800">
+                  <div className="h-full w-full flex flex-col items-center justify-center text-slate-300 dark:text-slate-600 bg-slate-50 dark:bg-slate-800 gap-2">
                     <Fish size={48} strokeWidth={1} />
+                    <span className="text-[10px] uppercase tracking-wider font-medium">Bez fotky</span>
                   </div>
                 )}
 
@@ -1006,13 +999,27 @@ export default function DiaryIndex() {
                 ? "Zatiaľ nemáte v denníku žiadne úlovky. Čas to zmeniť!"
                 : "Pre zadanú kombináciu filtrov sme nenašli žiadne úlovky."}
             </p>
-            {allCatchesList.length === 0 && (
+            {allCatchesList.length === 0 ? (
               <Button 
-                onClick={() => setLocation("/diary/catches")}
+                onClick={() => setIsStartFishingOpen(true)}
                 className="bg-cyan-600 hover:bg-cyan-700 rounded-xl px-6"
               >
-                <Plus className="w-4 h-4 mr-2" />
-                Pridať prvý úlovok
+                <Play className="w-4 h-4 mr-2" />
+                Začať rybačku
+              </Button>
+            ) : hasActiveFilters && (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSelectedTechnique("all");
+                  setSelectedFishType("all");
+                  setSelectedSpot("all");
+                  setDateRange(undefined);
+                }}
+                className="text-slate-400 hover:text-white border-slate-600"
+              >
+                <X className="w-4 h-4 mr-2" />
+                Zrušiť filtre
               </Button>
             )}
           </div>
@@ -1028,6 +1035,7 @@ export default function DiaryIndex() {
               data-testid="button-view-all-catches"
             >
               Zobraziť všetky úlovky ({allCatchesList.length})
+              <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           </div>
         )}
