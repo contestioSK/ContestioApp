@@ -239,6 +239,7 @@ export function ChecklistModal({ isOpen, onClose }: ChecklistModalProps) {
   const [isSaveTemplateOpen, setIsSaveTemplateOpen] = useState(false);
   const [newTemplateName, setNewTemplateName] = useState("");
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<{ categoryId: string; itemId: string; itemName: string } | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Load data from localStorage on mount
@@ -590,7 +591,7 @@ export function ChecklistModal({ isOpen, onClose }: ChecklistModalProps) {
                           className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive shrink-0"
                           onClick={(e) => {
                             e.stopPropagation();
-                            removeItem(category.id, item.id);
+                            setItemToDelete({ categoryId: category.id, itemId: item.id, itemName: item.name });
                           }}
                           data-testid={`delete-${item.id}`}
                         >
@@ -696,6 +697,32 @@ export function ChecklistModal({ isOpen, onClose }: ChecklistModalProps) {
             <AlertDialogCancel>Zrušiť</AlertDialogCancel>
             <AlertDialogAction onClick={resetChecklist}>
               Resetovať
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Item Confirmation Dialog */}
+      <AlertDialog open={!!itemToDelete} onOpenChange={(open) => !open && setItemToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Odstrániť položku?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Naozaj chceš odstrániť <span className="font-medium text-foreground">"{itemToDelete?.itemName}"</span> zo zoznamu? Položku môžeš vrátiť cez Reset.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Zrušiť</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (itemToDelete) {
+                  removeItem(itemToDelete.categoryId, itemToDelete.itemId);
+                  setItemToDelete(null);
+                }
+              }}
+            >
+              Odstrániť
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
