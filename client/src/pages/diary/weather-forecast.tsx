@@ -829,7 +829,9 @@ export default function WeatherForecast() {
                         }}
                       />
                       <Legend 
-                        wrapperStyle={{ color: '#94a3b8' }}
+                        formatter={(value: string) => (
+                          <span style={{ color: value === 'Teplota (°C)' ? '#f59e0b' : '#22d3ee' }}>{value}</span>
+                        )}
                       />
                       <Line 
                         yAxisId="left"
@@ -862,7 +864,7 @@ export default function WeatherForecast() {
                         name="Zrážky (mm)"
                       >
                         {chartData.map((entry, index) => (
-                          <Cell key={index} fill="#3b82f6" opacity={entry.isPast ? 0.2 : 0.6} />
+                          <Cell key={index} fill="#22d3ee" opacity={entry.isPast ? 0.2 : 0.6} />
                         ))}
                       </Bar>
                     </ComposedChart>
@@ -1073,7 +1075,9 @@ export default function WeatherForecast() {
                     }}
                   />
                   <Legend 
-                    wrapperStyle={{ color: '#94a3b8', fontSize: '11px' }}
+                    formatter={(value: string) => (
+                      <span style={{ color: value === 'Teplota (°C)' ? '#f59e0b' : '#22d3ee', fontSize: '11px' }}>{value}</span>
+                    )}
                   />
                   <Line 
                     yAxisId="left"
