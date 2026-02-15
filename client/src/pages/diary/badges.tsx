@@ -216,7 +216,7 @@ export default function BadgesPage() {
             {/* Katalóg výziev card */}
             <button
               onClick={() => setIsCatalogOpen(true)}
-              className="flex items-center gap-3 bg-card border border-[#F97316]/30 hover:border-[#F97316]/60 p-3 sm:p-4 rounded-xl shadow-lg transition-all group cursor-pointer text-left"
+              className="flex-1 flex items-center gap-3 bg-card border border-[#F97316]/30 hover:border-[#F97316]/60 p-3 sm:p-4 rounded-xl shadow-lg transition-all group cursor-pointer text-left"
               data-testid="button-open-catalog"
             >
               <div className="h-10 w-10 sm:h-12 sm:w-12 bg-[#F97316]/10 rounded-2xl flex items-center justify-center text-[#F97316] border border-[#F97316]/20 shrink-0 group-hover:bg-[#F97316]/15 transition-colors">
@@ -234,7 +234,7 @@ export default function BadgesPage() {
             </button>
 
             {/* Tvoj pokrok card */}
-            <div className="flex items-center gap-3 bg-card border border-border p-3 sm:p-4 rounded-xl shadow-lg">
+            <div className="flex-1 flex items-center gap-3 bg-card border border-border p-3 sm:p-4 rounded-xl shadow-lg">
               <div className="text-right">
                 <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest block mb-0.5">Tvoj pokrok</span>
                 <span className="text-lg sm:text-2xl font-medium text-[#F97316] leading-none font-mono tracking-tighter">
