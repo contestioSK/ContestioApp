@@ -273,7 +273,7 @@ export default function DiaryLayout({ children, fullBleed = false }: DiaryLayout
                 <div className="px-3 flex items-center gap-1.5">
                   <TacticalIconInline icon={Swords} variant="amber" size="sm" />
                   <p className="text-xs font-bold text-amber-600 dark:text-amber-500 uppercase tracking-wider">
-                    Súťaže & Komunita
+                    Battle & Komunita
                   </p>
                 </div>
               </div>
