@@ -5,7 +5,7 @@ import { randomUUID, createHmac } from "crypto";
 import { storage } from "./storage";
 import { db } from "./db";
 import { eq, and, gt, desc, or, inArray, sql } from "drizzle-orm";
-import { diaryBattles, users, baitManufacturers, baitProductLines, baitFlavors, userArsenalBaits, userBadges, fishingAreas, friendships, equipmentManufacturers, equipmentCategories, equipmentProducts, userArsenalEquipment, insertUserArsenalEquipmentSchema } from "@shared/schema";
+import { diaryBattles, users, baitManufacturers, baitProductLines, baitFlavors, userArsenalBaits, userBadges, fishingAreas, friendships, equipmentManufacturers, equipmentCategories, equipmentProducts, userArsenalEquipment, insertUserArsenalEquipmentSchema, userBaitBrands, userBaitFlavors, insertUserBaitBrandSchema, insertUserBaitFlavorSchema } from "@shared/schema";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { hashPassword, validatePassword, generateVerificationToken, generateTokenExpiration } from "./utils/auth";
 import { emailService } from "./utils/email";
@@ -8662,6 +8662,89 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     } catch (error) {
       console.error("[ARSENAL] Error deleting bait from arsenal:", error);
       res.status(500).json({ message: "Failed to delete bait from arsenal" });
+    }
+  });
+
+  // ==========================================
+  // Simple Bait Management (MVP) API endpoints
+  // ==========================================
+
+  app.get('/api/diary/baits/brands', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const brands = await db.query.userBaitBrands.findMany({
+        where: eq(userBaitBrands.userId, userId),
+        with: { flavors: true },
+        orderBy: [userBaitBrands.name],
+      });
+      res.json(brands);
+    } catch (error) {
+      console.error("[BAITS-MVP] Error fetching brands:", error);
+      res.status(500).json({ message: "Failed to fetch bait brands" });
+    }
+  });
+
+  app.post('/api/diary/baits/brands', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const parsed = insertUserBaitBrandSchema.parse({ ...req.body, userId });
+      const [brand] = await db.insert(userBaitBrands).values(parsed).returning();
+      res.json(brand);
+    } catch (error) {
+      console.error("[BAITS-MVP] Error creating brand:", error);
+      res.status(500).json({ message: "Failed to create bait brand" });
+    }
+  });
+
+  app.delete('/api/diary/baits/brands/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const brandId = parseInt(req.params.id);
+      if (isNaN(brandId)) return res.status(400).json({ message: "Invalid brand ID" });
+      const [deleted] = await db.delete(userBaitBrands)
+        .where(and(eq(userBaitBrands.id, brandId), eq(userBaitBrands.userId, userId)))
+        .returning();
+      if (!deleted) return res.status(404).json({ message: "Brand not found" });
+      res.json({ message: "Brand deleted" });
+    } catch (error) {
+      console.error("[BAITS-MVP] Error deleting brand:", error);
+      res.status(500).json({ message: "Failed to delete brand" });
+    }
+  });
+
+  app.post('/api/diary/baits/flavors', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const parsed = insertUserBaitFlavorSchema.parse(req.body);
+      const brand = await db.query.userBaitBrands.findFirst({
+        where: and(eq(userBaitBrands.id, parsed.brandId), eq(userBaitBrands.userId, userId)),
+      });
+      if (!brand) return res.status(404).json({ message: "Brand not found" });
+      const [flavor] = await db.insert(userBaitFlavors).values(parsed).returning();
+      res.json(flavor);
+    } catch (error) {
+      console.error("[BAITS-MVP] Error creating flavor:", error);
+      res.status(500).json({ message: "Failed to create bait flavor" });
+    }
+  });
+
+  app.delete('/api/diary/baits/flavors/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const flavorId = parseInt(req.params.id);
+      if (isNaN(flavorId)) return res.status(400).json({ message: "Invalid flavor ID" });
+      const flavor = await db.query.userBaitFlavors.findFirst({
+        where: eq(userBaitFlavors.id, flavorId),
+        with: { brand: true },
+      });
+      if (!flavor || (flavor.brand as any)?.userId !== userId) {
+        return res.status(404).json({ message: "Flavor not found" });
+      }
+      await db.delete(userBaitFlavors).where(eq(userBaitFlavors.id, flavorId));
+      res.json({ message: "Flavor deleted" });
+    } catch (error) {
+      console.error("[BAITS-MVP] Error deleting flavor:", error);
+      res.status(500).json({ message: "Failed to delete flavor" });
     }
   });
 
