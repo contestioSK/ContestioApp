@@ -202,88 +202,54 @@ export default function CatchFormDialog({
   const isPremium = premiumStatus?.isPremium || false;
   const maxPhotos = isPremium ? 99 : 1; // Premium: unlimited (99), Free: 1
 
-  // Fetch user's bait brands with flavors (MVP simple bait management)
-  const { data: baitBrands = [] } = useQuery<
-    Array<{
-      id: number;
-      name: string;
-      flavors: Array<{ id: number; name: string; diameter: string | null }>;
-    }>
-  >({
-    queryKey: ["/api/diary/baits/brands"],
+  // Fetch global bait manufacturers with flavors for combobox
+  type ManufacturerWithFlavors = {
+    id: number;
+    name: string;
+    flavors: Array<{ id: number; name: string; productLine: string }>;
+  };
+  const { data: manufacturers = [] } = useQuery<ManufacturerWithFlavors[]>({
+    queryKey: ["/api/baits/manufacturers/search"],
     enabled: !!user && isOpen,
+    staleTime: 5 * 60 * 1000,
   });
 
-  // State for bait selection (brand → flavor → diameter)
-  const [selectedBaitBrandId, setSelectedBaitBrandId] = useState<number | null>(null);
-  const [selectedBaitFlavorId, setSelectedBaitFlavorId] = useState<number | null>(null);
+  // State for bait selection (manufacturer → flavor)
+  const [selectedManufacturerId, setSelectedManufacturerId] = useState<number | null>(null);
+  const [selectedFlavorId, setSelectedFlavorId] = useState<number | null>(null);
   const [brandSearch, setBrandSearch] = useState("");
   const [flavorSearch, setFlavorSearch] = useState("");
   const [showBrandDropdown, setShowBrandDropdown] = useState(false);
   const [showFlavorDropdown, setShowFlavorDropdown] = useState(false);
-  const [showAddFlavorDiameter, setShowAddFlavorDiameter] = useState(false);
-  const [newFlavorDiameter, setNewFlavorDiameter] = useState("");
   const brandInputRef = useRef<HTMLInputElement>(null);
   const flavorInputRef = useRef<HTMLInputElement>(null);
   const brandDropdownRef = useRef<HTMLDivElement>(null);
   const flavorDropdownRef = useRef<HTMLDivElement>(null);
 
-  const selectedBrand = baitBrands.find(b => b.id === selectedBaitBrandId);
-  const selectedFlavor = selectedBrand?.flavors.find(f => f.id === selectedBaitFlavorId);
+  const selectedManufacturer = manufacturers.find(m => m.id === selectedManufacturerId);
+  const selectedFlavor = selectedManufacturer?.flavors.find(f => f.id === selectedFlavorId);
 
-  const createBrandMutation = useMutation({
-    mutationFn: async (name: string) => {
-      const res = await apiRequest("POST", "/api/diary/baits/brands", { name });
-      return res.json();
-    },
-    onSuccess: (brand) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/diary/baits/brands"] });
-      setSelectedBaitBrandId(brand.id);
-      setBrandSearch(brand.name);
-      setShowBrandDropdown(false);
-      setFlavorSearch("");
-      setSelectedBaitFlavorId(null);
-      setTimeout(() => flavorInputRef.current?.focus(), 100);
-    },
-  });
-
-  const createFlavorMutation = useMutation({
-    mutationFn: async (data: { brandId: number; name: string; diameter?: string }) => {
-      const res = await apiRequest("POST", "/api/diary/baits/flavors", data);
-      return res.json();
-    },
-    onSuccess: (flavor) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/diary/baits/brands"] });
-      setSelectedBaitFlavorId(flavor.id);
-      const displayName = flavor.diameter ? `${flavor.name} (${flavor.diameter})` : flavor.name;
-      setFlavorSearch(displayName);
-      setShowFlavorDropdown(false);
-      setShowAddFlavorDiameter(false);
-      setNewFlavorDiameter("");
-    },
-  });
-
-  // Filtered brand suggestions (brands + fishing methods)
+  // Filtered manufacturer suggestions (manufacturers + fishing methods)
   const filteredBrandSuggestions = useMemo(() => {
     const q = brandSearch.toLowerCase().trim();
-    const brands = baitBrands
-      .filter(b => !q || b.name.toLowerCase().includes(q))
-      .map(b => ({ type: "brand" as const, id: b.id, name: b.name }));
+    const brands = manufacturers
+      .filter(m => !q || m.name.toLowerCase().includes(q))
+      .map(m => ({ type: "brand" as const, id: m.id, name: m.name }));
     const methods = fishingMethods
       .filter(m => !q || m.toLowerCase().includes(q))
       .map(m => ({ type: "method" as const, id: m, name: m }));
     return { brands, methods };
-  }, [brandSearch, baitBrands]);
+  }, [brandSearch, manufacturers]);
 
   // Filtered flavor suggestions
   const filteredFlavorSuggestions = useMemo(() => {
-    if (!selectedBrand) return [];
+    if (!selectedManufacturer) return [];
     const q = flavorSearch.toLowerCase().trim();
-    return selectedBrand.flavors.filter(f => {
-      const display = f.diameter ? `${f.name} (${f.diameter})` : f.name;
-      return !q || display.toLowerCase().includes(q);
+    return selectedManufacturer.flavors.filter(f => {
+      const display = f.productLine ? `${f.productLine} - ${f.name}` : f.name;
+      return !q || display.toLowerCase().includes(q) || f.name.toLowerCase().includes(q);
     });
-  }, [flavorSearch, selectedBrand]);
+  }, [flavorSearch, selectedManufacturer]);
 
   // Close dropdowns on click outside
   useEffect(() => {
@@ -364,13 +330,13 @@ export default function CatchFormDialog({
 
   // Sync bait selection to form field
   useEffect(() => {
-    if (selectedBrand && selectedFlavor) {
-      const baitText = selectedFlavor.diameter
-        ? `${selectedBrand.name} - ${selectedFlavor.name} (${selectedFlavor.diameter})`
-        : `${selectedBrand.name} - ${selectedFlavor.name}`;
+    if (selectedManufacturer && selectedFlavor) {
+      const baitText = selectedFlavor.productLine
+        ? `${selectedManufacturer.name} - ${selectedFlavor.productLine} - ${selectedFlavor.name}`
+        : `${selectedManufacturer.name} - ${selectedFlavor.name}`;
       form.setValue("bait", baitText);
     }
-  }, [selectedBaitBrandId, selectedBaitFlavorId, selectedBrand, selectedFlavor, form]);
+  }, [selectedManufacturerId, selectedFlavorId, selectedManufacturer, selectedFlavor, form]);
 
   // Auto-set tripId when active battle exists
   useEffect(() => {
@@ -426,40 +392,54 @@ export default function CatchFormDialog({
       // Try to match existing bait text to brand/flavor
       const baitText = editingCatch.bait || "";
       let matched = false;
-      if (baitText && baitBrands.length > 0) {
-        for (const brand of baitBrands) {
-          for (const flavor of brand.flavors) {
-            const expected = flavor.diameter
-              ? `${brand.name} - ${flavor.name} (${flavor.diameter})`
-              : `${brand.name} - ${flavor.name}`;
-            if (baitText === expected) {
-              setSelectedBaitBrandId(brand.id);
-              setSelectedBaitFlavorId(flavor.id);
-              setBrandSearch(brand.name);
-              const flavorDisplay = flavor.diameter ? `${flavor.name} (${flavor.diameter})` : flavor.name;
+      if (baitText && manufacturers.length > 0) {
+        for (const mfr of manufacturers) {
+          for (const flavor of mfr.flavors) {
+            const candidates = [
+              flavor.productLine ? `${mfr.name} - ${flavor.productLine} - ${flavor.name}` : null,
+              `${mfr.name} - ${flavor.name}`,
+            ].filter(Boolean) as string[];
+            if (candidates.some(c => baitText === c)) {
+              setSelectedManufacturerId(mfr.id);
+              setSelectedFlavorId(flavor.id);
+              setBrandSearch(mfr.name);
+              const flavorDisplay = flavor.productLine ? `${flavor.productLine} - ${flavor.name}` : flavor.name;
               setFlavorSearch(flavorDisplay);
               matched = true;
               break;
             }
           }
           if (matched) break;
+          // Also match old "Brand - Flavor (diameter)" format by stripping diameter
+          if (!matched && baitText.startsWith(mfr.name + " - ")) {
+            const remainder = baitText.slice(mfr.name.length + 3);
+            const noDiameter = remainder.replace(/\s*\([^)]*\)\s*$/, "").trim();
+            for (const flavor of mfr.flavors) {
+              if (noDiameter === flavor.name || noDiameter === `${flavor.productLine} - ${flavor.name}`) {
+                setSelectedManufacturerId(mfr.id);
+                setSelectedFlavorId(flavor.id);
+                setBrandSearch(mfr.name);
+                const flavorDisplay = flavor.productLine ? `${flavor.productLine} - ${flavor.name}` : flavor.name;
+                setFlavorSearch(flavorDisplay);
+                matched = true;
+                break;
+              }
+            }
+          }
+          if (matched) break;
         }
       }
       if (!matched) {
-        setSelectedBaitBrandId(null);
-        setSelectedBaitFlavorId(null);
-        if (baitText && fishingMethods.includes(baitText)) {
-          setBrandSearch(baitText);
-        } else {
-          setBrandSearch(baitText);
-        }
+        setSelectedManufacturerId(null);
+        setSelectedFlavorId(null);
+        setBrandSearch(baitText);
         setFlavorSearch("");
       }
     } else {
       setExistingPhotos([]);
       setSelectedTripId(activeBattle?.tripId);
-      setSelectedBaitBrandId(null);
-      setSelectedBaitFlavorId(null);
+      setSelectedManufacturerId(null);
+      setSelectedFlavorId(null);
       setBrandSearch("");
       setFlavorSearch("");
       form.reset({
@@ -473,7 +453,7 @@ export default function CatchFormDialog({
         verified: false,
       });
     }
-  }, [editingCatch, form, activeBattle, baitBrands]);
+  }, [editingCatch, form, activeBattle, manufacturers]);
 
   // Create catch mutation
   const createCatchMutation = useMutation({
@@ -1351,15 +1331,15 @@ export default function CatchFormDialog({
                                 const val = e.target.value;
                                 setBrandSearch(val);
                                 setShowBrandDropdown(true);
-                                if (selectedBaitBrandId) {
-                                  setSelectedBaitBrandId(null);
-                                  setSelectedBaitFlavorId(null);
+                                if (selectedManufacturerId) {
+                                  setSelectedManufacturerId(null);
+                                  setSelectedFlavorId(null);
                                   setFlavorSearch("");
                                 }
                                 field.onChange("");
                               }}
                               onFocus={() => setShowBrandDropdown(true)}
-                              className="bg-muted/30 border-border/50"
+                              className="bg-slate-800/80 border-border/50 text-foreground placeholder:text-muted-foreground"
                               autoComplete="off"
                             />
                             {brandSearch && (
@@ -1368,8 +1348,8 @@ export default function CatchFormDialog({
                                 className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                                 onClick={() => {
                                   setBrandSearch("");
-                                  setSelectedBaitBrandId(null);
-                                  setSelectedBaitFlavorId(null);
+                                  setSelectedManufacturerId(null);
+                                  setSelectedFlavorId(null);
                                   setFlavorSearch("");
                                   field.onChange("");
                                   brandInputRef.current?.focus();
@@ -1395,9 +1375,9 @@ export default function CatchFormDialog({
                                         className="w-full text-left px-3 py-2 text-sm hover:bg-muted/50 transition-colors"
                                         onMouseDown={(e) => e.preventDefault()}
                                         onClick={() => {
-                                          setSelectedBaitBrandId(item.id as number);
+                                          setSelectedManufacturerId(item.id as number);
                                           setBrandSearch(item.name);
-                                          setSelectedBaitFlavorId(null);
+                                          setSelectedFlavorId(null);
                                           setFlavorSearch("");
                                           setShowBrandDropdown(false);
                                           field.onChange("");
@@ -1421,8 +1401,8 @@ export default function CatchFormDialog({
                                         className="w-full text-left px-3 py-2 text-sm hover:bg-muted/50 transition-colors"
                                         onMouseDown={(e) => e.preventDefault()}
                                         onClick={() => {
-                                          setSelectedBaitBrandId(null);
-                                          setSelectedBaitFlavorId(null);
+                                          setSelectedManufacturerId(null);
+                                          setSelectedFlavorId(null);
                                           setBrandSearch(item.name);
                                           setFlavorSearch("");
                                           setShowBrandDropdown(false);
@@ -1442,12 +1422,14 @@ export default function CatchFormDialog({
                                     className="w-full text-left px-3 py-2 text-sm text-orange-400 hover:bg-muted/50 transition-colors flex items-center gap-2"
                                     onMouseDown={(e) => e.preventDefault()}
                                     onClick={() => {
-                                      createBrandMutation.mutate(brandSearch.trim());
+                                      setSelectedManufacturerId(null);
+                                      setSelectedFlavorId(null);
+                                      setShowBrandDropdown(false);
+                                      field.onChange(brandSearch.trim());
                                     }}
                                   >
                                     <Plus className="h-3.5 w-3.5" />
-                                    Pridať „{brandSearch.trim()}" ako novú značku
-                                    {createBrandMutation.isPending && <Loader2 className="h-3 w-3 animate-spin ml-auto" />}
+                                    Použiť „{brandSearch.trim()}"
                                   </button>
                                 )}
                                 {!brandSearch.trim() && filteredBrandSuggestions.brands.length === 0 && filteredBrandSuggestions.methods.length === 0 && (
@@ -1459,22 +1441,22 @@ export default function CatchFormDialog({
                             )}
                           </div>
 
-                          {/* Flavor Combobox - only show when a brand is selected */}
-                          {selectedBaitBrandId && selectedBrand && (
+                          {/* Flavor Combobox - only show when a manufacturer is selected */}
+                          {selectedManufacturerId && selectedManufacturer && (
                             <div className="relative">
                               <Input
                                 ref={flavorInputRef}
-                                placeholder={`Príchuť od ${selectedBrand.name}...`}
+                                placeholder={`Príchuť od ${selectedManufacturer.name}...`}
                                 value={flavorSearch}
                                 onChange={(e) => {
                                   setFlavorSearch(e.target.value);
                                   setShowFlavorDropdown(true);
-                                  if (selectedBaitFlavorId) {
-                                    setSelectedBaitFlavorId(null);
+                                  if (selectedFlavorId) {
+                                    setSelectedFlavorId(null);
                                   }
                                 }}
                                 onFocus={() => setShowFlavorDropdown(true)}
-                                className="bg-muted/30 border-border/50"
+                                className="bg-slate-800/80 border-border/50 text-foreground placeholder:text-muted-foreground"
                                 autoComplete="off"
                               />
                               {flavorSearch && (
@@ -1483,7 +1465,8 @@ export default function CatchFormDialog({
                                   className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                                   onClick={() => {
                                     setFlavorSearch("");
-                                    setSelectedBaitFlavorId(null);
+                                    setSelectedFlavorId(null);
+                                    field.onChange("");
                                     flavorInputRef.current?.focus();
                                   }}
                                 >
@@ -1502,77 +1485,35 @@ export default function CatchFormDialog({
                                       className="w-full text-left px-3 py-2 text-sm hover:bg-muted/50 transition-colors"
                                       onMouseDown={(e) => e.preventDefault()}
                                       onClick={() => {
-                                        setSelectedBaitFlavorId(flavor.id);
-                                        const displayName = flavor.diameter ? `${flavor.name} (${flavor.diameter})` : flavor.name;
+                                        setSelectedFlavorId(flavor.id);
+                                        const displayName = flavor.productLine ? `${flavor.productLine} - ${flavor.name}` : flavor.name;
                                         setFlavorSearch(displayName);
                                         setShowFlavorDropdown(false);
                                       }}
                                     >
+                                      {flavor.productLine && <span className="text-muted-foreground">{flavor.productLine} – </span>}
                                       {flavor.name}
-                                      {flavor.diameter && <span className="text-muted-foreground ml-1">({flavor.diameter})</span>}
                                     </button>
                                   ))}
-                                  {flavorSearch.trim() && filteredFlavorSuggestions.length === 0 && !showAddFlavorDiameter && (
+                                  {flavorSearch.trim() && filteredFlavorSuggestions.length === 0 && (
                                     <button
                                       type="button"
                                       className="w-full text-left px-3 py-2 text-sm text-orange-400 hover:bg-muted/50 transition-colors flex items-center gap-2"
                                       onMouseDown={(e) => e.preventDefault()}
-                                      onClick={() => setShowAddFlavorDiameter(true)}
+                                      onClick={() => {
+                                        field.onChange(`${selectedManufacturer.name} - ${flavorSearch.trim()}`);
+                                        setShowFlavorDropdown(false);
+                                      }}
                                     >
                                       <Plus className="h-3.5 w-3.5" />
-                                      Pridať „{flavorSearch.trim()}" ako novú príchuť
+                                      Použiť „{flavorSearch.trim()}"
                                     </button>
                                   )}
                                   {!flavorSearch.trim() && filteredFlavorSuggestions.length === 0 && (
                                     <div className="px-3 py-2 text-sm text-muted-foreground">
-                                      Žiadne príchute. Začnite písať pre pridanie novej.
+                                      Žiadne príchute. Začnite písať.
                                     </div>
                                   )}
-                                </div>
-                              )}
-                              {showAddFlavorDiameter && (
-                                <div className="flex gap-1.5 mt-1">
-                                  <Input
-                                    placeholder="Priemer (napr. 20mm) - voliteľné"
-                                    value={newFlavorDiameter}
-                                    onChange={(e) => setNewFlavorDiameter(e.target.value)}
-                                    className="bg-muted/30 border-border/50 flex-1"
-                                    autoFocus
-                                    onKeyDown={(e) => {
-                                      if (e.key === "Enter") {
-                                        e.preventDefault();
-                                        createFlavorMutation.mutate({
-                                          brandId: selectedBaitBrandId,
-                                          name: flavorSearch.trim(),
-                                          diameter: newFlavorDiameter.trim() || undefined,
-                                        });
-                                      }
-                                    }}
-                                  />
-                                  <Button
-                                    type="button"
-                                    size="sm"
-                                    className="shrink-0"
-                                    disabled={createFlavorMutation.isPending}
-                                    onClick={() => {
-                                      createFlavorMutation.mutate({
-                                        brandId: selectedBaitBrandId,
-                                        name: flavorSearch.trim(),
-                                        diameter: newFlavorDiameter.trim() || undefined,
-                                      });
-                                    }}
-                                  >
-                                    {createFlavorMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : "OK"}
-                                  </Button>
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    className="shrink-0"
-                                    onClick={() => { setShowAddFlavorDiameter(false); setNewFlavorDiameter(""); }}
-                                  >
-                                    <X className="h-3.5 w-3.5" />
-                                  </Button>
                                 </div>
                               )}
                             </div>
