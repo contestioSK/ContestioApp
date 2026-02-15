@@ -212,31 +212,41 @@ export default function BadgesPage() {
             </div>
           </div>
           
-          <div className="flex flex-col items-end gap-3">
-            {/* Catalog button */}
-            <button 
+          <div className="flex items-stretch gap-3">
+            {/* Katalóg výziev card */}
+            <button
               onClick={() => setIsCatalogOpen(true)}
-              className="flex items-center gap-2 px-5 py-2 bg-card border border-border rounded-full hover:border-[#F97316]/50 transition-all text-muted-foreground hover:text-foreground"
+              className="flex items-center gap-3 bg-card border border-[#F97316]/30 hover:border-[#F97316]/60 p-3 sm:p-4 rounded-xl shadow-lg transition-all group cursor-pointer text-left"
               data-testid="button-open-catalog"
             >
-              <Lock size={12} className="text-muted-foreground" strokeWidth={1.75} />
-              <span className="text-[10px] font-bold uppercase tracking-widest">Katalóg výziev</span>
+              <div className="h-10 w-10 sm:h-12 sm:w-12 bg-[#F97316]/10 rounded-2xl flex items-center justify-center text-[#F97316] border border-[#F97316]/20 shrink-0 group-hover:bg-[#F97316]/15 transition-colors">
+                <Sparkles size={18} strokeWidth={1.75} />
+              </div>
+              <div>
+                <span className="text-[9px] font-bold text-[#F97316]/70 uppercase tracking-widest block mb-0.5">Katalóg</span>
+                <span className="text-lg sm:text-2xl font-medium text-[#F97316] leading-none font-mono tracking-tighter">
+                  {badgesList.length}<span className="text-[10px] sm:text-xs text-muted-foreground font-normal ml-0.5">výziev</span>
+                </span>
+                <div className="flex items-center gap-1.5 mt-1">
+                  <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground group-hover:text-foreground transition-colors">Objavuj →</span>
+                </div>
+              </div>
             </button>
 
-            {/* Progress counter */}
-            <div className="flex items-center gap-4 bg-card border border-border p-4 rounded-xl shadow-lg">
+            {/* Tvoj pokrok card */}
+            <div className="flex items-center gap-3 bg-card border border-border p-3 sm:p-4 rounded-xl shadow-lg">
               <div className="text-right">
                 <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest block mb-0.5">Tvoj pokrok</span>
-                <span className="text-2xl font-medium text-[#F97316] leading-none font-mono tracking-tighter">
-                  {userBadges.length}<span className="text-xs text-muted-foreground font-normal">/{totalPossibleBadges}</span>
+                <span className="text-lg sm:text-2xl font-medium text-[#F97316] leading-none font-mono tracking-tighter">
+                  {userBadges.length}<span className="text-[10px] sm:text-xs text-muted-foreground font-normal">/{totalPossibleBadges}</span>
                 </span>
-                <div className="flex items-center justify-end gap-1.5 mt-1.5">
+                <div className="flex items-center justify-end gap-1.5 mt-1">
                   <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground">{currentStatus}</span>
                   <div className="w-1.5 h-1.5 rounded-full bg-[#F97316] animate-pulse" />
                 </div>
               </div>
-              <div className="h-12 w-12 bg-muted/20 rounded-2xl flex items-center justify-center text-muted-foreground border border-border shadow-inner">
-                <Trophy size={20} strokeWidth={1.75} />
+              <div className="h-10 w-10 sm:h-12 sm:w-12 bg-muted/20 rounded-2xl flex items-center justify-center text-muted-foreground border border-border shadow-inner shrink-0">
+                <Trophy size={18} strokeWidth={1.75} />
               </div>
             </div>
           </div>
