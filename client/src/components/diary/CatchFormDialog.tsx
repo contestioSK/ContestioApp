@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useDiaryOffline } from "@/hooks/use-diary-offline";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -217,11 +217,16 @@ export default function CatchFormDialog({
   // State for bait selection (brand → flavor → diameter)
   const [selectedBaitBrandId, setSelectedBaitBrandId] = useState<number | null>(null);
   const [selectedBaitFlavorId, setSelectedBaitFlavorId] = useState<number | null>(null);
-  const [showAddBrandDialog, setShowAddBrandDialog] = useState(false);
-  const [showAddFlavorDialog, setShowAddFlavorDialog] = useState(false);
-  const [newBrandName, setNewBrandName] = useState("");
-  const [newFlavorName, setNewFlavorName] = useState("");
+  const [brandSearch, setBrandSearch] = useState("");
+  const [flavorSearch, setFlavorSearch] = useState("");
+  const [showBrandDropdown, setShowBrandDropdown] = useState(false);
+  const [showFlavorDropdown, setShowFlavorDropdown] = useState(false);
+  const [showAddFlavorDiameter, setShowAddFlavorDiameter] = useState(false);
   const [newFlavorDiameter, setNewFlavorDiameter] = useState("");
+  const brandInputRef = useRef<HTMLInputElement>(null);
+  const flavorInputRef = useRef<HTMLInputElement>(null);
+  const brandDropdownRef = useRef<HTMLDivElement>(null);
+  const flavorDropdownRef = useRef<HTMLDivElement>(null);
 
   const selectedBrand = baitBrands.find(b => b.id === selectedBaitBrandId);
   const selectedFlavor = selectedBrand?.flavors.find(f => f.id === selectedBaitFlavorId);
@@ -234,8 +239,11 @@ export default function CatchFormDialog({
     onSuccess: (brand) => {
       queryClient.invalidateQueries({ queryKey: ["/api/diary/baits/brands"] });
       setSelectedBaitBrandId(brand.id);
-      setNewBrandName("");
-      setShowAddBrandDialog(false);
+      setBrandSearch(brand.name);
+      setShowBrandDropdown(false);
+      setFlavorSearch("");
+      setSelectedBaitFlavorId(null);
+      setTimeout(() => flavorInputRef.current?.focus(), 100);
     },
   });
 
@@ -247,11 +255,59 @@ export default function CatchFormDialog({
     onSuccess: (flavor) => {
       queryClient.invalidateQueries({ queryKey: ["/api/diary/baits/brands"] });
       setSelectedBaitFlavorId(flavor.id);
-      setNewFlavorName("");
+      const displayName = flavor.diameter ? `${flavor.name} (${flavor.diameter})` : flavor.name;
+      setFlavorSearch(displayName);
+      setShowFlavorDropdown(false);
+      setShowAddFlavorDiameter(false);
       setNewFlavorDiameter("");
-      setShowAddFlavorDialog(false);
     },
   });
+
+  // Filtered brand suggestions (brands + fishing methods)
+  const filteredBrandSuggestions = useMemo(() => {
+    const q = brandSearch.toLowerCase().trim();
+    const brands = baitBrands
+      .filter(b => !q || b.name.toLowerCase().includes(q))
+      .map(b => ({ type: "brand" as const, id: b.id, name: b.name }));
+    const methods = fishingMethods
+      .filter(m => !q || m.toLowerCase().includes(q))
+      .map(m => ({ type: "method" as const, id: m, name: m }));
+    return { brands, methods };
+  }, [brandSearch, baitBrands]);
+
+  // Filtered flavor suggestions
+  const filteredFlavorSuggestions = useMemo(() => {
+    if (!selectedBrand) return [];
+    const q = flavorSearch.toLowerCase().trim();
+    return selectedBrand.flavors.filter(f => {
+      const display = f.diameter ? `${f.name} (${f.diameter})` : f.name;
+      return !q || display.toLowerCase().includes(q);
+    });
+  }, [flavorSearch, selectedBrand]);
+
+  // Close dropdowns on click outside
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (
+        brandDropdownRef.current &&
+        !brandDropdownRef.current.contains(e.target as Node) &&
+        brandInputRef.current &&
+        !brandInputRef.current.contains(e.target as Node)
+      ) {
+        setShowBrandDropdown(false);
+      }
+      if (
+        flavorDropdownRef.current &&
+        !flavorDropdownRef.current.contains(e.target as Node) &&
+        flavorInputRef.current &&
+        !flavorInputRef.current.contains(e.target as Node)
+      ) {
+        setShowFlavorDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   // Find active battle (either from battleId prop or first active battle)
   const activeBattle = battleId
@@ -379,6 +435,9 @@ export default function CatchFormDialog({
             if (baitText === expected) {
               setSelectedBaitBrandId(brand.id);
               setSelectedBaitFlavorId(flavor.id);
+              setBrandSearch(brand.name);
+              const flavorDisplay = flavor.diameter ? `${flavor.name} (${flavor.diameter})` : flavor.name;
+              setFlavorSearch(flavorDisplay);
               matched = true;
               break;
             }
@@ -389,12 +448,20 @@ export default function CatchFormDialog({
       if (!matched) {
         setSelectedBaitBrandId(null);
         setSelectedBaitFlavorId(null);
+        if (baitText && fishingMethods.includes(baitText)) {
+          setBrandSearch(baitText);
+        } else {
+          setBrandSearch(baitText);
+        }
+        setFlavorSearch("");
       }
     } else {
       setExistingPhotos([]);
       setSelectedTripId(activeBattle?.tripId);
       setSelectedBaitBrandId(null);
       setSelectedBaitFlavorId(null);
+      setBrandSearch("");
+      setFlavorSearch("");
       form.reset({
         capturedAt: new Date(),
         weight: "",
@@ -1264,7 +1331,7 @@ export default function CatchFormDialog({
                     )}
                   />
 
-                  {/* Bait - Cascading Brand → Flavor selection */}
+                  {/* Bait - Searchable Brand → Flavor combobox */}
                   <FormField
                     control={form.control}
                     name="bait"
@@ -1274,187 +1341,240 @@ export default function CatchFormDialog({
                           Nástraha
                         </FormLabel>
                         <div className="space-y-2">
-                          {/* Brand Select */}
-                          <div className="flex gap-1.5">
-                            <Select
-                              value={
-                                selectedBaitBrandId
-                                  ? selectedBaitBrandId.toString()
-                                  : field.value && fishingMethods.includes(field.value)
-                                    ? `method:${field.value}`
-                                    : "none"
-                              }
-                              onValueChange={(val) => {
-                                if (val === "none") {
+                          {/* Brand Combobox */}
+                          <div className="relative">
+                            <Input
+                              ref={brandInputRef}
+                              placeholder="Zadajte značku (napr. Mikbaits, LK Baits...)"
+                              value={brandSearch}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setBrandSearch(val);
+                                setShowBrandDropdown(true);
+                                if (selectedBaitBrandId) {
                                   setSelectedBaitBrandId(null);
                                   setSelectedBaitFlavorId(null);
-                                  field.onChange("");
-                                } else if (val.startsWith("method:")) {
-                                  setSelectedBaitBrandId(null);
-                                  setSelectedBaitFlavorId(null);
-                                  field.onChange(val.replace("method:", ""));
-                                } else {
-                                  setSelectedBaitBrandId(parseInt(val));
-                                  setSelectedBaitFlavorId(null);
+                                  setFlavorSearch("");
                                 }
+                                field.onChange("");
                               }}
-                            >
-                              <SelectTrigger
-                                data-testid="select-bait-brand"
-                                className="bg-muted/30 border-border/50 flex-1"
+                              onFocus={() => setShowBrandDropdown(true)}
+                              className="bg-muted/30 border-border/50"
+                              autoComplete="off"
+                            />
+                            {brandSearch && (
+                              <button
+                                type="button"
+                                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                onClick={() => {
+                                  setBrandSearch("");
+                                  setSelectedBaitBrandId(null);
+                                  setSelectedBaitFlavorId(null);
+                                  setFlavorSearch("");
+                                  field.onChange("");
+                                  brandInputRef.current?.focus();
+                                }}
                               >
-                                <SelectValue placeholder="Značka boilies" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="none">Neuvedené</SelectItem>
-                                {baitBrands.map((brand) => (
-                                  <SelectItem key={brand.id} value={brand.id.toString()}>
-                                    {brand.name}
-                                  </SelectItem>
-                                ))}
-                                <SelectSeparator />
-                                {fishingMethods.map((method) => (
-                                  <SelectItem key={method} value={`method:${method}`}>
-                                    {method}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="icon"
-                              className="shrink-0 h-9 w-9"
-                              onClick={() => setShowAddBrandDialog(true)}
-                              data-testid="button-add-brand"
-                            >
-                              <Plus className="h-4 w-4" />
-                            </Button>
+                                <X className="h-3.5 w-3.5" />
+                              </button>
+                            )}
+                            {showBrandDropdown && (
+                              <div
+                                ref={brandDropdownRef}
+                                className="absolute z-[100] top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-lg border border-border bg-popover shadow-lg"
+                              >
+                                {filteredBrandSuggestions.brands.length > 0 && (
+                                  <>
+                                    <div className="px-2 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                                      Značky
+                                    </div>
+                                    {filteredBrandSuggestions.brands.map((item) => (
+                                      <button
+                                        key={`brand-${item.id}`}
+                                        type="button"
+                                        className="w-full text-left px-3 py-2 text-sm hover:bg-muted/50 transition-colors"
+                                        onMouseDown={(e) => e.preventDefault()}
+                                        onClick={() => {
+                                          setSelectedBaitBrandId(item.id as number);
+                                          setBrandSearch(item.name);
+                                          setSelectedBaitFlavorId(null);
+                                          setFlavorSearch("");
+                                          setShowBrandDropdown(false);
+                                          field.onChange("");
+                                          setTimeout(() => flavorInputRef.current?.focus(), 50);
+                                        }}
+                                      >
+                                        {item.name}
+                                      </button>
+                                    ))}
+                                  </>
+                                )}
+                                {filteredBrandSuggestions.methods.length > 0 && (
+                                  <>
+                                    <div className="px-2 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider border-t border-border mt-1">
+                                      Spôsob lovu
+                                    </div>
+                                    {filteredBrandSuggestions.methods.map((item) => (
+                                      <button
+                                        key={`method-${item.id}`}
+                                        type="button"
+                                        className="w-full text-left px-3 py-2 text-sm hover:bg-muted/50 transition-colors"
+                                        onMouseDown={(e) => e.preventDefault()}
+                                        onClick={() => {
+                                          setSelectedBaitBrandId(null);
+                                          setSelectedBaitFlavorId(null);
+                                          setBrandSearch(item.name);
+                                          setFlavorSearch("");
+                                          setShowBrandDropdown(false);
+                                          field.onChange(item.name);
+                                        }}
+                                      >
+                                        {item.name}
+                                      </button>
+                                    ))}
+                                  </>
+                                )}
+                                {brandSearch.trim() &&
+                                  filteredBrandSuggestions.brands.length === 0 &&
+                                  !fishingMethods.some(m => m.toLowerCase() === brandSearch.toLowerCase().trim()) && (
+                                  <button
+                                    type="button"
+                                    className="w-full text-left px-3 py-2 text-sm text-orange-400 hover:bg-muted/50 transition-colors flex items-center gap-2"
+                                    onMouseDown={(e) => e.preventDefault()}
+                                    onClick={() => {
+                                      createBrandMutation.mutate(brandSearch.trim());
+                                    }}
+                                  >
+                                    <Plus className="h-3.5 w-3.5" />
+                                    Pridať „{brandSearch.trim()}" ako novú značku
+                                    {createBrandMutation.isPending && <Loader2 className="h-3 w-3 animate-spin ml-auto" />}
+                                  </button>
+                                )}
+                                {!brandSearch.trim() && filteredBrandSuggestions.brands.length === 0 && filteredBrandSuggestions.methods.length === 0 && (
+                                  <div className="px-3 py-2 text-sm text-muted-foreground">
+                                    Začnite písať pre vyhľadávanie...
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </div>
 
-                          {/* Flavor Select - only show when a brand is selected */}
+                          {/* Flavor Combobox - only show when a brand is selected */}
                           {selectedBaitBrandId && selectedBrand && (
-                            <div className="flex gap-1.5">
-                              <Select
-                                value={selectedBaitFlavorId?.toString() || ""}
-                                onValueChange={(val) => {
-                                  setSelectedBaitFlavorId(parseInt(val));
-                                }}
-                              >
-                                <SelectTrigger
-                                  data-testid="select-bait-flavor"
-                                  className="bg-muted/30 border-border/50 flex-1"
-                                >
-                                  <SelectValue placeholder="Príchuť" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {selectedBrand.flavors.length === 0 ? (
-                                    <div className="px-3 py-2 text-sm text-muted-foreground">
-                                      Žiadne príchute. Pridajte novú.
-                                    </div>
-                                  ) : (
-                                    selectedBrand.flavors.map((flavor) => (
-                                      <SelectItem key={flavor.id} value={flavor.id.toString()}>
-                                        {flavor.name}{flavor.diameter ? ` (${flavor.diameter})` : ""}
-                                      </SelectItem>
-                                    ))
-                                  )}
-                                </SelectContent>
-                              </Select>
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="icon"
-                                className="shrink-0 h-9 w-9"
-                                onClick={() => setShowAddFlavorDialog(true)}
-                                data-testid="button-add-flavor"
-                              >
-                                <Plus className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          )}
-
-                          {/* Inline Add Brand Dialog */}
-                          {showAddBrandDialog && (
-                            <div className="p-3 rounded-lg border border-border bg-card space-y-2">
-                              <p className="text-xs font-bold text-muted-foreground">Nová značka</p>
+                            <div className="relative">
                               <Input
-                                placeholder="Názov značky (napr. LK Baits, Mikbaits...)"
-                                value={newBrandName}
-                                onChange={(e) => setNewBrandName(e.target.value)}
-                                className="bg-muted/30"
-                                autoFocus
-                                onKeyDown={(e) => {
-                                  if (e.key === "Enter") {
-                                    e.preventDefault();
-                                    if (newBrandName.trim()) createBrandMutation.mutate(newBrandName.trim());
+                                ref={flavorInputRef}
+                                placeholder={`Príchuť od ${selectedBrand.name}...`}
+                                value={flavorSearch}
+                                onChange={(e) => {
+                                  setFlavorSearch(e.target.value);
+                                  setShowFlavorDropdown(true);
+                                  if (selectedBaitFlavorId) {
+                                    setSelectedBaitFlavorId(null);
                                   }
                                 }}
+                                onFocus={() => setShowFlavorDropdown(true)}
+                                className="bg-muted/30 border-border/50"
+                                autoComplete="off"
                               />
-                              <div className="flex gap-2 justify-end">
-                                <Button type="button" variant="ghost" size="sm" onClick={() => { setShowAddBrandDialog(false); setNewBrandName(""); }}>
-                                  Zrušiť
-                                </Button>
-                                <Button
+                              {flavorSearch && (
+                                <button
                                   type="button"
-                                  size="sm"
-                                  disabled={!newBrandName.trim() || createBrandMutation.isPending}
-                                  onClick={() => createBrandMutation.mutate(newBrandName.trim())}
+                                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                  onClick={() => {
+                                    setFlavorSearch("");
+                                    setSelectedBaitFlavorId(null);
+                                    flavorInputRef.current?.focus();
+                                  }}
                                 >
-                                  {createBrandMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
-                                  Pridať
-                                </Button>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Inline Add Flavor Dialog */}
-                          {showAddFlavorDialog && selectedBaitBrandId && (
-                            <div className="p-3 rounded-lg border border-border bg-card space-y-2">
-                              <p className="text-xs font-bold text-muted-foreground">Nová príchuť pre {selectedBrand?.name}</p>
-                              <Input
-                                placeholder="Názov príchute (napr. Nutric Acid, Chilli Squid...)"
-                                value={newFlavorName}
-                                onChange={(e) => setNewFlavorName(e.target.value)}
-                                className="bg-muted/30"
-                                autoFocus
-                              />
-                              <Input
-                                placeholder="Priemer (napr. 20mm, 24mm) - voliteľné"
-                                value={newFlavorDiameter}
-                                onChange={(e) => setNewFlavorDiameter(e.target.value)}
-                                className="bg-muted/30"
-                                onKeyDown={(e) => {
-                                  if (e.key === "Enter") {
-                                    e.preventDefault();
-                                    if (newFlavorName.trim()) {
+                                  <X className="h-3.5 w-3.5" />
+                                </button>
+                              )}
+                              {showFlavorDropdown && (
+                                <div
+                                  ref={flavorDropdownRef}
+                                  className="absolute z-[100] top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-lg border border-border bg-popover shadow-lg"
+                                >
+                                  {filteredFlavorSuggestions.map((flavor) => (
+                                    <button
+                                      key={flavor.id}
+                                      type="button"
+                                      className="w-full text-left px-3 py-2 text-sm hover:bg-muted/50 transition-colors"
+                                      onMouseDown={(e) => e.preventDefault()}
+                                      onClick={() => {
+                                        setSelectedBaitFlavorId(flavor.id);
+                                        const displayName = flavor.diameter ? `${flavor.name} (${flavor.diameter})` : flavor.name;
+                                        setFlavorSearch(displayName);
+                                        setShowFlavorDropdown(false);
+                                      }}
+                                    >
+                                      {flavor.name}
+                                      {flavor.diameter && <span className="text-muted-foreground ml-1">({flavor.diameter})</span>}
+                                    </button>
+                                  ))}
+                                  {flavorSearch.trim() && filteredFlavorSuggestions.length === 0 && !showAddFlavorDiameter && (
+                                    <button
+                                      type="button"
+                                      className="w-full text-left px-3 py-2 text-sm text-orange-400 hover:bg-muted/50 transition-colors flex items-center gap-2"
+                                      onMouseDown={(e) => e.preventDefault()}
+                                      onClick={() => setShowAddFlavorDiameter(true)}
+                                    >
+                                      <Plus className="h-3.5 w-3.5" />
+                                      Pridať „{flavorSearch.trim()}" ako novú príchuť
+                                    </button>
+                                  )}
+                                  {!flavorSearch.trim() && filteredFlavorSuggestions.length === 0 && (
+                                    <div className="px-3 py-2 text-sm text-muted-foreground">
+                                      Žiadne príchute. Začnite písať pre pridanie novej.
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                              {showAddFlavorDiameter && (
+                                <div className="flex gap-1.5 mt-1">
+                                  <Input
+                                    placeholder="Priemer (napr. 20mm) - voliteľné"
+                                    value={newFlavorDiameter}
+                                    onChange={(e) => setNewFlavorDiameter(e.target.value)}
+                                    className="bg-muted/30 border-border/50 flex-1"
+                                    autoFocus
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter") {
+                                        e.preventDefault();
+                                        createFlavorMutation.mutate({
+                                          brandId: selectedBaitBrandId,
+                                          name: flavorSearch.trim(),
+                                          diameter: newFlavorDiameter.trim() || undefined,
+                                        });
+                                      }
+                                    }}
+                                  />
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    className="shrink-0"
+                                    disabled={createFlavorMutation.isPending}
+                                    onClick={() => {
                                       createFlavorMutation.mutate({
                                         brandId: selectedBaitBrandId,
-                                        name: newFlavorName.trim(),
+                                        name: flavorSearch.trim(),
                                         diameter: newFlavorDiameter.trim() || undefined,
                                       });
-                                    }
-                                  }
-                                }}
-                              />
-                              <div className="flex gap-2 justify-end">
-                                <Button type="button" variant="ghost" size="sm" onClick={() => { setShowAddFlavorDialog(false); setNewFlavorName(""); setNewFlavorDiameter(""); }}>
-                                  Zrušiť
-                                </Button>
-                                <Button
-                                  type="button"
-                                  size="sm"
-                                  disabled={!newFlavorName.trim() || createFlavorMutation.isPending}
-                                  onClick={() => createFlavorMutation.mutate({
-                                    brandId: selectedBaitBrandId,
-                                    name: newFlavorName.trim(),
-                                    diameter: newFlavorDiameter.trim() || undefined,
-                                  })}
-                                >
-                                  {createFlavorMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
-                                  Pridať
-                                </Button>
-                              </div>
+                                    }}
+                                  >
+                                    {createFlavorMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : "OK"}
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="shrink-0"
+                                    onClick={() => { setShowAddFlavorDiameter(false); setNewFlavorDiameter(""); }}
+                                  >
+                                    <X className="h-3.5 w-3.5" />
+                                  </Button>
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
