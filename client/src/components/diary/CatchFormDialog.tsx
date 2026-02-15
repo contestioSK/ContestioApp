@@ -1476,7 +1476,7 @@ export default function CatchFormDialog({
                                             ? `${fav.productLine.name} - ${fav.flavor.name}`
                                             : fav.flavor.name;
                                           setFlavorSearch(flavorDisplay);
-                                          setSelectedDiameter(fav.diameter || "");
+                                          setSelectedDiameter(fav.diameter ? fav.diameter.replace(/mm$/i, "") : "");
                                           setShowBrandDropdown(false);
                                         }}
                                       >
@@ -1486,7 +1486,7 @@ export default function CatchFormDialog({
                                           {" – "}
                                           {fav.productLine?.name && <span className="text-muted-foreground">{fav.productLine.name} – </span>}
                                           {fav.flavor.name}
-                                          {fav.diameter && <span className="text-orange-400 font-mono text-xs ml-1">({fav.diameter}mm)</span>}
+                                          {fav.diameter && <span className="text-orange-400 font-mono text-xs ml-1">({fav.diameter.replace(/mm$/i, "")}mm)</span>}
                                         </span>
                                       </button>
                                     ))}
