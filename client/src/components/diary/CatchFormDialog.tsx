@@ -202,18 +202,55 @@ export default function CatchFormDialog({
   const isPremium = premiumStatus?.isPremium || false;
   const maxPhotos = isPremium ? 99 : 1; // Premium: unlimited (99), Free: 1
 
-  // Fetch favorite baits from arsenal
-  const { data: favoriteBaits = [] } = useQuery<
+  // Fetch user's bait brands with flavors (MVP simple bait management)
+  const { data: baitBrands = [] } = useQuery<
     Array<{
       id: number;
-      diameter: string | null;
-      manufacturer: { id: number; name: string };
-      productLine: { id: number; name: string };
-      flavor: { id: number; name: string };
+      name: string;
+      flavors: Array<{ id: number; name: string; diameter: string | null }>;
     }>
   >({
-    queryKey: ["/api/diary/arsenal/baits/favorites"],
+    queryKey: ["/api/diary/baits/brands"],
     enabled: !!user && isOpen,
+  });
+
+  // State for bait selection (brand → flavor → diameter)
+  const [selectedBaitBrandId, setSelectedBaitBrandId] = useState<number | null>(null);
+  const [selectedBaitFlavorId, setSelectedBaitFlavorId] = useState<number | null>(null);
+  const [showAddBrandDialog, setShowAddBrandDialog] = useState(false);
+  const [showAddFlavorDialog, setShowAddFlavorDialog] = useState(false);
+  const [newBrandName, setNewBrandName] = useState("");
+  const [newFlavorName, setNewFlavorName] = useState("");
+  const [newFlavorDiameter, setNewFlavorDiameter] = useState("");
+
+  const selectedBrand = baitBrands.find(b => b.id === selectedBaitBrandId);
+  const selectedFlavor = selectedBrand?.flavors.find(f => f.id === selectedBaitFlavorId);
+
+  const createBrandMutation = useMutation({
+    mutationFn: async (name: string) => {
+      const res = await apiRequest("POST", "/api/diary/baits/brands", { name });
+      return res.json();
+    },
+    onSuccess: (brand) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/diary/baits/brands"] });
+      setSelectedBaitBrandId(brand.id);
+      setNewBrandName("");
+      setShowAddBrandDialog(false);
+    },
+  });
+
+  const createFlavorMutation = useMutation({
+    mutationFn: async (data: { brandId: number; name: string; diameter?: string }) => {
+      const res = await apiRequest("POST", "/api/diary/baits/flavors", data);
+      return res.json();
+    },
+    onSuccess: (flavor) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/diary/baits/brands"] });
+      setSelectedBaitFlavorId(flavor.id);
+      setNewFlavorName("");
+      setNewFlavorDiameter("");
+      setShowAddFlavorDialog(false);
+    },
   });
 
   // Find active battle (either from battleId prop or first active battle)
@@ -269,6 +306,16 @@ export default function CatchFormDialog({
     },
   });
 
+  // Sync bait selection to form field
+  useEffect(() => {
+    if (selectedBrand && selectedFlavor) {
+      const baitText = selectedFlavor.diameter
+        ? `${selectedBrand.name} - ${selectedFlavor.name} (${selectedFlavor.diameter})`
+        : `${selectedBrand.name} - ${selectedFlavor.name}`;
+      form.setValue("bait", baitText);
+    }
+  }, [selectedBaitBrandId, selectedBaitFlavorId, selectedBrand, selectedFlavor, form]);
+
   // Auto-set tripId when active battle exists
   useEffect(() => {
     if (isOpen && !editingCatch && activeBattle) {
@@ -319,9 +366,35 @@ export default function CatchFormDialog({
           ? Number(editingCatch.longitude)
           : undefined,
       });
+
+      // Try to match existing bait text to brand/flavor
+      const baitText = editingCatch.bait || "";
+      let matched = false;
+      if (baitText && baitBrands.length > 0) {
+        for (const brand of baitBrands) {
+          for (const flavor of brand.flavors) {
+            const expected = flavor.diameter
+              ? `${brand.name} - ${flavor.name} (${flavor.diameter})`
+              : `${brand.name} - ${flavor.name}`;
+            if (baitText === expected) {
+              setSelectedBaitBrandId(brand.id);
+              setSelectedBaitFlavorId(flavor.id);
+              matched = true;
+              break;
+            }
+          }
+          if (matched) break;
+        }
+      }
+      if (!matched) {
+        setSelectedBaitBrandId(null);
+        setSelectedBaitFlavorId(null);
+      }
     } else {
       setExistingPhotos([]);
       setSelectedTripId(activeBattle?.tripId);
+      setSelectedBaitBrandId(null);
+      setSelectedBaitFlavorId(null);
       form.reset({
         capturedAt: new Date(),
         weight: "",
@@ -333,7 +406,7 @@ export default function CatchFormDialog({
         verified: false,
       });
     }
-  }, [editingCatch, form, activeBattle]);
+  }, [editingCatch, form, activeBattle, baitBrands]);
 
   // Create catch mutation
   const createCatchMutation = useMutation({
@@ -1191,7 +1264,7 @@ export default function CatchFormDialog({
                     )}
                   />
 
-                  {/* Bait */}
+                  {/* Bait - Cascading Brand → Flavor selection */}
                   <FormField
                     control={form.control}
                     name="bait"
@@ -1200,49 +1273,191 @@ export default function CatchFormDialog({
                         <FormLabel className="text-[10px] font-bold text-muted-foreground ml-1">
                           Nástraha
                         </FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger
-                              data-testid="select-bait"
-                              className="bg-muted/30 border-border/50"
+                        <div className="space-y-2">
+                          {/* Brand Select */}
+                          <div className="flex gap-1.5">
+                            <Select
+                              value={
+                                selectedBaitBrandId
+                                  ? selectedBaitBrandId.toString()
+                                  : field.value && fishingMethods.includes(field.value)
+                                    ? `method:${field.value}`
+                                    : "none"
+                              }
+                              onValueChange={(val) => {
+                                if (val === "none") {
+                                  setSelectedBaitBrandId(null);
+                                  setSelectedBaitFlavorId(null);
+                                  field.onChange("");
+                                } else if (val.startsWith("method:")) {
+                                  setSelectedBaitBrandId(null);
+                                  setSelectedBaitFlavorId(null);
+                                  field.onChange(val.replace("method:", ""));
+                                } else {
+                                  setSelectedBaitBrandId(parseInt(val));
+                                  setSelectedBaitFlavorId(null);
+                                }
+                              }}
                             >
-                              <SelectValue placeholder="Vyberte nástrahu" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="none">Neuvedené</SelectItem>
-
-                            {favoriteBaits.length > 0 && (
-                              <>
-                                {favoriteBaits.map((bait) => {
-                                  const label = `${bait.manufacturer.name} - ${bait.productLine.name} - ${bait.flavor.name}${bait.diameter ? ` (${bait.diameter})` : ""}`;
-                                  return (
-                                    <SelectItem
-                                      key={`fav-${bait.id}`}
-                                      value={label}
-                                      data-testid={`select-favorite-bait-${bait.id}`}
-                                    >
-                                      <div className="flex items-center gap-2">
-                                        <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
-                                        <span>{label}</span>
-                                      </div>
-                                    </SelectItem>
-                                  );
-                                })}
+                              <SelectTrigger
+                                data-testid="select-bait-brand"
+                                className="bg-muted/30 border-border/50 flex-1"
+                              >
+                                <SelectValue placeholder="Značka boilies" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="none">Neuvedené</SelectItem>
+                                {baitBrands.map((brand) => (
+                                  <SelectItem key={brand.id} value={brand.id.toString()}>
+                                    {brand.name}
+                                  </SelectItem>
+                                ))}
                                 <SelectSeparator />
-                              </>
-                            )}
+                                {fishingMethods.map((method) => (
+                                  <SelectItem key={method} value={`method:${method}`}>
+                                    {method}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="shrink-0 h-9 w-9"
+                              onClick={() => setShowAddBrandDialog(true)}
+                              data-testid="button-add-brand"
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </div>
 
-                            {fishingMethods.map((method) => (
-                              <SelectItem key={method} value={method}>
-                                {method}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                          {/* Flavor Select - only show when a brand is selected */}
+                          {selectedBaitBrandId && selectedBrand && (
+                            <div className="flex gap-1.5">
+                              <Select
+                                value={selectedBaitFlavorId?.toString() || ""}
+                                onValueChange={(val) => {
+                                  setSelectedBaitFlavorId(parseInt(val));
+                                }}
+                              >
+                                <SelectTrigger
+                                  data-testid="select-bait-flavor"
+                                  className="bg-muted/30 border-border/50 flex-1"
+                                >
+                                  <SelectValue placeholder="Príchuť" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {selectedBrand.flavors.length === 0 ? (
+                                    <div className="px-3 py-2 text-sm text-muted-foreground">
+                                      Žiadne príchute. Pridajte novú.
+                                    </div>
+                                  ) : (
+                                    selectedBrand.flavors.map((flavor) => (
+                                      <SelectItem key={flavor.id} value={flavor.id.toString()}>
+                                        {flavor.name}{flavor.diameter ? ` (${flavor.diameter})` : ""}
+                                      </SelectItem>
+                                    ))
+                                  )}
+                                </SelectContent>
+                              </Select>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                className="shrink-0 h-9 w-9"
+                                onClick={() => setShowAddFlavorDialog(true)}
+                                data-testid="button-add-flavor"
+                              >
+                                <Plus className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          )}
+
+                          {/* Inline Add Brand Dialog */}
+                          {showAddBrandDialog && (
+                            <div className="p-3 rounded-lg border border-border bg-card space-y-2">
+                              <p className="text-xs font-bold text-muted-foreground">Nová značka</p>
+                              <Input
+                                placeholder="Názov značky (napr. LK Baits, Mikbaits...)"
+                                value={newBrandName}
+                                onChange={(e) => setNewBrandName(e.target.value)}
+                                className="bg-muted/30"
+                                autoFocus
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") {
+                                    e.preventDefault();
+                                    if (newBrandName.trim()) createBrandMutation.mutate(newBrandName.trim());
+                                  }
+                                }}
+                              />
+                              <div className="flex gap-2 justify-end">
+                                <Button type="button" variant="ghost" size="sm" onClick={() => { setShowAddBrandDialog(false); setNewBrandName(""); }}>
+                                  Zrušiť
+                                </Button>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  disabled={!newBrandName.trim() || createBrandMutation.isPending}
+                                  onClick={() => createBrandMutation.mutate(newBrandName.trim())}
+                                >
+                                  {createBrandMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
+                                  Pridať
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Inline Add Flavor Dialog */}
+                          {showAddFlavorDialog && selectedBaitBrandId && (
+                            <div className="p-3 rounded-lg border border-border bg-card space-y-2">
+                              <p className="text-xs font-bold text-muted-foreground">Nová príchuť pre {selectedBrand?.name}</p>
+                              <Input
+                                placeholder="Názov príchute (napr. Nutric Acid, Chilli Squid...)"
+                                value={newFlavorName}
+                                onChange={(e) => setNewFlavorName(e.target.value)}
+                                className="bg-muted/30"
+                                autoFocus
+                              />
+                              <Input
+                                placeholder="Priemer (napr. 20mm, 24mm) - voliteľné"
+                                value={newFlavorDiameter}
+                                onChange={(e) => setNewFlavorDiameter(e.target.value)}
+                                className="bg-muted/30"
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") {
+                                    e.preventDefault();
+                                    if (newFlavorName.trim()) {
+                                      createFlavorMutation.mutate({
+                                        brandId: selectedBaitBrandId,
+                                        name: newFlavorName.trim(),
+                                        diameter: newFlavorDiameter.trim() || undefined,
+                                      });
+                                    }
+                                  }
+                                }}
+                              />
+                              <div className="flex gap-2 justify-end">
+                                <Button type="button" variant="ghost" size="sm" onClick={() => { setShowAddFlavorDialog(false); setNewFlavorName(""); setNewFlavorDiameter(""); }}>
+                                  Zrušiť
+                                </Button>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  disabled={!newFlavorName.trim() || createFlavorMutation.isPending}
+                                  onClick={() => createFlavorMutation.mutate({
+                                    brandId: selectedBaitBrandId,
+                                    name: newFlavorName.trim(),
+                                    diameter: newFlavorDiameter.trim() || undefined,
+                                  })}
+                                >
+                                  {createFlavorMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
+                                  Pridať
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                         <FormMessage />
                       </FormItem>
                     )}
