@@ -30,7 +30,8 @@ import {
   Moon,
   TrendingUp,
   TrendingDown,
-  Minus
+  Minus,
+  Star
 } from "lucide-react";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
@@ -111,6 +112,14 @@ interface LocationResult {
 }
 
 const LAST_LOCATION_KEY = 'weather-last-location';
+const FAVORITE_LOCATIONS_KEY = 'weather-favorite-locations';
+
+interface SavedLocation {
+  query: string;
+  name: string;
+  region: string;
+  country: string;
+}
 
 export default function WeatherForecast() {
   const { user } = useAuth();
@@ -119,6 +128,12 @@ export default function WeatherForecast() {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<LocationResult[]>([]);
+  const [favoriteLocations, setFavoriteLocations] = useState<SavedLocation[]>(() => {
+    try {
+      const saved = localStorage.getItem(FAVORITE_LOCATIONS_KEY);
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
   const [searchLoading, setSearchLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
@@ -309,6 +324,45 @@ export default function WeatherForecast() {
         maximumAge: 300000
       }
     );
+  };
+
+  const isCurrentLocationFavorite = forecast ? favoriteLocations.some(
+    fav => fav.name === forecast.location.name && fav.country === forecast.location.country
+  ) : false;
+
+  const toggleFavoriteLocation = () => {
+    if (!forecast) return;
+    let savedQuery = `${forecast.location.name}, ${forecast.location.region || forecast.location.country}`;
+    try {
+      const last = localStorage.getItem(LAST_LOCATION_KEY);
+      if (last) {
+        const parsed = JSON.parse(last);
+        if (parsed.name === forecast.location.name) savedQuery = parsed.query;
+      }
+    } catch {}
+    const current: SavedLocation = {
+      query: savedQuery,
+      name: forecast.location.name,
+      region: forecast.location.region,
+      country: forecast.location.country,
+    };
+
+    let updated: SavedLocation[];
+    if (isCurrentLocationFavorite) {
+      updated = favoriteLocations.filter(
+        fav => !(fav.name === current.name && fav.country === current.country)
+      );
+    } else {
+      updated = [...favoriteLocations, current].slice(0, 5);
+    }
+    setFavoriteLocations(updated);
+    localStorage.setItem(FAVORITE_LOCATIONS_KEY, JSON.stringify(updated));
+  };
+
+  const loadFavoriteLocation = (fav: SavedLocation) => {
+    const displayName = `${fav.name}, ${fav.region || fav.country}`;
+    setSearchQuery(displayName);
+    fetchForecast(fav.query || displayName);
   };
 
   const getDayName = (dateString: string) => {
@@ -577,26 +631,72 @@ export default function WeatherForecast() {
               )}
             </div>
 
-            <Button 
-              onClick={() => getMyLocation()} 
-              disabled={loading}
-              data-testid="button-get-location"
-              variant="outline"
-              className="w-full sm:w-auto"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Načítavam...
-                </>
-              ) : (
-                <>
-                  <MapPin className="h-4 w-4 mr-2 text-muted-foreground" strokeWidth={1.75} />
-                  Moja poloha
-                </>
+            <div className="flex gap-2">
+              {forecast && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        onClick={toggleFavoriteLocation}
+                        variant="outline"
+                        size="icon"
+                        className="shrink-0"
+                        data-testid="button-toggle-favorite"
+                      >
+                        <Star className={`h-4 w-4 ${isCurrentLocationFavorite ? 'fill-amber-500 text-amber-500' : 'text-muted-foreground'}`} strokeWidth={1.75} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {isCurrentLocationFavorite ? 'Odstrániť z obľúbených' : 'Uložiť do obľúbených'}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               )}
-            </Button>
+              <Button 
+                onClick={() => getMyLocation()} 
+                disabled={loading}
+                data-testid="button-get-location"
+                variant="outline"
+                className="w-full sm:w-auto"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Načítavam...
+                  </>
+                ) : (
+                  <>
+                    <MapPin className="h-4 w-4 mr-2 text-muted-foreground" strokeWidth={1.75} />
+                    Moja poloha
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
+
+          {favoriteLocations.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              <span className="text-xs text-muted-foreground self-center mr-1">
+                <Star className="h-3 w-3 inline fill-amber-500 text-amber-500 mr-1" />
+                Obľúbené:
+              </span>
+              {favoriteLocations.map((fav, i) => (
+                <button
+                  key={`${fav.name}-${i}`}
+                  onClick={() => loadFavoriteLocation(fav)}
+                  className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
+                    forecast?.location.name === fav.name && forecast?.location.country === fav.country
+                      ? 'bg-primary/10 border-primary text-primary font-medium'
+                      : 'bg-card border-border text-muted-foreground hover:text-foreground hover:border-primary/50'
+                  }`}
+                  data-testid={`button-favorite-${i}`}
+                >
+                  <MapPin className="h-3 w-3 inline mr-1" />
+                  {fav.name}
+                </button>
+              ))}
+            </div>
+          )}
 
           {error && (
             <Alert variant="destructive" data-testid="alert-error">
