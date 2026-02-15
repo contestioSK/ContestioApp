@@ -1429,6 +1429,48 @@ export const insertUserArsenalBaitSchema = createInsertSchema(userArsenalBaits).
 
 export type UserArsenalBait = typeof userArsenalBaits.$inferSelect;
 
+// ==========================================
+// Simple Bait Management (MVP)
+// ==========================================
+
+export const userBaitBrands = pgTable("user_bait_brands", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 255 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const userBaitFlavors = pgTable("user_bait_flavors", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  brandId: integer("brand_id").notNull().references(() => userBaitBrands.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 255 }).notNull(),
+  diameter: varchar("diameter", { length: 20 }),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const userBaitBrandsRelations = relations(userBaitBrands, ({ one, many }) => ({
+  user: one(users, { fields: [userBaitBrands.userId], references: [users.id] }),
+  flavors: many(userBaitFlavors),
+}));
+
+export const userBaitFlavorsRelations = relations(userBaitFlavors, ({ one }) => ({
+  brand: one(userBaitBrands, { fields: [userBaitFlavors.brandId], references: [userBaitBrands.id] }),
+}));
+
+export const insertUserBaitBrandSchema = createInsertSchema(userBaitBrands, {
+  name: z.string().min(1, "Názov značky je povinný").max(255),
+}).omit({ createdAt: true });
+
+export const insertUserBaitFlavorSchema = createInsertSchema(userBaitFlavors, {
+  name: z.string().min(1, "Názov príchute je povinný").max(255),
+  diameter: z.string().max(20).optional(),
+}).omit({ createdAt: true });
+
+export type UserBaitBrand = typeof userBaitBrands.$inferSelect;
+export type InsertUserBaitBrand = z.infer<typeof insertUserBaitBrandSchema>;
+export type UserBaitFlavor = typeof userBaitFlavors.$inferSelect;
+export type InsertUserBaitFlavor = z.infer<typeof insertUserBaitFlavorSchema>;
+
 // User Badges - Gamification system
 export const userBadges = pgTable("user_badges", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
