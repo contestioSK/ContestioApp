@@ -123,7 +123,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
 
         <div className="overflow-y-auto flex-1 bg-slate-50/50 dark:bg-slate-950">
           {hasMultipleRoles && (
-            <div className="p-4 pb-2">
+            <div className="px-4 pt-2 pb-2">
               <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 pl-1">
                 Režim aplikácie
               </p>
