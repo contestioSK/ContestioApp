@@ -8447,7 +8447,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       const grouped: Record<number, {
         id: number;
         name: string;
-        flavors: Array<{ id: number; name: string; productLine: string }>;
+        flavors: Array<{ id: number; name: string; productLine: string; productLineId: number | null }>;
       }> = {};
 
       for (const row of results) {
@@ -8463,6 +8463,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
             id: row.flavorId,
             name: row.flavorName,
             productLine: row.productLineName || "",
+            productLineId: row.productLineId || null,
           });
         }
       }

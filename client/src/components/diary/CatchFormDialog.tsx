@@ -206,7 +206,7 @@ export default function CatchFormDialog({
   type ManufacturerWithFlavors = {
     id: number;
     name: string;
-    flavors: Array<{ id: number; name: string; productLine: string }>;
+    flavors: Array<{ id: number; name: string; productLine: string; productLineId: number | null }>;
   };
   const { data: manufacturers = [] } = useQuery<ManufacturerWithFlavors[]>({
     queryKey: ["/api/baits/manufacturers/search"],
@@ -214,9 +214,23 @@ export default function CatchFormDialog({
     staleTime: 5 * 60 * 1000,
   });
 
-  // State for bait selection (manufacturer → flavor)
+  type FavoriteBait = {
+    id: number;
+    diameter: string | null;
+    manufacturer: { id: number; name: string };
+    productLine: { id: number; name: string } | null;
+    flavor: { id: number; name: string };
+  };
+  const { data: favoriteBaits = [] } = useQuery<FavoriteBait[]>({
+    queryKey: ["/api/diary/arsenal/baits/favorites"],
+    enabled: !!user && isOpen,
+    staleTime: 60 * 1000,
+  });
+
+  // State for bait selection (manufacturer → flavor → diameter)
   const [selectedManufacturerId, setSelectedManufacturerId] = useState<number | null>(null);
   const [selectedFlavorId, setSelectedFlavorId] = useState<number | null>(null);
+  const [selectedDiameter, setSelectedDiameter] = useState<string>("");
   const [brandSearch, setBrandSearch] = useState("");
   const [flavorSearch, setFlavorSearch] = useState("");
   const [showBrandDropdown, setShowBrandDropdown] = useState(false);
@@ -225,6 +239,8 @@ export default function CatchFormDialog({
   const flavorInputRef = useRef<HTMLInputElement>(null);
   const brandDropdownRef = useRef<HTMLDivElement>(null);
   const flavorDropdownRef = useRef<HTMLDivElement>(null);
+
+  const commonDiameters = ["10", "12", "14", "16", "18", "20", "24", "26", "28", "30"];
 
   const selectedManufacturer = manufacturers.find(m => m.id === selectedManufacturerId);
   const selectedFlavor = selectedManufacturer?.flavors.find(f => f.id === selectedFlavorId);
@@ -328,15 +344,18 @@ export default function CatchFormDialog({
     },
   });
 
-  // Sync bait selection to form field
+  // Sync bait selection to form field (with diameter)
   useEffect(() => {
     if (selectedManufacturer && selectedFlavor) {
-      const baitText = selectedFlavor.productLine
+      let baitText = selectedFlavor.productLine
         ? `${selectedManufacturer.name} - ${selectedFlavor.productLine} - ${selectedFlavor.name}`
         : `${selectedManufacturer.name} - ${selectedFlavor.name}`;
+      if (selectedDiameter) {
+        baitText += ` (${selectedDiameter}mm)`;
+      }
       form.setValue("bait", baitText);
     }
-  }, [selectedManufacturerId, selectedFlavorId, selectedManufacturer, selectedFlavor, form]);
+  }, [selectedManufacturerId, selectedFlavorId, selectedManufacturer, selectedFlavor, selectedDiameter, form]);
 
   // Auto-set tripId when active battle exists
   useEffect(() => {
@@ -389,19 +408,26 @@ export default function CatchFormDialog({
           : undefined,
       });
 
-      // Try to match existing bait text to brand/flavor
+      // Try to match existing bait text to brand/flavor and extract diameter
       const baitText = editingCatch.bait || "";
       let matched = false;
-      if (baitText && manufacturers.length > 0) {
+
+      // Extract diameter from bait text (e.g. "(20mm)" at the end)
+      const diameterMatch = baitText.match(/\((\d+)mm\)\s*$/);
+      const extractedDiameter = diameterMatch ? diameterMatch[1] : "";
+      const baitWithoutDiameter = baitText.replace(/\s*\(\d+mm\)\s*$/, "").trim();
+
+      if (baitWithoutDiameter && manufacturers.length > 0) {
         for (const mfr of manufacturers) {
           for (const flavor of mfr.flavors) {
             const candidates = [
               flavor.productLine ? `${mfr.name} - ${flavor.productLine} - ${flavor.name}` : null,
               `${mfr.name} - ${flavor.name}`,
             ].filter(Boolean) as string[];
-            if (candidates.some(c => baitText === c)) {
+            if (candidates.some(c => baitWithoutDiameter === c)) {
               setSelectedManufacturerId(mfr.id);
               setSelectedFlavorId(flavor.id);
+              setSelectedDiameter(extractedDiameter);
               setBrandSearch(mfr.name);
               const flavorDisplay = flavor.productLine ? `${flavor.productLine} - ${flavor.name}` : flavor.name;
               setFlavorSearch(flavorDisplay);
@@ -411,13 +437,14 @@ export default function CatchFormDialog({
           }
           if (matched) break;
           // Also match old "Brand - Flavor (diameter)" format by stripping diameter
-          if (!matched && baitText.startsWith(mfr.name + " - ")) {
-            const remainder = baitText.slice(mfr.name.length + 3);
+          if (!matched && baitWithoutDiameter.startsWith(mfr.name + " - ")) {
+            const remainder = baitWithoutDiameter.slice(mfr.name.length + 3);
             const noDiameter = remainder.replace(/\s*\([^)]*\)\s*$/, "").trim();
             for (const flavor of mfr.flavors) {
               if (noDiameter === flavor.name || noDiameter === `${flavor.productLine} - ${flavor.name}`) {
                 setSelectedManufacturerId(mfr.id);
                 setSelectedFlavorId(flavor.id);
+                setSelectedDiameter(extractedDiameter);
                 setBrandSearch(mfr.name);
                 const flavorDisplay = flavor.productLine ? `${flavor.productLine} - ${flavor.name}` : flavor.name;
                 setFlavorSearch(flavorDisplay);
@@ -432,6 +459,7 @@ export default function CatchFormDialog({
       if (!matched) {
         setSelectedManufacturerId(null);
         setSelectedFlavorId(null);
+        setSelectedDiameter(extractedDiameter);
         setBrandSearch(baitText);
         setFlavorSearch("");
       }
@@ -440,6 +468,7 @@ export default function CatchFormDialog({
       setSelectedTripId(activeBattle?.tripId);
       setSelectedManufacturerId(null);
       setSelectedFlavorId(null);
+      setSelectedDiameter("");
       setBrandSearch("");
       setFlavorSearch("");
       form.reset({
@@ -454,6 +483,62 @@ export default function CatchFormDialog({
       });
     }
   }, [editingCatch, form, activeBattle, manufacturers]);
+
+  // Toggle favorite bait mutation
+  const toggleFavoriteMutation = useMutation({
+    mutationFn: async ({ arsenalBaitId }: { arsenalBaitId: number }) => {
+      const response = await apiRequest("PATCH", `/api/diary/arsenal/baits/${arsenalBaitId}/favorite`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/diary/arsenal/baits/favorites"] });
+    },
+  });
+
+  // Add bait to arsenal + mark as favorite
+  const addFavoriteMutation = useMutation({
+    mutationFn: async ({ manufacturerId, productLineId, flavorId, diameter }: { manufacturerId: number; productLineId: number; flavorId: number; diameter?: string }) => {
+      const response = await apiRequest("POST", "/api/diary/arsenal/baits", {
+        manufacturerId,
+        productLineId,
+        flavorId,
+        diameter: diameter || null,
+        isFavorite: true,
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/diary/arsenal/baits/favorites"] });
+    },
+  });
+
+  // Check if current selection is a favorite (match manufacturer + flavor + diameter)
+  const currentFavorite = useMemo(() => {
+    if (!selectedManufacturerId || !selectedFlavorId) return null;
+    return favoriteBaits.find(
+      f => f.manufacturer.id === selectedManufacturerId
+        && f.flavor.id === selectedFlavorId
+        && (f.diameter || "") === selectedDiameter
+    ) || null;
+  }, [selectedManufacturerId, selectedFlavorId, selectedDiameter, favoriteBaits]);
+
+  // Handle toggle favorite for current selection
+  const handleToggleFavorite = () => {
+    if (!selectedManufacturerId || !selectedFlavorId) return;
+    if (currentFavorite) {
+      toggleFavoriteMutation.mutate({ arsenalBaitId: currentFavorite.id });
+    } else {
+      const flavorData = selectedManufacturer?.flavors.find(f => f.id === selectedFlavorId);
+      if (flavorData) {
+        addFavoriteMutation.mutate({
+          manufacturerId: selectedManufacturerId,
+          productLineId: flavorData.productLineId || 0,
+          flavorId: selectedFlavorId,
+          diameter: selectedDiameter || undefined,
+        });
+      }
+    }
+  };
 
   // Create catch mutation
   const createCatchMutation = useMutation({
@@ -1334,6 +1419,7 @@ export default function CatchFormDialog({
                                 if (selectedManufacturerId) {
                                   setSelectedManufacturerId(null);
                                   setSelectedFlavorId(null);
+                                  setSelectedDiameter("");
                                   setFlavorSearch("");
                                 }
                                 field.onChange("");
@@ -1350,6 +1436,7 @@ export default function CatchFormDialog({
                                   setBrandSearch("");
                                   setSelectedManufacturerId(null);
                                   setSelectedFlavorId(null);
+                                  setSelectedDiameter("");
                                   setFlavorSearch("");
                                   field.onChange("");
                                   brandInputRef.current?.focus();
@@ -1363,6 +1450,44 @@ export default function CatchFormDialog({
                                 ref={brandDropdownRef}
                                 className="absolute z-[100] top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-lg border border-border bg-popover shadow-lg"
                               >
+                                {/* Favorites section */}
+                                {favoriteBaits.length > 0 && !brandSearch.trim() && (
+                                  <>
+                                    <div className="px-2 py-1.5 text-[10px] font-bold text-amber-500 uppercase tracking-wider flex items-center gap-1">
+                                      <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
+                                      Obľúbené
+                                    </div>
+                                    {favoriteBaits.map((fav) => (
+                                      <button
+                                        key={`fav-${fav.id}`}
+                                        type="button"
+                                        className="w-full text-left px-3 py-2 text-sm hover:bg-muted/50 transition-colors flex items-center gap-2"
+                                        onMouseDown={(e) => e.preventDefault()}
+                                        onClick={() => {
+                                          setSelectedManufacturerId(fav.manufacturer.id);
+                                          setBrandSearch(fav.manufacturer.name);
+                                          setSelectedFlavorId(fav.flavor.id);
+                                          const flavorDisplay = fav.productLine?.name
+                                            ? `${fav.productLine.name} - ${fav.flavor.name}`
+                                            : fav.flavor.name;
+                                          setFlavorSearch(flavorDisplay);
+                                          setSelectedDiameter(fav.diameter || "");
+                                          setShowBrandDropdown(false);
+                                        }}
+                                      >
+                                        <Star className="h-3 w-3 fill-amber-500 text-amber-500 shrink-0" />
+                                        <span>
+                                          <span className="text-muted-foreground">{fav.manufacturer.name}</span>
+                                          {" – "}
+                                          {fav.productLine?.name && <span className="text-muted-foreground">{fav.productLine.name} – </span>}
+                                          {fav.flavor.name}
+                                          {fav.diameter && <span className="text-orange-400 font-mono text-xs ml-1">({fav.diameter}mm)</span>}
+                                        </span>
+                                      </button>
+                                    ))}
+                                    <div className="border-t border-border my-1" />
+                                  </>
+                                )}
                                 {filteredBrandSuggestions.brands.length > 0 && (
                                   <>
                                     <div className="px-2 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
@@ -1378,6 +1503,7 @@ export default function CatchFormDialog({
                                           setSelectedManufacturerId(item.id as number);
                                           setBrandSearch(item.name);
                                           setSelectedFlavorId(null);
+                                          setSelectedDiameter("");
                                           setFlavorSearch("");
                                           setShowBrandDropdown(false);
                                           field.onChange("");
@@ -1403,6 +1529,7 @@ export default function CatchFormDialog({
                                         onClick={() => {
                                           setSelectedManufacturerId(null);
                                           setSelectedFlavorId(null);
+                                          setSelectedDiameter("");
                                           setBrandSearch(item.name);
                                           setFlavorSearch("");
                                           setShowBrandDropdown(false);
@@ -1424,6 +1551,7 @@ export default function CatchFormDialog({
                                     onClick={() => {
                                       setSelectedManufacturerId(null);
                                       setSelectedFlavorId(null);
+                                      setSelectedDiameter("");
                                       setShowBrandDropdown(false);
                                       field.onChange(brandSearch.trim());
                                     }}
@@ -1432,7 +1560,7 @@ export default function CatchFormDialog({
                                     Použiť „{brandSearch.trim()}"
                                   </button>
                                 )}
-                                {!brandSearch.trim() && filteredBrandSuggestions.brands.length === 0 && filteredBrandSuggestions.methods.length === 0 && (
+                                {!brandSearch.trim() && filteredBrandSuggestions.brands.length === 0 && filteredBrandSuggestions.methods.length === 0 && favoriteBaits.length === 0 && (
                                   <div className="px-3 py-2 text-sm text-muted-foreground">
                                     Začnite písať pre vyhľadávanie...
                                   </div>
@@ -1516,6 +1644,41 @@ export default function CatchFormDialog({
                                   )}
                                 </div>
                               )}
+                            </div>
+                          )}
+
+                          {/* Diameter selector + Favorite toggle - show when flavor is selected */}
+                          {selectedManufacturerId && selectedFlavorId && (
+                            <div className="flex items-center gap-2">
+                              <Select
+                                value={selectedDiameter}
+                                onValueChange={(val) => setSelectedDiameter(val === "none" ? "" : val)}
+                              >
+                                <SelectTrigger className="bg-slate-800/80 border-border/50 text-foreground flex-1">
+                                  <SelectValue placeholder="Priemer (mm)" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="none">Bez priemeru</SelectItem>
+                                  <SelectSeparator />
+                                  {commonDiameters.map((d) => (
+                                    <SelectItem key={d} value={d}>{d}mm</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <button
+                                type="button"
+                                onClick={handleToggleFavorite}
+                                disabled={toggleFavoriteMutation.isPending || addFavoriteMutation.isPending}
+                                className={cn(
+                                  "p-2 rounded-lg border transition-colors shrink-0",
+                                  currentFavorite
+                                    ? "border-amber-500/50 bg-amber-500/10 text-amber-500"
+                                    : "border-border/50 bg-slate-800/80 text-muted-foreground hover:text-amber-500 hover:border-amber-500/30"
+                                )}
+                                title={currentFavorite ? "Odobrať z obľúbených" : "Pridať do obľúbených"}
+                              >
+                                <Star className={cn("h-4 w-4", currentFavorite && "fill-amber-500")} />
+                              </button>
                             </div>
                           )}
                         </div>
