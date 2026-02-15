@@ -1159,7 +1159,7 @@ export default function CatchFormDialog({
                         <FormControl>
                           <SelectTrigger
                             data-testid="select-fish-type"
-                            className="font-semibold"
+                            className="font-semibold bg-slate-800/80 border-border/50 text-foreground"
                           >
                             <div className="flex items-center gap-2">
                               <Fish className="h-4 w-4 text-muted-foreground" strokeWidth={1.75} />
@@ -1243,7 +1243,7 @@ export default function CatchFormDialog({
                             type="text"
                             placeholder="7.5"
                             data-testid="input-weight"
-                            className="font-bold text-lg pr-10"
+                            className="font-bold text-lg pr-10 bg-slate-800/80 border-border/50 text-foreground"
                             {...field}
                           />
                           <Scale className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" strokeWidth={1.75} />
@@ -1327,7 +1327,7 @@ export default function CatchFormDialog({
                               onChange={(e) => handleDateChange(e.target.value)}
                               data-testid="input-capture-date"
                               max={format(new Date(), "yyyy-MM-dd")}
-                              className="text-sm"
+                              className="text-sm bg-slate-800/80 border-border/50 text-foreground"
                             />
                           </FormControl>
                         </FormItem>
@@ -1338,7 +1338,7 @@ export default function CatchFormDialog({
                               value={timeValue}
                               onChange={(e) => handleTimeChange(e.target.value)}
                               data-testid="input-capture-time"
-                              className="text-sm"
+                              className="text-sm bg-slate-800/80 border-border/50 text-foreground"
                             />
                           </FormControl>
                         </FormItem>
@@ -1384,7 +1384,7 @@ export default function CatchFormDialog({
                             type="number"
                             placeholder="napr. 65"
                             data-testid="input-length"
-                            className="bg-muted/30 border-border/50"
+                            className="bg-slate-800/80 border-border/50 text-foreground"
                             {...field}
                             value={field.value ?? ""}
                             onChange={(e) =>
@@ -1722,7 +1722,7 @@ export default function CatchFormDialog({
                         <FormControl>
                           <Input
                             placeholder="napr. Šupináč zo zátoky"
-                            className="bg-muted/30 border-border/50"
+                            className="bg-slate-800/80 border-border/50 text-foreground"
                             maxLength={40}
                             data-testid="input-nickname"
                             {...field}
@@ -1745,7 +1745,7 @@ export default function CatchFormDialog({
                         <FormControl>
                           <Textarea
                             placeholder="Montáž, teplota vody, hĺbka, postrehy…"
-                            className="resize-none bg-muted/30 border-border/50 min-h-[60px]"
+                            className="resize-none bg-slate-800/80 border-border/50 text-foreground min-h-[60px]"
                             rows={2}
                             data-testid="textarea-notes"
                             {...field}
