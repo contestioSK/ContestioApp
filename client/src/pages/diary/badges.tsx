@@ -323,6 +323,12 @@ export default function BadgesPage() {
         )}
 
         {/* TIERED UNLOCKED BADGES - Colored accent lines */}
+        {userBadges.length > 0 && (
+          <div className="flex items-center gap-3">
+            <Award className="h-5 w-5 text-muted-foreground" strokeWidth={1.75} />
+            <h2 className="text-lg font-bold text-foreground">Získané odznaky</h2>
+          </div>
+        )}
         <div className="space-y-10 pb-12">
           {(['gold', 'silver', 'bronze'] as const).map((tier) => {
             const items = unlockedByTier[tier];
