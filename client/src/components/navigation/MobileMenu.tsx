@@ -280,7 +280,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
             {/* Community Section (amber) */}
             <div>
               <p className="text-[10px] font-bold text-amber-600 dark:text-amber-500 uppercase tracking-widest mb-2 pl-3">
-                Súťaže & Komunita
+                Battle & Komunita
               </p>
               <div className="space-y-0">
                 {communityItems.map((item) => {
