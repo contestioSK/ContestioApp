@@ -69,7 +69,7 @@ export function FishingAreaSelect({ value, onChange }: FishingAreaSelectProps) {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between"
+          className="w-full justify-between bg-slate-800/80 border-border/50 text-foreground hover:bg-slate-800/90 hover:text-foreground font-normal"
           data-testid="button-select-fishing-area"
         >
           {selectedArea 
@@ -86,7 +86,7 @@ export function FishingAreaSelect({ value, onChange }: FishingAreaSelectProps) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             data-testid="input-search-fishing-area"
-            className="h-8"
+            className="h-8 bg-slate-800/80 border-border/50 text-foreground"
           />
         </div>
         <CommandList>
