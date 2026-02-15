@@ -8427,6 +8427,53 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
+  // Combined manufacturer search endpoint for bait combobox
+  app.get('/api/baits/manufacturers/search', isAuthenticated, async (req: any, res) => {
+    try {
+      const results = await db
+        .select({
+          manufacturerId: baitManufacturers.id,
+          manufacturerName: baitManufacturers.name,
+          productLineId: baitProductLines.id,
+          productLineName: baitProductLines.name,
+          flavorId: baitFlavors.id,
+          flavorName: baitFlavors.name,
+        })
+        .from(baitManufacturers)
+        .leftJoin(baitProductLines, eq(baitProductLines.manufacturerId, baitManufacturers.id))
+        .leftJoin(baitFlavors, eq(baitFlavors.productLineId, baitProductLines.id))
+        .orderBy(baitManufacturers.name, baitProductLines.name, baitFlavors.name);
+
+      const grouped: Record<number, {
+        id: number;
+        name: string;
+        flavors: Array<{ id: number; name: string; productLine: string }>;
+      }> = {};
+
+      for (const row of results) {
+        if (!grouped[row.manufacturerId]) {
+          grouped[row.manufacturerId] = {
+            id: row.manufacturerId,
+            name: row.manufacturerName,
+            flavors: [],
+          };
+        }
+        if (row.flavorId && row.flavorName) {
+          grouped[row.manufacturerId].flavors.push({
+            id: row.flavorId,
+            name: row.flavorName,
+            productLine: row.productLineName || "",
+          });
+        }
+      }
+
+      res.json(Object.values(grouped));
+    } catch (error) {
+      console.error("[BAITS] Error searching manufacturers:", error);
+      res.status(500).json({ message: "Failed to search manufacturers" });
+    }
+  });
+
   // User Arsenal Baits endpoints
   app.get('/api/diary/arsenal/baits', isAuthenticated, async (req: any, res) => {
     try {
