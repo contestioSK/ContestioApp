@@ -4,8 +4,8 @@ import { WebSocketServer, WebSocket } from "ws";
 import { randomUUID, createHmac } from "crypto";
 import { storage } from "./storage";
 import { db } from "./db";
-import { eq, and, gt, desc, or, inArray, sql } from "drizzle-orm";
-import { diaryBattles, users, baitManufacturers, baitProductLines, baitFlavors, userArsenalBaits, userBadges, fishingAreas, friendships, equipmentManufacturers, equipmentCategories, equipmentProducts, userArsenalEquipment, insertUserArsenalEquipmentSchema, userBaitBrands, userBaitFlavors, insertUserBaitBrandSchema, insertUserBaitFlavorSchema } from "@shared/schema";
+import { eq, and, gt, desc, or, inArray, sql, isNotNull } from "drizzle-orm";
+import { diaryBattles, diaryCatches, users, baitManufacturers, baitProductLines, baitFlavors, userArsenalBaits, userBadges, fishingAreas, friendships, equipmentManufacturers, equipmentCategories, equipmentProducts, userArsenalEquipment, insertUserArsenalEquipmentSchema, userBaitBrands, userBaitFlavors, insertUserBaitBrandSchema, insertUserBaitFlavorSchema } from "@shared/schema";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { hashPassword, validatePassword, generateVerificationToken, generateTokenExpiration } from "./utils/auth";
 import { emailService } from "./utils/email";
@@ -7179,6 +7179,128 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     } catch (error) {
       console.error("Error searching diary:", error);
       res.status(500).json({ message: "Failed to search diary" });
+    }
+  });
+
+  // Bait Statistics endpoint
+  app.get('/api/diary/bait-stats', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id || req.user?.claims?.sub;
+      const year = req.query.year ? parseInt(req.query.year as string) : undefined;
+
+      const allCatches = await db
+        .select({
+          id: diaryCatches.id,
+          bait: diaryCatches.bait,
+          weight: diaryCatches.weight,
+          fishType: diaryCatches.fishType,
+          capturedAt: diaryCatches.capturedAt,
+          nickname: diaryCatches.nickname,
+          isHistorical: diaryCatches.isHistorical,
+        })
+        .from(diaryCatches)
+        .where(
+          and(
+            sql`${diaryCatches.angler}->>'userId' = ${userId}`,
+            isNotNull(diaryCatches.bait),
+            sql`${diaryCatches.bait} != ''`,
+            eq(diaryCatches.isHistorical, false),
+            ...(year ? [sql`EXTRACT(YEAR FROM ${diaryCatches.capturedAt}) = ${year}`] : [])
+          )
+        )
+        .orderBy(desc(diaryCatches.capturedAt));
+
+      const baitMap = new Map<string, {
+        bait: string;
+        catchCount: number;
+        totalWeight: number;
+        maxWeight: number;
+        maxWeightFish: string | null;
+        maxWeightDate: Date | null;
+        maxWeightNickname: string | null;
+        fishTypes: Record<string, number>;
+        lastUsed: Date | null;
+        catches: Array<{
+          id: string;
+          weight: number;
+          fishType: string;
+          capturedAt: Date;
+          nickname: string | null;
+        }>;
+        monthlyUsage: Record<number, number>;
+      }>();
+
+      for (const c of allCatches) {
+        const baitName = c.bait!.trim();
+        const weight = parseFloat(c.weight);
+        const month = c.capturedAt.getMonth();
+
+        if (!baitMap.has(baitName)) {
+          baitMap.set(baitName, {
+            bait: baitName,
+            catchCount: 0,
+            totalWeight: 0,
+            maxWeight: 0,
+            maxWeightFish: null,
+            maxWeightDate: null,
+            maxWeightNickname: null,
+            fishTypes: {},
+            lastUsed: null,
+            catches: [],
+            monthlyUsage: {},
+          });
+        }
+
+        const stats = baitMap.get(baitName)!;
+        stats.catchCount++;
+        stats.totalWeight += weight;
+
+        if (weight > stats.maxWeight) {
+          stats.maxWeight = weight;
+          stats.maxWeightFish = c.fishType;
+          stats.maxWeightDate = c.capturedAt;
+          stats.maxWeightNickname = c.nickname;
+        }
+
+        stats.fishTypes[c.fishType] = (stats.fishTypes[c.fishType] || 0) + 1;
+
+        if (!stats.lastUsed || c.capturedAt > stats.lastUsed) {
+          stats.lastUsed = c.capturedAt;
+        }
+
+        stats.catches.push({
+          id: c.id,
+          weight,
+          fishType: c.fishType,
+          capturedAt: c.capturedAt,
+          nickname: c.nickname,
+        });
+
+        stats.monthlyUsage[month] = (stats.monthlyUsage[month] || 0) + 1;
+      }
+
+      const result = Array.from(baitMap.values()).map(s => {
+        const topFishType = Object.entries(s.fishTypes).sort((a, b) => b[1] - a[1])[0];
+        return {
+          bait: s.bait,
+          catchCount: s.catchCount,
+          totalWeight: Math.round(s.totalWeight * 100) / 100,
+          averageWeight: Math.round((s.totalWeight / s.catchCount) * 100) / 100,
+          maxWeight: s.maxWeight,
+          maxWeightFish: s.maxWeightFish,
+          maxWeightDate: s.maxWeightDate,
+          maxWeightNickname: s.maxWeightNickname,
+          topFishType: topFishType ? { fishType: topFishType[0], count: topFishType[1] } : null,
+          lastUsed: s.lastUsed,
+          catches: s.catches,
+          monthlyUsage: s.monthlyUsage,
+        };
+      }).sort((a, b) => b.catchCount - a.catchCount);
+
+      res.json(result);
+    } catch (error) {
+      console.error("[BAIT-STATS] Error fetching bait statistics:", error);
+      res.status(500).json({ message: "Failed to fetch bait statistics" });
     }
   });
 
