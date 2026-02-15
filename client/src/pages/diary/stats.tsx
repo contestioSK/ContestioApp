@@ -19,7 +19,11 @@ import {
   Trophy,
   BarChart3,
   Weight,
-  Map
+  Map,
+  Target,
+  ChevronDown,
+  ChevronRight,
+  Loader2
 } from "lucide-react";
 
 const getFishDeclension = (count: number): string => {
@@ -51,6 +55,27 @@ type PremiumStatus = {
   isPremium: boolean;
 };
 
+type BaitStat = {
+  bait: string;
+  catchCount: number;
+  totalWeight: number;
+  averageWeight: number;
+  maxWeight: number;
+  maxWeightFish: string | null;
+  maxWeightDate: string | null;
+  maxWeightNickname: string | null;
+  topFishType: { fishType: string; count: number } | null;
+  lastUsed: string | null;
+  catches: Array<{
+    id: string;
+    weight: number;
+    fishType: string;
+    capturedAt: string;
+    nickname: string | null;
+  }>;
+  monthlyUsage: Record<number, number>;
+};
+
 const TrendChart = ({ data }: { data: { label: string; val: number }[] }) => {
   const max = Math.max(...data.map(d => d.val), 1);
   return (
@@ -79,6 +104,8 @@ export default function DiaryStats() {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const [, setLocation] = useLocation();
+  const [expandedBait, setExpandedBait] = useState<string | null>(null);
+  const [baitSortBy, setBaitSortBy] = useState<"catchCount" | "averageWeight" | "maxWeight" | "totalWeight">("catchCount");
   const selectedPeriodMonths: 3 | 6 | 12 | 24 = 12;
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState<number>(currentYear);
@@ -125,6 +152,28 @@ export default function DiaryStats() {
   });
 
   const isPremium = premiumStatus?.isPremium || false;
+
+  const { data: baitStats = [], isLoading: isLoadingBaitStats, isError: isBaitStatsError } = useQuery<BaitStat[]>({
+    queryKey: ["/api/diary/bait-stats", selectedYear],
+    queryFn: async () => {
+      const res = await fetch(`/api/diary/bait-stats?year=${selectedYear}`);
+      if (!res.ok) return [];
+      return res.json();
+    },
+    enabled: !!user,
+    retry: 1,
+  });
+
+  const sortedBaitStats = useMemo(() => {
+    return [...baitStats].sort((a, b) => {
+      switch (baitSortBy) {
+        case "averageWeight": return b.averageWeight - a.averageWeight;
+        case "maxWeight": return b.maxWeight - a.maxWeight;
+        case "totalWeight": return b.totalWeight - a.totalWeight;
+        default: return b.catchCount - a.catchCount;
+      }
+    });
+  }, [baitStats, baitSortBy]);
 
   const basicStats = useMemo(() => calculateBasicStats(catches, trips), [catches, trips]);
   const monthlyStats = useMemo(() => calculateMonthlyStats(catches, trips, selectedPeriodMonths), [catches, trips, selectedPeriodMonths]);
@@ -325,6 +374,198 @@ export default function DiaryStats() {
                 <Info size={12} />
                 Graf zobrazuje počet úlovkov za posledných 12 mesiacov.
               </div>
+            </section>
+
+            {/* Moje nástrahy - Bait Statistics */}
+            <section className="bg-card dark:bg-slate-900 border border-border/50 rounded-xl p-6 md:p-8">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+                <div className="flex items-center gap-3">
+                  <Target className="h-5 w-5 text-muted-foreground" strokeWidth={1.75} />
+                  <h3 className="text-lg font-bold text-foreground">Moje nástrahy</h3>
+                  {baitStats.length > 0 && (
+                    <Badge variant="secondary" className="text-xs font-mono">
+                      {baitStats.length}
+                    </Badge>
+                  )}
+                </div>
+                {baitStats.length > 1 && (
+                  <Select value={baitSortBy} onValueChange={(v) => setBaitSortBy(v as typeof baitSortBy)}>
+                    <SelectTrigger className="w-[160px] h-8 text-xs bg-slate-800/80 border-border/50">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="catchCount">Počet úlovkov</SelectItem>
+                      <SelectItem value="averageWeight">Priemerná váha</SelectItem>
+                      <SelectItem value="maxWeight">Najväčší úlovok</SelectItem>
+                      <SelectItem value="totalWeight">Celková váha</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+
+              {isLoadingBaitStats ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : sortedBaitStats.length === 0 ? (
+                <div className="text-center py-8">
+                  <Target className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-50" strokeWidth={1.75} />
+                  <p className="text-muted-foreground text-sm">Zatiaľ nemáš žiadne úlovky s nástrahami.</p>
+                  <p className="text-xs text-muted-foreground mt-1">Pri zápise úlovku vyplň pole „Nástraha".</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {sortedBaitStats.map((bait, index) => {
+                    const isExpanded = expandedBait === bait.bait;
+                    const maxCatchCount = sortedBaitStats[0]?.catchCount || 1;
+                    const barWidth = (bait.catchCount / maxCatchCount) * 100;
+                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Máj', 'Jún', 'Júl', 'Aug', 'Sep', 'Okt', 'Nov', 'Dec'];
+
+                    return (
+                      <div key={bait.bait} className="rounded-xl border border-border/50 overflow-hidden transition-all duration-200 hover:border-border">
+                        <button
+                          type="button"
+                          className="w-full text-left p-4 hover:bg-muted/30 transition-colors"
+                          onClick={() => setExpandedBait(isExpanded ? null : bait.bait)}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${
+                              index === 0 ? 'bg-amber-500/20 text-amber-500' :
+                              index === 1 ? 'bg-zinc-400/20 text-zinc-400' :
+                              index === 2 ? 'bg-orange-700/20 text-orange-600' :
+                              'bg-muted text-muted-foreground'
+                            }`}>
+                              {index + 1}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="font-medium text-foreground text-sm truncate">{bait.bait}</span>
+                                {isExpanded ? (
+                                  <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" strokeWidth={1.75} />
+                                ) : (
+                                  <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" strokeWidth={1.75} />
+                                )}
+                              </div>
+                              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5">
+                                <span className="text-xs text-muted-foreground">
+                                  <span className="font-mono font-medium text-[#F97316]">{bait.catchCount}</span> úlovkov
+                                </span>
+                                <span className="text-xs text-muted-foreground">
+                                  Ø <span className="font-mono font-medium text-[#F97316]">{bait.averageWeight.toFixed(1)}</span> kg
+                                </span>
+                                <span className="text-xs text-muted-foreground">
+                                  PB <span className="font-mono font-medium text-[#F97316]">{bait.maxWeight.toFixed(1)}</span> kg
+                                </span>
+                              </div>
+                              <div className="mt-2 h-1.5 rounded-full bg-muted overflow-hidden">
+                                <div
+                                  className="h-full rounded-full bg-[#F97316]/70 transition-all duration-500"
+                                  style={{ width: `${barWidth}%` }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </button>
+
+                        {isExpanded && (
+                          <div className="px-4 pb-4 pt-1 border-t border-border/30 space-y-4">
+                            {/* Summary stats grid */}
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
+                              <div className="p-3 rounded-lg bg-muted/30">
+                                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Celková váha</div>
+                                <div className="text-sm font-mono font-medium text-[#F97316]">{bait.totalWeight.toFixed(1)} kg</div>
+                              </div>
+                              <div className="p-3 rounded-lg bg-muted/30">
+                                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Priemerná váha</div>
+                                <div className="text-sm font-mono font-medium text-[#F97316]">{bait.averageWeight.toFixed(1)} kg</div>
+                              </div>
+                              <div className="p-3 rounded-lg bg-muted/30">
+                                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">PB úlovok</div>
+                                <div className="text-sm font-mono font-medium text-[#F97316]">{bait.maxWeight.toFixed(1)} kg</div>
+                                {bait.maxWeightFish && (
+                                  <div className="text-[10px] text-muted-foreground mt-0.5">{getFishTypeLabel(bait.maxWeightFish)}</div>
+                                )}
+                              </div>
+                              <div className="p-3 rounded-lg bg-muted/30">
+                                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Najčastejší druh</div>
+                                {bait.topFishType ? (
+                                  <>
+                                    <div className="text-sm font-medium text-foreground">{getFishTypeLabel(bait.topFishType.fishType)}</div>
+                                    <div className="text-[10px] text-muted-foreground mt-0.5">{bait.topFishType.count}× z {bait.catchCount}</div>
+                                  </>
+                                ) : (
+                                  <div className="text-sm text-muted-foreground">–</div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Monthly usage mini chart */}
+                            {Object.keys(bait.monthlyUsage).length > 0 && (
+                              <div>
+                                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Sezónny prehľad</div>
+                                <div className="flex items-end gap-1 h-12">
+                                  {monthNames.map((name, i) => {
+                                    const count = bait.monthlyUsage[i] || 0;
+                                    const maxMonth = Math.max(...Object.values(bait.monthlyUsage), 1);
+                                    return (
+                                      <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                                        <div
+                                          className={`w-full rounded-sm transition-all ${count > 0 ? 'bg-[#F97316]/60' : 'bg-muted/50'}`}
+                                          style={{ height: count > 0 ? `${Math.max((count / maxMonth) * 100, 10)}%` : '4px' }}
+                                          title={`${name}: ${count}`}
+                                        />
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                                <div className="flex justify-between mt-1">
+                                  {monthNames.map((name, i) => (
+                                    <span key={i} className="text-[8px] text-muted-foreground flex-1 text-center">{name}</span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Catch history */}
+                            <div>
+                              <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
+                                Posledné úlovky ({Math.min(bait.catches.length, 5)} z {bait.catches.length})
+                              </div>
+                              <div className="space-y-1.5">
+                                {bait.catches.slice(0, 5).map((c) => (
+                                  <div
+                                    key={c.id}
+                                    className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/30 transition-colors cursor-pointer"
+                                    onClick={() => setLocation(`/diary/catches/${c.id}`)}
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <Fish className="h-3.5 w-3.5 text-muted-foreground" strokeWidth={1.75} />
+                                      <span className="text-sm text-foreground">{getFishTypeLabel(c.fishType)}</span>
+                                      {c.nickname && <span className="text-xs text-muted-foreground italic">„{c.nickname}"</span>}
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                      <span className="text-sm font-mono font-medium text-[#F97316]">{c.weight.toFixed(1)} kg</span>
+                                      <span className="text-[10px] text-muted-foreground">
+                                        {new Date(c.capturedAt).toLocaleDateString('sk-SK', { day: 'numeric', month: 'short' })}
+                                      </span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {bait.lastUsed && (
+                              <div className="text-[10px] text-muted-foreground pt-2 border-t border-border/30">
+                                Posledné použitie: {new Date(bait.lastUsed).toLocaleDateString('sk-SK', { day: 'numeric', month: 'long', year: 'numeric' })}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </section>
 
           </div>

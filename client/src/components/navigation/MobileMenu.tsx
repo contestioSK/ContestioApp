@@ -85,7 +85,6 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const fishingLifeItems = [
     { icon: Fish, label: "Moje úlovky", href: "/diary/catches", color: "cyan" },
     { icon: MapPin, label: "Rybárske výpravy", href: "/diary/trips", color: "cyan" },
-    { icon: Package, label: "Môj arzenál", href: "/diary/arsenal", color: "cyan" },
     { icon: BarChart3, label: "Štatistiky", href: "/diary/stats", color: "cyan" },
   ];
 
