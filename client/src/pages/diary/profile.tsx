@@ -158,9 +158,9 @@ function ProfileAvatar({ imageUrl, size = 'md', editable = false, isUploading = 
         onClick={handleClick}
         disabled={!editable || isUploading}
         className={`
-          ${sizeClasses[size]} rounded-full overflow-hidden border-4 border-primary/20
+          ${sizeClasses[size]} rounded-full overflow-hidden border-4
+          ${isUploading ? 'border-primary animate-pulse' : 'border-primary/20'}
           ${editable ? 'cursor-pointer hover:border-primary/40 transition-all' : 'cursor-default'}
-          ${isUploading ? 'opacity-50' : ''}
           focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2
         `}
         data-testid="button-avatar"
@@ -281,6 +281,9 @@ export default function Profile() {
   const [, setLocation] = useLocation();
   const [isEditing, setIsEditing] = useState(false);
   const [showTechDetails, setShowTechDetails] = useState(false);
+  const [showCompHistory, setShowCompHistory] = useState(false);
+  const [showCompCatches, setShowCompCatches] = useState(false);
+  const [showSettings, setShowSettings] = useState(true);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [profileImage, setProfileImage] = useState<File | null>(null);
 
@@ -568,7 +571,14 @@ export default function Profile() {
                     onFileSelect={handleAvatarFileSelect}
                   />
                   <p className="text-xs text-muted-foreground mt-2">
-                    Klikni pre zmenu
+                    {uploadImageMutation.isPending ? (
+                      <span className="flex items-center justify-center gap-1 text-primary">
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        Nahrávam...
+                      </span>
+                    ) : (
+                      "Klikni pre zmenu"
+                    )}
                   </p>
                 </div>
                 <CardTitle className="text-xl">
@@ -900,16 +910,28 @@ export default function Profile() {
 
           {/* Competition History & Catches - only shown if user has competition participation */}
           {!isHistoryLoading && competitionHistory.length > 0 && (<>
+          <Collapsible open={showCompHistory} onOpenChange={setShowCompHistory}>
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Trophy className="w-5 h-5 text-amber-500" />
-                História pretekov
-              </CardTitle>
-              <CardDescription>
-                Súťaže, ktorých si sa zúčastnil ako člen tímu
-              </CardDescription>
+            <CardHeader className="pb-3">
+              <CollapsibleTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  className="w-full flex items-center justify-between p-0 h-auto hover:bg-transparent"
+                >
+                  <div className="text-left">
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <Trophy className="w-5 h-5 text-amber-500" />
+                      História pretekov
+                    </CardTitle>
+                    <CardDescription className="text-sm">
+                      Súťaže, ktorých si sa zúčastnil ako člen tímu
+                    </CardDescription>
+                  </div>
+                  <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform ${showCompHistory ? 'rotate-180' : ''}`} />
+                </Button>
+              </CollapsibleTrigger>
             </CardHeader>
+            <CollapsibleContent>
             <CardContent>
               {isHistoryLoading ? (
                 <div className="space-y-4">
@@ -1063,19 +1085,33 @@ export default function Profile() {
                 </div>
               )}
             </CardContent>
+            </CollapsibleContent>
           </Card>
+          </Collapsible>
 
           {/* Competition Catches Import Section */}
+          <Collapsible open={showCompCatches} onOpenChange={setShowCompCatches}>
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Fish className="w-5 h-5 text-blue-500" />
-                Moje úlovky zo súťaží
-              </CardTitle>
-              <CardDescription>
-                Úlovky z tvojich tímov - môžeš si ich pridať do osobného denníka
-              </CardDescription>
+            <CardHeader className="pb-3">
+              <CollapsibleTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  className="w-full flex items-center justify-between p-0 h-auto hover:bg-transparent"
+                >
+                  <div className="text-left">
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <Fish className="w-5 h-5 text-blue-500" />
+                      Moje úlovky zo súťaží
+                    </CardTitle>
+                    <CardDescription className="text-sm">
+                      Úlovky z tvojich tímov - môžeš si ich pridať do osobného denníka
+                    </CardDescription>
+                  </div>
+                  <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform ${showCompCatches ? 'rotate-180' : ''}`} />
+                </Button>
+              </CollapsibleTrigger>
             </CardHeader>
+            <CollapsibleContent>
             <CardContent>
               {isCatchesLoading ? (
                 <div className="space-y-3">
@@ -1175,20 +1211,34 @@ export default function Profile() {
                 </div>
               )}
             </CardContent>
+            </CollapsibleContent>
           </Card>
+          </Collapsible>
           </>)}
 
           {/* Diary Settings Section */}
+          <Collapsible open={showSettings} onOpenChange={setShowSettings}>
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Settings className="w-5 h-5" />
-                Nastavenia denníka
-              </CardTitle>
-              <CardDescription>
-                Prispôsobte si funkcie rybárskeho denníka
-              </CardDescription>
+            <CardHeader className="pb-3">
+              <CollapsibleTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  className="w-full flex items-center justify-between p-0 h-auto hover:bg-transparent"
+                >
+                  <div className="text-left">
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <Settings className="w-5 h-5" />
+                      Nastavenia denníka
+                    </CardTitle>
+                    <CardDescription className="text-sm">
+                      Prispôsobte si funkcie rybárskeho denníka
+                    </CardDescription>
+                  </div>
+                  <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform ${showSettings ? 'rotate-180' : ''}`} />
+                </Button>
+              </CollapsibleTrigger>
             </CardHeader>
+            <CollapsibleContent>
             <CardContent className="space-y-6">
               {/* Historical Catches Toggle */}
               <div className="flex items-center justify-between">
@@ -1270,7 +1320,9 @@ export default function Profile() {
                 </div>
               </div>
             </CardContent>
+            </CollapsibleContent>
           </Card>
+          </Collapsible>
 
           {/* Account Information - Collapsible */}
           <Collapsible open={showTechDetails} onOpenChange={setShowTechDetails}>
