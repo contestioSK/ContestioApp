@@ -32,7 +32,6 @@ import {
   CalendarDays,
   Award,
   Lock,
-  Package,
   Wrench
 } from "lucide-react";
 import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
@@ -84,12 +83,6 @@ const fishingLifeSection = [
     label: "Moje rybárske výpravy",
     href: "/diary/trips",
     description: "Viacdenné výlety"
-  },
-  {
-    icon: Package,
-    label: "Môj arzenál",
-    href: "/diary/arsenal",
-    description: "Nástrahy a vybavenie"
   },
   {
     icon: BarChart3,
