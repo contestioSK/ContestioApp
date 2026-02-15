@@ -933,6 +933,11 @@ export default function CatchFormDialog({
     setWeatherDataLoaded(false);
     setIsEditingDateTime(false);
     setIsDetailsOpen(false);
+    setSelectedManufacturerId(null);
+    setSelectedFlavorId(null);
+    setSelectedDiameter("");
+    setBrandSearch("");
+    setFlavorSearch("");
     form.reset();
     onClose();
   };
