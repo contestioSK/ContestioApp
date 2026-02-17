@@ -99,7 +99,8 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
         teamId: "",
       });
     }
-  }, [selectedCompetitionDetails, selectedCompetition, form]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCompetitionDetails?.minWeight, selectedCompetition]);
 
   const submitCatchMutation = useMutation({
     mutationFn: async (data: CatchSubmissionForm & { photo?: File }) => {
@@ -167,7 +168,8 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
     if (selectedCompetition) {
       form.setValue('competitionId', selectedCompetition);
     }
-  }, [selectedCompetition, form]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCompetition]);
 
   const onSubmit = useCallback(async (data: CatchSubmissionForm) => {
     if (isOffline) {
@@ -930,7 +932,7 @@ export default function RefereeInterface() {
                   {user?.firstName ? `${user.firstName} ${user.lastName || ""}` : (user?.nickname || "Používateľ")}, Rozhodca — {
                     refereeAssignment?.assignedSector && selectedCompetition ? (
                       <Link href={`/competition/${selectedCompetition}/sector/${refereeAssignment.assignedSector}`} data-testid="link-referee-sector">
-                        <span className="underline hover:text-primary-foreground cursor-pointer transition-colors inline-block py-1 px-2 -mx-2 min-h-[44px] flex items-center">
+                        <span className="underline hover:text-primary-foreground cursor-pointer transition-colors inline-flex py-1 px-2 -mx-2 min-h-[44px] items-center">
                           Sektor {refereeAssignment.assignedSector}
                         </span>
                       </Link>
@@ -1032,7 +1034,7 @@ export default function RefereeInterface() {
           {/* Recent Submissions */}
           {selectedCompetition && recentCatches && (
             <div className="border-t border-border p-4">
-              <h4 className="font-bold text-foreground mb-3">Posledné odosílania</h4>
+              <h4 className="font-bold text-foreground mb-3">Posledné odosielania</h4>
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {recentCatches.slice(0, 5).map((catch_: Catch & { team: Team }) => (
                   <div key={catch_.id} className="flex items-center justify-between text-sm" data-testid={`catch-${catch_.id}`}>
@@ -1070,7 +1072,7 @@ export default function RefereeInterface() {
                 {submitHandle.isPending ? (
                   <>
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" strokeWidth={1.75} />
-                    Odosíla sa...
+                    Odosiela sa...
                   </>
                 ) : (
                   "Odoslať úlovok"

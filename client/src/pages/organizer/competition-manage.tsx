@@ -361,12 +361,12 @@ export default function CompetitionManage() {
 
   if (competitionLoading) {
     return (
-      <div className="min-h-screen bg-[#020617]">
+      <div className="min-h-screen bg-background">
         <div className="max-w-[1400px] mx-auto px-6 py-20">
-          <Skeleton className="h-8 w-64 mb-4 bg-slate-800" />
-          <Skeleton className="h-4 w-96 mb-8 bg-slate-800" />
+          <Skeleton className="h-8 w-64 mb-4" />
+          <Skeleton className="h-4 w-96 mb-8" />
           <div className="grid gap-4 md:grid-cols-4">
-            {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-32 bg-slate-800" />)}
+            {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-32" />)}
           </div>
         </div>
       </div>
@@ -375,8 +375,8 @@ export default function CompetitionManage() {
 
   if (!competition) {
     return (
-      <div className="min-h-screen bg-[#020617] flex items-center justify-center p-4">
-        <div className="bg-[#0B1221] border border-slate-800 rounded-2xl p-8 max-w-md w-full text-center">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="bg-card border border-border rounded-2xl p-8 max-w-md w-full text-center">
           <Trophy className="w-12 h-12 mx-auto mb-4 text-slate-500" />
           <h2 className="text-xl font-bold text-white mb-2">Súťaž nenájdená</h2>
           <p className="text-slate-400 mb-6">Táto súťaž neexistuje alebo k nej nemáte prístup.</p>
@@ -459,8 +459,8 @@ export default function CompetitionManage() {
     : `Ahojte! Registrácia na ${competition.name} je otvorená.${locationLine}${dateLine}\nPrihlásenie: ${window.location.origin}/competition/${competition.id}`;
 
   return (
-    <div className="min-h-screen bg-[#020617] text-slate-200 font-sans pb-20">
-      <header className="sticky top-0 z-40 bg-[#020617]/95 border-b border-slate-800 backdrop-blur-sm shadow-2xl">
+    <div className="min-h-screen bg-background text-foreground font-sans pb-20">
+      <header className="sticky top-0 z-40 bg-background/95 border-b border-border backdrop-blur-sm shadow-2xl">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4 min-w-0">
             <button onClick={() => setLocation('/organizer/competitions')} className="text-slate-500 hover:text-white transition-colors flex-shrink-0">
@@ -485,7 +485,7 @@ export default function CompetitionManage() {
             <Button
               variant="outline"
               size="sm"
-              className="bg-slate-900/50 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 h-9 px-3 sm:px-4 text-xs font-bold transition-all"
+              className="bg-slate-900/50 border-border text-slate-400 hover:text-white hover:bg-slate-800 h-9 px-3 sm:px-4 text-xs font-bold transition-all"
               onClick={() => window.open(`/competition/${competition.id}`, '_blank')}
             >
               <ExternalLink size={14} className="mr-1 sm:mr-2" />
@@ -552,7 +552,7 @@ export default function CompetitionManage() {
         )}
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
-          <Card className="bg-[#0B1221] border-slate-800/60 shadow-none">
+          <Card className="bg-card border-border shadow-none">
             <CardContent className="p-4 sm:p-5">
               <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-2">
                 {competition.status === 'live' ? 'Do konca' : 'Čas do štartu'}
@@ -565,7 +565,7 @@ export default function CompetitionManage() {
           </Card>
 
           <Card
-            className={`bg-[#0B1221] border-slate-800/60 shadow-none transition-all ${pendingTeams.length > 0 ? 'ring-1 ring-orange-500/30 cursor-pointer hover:bg-slate-800/40' : ''}`}
+            className={`bg-card border-border shadow-none transition-all ${pendingTeams.length > 0 ? 'ring-1 ring-orange-500/30 cursor-pointer hover:bg-slate-800/40' : ''}`}
             onClick={() => pendingTeams.length > 0 && setTeamsFilter('pending')}
           >
             <CardContent className="p-4 sm:p-5">
@@ -583,7 +583,7 @@ export default function CompetitionManage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-[#0B1221] border-slate-800/60 shadow-none">
+          <Card className="bg-card border-border shadow-none">
             <CardContent className="p-4 sm:p-5">
               <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-2">Rozhodcovia</p>
               <div className="flex justify-between items-center">
@@ -593,7 +593,7 @@ export default function CompetitionManage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-[#0B1221] border-slate-800/60 shadow-none">
+          <Card className="bg-card border-border shadow-none">
             <CardContent className="p-4 sm:p-5">
               <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-2">Pripravenosť</p>
               <div className="w-full bg-slate-950 h-1.5 rounded-full mt-3 overflow-hidden border border-slate-900">
@@ -617,7 +617,7 @@ export default function CompetitionManage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
           <div className="lg:col-span-8 space-y-4 sm:space-y-6">
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-between items-start sm:items-center bg-[#0B1221] p-2 rounded-xl border border-slate-800/60">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-between items-start sm:items-center bg-card p-2 rounded-xl border border-border">
               <div className="flex gap-1 p-1 bg-slate-950 rounded-lg">
                 <button
                   onClick={() => setTeamsFilter('all')}
@@ -638,12 +638,12 @@ export default function CompetitionManage() {
                   placeholder="Hľadať tím..."
                   value={teamsSearch}
                   onChange={(e) => setTeamsSearch(e.target.value)}
-                  className="h-9 bg-slate-950 border-slate-800 text-xs pl-9 focus:ring-1 focus:ring-orange-500/50 text-slate-300 placeholder:text-slate-600"
+                  className="h-9 bg-slate-950 border-border text-xs pl-9 focus:ring-1 focus:ring-orange-500/50 text-slate-300 placeholder:text-slate-600"
                 />
               </div>
             </div>
 
-            <Card className="bg-[#0B1221] border-slate-800/60 shadow-none overflow-hidden rounded-xl">
+            <Card className="bg-card border-border shadow-none overflow-hidden rounded-xl">
               <div className="divide-y divide-slate-800/40">
                 {teamsLoading ? (
                   <div className="p-4 space-y-4">
@@ -705,7 +705,7 @@ export default function CompetitionManage() {
             </Card>
 
             {(competition?.status === 'live' || competition?.status === 'finished') && (
-              <Card className="bg-[#0B1221] border-slate-800/60 shadow-none">
+              <Card className="bg-card border-border shadow-none">
                 <CardContent className="p-5">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Úlovky</h3>
@@ -728,9 +728,9 @@ export default function CompetitionManage() {
                   ) : (
                     <div className="space-y-2">
                       {catches.slice(0, 5).map(c => (
-                        <div key={c.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-slate-900/50 border border-slate-800/30">
+                        <div key={c.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-slate-900/50 border border-border/30">
                           <div className="min-w-0">
-                            <span className="text-sm text-slate-200 font-medium">{c.fishType === 'mirror' ? 'Lysec' : c.fishType === 'scaly' ? 'Šupináč' : (c.fishType || 'Neznámy druh')}</span>
+                            <span className="text-sm text-foreground font-medium">{c.fishType === 'mirror' ? 'Lysec' : c.fishType === 'scaly' ? 'Šupináč' : (c.fishType || 'Neznámy druh')}</span>
                           </div>
                           <span className="text-sm font-mono font-medium text-orange-500">{c.weight ? `${c.weight}g` : '-'}</span>
                         </div>
@@ -764,10 +764,10 @@ export default function CompetitionManage() {
                 </div>
               ) : (
                 announcements.map(a => (
-                  <Card key={a.id} className="bg-[#0B1221] border-slate-800/60 shadow-none">
+                  <Card key={a.id} className="bg-card border-border shadow-none">
                     <CardContent className="p-4">
                       <div className="flex justify-between items-start mb-1">
-                        <h4 className="text-sm font-bold text-slate-200">{a.title}</h4>
+                        <h4 className="text-sm font-bold text-foreground">{a.title}</h4>
                         <span className="text-[10px] text-slate-600">{a.createdAt ? format(new Date(a.createdAt), "d. MMM, HH:mm", { locale: sk }) : ''}</span>
                       </div>
                       <p className="text-xs text-slate-400">{a.content}</p>
@@ -781,20 +781,20 @@ export default function CompetitionManage() {
           <div className="lg:col-span-4 space-y-4">
             <h3 className="text-[10px] font-bold text-slate-600 uppercase tracking-widest px-1">Nástroje organizátora</h3>
             <div className="grid grid-cols-1 gap-2">
-              <Button variant="outline" className="w-full justify-start h-12 bg-[#0B1221] border-slate-800/60 hover:bg-slate-800 hover:border-slate-700 text-slate-400 hover:text-white group transition-all" onClick={() => setShowShareDialog(true)}>
+              <Button variant="outline" className="w-full justify-start h-12 bg-card border-border hover:bg-slate-800 hover:border-slate-700 text-slate-400 hover:text-white group transition-all" onClick={() => setShowShareDialog(true)}>
                 <Share2 size={16} className="mr-3 text-blue-500 group-hover:scale-110 transition-transform" /> Pozvať tímy
               </Button>
-              <Button variant="outline" className="w-full justify-start h-12 bg-[#0B1221] border-slate-800/60 hover:bg-slate-800 hover:border-slate-700 text-slate-400 hover:text-white group transition-all" onClick={() => setShowAddRefereeDialog(true)}>
+              <Button variant="outline" className="w-full justify-start h-12 bg-card border-border hover:bg-slate-800 hover:border-slate-700 text-slate-400 hover:text-white group transition-all" onClick={() => setShowAddRefereeDialog(true)}>
                 <Shield size={16} className="mr-3 text-purple-500 group-hover:scale-110 transition-transform" /> Rozhodcovia
               </Button>
-              <Button variant="outline" className="w-full justify-start h-12 bg-[#0B1221] border-slate-800/60 hover:bg-slate-800 hover:border-slate-700 text-slate-400 hover:text-white group transition-all" onClick={() => setShowAddAnnouncementDialog(true)}>
+              <Button variant="outline" className="w-full justify-start h-12 bg-card border-border hover:bg-slate-800 hover:border-slate-700 text-slate-400 hover:text-white group transition-all" onClick={() => setShowAddAnnouncementDialog(true)}>
                 <Megaphone size={16} className="mr-3 text-orange-500 group-hover:scale-110 transition-transform" /> Nový oznam
               </Button>
             </div>
 
             {referees && referees.length > 0 && (
-              <Card className="bg-[#0B1221] border-slate-800/60 shadow-none overflow-hidden">
-                <div className="p-4 border-b border-slate-800/60 bg-slate-900/20">
+              <Card className="bg-card border-border shadow-none overflow-hidden">
+                <div className="p-4 border-b border-border bg-slate-900/20">
                   <h5 className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Rozhodcovia ({refereesCount})</h5>
                 </div>
                 <CardContent className="p-3 space-y-2">
@@ -819,8 +819,8 @@ export default function CompetitionManage() {
               </Card>
             )}
 
-            <Card className="bg-[#0B1221] border-slate-800/60 shadow-none overflow-hidden">
-              <div className="p-4 border-b border-slate-800/60 bg-slate-900/20">
+            <Card className="bg-card border-border shadow-none overflow-hidden">
+              <div className="p-4 border-b border-border bg-slate-900/20">
                 <h5 className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Verejný odkaz</h5>
               </div>
               <CardContent className="p-4">
@@ -828,12 +828,12 @@ export default function CompetitionManage() {
                   <Input
                     value={`${window.location.origin}/competition/${competition.id}`}
                     readOnly
-                    className="h-9 text-[11px] bg-slate-950 border-slate-800 text-blue-400/80 font-mono focus:ring-0"
+                    className="h-9 text-[11px] bg-slate-950 border-border text-blue-400/80 font-mono focus:ring-0"
                   />
                   <Button
                     size="icon"
                     variant="outline"
-                    className="h-9 w-9 border-slate-800 bg-slate-900 hover:bg-slate-800 flex-shrink-0"
+                    className="h-9 w-9 border-border bg-slate-900 hover:bg-slate-800 flex-shrink-0"
                     onClick={() => copyToClipboard(`${window.location.origin}/competition/${competition.id}`, 'link')}
                   >
                     {copiedKey === 'link' ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} className="text-slate-500" />}
@@ -846,7 +846,7 @@ export default function CompetitionManage() {
       </main>
 
       <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
-        <DialogContent className="sm:max-w-[400px] bg-[#0B1221] border-slate-800 text-slate-200 shadow-2xl">
+        <DialogContent className="sm:max-w-[400px] bg-card border-border text-foreground shadow-2xl">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold flex items-center gap-2">
               <Share2 size={20} className="text-blue-500" /> Pozvánka pre tímy
@@ -863,7 +863,7 @@ export default function CompetitionManage() {
                   <Textarea
                     value={inviteMessage}
                     readOnly
-                    className="bg-slate-950 border-slate-800 text-slate-400 text-xs h-28 resize-none pr-10 pt-3 focus:ring-1 focus:ring-blue-500/20"
+                    className="bg-slate-950 border-border text-slate-400 text-xs h-28 resize-none pr-10 pt-3 focus:ring-1 focus:ring-blue-500/20"
                   />
                   <Button
                     variant="ghost"
@@ -878,7 +878,7 @@ export default function CompetitionManage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" className="w-full border-slate-800 bg-slate-900 hover:bg-slate-800 text-slate-400" onClick={() => setShowShareDialog(false)}>
+            <Button variant="outline" className="w-full border-border bg-slate-900 hover:bg-slate-800 text-slate-400" onClick={() => setShowShareDialog(false)}>
               Zavrieť
             </Button>
           </DialogFooter>
@@ -886,7 +886,7 @@ export default function CompetitionManage() {
       </Dialog>
 
       <AlertDialog open={showStartDialog} onOpenChange={setShowStartDialog}>
-        <AlertDialogContent className="bg-[#0B1221] border-slate-800 text-slate-200">
+        <AlertDialogContent className="bg-card border-border text-foreground">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-white">Spustiť súťaž?</AlertDialogTitle>
             <AlertDialogDescription className="text-slate-400">
@@ -903,7 +903,7 @@ export default function CompetitionManage() {
       </AlertDialog>
 
       <AlertDialog open={showEndDialog} onOpenChange={setShowEndDialog}>
-        <AlertDialogContent className="bg-[#0B1221] border-slate-800 text-slate-200">
+        <AlertDialogContent className="bg-card border-border text-foreground">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-white">Ukončiť súťaž?</AlertDialogTitle>
             <AlertDialogDescription className="text-slate-400">
@@ -920,7 +920,7 @@ export default function CompetitionManage() {
       </AlertDialog>
 
       <AlertDialog open={showPrepareDialog} onOpenChange={setShowPrepareDialog}>
-        <AlertDialogContent className="bg-[#0B1221] border-slate-800 text-slate-200">
+        <AlertDialogContent className="bg-card border-border text-foreground">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-white">Pripraviť súťaž na spustenie?</AlertDialogTitle>
             <AlertDialogDescription className="text-slate-400">
@@ -937,7 +937,7 @@ export default function CompetitionManage() {
       </AlertDialog>
 
       <Dialog open={showSelectPlanDialog} onOpenChange={setShowSelectPlanDialog}>
-        <DialogContent className="sm:max-w-[600px] bg-[#0B1221] border-slate-800 text-slate-200">
+        <DialogContent className="sm:max-w-[600px] bg-card border-border text-foreground">
           <DialogHeader>
             <DialogTitle className="text-white">Vyber balík pre svoju súťaž</DialogTitle>
             <DialogDescription className="text-slate-400">Vyber si balík podľa veľkosti a potrieb tvojej súťaže.</DialogDescription>
@@ -950,7 +950,7 @@ export default function CompetitionManage() {
             ].map(plan => (
               <div
                 key={plan.key}
-                className={`p-4 border-2 rounded-xl cursor-pointer transition-all hover:border-orange-500/80 relative ${plan.popular ? 'border-orange-500/50 bg-orange-500/5' : 'border-slate-800 hover:bg-slate-800/30'}`}
+                className={`p-4 border-2 rounded-xl cursor-pointer transition-all hover:border-orange-500/80 relative ${plan.popular ? 'border-orange-500/50 bg-orange-500/5' : 'border-border hover:bg-slate-800/30'}`}
                 onClick={() => setLocation(`/organizer/competition/${competitionId}/checkout?plan=${plan.key}`)}
               >
                 {plan.popular && <Badge className="absolute -top-2 right-4 bg-orange-500 text-white border-none text-[9px]">Najobľúbenejší</Badge>}
@@ -970,7 +970,7 @@ export default function CompetitionManage() {
             ))}
           </div>
           <DialogFooter>
-            <Button variant="outline" className="border-slate-800 bg-slate-900 hover:bg-slate-800 text-slate-400" onClick={() => setShowSelectPlanDialog(false)}>
+            <Button variant="outline" className="border-border bg-slate-900 hover:bg-slate-800 text-slate-400" onClick={() => setShowSelectPlanDialog(false)}>
               Zavrieť
             </Button>
           </DialogFooter>
@@ -981,7 +981,7 @@ export default function CompetitionManage() {
         setShowAddRefereeDialog(open);
         if (!open) { setSelectedRefereeUser(null); setRefereeEmail(""); setRefereeSector("all"); }
       }}>
-        <DialogContent className="sm:max-w-[500px] bg-[#0B1221] border-slate-800 text-slate-200">
+        <DialogContent className="sm:max-w-[500px] bg-card border-border text-foreground">
           <DialogHeader>
             <DialogTitle className="text-white">Pridať rozhodcu</DialogTitle>
             <DialogDescription className="text-slate-400">Vyhľadajte existujúceho používateľa alebo pozvite nového rozhodcu.</DialogDescription>
@@ -997,7 +997,7 @@ export default function CompetitionManage() {
               />
             </div>
             {(selectedRefereeUser || refereeEmail) && (
-              <div className="p-3 bg-slate-900 rounded-lg border border-slate-800 space-y-3">
+              <div className="p-3 bg-slate-900 rounded-lg border border-border space-y-3">
                 <p className="text-sm font-medium text-slate-300">
                   {selectedRefereeUser ? <>Vybraný: <span className="text-orange-500">{selectedRefereeUser.email}</span></> : <>Pozvánka: <span className="text-orange-500">{refereeEmail}</span></>}
                 </p>
@@ -1007,7 +1007,7 @@ export default function CompetitionManage() {
                     <select
                       value={refereeSector}
                       onChange={(e) => setRefereeSector(e.target.value)}
-                      className="w-full rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-300"
+                      className="w-full rounded-md border border-border bg-slate-950 px-3 py-2 text-sm text-slate-300"
                     >
                       <option value="all">Všetky sektory</option>
                       {(competition.sectorPlaces as any[])?.map((s: any) => (
@@ -1020,7 +1020,7 @@ export default function CompetitionManage() {
             )}
           </div>
           <DialogFooter>
-            <Button variant="outline" className="border-slate-800 text-slate-400 hover:bg-slate-800" onClick={() => setShowAddRefereeDialog(false)}>Zrušiť</Button>
+            <Button variant="outline" className="border-border text-slate-400 hover:bg-slate-800" onClick={() => setShowAddRefereeDialog(false)}>Zrušiť</Button>
             <Button
               onClick={handleAddReferee}
               disabled={(!selectedRefereeUser && !refereeEmail.trim()) || addRefereeMutation.isPending}
@@ -1034,7 +1034,7 @@ export default function CompetitionManage() {
       </Dialog>
 
       <Dialog open={showAddAnnouncementDialog} onOpenChange={setShowAddAnnouncementDialog}>
-        <DialogContent className="sm:max-w-[500px] bg-[#0B1221] border-slate-800 text-slate-200">
+        <DialogContent className="sm:max-w-[500px] bg-card border-border text-foreground">
           <DialogHeader>
             <DialogTitle className="text-white">Nový oznam</DialogTitle>
             <DialogDescription className="text-slate-400">Vytvor oznam pre účastníkov súťaže.</DialogDescription>
@@ -1046,7 +1046,7 @@ export default function CompetitionManage() {
                 placeholder="Napr. Zmena pravidiel"
                 value={announcementTitle}
                 onChange={(e) => setAnnouncementTitle(e.target.value)}
-                className="bg-slate-950 border-slate-800 text-slate-200 placeholder:text-slate-600"
+                className="bg-slate-950 border-border text-foreground placeholder:text-slate-600"
               />
             </div>
             <div className="space-y-2">
@@ -1056,12 +1056,12 @@ export default function CompetitionManage() {
                 value={announcementContent}
                 onChange={(e) => setAnnouncementContent(e.target.value)}
                 rows={4}
-                className="bg-slate-950 border-slate-800 text-slate-200 placeholder:text-slate-600"
+                className="bg-slate-950 border-border text-foreground placeholder:text-slate-600"
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" className="border-slate-800 text-slate-400 hover:bg-slate-800" onClick={() => setShowAddAnnouncementDialog(false)}>Zrušiť</Button>
+            <Button variant="outline" className="border-border text-slate-400 hover:bg-slate-800" onClick={() => setShowAddAnnouncementDialog(false)}>Zrušiť</Button>
             <Button
               onClick={handleAddAnnouncement}
               disabled={!announcementTitle.trim() || !announcementContent.trim() || addAnnouncementMutation.isPending}
@@ -1078,7 +1078,7 @@ export default function CompetitionManage() {
         setShowRejectTeamDialog(open);
         if (!open) { setRejectingTeamId(null); setRejectingTeamName(""); }
       }}>
-        <AlertDialogContent className="bg-[#0B1221] border-slate-800 text-slate-200">
+        <AlertDialogContent className="bg-card border-border text-foreground">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-white">Zamietnuť tím?</AlertDialogTitle>
             <AlertDialogDescription className="text-slate-400">

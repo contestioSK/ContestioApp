@@ -314,7 +314,7 @@ export default function CompetitionDetail() {
       name: "",
       description: "",
       members: [
-        { name: user?.firstName + " " + user?.lastName || "", role: "captain", email: user?.email || "", phone: "" }
+        { name: `${user?.firstName || ""} ${user?.lastName || ""}`.trim(), role: "captain" as const, email: user?.email || "", phone: "" }
       ],
     },
   });
@@ -325,8 +325,11 @@ export default function CompetitionDetail() {
     const currentEmail = (form.getValues("members.0.email") || "").trim();
     const suggestedName = `${user.firstName || ""} ${user.lastName || ""}`.trim();
     const suggestedEmail = (user.email || "").trim();
-    if (!currentName && suggestedName) form.setValue("members.0.name", suggestedName, { shouldDirty: true });
+    if ((!currentName || currentName === "undefined" || currentName === "undefined undefined") && suggestedName) {
+      form.setValue("members.0.name", suggestedName, { shouldDirty: true });
+    }
     if (!currentEmail && suggestedEmail) form.setValue("members.0.email", suggestedEmail, { shouldDirty: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   // Team registration mutation
