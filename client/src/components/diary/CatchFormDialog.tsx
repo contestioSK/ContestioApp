@@ -124,23 +124,19 @@ const catchFormSchema = z.object({
 
 type CatchFormData = z.infer<typeof catchFormSchema>;
 
-// Fishing methods
-const fishingMethods = [
-  // Kaprárina / Feeder / Plávaná
-  "Kukurica / Partikel",
-  "Pelety",
-  "Živá nástraha",
-  "Pečivo / Cesto",
-  "Wafters / Pop-up",
-  // Prívlač (Dravce)
-  "Gumená nástraha",
-  "Wobler",
-  "Rotačka / Plandavka",
-  "Nástražná rybka",
-  // Ostatné
-  "Umelá muška",
-  "Iná nástraha",
-];
+type UserBrandWithFlavors = {
+  id: number;
+  name: string;
+  flavors: Array<{ id: number; name: string; diameter: string | null }>;
+};
+
+type RecentBaitItem = {
+  source: string | null;
+  brandId: number | null;
+  flavorId: number | null;
+  diameterMm: number | null;
+  label: string;
+};
 
 type PhotoObject = {
   id: string;
@@ -214,6 +210,21 @@ export default function CatchFormDialog({
     staleTime: 5 * 60 * 1000,
   });
 
+  // Fetch user's own bait brands
+  const { data: userBrands = [] } = useQuery<UserBrandWithFlavors[]>({
+    queryKey: ["/api/diary/baits/brands"],
+    enabled: !!user && isOpen,
+    staleTime: 60 * 1000,
+  });
+
+  // Fetch recent baits
+  const { data: recentBaitsData } = useQuery<{ items: RecentBaitItem[] }>({
+    queryKey: ["/api/diary/baits/recent"],
+    enabled: !!user && isOpen,
+    staleTime: 30 * 1000,
+  });
+  const recentBaits = recentBaitsData?.items || [];
+
   type FavoriteBait = {
     id: number;
     diameter: string | null;
@@ -231,6 +242,7 @@ export default function CatchFormDialog({
   const [selectedManufacturerId, setSelectedManufacturerId] = useState<number | null>(null);
   const [selectedFlavorId, setSelectedFlavorId] = useState<number | null>(null);
   const [selectedDiameter, setSelectedDiameter] = useState<string>("");
+  const [baitSource, setBaitSource] = useState<"user" | "global" | null>(null);
   const [brandSearch, setBrandSearch] = useState("");
   const [flavorSearch, setFlavorSearch] = useState("");
   const [showBrandDropdown, setShowBrandDropdown] = useState(false);
@@ -242,30 +254,85 @@ export default function CatchFormDialog({
 
   const commonDiameters = ["10", "12", "14", "16", "18", "20", "24", "26", "28", "30"];
 
-  const selectedManufacturer = manufacturers.find(m => m.id === selectedManufacturerId);
+  const selectedManufacturer = baitSource === "global" ? manufacturers.find(m => m.id === selectedManufacturerId) : null;
+  const selectedUserBrand = baitSource === "user" ? userBrands.find(b => b.id === selectedManufacturerId) : null;
   const selectedFlavor = selectedManufacturer?.flavors.find(f => f.id === selectedFlavorId);
+  const selectedUserFlavor = selectedUserBrand?.flavors.find(f => f.id === selectedFlavorId);
 
-  // Filtered manufacturer suggestions (manufacturers + fishing methods)
+  // Centralized helpers to avoid state drift
+  const clearBaitSelection = () => {
+    setBaitSource(null);
+    setSelectedManufacturerId(null);
+    setSelectedFlavorId(null);
+    setSelectedDiameter("");
+    setFlavorSearch("");
+  };
+
+  const selectBrand = (source: "user" | "global", id: number, name: string) => {
+    setBaitSource(source);
+    setSelectedManufacturerId(id);
+    setBrandSearch(name);
+    setSelectedFlavorId(null);
+    setSelectedDiameter("");
+    setFlavorSearch("");
+    setShowBrandDropdown(false);
+  };
+
+  // Filtered brand suggestions (user brands + global brands, no fishing methods)
   const filteredBrandSuggestions = useMemo(() => {
     const q = brandSearch.toLowerCase().trim();
-    const brands = manufacturers
+    const userBrandItems = userBrands
+      .filter(b => !q || b.name.toLowerCase().includes(q))
+      .map(b => ({ type: "user" as const, id: b.id, name: b.name }));
+    const globalBrandItems = manufacturers
       .filter(m => !q || m.name.toLowerCase().includes(q))
-      .map(m => ({ type: "brand" as const, id: m.id, name: m.name }));
-    const methods = fishingMethods
-      .filter(m => !q || m.toLowerCase().includes(q))
-      .map(m => ({ type: "method" as const, id: m, name: m }));
-    return { brands, methods };
-  }, [brandSearch, manufacturers]);
+      .map(m => ({ type: "global" as const, id: m.id, name: m.name }));
+    return { userBrands: userBrandItems, globalBrands: globalBrandItems };
+  }, [brandSearch, manufacturers, userBrands]);
 
-  // Filtered flavor suggestions
+  // Filtered flavor suggestions (depends on baitSource)
   const filteredFlavorSuggestions = useMemo(() => {
-    if (!selectedManufacturer) return [];
     const q = flavorSearch.toLowerCase().trim();
-    return selectedManufacturer.flavors.filter(f => {
-      const display = f.productLine ? `${f.productLine} - ${f.name}` : f.name;
-      return !q || display.toLowerCase().includes(q) || f.name.toLowerCase().includes(q);
-    });
-  }, [flavorSearch, selectedManufacturer]);
+    if (baitSource === "global" && selectedManufacturer) {
+      return selectedManufacturer.flavors.filter(f => {
+        const display = f.productLine ? `${f.productLine} - ${f.name}` : f.name;
+        return !q || display.toLowerCase().includes(q) || f.name.toLowerCase().includes(q);
+      });
+    }
+    if (baitSource === "user" && selectedUserBrand) {
+      return selectedUserBrand.flavors.filter(f => {
+        return !q || f.name.toLowerCase().includes(q);
+      });
+    }
+    return [];
+  }, [flavorSearch, selectedManufacturer, selectedUserBrand, baitSource]);
+
+  // Mutation: create user brand inline
+  const createUserBrandMutation = useMutation({
+    mutationFn: async (name: string) => {
+      const response = await apiRequest("POST", "/api/diary/baits/brands", { name });
+      return response.json() as Promise<UserBrandWithFlavors>;
+    },
+    onSuccess: (brand) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/diary/baits/brands"] });
+      selectBrand("user", brand.id, brand.name);
+      setTimeout(() => flavorInputRef.current?.focus(), 50);
+    },
+  });
+
+  // Mutation: create user flavor inline
+  const createUserFlavorMutation = useMutation({
+    mutationFn: async ({ brandId, name }: { brandId: number; name: string }) => {
+      const response = await apiRequest("POST", "/api/diary/baits/flavors", { brandId, name });
+      return response.json() as Promise<{ id: number; name: string; diameter: string | null }>;
+    },
+    onSuccess: (flavor) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/diary/baits/brands"] });
+      setSelectedFlavorId(flavor.id);
+      setFlavorSearch(flavor.name);
+      setShowFlavorDropdown(false);
+    },
+  });
 
   // Close dropdowns on click outside
   useEffect(() => {
@@ -344,18 +411,24 @@ export default function CatchFormDialog({
     },
   });
 
+  // Build bait text from current selection
+  const buildBaitText = (source: "user" | "global" | null, brandName: string, flavorName: string, diameter: string) => {
+    let text = brandName && flavorName ? `${brandName} - ${flavorName}` : brandName || flavorName || "";
+    if (diameter) text += ` (${diameter}mm)`;
+    return text;
+  };
+
   // Sync bait selection to form field (with diameter)
   useEffect(() => {
-    if (selectedManufacturer && selectedFlavor) {
-      let baitText = selectedFlavor.productLine
-        ? `${selectedManufacturer.name} - ${selectedFlavor.productLine} - ${selectedFlavor.name}`
-        : `${selectedManufacturer.name} - ${selectedFlavor.name}`;
-      if (selectedDiameter) {
-        baitText += ` (${selectedDiameter}mm)`;
-      }
-      form.setValue("bait", baitText);
+    if (baitSource === "global" && selectedManufacturer && selectedFlavor) {
+      const flavorDisplay = selectedFlavor.productLine
+        ? `${selectedFlavor.productLine} - ${selectedFlavor.name}`
+        : selectedFlavor.name;
+      form.setValue("bait", buildBaitText("global", selectedManufacturer.name, flavorDisplay, selectedDiameter));
+    } else if (baitSource === "user" && selectedUserBrand && selectedUserFlavor) {
+      form.setValue("bait", buildBaitText("user", selectedUserBrand.name, selectedUserFlavor.name, selectedDiameter));
     }
-  }, [selectedManufacturerId, selectedFlavorId, selectedManufacturer, selectedFlavor, selectedDiameter, form]);
+  }, [selectedManufacturerId, selectedFlavorId, selectedManufacturer, selectedFlavor, selectedUserBrand, selectedUserFlavor, selectedDiameter, baitSource, form]);
 
   // Auto-set tripId when active battle exists
   useEffect(() => {
@@ -408,40 +481,60 @@ export default function CatchFormDialog({
           : undefined,
       });
 
-      // Try to match existing bait text to brand/flavor and extract diameter
+      // Restore bait source from stored catch data
+      const storedSource = (editingCatch as any).baitBrandSource as string | null;
+      const storedBrandId = (editingCatch as any).baitBrandId as number | null;
+      const storedFlavorId = (editingCatch as any).baitFlavorId as number | null;
+      const storedDiameterMm = (editingCatch as any).baitDiameterMm as number | null;
+
       const baitText = editingCatch.bait || "";
+      const diameterMatch = baitText.match(/\((\d+)mm\)\s*$/);
+      const extractedDiameter = storedDiameterMm ? String(storedDiameterMm) : (diameterMatch ? diameterMatch[1] : "");
       let matched = false;
 
-      // Extract diameter from bait text (e.g. "(20mm)" at the end)
-      const diameterMatch = baitText.match(/\((\d+)mm\)\s*$/);
-      const extractedDiameter = diameterMatch ? diameterMatch[1] : "";
-      const baitWithoutDiameter = baitText.replace(/\s*\(\d+mm\)\s*$/, "").trim();
-
-      if (baitWithoutDiameter && manufacturers.length > 0) {
-        for (const mfr of manufacturers) {
-          for (const flavor of mfr.flavors) {
-            const candidates = [
-              flavor.productLine ? `${mfr.name} - ${flavor.productLine} - ${flavor.name}` : null,
-              `${mfr.name} - ${flavor.name}`,
-            ].filter(Boolean) as string[];
-            if (candidates.some(c => baitWithoutDiameter === c)) {
-              setSelectedManufacturerId(mfr.id);
-              setSelectedFlavorId(flavor.id);
-              setSelectedDiameter(extractedDiameter);
-              setBrandSearch(mfr.name);
-              const flavorDisplay = flavor.productLine ? `${flavor.productLine} - ${flavor.name}` : flavor.name;
-              setFlavorSearch(flavorDisplay);
-              matched = true;
-              break;
-            }
+      if (storedSource === "user" && storedBrandId) {
+        const userBrand = userBrands.find(b => b.id === storedBrandId);
+        if (userBrand) {
+          setBaitSource("user");
+          setSelectedManufacturerId(storedBrandId);
+          setBrandSearch(userBrand.name);
+          if (storedFlavorId) {
+            const userFl = userBrand.flavors.find(f => f.id === storedFlavorId);
+            setSelectedFlavorId(storedFlavorId);
+            setFlavorSearch(userFl?.name || "");
           }
-          if (matched) break;
-          // Also match old "Brand - Flavor (diameter)" format by stripping diameter
-          if (!matched && baitWithoutDiameter.startsWith(mfr.name + " - ")) {
-            const remainder = baitWithoutDiameter.slice(mfr.name.length + 3);
-            const noDiameter = remainder.replace(/\s*\([^)]*\)\s*$/, "").trim();
+          setSelectedDiameter(extractedDiameter);
+          matched = true;
+        }
+      } else if (storedSource === "global" && storedBrandId) {
+        const globalBrand = manufacturers.find(m => m.id === storedBrandId);
+        if (globalBrand) {
+          setBaitSource("global");
+          setSelectedManufacturerId(storedBrandId);
+          setBrandSearch(globalBrand.name);
+          if (storedFlavorId) {
+            const globalFl = globalBrand.flavors.find(f => f.id === storedFlavorId);
+            setSelectedFlavorId(storedFlavorId);
+            const flavorDisplay = globalFl ? (globalFl.productLine ? `${globalFl.productLine} - ${globalFl.name}` : globalFl.name) : "";
+            setFlavorSearch(flavorDisplay);
+          }
+          setSelectedDiameter(extractedDiameter);
+          matched = true;
+        }
+      }
+
+      // Fallback: try matching bait text to global brands
+      if (!matched) {
+        const baitWithoutDiameter = baitText.replace(/\s*\(\d+mm\)\s*$/, "").trim();
+        if (baitWithoutDiameter && manufacturers.length > 0) {
+          for (const mfr of manufacturers) {
             for (const flavor of mfr.flavors) {
-              if (noDiameter === flavor.name || noDiameter === `${flavor.productLine} - ${flavor.name}`) {
+              const candidates = [
+                flavor.productLine ? `${mfr.name} - ${flavor.productLine} - ${flavor.name}` : null,
+                `${mfr.name} - ${flavor.name}`,
+              ].filter(Boolean) as string[];
+              if (candidates.some(c => baitWithoutDiameter === c)) {
+                setBaitSource("global");
                 setSelectedManufacturerId(mfr.id);
                 setSelectedFlavorId(flavor.id);
                 setSelectedDiameter(extractedDiameter);
@@ -452,11 +545,13 @@ export default function CatchFormDialog({
                 break;
               }
             }
+            if (matched) break;
           }
-          if (matched) break;
         }
       }
+
       if (!matched) {
+        setBaitSource(null);
         setSelectedManufacturerId(null);
         setSelectedFlavorId(null);
         setSelectedDiameter(extractedDiameter);
@@ -466,11 +561,8 @@ export default function CatchFormDialog({
     } else {
       setExistingPhotos([]);
       setSelectedTripId(activeBattle?.tripId);
-      setSelectedManufacturerId(null);
-      setSelectedFlavorId(null);
-      setSelectedDiameter("");
+      clearBaitSelection();
       setBrandSearch("");
-      setFlavorSearch("");
       form.reset({
         capturedAt: new Date(),
         weight: "",
@@ -482,7 +574,7 @@ export default function CatchFormDialog({
         verified: false,
       });
     }
-  }, [editingCatch, form, activeBattle, manufacturers]);
+  }, [editingCatch, form, activeBattle, manufacturers, userBrands]);
 
   // Toggle favorite bait mutation
   const toggleFavoriteMutation = useMutation({
@@ -512,15 +604,15 @@ export default function CatchFormDialog({
     },
   });
 
-  // Check if current selection is a favorite (match manufacturer + flavor + diameter)
+  // Check if current selection is a favorite (only for global brands)
   const currentFavorite = useMemo(() => {
-    if (!selectedManufacturerId || !selectedFlavorId) return null;
+    if (!selectedManufacturerId || !selectedFlavorId || baitSource !== "global") return null;
     return favoriteBaits.find(
       f => f.manufacturer.id === selectedManufacturerId
         && f.flavor.id === selectedFlavorId
         && (f.diameter || "") === selectedDiameter
     ) || null;
-  }, [selectedManufacturerId, selectedFlavorId, selectedDiameter, favoriteBaits]);
+  }, [selectedManufacturerId, selectedFlavorId, selectedDiameter, favoriteBaits, baitSource]);
 
   // Handle toggle favorite for current selection
   const handleToggleFavorite = () => {
@@ -624,13 +716,10 @@ export default function CatchFormDialog({
   });
 
   const handleSubmit = async (data: CatchFormData) => {
-    // Convert "none" values to undefined (no selection)
-    // CRITICAL: Always include userId in angler object
-    // Include tripId and battleId if active battle exists (for participant permission checks)
     const processedData = {
       ...data,
-      tripId: selectedTripId, // Include tripId from active battle or selected trip
-      battleId: activeBattle?.id, // Include battleId for participant permission checks
+      tripId: selectedTripId,
+      battleId: activeBattle?.id,
       angler: {
         name: user?.firstName
           ? `${user.firstName} ${user.lastName || ""}`.trim()
@@ -638,6 +727,10 @@ export default function CatchFormDialog({
         userId: user?.id || "",
       },
       bait: data.bait === "none" ? undefined : data.bait,
+      baitBrandSource: baitSource || undefined,
+      baitBrandId: selectedManufacturerId || undefined,
+      baitFlavorId: selectedFlavorId || undefined,
+      baitDiameterMm: selectedDiameter ? parseInt(selectedDiameter) : undefined,
     };
 
     if (isOffline) {
@@ -933,11 +1026,8 @@ export default function CatchFormDialog({
     setWeatherDataLoaded(false);
     setIsEditingDateTime(false);
     setIsDetailsOpen(false);
-    setSelectedManufacturerId(null);
-    setSelectedFlavorId(null);
-    setSelectedDiameter("");
+    clearBaitSelection();
     setBrandSearch("");
-    setFlavorSearch("");
     form.reset();
     onClose();
   };
@@ -1422,10 +1512,7 @@ export default function CatchFormDialog({
                                 setBrandSearch(val);
                                 setShowBrandDropdown(true);
                                 if (selectedManufacturerId) {
-                                  setSelectedManufacturerId(null);
-                                  setSelectedFlavorId(null);
-                                  setSelectedDiameter("");
-                                  setFlavorSearch("");
+                                  clearBaitSelection();
                                 }
                                 field.onChange("");
                               }}
@@ -1438,11 +1525,8 @@ export default function CatchFormDialog({
                                 type="button"
                                 className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                                 onClick={() => {
+                                  clearBaitSelection();
                                   setBrandSearch("");
-                                  setSelectedManufacturerId(null);
-                                  setSelectedFlavorId(null);
-                                  setSelectedDiameter("");
-                                  setFlavorSearch("");
                                   field.onChange("");
                                   brandInputRef.current?.focus();
                                 }}
@@ -1455,6 +1539,57 @@ export default function CatchFormDialog({
                                 ref={brandDropdownRef}
                                 className="absolute z-[100] top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-lg border border-border bg-popover shadow-lg"
                               >
+                                {/* Recent baits section */}
+                                {recentBaits.length > 0 && !brandSearch.trim() && (
+                                  <>
+                                    <div className="px-2 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                                      Naposledy použité
+                                    </div>
+                                    {recentBaits.map((item, idx) => (
+                                      <button
+                                        key={`recent-${idx}`}
+                                        type="button"
+                                        className="w-full text-left px-3 py-2 text-sm hover:bg-muted/50 transition-colors"
+                                        onMouseDown={(e) => e.preventDefault()}
+                                        onClick={() => {
+                                          if (item.source === "user" && item.brandId) {
+                                            const ub = userBrands.find(b => b.id === item.brandId);
+                                            if (ub) {
+                                              selectBrand("user", item.brandId, ub.name);
+                                              if (item.flavorId) {
+                                                const uf = ub.flavors.find(f => f.id === item.flavorId);
+                                                setSelectedFlavorId(item.flavorId);
+                                                setFlavorSearch(uf?.name || "");
+                                              }
+                                              setSelectedDiameter(item.diameterMm ? String(item.diameterMm) : "");
+                                            }
+                                          } else if (item.source === "global" && item.brandId) {
+                                            const gm = manufacturers.find(m => m.id === item.brandId);
+                                            if (gm) {
+                                              selectBrand("global", item.brandId, gm.name);
+                                              if (item.flavorId) {
+                                                const gf = gm.flavors.find(f => f.id === item.flavorId);
+                                                setSelectedFlavorId(item.flavorId);
+                                                const flavorDisplay = gf ? (gf.productLine ? `${gf.productLine} - ${gf.name}` : gf.name) : "";
+                                                setFlavorSearch(flavorDisplay);
+                                              }
+                                              setSelectedDiameter(item.diameterMm ? String(item.diameterMm) : "");
+                                            }
+                                          } else {
+                                            clearBaitSelection();
+                                            setBrandSearch(item.label);
+                                            field.onChange(item.label);
+                                          }
+                                          setShowBrandDropdown(false);
+                                        }}
+                                      >
+                                        {item.label}
+                                      </button>
+                                    ))}
+                                    <div className="border-t border-border my-1" />
+                                  </>
+                                )}
+
                                 {/* Favorites section */}
                                 {favoriteBaits.length > 0 && !brandSearch.trim() && (
                                   <>
@@ -1469,15 +1604,13 @@ export default function CatchFormDialog({
                                         className="w-full text-left px-3 py-2 text-sm hover:bg-muted/50 transition-colors flex items-center gap-2"
                                         onMouseDown={(e) => e.preventDefault()}
                                         onClick={() => {
-                                          setSelectedManufacturerId(fav.manufacturer.id);
-                                          setBrandSearch(fav.manufacturer.name);
+                                          selectBrand("global", fav.manufacturer.id, fav.manufacturer.name);
                                           setSelectedFlavorId(fav.flavor.id);
                                           const flavorDisplay = fav.productLine?.name
                                             ? `${fav.productLine.name} - ${fav.flavor.name}`
                                             : fav.flavor.name;
                                           setFlavorSearch(flavorDisplay);
                                           setSelectedDiameter(fav.diameter ? fav.diameter.replace(/mm$/i, "") : "");
-                                          setShowBrandDropdown(false);
                                         }}
                                       >
                                         <Star className="h-3 w-3 fill-amber-500 text-amber-500 shrink-0" />
@@ -1493,24 +1626,21 @@ export default function CatchFormDialog({
                                     <div className="border-t border-border my-1" />
                                   </>
                                 )}
-                                {filteredBrandSuggestions.brands.length > 0 && (
+
+                                {/* User brands section */}
+                                {filteredBrandSuggestions.userBrands.length > 0 && (
                                   <>
                                     <div className="px-2 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                                      Značky
+                                      Moje značky
                                     </div>
-                                    {filteredBrandSuggestions.brands.map((item) => (
+                                    {filteredBrandSuggestions.userBrands.map((item) => (
                                       <button
-                                        key={`brand-${item.id}`}
+                                        key={`user-${item.id}`}
                                         type="button"
                                         className="w-full text-left px-3 py-2 text-sm hover:bg-muted/50 transition-colors"
                                         onMouseDown={(e) => e.preventDefault()}
                                         onClick={() => {
-                                          setSelectedManufacturerId(item.id as number);
-                                          setBrandSearch(item.name);
-                                          setSelectedFlavorId(null);
-                                          setSelectedDiameter("");
-                                          setFlavorSearch("");
-                                          setShowBrandDropdown(false);
+                                          selectBrand("user", item.id, item.name);
                                           field.onChange("");
                                           setTimeout(() => flavorInputRef.current?.focus(), 50);
                                         }}
@@ -1520,25 +1650,23 @@ export default function CatchFormDialog({
                                     ))}
                                   </>
                                 )}
-                                {filteredBrandSuggestions.methods.length > 0 && (
+
+                                {/* Global brands section */}
+                                {filteredBrandSuggestions.globalBrands.length > 0 && (
                                   <>
                                     <div className="px-2 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider border-t border-border mt-1">
-                                      Spôsob lovu
+                                      Globálne značky
                                     </div>
-                                    {filteredBrandSuggestions.methods.map((item) => (
+                                    {filteredBrandSuggestions.globalBrands.map((item) => (
                                       <button
-                                        key={`method-${item.id}`}
+                                        key={`global-${item.id}`}
                                         type="button"
                                         className="w-full text-left px-3 py-2 text-sm hover:bg-muted/50 transition-colors"
                                         onMouseDown={(e) => e.preventDefault()}
                                         onClick={() => {
-                                          setSelectedManufacturerId(null);
-                                          setSelectedFlavorId(null);
-                                          setSelectedDiameter("");
-                                          setBrandSearch(item.name);
-                                          setFlavorSearch("");
-                                          setShowBrandDropdown(false);
-                                          field.onChange(item.name);
+                                          selectBrand("global", item.id, item.name);
+                                          field.onChange("");
+                                          setTimeout(() => flavorInputRef.current?.focus(), 50);
                                         }}
                                       >
                                         {item.name}
@@ -1546,26 +1674,50 @@ export default function CatchFormDialog({
                                     ))}
                                   </>
                                 )}
+
+                                {/* CTA: Add to user brands */}
                                 {brandSearch.trim() &&
-                                  filteredBrandSuggestions.brands.length === 0 &&
-                                  !fishingMethods.some(m => m.toLowerCase() === brandSearch.toLowerCase().trim()) && (
+                                  filteredBrandSuggestions.userBrands.length === 0 &&
+                                  !userBrands.some(b => b.name.toLowerCase() === brandSearch.toLowerCase().trim()) && (
                                   <button
                                     type="button"
-                                    className="w-full text-left px-3 py-2 text-sm text-orange-400 hover:bg-muted/50 transition-colors flex items-center gap-2"
+                                    className="w-full text-left px-3 py-2 text-sm text-orange-400 hover:bg-muted/50 transition-colors flex items-center gap-2 border-t border-border"
                                     onMouseDown={(e) => e.preventDefault()}
                                     onClick={() => {
-                                      setSelectedManufacturerId(null);
-                                      setSelectedFlavorId(null);
-                                      setSelectedDiameter("");
+                                      createUserBrandMutation.mutate(brandSearch.trim());
+                                    }}
+                                    disabled={createUserBrandMutation.isPending}
+                                  >
+                                    <Plus className="h-3.5 w-3.5" />
+                                    {createUserBrandMutation.isPending
+                                      ? "Pridávam..."
+                                      : `Pridať „${brandSearch.trim()}" do Mojich značiek`}
+                                  </button>
+                                )}
+
+                                {/* Fallback: Use as free text */}
+                                {brandSearch.trim() &&
+                                  filteredBrandSuggestions.userBrands.length === 0 &&
+                                  filteredBrandSuggestions.globalBrands.length === 0 && (
+                                  <button
+                                    type="button"
+                                    className="w-full text-left px-3 py-2 text-sm text-muted-foreground hover:bg-muted/50 transition-colors flex items-center gap-2"
+                                    onMouseDown={(e) => e.preventDefault()}
+                                    onClick={() => {
+                                      clearBaitSelection();
                                       setShowBrandDropdown(false);
                                       field.onChange(brandSearch.trim());
                                     }}
                                   >
-                                    <Plus className="h-3.5 w-3.5" />
-                                    Použiť „{brandSearch.trim()}"
+                                    Použiť „{brandSearch.trim()}" ako text
                                   </button>
                                 )}
-                                {!brandSearch.trim() && filteredBrandSuggestions.brands.length === 0 && filteredBrandSuggestions.methods.length === 0 && favoriteBaits.length === 0 && (
+
+                                {!brandSearch.trim() &&
+                                  filteredBrandSuggestions.userBrands.length === 0 &&
+                                  filteredBrandSuggestions.globalBrands.length === 0 &&
+                                  favoriteBaits.length === 0 &&
+                                  recentBaits.length === 0 && (
                                   <div className="px-3 py-2 text-sm text-muted-foreground">
                                     Začnite písať pre vyhľadávanie...
                                   </div>
@@ -1574,12 +1726,12 @@ export default function CatchFormDialog({
                             )}
                           </div>
 
-                          {/* Flavor Combobox - only show when a manufacturer is selected */}
-                          {selectedManufacturerId && selectedManufacturer && (
+                          {/* Flavor Combobox - show when brand is selected (user or global) */}
+                          {selectedManufacturerId && (selectedManufacturer || selectedUserBrand) && (
                             <div className="relative">
                               <Input
                                 ref={flavorInputRef}
-                                placeholder={`Príchuť od ${selectedManufacturer.name}...`}
+                                placeholder={`Príchuť od ${selectedManufacturer?.name || selectedUserBrand?.name}...`}
                                 value={flavorSearch}
                                 onChange={(e) => {
                                   setFlavorSearch(e.target.value);
@@ -1611,7 +1763,7 @@ export default function CatchFormDialog({
                                   ref={flavorDropdownRef}
                                   className="absolute z-[100] top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-lg border border-border bg-popover shadow-lg"
                                 >
-                                  {filteredFlavorSuggestions.map((flavor) => (
+                                  {filteredFlavorSuggestions.map((flavor: any) => (
                                     <button
                                       key={flavor.id}
                                       type="button"
@@ -1619,16 +1771,43 @@ export default function CatchFormDialog({
                                       onMouseDown={(e) => e.preventDefault()}
                                       onClick={() => {
                                         setSelectedFlavorId(flavor.id);
-                                        const displayName = flavor.productLine ? `${flavor.productLine} - ${flavor.name}` : flavor.name;
+                                        const displayName = baitSource === "global" && flavor.productLine
+                                          ? `${flavor.productLine} - ${flavor.name}`
+                                          : flavor.name;
                                         setFlavorSearch(displayName);
                                         setShowFlavorDropdown(false);
                                       }}
                                     >
-                                      {flavor.productLine && <span className="text-muted-foreground">{flavor.productLine} – </span>}
+                                      {baitSource === "global" && flavor.productLine && (
+                                        <span className="text-muted-foreground">{flavor.productLine} – </span>
+                                      )}
                                       {flavor.name}
                                     </button>
                                   ))}
-                                  {flavorSearch.trim() && filteredFlavorSuggestions.length === 0 && (
+
+                                  {/* CTA: Add flavor for user brands */}
+                                  {flavorSearch.trim() && filteredFlavorSuggestions.length === 0 && baitSource === "user" && selectedManufacturerId && (
+                                    <button
+                                      type="button"
+                                      className="w-full text-left px-3 py-2 text-sm text-orange-400 hover:bg-muted/50 transition-colors flex items-center gap-2"
+                                      onMouseDown={(e) => e.preventDefault()}
+                                      onClick={() => {
+                                        createUserFlavorMutation.mutate({
+                                          brandId: selectedManufacturerId,
+                                          name: flavorSearch.trim(),
+                                        });
+                                      }}
+                                      disabled={createUserFlavorMutation.isPending}
+                                    >
+                                      <Plus className="h-3.5 w-3.5" />
+                                      {createUserFlavorMutation.isPending
+                                        ? "Pridávam..."
+                                        : `Pridať príchuť „${flavorSearch.trim()}"`}
+                                    </button>
+                                  )}
+
+                                  {/* Fallback for global brands: use as free text */}
+                                  {flavorSearch.trim() && filteredFlavorSuggestions.length === 0 && baitSource === "global" && selectedManufacturer && (
                                     <button
                                       type="button"
                                       className="w-full text-left px-3 py-2 text-sm text-orange-400 hover:bg-muted/50 transition-colors flex items-center gap-2"
@@ -1642,6 +1821,7 @@ export default function CatchFormDialog({
                                       Použiť „{flavorSearch.trim()}"
                                     </button>
                                   )}
+
                                   {!flavorSearch.trim() && filteredFlavorSuggestions.length === 0 && (
                                     <div className="px-3 py-2 text-sm text-muted-foreground">
                                       Žiadne príchute. Začnite písať.
@@ -1670,20 +1850,22 @@ export default function CatchFormDialog({
                                   ))}
                                 </SelectContent>
                               </Select>
-                              <button
-                                type="button"
-                                onClick={handleToggleFavorite}
-                                disabled={toggleFavoriteMutation.isPending || addFavoriteMutation.isPending}
-                                className={cn(
-                                  "p-2 rounded-lg border transition-colors shrink-0",
-                                  currentFavorite
-                                    ? "border-amber-500/50 bg-amber-500/10 text-amber-500"
-                                    : "border-border/50 bg-slate-800/80 text-muted-foreground hover:text-amber-500 hover:border-amber-500/30"
-                                )}
-                                title={currentFavorite ? "Odobrať z obľúbených" : "Pridať do obľúbených"}
-                              >
-                                <Star className={cn("h-4 w-4", currentFavorite && "fill-amber-500")} />
-                              </button>
+                              {baitSource === "global" && (
+                                <button
+                                  type="button"
+                                  onClick={handleToggleFavorite}
+                                  disabled={toggleFavoriteMutation.isPending || addFavoriteMutation.isPending}
+                                  className={cn(
+                                    "p-2 rounded-lg border transition-colors shrink-0",
+                                    currentFavorite
+                                      ? "border-amber-500/50 bg-amber-500/10 text-amber-500"
+                                      : "border-border/50 bg-slate-800/80 text-muted-foreground hover:text-amber-500 hover:border-amber-500/30"
+                                  )}
+                                  title={currentFavorite ? "Odobrať z obľúbených" : "Pridať do obľúbených"}
+                                >
+                                  <Star className={cn("h-4 w-4", currentFavorite && "fill-amber-500")} />
+                                </button>
+                              )}
                             </div>
                           )}
                         </div>
