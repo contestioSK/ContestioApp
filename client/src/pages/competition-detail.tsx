@@ -267,7 +267,7 @@ const teamRegistrationSchema = z.object({
     role: z.enum(["captain", "member"]),
     email: z.string().optional().refine((val) => !val || z.string().email().safeParse(val).success, "Zadajte platný e-mail"),
     phone: z.string().optional(),
-  })).min(1, "Aspoň jeden člen tímu je povinný").max(6, "Maximálne 6 členov je povolených"),
+  })).min(1, "Aspoň jeden člen tímu je povinný").max(10, "Maximálne 10 členov je povolených"),
 });
 
 type TeamRegistrationForm = z.infer<typeof teamRegistrationSchema>;
@@ -368,12 +368,13 @@ export default function CompetitionDetail() {
 
   const addMember = () => {
     const currentMembers = form.getValues("members");
-    if (currentMembers.length < 6) {
+    if (currentMembers.length < maxTeamMembers) {
       form.setValue("members", [...currentMembers, { name: "", role: "member", email: "", phone: "" }]);
     }
   };
 
   const removeMember = (index: number) => {
+    if (index === 0) return;
     const currentMembers = form.getValues("members");
     if (currentMembers.length > 1) {
       form.setValue("members", currentMembers.filter((_, i) => i !== index));
@@ -389,6 +390,7 @@ export default function CompetitionDetail() {
     enabled: !!id,
   });
 
+  const maxTeamMembers = competition?.teamSize ?? 1;
   const status = competition?.status;
   const isLive = status === 'live';
   const isEnded = ['ended', 'completed', 'finished'].includes(status || '');
@@ -946,17 +948,25 @@ export default function CompetitionDetail() {
 
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <FormLabel>Členovia tímu</FormLabel>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={addMember}
-                    disabled={form.watch("members").length >= 6}
-                  >
-                    <UserPlus className="w-4 h-4 mr-2" />
-                    Pridať člena
-                  </Button>
+                  <div>
+                    <FormLabel>Členovia tímu</FormLabel>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {maxTeamMembers === 1 ? 'Súťaž pre jednotlivcov' : `Max. ${maxTeamMembers} členov v tíme`}
+                      {' '}({form.watch("members").length}/{maxTeamMembers})
+                    </p>
+                  </div>
+                  {maxTeamMembers > 1 && (
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={addMember}
+                      disabled={form.watch("members").length >= maxTeamMembers}
+                    >
+                      <UserPlus className="w-4 h-4 mr-2" />
+                      Pridať člena
+                    </Button>
+                  )}
                 </div>
 
                 {form.watch("members").map((member, index) => (
