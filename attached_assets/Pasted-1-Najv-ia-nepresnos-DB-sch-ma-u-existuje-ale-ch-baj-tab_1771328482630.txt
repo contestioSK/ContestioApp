@@ -1,0 +1,89 @@
+1) Najväčšia nepresnosť: „DB schéma už existuje, ale chýbajú tabuľky“
+
+To nedáva zmysel. Buď:
+
+schéma existuje aj fyzicky (tabuľky sú v DB), alebo
+
+“existuje” len ako idea v kóde / typoch.
+
+Takže reálne máš 2 možnosti:
+
+A) tabuľky už v DB sú → stačí API + napojenie do catch formu
+
+B) tabuľky nie sú → treba migráciu
+
+👉 Prakticky: toto si overíš za 30 sekúnd v DB (ale nemusíš sa ma nič pýtať – len hovorím, že Replit tvrdenie je slabé).
+
+2) Správny cieľ: normalizácia bez rozbitia spätných dát
+
+Tvoj CatchForm dnes ukladá bait ako text. To je OK, len to nie je použiteľné na analytiku.
+
+Najlepší kompromis:
+
+v catchi nechaj bait text (kvôli UI/legacy/exportu)
+
+pridaj baitBrandId, baitFlavorId, baitDiameterMm (alebo string)
+
+backend si bude vedieť poradiť, keď ID chýbajú (staré úlovky)
+
+Toto Replit navrhol OK.
+
+3) Jedna dôležitá oprava: nelep “My brands” na globálne manufacturers
+
+Ty máš dnes globálne manufacturers s flavors a productLine.
+To je iný svet ako “moje značky”.
+
+Moje značky musia byť separátne:
+
+user_bait_brands (userId, name)
+
+user_bait_flavors (brandId, name)
+
+Až v UI to zmixuješ do jedného dropdownu.
+Ale v dátach to nesmie byť jedna tabuľka, inak budeš mať bordel v ownership, duplikátoch a moderácii.
+
+4) Najväčší risk: case-insensitive unikátnosť bez DB constraintu
+
+Ak to spravíš len v API (kontrola pred insertom), pri dvoch requestoch naraz ti to aj tak duplikuje.
+
+Správne:
+
+urob DB unique index case-insensitive (Postgres: citext alebo lower(name) index)
+
+API nech len chytá constraint error a vráti existujúci záznam
+
+Replit to spomenul, ale dôležité je: musí to byť v DB, nie len v kóde.
+
+5) UX zmena: “Použiť…” je zlé copy
+
+Replit správne navrhol zmeniť “Použiť” na “Pridať značku/príchuť”.
+
+Ja by som to spravil takto:
+
++ Pridať značku „X“ do Mojich značiek
+
++ Pridať príchuť „Y“ do značky Mikbaits
+
+To je jasné a nastaví očakávanie, že sa to uloží natrvalo.
+
+6) Jedna vec navyše, ktorú by som spravil (a Replit nespomenul)
+„Recent used“ je MVP killer feature, lacnejšia než favority
+
+V praxi rybár používa pár nástrah dokola.
+Takže v dropdownoch:
+
+hore Naposledy použité (z posledných úlovkov)
+
+potom Moje značky
+
+potom globálne
+
+To drasticky zrýchli zapisovanie úlovku.
+
+Ako to zhrniem: Replit plán je dobrý, ale doplň tieto 3 podmienky
+
+DB constraints na unikátnosť (nie len API kontrola)
+
+Oddeliť user značky od globálnej DB (len UI mix)
+
+V CatchForm ukladať IDčka + text fallback, žiadne productLineId || 0
