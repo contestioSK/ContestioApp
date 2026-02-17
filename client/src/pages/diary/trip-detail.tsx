@@ -5,7 +5,7 @@ import { format, isPast, isToday } from "date-fns";
 import { sk } from "date-fns/locale";
 import { ArrowLeft, MapPin, Calendar as CalendarIcon, Fish, Weight, Trophy, FileText, Medal, Ruler, Target, Cloud, Thermometer, Wind, Gauge, XCircle, Download, Grid3x3, MoreHorizontal, Share2, ChevronRight, ZoomIn, Scale, PieChart, Anchor } from "lucide-react";
 import { PhotoLightbox } from "@/components/diary/PhotoLightbox";
-import { TacticalIconInline } from "@/components/ui/tactical-icon";
+import { TacticalIcon } from "@/components/ui/tactical-icon";
 import html2canvas from "html2canvas";
 import contestioLogo from "@assets/contestio logo_1760283270014.png";
 
@@ -605,115 +605,112 @@ export default function TripDetail() {
         </Card>
 
         {/* Statistics Cards - NOW AFTER CATCHES */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Počet úlovkov</CardTitle>
-              <TacticalIconInline icon={Fish} variant="cyan" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold" data-testid="text-total-catches">{totalCatches}</div>
-              <p className="text-xs text-muted-foreground">
-                {totalCatches === 0 ? "Zatiaľ žiadne" : totalCatches === 1 ? "1 úlovok" : `${totalCatches} úlovkov`}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Celková váha</CardTitle>
-              <TacticalIconInline icon={Weight} variant="orange" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold" data-testid="text-total-weight">{totalWeight.toFixed(1)} kg</div>
-              <p className="text-xs text-muted-foreground">
-                Priemerná: {totalCatches > 0 ? (totalWeight / totalCatches).toFixed(1) : "0"} kg
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Najväčší úlovok</CardTitle>
-              <TacticalIconInline icon={Trophy} variant="amber" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold" data-testid="text-biggest-catch">
-                {biggestCatch ? `${parseFloat(biggestCatch.weight).toFixed(1)} kg` : "—"}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {biggestCatch ? getFishTypeLabel(biggestCatch.fishType) : "Žiadny úlovok"}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Priemerná váha</CardTitle>
-              <TacticalIconInline icon={Scale} variant="purple" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{averageWeight.toFixed(1)} kg</div>
-              <p className="text-xs text-muted-foreground">
-                {totalCatches > 0 ? `Z ${totalCatches} úlovkov` : "Žiadne úlovky"}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Lysec / Šupináč</CardTitle>
-              <TacticalIconInline icon={PieChart} variant="emerald" />
-            </CardHeader>
-            <CardContent>
-              {(lysecCount + supinacCount) > 0 ? (
-                <>
-                  <div className="text-2xl font-bold">{lysecCount} / {supinacCount}</div>
-                  <div className="flex items-center gap-2 mt-1">
-                    <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-amber-500 rounded-full"
-                        style={{ width: `${(lysecCount / (lysecCount + supinacCount)) * 100}%` }}
-                      />
-                    </div>
-                    <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-                      {otherFishCount > 0 ? `+ ${otherFishCount} iné` : ""}
-                    </span>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="text-2xl font-bold">—</div>
-                  <p className="text-xs text-muted-foreground">Žiadne kapry</p>
-                </>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">TOP 3 nástrahy</CardTitle>
-              <TacticalIconInline icon={Anchor} variant="rose" />
-            </CardHeader>
-            <CardContent>
-              {top3Baits.length > 0 ? (
-                <div className="space-y-1.5">
-                  {top3Baits.map(([bait, count], i) => (
-                    <div key={bait} className="flex items-center justify-between gap-2">
-                      <span className="text-sm truncate">
-                        <span className="text-muted-foreground mr-1.5">{i + 1}.</span>
-                        {bait}
-                      </span>
-                      <span className="text-xs font-mono font-medium text-[#F97316] whitespace-nowrap">{count}×</span>
-                    </div>
-                  ))}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          <Card className="bg-card dark:bg-slate-900 border border-border rounded-xl shadow-sm transition-all duration-200 hover:shadow-md hover:border-border/80">
+            <CardContent className="p-4 md:p-6">
+              <div className="flex items-center gap-3 md:gap-4">
+                <TacticalIcon icon={Fish} variant="cyan" size="sm" showLabel={false} />
+                <div className="flex-1">
+                  <div className="text-xs md:text-sm text-muted-foreground mb-1">Počet úlovkov</div>
+                  <div className="text-xl md:text-2xl font-mono font-medium text-[#F97316]" data-testid="text-total-catches">{totalCatches} ks</div>
                 </div>
-              ) : (
-                <>
-                  <div className="text-2xl font-bold">—</div>
-                  <p className="text-xs text-muted-foreground">Žiadne nástrahy</p>
-                </>
-              )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card dark:bg-slate-900 border border-border rounded-xl shadow-sm transition-all duration-200 hover:shadow-md hover:border-border/80">
+            <CardContent className="p-4 md:p-6">
+              <div className="flex items-center gap-3 md:gap-4">
+                <TacticalIcon icon={Weight} variant="indigo" size="sm" showLabel={false} />
+                <div className="flex-1">
+                  <div className="text-xs md:text-sm text-muted-foreground mb-1">Celková váha</div>
+                  <div className="text-xl md:text-2xl font-mono font-medium text-[#F97316]" data-testid="text-total-weight">{totalWeight.toFixed(1)} kg</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card dark:bg-slate-900 border border-border rounded-xl shadow-sm transition-all duration-200 hover:shadow-md hover:border-border/80">
+            <CardContent className="p-4 md:p-6">
+              <div className="flex items-center gap-3 md:gap-4">
+                <TacticalIcon icon={Trophy} variant="amber" size="sm" showLabel={false} />
+                <div className="flex-1">
+                  <div className="text-xs md:text-sm text-muted-foreground mb-1">Najväčší úlovok</div>
+                  <div className="text-xl md:text-2xl font-mono font-medium text-[#F97316]" data-testid="text-biggest-catch">
+                    {biggestCatch ? `${parseFloat(biggestCatch.weight).toFixed(1)} kg` : "—"}
+                  </div>
+                  {biggestCatch && (
+                    <div className="text-[10px] text-muted-foreground">{getFishTypeLabel(biggestCatch.fishType)}</div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card dark:bg-slate-900 border border-border rounded-xl shadow-sm transition-all duration-200 hover:shadow-md hover:border-border/80">
+            <CardContent className="p-4 md:p-6">
+              <div className="flex items-center gap-3 md:gap-4">
+                <TacticalIcon icon={Scale} variant="purple" size="sm" showLabel={false} />
+                <div className="flex-1">
+                  <div className="text-xs md:text-sm text-muted-foreground mb-1">Priemerná váha</div>
+                  <div className="text-xl md:text-2xl font-mono font-medium text-[#F97316]">{averageWeight.toFixed(1)} kg</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card dark:bg-slate-900 border border-border rounded-xl shadow-sm transition-all duration-200 hover:shadow-md hover:border-border/80">
+            <CardContent className="p-4 md:p-6">
+              <div className="flex items-center gap-3 md:gap-4">
+                <TacticalIcon icon={PieChart} variant="emerald" size="sm" showLabel={false} />
+                <div className="flex-1">
+                  <div className="text-xs md:text-sm text-muted-foreground mb-1">Lysec / Šupináč</div>
+                  {(lysecCount + supinacCount) > 0 ? (
+                    <>
+                      <div className="text-xl md:text-2xl font-mono font-medium text-[#F97316]">{lysecCount} / {supinacCount}</div>
+                      <div className="flex items-center gap-2 mt-1">
+                        <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-emerald-500 rounded-full"
+                            style={{ width: `${(lysecCount / (lysecCount + supinacCount)) * 100}%` }}
+                          />
+                        </div>
+                        {otherFishCount > 0 && (
+                          <span className="text-[9px] text-muted-foreground whitespace-nowrap">+{otherFishCount}</span>
+                        )}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-xl md:text-2xl font-mono font-medium text-[#F97316]">—</div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card dark:bg-slate-900 border border-border rounded-xl shadow-sm transition-all duration-200 hover:shadow-md hover:border-border/80">
+            <CardContent className="p-4 md:p-6">
+              <div className="flex items-center gap-3 md:gap-4">
+                <TacticalIcon icon={Anchor} variant="rose" size="sm" showLabel={false} />
+                <div className="flex-1">
+                  <div className="text-xs md:text-sm text-muted-foreground mb-1">TOP 3 nástrahy</div>
+                  {top3Baits.length > 0 ? (
+                    <div className="space-y-0.5">
+                      {top3Baits.map(([bait, count], i) => (
+                        <div key={bait} className="flex items-center justify-between gap-2">
+                          <span className="text-xs md:text-sm truncate">
+                            <span className="text-muted-foreground mr-1">{i + 1}.</span>
+                            {bait}
+                          </span>
+                          <span className="text-xs font-mono font-medium text-[#F97316] whitespace-nowrap">{count}×</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-xl md:text-2xl font-mono font-medium text-[#F97316]">—</div>
+                  )}
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
