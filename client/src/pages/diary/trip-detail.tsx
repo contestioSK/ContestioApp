@@ -132,8 +132,8 @@ export default function TripDetail() {
               text: `Moja rybárska výprava: ${trip.name}`,
             });
             toast({
-              title: "Zdieľané!",
-              description: "Výprava bola úspešne zdieľaná.",
+              title: "Vizuál pripravený",
+              description: "Obrázok reportu bol úspešne zdieľaný.",
             });
             return;
           }
@@ -150,8 +150,8 @@ export default function TripDetail() {
       link.click();
       
       toast({
-        title: "Export úspešný!",
-        description: "Výprava bola exportovaná ako obrázok.",
+        title: "Vizuál pripravený",
+        description: "Obrázok reportu je pripravený na zdieľanie.",
       });
     } catch (error) {
       console.error('Export error:', error);
@@ -253,9 +253,10 @@ export default function TripDetail() {
                 disabled={isExporting}
                 className="gap-2"
                 data-testid="button-export-trip"
+                title="Vygeneruje obrázok reportu na zdieľanie"
               >
                 <Share2 className="w-4 h-4" />
-                {isExporting ? "Generujem..." : "Zdieľať report"}
+                {isExporting ? "Generujem vizuál…" : "Vytvoriť vizuál"}
               </Button>
 
               {trip && !isPast(new Date(trip.endDate)) && !isToday(new Date(trip.endDate)) && (
@@ -287,7 +288,7 @@ export default function TripDetail() {
                 )}
                 <DropdownMenuItem onClick={handleExportTrip} disabled={isExporting} data-testid="menu-export">
                   <Share2 className="w-4 h-4 mr-2" />
-                  {isExporting ? "Generujem..." : "Zdieľať report"}
+                  {isExporting ? "Generujem vizuál…" : "Vytvoriť vizuál"}
                 </DropdownMenuItem>
                 {trip && !isPast(new Date(trip.endDate)) && !isToday(new Date(trip.endDate)) && (
                   <>
