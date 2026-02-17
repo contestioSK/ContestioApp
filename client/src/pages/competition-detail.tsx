@@ -1036,6 +1036,7 @@ export default function CompetitionDetail() {
                   {competition.registrationFee && (
                     <p>Štartovné na tím: {parseFloat(competition.registrationFee)}€</p>
                   )}
+                  <p>Členov v tíme: {competition.teamSize === 1 ? 'Jednotlivec' : `${competition.teamSize ?? 1}`}</p>
                   {competition.maxTeams && (
                     <p>Maximálny počet tímov: {competition.maxTeams}</p>
                   )}
