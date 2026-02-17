@@ -85,10 +85,10 @@ function Stepper({ currentStatus }: { currentStatus: string }) {
         const isPast = currentIndex > idx;
         return (
           <Fragment key={step.id}>
-            <span className={`transition-colors ${isActive ? 'text-orange-500 font-bold' : isPast ? 'text-slate-400' : 'text-slate-600'}`}>
+            <span className={`transition-colors ${isActive ? 'text-orange-500 font-bold' : isPast ? 'text-muted-foreground' : 'text-muted-foreground/50'}`}>
               {step.label}
             </span>
-            {idx < STEPS.length - 1 && <ChevronRight size={10} className="text-slate-800" />}
+            {idx < STEPS.length - 1 && <ChevronRight size={10} className="text-muted-foreground/30" />}
           </Fragment>
         );
       })}
@@ -119,7 +119,7 @@ function Countdown({ targetDate }: { targetDate: Date | string }) {
     }, 1000);
     return () => clearInterval(timer);
   }, [targetDate]);
-  return <span className="text-2xl font-bold tabular-nums text-white">{timeLeft}</span>;
+  return <span className="text-2xl font-bold tabular-nums text-foreground">{timeLeft}</span>;
 }
 
 export default function CompetitionManage() {
@@ -377,9 +377,9 @@ export default function CompetitionManage() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <div className="bg-card border border-border rounded-2xl p-8 max-w-md w-full text-center">
-          <Trophy className="w-12 h-12 mx-auto mb-4 text-slate-500" />
-          <h2 className="text-xl font-bold text-white mb-2">Súťaž nenájdená</h2>
-          <p className="text-slate-400 mb-6">Táto súťaž neexistuje alebo k nej nemáte prístup.</p>
+          <Trophy className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+          <h2 className="text-xl font-bold text-foreground mb-2">Súťaž nenájdená</h2>
+          <p className="text-muted-foreground mb-6">Táto súťaž neexistuje alebo k nej nemáte prístup.</p>
           <Button onClick={() => setLocation('/organizer/competitions')} className="bg-orange-500 hover:bg-orange-600 text-white font-bold w-full h-12 rounded-xl">
             Späť na zoznam súťaží
           </Button>
@@ -431,7 +431,7 @@ export default function CompetitionManage() {
       return {
         label: 'Spustiť súťaž',
         context: hasPending ? `Čakajú ${pendingTeams.length} tímy` : 'Pripravené na štart',
-        contextColor: hasPending ? 'text-orange-400' : 'text-slate-400',
+        contextColor: hasPending ? 'text-orange-400' : 'text-muted-foreground',
         variant: 'green' as const,
         Icon: Play,
         action: () => setShowStartDialog(true),
@@ -463,14 +463,14 @@ export default function CompetitionManage() {
       <header className="sticky top-0 z-40 bg-background/95 border-b border-border backdrop-blur-sm shadow-2xl">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4 min-w-0">
-            <button onClick={() => setLocation('/organizer/competitions')} className="text-slate-500 hover:text-white transition-colors flex-shrink-0">
+            <button onClick={() => setLocation('/organizer/competitions')} className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0">
               <ArrowLeft size={18} />
             </button>
             <div className="w-8 h-8 bg-orange-600 rounded flex items-center justify-center text-white shadow-lg shadow-orange-900/20 flex-shrink-0">
               <Trophy size={18} />
             </div>
             <div className="leading-tight min-w-0">
-              <h1 className="text-sm font-bold text-white tracking-tight truncate">{competition.name}</h1>
+              <h1 className="text-sm font-bold text-foreground tracking-tight truncate">{competition.name}</h1>
               <Stepper currentStatus={competition.status} />
             </div>
           </div>
@@ -478,14 +478,14 @@ export default function CompetitionManage() {
           <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
             {actionState && (
               <div className="hidden lg:flex flex-col items-end leading-none mr-3">
-                <span className="text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-1">Nasledujúci krok</span>
+                <span className="text-[9px] font-bold text-muted-foreground/70 uppercase tracking-widest mb-1">Nasledujúci krok</span>
                 <span className={`text-[11px] font-semibold ${actionState.contextColor}`}>{actionState.context}</span>
               </div>
             )}
             <Button
               variant="outline"
               size="sm"
-              className="bg-slate-900/50 border-border text-slate-400 hover:text-white hover:bg-slate-800 h-9 px-3 sm:px-4 text-xs font-bold transition-all"
+              className="bg-muted/50 border-border text-muted-foreground hover:text-foreground hover:bg-accent h-9 px-3 sm:px-4 text-xs font-bold transition-all"
               onClick={() => window.open(`/competition/${competition.id}`, '_blank')}
             >
               <ExternalLink size={14} className="mr-1 sm:mr-2" />
@@ -512,13 +512,13 @@ export default function CompetitionManage() {
       </header>
 
       <main className="max-w-[1400px] mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mb-8 text-sm text-slate-500">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mb-8 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
-            <MapPin size={14} className="text-slate-700" />
+            <MapPin size={14} className="text-muted-foreground/50" />
             <span>{competition.location}</span>
           </div>
-          <div className="flex items-center gap-2 font-medium text-slate-400">
-            <Calendar size={14} className="text-slate-700" />
+          <div className="flex items-center gap-2 font-medium text-muted-foreground">
+            <Calendar size={14} className="text-muted-foreground/50" />
             <span>
               {format(new Date(competition.startDate), "d. MMMM yyyy", { locale: sk })}
             </span>
@@ -526,7 +526,7 @@ export default function CompetitionManage() {
           <Button
             variant="ghost"
             size="sm"
-            className="text-slate-500 hover:text-white h-7 px-2 text-xs"
+            className="text-muted-foreground hover:text-foreground h-7 px-2 text-xs"
             onClick={() => setLocation(competition.status === 'draft' ? `/organizer/create?id=${competition.id}` : `/competition/${competition.id}/setup`)}
           >
             <Edit size={12} className="mr-1" />
@@ -554,40 +554,40 @@ export default function CompetitionManage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
           <Card className="bg-card border-border shadow-none">
             <CardContent className="p-4 sm:p-5">
-              <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-2">
+              <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest mb-2">
                 {competition.status === 'live' ? 'Do konca' : 'Čas do štartu'}
               </p>
               <Countdown targetDate={competition.status === 'live' ? competition.endDate : competition.startDate} />
-              <span className="text-[11px] text-slate-600 mt-1 block">
+              <span className="text-[11px] text-muted-foreground/70 mt-1 block">
                 {format(new Date(competition.startDate), "d.M.yyyy", { locale: sk })}
               </span>
             </CardContent>
           </Card>
 
           <Card
-            className={`bg-card border-border shadow-none transition-all ${pendingTeams.length > 0 ? 'ring-1 ring-orange-500/30 cursor-pointer hover:bg-slate-800/40' : ''}`}
+            className={`bg-card border-border shadow-none transition-all ${pendingTeams.length > 0 ? 'ring-1 ring-orange-500/30 cursor-pointer hover:bg-accent/40' : ''}`}
             onClick={() => pendingTeams.length > 0 && setTeamsFilter('pending')}
           >
             <CardContent className="p-4 sm:p-5">
               <div className="flex justify-between items-start mb-2">
-                <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Tímy</p>
+                <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest">Tímy</p>
                 {pendingTeams.length > 0 && (
                   <Badge className="bg-orange-600 text-white border-none text-[9px] px-1.5 py-0">
                     {pendingTeams.length} ČAKÁ
                   </Badge>
                 )}
               </div>
-              <div className="flex items-baseline gap-2 text-2xl font-bold text-white">
-                {teamsCount} <span className="text-sm font-normal text-slate-700">/ {competition.maxTeams || '∞'}</span>
+              <div className="flex items-baseline gap-2 text-2xl font-bold text-foreground">
+                {teamsCount} <span className="text-sm font-normal text-muted-foreground/50">/ {competition.maxTeams || '∞'}</span>
               </div>
             </CardContent>
           </Card>
 
           <Card className="bg-card border-border shadow-none">
             <CardContent className="p-4 sm:p-5">
-              <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-2">Rozhodcovia</p>
+              <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest mb-2">Rozhodcovia</p>
               <div className="flex justify-between items-center">
-                <span className="text-2xl font-bold text-white">{refereesCount}</span>
+                <span className="text-2xl font-bold text-foreground">{refereesCount}</span>
                 <button onClick={() => setShowAddRefereeDialog(true)} className="text-orange-500 text-xs font-bold hover:text-orange-400">Spravovať</button>
               </div>
             </CardContent>
@@ -595,8 +595,8 @@ export default function CompetitionManage() {
 
           <Card className="bg-card border-border shadow-none">
             <CardContent className="p-4 sm:p-5">
-              <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-2">Pripravenosť</p>
-              <div className="w-full bg-slate-950 h-1.5 rounded-full mt-3 overflow-hidden border border-slate-900">
+              <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest mb-2">Pripravenosť</p>
+              <div className="w-full bg-muted h-1.5 rounded-full mt-3 overflow-hidden border border-border/50">
                 <div className="bg-orange-600 h-full transition-all duration-500" style={{ width: `${readinessPct}%` }} />
               </div>
               <div className="flex flex-wrap gap-x-3 gap-y-1 mt-3">
@@ -618,44 +618,44 @@ export default function CompetitionManage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
           <div className="lg:col-span-8 space-y-4 sm:space-y-6">
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-between items-start sm:items-center bg-card p-2 rounded-xl border border-border">
-              <div className="flex gap-1 p-1 bg-slate-950 rounded-lg">
+              <div className="flex gap-1 p-1 bg-muted rounded-lg">
                 <button
                   onClick={() => setTeamsFilter('all')}
-                  className={`px-4 sm:px-5 py-1.5 text-[11px] font-bold rounded-md transition-all ${teamsFilter === 'all' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-500 hover:text-slate-300'}`}
+                  className={`px-4 sm:px-5 py-1.5 text-[11px] font-bold rounded-md transition-all ${teamsFilter === 'all' ? 'bg-accent text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground/80'}`}
                 >
                   VŠETKY
                 </button>
                 <button
                   onClick={() => setTeamsFilter('pending')}
-                  className={`px-4 sm:px-5 py-1.5 text-[11px] font-bold rounded-md transition-all flex items-center gap-2 ${teamsFilter === 'pending' ? 'bg-orange-600 text-white shadow-lg shadow-orange-900/20' : 'text-slate-500 hover:text-slate-300'}`}
+                  className={`px-4 sm:px-5 py-1.5 text-[11px] font-bold rounded-md transition-all flex items-center gap-2 ${teamsFilter === 'pending' ? 'bg-orange-600 text-white shadow-lg shadow-orange-900/20' : 'text-muted-foreground hover:text-foreground/80'}`}
                 >
                   ČAKAJÚCE {pendingTeams.length > 0 && <span className="bg-black/20 px-1.5 rounded text-[10px]">{pendingTeams.length}</span>}
                 </button>
               </div>
               <div className="relative w-full sm:w-64">
-                <Search size={14} className="absolute left-3 top-2.5 text-slate-600" />
+                <Search size={14} className="absolute left-3 top-2.5 text-muted-foreground/70" />
                 <Input
                   placeholder="Hľadať tím..."
                   value={teamsSearch}
                   onChange={(e) => setTeamsSearch(e.target.value)}
-                  className="h-9 bg-slate-950 border-border text-xs pl-9 focus:ring-1 focus:ring-orange-500/50 text-slate-300 placeholder:text-slate-600"
+                  className="h-9 bg-muted border-border text-xs pl-9 focus:ring-1 focus:ring-orange-500/50 text-foreground/80 placeholder:text-muted-foreground/50"
                 />
               </div>
             </div>
 
             <Card className="bg-card border-border shadow-none overflow-hidden rounded-xl">
-              <div className="divide-y divide-slate-800/40">
+              <div className="divide-y divide-border">
                 {teamsLoading ? (
                   <div className="p-4 space-y-4">
-                    {[1, 2, 3].map(i => <Skeleton key={i} className="h-14 bg-slate-800" />)}
+                    {[1, 2, 3].map(i => <Skeleton key={i} className="h-14" />)}
                   </div>
                 ) : filteredTeams.length > 0 ? filteredTeams.map(team => (
-                  <div key={team.id} className="p-4 flex items-center justify-between hover:bg-slate-800/20 transition-all group">
+                  <div key={team.id} className="p-4 flex items-center justify-between hover:bg-accent/20 transition-all group">
                     <div className="flex items-center gap-4 cursor-pointer min-w-0" onClick={() => setLocation(`/team/${team.id}`)}>
                       <div className={`w-2 h-2 rounded-full flex-shrink-0 ${team.status === 'approved' ? 'bg-emerald-500' : 'bg-orange-500 animate-pulse shadow-[0_0_8px_rgba(249,115,22,0.4)]'}`} />
                       <div className="min-w-0">
-                        <h4 className="text-sm font-bold text-slate-100 group-hover:text-white truncate flex items-center gap-1.5"><TeamFlag country={team.country} size="xs" />{team.name}</h4>
-                        <p className="text-[11px] text-slate-500 flex items-center gap-2">
+                        <h4 className="text-sm font-bold text-foreground group-hover:text-foreground truncate flex items-center gap-1.5"><TeamFlag country={team.country} size="xs" />{team.name}</h4>
+                        <p className="text-[11px] text-muted-foreground flex items-center gap-2">
                           {team.sector ? `Sektor ${team.sector}` : 'Sektor nepridelený'}
                         </p>
                       </div>
@@ -664,7 +664,7 @@ export default function CompetitionManage() {
                       <Button
                         size="sm"
                         variant="outline"
-                        className="h-8 border-slate-700 bg-transparent text-slate-400 hover:text-white hover:border-slate-500 text-[11px] font-bold px-3 sm:px-4"
+                        className="h-8 border-border bg-transparent text-muted-foreground hover:text-foreground hover:border-border text-[11px] font-bold px-3 sm:px-4"
                         onClick={() => setLocation(`/team/${team.id}`)}
                       >
                         <Eye size={12} className="mr-1" />
@@ -683,7 +683,7 @@ export default function CompetitionManage() {
                           <Button
                             size="icon"
                             variant="ghost"
-                            className="h-8 w-8 text-slate-600 hover:text-red-400 hover:bg-red-400/10"
+                            className="h-8 w-8 text-muted-foreground/70 hover:text-red-400 hover:bg-red-400/10"
                             onClick={(e) => { e.stopPropagation(); setRejectingTeamId(team.id); setRejectingTeamName(team.name); setShowRejectTeamDialog(true); }}
                             disabled={processingTeamId === team.id}
                           >
@@ -695,8 +695,8 @@ export default function CompetitionManage() {
                   </div>
                 )) : (
                   <div className="p-16 text-center">
-                    <Users className="w-8 h-8 mx-auto mb-3 text-slate-700" />
-                    <p className="text-slate-600 text-xs italic tracking-wide">
+                    <Users className="w-8 h-8 mx-auto mb-3 text-muted-foreground/50" />
+                    <p className="text-muted-foreground/70 text-xs italic tracking-wide">
                       {teamsSearch ? 'Žiadne tímy nevyhovujú hľadaniu.' : teamsFilter === 'pending' ? 'Žiadne čakajúce tímy.' : 'Zatiaľ žiadne registrované tímy.'}
                     </p>
                   </div>
@@ -708,27 +708,27 @@ export default function CompetitionManage() {
               <Card className="bg-card border-border shadow-none">
                 <CardContent className="p-5">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Úlovky</h3>
-                    <Badge variant="outline" className="bg-transparent border-slate-700 text-slate-400 text-[10px]">
+                    <h3 className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest">Úlovky</h3>
+                    <Badge variant="outline" className="bg-transparent border-border text-muted-foreground text-[10px]">
                       {catchesLoading ? '...' : (catches?.length || 0)}
                     </Badge>
                   </div>
                   {catchesLoading ? (
                     <div className="space-y-2">
-                      <Skeleton className="h-8 w-full bg-slate-800" />
-                      <Skeleton className="h-8 w-full bg-slate-800" />
+                      <Skeleton className="h-8 w-full" />
+                      <Skeleton className="h-8 w-full" />
                     </div>
                   ) : !catches || catches.length === 0 ? (
                     <div className="text-center py-6">
-                      <Fish size={24} className="mx-auto text-slate-700 mb-2" />
-                      <p className="text-xs text-slate-600">
+                      <Fish size={24} className="mx-auto text-muted-foreground/50 mb-2" />
+                      <p className="text-xs text-muted-foreground/70">
                         {competition?.status === 'live' ? 'Zatiaľ žiadne úlovky' : 'Žiadne úlovky'}
                       </p>
                     </div>
                   ) : (
                     <div className="space-y-2">
                       {catches.slice(0, 5).map(c => (
-                        <div key={c.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-slate-900/50 border border-border/30">
+                        <div key={c.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-muted/50 border border-border/30">
                           <div className="min-w-0">
                             <span className="text-sm text-foreground font-medium">{c.fishType === 'mirror' ? 'Lysec' : c.fishType === 'scaly' ? 'Šupináč' : (c.fishType || 'Neznámy druh')}</span>
                           </div>
@@ -739,7 +739,7 @@ export default function CompetitionManage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="w-full text-xs text-slate-500 hover:text-white"
+                          className="w-full text-xs text-muted-foreground hover:text-foreground"
                           onClick={() => setLocation(`/competition/${competitionId}`)}
                         >
                           Zobraziť všetky ({catches.length})
@@ -752,15 +752,15 @@ export default function CompetitionManage() {
             )}
 
             <div className="space-y-3">
-              <h3 className="text-[10px] font-bold text-slate-600 uppercase tracking-widest px-1">Oznamy</h3>
+              <h3 className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest px-1">Oznamy</h3>
               {announcementsLoading ? (
                 <div className="space-y-2">
-                  <Skeleton className="h-16 w-full bg-slate-800/50" />
+                  <Skeleton className="h-16 w-full" />
                 </div>
               ) : !announcements || announcements.length === 0 ? (
                 <div className="text-center py-6">
-                  <Megaphone size={20} className="mx-auto text-slate-700 mb-2" />
-                  <p className="text-xs text-slate-600">Žiadne oznamy</p>
+                  <Megaphone size={20} className="mx-auto text-muted-foreground/50 mb-2" />
+                  <p className="text-xs text-muted-foreground/70">Žiadne oznamy</p>
                 </div>
               ) : (
                 announcements.map(a => (
@@ -768,9 +768,9 @@ export default function CompetitionManage() {
                     <CardContent className="p-4">
                       <div className="flex justify-between items-start mb-1">
                         <h4 className="text-sm font-bold text-foreground">{a.title}</h4>
-                        <span className="text-[10px] text-slate-600">{a.createdAt ? format(new Date(a.createdAt), "d. MMM, HH:mm", { locale: sk }) : ''}</span>
+                        <span className="text-[10px] text-muted-foreground/70">{a.createdAt ? format(new Date(a.createdAt), "d. MMM, HH:mm", { locale: sk }) : ''}</span>
                       </div>
-                      <p className="text-xs text-slate-400">{a.content}</p>
+                      <p className="text-xs text-muted-foreground">{a.content}</p>
                     </CardContent>
                   </Card>
                 ))
@@ -779,37 +779,37 @@ export default function CompetitionManage() {
           </div>
 
           <div className="lg:col-span-4 space-y-4">
-            <h3 className="text-[10px] font-bold text-slate-600 uppercase tracking-widest px-1">Nástroje organizátora</h3>
+            <h3 className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest px-1">Nástroje organizátora</h3>
             <div className="grid grid-cols-1 gap-2">
-              <Button variant="outline" className="w-full justify-start h-12 bg-card border-border hover:bg-slate-800 hover:border-slate-700 text-slate-400 hover:text-white group transition-all" onClick={() => setShowShareDialog(true)}>
+              <Button variant="outline" className="w-full justify-start h-12 bg-card border-border hover:bg-accent hover:border-border text-muted-foreground hover:text-foreground group transition-all" onClick={() => setShowShareDialog(true)}>
                 <Share2 size={16} className="mr-3 text-blue-500 group-hover:scale-110 transition-transform" /> Pozvať tímy
               </Button>
-              <Button variant="outline" className="w-full justify-start h-12 bg-card border-border hover:bg-slate-800 hover:border-slate-700 text-slate-400 hover:text-white group transition-all" onClick={() => setShowAddRefereeDialog(true)}>
+              <Button variant="outline" className="w-full justify-start h-12 bg-card border-border hover:bg-accent hover:border-border text-muted-foreground hover:text-foreground group transition-all" onClick={() => setShowAddRefereeDialog(true)}>
                 <Shield size={16} className="mr-3 text-purple-500 group-hover:scale-110 transition-transform" /> Rozhodcovia
               </Button>
-              <Button variant="outline" className="w-full justify-start h-12 bg-card border-border hover:bg-slate-800 hover:border-slate-700 text-slate-400 hover:text-white group transition-all" onClick={() => setShowAddAnnouncementDialog(true)}>
-                <Megaphone size={16} className="mr-3 text-orange-500 group-hover:scale-110 transition-transform" /> Nový oznam
+              <Button variant="outline" className="w-full justify-start h-12 bg-card border-border hover:bg-accent hover:border-border text-muted-foreground hover:text-foreground group transition-all" onClick={() => setShowAddAnnouncementDialog(true)}>
+                <Megaphone size={16} className="mr-3 text-muted-foreground group-hover:scale-110 transition-transform" /> Nový oznam
               </Button>
             </div>
 
             {referees && referees.length > 0 && (
               <Card className="bg-card border-border shadow-none overflow-hidden">
-                <div className="p-4 border-b border-border bg-slate-900/20">
-                  <h5 className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Rozhodcovia ({refereesCount})</h5>
+                <div className="p-4 border-b border-border bg-muted/20">
+                  <h5 className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest">Rozhodcovia ({refereesCount})</h5>
                 </div>
                 <CardContent className="p-3 space-y-2">
                   {referees.map(referee => (
-                    <div key={referee.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-800/30 group">
+                    <div key={referee.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-accent/30 group">
                       <div className="flex items-center gap-2 min-w-0">
                         <Shield size={14} className="text-purple-500 flex-shrink-0" />
                         <div className="min-w-0">
-                          <p className="text-xs font-medium text-slate-300 truncate">{(referee as any).user?.email || 'Rozhodca'}</p>
-                          <p className="text-[10px] text-slate-600">{referee.assignedSector ? `Sektor ${referee.assignedSector}` : 'Všetky sektory'}</p>
+                          <p className="text-xs font-medium text-foreground/80 truncate">{(referee as any).user?.email || 'Rozhodca'}</p>
+                          <p className="text-[10px] text-muted-foreground/70">{referee.assignedSector ? `Sektor ${referee.assignedSector}` : 'Všetky sektory'}</p>
                         </div>
                       </div>
                       <button
                         onClick={() => removeRefereeMutation.mutate(referee.id)}
-                        className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-400 transition-all"
+                        className="opacity-0 group-hover:opacity-100 text-muted-foreground/70 hover:text-red-400 transition-all"
                       >
                         <Trash2 size={12} />
                       </button>
@@ -820,23 +820,23 @@ export default function CompetitionManage() {
             )}
 
             <Card className="bg-card border-border shadow-none overflow-hidden">
-              <div className="p-4 border-b border-border bg-slate-900/20">
-                <h5 className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Verejný odkaz</h5>
+              <div className="p-4 border-b border-border bg-muted/20">
+                <h5 className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest">Verejný odkaz</h5>
               </div>
               <CardContent className="p-4">
                 <div className="flex gap-2">
                   <Input
                     value={`${window.location.origin}/competition/${competition.id}`}
                     readOnly
-                    className="h-9 text-[11px] bg-slate-950 border-border text-blue-400/80 font-mono focus:ring-0"
+                    className="h-9 text-[11px] bg-muted border-border text-blue-400/80 font-mono focus:ring-0"
                   />
                   <Button
                     size="icon"
                     variant="outline"
-                    className="h-9 w-9 border-border bg-slate-900 hover:bg-slate-800 flex-shrink-0"
+                    className="h-9 w-9 border-border bg-muted hover:bg-accent flex-shrink-0"
                     onClick={() => copyToClipboard(`${window.location.origin}/competition/${competition.id}`, 'link')}
                   >
-                    {copiedKey === 'link' ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} className="text-slate-500" />}
+                    {copiedKey === 'link' ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} className="text-muted-foreground" />}
                   </Button>
                 </div>
               </CardContent>
@@ -858,17 +858,17 @@ export default function CompetitionManage() {
             </div>
             <div className="w-full space-y-4">
               <div className="space-y-2">
-                <Label className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">Pozývacia správa</Label>
+                <Label className="text-[10px] text-muted-foreground/70 font-bold uppercase tracking-widest">Pozývacia správa</Label>
                 <div className="relative">
                   <Textarea
                     value={inviteMessage}
                     readOnly
-                    className="bg-slate-950 border-border text-slate-400 text-xs h-28 resize-none pr-10 pt-3 focus:ring-1 focus:ring-blue-500/20"
+                    className="bg-muted border-border text-muted-foreground text-xs h-28 resize-none pr-10 pt-3 focus:ring-1 focus:ring-blue-500/20"
                   />
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="absolute top-2 right-2 h-7 w-7 text-slate-600 hover:text-white"
+                    className="absolute top-2 right-2 h-7 w-7 text-muted-foreground/70 hover:text-foreground"
                     onClick={() => copyToClipboard(inviteMessage, 'invite')}
                   >
                     {copiedKey === 'invite' ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
@@ -878,7 +878,7 @@ export default function CompetitionManage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" className="w-full border-border bg-slate-900 hover:bg-slate-800 text-slate-400" onClick={() => setShowShareDialog(false)}>
+            <Button variant="outline" className="w-full border-border bg-muted hover:bg-accent text-muted-foreground" onClick={() => setShowShareDialog(false)}>
               Zavrieť
             </Button>
           </DialogFooter>
@@ -888,13 +888,13 @@ export default function CompetitionManage() {
       <AlertDialog open={showStartDialog} onOpenChange={setShowStartDialog}>
         <AlertDialogContent className="bg-card border-border text-foreground">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">Spustiť súťaž?</AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-400">
+            <AlertDialogTitle className="text-foreground">Spustiť súťaž?</AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground">
               Súťaž "{competition.name}" bude spustená. Tímy budú môcť začať zaznamenávať úlovky. Registrácia nových tímov bude uzavretá.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-transparent border-slate-700 text-slate-300 hover:bg-slate-800">Zrušiť</AlertDialogCancel>
+            <AlertDialogCancel className="bg-transparent border-border text-foreground/80 hover:bg-accent">Zrušiť</AlertDialogCancel>
             <AlertDialogAction onClick={handleStartCompetition} className="bg-emerald-600 hover:bg-emerald-700 text-white border-none">
               <Play className="w-4 h-4 mr-1" /> Spustiť súťaž
             </AlertDialogAction>
@@ -905,13 +905,13 @@ export default function CompetitionManage() {
       <AlertDialog open={showEndDialog} onOpenChange={setShowEndDialog}>
         <AlertDialogContent className="bg-card border-border text-foreground">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">Ukončiť súťaž?</AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-400">
+            <AlertDialogTitle className="text-foreground">Ukončiť súťaž?</AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground">
               Súťaž "{competition.name}" bude ukončená. Zaznamenávanie úlovkov bude zastavené a výsledky budú finálne. Táto akcia sa nedá vrátiť späť.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-transparent border-slate-700 text-slate-300 hover:bg-slate-800">Zrušiť</AlertDialogCancel>
+            <AlertDialogCancel className="bg-transparent border-border text-foreground/80 hover:bg-accent">Zrušiť</AlertDialogCancel>
             <AlertDialogAction onClick={handleEndCompetition} className="bg-red-600 hover:bg-red-700 text-white border-none">
               <StopCircle className="w-4 h-4 mr-1" /> Ukončiť súťaž
             </AlertDialogAction>
@@ -922,13 +922,13 @@ export default function CompetitionManage() {
       <AlertDialog open={showPrepareDialog} onOpenChange={setShowPrepareDialog}>
         <AlertDialogContent className="bg-card border-border text-foreground">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">Pripraviť súťaž na spustenie?</AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-400">
+            <AlertDialogTitle className="text-foreground">Pripraviť súťaž na spustenie?</AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground">
               Po potvrdení bude súťaž "{competition.name}" označená ako pripravená. Následne budeš presmerovaný na výber balíka a platbu.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-transparent border-slate-700 text-slate-300 hover:bg-slate-800">Zrušiť</AlertDialogCancel>
+            <AlertDialogCancel className="bg-transparent border-border text-foreground/80 hover:bg-accent">Zrušiť</AlertDialogCancel>
             <AlertDialogAction onClick={confirmPrepareForLaunch} className="bg-orange-500 hover:bg-orange-600 text-white border-none">
               <ClipboardCheck className="w-4 h-4 mr-1" /> Pokračovať
             </AlertDialogAction>
@@ -939,8 +939,8 @@ export default function CompetitionManage() {
       <Dialog open={showSelectPlanDialog} onOpenChange={setShowSelectPlanDialog}>
         <DialogContent className="sm:max-w-[600px] bg-card border-border text-foreground">
           <DialogHeader>
-            <DialogTitle className="text-white">Vyber balík pre svoju súťaž</DialogTitle>
-            <DialogDescription className="text-slate-400">Vyber si balík podľa veľkosti a potrieb tvojej súťaže.</DialogDescription>
+            <DialogTitle className="text-foreground">Vyber balík pre svoju súťaž</DialogTitle>
+            <DialogDescription className="text-muted-foreground">Vyber si balík podľa veľkosti a potrieb tvojej súťaže.</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             {[
@@ -950,18 +950,18 @@ export default function CompetitionManage() {
             ].map(plan => (
               <div
                 key={plan.key}
-                className={`p-4 border-2 rounded-xl cursor-pointer transition-all hover:border-orange-500/80 relative ${plan.popular ? 'border-orange-500/50 bg-orange-500/5' : 'border-border hover:bg-slate-800/30'}`}
+                className={`p-4 border-2 rounded-xl cursor-pointer transition-all hover:border-orange-500/80 relative ${plan.popular ? 'border-orange-500/50 bg-orange-500/5' : 'border-border hover:bg-accent/30'}`}
                 onClick={() => setLocation(`/organizer/competition/${competitionId}/checkout?plan=${plan.key}`)}
               >
                 {plan.popular && <Badge className="absolute -top-2 right-4 bg-orange-500 text-white border-none text-[9px]">Najobľúbenejší</Badge>}
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-base font-bold text-white">{plan.name}</h3>
+                  <h3 className="text-base font-bold text-foreground">{plan.name}</h3>
                   <span className="text-xl font-mono font-medium text-orange-500">{plan.price}</span>
                 </div>
-                <p className="text-xs text-slate-400 mb-3">{plan.desc}</p>
+                <p className="text-xs text-muted-foreground mb-3">{plan.desc}</p>
                 <ul className="text-xs space-y-1.5">
                   {plan.features.map(f => (
-                    <li key={f} className="flex items-center gap-2 text-slate-300">
+                    <li key={f} className="flex items-center gap-2 text-foreground/80">
                       <CheckCircle className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" /> {f}
                     </li>
                   ))}
@@ -970,7 +970,7 @@ export default function CompetitionManage() {
             ))}
           </div>
           <DialogFooter>
-            <Button variant="outline" className="border-border bg-slate-900 hover:bg-slate-800 text-slate-400" onClick={() => setShowSelectPlanDialog(false)}>
+            <Button variant="outline" className="border-border bg-muted hover:bg-accent text-muted-foreground" onClick={() => setShowSelectPlanDialog(false)}>
               Zavrieť
             </Button>
           </DialogFooter>
@@ -983,12 +983,12 @@ export default function CompetitionManage() {
       }}>
         <DialogContent className="sm:max-w-[500px] bg-card border-border text-foreground">
           <DialogHeader>
-            <DialogTitle className="text-white">Pridať rozhodcu</DialogTitle>
-            <DialogDescription className="text-slate-400">Vyhľadajte existujúceho používateľa alebo pozvite nového rozhodcu.</DialogDescription>
+            <DialogTitle className="text-foreground">Pridať rozhodcu</DialogTitle>
+            <DialogDescription className="text-muted-foreground">Vyhľadajte existujúceho používateľa alebo pozvite nového rozhodcu.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label className="text-slate-400">Vyhľadať používateľa</Label>
+              <Label className="text-muted-foreground">Vyhľadať používateľa</Label>
               <UserSearchAutocomplete
                 onSelect={handleRefereeSelect}
                 placeholder="Meno alebo email rozhodcu..."
@@ -997,17 +997,17 @@ export default function CompetitionManage() {
               />
             </div>
             {(selectedRefereeUser || refereeEmail) && (
-              <div className="p-3 bg-slate-900 rounded-lg border border-border space-y-3">
-                <p className="text-sm font-medium text-slate-300">
+              <div className="p-3 bg-muted rounded-lg border border-border space-y-3">
+                <p className="text-sm font-medium text-foreground/80">
                   {selectedRefereeUser ? <>Vybraný: <span className="text-orange-500">{selectedRefereeUser.email}</span></> : <>Pozvánka: <span className="text-orange-500">{refereeEmail}</span></>}
                 </p>
                 {selectedRefereeUser && competition?.hasSectors && (
                   <div className="space-y-1">
-                    <Label className="text-xs text-slate-500">Priradený sektor</Label>
+                    <Label className="text-xs text-muted-foreground">Priradený sektor</Label>
                     <select
                       value={refereeSector}
                       onChange={(e) => setRefereeSector(e.target.value)}
-                      className="w-full rounded-md border border-border bg-slate-950 px-3 py-2 text-sm text-slate-300"
+                      className="w-full rounded-md border border-border bg-muted px-3 py-2 text-sm text-foreground/80"
                     >
                       <option value="all">Všetky sektory</option>
                       {(competition.sectorPlaces as any[])?.map((s: any) => (
@@ -1020,7 +1020,7 @@ export default function CompetitionManage() {
             )}
           </div>
           <DialogFooter>
-            <Button variant="outline" className="border-border text-slate-400 hover:bg-slate-800" onClick={() => setShowAddRefereeDialog(false)}>Zrušiť</Button>
+            <Button variant="outline" className="border-border text-muted-foreground hover:bg-accent" onClick={() => setShowAddRefereeDialog(false)}>Zrušiť</Button>
             <Button
               onClick={handleAddReferee}
               disabled={(!selectedRefereeUser && !refereeEmail.trim()) || addRefereeMutation.isPending}
@@ -1036,32 +1036,32 @@ export default function CompetitionManage() {
       <Dialog open={showAddAnnouncementDialog} onOpenChange={setShowAddAnnouncementDialog}>
         <DialogContent className="sm:max-w-[500px] bg-card border-border text-foreground">
           <DialogHeader>
-            <DialogTitle className="text-white">Nový oznam</DialogTitle>
-            <DialogDescription className="text-slate-400">Vytvor oznam pre účastníkov súťaže.</DialogDescription>
+            <DialogTitle className="text-foreground">Nový oznam</DialogTitle>
+            <DialogDescription className="text-muted-foreground">Vytvor oznam pre účastníkov súťaže.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label className="text-slate-400">Nadpis</Label>
+              <Label className="text-muted-foreground">Nadpis</Label>
               <Input
                 placeholder="Napr. Zmena pravidiel"
                 value={announcementTitle}
                 onChange={(e) => setAnnouncementTitle(e.target.value)}
-                className="bg-slate-950 border-border text-foreground placeholder:text-slate-600"
+                className="bg-muted border-border text-foreground placeholder:text-muted-foreground/50"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-slate-400">Obsah oznamu</Label>
+              <Label className="text-muted-foreground">Obsah oznamu</Label>
               <Textarea
                 placeholder="Napíšte text oznamu..."
                 value={announcementContent}
                 onChange={(e) => setAnnouncementContent(e.target.value)}
                 rows={4}
-                className="bg-slate-950 border-border text-foreground placeholder:text-slate-600"
+                className="bg-muted border-border text-foreground placeholder:text-muted-foreground/50"
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" className="border-border text-slate-400 hover:bg-slate-800" onClick={() => setShowAddAnnouncementDialog(false)}>Zrušiť</Button>
+            <Button variant="outline" className="border-border text-muted-foreground hover:bg-accent" onClick={() => setShowAddAnnouncementDialog(false)}>Zrušiť</Button>
             <Button
               onClick={handleAddAnnouncement}
               disabled={!announcementTitle.trim() || !announcementContent.trim() || addAnnouncementMutation.isPending}
@@ -1080,13 +1080,13 @@ export default function CompetitionManage() {
       }}>
         <AlertDialogContent className="bg-card border-border text-foreground">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">Zamietnuť tím?</AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-400">
+            <AlertDialogTitle className="text-foreground">Zamietnuť tím?</AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground">
               Tím "{rejectingTeamName}" bude zamietnutý a nebude sa môcť zúčastniť súťaže. Túto akciu je možné vrátiť späť schválením tímu.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-transparent border-slate-700 text-slate-300 hover:bg-slate-800">Zrušiť</AlertDialogCancel>
+            <AlertDialogCancel className="bg-transparent border-border text-foreground/80 hover:bg-accent">Zrušiť</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => { if (rejectingTeamId) updateTeamStatusMutation.mutate({ teamId: rejectingTeamId, status: 'rejected' }); }}
               className="bg-red-600 hover:bg-red-700 text-white border-none"
