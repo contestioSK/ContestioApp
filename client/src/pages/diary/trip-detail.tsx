@@ -109,7 +109,7 @@ export default function TripDetail() {
     setIsExporting(true);
     try {
       const canvas = await html2canvas(exportCardRef.current, {
-        backgroundColor: '#0c1f28',
+        backgroundColor: '#0B1C2F',
         scale: 2,
         logging: false,
         useCORS: true,
@@ -853,7 +853,7 @@ export default function TripDetail() {
         {/* Hidden Export Card */}
         <div 
           ref={exportCardRef}
-          className="absolute left-[-9999px] w-[1200px] bg-[#0c1f28] p-12"
+          className="absolute left-[-9999px] w-[1200px] bg-[#0B1C2F] p-12"
           data-testid="export-card"
         >
           {trip && (
