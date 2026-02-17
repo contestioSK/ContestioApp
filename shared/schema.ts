@@ -800,7 +800,15 @@ export const insertCompetitionSchema = createInsertSchema(competitions).omit({
   secondPlacePrize: optionalDecimalField,
   thirdPlacePrize: optionalDecimalField,
   registrationFee: optionalDecimalField,
-  teamSize: optionalIntegerField,
+  teamSize: z.preprocess(
+    (val) => {
+      if (val === undefined) return undefined;
+      if (val === "" || val === null) return 1;
+      const num = typeof val === 'string' ? parseInt(val, 10) : val;
+      return isNaN(num as number) ? 1 : num;
+    },
+    z.number().int().min(1).max(10).optional()
+  ),
   maxTeams: optionalIntegerField,
   maxReferees: optionalIntegerField,
 });

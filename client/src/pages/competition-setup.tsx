@@ -24,7 +24,8 @@ import {
   Calendar,
   Clock,
   Phone,
-  Banknote
+  Banknote,
+  Users
 } from "lucide-react";
 import { z } from "zod";
 import { AnimatePresence, motion } from "framer-motion";
@@ -50,6 +51,7 @@ const basicsSchema = z.object({
   scoringType: z.enum(["total", "avg3", "avg5"]).default("total"),
   minWeight: z.number().min(0).max(100).default(2),
   entryFee: z.string().min(1, "Zadajte výšku štartovného"),
+  teamSize: z.number().min(1, "Minimálne 1 člen").max(10, "Maximálne 10 členov").default(1),
   firstPlacePrize: z.string().optional(),
   secondPlacePrize: z.string().optional(),
   thirdPlacePrize: z.string().optional(),
@@ -125,6 +127,7 @@ export default function CompetitionSetup() {
       scoringType: "total",
       minWeight: 2,
       entryFee: "",
+      teamSize: 1,
       firstPlacePrize: "",
       secondPlacePrize: "",
       thirdPlacePrize: "",
@@ -160,6 +163,7 @@ export default function CompetitionSetup() {
         scoringType: (registration.scoringType as "total" | "avg3" | "avg5") || "total",
         minWeight: registration.minWeight ? parseFloat(registration.minWeight) : 2,
         entryFee: registration.registrationFee || "",
+        teamSize: registration.teamSize ?? 1,
         firstPlacePrize: registration.firstPlacePrize || "",
         secondPlacePrize: registration.secondPlacePrize || "",
         thirdPlacePrize: registration.thirdPlacePrize || "",
@@ -248,6 +252,7 @@ export default function CompetitionSetup() {
         endDate: formData.endDate ? new Date(formData.endDate).toISOString() : null,
         contactPhone: formData.contact || null,
         registrationFee: formData.entryFee || null,
+        teamSize: formData.teamSize || 1,
         rules: formData.rules || null,
         scoringType: formData.scoringType || "total",
         minWeight: String(formData.minWeight || 2),
@@ -441,6 +446,28 @@ export default function CompetitionSetup() {
                           <Input {...basicsForm.register("entryFee")} className="pl-9 bg-slate-950 border-slate-800 text-white h-12 rounded-xl focus:border-orange-500 font-mono text-lg" placeholder="Napr. 150 €" />
                         </div>
                         {basicsForm.formState.errors.entryFee && <p className="text-red-500 text-[10px] pl-1">{basicsForm.formState.errors.entryFee.message}</p>}
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs font-black uppercase text-slate-500 tracking-widest">Členov v tíme</label>
+                        <div className="relative">
+                          <Users size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 z-10" />
+                          <Select
+                            value={String(basicsForm.watch("teamSize") || 1)}
+                            onValueChange={(val) => basicsForm.setValue("teamSize", parseInt(val))}
+                          >
+                            <SelectTrigger className="pl-9 bg-slate-950 border-slate-800 text-white h-12 rounded-xl focus:border-orange-500 font-mono text-lg">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="1">1 — Jednotlivec</SelectItem>
+                              <SelectItem value="2">2 — Dvojica</SelectItem>
+                              <SelectItem value="3">3 — Trojica</SelectItem>
+                              <SelectItem value="4">4 — Štvorka</SelectItem>
+                              <SelectItem value="5">5 — Pätica</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        {basicsForm.formState.errors.teamSize && <p className="text-red-500 text-[10px] pl-1">{basicsForm.formState.errors.teamSize.message}</p>}
                       </div>
                     </div>
 
