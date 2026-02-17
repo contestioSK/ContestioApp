@@ -418,6 +418,10 @@ export const diaryCatches = pgTable("diary_catches", {
   fishType: varchar("fish_type").notNull(), // Fish species
   nickname: varchar("nickname", { length: 40 }), // Optional nickname for the fish (emotional, max 40 chars)
   bait: text("bait"), // what bait was used
+  baitBrandSource: varchar("bait_brand_source", { length: 10 }), // "user" | "global" | null
+  baitBrandId: integer("bait_brand_id"),
+  baitFlavorId: integer("bait_flavor_id"),
+  baitDiameterMm: integer("bait_diameter_mm"),
   spot: text("spot"), // fishing spot description
   latitude: decimal("latitude", { precision: 10, scale: 8 }), // GPS coordinates
   longitude: decimal("longitude", { precision: 11, scale: 8 }), // GPS coordinates
@@ -1091,6 +1095,10 @@ export const insertDiaryCatchSchema = createInsertSchema(diaryCatches).omit({
     name: z.string().min(1, "Meno rybára je povinné")
   }),
   bait: z.string().optional(),
+  baitBrandSource: z.enum(["user", "global"]).optional().nullable(),
+  baitBrandId: z.number().int().optional().nullable(),
+  baitFlavorId: z.number().int().optional().nullable(),
+  baitDiameterMm: z.number().int().optional().nullable(),
   spot: z.string().optional(),
   latitude: z.number().min(-90).max(90).optional(), // GPS coordinate validation
   longitude: z.number().min(-180).max(180).optional(), // GPS coordinate validation

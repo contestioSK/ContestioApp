@@ -8857,9 +8857,30 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
   app.post('/api/diary/baits/brands', isAuthenticated, async (req: any, res) => {
     try {
       const userId = getUserId(req);
-      const parsed = insertUserBaitBrandSchema.parse({ ...req.body, userId });
-      const [brand] = await db.insert(userBaitBrands).values(parsed).returning();
-      res.json(brand);
+      const normalizedName = (req.body.name || "").trim().replace(/\s+/g, ' ');
+      if (!normalizedName) return res.status(400).json({ message: "Názov značky je povinný" });
+      const existing = await db.query.userBaitBrands.findFirst({
+        where: and(
+          eq(userBaitBrands.userId, userId),
+          sql`lower(${userBaitBrands.name}) = lower(${normalizedName})`
+        ),
+        with: { flavors: true },
+      });
+      if (existing) return res.json(existing);
+      try {
+        const [brand] = await db.insert(userBaitBrands).values({ userId, name: normalizedName }).returning();
+        const brandWithFlavors = { ...brand, flavors: [] };
+        res.status(201).json(brandWithFlavors);
+      } catch (insertError: any) {
+        if (insertError?.code === '23505') {
+          const fallback = await db.query.userBaitBrands.findFirst({
+            where: and(eq(userBaitBrands.userId, userId), sql`lower(${userBaitBrands.name}) = lower(${normalizedName})`),
+            with: { flavors: true },
+          });
+          return res.json(fallback);
+        }
+        throw insertError;
+      }
     } catch (error) {
       console.error("[BAITS-MVP] Error creating brand:", error);
       res.status(500).json({ message: "Failed to create bait brand" });
@@ -8885,13 +8906,33 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
   app.post('/api/diary/baits/flavors', isAuthenticated, async (req: any, res) => {
     try {
       const userId = getUserId(req);
-      const parsed = insertUserBaitFlavorSchema.parse(req.body);
+      const brandId = parseInt(req.body.brandId);
+      if (isNaN(brandId)) return res.status(400).json({ message: "Invalid brand ID" });
+      const normalizedName = (req.body.name || "").trim().replace(/\s+/g, ' ');
+      if (!normalizedName) return res.status(400).json({ message: "Názov príchute je povinný" });
       const brand = await db.query.userBaitBrands.findFirst({
-        where: and(eq(userBaitBrands.id, parsed.brandId), eq(userBaitBrands.userId, userId)),
+        where: and(eq(userBaitBrands.id, brandId), eq(userBaitBrands.userId, userId)),
       });
       if (!brand) return res.status(404).json({ message: "Brand not found" });
-      const [flavor] = await db.insert(userBaitFlavors).values(parsed).returning();
-      res.json(flavor);
+      const existing = await db.query.userBaitFlavors.findFirst({
+        where: and(
+          eq(userBaitFlavors.brandId, brandId),
+          sql`lower(${userBaitFlavors.name}) = lower(${normalizedName})`
+        ),
+      });
+      if (existing) return res.json(existing);
+      try {
+        const [flavor] = await db.insert(userBaitFlavors).values({ brandId, name: normalizedName }).returning();
+        res.status(201).json(flavor);
+      } catch (insertError: any) {
+        if (insertError?.code === '23505') {
+          const fallback = await db.query.userBaitFlavors.findFirst({
+            where: and(eq(userBaitFlavors.brandId, brandId), sql`lower(${userBaitFlavors.name}) = lower(${normalizedName})`),
+          });
+          return res.json(fallback);
+        }
+        throw insertError;
+      }
     } catch (error) {
       console.error("[BAITS-MVP] Error creating flavor:", error);
       res.status(500).json({ message: "Failed to create bait flavor" });
@@ -8915,6 +8956,58 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     } catch (error) {
       console.error("[BAITS-MVP] Error deleting flavor:", error);
       res.status(500).json({ message: "Failed to delete flavor" });
+    }
+  });
+
+  // Recent baits - last unique baits used by user
+  app.get('/api/diary/baits/recent', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const limit = Math.min(parseInt(req.query.limit as string) || 5, 10);
+      const recentCatches = await db.select({
+        bait: diaryCatches.bait,
+        baitBrandSource: diaryCatches.baitBrandSource,
+        baitBrandId: diaryCatches.baitBrandId,
+        baitFlavorId: diaryCatches.baitFlavorId,
+        baitDiameterMm: diaryCatches.baitDiameterMm,
+        capturedAt: diaryCatches.capturedAt,
+      })
+        .from(diaryCatches)
+        .where(and(
+          sql`${diaryCatches.angler}->>'userId' = ${userId}`,
+          isNotNull(diaryCatches.bait),
+          sql`${diaryCatches.bait} != ''`
+        ))
+        .orderBy(desc(diaryCatches.capturedAt))
+        .limit(50);
+
+      const seen = new Set<string>();
+      const items: Array<{
+        source: string | null;
+        brandId: number | null;
+        flavorId: number | null;
+        diameterMm: number | null;
+        label: string;
+      }> = [];
+
+      for (const c of recentCatches) {
+        if (items.length >= limit) break;
+        const key = `${c.baitBrandSource || 'text'}_${c.baitBrandId || 0}_${c.baitFlavorId || 0}_${c.baitDiameterMm || 0}_${(c.bait || '').toLowerCase()}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        items.push({
+          source: c.baitBrandSource,
+          brandId: c.baitBrandId,
+          flavorId: c.baitFlavorId,
+          diameterMm: c.baitDiameterMm,
+          label: c.bait || '',
+        });
+      }
+
+      res.json({ items });
+    } catch (error) {
+      console.error("[BAITS-MVP] Error fetching recent baits:", error);
+      res.status(500).json({ message: "Failed to fetch recent baits" });
     }
   });
 
