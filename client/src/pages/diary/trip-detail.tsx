@@ -3,7 +3,7 @@ import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { format, isPast, isToday } from "date-fns";
 import { sk } from "date-fns/locale";
-import { ArrowLeft, MapPin, Calendar as CalendarIcon, Fish, Weight, Trophy, FileText, Medal, Ruler, Target, Cloud, Thermometer, Wind, Gauge, XCircle, Download, Grid3x3, MoreHorizontal, Share2, ChevronRight, ZoomIn } from "lucide-react";
+import { ArrowLeft, MapPin, Calendar as CalendarIcon, Fish, Weight, Trophy, FileText, Medal, Ruler, Target, Cloud, Thermometer, Wind, Gauge, XCircle, Download, Grid3x3, MoreHorizontal, Share2, ChevronRight, ZoomIn, Scale, PieChart, Anchor } from "lucide-react";
 import { PhotoLightbox } from "@/components/diary/PhotoLightbox";
 import { TacticalIconInline } from "@/components/ui/tactical-icon";
 import html2canvas from "html2canvas";
@@ -174,6 +174,21 @@ export default function TripDetail() {
   const biggestCatch = totalCatches > 0 
     ? tripCatches.reduce((max, c) => parseFloat(c.weight) > parseFloat(max.weight) ? c : max)
     : null;
+  const averageWeight = totalCatches > 0 ? totalWeight / totalCatches : 0;
+
+  const lysecCount = tripCatches.filter(c => c.fishType === 'kapor_lysec').length;
+  const supinacCount = tripCatches.filter(c => c.fishType === 'kapor_supinac').length;
+  const otherFishCount = totalCatches - lysecCount - supinacCount;
+
+  const baitCounts: Record<string, number> = {};
+  tripCatches.forEach(c => {
+    if (c.bait) {
+      baitCounts[c.bait] = (baitCounts[c.bait] || 0) + 1;
+    }
+  });
+  const top3Baits = Object.entries(baitCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3);
 
   // Sort catches by weight (descending) and split into TOP 3 and rest
   const sortedCatches = [...tripCatches].sort((a, b) => parseFloat(b.weight) - parseFloat(a.weight));
@@ -629,6 +644,76 @@ export default function TripDetail() {
               <p className="text-xs text-muted-foreground">
                 {biggestCatch ? getFishTypeLabel(biggestCatch.fishType) : "Žiadny úlovok"}
               </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Priemerná váha</CardTitle>
+              <TacticalIconInline icon={Scale} variant="purple" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{averageWeight.toFixed(1)} kg</div>
+              <p className="text-xs text-muted-foreground">
+                {totalCatches > 0 ? `Z ${totalCatches} úlovkov` : "Žiadne úlovky"}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Lysec / Šupináč</CardTitle>
+              <TacticalIconInline icon={PieChart} variant="emerald" />
+            </CardHeader>
+            <CardContent>
+              {(lysecCount + supinacCount) > 0 ? (
+                <>
+                  <div className="text-2xl font-bold">{lysecCount} / {supinacCount}</div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-amber-500 rounded-full"
+                        style={{ width: `${(lysecCount / (lysecCount + supinacCount)) * 100}%` }}
+                      />
+                    </div>
+                    <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                      {otherFishCount > 0 ? `+ ${otherFishCount} iné` : ""}
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="text-2xl font-bold">—</div>
+                  <p className="text-xs text-muted-foreground">Žiadne kapry</p>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">TOP 3 nástrahy</CardTitle>
+              <TacticalIconInline icon={Anchor} variant="rose" />
+            </CardHeader>
+            <CardContent>
+              {top3Baits.length > 0 ? (
+                <div className="space-y-1.5">
+                  {top3Baits.map(([bait, count], i) => (
+                    <div key={bait} className="flex items-center justify-between gap-2">
+                      <span className="text-sm truncate">
+                        <span className="text-muted-foreground mr-1.5">{i + 1}.</span>
+                        {bait}
+                      </span>
+                      <span className="text-xs font-mono font-medium text-[#F97316] whitespace-nowrap">{count}×</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <>
+                  <div className="text-2xl font-bold">—</div>
+                  <p className="text-xs text-muted-foreground">Žiadne nástrahy</p>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>
