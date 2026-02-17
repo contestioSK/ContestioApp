@@ -3293,6 +3293,17 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         }
       }
 
+      const competition = await storage.getCompetition(req.params.id);
+      if (!competition) {
+        return res.status(404).json({ message: "Competition not found" });
+      }
+
+      const maxMembers = competition.teamSize ?? 1;
+      const membersArray = req.body.members && Array.isArray(req.body.members) ? req.body.members : [];
+      if (membersArray.length > maxMembers) {
+        return res.status(400).json({ message: `Tím môže mať maximálne ${maxMembers} ${maxMembers === 1 ? 'člena' : 'členov'}` });
+      }
+
       const teamData = insertTeamSchema.parse({
         ...req.body,
         competitionId: req.params.id,
