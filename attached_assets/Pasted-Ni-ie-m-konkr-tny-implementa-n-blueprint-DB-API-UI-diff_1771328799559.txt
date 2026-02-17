@@ -1,0 +1,207 @@
+Nižšie máš konkrétny implementačný blueprint: DB → API → UI diff → “recent used”.
+
+1) DB: tabuľky + constraints (správne a bezpečné)
+user_bait_brands
+
+id (pk)
+
+user_id (fk users)
+
+name (text, trimmed)
+
+created_at
+
+Index:
+
+UNIQUE (user_id, lower(name))
+
+user_bait_flavors
+
+id (pk)
+
+brand_id (fk user_bait_brands)
+
+name (text, trimmed)
+
+created_at
+
+Index:
+
+UNIQUE (brand_id, lower(name))
+
+Pozor na 2 drobnosti, ktoré ti v praxi urobia bordel:
+
+trim + collapse whitespace: “MikBaits” vs " MikBaits " vs "Mik Baits"
+→ pred uložením normalizuj: name = name.trim().replace(/\s+/g,' ')
+
+diakritika: “Kôpor” vs “Kopor” – toto lower() nerieši.
+MVP: nerieš “accent-insensitive unique”, je to zbytočný overkill. Stačí case-insensitive + whitespace.
+
+2) Catch DB: pridaj IDčka bez rozbitia legacy
+
+Do diary_catches pridaj nullable stĺpce:
+
+bait_brand_source ENUM alebo text: "user" | "global" | null
+
+bait_brand_id (int, nullable) — podľa source:
+
+ak user: user_bait_brands.id
+
+ak global: bait_manufacturers.id
+
+bait_flavor_id (int, nullable) — podľa source:
+
+ak user: user_bait_flavors.id
+
+ak global: bait_flavors.id
+
+bait_diameter_mm (int, nullable)
+
+bait text nechaj tak ako je.
+
+Prečo “source” odporúčam:
+Bez toho budeš mať dve rôzne tabuľky s rovnakým typom ID a časom sa v tom zamotáš.
+
+3) API: endpointy tak, aby UI bolo jednoduché
+A) “Moje značky” (s príchuťami)
+
+GET /api/diary/baits/my-brands
+
+response: [{ id, name, flavors: [{id, name}] }]
+
+B) Vytvor brand (idempotentné)
+
+POST /api/diary/baits/my-brands
+
+body: { name }
+
+server:
+
+normalize name
+
+insert
+
+ak padne unique constraint → načítaj existujúci a vráť ho (200/201 je jedno, len konzistentne)
+
+C) Vytvor flavor (idempotentné)
+
+POST /api/diary/baits/my-flavors
+
+body: { brandId, name }
+
+server:
+
+validate brand belongs to user (brand.user_id = req.user.id)
+
+normalize
+
+insert / on conflict return existing
+
+D) “Naposledy použité” – najlacnejšie a najlepšie
+
+GET /api/diary/baits/recent?limit=5
+
+vráti unikátne kombinácie (brand+flavor+diameter+source) z posledných úlovkov
+
+Dôležité: vracaj už “UI-ready label”, aby si v Reacte nelepil texty na 5 miestach.
+
+Napr:
+
+{
+  "items": [
+    {
+      "source": "user",
+      "brandId": 12,
+      "brandName": "Moje Boilies",
+      "flavorId": 55,
+      "flavorName": "Krill",
+      "diameterMm": 20,
+      "label": "Moje Boilies – Krill (20mm)"
+    }
+  ]
+}
+
+4) UI: minimálny zásah do tvojho CatchFormDialog
+Stav, ktorý potrebuješ (doplníš k existujúcim)
+
+baitSource: "user" | "global" | null
+
+selectedUserBrandId, selectedUserFlavorId (pre user zdroj)
+
+selectedGlobalManufacturerId, selectedGlobalFlavorId (to už máš)
+
+Ale aby si nezduplikoval UI logiku, sprav to prakticky:
+
+nechaj existujúce selectedManufacturerId/selectedFlavorId pre global
+
+pre “my brands” použi separátne state
+
+pri výbere z recent položky nastav aj source aj idčka
+
+Brand dropdown sekcie (v poradí)
+
+Naposledy použité (len keď je prázdny search)
+
+Moje značky
+
+Globálne značky
+
+CTA: + Pridať značku „X“ do Mojich značiek
+
+👉 Keď user klikne “Pridať značku…”, zavoláš POST my-brands, potom:
+
+nastavíš baitSource="user"
+
+nastavíš selectedUserBrandId na vytvorený brand
+
+vyčistíš flavor a fokusneš flavor input
+
+Flavor dropdown
+
+Ak baitSource="user":
+
+zoznam z myBrands.find(id).flavors
+
+CTA: + Pridať príchuť „Y“ do značky {brand}
+
+voláš POST my-flavors
+
+nastavíš selectedUserFlavorId
+
+Ak baitSource="global":
+
+ako dnes (selectedManufacturer.flavors)
+
+CTA “Použiť” môže zostať len ako fallback text, ale ja by som to skôr obmedzil:
+
+global free-text príchuť ti rozbije globálnu čistotu (MVP radšej nie)
+
+Diameter
+
+Ukladaj ako číslo (baitDiameterMm) a text generuj len pre label.
+
+5) Submit: posielaj IDčka + text
+
+V processedData pridaj:
+
+baitBrandSource
+
+baitBrandId
+
+baitFlavorId
+
+baitDiameterMm
+
+A bait text nechaj tak, len ho generuj z jednotného miesta (jedna funkcia), nie po celom komponente.
+
+6) Kľúčová dilema, ktorú musíš rozhodnúť (a ja ti dávam jasný verdikt)
+
+Dovoľ free-text bez uloženia do “Moje značky”?
+
+Verdikt pre MVP:
+
+brand free-text: áno, ale pri potvrdení ho ulož ako “Moju značku” (to je tvoja hlavná požiadavka)
+
+flavor free-text: áno, ale iba keď je vybraná “Moja značka” → uložiť ako “Moja príchuť”
+
+free-text pre global: nie (lebo ti to spraví pseudo-global špinu)

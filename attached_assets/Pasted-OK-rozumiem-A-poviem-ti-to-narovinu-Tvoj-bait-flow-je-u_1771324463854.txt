@@ -1,0 +1,148 @@
+OK, rozumiem. A poviem ti to narovinu:
+
+Tvoj „bait“ flow je už teraz takmer to, čo chceš (user si vie zadať vlastnú značku/príchuť), ale je to urobené spôsobom, ktorý ti neskôr rozbije analytiku a duplicitami zničí dáta.
+
+Teraz totiž:
+
+keď používateľ napíše vlastnú značku alebo príchuť → ty to len uložíš ako text do bait (field.onChange(...)).
+
+to znamená: žiadne normalizované dáta, žiadne “moja značka” v profile, žiadne prehľady, neskôr migrácia bude bolieť.
+
+Nižšie máš najlepšiu MVP úpravu: minimum UI, maximum hodnoty, nulové “Arzenál” stránky.
+
+1) MVP rozhodnutie: „Moje značky boilies“ patrí do Catch formu (tu), nie do arzenálu
+
+A ty to už presne tak robíš. Správne.
+
+Teraz len potrebuješ zmeniť jednu vec:
+
+Nepíš to ako voľný text. Ulož to ako userBaitBrandId + userBaitFlavorId (a text len ako fallback).
+2) Najväčší problém v kóde: miešaš 3 rôzne koncepty do jedného inputu
+
+V “Brand input” dropdown máš:
+
+Značky (manufacturers) – globálna DB
+
+Spôsob lovu (methods) – vôbec nie boilies značka
+
+Free text “Použiť…” – custom text
+
+To je UX chaos a dátový chaos.
+
+Najlepšia úprava:
+
+„Spôsob lovu“ sem nepatrí. To má byť vlastné pole (alebo vôbec nie v MVP).
+
+Brand input nech je len: Moje značky + globálne značky + Pridať vlastnú značku.
+
+3) Čo konkrétne zmeniť (s minimálnym zásahom)
+A) Pridaj “Moje značky / príchute” endpointy
+
+GET /api/diary/baits/my/brands (vráti brandy + flavors)
+
+POST /api/diary/baits/my/brands { name }
+
+POST /api/diary/baits/my/flavors { brandId, name }
+
+A v catch forme:
+
+pri “Použiť „XYZ“” to neurobí len text, ale:
+
+ak to je brand → vytvor brand (ak neexistuje) a vyber ho
+
+ak to je flavor → vytvor flavor pod vybranou brand
+
+Dôležité pravidlo (inak máš bordel):
+
+case-insensitive unique pre (userId, brandName)
+
+case-insensitive unique pre (brandId, flavorName)
+
+B) Uprav dátový model catchu (minimálne)
+
+V CatchFormData nechaj bait ako text (kvôli kompatibilite), ale pridaj:
+
+baitBrandId?: number
+
+baitFlavorId?: number
+
+baitDiameterMm?: number
+
+A pri submit:
+
+ak je vybraná brand/flavor → posielaj IDčka
+
+bait text si stále generuj ako teraz (na zobrazenie), ale backend nech ukladá aj ID.
+
+Tým si kúpiš budúcnosť.
+
+4) Kódový review – tvrdé chyby / riziká
+4.1 Závislosť na /api/baits/manufacturers/search
+
+To je veľká vec na MVP. Je to “centrálna databáza”, ktorú budeš musieť živiť.
+
+MVP kompromis:
+
+nechaj tam globálne značky, ale preferuj “Moje značky” ako prvé.
+
+ak globálna DB nebude, app stále funguje.
+
+4.2 productLineId || 0 je smrť
+
+Tu:
+
+productLineId: flavorData.productLineId || 0,
+
+
+Ak backend očakáva validné ID, 0 je len “fake” a raz ti to odpáli dáta.
+
+Fix: productLineId musí byť null alebo undefined, nie 0.
+A endpoint /api/diary/arsenal/baits musí akceptovať productLineId?: number | null.
+
+4.3 “Favorites” sú naviazané na arzenál, nie na catch
+
+Ty chceš MVP: “pridať značku a príchute”. Favority sú bonus.
+
+Teraz máš:
+
+favorite list query
+
+toggle / add favorite mutation
+
+match by manufacturer+flavor+diameter
+
+To je veľa logiky + veľa bugov na edge case.
+
+MVP odporúčanie:
+Favority dočasne nechaj len ako “recently used” (automaticky). Je to lacnejšie a efektívnejšie.
+
+5) Najlepší UX dizajn pre “pridať svoju značku/príchuť” v tomto UI
+
+Tvoje “Použiť ‘XYZ’” je super. Len mu chýba správny copy a pravidlá.
+
+Brand dropdown – posledná položka:
+
++ Pridať značku „{brandSearch}“
+(nie “Použiť”, lebo to znie ako dočasná vec)
+
+Flavor dropdown:
+
++ Pridať príchuť „{flavorSearch}“ do {selectedManufacturer.name}
+
+A po vytvorení:
+
+automaticky vybrať novovytvorenú položku
+
+krátky toast: „Pridané do tvojich značiek“
+
+6) Záver: čo máš spraviť najbližšie (bez ďalších stránok)
+
+Ak chceš “niekde do aplikácie aby si mohli pridať svoju značku boilies a príchute”, tak si to práve našiel: tu.
+
+Tvoj ďalší krok nie je UI. Je to:
+
+pridať “My brands/flavors” API + DB
+
+pri “Pridať…” volať create endpoints
+
+ukladať do catchu IDčka (plus text fallback)
