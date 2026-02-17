@@ -154,12 +154,7 @@ export default function DiaryStats() {
   const isPremium = premiumStatus?.isPremium || false;
 
   const { data: baitStats = [], isLoading: isLoadingBaitStats, isError: isBaitStatsError } = useQuery<BaitStat[]>({
-    queryKey: ["/api/diary/bait-stats", selectedYear],
-    queryFn: async () => {
-      const res = await fetch(`/api/diary/bait-stats?year=${selectedYear}`);
-      if (!res.ok) return [];
-      return res.json();
-    },
+    queryKey: [`/api/diary/bait-stats?year=${selectedYear}`],
     enabled: !!user,
     retry: 1,
   });
