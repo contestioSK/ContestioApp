@@ -108,6 +108,7 @@ const step2Schema = z.object({
   minWeight: z.coerce.number().min(1).max(15).default(2),
   bigFishThreshold: z.coerce.number().min(1).max(50).default(10),
   resultBlocking: z.enum(["none", "12h", "24h"]).default("none"),
+  teamSize: z.coerce.number().min(1, "Minimálne 1 člen").max(10, "Maximálne 10 členov").default(1),
   firstPlacePrize: z.string().optional(),
   secondPlacePrize: z.string().optional(),
   thirdPlacePrize: z.string().optional(),
@@ -171,6 +172,7 @@ export default function CreateCompetition() {
       minWeight: 2,
       bigFishThreshold: 10,
       resultBlocking: "none",
+      teamSize: 1,
       firstPlacePrize: "",
       secondPlacePrize: "",
       thirdPlacePrize: "",
@@ -216,6 +218,7 @@ export default function CreateCompetition() {
         minWeight: existingCompetition.minWeight ? parseFloat(existingCompetition.minWeight) : 2,
         bigFishThreshold: existingCompetition.bigFishThreshold ? parseFloat(existingCompetition.bigFishThreshold) : 10,
         resultBlocking: (existingCompetition.resultBlocking as "none" | "12h" | "24h") || "none",
+        teamSize: existingCompetition.teamSize ?? 1,
         firstPlacePrize: existingCompetition.firstPlacePrize || "",
         secondPlacePrize: existingCompetition.secondPlacePrize || "",
         thirdPlacePrize: existingCompetition.thirdPlacePrize || "",
@@ -702,7 +705,7 @@ export default function CreateCompetition() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-slate-800/50">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-slate-800/50">
                     <div className="space-y-2">
                       <label className="text-xs font-black uppercase text-slate-500 tracking-widest">Skrytie výsledkov</label>
                       <Select value={form.watch("resultBlocking")} onValueChange={(v) => form.setValue("resultBlocking", v as any)}>
@@ -729,6 +732,29 @@ export default function CreateCompetition() {
                       </div>
                       {currentPlanLimits.maxTeams !== null && <p className="text-[10px] text-slate-600 pl-1">Balík {currentPlanLimits.name} povoľuje max. {currentPlanLimits.maxTeams} tímov</p>}
                       {form.formState.errors.maxTeams && <p className="text-red-500 text-[10px] pl-1">{form.formState.errors.maxTeams.message}</p>}
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-black uppercase text-slate-500 tracking-widest">Členov v tíme</label>
+                      <div className="relative">
+                        <Users size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 z-10" />
+                        <Select
+                          value={String(form.watch("teamSize") || 1)}
+                          onValueChange={(val) => form.setValue("teamSize", parseInt(val))}
+                        >
+                          <SelectTrigger className="pl-9 bg-slate-950 border-slate-800 text-white h-12 rounded-xl focus:border-orange-500 font-mono text-lg">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-slate-900 border-slate-800 text-white">
+                            <SelectItem value="1">1 — Jednotlivec</SelectItem>
+                            <SelectItem value="2">2 — Dvojica</SelectItem>
+                            <SelectItem value="3">3 — Trojica</SelectItem>
+                            <SelectItem value="4">4 — Štvorka</SelectItem>
+                            <SelectItem value="5">5 — Pätica</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <p className="text-[10px] text-slate-600 pl-1">Koľko členov môže mať jeden tím</p>
+                      {form.formState.errors.teamSize && <p className="text-red-500 text-[10px] pl-1">{form.formState.errors.teamSize.message}</p>}
                     </div>
                   </div>
 
