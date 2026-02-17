@@ -5481,6 +5481,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         secondPlacePrize,
         thirdPlacePrize,
         registrationFee,
+        teamSize,
         maxTeams,
         branding
       } = req.body;
@@ -5498,6 +5499,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       if (secondPlacePrize !== undefined) updateData.secondPlacePrize = secondPlacePrize;
       if (thirdPlacePrize !== undefined) updateData.thirdPlacePrize = thirdPlacePrize;
       if (registrationFee !== undefined) updateData.registrationFee = registrationFee;
+      if (teamSize !== undefined) updateData.teamSize = teamSize;
       if (maxTeams !== undefined) updateData.maxTeams = maxTeams;
       if (branding !== undefined) updateData.branding = branding;
 
