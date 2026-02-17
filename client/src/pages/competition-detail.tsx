@@ -46,7 +46,7 @@ const StatusBadge = ({ status }: { status: string }) => {
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
           <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
         </span>
-        <span className="text-xs font-black uppercase tracking-widest">PRETEK PREBIEHA</span>
+        <span className="text-xs font-bold uppercase tracking-widest">PRETEK PREBIEHA</span>
       </div>
     );
   }
@@ -54,7 +54,7 @@ const StatusBadge = ({ status }: { status: string }) => {
     return (
       <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 px-3 py-1 rounded-full">
         <div className="w-2 h-2 bg-emerald-500 rounded-full" />
-        <span className="text-xs font-black uppercase tracking-widest">REGISTRÁCIA OTVORENÁ</span>
+        <span className="text-xs font-bold uppercase tracking-widest">REGISTRÁCIA OTVORENÁ</span>
       </div>
     );
   }
@@ -62,14 +62,14 @@ const StatusBadge = ({ status }: { status: string }) => {
     return (
       <div className="flex items-center gap-2 bg-muted/50 border border-border text-muted-foreground px-3 py-1 rounded-full">
         <div className="w-2 h-2 bg-muted-foreground rounded-full" />
-        <span className="text-xs font-black uppercase tracking-widest">PRETEK UKONČENÝ</span>
+        <span className="text-xs font-bold uppercase tracking-widest">PRETEK UKONČENÝ</span>
       </div>
     );
   }
   // Fallback for unknown statuses (draft, cancelled, etc.)
   return (
     <div className="flex items-center gap-2 bg-muted/50 border border-border text-muted-foreground px-3 py-1 rounded-full">
-      <span className="text-xs font-black uppercase tracking-widest">{status?.toUpperCase() || 'NEZNÁMY'}</span>
+      <span className="text-xs font-bold uppercase tracking-widest">{status?.toUpperCase() || 'NEZNÁMY'}</span>
     </div>
   );
 };
@@ -1134,7 +1134,7 @@ export default function CompetitionDetail() {
                   <div className="grid grid-cols-3 items-end gap-2">
                     {/* 2nd Place - left */}
                     <div className="flex flex-col items-center">
-                      <div className="w-9 h-9 bg-slate-500 rounded-full flex items-center justify-center font-bold text-white text-sm mb-2 border-2 border-slate-400/30">2</div>
+                      <div className="w-9 h-9 bg-muted-foreground rounded-full flex items-center justify-center font-bold text-background text-sm mb-2 border-2 border-muted-foreground/30">2</div>
                       <div className="text-center w-full">
                         <button
                           className="font-bold text-foreground text-xs truncate px-1 hover:text-cyan-500 transition-colors"
@@ -1152,7 +1152,7 @@ export default function CompetitionDetail() {
                       <div className="w-11 h-11 bg-amber-500 rounded-full flex items-center justify-center mb-2 shadow-lg shadow-amber-500/40 animate-crown-bounce border-2 border-amber-400/50">
                         <Crown size={20} className="text-black" />
                       </div>
-                      <span className="text-[8px] font-black uppercase tracking-wider text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full mb-1">LÍDER</span>
+                      <span className="text-[8px] font-bold uppercase tracking-wider text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full mb-1">LÍDER</span>
                       <div className="text-center w-full">
                         <button
                           className="font-bold text-amber-500 text-sm truncate px-1 hover:underline"
@@ -1187,8 +1187,8 @@ export default function CompetitionDetail() {
               {sortedLeaderboard.length >= 3 && (
                 <div className="hidden md:grid md:grid-cols-3 gap-4 items-end">
                   {/* 2nd Place */}
-                  <div className="bg-card border border-border hover:border-slate-500/40 rounded-xl p-4 flex flex-col items-center justify-end h-48 relative transition-all">
-                    <div className="absolute -top-4 w-11 h-11 bg-slate-500 rounded-full flex items-center justify-center font-bold text-white text-lg border-4 border-background shadow-lg">2</div>
+                  <div className="bg-card border border-border hover:border-muted-foreground/40 rounded-xl p-4 flex flex-col items-center justify-end h-48 relative transition-all">
+                    <div className="absolute -top-4 w-11 h-11 bg-muted-foreground rounded-full flex items-center justify-center font-bold text-background text-lg border-4 border-background shadow-lg">2</div>
                     <div className="text-center w-full">
                       <button
                         className="font-bold text-foreground mb-1 truncate px-2 hover:text-cyan-500 transition-colors"
@@ -1203,11 +1203,11 @@ export default function CompetitionDetail() {
 
                   {/* Winner */}
                   <div className="bg-card border border-amber-500/30 rounded-xl p-4 flex flex-col items-center justify-end h-56 relative amber-glow z-10">
-                    <div className="absolute -top-10 w-14 h-14 bg-amber-500 rounded-full flex items-center justify-center font-black text-black text-xl border-4 border-background shadow-lg shadow-amber-500/30 animate-crown-bounce">
+                    <div className="absolute -top-10 w-14 h-14 bg-amber-500 rounded-full flex items-center justify-center font-bold text-black text-xl border-4 border-background shadow-lg shadow-amber-500/30 animate-crown-bounce">
                       <Crown size={24} />
                     </div>
                     <div className="absolute top-2 left-1/2 -translate-x-1/2">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-amber-500 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">LÍDER PRETEKU</span>
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-amber-500 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">LÍDER PRETEKU</span>
                     </div>
                     <div className="text-center w-full mb-2">
                       <button
@@ -1371,7 +1371,7 @@ export default function CompetitionDetail() {
                     >
                       Všetky úlovky
                     </button>
-                    <span className={`flex items-center gap-1.5 text-[10px] font-bold uppercase px-2 py-1 rounded-full ${isLive ? 'text-emerald-500 bg-emerald-500/10' : 'text-slate-400 bg-slate-500/10'}`}>
+                    <span className={`flex items-center gap-1.5 text-[10px] font-bold uppercase px-2 py-1 rounded-full ${isLive ? 'text-emerald-500 bg-emerald-500/10' : 'text-muted-foreground bg-muted'}`}>
                       {isLive ? 'Live' : 'Archív'}
                     </span>
                   </div>
@@ -1459,7 +1459,7 @@ export default function CompetitionDetail() {
             {/* Modal Header */}
             <div className="p-6 md:p-8 border-b border-border flex flex-col md:flex-row md:items-center justify-between gap-4 bg-muted/30">
               <div>
-                <h2 className="text-xl md:text-2xl font-black text-foreground flex items-center gap-3">
+                <h2 className="text-xl md:text-2xl font-bold text-foreground flex items-center gap-3">
                   <PieChart className="text-blue-500" />
                   Ako ryby berú počas preteku
                 </h2>
@@ -1605,7 +1605,7 @@ export default function CompetitionDetail() {
             {/* Modal Header */}
             <div className="p-6 md:p-8 border-b border-border flex items-center justify-between bg-muted/30">
               <div>
-                <h2 className="text-xl md:text-2xl font-black text-foreground flex items-center gap-3">
+                <h2 className="text-xl md:text-2xl font-bold text-foreground flex items-center gap-3">
                   <FileText className="text-cyan-500" />
                   Pravidlá preteku
                 </h2>
@@ -1655,7 +1655,7 @@ export default function CompetitionDetail() {
             {/* Modal Header */}
             <div className="p-6 md:p-8 border-b border-border flex items-center justify-between bg-muted/30">
               <div>
-                <h2 className="text-xl md:text-2xl font-black text-foreground flex items-center gap-3">
+                <h2 className="text-xl md:text-2xl font-bold text-foreground flex items-center gap-3">
                   <Users className="text-blue-500" />
                   {userTeam.name}
                 </h2>
@@ -1691,15 +1691,15 @@ export default function CompetitionDetail() {
                 return (
                   <div className="grid grid-cols-3 gap-4">
                     <div className="bg-card border border-border rounded-xl p-4 text-center">
-                      <div className="text-2xl font-black text-foreground">{lb?.fish ?? 0}</div>
+                      <div className="text-2xl font-mono font-medium text-foreground">{lb?.fish ?? 0}</div>
                       <div className="text-xs text-muted-foreground">Úlovkov</div>
                     </div>
                     <div className="bg-card border border-border rounded-xl p-4 text-center">
-                      <div className="text-2xl font-black text-foreground">{(lb?.weight ?? 0).toFixed(1)} kg</div>
+                      <div className="text-2xl font-mono font-medium text-foreground">{(lb?.weight ?? 0).toFixed(1)} kg</div>
                       <div className="text-xs text-muted-foreground">Celková váha</div>
                     </div>
                     <div className="bg-card border border-border rounded-xl p-4 text-center">
-                      <div className="text-2xl font-black text-[#F97316]">{lb?.rank ? `#${lb.rank}` : '-'}</div>
+                      <div className="text-2xl font-mono font-medium text-[#F97316]">{lb?.rank ? `#${lb.rank}` : '-'}</div>
                       <div className="text-xs text-muted-foreground">Poradie</div>
                     </div>
                   </div>
@@ -1767,7 +1767,7 @@ export default function CompetitionDetail() {
               <>
                 <div className="p-6 border-b border-border flex items-center justify-between bg-muted/30">
                   <div>
-                    <h2 className="text-xl font-black text-foreground flex items-center gap-3">
+                    <h2 className="text-xl font-bold text-foreground flex items-center gap-3">
                       <Fish className="text-cyan-500" />
                       Všetky úlovky
                     </h2>
@@ -1806,7 +1806,7 @@ export default function CompetitionDetail() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-xl font-black text-foreground">{safeWeight(c.weight).toFixed(1)} kg</div>
+                          <div className="text-xl font-mono font-medium text-foreground">{safeWeight(c.weight).toFixed(1)} kg</div>
                           <div className="text-[10px] text-muted-foreground">
                             {c.submittedAt ? formatDistanceToNow(new Date(c.submittedAt), { addSuffix: true, locale: sk }) : ''}
                           </div>
@@ -1842,7 +1842,7 @@ export default function CompetitionDetail() {
                       </button>
                     )}
                     <div>
-                      <h2 className="text-xl font-black text-foreground flex items-center gap-3">
+                      <h2 className="text-xl font-bold text-foreground flex items-center gap-3">
                         {safeWeight(entityModal.catch_.weight) >= bigFishThreshold ? (
                           <Crown className="text-amber-500" />
                         ) : (
@@ -1862,7 +1862,7 @@ export default function CompetitionDetail() {
                 </div>
                 <div className="flex-1 overflow-y-auto p-6 space-y-6">
                   <div className="text-center py-6 bg-muted/30 rounded-xl border border-border">
-                    <div className="text-5xl font-black text-foreground mb-1">{safeWeight(entityModal.catch_.weight).toFixed(1)}</div>
+                    <div className="text-5xl font-bold text-foreground mb-1">{safeWeight(entityModal.catch_.weight).toFixed(1)}</div>
                     <div className="text-lg text-muted-foreground">kilogramov</div>
                   </div>
                   <div className="space-y-4">
