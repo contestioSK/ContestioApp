@@ -86,6 +86,7 @@ export const competitions = pgTable("competitions", {
   secondPlacePrize: decimal("second_place_prize", { precision: 10, scale: 2 }),
   thirdPlacePrize: decimal("third_place_prize", { precision: 10, scale: 2 }),
   registrationFee: decimal("registration_fee", { precision: 10, scale: 2 }),
+  teamSize: integer("team_size").notNull().default(1),
   maxTeams: integer("max_teams"),
   organizerId: varchar("organizer_id").notNull().references(() => users.id),
   organizerEmail: varchar("organizer_email"), // Email of the competition organizer (from registration)
@@ -137,6 +138,7 @@ export const competitionRegistrations = pgTable("competition_registrations", {
   secondPlacePrize: decimal("second_place_prize", { precision: 10, scale: 2 }),
   thirdPlacePrize: decimal("third_place_prize", { precision: 10, scale: 2 }),
   registrationFee: decimal("registration_fee", { precision: 10, scale: 2 }),
+  teamSize: integer("team_size").notNull().default(1),
   maxTeams: integer("max_teams"),
   sectorPlaces: jsonb("sector_places").$type<Array<{ sectorName: string; places: string[] }>>(),
   sideCompetitions: jsonb("side_competitions").$type<string[]>().default([]), // Array of side competition names
@@ -798,6 +800,7 @@ export const insertCompetitionSchema = createInsertSchema(competitions).omit({
   secondPlacePrize: optionalDecimalField,
   thirdPlacePrize: optionalDecimalField,
   registrationFee: optionalDecimalField,
+  teamSize: optionalIntegerField,
   maxTeams: optionalIntegerField,
   maxReferees: optionalIntegerField,
 });
