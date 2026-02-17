@@ -4117,88 +4117,6 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
-  // Update referee status
-  app.patch('/api/competitions/:id/referees/:refereeId', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = getUserId(req);
-      const user = await storage.getUser(userId);
-      
-      if (user?.role !== 'organizer' && user?.role !== 'admin') {
-        return res.status(403).json({ message: "Only organizers and admins can update referees" });
-      }
-
-      // Verify competition ownership for non-admin users
-      if (user?.role === 'organizer') {
-        const competition = await storage.getCompetition(req.params.id);
-        if (!competition || competition.organizerId !== userId) {
-          return res.status(403).json({ message: "You can only update referees for your own competitions" });
-        }
-      }
-
-      // Validate request body
-      const updateSchema = z.object({
-        isActive: z.boolean().optional(),
-        assignedSector: z.string().optional()
-      });
-      
-      const validation = updateSchema.safeParse(req.body);
-      if (!validation.success) {
-        return res.status(400).json({ message: "Invalid request data", errors: validation.error.errors });
-      }
-
-      // Verify the referee belongs to this competition (prevent IDOR)
-      const referees = await storage.getRefereesByCompetition(req.params.id);
-      const targetReferee = referees.find(r => r.id === req.params.refereeId);
-      if (!targetReferee) {
-        return res.status(404).json({ message: "Referee not found in this competition" });
-      }
-
-      const { isActive, assignedSector } = validation.data;
-      const referee = await storage.updateReferee(req.params.refereeId, { 
-        isActive,
-        assignedSector
-      });
-      
-      res.json(referee);
-    } catch (error) {
-      console.error("Error updating referee:", error);
-      res.status(500).json({ message: "Failed to update referee" });
-    }
-  });
-
-  // Delete referee
-  app.delete('/api/competitions/:id/referees/:refereeId', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = getUserId(req);
-      const user = await storage.getUser(userId);
-      
-      if (user?.role !== 'organizer' && user?.role !== 'admin') {
-        return res.status(403).json({ message: "Only organizers and admins can delete referees" });
-      }
-
-      // Verify competition ownership for non-admin users
-      if (user?.role === 'organizer') {
-        const competition = await storage.getCompetition(req.params.id);
-        if (!competition || competition.organizerId !== userId) {
-          return res.status(403).json({ message: "You can only delete referees from your own competitions" });
-        }
-      }
-
-      // Verify the referee belongs to this competition (prevent IDOR)
-      const referees = await storage.getRefereesByCompetition(req.params.id);
-      const targetReferee = referees.find(r => r.id === req.params.refereeId);
-      if (!targetReferee) {
-        return res.status(404).json({ message: "Referee not found in this competition" });
-      }
-
-      await storage.deleteReferee(req.params.refereeId);
-      res.json({ message: "Referee deleted successfully" });
-    } catch (error) {
-      console.error("Error deleting referee:", error);
-      res.status(500).json({ message: "Failed to delete referee" });
-    }
-  });
-
   // Update sponsor
   app.put('/api/competitions/:id/sponsors/:sponsorId', isAuthenticated, async (req: any, res) => {
     try {
@@ -4285,89 +4203,6 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     } catch (error) {
       console.error("Error deleting sponsor:", error);
       res.status(500).json({ message: "Failed to delete sponsor" });
-    }
-  });
-
-  // Delete competition
-  app.delete('/api/competitions/:id', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = getUserId(req);
-      const user = await storage.getUser(userId);
-      
-      if (user?.role !== 'organizer' && user?.role !== 'admin') {
-        return res.status(403).json({ message: "Only organizers and admins can delete competitions" });
-      }
-
-      // Verify competition ownership for non-admin users
-      const competition = await storage.getCompetition(req.params.id);
-      if (!competition) {
-        return res.status(404).json({ message: "Competition not found" });
-      }
-      
-      if (user?.role === 'organizer' && competition.organizerId !== userId) {
-        return res.status(403).json({ message: "You can only delete your own competitions" });
-      }
-
-      await storage.deleteCompetition(req.params.id);
-      res.json({ message: "Competition deleted successfully" });
-    } catch (error) {
-      console.error("Error deleting competition:", error);
-      res.status(500).json({ message: "Failed to delete competition" });
-    }
-  });
-
-  // Reset competition catches
-  app.delete('/api/competitions/:id/catches', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = getUserId(req);
-      const user = await storage.getUser(userId);
-      
-      if (user?.role !== 'organizer' && user?.role !== 'admin') {
-        return res.status(403).json({ message: "Only organizers and admins can reset catches" });
-      }
-
-      // Verify competition ownership for non-admin users
-      const competition = await storage.getCompetition(req.params.id);
-      if (!competition) {
-        return res.status(404).json({ message: "Competition not found" });
-      }
-      
-      if (user?.role === 'organizer' && competition.organizerId !== userId) {
-        return res.status(403).json({ message: "You can only reset catches for your own competitions" });
-      }
-
-      await storage.resetCompetitionCatches(req.params.id);
-      
-      // Invalidate cache after catches reset
-      cache.invalidateCompetition(req.params.id);
-      
-      res.json({ message: "Competition catches reset successfully" });
-    } catch (error) {
-      console.error("Error resetting catches:", error);
-      res.status(500).json({ message: "Failed to reset catches" });
-    }
-  });
-
-  // Update competition status
-  app.patch('/api/competitions/:id/status', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = getUserId(req);
-      const user = await storage.getUser(userId);
-      
-      if (user?.role !== 'organizer' && user?.role !== 'admin') {
-        return res.status(403).json({ message: "Only organizers and admins can update competition status" });
-      }
-
-      const { status } = req.body;
-      if (!['draft', 'ready', 'live', 'finished'].includes(status)) {
-        return res.status(400).json({ message: "Invalid status" });
-      }
-
-      const competition = await storage.updateCompetitionStatus(req.params.id, status);
-      res.json(competition);
-    } catch (error) {
-      console.error("Error updating competition status:", error);
-      res.status(500).json({ message: "Failed to update competition status" });
     }
   });
 
@@ -9292,23 +9127,6 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     } catch (error) {
       console.error('[FRIENDS] Error fetching sent friend requests:', error);
       res.status(500).json({ message: 'Chyba pri načítaní odoslaných žiadostí' });
-    }
-  });
-
-  app.get('/api/users/search', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = getUserId(req);
-      const query = req.query.q as string;
-      
-      if (!query || query.length < 2) {
-        return res.json([]);
-      }
-      
-      const results = await storage.searchUsers(query, userId);
-      res.json(results);
-    } catch (error) {
-      console.error('[FRIENDS] Error searching users:', error);
-      res.status(500).json({ message: 'Chyba pri vyhľadávaní' });
     }
   });
 

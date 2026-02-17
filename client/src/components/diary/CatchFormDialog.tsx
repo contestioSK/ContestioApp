@@ -418,17 +418,19 @@ export default function CatchFormDialog({
     return text;
   };
 
+  // Derive stable primitive values for bait text sync
+  const selectedBrandName = selectedManufacturer?.name || selectedUserBrand?.name || "";
+  const selectedFlavorName = baitSource === "global" && selectedFlavor
+    ? (selectedFlavor.productLine ? `${selectedFlavor.productLine} - ${selectedFlavor.name}` : selectedFlavor.name)
+    : selectedUserFlavor?.name || "";
+
   // Sync bait selection to form field (with diameter)
   useEffect(() => {
-    if (baitSource === "global" && selectedManufacturer && selectedFlavor) {
-      const flavorDisplay = selectedFlavor.productLine
-        ? `${selectedFlavor.productLine} - ${selectedFlavor.name}`
-        : selectedFlavor.name;
-      form.setValue("bait", buildBaitText("global", selectedManufacturer.name, flavorDisplay, selectedDiameter));
-    } else if (baitSource === "user" && selectedUserBrand && selectedUserFlavor) {
-      form.setValue("bait", buildBaitText("user", selectedUserBrand.name, selectedUserFlavor.name, selectedDiameter));
+    if (baitSource && selectedBrandName && selectedFlavorName) {
+      form.setValue("bait", buildBaitText(baitSource, selectedBrandName, selectedFlavorName, selectedDiameter));
     }
-  }, [selectedManufacturerId, selectedFlavorId, selectedManufacturer, selectedFlavor, selectedUserBrand, selectedUserFlavor, selectedDiameter, baitSource, form]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedBrandName, selectedFlavorName, selectedDiameter, baitSource]);
 
   // Auto-set tripId when active battle exists
   useEffect(() => {
