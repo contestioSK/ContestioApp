@@ -112,6 +112,8 @@ export default function DiaryTrips() {
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
   const [isChecklistOpen, setIsChecklistOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"active" | "history">("active");
+  const initialTabSet = useRef(false);
+  const prevActiveCount = useRef<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
   const scrollToHistory = () => {
@@ -534,6 +536,18 @@ export default function DiaryTrips() {
     };
   }, [trips, isPremium, searchQuery]);
   
+  useEffect(() => {
+    if (trips.length > 0) {
+      if (!initialTabSet.current) {
+        initialTabSet.current = true;
+        setActiveTab(activeAndPlannedTrips.length > 0 ? "active" : "history");
+      } else if (prevActiveCount.current === 0 && activeAndPlannedTrips.length > 0) {
+        setActiveTab("active");
+      }
+      prevActiveCount.current = activeAndPlannedTrips.length;
+    }
+  }, [trips, activeAndPlannedTrips]);
+
   // Check if a trip is locked for FREE users
   const isTripLocked = useCallback((tripId: string): boolean => {
     if (isPremium) return false;
