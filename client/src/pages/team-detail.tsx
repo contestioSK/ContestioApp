@@ -1,15 +1,17 @@
 import { useState } from "react";
 import { useParams, Link } from "wouter";
 import { TeamFlag } from "@/components/team-flag";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Users, Trophy, Fish, MapPin, Camera, X, Heart, Scale, Ruler, Calendar, Anchor } from "lucide-react";
-import { Team, TeamMember, Catch } from "@shared/schema";
+import { ArrowLeft, Users, Trophy, Fish, MapPin, Camera, X, Heart, Scale, Ruler, Calendar, Anchor, Trash2, Crown, Shield, Loader2 } from "lucide-react";
+import { Team, TeamMember, Catch, Competition } from "@shared/schema";
 import { useFavoriteTeams, useToggleFavoriteTeam } from "@/hooks/useFavorites";
+import { useToast } from "@/hooks/use-toast";
 
 type TeamWithDetails = Team & {
   members?: TeamMember[];
@@ -105,15 +107,55 @@ const CatchGridItem = ({ data, onClick }: { data: Catch; onClick: (c: Catch) => 
 export default function TeamDetail() {
   const { teamId } = useParams();
   const [selectedPhoto, setSelectedPhoto] = useState<Catch | null>(null);
+  const [confirmRemoveMember, setConfirmRemoveMember] = useState<TeamMember | null>(null);
+  const [confirmNewCaptain, setConfirmNewCaptain] = useState<TeamMember | null>(null);
+  const { toast } = useToast();
 
   const { data: teamData, isLoading } = useQuery<TeamWithDetails>({
     queryKey: ["/api/teams", teamId],
     enabled: !!teamId,
   });
 
+  const { data: competition } = useQuery<Competition>({
+    queryKey: ["/api/competitions", teamData?.competitionId],
+    enabled: !!teamData?.competitionId,
+  });
+
   const { data: favoriteTeams } = useFavoriteTeams();
   const { addFavorite, removeFavorite, isAdding, isRemoving } = useToggleFavoriteTeam();
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
+
+  const isOrganizer = isAuthenticated && competition && (
+    user?.role === 'admin' || (user?.role === 'organizer' && competition.organizerId === user?.id)
+  );
+
+  const removeMemberMutation = useMutation({
+    mutationFn: async (memberId: string) => {
+      await apiRequest('DELETE', `/api/teams/${teamId}/members/${memberId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/teams", teamId] });
+      toast({ title: "Člen bol odstránený z tímu" });
+      setConfirmRemoveMember(null);
+    },
+    onError: (error: any) => {
+      toast({ title: "Chyba", description: error.message || "Nepodarilo sa odstrániť člena", variant: "destructive" });
+    },
+  });
+
+  const changeRoleMutation = useMutation({
+    mutationFn: async ({ memberId, role }: { memberId: string; role: string }) => {
+      await apiRequest('PATCH', `/api/teams/${teamId}/members/${memberId}/role`, { role });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/teams", teamId] });
+      toast({ title: "Kapitán tímu bol zmenený" });
+      setConfirmNewCaptain(null);
+    },
+    onError: (error: any) => {
+      toast({ title: "Chyba", description: error.message || "Nepodarilo sa zmeniť rolu", variant: "destructive" });
+    },
+  });
 
   const isFavorite = isAuthenticated && favoriteTeams?.some(fav => fav.teamId === teamId);
 
@@ -315,13 +357,98 @@ export default function TeamDetail() {
                       <div className="text-xs text-muted-foreground truncate">{member.email}</div>
                     )}
                   </div>
+                  {isOrganizer && (
+                    <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
+                      {member.role !== 'captain' && (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-7 w-7 text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10"
+                          title="Nastaviť ako kapitána"
+                          onClick={() => setConfirmNewCaptain(member)}
+                        >
+                          <Crown size={14} />
+                        </Button>
+                      )}
+                      {(teamData.members?.length ?? 0) > 1 && (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-7 w-7 text-muted-foreground hover:text-red-400 hover:bg-red-400/10"
+                          title="Odstrániť z tímu"
+                          onClick={() => setConfirmRemoveMember(member)}
+                        >
+                          <Trash2 size={14} />
+                        </Button>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
 
+            {isOrganizer && (
+              <p className="text-[10px] text-muted-foreground/50 mt-2 pl-1">
+                <Shield size={10} className="inline mr-1" />
+                Ako organizátor môžeš spravovať členov tímu
+              </p>
+            )}
+
           </div>
         </div>
       </div>
+
+      <Dialog open={!!confirmRemoveMember} onOpenChange={() => setConfirmRemoveMember(null)}>
+        <DialogContent className="bg-card border-border max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">Odstrániť člena z tímu?</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              {confirmRemoveMember?.role === 'captain' ? (
+                <>Odstraňuješ <span className="font-bold text-amber-500">kapitána</span> „{confirmRemoveMember?.name}". Ďalší člen tímu bude automaticky ustanovený ako nový kapitán.</>
+              ) : (
+                <>Naozaj chceš odstrániť „{confirmRemoveMember?.name}" z tímu? Táto akcia je nevratná.</>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setConfirmRemoveMember(null)} className="border-border text-muted-foreground">
+              Zrušiť
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => confirmRemoveMember && removeMemberMutation.mutate(confirmRemoveMember.id)}
+              disabled={removeMemberMutation.isPending}
+            >
+              {removeMemberMutation.isPending ? <Loader2 size={14} className="animate-spin mr-2" /> : <Trash2 size={14} className="mr-2" />}
+              Odstrániť
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!confirmNewCaptain} onOpenChange={() => setConfirmNewCaptain(null)}>
+        <DialogContent className="bg-card border-border max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">Zmeniť kapitána tímu?</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Nastaviť „{confirmNewCaptain?.name}" ako nového kapitána tímu? Doterajší kapitán bude preradený na bežného člena.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setConfirmNewCaptain(null)} className="border-border text-muted-foreground">
+              Zrušiť
+            </Button>
+            <Button
+              className="bg-amber-600 hover:bg-amber-700 text-white"
+              onClick={() => confirmNewCaptain && changeRoleMutation.mutate({ memberId: confirmNewCaptain.id, role: 'captain' })}
+              disabled={changeRoleMutation.isPending}
+            >
+              {changeRoleMutation.isPending ? <Loader2 size={14} className="animate-spin mr-2" /> : <Crown size={14} className="mr-2" />}
+              Potvrdiť
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!selectedPhoto} onOpenChange={() => setSelectedPhoto(null)}>
         <DialogContent className="max-w-5xl p-0 overflow-hidden bg-black/95 border-border backdrop-blur-xl [&>button]:hidden" aria-describedby="catch-photo-description">

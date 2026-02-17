@@ -3438,6 +3438,117 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
+  app.delete('/api/teams/:teamId/members/:memberId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'organizer' && user?.role !== 'admin') {
+        return res.status(403).json({ message: "Len organizátor môže odstrániť člena tímu" });
+      }
+
+      const team = await storage.getTeam(req.params.teamId);
+      if (!team) {
+        return res.status(404).json({ message: "Tím nebol nájdený" });
+      }
+
+      const competition = await storage.getCompetition(team.competitionId);
+      if (!competition) {
+        return res.status(404).json({ message: "Súťaž nebola nájdená" });
+      }
+
+      if (user?.role === 'organizer' && competition.organizerId !== userId) {
+        return res.status(403).json({ message: "Môžeš spravovať len tímy vo vlastných súťažiach" });
+      }
+
+      const member = team.members?.find(m => m.id === req.params.memberId);
+      if (!member) {
+        return res.status(404).json({ message: "Člen tímu nebol nájdený" });
+      }
+
+      if (team.members && team.members.length <= 1) {
+        return res.status(400).json({ message: "Tím musí mať aspoň jedného člena" });
+      }
+
+      if (member.role === 'captain' && team.members && team.members.length > 1) {
+        const nextMember = team.members.find(m => m.id !== req.params.memberId);
+        if (nextMember) {
+          await storage.updateTeamMemberRole(nextMember.id, 'captain');
+        }
+      }
+
+      await storage.deleteTeamMember(req.params.memberId);
+
+      broadcast({
+        type: 'team_updated',
+        teamId: req.params.teamId,
+        competitionId: team.competitionId,
+        payload: { action: 'member_removed', memberId: req.params.memberId }
+      });
+
+      res.json({ message: "Člen tímu bol odstránený" });
+    } catch (error) {
+      console.error("Error removing team member:", error);
+      res.status(500).json({ message: "Nepodarilo sa odstrániť člena tímu" });
+    }
+  });
+
+  app.patch('/api/teams/:teamId/members/:memberId/role', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getUserId(req);
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'organizer' && user?.role !== 'admin') {
+        return res.status(403).json({ message: "Len organizátor môže zmeniť rolu člena tímu" });
+      }
+
+      const team = await storage.getTeam(req.params.teamId);
+      if (!team) {
+        return res.status(404).json({ message: "Tím nebol nájdený" });
+      }
+
+      const competition = await storage.getCompetition(team.competitionId);
+      if (!competition) {
+        return res.status(404).json({ message: "Súťaž nebola nájdená" });
+      }
+
+      if (user?.role === 'organizer' && competition.organizerId !== userId) {
+        return res.status(403).json({ message: "Môžeš spravovať len tímy vo vlastných súťažiach" });
+      }
+
+      const member = team.members?.find(m => m.id === req.params.memberId);
+      if (!member) {
+        return res.status(404).json({ message: "Člen tímu nebol nájdený" });
+      }
+
+      const { role } = req.body;
+      if (!role || !['captain', 'member'].includes(role)) {
+        return res.status(400).json({ message: "Neplatná rola" });
+      }
+
+      if (role === 'captain') {
+        const currentCaptain = team.members?.find(m => m.role === 'captain');
+        if (currentCaptain) {
+          await storage.updateTeamMemberRole(currentCaptain.id, 'member');
+        }
+      }
+
+      await storage.updateTeamMemberRole(req.params.memberId, role);
+
+      broadcast({
+        type: 'team_updated',
+        teamId: req.params.teamId,
+        competitionId: team.competitionId,
+        payload: { action: 'role_changed', memberId: req.params.memberId, role }
+      });
+
+      res.json({ message: "Rola člena tímu bola zmenená" });
+    } catch (error) {
+      console.error("Error updating team member role:", error);
+      res.status(500).json({ message: "Nepodarilo sa zmeniť rolu člena tímu" });
+    }
+  });
+
   // Update team details
   app.patch('/api/teams/:id', isAuthenticated, async (req: any, res) => {
     try {
