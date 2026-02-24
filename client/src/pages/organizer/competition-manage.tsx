@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, Fragment } from "react";
+import QRCodeLib from "qrcode";
 import { useRoute, useLocation, useSearch } from "wouter";
 import { TeamFlag } from "@/components/team-flag";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -151,6 +152,7 @@ export default function CompetitionManage() {
   const [rejectingTeamId, setRejectingTeamId] = useState<string | null>(null);
   const [rejectingTeamName, setRejectingTeamName] = useState("");
   const [processingTeamId, setProcessingTeamId] = useState<string | null>(null);
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(searchString);
@@ -167,6 +169,15 @@ export default function CompetitionManage() {
       window.history.replaceState({}, '', `/organizer/competition/${competitionId}`);
     }
   }, [searchString, competitionId, toast]);
+
+  useEffect(() => {
+    if (showShareDialog && competitionId) {
+      const url = `${window.location.origin}/competition/${competitionId}`;
+      QRCodeLib.toDataURL(url, { width: 200, margin: 1, color: { dark: '#0f172a', light: '#ffffff' } })
+        .then(setQrDataUrl)
+        .catch(() => setQrDataUrl(null));
+    }
+  }, [showShareDialog, competitionId]);
 
   const { data: competition, isLoading: competitionLoading } = useQuery<Competition>({
     queryKey: ['/api/competitions', competitionId],
@@ -732,7 +743,7 @@ export default function CompetitionManage() {
                           <div className="min-w-0">
                             <span className="text-sm text-foreground font-medium">{c.fishType === 'mirror' ? 'Lysec' : c.fishType === 'scaly' ? 'Šupináč' : (c.fishType || 'Neznámy druh')}</span>
                           </div>
-                          <span className="text-sm font-mono font-medium text-orange-500">{c.weight ? `${c.weight}g` : '-'}</span>
+                          <span className="text-sm font-mono font-medium text-orange-500">{c.weight ? `${parseFloat(c.weight.toString()).toFixed(1)} kg` : '-'}</span>
                         </div>
                       ))}
                       {catches.length > 5 && (
@@ -854,7 +865,11 @@ export default function CompetitionManage() {
           </DialogHeader>
           <div className="flex flex-col items-center py-6 gap-6">
             <div className="bg-white p-3 rounded-xl shadow-[0_0_20px_rgba(255,255,255,0.05)]">
-              <QrCode size={140} className="text-slate-900" />
+              {qrDataUrl ? (
+                <img src={qrDataUrl} alt="QR kód súťaže" width={140} height={140} className="rounded" />
+              ) : (
+                <QrCode size={140} className="text-slate-200 animate-pulse" />
+              )}
             </div>
             <div className="w-full space-y-4">
               <div className="space-y-2">
@@ -942,11 +957,11 @@ export default function CompetitionManage() {
             <DialogTitle className="text-foreground">Vyber balík pre svoju súťaž</DialogTitle>
             <DialogDescription className="text-muted-foreground">Vyber si balík podľa veľkosti a potrieb tvojej súťaže.</DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
+          <div className="grid gap-3 py-4">
             {[
-              { key: 'basic', name: 'Základný', price: '9.99€', desc: 'Pre menšie súťaže do 10 tímov', features: ['Max. 10 tímov', 'Základné štatistiky', 'QR kódy pre registráciu'] },
-              { key: 'premium', name: 'Premium', price: '24.99€', desc: 'Pre stredné súťaže do 30 tímov', features: ['Max. 30 tímov', 'Pokročilé štatistiky', 'Vedľajšie súťaže', 'Rozhodcovia a sektory'], popular: true },
-              { key: 'enterprise', name: 'Enterprise', price: '49.99€', desc: 'Pre veľké súťaže bez limitu', features: ['Neobmedzený počet tímov', 'Všetky funkcie Premium', 'Prioritná podpora', 'Vlastné branding'] },
+              { key: 'basic', name: 'Basic', price: '69€', desc: 'Pre menšie súťaže', features: ['Max. 15 tímov', '2 rozhodcovia', 'Live tabuľka výsledkov', 'Základné štatistiky'] },
+              { key: 'pro', name: 'Pro', price: '199€', desc: 'Najobľúbenejší pre väčšinu súťaží', features: ['Neobmedzený počet tímov', '5 rozhodcov', 'Sektory a vyhodnotenie', 'Vedľajšie súťaže', 'Email notifikácie'], popular: true },
+              { key: 'premium', name: 'Premium', price: '599€', desc: 'Pre veľké podujatia s brandingom', features: ['Neobmedzené tímy a rozhodcovia', 'Branding a logo', 'Prioritná podpora'] },
             ].map(plan => (
               <div
                 key={plan.key}
