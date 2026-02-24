@@ -366,7 +366,7 @@ export default function CatchDetail() {
                     className="group flex flex-col items-center gap-1 p-2 text-muted-foreground hover:text-foreground transition-colors"
                   >
                     <span className="text-xs font-bold uppercase tracking-widest">
-                      {storyExpanded ? "Zbaliť príbeh" : "Čítať celý príbeh"}
+                      {storyExpanded ? "Skryť príbeh" : "Čítať celý príbeh"}
                     </span>
                     {storyExpanded ? (
                       <ChevronUp size={16} className="animate-bounce" />

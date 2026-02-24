@@ -1129,7 +1129,7 @@ export default function DiaryTrips() {
                         <History size={36} className="text-purple-500 relative z-10" />
                       </div>
                       <h3 className="text-xl md:text-2xl font-bold text-foreground mb-3">
-                        História zíva prázdnotou
+                        História je zatiaľ prázdna
                       </h3>
                       <p className="text-muted-foreground max-w-sm text-base md:text-lg leading-relaxed">
                         Tvoj denník je zatiaľ čistý. Všetky tvoje legendárne úlovky a spomienky sa uložia práve sem.

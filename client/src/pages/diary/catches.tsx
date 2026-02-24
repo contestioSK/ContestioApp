@@ -883,10 +883,10 @@ export default function DiaryCatches() {
             <div className="hidden md:flex flex-wrap gap-3">
               <Select value={selectedFishType} onValueChange={setSelectedFishType}>
                 <SelectTrigger className="w-full sm:w-[180px] bg-muted dark:bg-slate-700/50 border text-foreground dark:text-white" data-testid="filter-fish-type">
-                  <SelectValue placeholder="Všetky Druhy" />
+                  <SelectValue placeholder="Všetky druhy" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Všetky Druhy</SelectItem>
+                  <SelectItem value="all">Všetky druhy</SelectItem>
                   {getFishTypeOptions().map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
@@ -897,10 +897,10 @@ export default function DiaryCatches() {
 
               <Select value={selectedSpot} onValueChange={setSelectedSpot}>
                 <SelectTrigger className="w-full sm:w-[180px] bg-muted dark:bg-slate-700/50 border text-foreground dark:text-white" data-testid="filter-spot">
-                  <SelectValue placeholder="Všetky Revíry" />
+                  <SelectValue placeholder="Všetky revíry" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Všetky Revíry</SelectItem>
+                  <SelectItem value="all">Všetky revíry</SelectItem>
                   {uniqueSpots.map((spot: string) => (
                     <SelectItem key={spot} value={spot}>
                       {spot}
@@ -1118,10 +1118,10 @@ export default function DiaryCatches() {
                   <label className="text-sm text-muted-foreground dark:text-slate-400 mb-2 block">Druh ryby</label>
                   <Select value={selectedFishType} onValueChange={setSelectedFishType}>
                     <SelectTrigger className="w-full bg-muted dark:bg-slate-700/50 border text-foreground dark:text-white">
-                      <SelectValue placeholder="Všetky Druhy" />
+                      <SelectValue placeholder="Všetky druhy" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Všetky Druhy</SelectItem>
+                      <SelectItem value="all">Všetky druhy</SelectItem>
                       {getFishTypeOptions().map((option) => (
                         <SelectItem key={option.value} value={option.value}>
                           {option.label}
@@ -1135,10 +1135,10 @@ export default function DiaryCatches() {
                   <label className="text-sm text-muted-foreground dark:text-slate-400 mb-2 block">Revír</label>
                   <Select value={selectedSpot} onValueChange={setSelectedSpot}>
                     <SelectTrigger className="w-full bg-muted dark:bg-slate-700/50 border text-foreground dark:text-white">
-                      <SelectValue placeholder="Všetky Revíry" />
+                      <SelectValue placeholder="Všetky revíry" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Všetky Revíry</SelectItem>
+                      <SelectItem value="all">Všetky revíry</SelectItem>
                       {uniqueSpots.map((spot: string) => (
                         <SelectItem key={spot} value={spot}>
                           {spot}
@@ -1193,7 +1193,7 @@ export default function DiaryCatches() {
                     className="flex-1 border-slate-600"
                     onClick={() => {
                       setSearchQuery("");
-                      setSelectedSeason("2025");
+                      setSelectedSeason("all");
                       setSortBy("newest");
                       setSelectedFishType("all");
                       setSelectedSpot("all");
@@ -1408,7 +1408,7 @@ export default function DiaryCatches() {
               <p className="text-muted-foreground dark:text-slate-400 text-sm mb-6 max-w-[280px] mx-auto leading-relaxed">
                 {seasonFilteredCatches.length === 0 
                   ? "Zatiaľ nemáte v denníku žiadne úlovky. Čas to zmeniť!"
-                  : "Pre zadanú kombináciu filtrov sme v denníku nenašli žiadnu jazdu."}
+                  : "Pre zadanú kombináciu filtrov sme v denníku nenašli žiadny úlovok."}
               </p>
               {seasonFilteredCatches.length === 0 ? (
                 <Button 

@@ -123,8 +123,8 @@ export default function BattleDetail() {
       queryClient.invalidateQueries({ queryKey: ['/api/diary/battles/archive'] });
       
       toast({
-        title: "Battle ukončený!",
-        description: "Battle bol úspešne ukončený a presunutý do archívu.",
+        title: "Súboj ukončený!",
+        description: "Súboj bol úspešne ukončený a presunutý do archívu.",
       });
       setShowEndBattleDialog(false);
       setLocation("/diary/battles/archive");
@@ -132,7 +132,7 @@ export default function BattleDetail() {
     onError: (error: Error) => {
       toast({
         title: "Chyba",
-        description: error.message || "Nepodarilo sa ukončiť battle",
+        description: error.message || "Nepodarilo sa ukončiť súboj",
         variant: "destructive",
       });
     }
@@ -921,7 +921,7 @@ export default function BattleDetail() {
       <AlertDialog open={showEndBattleDialog} onOpenChange={setShowEndBattleDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Ukončiť Battle?</AlertDialogTitle>
+            <AlertDialogTitle>Ukončiť súboj?</AlertDialogTitle>
             <AlertDialogDescription>
               Týmto ukončíte tento súboj a presuniete ho do archívu. Výsledky budú automaticky vypočítané podľa aktuálneho stavu. Túto akciu nie je možné vrátiť späť.
             </AlertDialogDescription>

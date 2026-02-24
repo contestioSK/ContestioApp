@@ -702,7 +702,7 @@ export default function DiaryStats() {
                   Zisti, kedy ryby berú najčastejšie
                 </h3>
                 <p className="text-xs text-muted-foreground mb-4">
-                  Získaj prístup k pokročilým analýzam, trendov a porovnaniu lokalít.
+                  Získaj prístup k pokročilým analýzam, trendom a porovnaniu lokalít.
                 </p>
                 <Button 
                   variant="outline"

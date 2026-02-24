@@ -1377,7 +1377,7 @@ export default function WeatherForecast() {
                 <div className="flex items-center gap-2">
                   <CloudRain className="w-4 h-4 text-blue-400" />
                   <div>
-                    <p className="text-xs text-muted-foreground">Šanca dážď</p>
+                    <p className="text-xs text-muted-foreground">Šanca na dážď</p>
                     <p className="text-sm font-semibold">{selectedDay.day.daily_chance_of_rain}%</p>
                   </div>
                 </div>
