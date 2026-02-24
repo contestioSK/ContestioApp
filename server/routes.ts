@@ -147,12 +147,18 @@ function getUserId(req: any): string {
 }
 
 export async function registerRoutes(app: Express): Promise<{ server: Server; broadcastToUsers: (userIds: string[], data: any) => void }> {
-  // Serve uploads directory with proper cache headers
+  // Serve uploads directory with proper cache headers.
+  // Root-level files (/uploads/randomhash) are Multer temp files — never serve them.
+  // Organized variants live in subdirectories (/uploads/teams/..., /uploads/catches/...).
   app.use('/uploads', (req, res, next) => {
-    // Set cache headers for images
+    const pathParts = req.path.split('/').filter(Boolean);
+    if (pathParts.length < 2) {
+      // Root-level file — Multer temp or unknown. Block access entirely.
+      return res.status(404).end();
+    }
     res.set({
-      'Cache-Control': 'public, max-age=31536000, immutable', // 1 year cache
-      'Expires': new Date(Date.now() + 31536000000).toUTCString(), // 1 year from now
+      'Cache-Control': 'public, max-age=31536000, immutable',
+      'Expires': new Date(Date.now() + 31536000000).toUTCString(),
     });
     next();
   }, express.static('uploads'));
@@ -1855,41 +1861,30 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
 
       // Handle uploaded image with optimization
       let imageUrl = req.body.imageUrl;
-      let imageMetadata: ProcessedImageResult | null = null;
       
       if (req.file) {
         try {
-          // Process image with multiple sizes and formats
-          const originalFilename = path.parse(req.file.originalname).name;
           const competitionDir = path.join('uploads', 'competitions', req.params.id);
           const outputBasePath = path.join(competitionDir, 'logo');
-          
-          // Create directory if it doesn't exist
           if (!fs.existsSync(competitionDir)) {
             fs.mkdirSync(competitionDir, { recursive: true });
           }
-          
-          imageMetadata = await ImageService.processImage(
+          const imageMetadata = await ImageService.processImage(
             req.file.path,
             outputBasePath,
             `logo-${Date.now()}`,
             undefined, undefined, undefined,
             `competition_photos/${req.params.id}`
           );
-          
-          // Use the best WebP variant for the database URL, fall back to JPEG
           const bestVariant = ImageService.getBestVariantForWidth(imageMetadata.variants, 640, 'webp') ||
                               ImageService.getBestVariantForWidth(imageMetadata.variants, 640, 'jpeg') ||
                               imageMetadata.variants[0];
-          
-          imageUrl = bestVariant?.url || `/uploads/${req.file.filename}`;
-          
-          // Clean up the original uploaded file
+          imageUrl = bestVariant?.url ?? null;
           await ImageService.cleanupTempFile(req.file.path);
         } catch (error) {
-          console.error("Error processing competition image:", error);
-          // Fall back to original file if processing fails
-          imageUrl = `/uploads/${req.file.filename}`;
+          console.error("[CompetitionImage] Processing failed:", error);
+          try { await ImageService.cleanupTempFile(req.file.path); } catch {}
+          return res.status(400).json({ message: "Nepodarilo sa spracovať obrázok súťaže. Skúste iný súbor." });
         }
       }
 
@@ -3264,11 +3259,12 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
           const bestVariant = ImageService.getBestVariantForWidth(imageMetadata.variants, 400, 'webp') ||
                               ImageService.getBestVariantForWidth(imageMetadata.variants, 400, 'jpeg') ||
                               imageMetadata.variants[0];
-          teamPhotoUrl = bestVariant?.url || `/uploads/${file.filename}`;
+          teamPhotoUrl = bestVariant?.url ?? null;
           await ImageService.cleanupTempFile(file.path);
         } catch (error) {
-          console.error("Error processing team photo:", error);
-          teamPhotoUrl = `/uploads/${req.files.teamPhoto[0].filename}`;
+          console.error("[TeamPhoto] Processing failed:", error);
+          try { await ImageService.cleanupTempFile(file.path); } catch {}
+          teamPhotoUrl = null; // optional — team created without photo
         }
       }
 
@@ -3310,11 +3306,12 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
               const bestVariant = ImageService.getBestVariantForWidth(imageMetadata.variants, 200, 'webp') ||
                                   ImageService.getBestVariantForWidth(imageMetadata.variants, 200, 'jpeg') ||
                                   imageMetadata.variants[0];
-              memberPhotoUrl = bestVariant?.url || `/uploads/${file.filename}`;
+              memberPhotoUrl = bestVariant?.url ?? null;
               await ImageService.cleanupTempFile(file.path);
             } catch (error) {
-              console.error("Error processing member photo:", error);
-              memberPhotoUrl = `/uploads/${req.files[`memberPhoto_${index}`][0].filename}`;
+              console.error("[MemberPhoto] Processing failed:", error);
+              try { await ImageService.cleanupTempFile(file.path); } catch {}
+              memberPhotoUrl = null; // optional — member created without photo
             }
           }
           
@@ -3890,10 +3887,20 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
 
       let photoUrl = null;
       if (req.file) {
+        // Sanitize first — referee's phone has GPS enabled by default
+        const sanitizedPath = `${req.file.path}-sanitized.jpg`;
+        try {
+          await ImageService.sanitizeToFile(req.file.path, sanitizedPath);
+          await fsPromises.unlink(req.file.path); // delete raw temp immediately
+        } catch (sanitizeErr) {
+          console.error("[CatchPhoto] Sanitize failed:", sanitizeErr);
+          try { await fsPromises.unlink(req.file.path); } catch {}
+          return res.status(400).json({ message: "Neplatný obrázkový súbor. Skúste iný." });
+        }
         try {
           const photoId = `catch-${Date.now()}`;
           const imageMetadata = await ImageService.processImage(
-            req.file.path,
+            sanitizedPath,
             path.join('uploads', 'catches', photoId),
             photoId,
             undefined, undefined, undefined,
@@ -3902,11 +3909,12 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
           const bestVariant = ImageService.getBestVariantForWidth(imageMetadata.variants, 800, 'webp') ||
                               ImageService.getBestVariantForWidth(imageMetadata.variants, 800, 'jpeg') ||
                               imageMetadata.variants[0];
-          photoUrl = bestVariant?.url || `/uploads/${req.file.filename}`;
-          await ImageService.cleanupTempFile(req.file.path);
+          photoUrl = bestVariant?.url ?? null;
+          await ImageService.cleanupTempFile(sanitizedPath);
         } catch (error) {
-          console.error("Error processing catch photo:", error);
-          photoUrl = `/uploads/${req.file.filename}`;
+          console.error("[CatchPhoto] Processing failed:", error);
+          try { await ImageService.cleanupTempFile(sanitizedPath); } catch {}
+          return res.status(400).json({ message: "Nepodarilo sa spracovať fotku. Skúste iný súbor." });
         }
       }
 
@@ -4081,7 +4089,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         return res.status(400).json({ message: "Žiaden súbor nebol nahratý" });
       }
 
-      let logoUrl = `/uploads/${req.file.filename}`;
+      let logoUrl: string | null = null;
       try {
         const photoId = `sponsor-logo-${Date.now()}`;
         const imageMetadata = await ImageService.processImage(
@@ -4094,10 +4102,13 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         const bestVariant = ImageService.getBestVariantForWidth(imageMetadata.variants, 400, 'webp') ||
                             ImageService.getBestVariantForWidth(imageMetadata.variants, 400, 'jpeg') ||
                             imageMetadata.variants[0];
-        logoUrl = bestVariant?.url || logoUrl;
+        logoUrl = bestVariant?.url ?? null;
+        if (!logoUrl) throw new Error("No variants produced");
         await ImageService.cleanupTempFile(req.file.path);
       } catch (error) {
-        console.error("Error processing sponsor logo:", error);
+        console.error("[SponsorLogo] Processing failed:", error);
+        try { await ImageService.cleanupTempFile(req.file.path); } catch {}
+        return res.status(400).json({ message: "Nepodarilo sa spracovať logo. Skúste iný súbor." });
       }
       res.json({ logoUrl });
     } catch (error) {
@@ -5303,11 +5314,12 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
           const bestVariant = ImageService.getBestVariantForWidth(imageMetadata.variants, 640, 'webp') ||
                               ImageService.getBestVariantForWidth(imageMetadata.variants, 640, 'jpeg') ||
                               imageMetadata.variants[0];
-          imageUrl = bestVariant?.url || `/uploads/${req.file.filename}`;
+          imageUrl = bestVariant?.url ?? null;
           await ImageService.cleanupTempFile(req.file.path);
         } catch (error) {
-          console.error("Error processing competition logo:", error);
-          imageUrl = `/uploads/${req.file.filename}`;
+          console.error("[RegistrationLogo] Processing failed:", error);
+          try { await ImageService.cleanupTempFile(req.file.path); } catch {}
+          imageUrl = null; // optional — registration continues without logo
         }
       }
 
