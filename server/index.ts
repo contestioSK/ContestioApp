@@ -594,18 +594,17 @@ async function startPhotoCleanupScheduler() {
               isStuck = true;
             }
             
-            if (isStuck && photo.originalUrl) {
-              // Mark as ready with original URL as fallback
+            if (isStuck) {
+              // Mark as failed — never fall back to originalUrl (may contain GPS EXIF)
               needsUpdate = true;
               fixedCount++;
-              const elapsedMinutes = photo.processingStartedAt 
+              const elapsedMinutes = photo.processingStartedAt
                 ? Math.round((now - new Date(photo.processingStartedAt).getTime()) / 60000)
                 : 'unknown';
-              console.log(`[PHOTO_CLEANUP] Fixing stuck photo ${photo.id} - processing for ${elapsedMinutes} min, using originalUrl`);
+              console.log(`[PHOTO_CLEANUP] Marking stuck photo ${photo.id} as failed (${elapsedMinutes} min elapsed)`);
               return {
                 ...photo,
-                status: 'ready',
-                url: photo.originalUrl,
+                status: 'failed',
                 _recoveredAt: new Date().toISOString(),
                 _wasStuck: true
               };
