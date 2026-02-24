@@ -80,7 +80,7 @@ import {
   type CompetitionSetupToken,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, or, not, sql, ne, count, gt, gte, lt, lte, inArray, isNotNull } from "drizzle-orm";
+import { eq, desc, and, or, not, sql, ne, count, gt, gte, lt, lte, inArray, isNotNull, isNull } from "drizzle-orm";
 import { randomBytes, createHash } from "crypto";
 
 export interface IStorage {
@@ -306,7 +306,7 @@ export interface IStorage {
   
   // User subscription operations (for premium features)
   getUserSubscription(userId: string, product?: string): Promise<UserSubscription | undefined>;
-  createOrUpdateSubscription(subscription: InsertUserSubscription): Promise<UserSubscription>;
+  createOrUpdateSubscription(subscription: InsertUserSubscription, dbClient?: typeof db): Promise<UserSubscription>;
   cancelSubscription(userId: string, product: string): Promise<UserSubscription>;
   
   // Diary trip operations
@@ -2671,26 +2671,28 @@ export class DatabaseStorage implements IStorage {
     return subscription;
   }
 
-  async createOrUpdateSubscription(subscription: InsertUserSubscription): Promise<UserSubscription> {
-    const existing = await this.getUserSubscription(subscription.userId, subscription.product);
-    
-    if (existing) {
-      const [updated] = await db
-        .update(userSubscriptions)
-        .set({ ...subscription, updatedAt: new Date() })
-        .where(and(
-          eq(userSubscriptions.userId, subscription.userId),
-          eq(userSubscriptions.product, subscription.product)
-        ))
-        .returning();
-      return updated;
-    } else {
-      const [created] = await db
-        .insert(userSubscriptions)
-        .values(subscription as typeof userSubscriptions.$inferInsert)
-        .returning();
-      return created;
-    }
+  async createOrUpdateSubscription(
+    subscription: InsertUserSubscription,
+    dbClient: typeof db = db
+  ): Promise<UserSubscription> {
+    // Try UPDATE first — works for both existing and new records cleanly
+    const [updated] = await dbClient
+      .update(userSubscriptions)
+      .set({ ...subscription, updatedAt: new Date() })
+      .where(and(
+        eq(userSubscriptions.userId, subscription.userId),
+        eq(userSubscriptions.product, subscription.product)
+      ))
+      .returning();
+
+    if (updated) return updated;
+
+    // No existing row — INSERT
+    const [created] = await dbClient
+      .insert(userSubscriptions)
+      .values(subscription as typeof userSubscriptions.$inferInsert)
+      .returning();
+    return created;
   }
 
   async cancelSubscription(userId: string, product: string): Promise<UserSubscription> {
@@ -4663,6 +4665,26 @@ export class DatabaseStorage implements IStorage {
   ): Promise<'valid' | 'expired' | 'used' | 'invalid'> {
     const tokenHash = createHash('sha256').update(token).digest('hex');
 
+    // ── Atomic compare-and-swap (UPDATE-first) ────────────────────────────────
+    // All conditions (tokenHash, registrationId, usedAt IS NULL, expiresAt > now)
+    // are evaluated atomically under PostgreSQL row-level locking.
+    // Two concurrent requests with the same token: only one UPDATE succeeds.
+    const [consumed] = await db
+      .update(competitionSetupTokens)
+      .set({ usedAt: new Date() })
+      .where(
+        and(
+          eq(competitionSetupTokens.tokenHash, tokenHash),
+          eq(competitionSetupTokens.registrationId, registrationId),
+          isNull(competitionSetupTokens.usedAt),           // single-use guard
+          gt(competitionSetupTokens.expiresAt, new Date()) // not expired
+        )
+      )
+      .returning();
+
+    if (consumed) return 'valid';
+
+    // ── UPDATE found nothing — determine why (read-only, no race risk here) ───
     const [record] = await db
       .select()
       .from(competitionSetupTokens)
@@ -4676,15 +4698,7 @@ export class DatabaseStorage implements IStorage {
 
     if (!record) return 'invalid';
     if (record.usedAt !== null) return 'used';
-    if (record.expiresAt < new Date()) return 'expired';
-
-    // Consume the token atomically
-    await db
-      .update(competitionSetupTokens)
-      .set({ usedAt: new Date() })
-      .where(eq(competitionSetupTokens.id, record.id));
-
-    return 'valid';
+    return 'expired'; // record exists, usedAt is null, but expiresAt <= now
   }
 }
 

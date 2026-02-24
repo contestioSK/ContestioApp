@@ -5,10 +5,6 @@ import type { User, Team, TeamMember, Competition } from "@shared/schema";
 /**
  * Overí, že prihlásený user je organizer alebo admin danej competition.
  * Ak nie, pošle 403/404 a vráti null.
- *
- * Použitie:
- *   const competition = await assertCompetitionOrganizer(userId, competitionId, res, user);
- *   if (!competition) return;
  */
 export async function assertCompetitionOrganizer(
   userId: string,
@@ -35,18 +31,8 @@ export async function assertCompetitionOrganizer(
 
 /**
  * Dual-layer autorizácia pre správu tímu:
- *   – Primary authority: Captain spravuje vlastný tím
- *   – Administrative override: Organizer môže zasiahnuť do tímu v rámci svojej súťaže
- *
- * Pri organizer override je povinný `auditReason` a každá akcia je zapísaná do audit logu.
- * Vráti { team, member, accessType } alebo null (s 403/404 odpoveďou).
- *
- * Použitie:
- *   const auth = await assertTeamCaptainOrOrganizer(userId, teamId, res, user, {
- *     auditAction: 'REMOVE_MEMBER',
- *     auditReason: req.body.reason,
- *   });
- *   if (!auth) return;
+ *   – Primary: captain spravuje vlastný tím (cez teamMembers.userId)
+ *   – Override: organizer môže zasiahnuť do tímu v rámci svojej súťaže (s povinným reason + audit log)
  */
 export async function assertTeamCaptainOrOrganizer(
   userId: string,
@@ -56,6 +42,7 @@ export async function assertTeamCaptainOrOrganizer(
   options?: {
     auditAction?: string;
     auditReason?: string;
+    targetMemberId?: string;
   }
 ): Promise<{
   team: Team & { members: TeamMember[] };
@@ -68,24 +55,33 @@ export async function assertTeamCaptainOrOrganizer(
     return null;
   }
 
-  const isAdmin = user?.role === "admin";
+  const isAdminRole = user?.role === "admin";
 
-  // Check if user is captain of this team (via linked userId)
+  // Captain check: linked Contestio account (teamMembers.userId is optional)
   const captainMember = team.members?.find(
     (m) => m.userId === userId && m.role === "captain"
   ) ?? null;
   const isCaptain = !!captainMember;
 
-  if (isAdmin) {
-    writeAuditLog(userId, teamId, options?.auditAction ?? "ADMIN_ACTION", options?.auditReason ?? "Admin override", "admin");
+  if (isAdminRole) {
+    writeAuditLog({
+      userId,
+      targetTeamId: teamId,
+      competitionId: team.competitionId,
+      targetMemberId: options?.targetMemberId,
+      action: options?.auditAction ?? "ADMIN_ACTION",
+      reason: options?.auditReason ?? "Admin override",
+      role: "admin",
+    });
     return { team: team as Team & { members: TeamMember[] }, member: captainMember, accessType: "admin" };
   }
 
   if (isCaptain) {
+    // Captain actions are not audited — self-management is expected and routine
     return { team: team as Team & { members: TeamMember[] }, member: captainMember, accessType: "captain" };
   }
 
-  // Check organizer override
+  // Organizer override path
   if (user?.role === "organizer") {
     const competition = await storage.getCompetition(team.competitionId);
     if (!competition) {
@@ -98,7 +94,7 @@ export async function assertTeamCaptainOrOrganizer(
       return null;
     }
 
-    // Organizer override — reason is mandatory
+    // reason is mandatory for organizer override — min. 3 chars
     if (!options?.auditReason || options.auditReason.trim().length < 3) {
       res.status(400).json({
         message: "Pre adminský zásah do tímu je povinný dôvod (reason) — min. 3 znaky",
@@ -106,7 +102,15 @@ export async function assertTeamCaptainOrOrganizer(
       return null;
     }
 
-    writeAuditLog(userId, teamId, options?.auditAction ?? "ORGANIZER_OVERRIDE", options.auditReason, "organizer");
+    writeAuditLog({
+      userId,
+      targetTeamId: teamId,
+      competitionId: team.competitionId,
+      targetMemberId: options?.targetMemberId,
+      action: options?.auditAction ?? "ORGANIZER_OVERRIDE",
+      reason: options.auditReason,
+      role: "organizer",
+    });
     return { team: team as Team & { members: TeamMember[] }, member: null, accessType: "organizer" };
   }
 
@@ -118,21 +122,27 @@ export async function assertTeamCaptainOrOrganizer(
 
 // ─── Internal audit logger ────────────────────────────────────────────────────
 
-function writeAuditLog(
-  userId: string,
-  targetTeamId: string,
-  action: string,
-  reason: string,
-  role: "captain" | "organizer" | "admin"
-) {
+interface AuditLogEntry {
+  userId: string;
+  targetTeamId: string;
+  competitionId: string;
+  targetMemberId?: string;
+  action: string;
+  reason: string;
+  role: "captain" | "organizer" | "admin";
+}
+
+function writeAuditLog(entry: AuditLogEntry) {
   console.log(
     "[AUDIT]",
     JSON.stringify({
-      userId,
-      targetTeamId,
-      action,
-      reason,
-      role,
+      userId: entry.userId,
+      targetTeamId: entry.targetTeamId,
+      competitionId: entry.competitionId,
+      targetMemberId: entry.targetMemberId ?? undefined,
+      action: entry.action,
+      reason: entry.reason,
+      role: entry.role,
       timestamp: new Date().toISOString(),
     })
   );

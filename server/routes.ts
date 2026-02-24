@@ -2497,7 +2497,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
               billingInterval: billingInterval as 'monthly' | 'yearly',
               currentPeriodEnd: new Date((subscription.current_period_end as number) * 1000),
               cancelAtPeriodEnd: subscription.cancel_at_period_end,
-            });
+            }, tx as any);
 
             await tx.update(users).set({
               isPremium: true,
@@ -2566,7 +2566,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
               stripeSubscriptionId: subscription.id,
               currentPeriodEnd: new Date((subscription.current_period_end as number) * 1000),
               cancelAtPeriodEnd: subscription.cancel_at_period_end,
-            });
+            }, tx as any);
 
             const isPremium = status === 'active';
             await tx.update(users).set({
@@ -2592,7 +2592,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
               status: 'canceled',
               stripeSubscriptionId: subscription.id,
               cancelAtPeriodEnd: false,
-            });
+            }, tx as any);
 
             await tx.update(users).set({
               isPremium: false,
@@ -2614,7 +2614,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
 
             if (userId && subscription.metadata?.product === 'diary_premium') {
               console.log(`[Stripe Webhook] Payment failed for user ${userId}`);
-              await storage.createOrUpdateSubscription({ userId, product: 'diary_premium', status: 'past_due' });
+              await storage.createOrUpdateSubscription({ userId, product: 'diary_premium', status: 'past_due' }, tx as any);
             }
           }
         }
@@ -3426,6 +3426,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       const auth = await assertTeamCaptainOrOrganizer(userId, req.params.teamId, res, user ?? null, {
         auditAction: 'REMOVE_MEMBER',
         auditReason: req.body?.reason,
+        targetMemberId: req.params.memberId,
       });
       if (!auth) return;
 
@@ -3473,6 +3474,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       const auth = await assertTeamCaptainOrOrganizer(userId, req.params.teamId, res, user ?? null, {
         auditAction: 'CHANGE_ROLE',
         auditReason: req.body?.reason,
+        targetMemberId: req.params.memberId,
       });
       if (!auth) return;
 
