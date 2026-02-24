@@ -193,7 +193,7 @@ export default function DiaryIndex() {
   });
 
   // Filters state
-  const [selectedTechnique, setSelectedTechnique] = useState<string>("all");
+  const [selectedBait, setSelectedBait] = useState<string>("all");
   const [selectedFishType, setSelectedFishType] = useState<string>("all");
   const [selectedSpot, setSelectedSpot] = useState<string>("all");
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
@@ -337,8 +337,8 @@ export default function DiaryIndex() {
   // Apply filters to ALL catches (table shows all, not just season)
   const allCatchesList = Array.isArray(allCatches) ? allCatches : [];
   const filteredCatches = allCatchesList.filter((catch_: any) => {
-    // Filter by technique
-    if (selectedTechnique !== "all" && catch_.bait !== selectedTechnique) {
+    // Filter by bait
+    if (selectedBait !== "all" && catch_.bait !== selectedBait) {
       return false;
     }
     
@@ -378,14 +378,14 @@ export default function DiaryIndex() {
   });
 
   // Check if any filters are active and count them
-  const activeFilterCount = [selectedTechnique !== "all", selectedFishType !== "all", selectedSpot !== "all", dateRange?.from !== undefined].filter(Boolean).length;
+  const activeFilterCount = [selectedBait !== "all", selectedFishType !== "all", selectedSpot !== "all", dateRange?.from !== undefined].filter(Boolean).length;
   const hasActiveFilters = activeFilterCount > 0;
 
   // Display catches: show top 5 when no filters are active, otherwise show all filtered results
   const displayedCatches = hasActiveFilters ? filteredCatches : filteredCatches.slice(0, 4);
 
   // Get unique techniques and spots for filter dropdowns (from all catches)
-  const uniqueTechniques = Array.from(new Set(allCatchesList.map((c: any) => c.bait).filter(Boolean)));
+  const uniqueBaits = Array.from(new Set(allCatchesList.map((c: any) => c.bait).filter(Boolean)));
   const uniqueSpots = Array.from(new Set(allCatchesList.map((c: any) => c.spot).filter(Boolean)));
 
   // Calculate statistics from current season catches
@@ -708,16 +708,16 @@ export default function DiaryIndex() {
             
             <div className="space-y-4 pb-6">
               <div>
-                <label className="text-sm text-slate-400 mb-2 block">Technika</label>
-                <Select value={selectedTechnique} onValueChange={setSelectedTechnique}>
-                  <SelectTrigger className="w-full bg-slate-700/50 border text-white" data-testid="mobile-filter-technique">
-                    <SelectValue placeholder="Všetky Techniky" />
+                <label className="text-sm text-slate-400 mb-2 block">Nástraha</label>
+                <Select value={selectedBait} onValueChange={setSelectedBait}>
+                  <SelectTrigger className="w-full bg-slate-700/50 border text-white" data-testid="mobile-filter-bait">
+                    <SelectValue placeholder="Všetky nástrahy" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Všetky Techniky</SelectItem>
-                    {uniqueTechniques.map((technique: string) => (
-                      <SelectItem key={technique} value={technique}>
-                        {technique}
+                    <SelectItem value="all">Všetky nástrahy</SelectItem>
+                    {uniqueBaits.map((bait: string) => (
+                      <SelectItem key={bait} value={bait}>
+                        {bait}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -801,7 +801,7 @@ export default function DiaryIndex() {
                   <Button
                     variant="outline"
                     onClick={() => {
-                      setSelectedTechnique("all");
+                      setSelectedBait("all");
                       setSelectedFishType("all");
                       setSelectedSpot("all");
                       setDateRange(undefined);
@@ -827,15 +827,15 @@ export default function DiaryIndex() {
 
         {/* Desktop Filters - Hidden on Mobile */}
         <div className="hidden md:flex flex-wrap gap-3 mb-4">
-            <Select value={selectedTechnique} onValueChange={setSelectedTechnique}>
-            <SelectTrigger className="w-[200px] bg-slate-700/50 border text-white" data-testid="filter-technique">
-              <SelectValue placeholder="Všetky Techniky" />
+            <Select value={selectedBait} onValueChange={setSelectedBait}>
+            <SelectTrigger className="w-[200px] bg-slate-700/50 border text-white" data-testid="filter-bait">
+              <SelectValue placeholder="Všetky nástrahy" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Všetky Techniky</SelectItem>
-              {uniqueTechniques.map((technique: string) => (
-                <SelectItem key={technique} value={technique}>
-                  {technique}
+              <SelectItem value="all">Všetky nástrahy</SelectItem>
+              {uniqueBaits.map((bait: string) => (
+                <SelectItem key={bait} value={bait}>
+                  {bait}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -904,11 +904,11 @@ export default function DiaryIndex() {
             </PopoverContent>
           </Popover>
 
-          {(selectedTechnique !== "all" || selectedFishType !== "all" || selectedSpot !== "all" || dateRange?.from) && (
+          {(selectedBait !== "all" || selectedFishType !== "all" || selectedSpot !== "all" || dateRange?.from) && (
             <Button
               variant="ghost"
               onClick={() => {
-                setSelectedTechnique("all");
+                setSelectedBait("all");
                 setSelectedFishType("all");
                 setSelectedSpot("all");
                 setDateRange(undefined);
@@ -1011,7 +1011,7 @@ export default function DiaryIndex() {
               <Button
                 variant="outline"
                 onClick={() => {
-                  setSelectedTechnique("all");
+                  setSelectedBait("all");
                   setSelectedFishType("all");
                   setSelectedSpot("all");
                   setDateRange(undefined);
