@@ -750,6 +750,11 @@ export default function CreateCompetition() {
                             <SelectItem value="3">3 — Trojica</SelectItem>
                             <SelectItem value="4">4 — Štvorka</SelectItem>
                             <SelectItem value="5">5 — Pätica</SelectItem>
+                            <SelectItem value="6">6 — Šestica</SelectItem>
+                            <SelectItem value="7">7 — Sedmica</SelectItem>
+                            <SelectItem value="8">8 — Osmička</SelectItem>
+                            <SelectItem value="9">9 — Devätka</SelectItem>
+                            <SelectItem value="10">10 — Desiatka</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
