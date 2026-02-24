@@ -1830,3 +1830,25 @@ export type EquipmentProduct = typeof equipmentProducts.$inferSelect;
 export type InsertEquipmentProduct = z.infer<typeof insertEquipmentProductSchema>;
 export type UserArsenalEquipment = typeof userArsenalEquipment.$inferSelect;
 export type InsertUserArsenalEquipment = z.infer<typeof insertUserArsenalEquipmentSchema>;
+
+// ─── Security tables ──────────────────────────────────────────────────────────
+
+// Stateful single-use setup tokens for competition registration setup wizard
+export const competitionSetupTokens = pgTable("competition_setup_tokens", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  tokenHash: varchar("token_hash", { length: 64 }).notNull().unique(), // SHA-256 hex — never store plaintext
+  registrationId: uuid("registration_id").notNull().references(() => competitionRegistrations.id, { onDelete: 'cascade' }),
+  expiresAt: timestamp("expires_at").notNull(),   // created_at + 48h
+  usedAt: timestamp("used_at"),                   // null = unused (single-use enforcement)
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export type CompetitionSetupToken = typeof competitionSetupTokens.$inferSelect;
+
+// Idempotency table for Stripe webhook events — prevents double fulfillment
+export const processedStripeEvents = pgTable("processed_stripe_events", {
+  eventId: varchar("event_id", { length: 255 }).primaryKey(), // evt_xxx — Stripe event ID
+  eventType: varchar("event_type", { length: 100 }).notNull(),
+  livemode: boolean("livemode").notNull(),
+  processedAt: timestamp("processed_at").defaultNow(),
+});
