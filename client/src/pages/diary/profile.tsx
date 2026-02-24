@@ -597,7 +597,7 @@ export default function Profile() {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Status</span>
+                    <span className="text-sm text-muted-foreground">Stav</span>
                     {isPremiumLoading ? (
                       <Skeleton className="h-6 w-20" />
                     ) : (

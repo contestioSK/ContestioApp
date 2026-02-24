@@ -432,7 +432,7 @@ export default function BattleCreate() {
     if (days > 0) {
       return `${days} ${days === 1 ? 'deň' : days < 5 ? 'dni' : 'dní'}${remainingHours > 0 ? ` a ${remainingHours}h` : ''}`;
     }
-    return `${hours} hodín`;
+    return `${hours} ${hours === 1 ? 'hodina' : hours < 5 ? 'hodiny' : 'hodín'}`;
   };
 
   const getSelectedMode = () => gameModes.find(m => m.value === formValues.mode);
