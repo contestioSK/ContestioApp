@@ -216,7 +216,7 @@ export class ImageService {
     await sharp(inputPath)
       .rotate()             // auto-orient from EXIF orientation tag
       .withMetadata(false)  // strip ALL EXIF/IPTC/XMP — especially GPS coordinates
-      .jpeg({ quality: 95, mozjpeg: true }) // high quality, always JPEG output
+      .jpeg({ quality: 90, mozjpeg: true }) // high quality, always JPEG output
       .toFile(outputPath);
   }
 
