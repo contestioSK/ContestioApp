@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
 import {
   Select,
   SelectContent,
@@ -260,14 +259,11 @@ export default function OrganizerCompetitions() {
                   </div>
                 )}
                 
-                {/* Progress bar for registration */}
-                {competition.status === 'registration' && competition.maxTeams && (
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>Registrácia</span>
-                      <span className="font-mono font-medium text-[#F97316]">0/{competition.maxTeams}</span>
-                    </div>
-                    <Progress value={0} className="h-1.5" />
+                {/* Registration open indicator */}
+                {competition.status === 'registration' && (
+                  <div className="flex items-center gap-1.5 text-xs text-blue-500 dark:text-blue-400">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                    Registrácia otvorená
                   </div>
                 )}
                 
