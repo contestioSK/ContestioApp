@@ -6740,50 +6740,58 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       for (const file of req.files as any[]) {
         const photoId = randomUUID();
         const baseFilename = `${photoId}`;
-        const originalFilename = `${baseFilename}-original${path.extname(file.originalname)}`;
-        const originalPath = path.join(diaryPhotosDir, originalFilename);
-        
+
+        // Sanitized original — always .jpg regardless of input format (HEIC/PNG → JPEG).
+        // EXIF/GPS strip happens HERE, before anything is saved to disk or returned to client.
+        const sanitizedFilename = `${baseFilename}-original.jpg`;
+        const sanitizedPath = path.join(diaryPhotosDir, sanitizedFilename);
+
         console.log(`[PhotoUpload] Processing file: ${file.originalname} (${file.size} bytes), temp: ${file.path}`);
-        
-        // Check if source file exists
+
+        // Check if Multer temp file exists
         if (!existsSync(file.path)) {
           console.error(`[PhotoUpload] Source file doesn't exist: ${file.path}`);
           failedPhotos.push(file.originalname);
           continue;
         }
-        
-        // Move uploaded file to permanent location with retry logic
-        const moveSuccess = await safeFileMoveWithRetry(file.path, originalPath);
-        
-        if (!moveSuccess) {
-          console.error(`[PhotoUpload] Failed to move file after all retries: ${file.path} -> ${originalPath}`);
+
+        // Strip EXIF/GPS and re-encode to JPEG — must complete before any disk write or response
+        try {
+          await ImageService.sanitizeToFile(file.path, sanitizedPath);
+          console.log(`[PhotoUpload] Sanitized (EXIF-stripped): ${file.originalname} -> ${sanitizedFilename}`);
+        } catch (sanitizeErr) {
+          console.error(`[PhotoUpload] Sanitize failed for ${file.originalname}:`, sanitizeErr);
+          failedPhotos.push(file.originalname);
+          try { await fsPromises.unlink(file.path); } catch {}
+          continue;
+        }
+
+        // Delete RAW Multer temp — must never remain on disk
+        try { await fsPromises.unlink(file.path); } catch {}
+
+        // Verify sanitized file exists
+        if (!existsSync(sanitizedPath)) {
+          console.error(`[PhotoUpload] Sanitized file missing after write: ${sanitizedPath}`);
           failedPhotos.push(file.originalname);
           continue;
         }
-        
-        // Final verification - ensure file exists at destination
-        if (!existsSync(originalPath)) {
-          console.error(`[PhotoUpload] File doesn't exist at destination after move: ${originalPath}`);
-          failedPhotos.push(file.originalname);
-          continue;
-        }
-        
-        const destStats = await fsPromises.stat(originalPath);
-        console.log(`[PhotoUpload] File saved successfully: ${originalPath} (${destStats.size} bytes)`);
-        
-        const originalUrl = `/attached_assets/diary_photos/${userId}/${originalFilename}`;
-        
+
+        const destStats = await fsPromises.stat(sanitizedPath);
+        console.log(`[PhotoUpload] Sanitized file saved: ${sanitizedPath} (${destStats.size} bytes)`);
+
+        // originalUrl now always points to the EXIF-stripped version — never raw
+        const originalUrl = `/attached_assets/diary_photos/${userId}/${sanitizedFilename}`;
+
         photos.push({
           id: photoId,
-          url: originalUrl, // Return original immediately
+          url: originalUrl,
           status: 'processing' as const,
           originalUrl,
-          processingStartedAt: new Date().toISOString(), // Track when processing started
-          // Store processing info for later queuing
+          processingStartedAt: new Date().toISOString(),
           _processingInfo: {
             userId,
-            originalPath,
-            originalFilename: file.originalname,
+            originalPath: sanitizedPath,
+            originalFilename: sanitizedFilename,
             outputBasePath: path.join(diaryPhotosDir, baseFilename)
           }
         });
