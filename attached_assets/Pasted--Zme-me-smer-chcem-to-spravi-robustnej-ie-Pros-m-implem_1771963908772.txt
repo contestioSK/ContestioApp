@@ -1,0 +1,81 @@
+„Zmeňme smer – chcem to spraviť robustnejšie. Prosím implementuj podľa týchto záväzných požiadaviek:
+
+1) Autorizácia / IDOR (kritické)
+
+Rozdeľ endpointy podľa toho, kto má mať oprávnenie:
+
+Organizer endpoints: over user je owner organizátora danej competition.
+
+Team self-management endpoints (mazanie člena, zmena role, a pod.): over:
+
+tím patrí do danej súťaže,
+
+user je člen tímu,
+
+user má rolu captain (alebo ekvivalent).
+
+Prosím pošli mi najprv návrh middleware/helper funkcií (signatúry + príklady použitia na 2 endpointoch), aby sme to neimplementovali nekonzistentne.
+
+2) Setup tokeny – stateful, single-use
+
+Stateless HMAC návrh nechcem. Potrebujem revokáciu a single-use.
+
+Drizzle migrácia: tabuľka napr. team_setup_tokens:
+
+token_hash (nikdy neukladať plaintext),
+
+team_id,
+
+expires_at (hard limit 48h),
+
+used_at (nullable),
+
+created_at.
+
+Token: min. 32 random bytes (Base64URL).
+
+Validácia: porovnať hash, skontrolovať expires_at, used_at IS NULL.
+
+Pri použití: nastaviť used_at = now() (single-use), ideálne v transakcii.
+
+3) Stripe webhook – idempotencia + transakcie + raw body
+
+Drizzle migrácia: processed_stripe_events s event_id UNIQUE.
+
+Webhook handler:
+
+overiť signature cez raw body,
+
+spracovanie v DB transakcii:
+
+insert event_id,
+
+side effects (update payment status, premium, atď.).
+
+Ak insert spadne na unique conflict → vráť 200 OK a nič ďalšie nerob.
+
+4) Upload / EXIF
+
+Nechcem spoliehať sa na implicitné správanie bez dôkazu.
+
+Re-encode všetkých obrázkov do WebP/JPEG cez sharp bez zachovania metadát.
+
+Prosím pridaj jednoduchý test/skript, ktorý potvrdí, že výstup nemá GPS EXIF.
+
+Keď budeš mať hotové migrácie a kritické časti kódu (token generator + validator, webhook handler, auth middleware), pošli mi ukážky/diffy.“**
+
+Ešte jedna vec: “Organizátor nespravuje členov tímu” — pozor
+
+Skôr než to zabetónuješ: v súťažnom režime je realistické, že organizátor potrebuje:
+
+vynútiť zmenu kapitána
+
+odstrániť člena pri porušení pravidiel
+
+upraviť tím pri administratívnej chybe
+
+Takže by som to formuloval:
+
+team endpoints: captain
+
+organizer override: organizer (audit log + dôvod)
