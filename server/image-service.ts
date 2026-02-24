@@ -51,9 +51,11 @@ export class ImageService {
       throw new Error("Unable to read image dimensions");
     }
 
-    // Auto-rotate based on EXIF and strip metadata
+    // Auto-rotate based on EXIF orientation tag, then explicitly strip ALL metadata
+    // (including GPS coordinates). .withMetadata(false) is explicit — do not rely on default behaviour.
     const processedImage = image
-      .rotate(); // Auto-rotate based on EXIF, metadata is stripped by default
+      .rotate()           // auto-orient from EXIF
+      .withMetadata(false); // strip ALL EXIF/IPTC/XMP — especially GPS coordinates
 
     // Ensure image doesn't exceed max dimension (2560px)
     const maxDimension = 2560;
