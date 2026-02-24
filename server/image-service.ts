@@ -204,6 +204,22 @@ export class ImageService {
     return suitableVariants[0];
   }
 
+  /**
+   * Sanitize an image file in-place: auto-orient from EXIF, strip ALL metadata
+   * (including GPS), re-encode to high-quality JPEG. Always produces JPEG output
+   * regardless of input format (HEIC, PNG, GIF → JPEG). Sharp decode failure
+   * throws — acts as implicit magic-bytes validation.
+   *
+   * This MUST be called before any file is saved to disk or served to the client.
+   */
+  static async sanitizeToFile(inputPath: string, outputPath: string): Promise<void> {
+    await sharp(inputPath)
+      .rotate()             // auto-orient from EXIF orientation tag
+      .withMetadata(false)  // strip ALL EXIF/IPTC/XMP — especially GPS coordinates
+      .jpeg({ quality: 95, mozjpeg: true }) // high quality, always JPEG output
+      .toFile(outputPath);
+  }
+
   static detectUrlBase(outputDir: string): string {
     const normalizedPath = outputDir.replace(/\\/g, '/');
     
