@@ -78,6 +78,15 @@ function LiveTeaser() {
   const liveCompetition = liveCompetitions?.[0];
   const hasLive = !!liveCompetition;
 
+  const { data: leaderboard } = useQuery<any[]>({
+    queryKey: ['/api/competitions', liveCompetition?.id, 'leaderboard'],
+    enabled: hasLive && !!liveCompetition?.id,
+    staleTime: 10000,
+    refetchInterval: 30000,
+  });
+
+  const top3 = leaderboard?.slice(0, 3) ?? [];
+
   const handleClick = () => {
     if (liveCompetition) {
       setLocation(`/competition/${liveCompetition.id}`);
@@ -152,20 +161,26 @@ function LiveTeaser() {
               </div>
               <div className="space-y-2 font-mono text-sm">
                 <div className="flex justify-between text-white font-bold">
-                  <span className="truncate max-w-[140px]">1. ---</span>
-                  <span className={`flex-shrink-0 ${hasLive ? 'text-emerald-400' : 'text-slate-500'}`}>---.--</span>
+                  <span className="truncate max-w-[140px]">1. {top3[0]?.name ?? '---'}</span>
+                  <span className={`flex-shrink-0 ${hasLive && top3[0] ? 'text-[#F97316]' : 'text-slate-500'}`}>
+                    {top3[0] ? `${parseFloat(top3[0].totalWeight ?? 0).toFixed(2)}` : '---.--'}
+                  </span>
                 </div>
                 <div className="flex justify-between text-slate-300">
-                  <span className="truncate max-w-[140px]">2. ---</span>
+                  <span className="truncate max-w-[140px]">2. {top3[1]?.name ?? '---'}</span>
                   <div className="flex items-center gap-2">
-                    <span className="flex-shrink-0 blur-[3px] select-none opacity-50">---.--</span>
+                    <span className="flex-shrink-0 blur-[3px] select-none opacity-50">
+                      {top3[1] ? `${parseFloat(top3[1].totalWeight ?? 0).toFixed(2)}` : '---.--'}
+                    </span>
                     <Lock size={10} className="text-slate-500" />
                   </div>
                 </div>
                 <div className="flex justify-between text-slate-400">
-                  <span className="truncate max-w-[140px]">3. ---</span>
+                  <span className="truncate max-w-[140px]">3. {top3[2]?.name ?? '---'}</span>
                   <div className="flex items-center gap-2">
-                    <span className="flex-shrink-0 blur-[3px] select-none opacity-50">---.--</span>
+                    <span className="flex-shrink-0 blur-[3px] select-none opacity-50">
+                      {top3[2] ? `${parseFloat(top3[2].totalWeight ?? 0).toFixed(2)}` : '---.--'}
+                    </span>
                     <Lock size={10} className="text-slate-500" />
                   </div>
                 </div>
