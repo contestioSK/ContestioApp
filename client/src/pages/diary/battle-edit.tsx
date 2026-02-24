@@ -114,7 +114,7 @@ export default function BattleEdit() {
     onSuccess: () => {
       toast({
         title: "Úspech",
-        description: "Battle bol úspešne upravený."
+        description: "Súboj bol úspešne upravený."
       });
       queryClient.invalidateQueries({ queryKey: ["/api/diary/battles"] });
       queryClient.invalidateQueries({ queryKey: ['/api/diary/battles', id] });
@@ -123,7 +123,7 @@ export default function BattleEdit() {
     onError: () => {
       toast({
         title: "Chyba",
-        description: "Nepodarilo sa upraviť battle. Skúste to znovu.",
+        description: "Nepodarilo sa upraviť súboj. Skúste to znovu.",
         variant: "destructive"
       });
     }
@@ -175,9 +175,9 @@ export default function BattleEdit() {
     return (
       <DiaryLayout>
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-foreground mb-2">Battle sa nenašiel</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-2">Súboj sa nenašiel</h2>
           <Button onClick={() => setLocation("/diary/battles")} className="mt-4">
-            Späť na battles
+            Späť na súboje
           </Button>
         </div>
       </DiaryLayout>
@@ -191,21 +191,21 @@ export default function BattleEdit() {
           <div className="mb-8">
             <Button
               variant="ghost"
-              onClick={() => setLocation(`/diary/battle/${id}`)}
+              onClick={() => setLocation(`/diary/battles/${id}`)}
               className="mb-4"
               data-testid="button-back-to-battle"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Späť na battle
+              Späť na súboj
             </Button>
             <div className="flex items-center gap-4">
               <TacticalIcon icon={Swords} variant="rose" size="lg" showLabel={false} />
               <h1 className="text-3xl font-bold text-foreground">
-                Upraviť Battle
+                Upraviť súboj
               </h1>
             </div>
             <p className="text-muted-foreground mt-2">
-              Uprav detaily svojho fishing battle
+              Uprav detaily svojho súboja
             </p>
           </div>
 
@@ -222,7 +222,7 @@ export default function BattleEdit() {
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Názov Battle</FormLabel>
+                        <FormLabel>Názov súboja</FormLabel>
                         <FormControl>
                           <Input placeholder="napr. Víkendový súboj kamarátov" {...field} data-testid="input-name" />
                         </FormControl>
@@ -492,7 +492,7 @@ export default function BattleEdit() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setLocation(`/diary/battle/${id}`)}
+                  onClick={() => setLocation(`/diary/battles/${id}`)}
                   className="flex-1"
                   data-testid="button-cancel"
                 >
