@@ -22,13 +22,14 @@ import {
   Ruler, 
   Star,
   Crown,
-  Loader2
+  Loader2,
+  Lock
 } from "lucide-react";
 import { useLocation, useParams } from "wouter";
 import DiaryLayout from "@/components/DiaryLayout";
 import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 
-// Goal Types Configuration (same as create)
+// Goal Types Configuration (all types, same as create)
 const goalTypeConfig = {
   total_weight: {
     icon: Weight,
@@ -41,7 +42,7 @@ const goalTypeConfig = {
   fish_count: {
     icon: Fish,
     label: "Počet rýb",
-    color: "text-green-500", 
+    color: "text-green-500",
     unit: "ks",
     description: "Celkový počet chytených rýb v sezóne",
     placeholder: "napr. 100"
@@ -59,8 +60,56 @@ const goalTypeConfig = {
     label: "Najväčšia ryba",
     color: "text-orange-500",
     unit: "kg",
-    description: "Hmotnosť najväčšej ulovenej ryby v sezóne",
+    description: "Hmotnosť alebo dĺžka najväčšej ulovenej ryby",
     placeholder: "napr. 15.2"
+  },
+  personal_best: {
+    icon: Crown,
+    label: "Prekonať PB",
+    color: "text-yellow-500",
+    unit: "kg",
+    description: "Prekonaj osobný rekord v hmotnosti alebo dĺžke",
+    placeholder: "napr. 20.0"
+  },
+  min_size_catch_count: {
+    icon: Ruler,
+    label: "Počet rýb nad X cm",
+    color: "text-cyan-500",
+    unit: "ks",
+    description: "Počet rýb s dĺžkou nad stanovenú hranicu",
+    placeholder: "napr. 10"
+  },
+  min_weight_catch_count: {
+    icon: Weight,
+    label: "Počet rýb nad X kg",
+    color: "text-indigo-500",
+    unit: "ks",
+    description: "Počet rýb s hmotnosťou nad stanovenú hranicu",
+    placeholder: "napr. 5"
+  },
+  spot_catch_count: {
+    icon: MapPin,
+    label: "Počet rýb na konkrétny revír",
+    color: "text-teal-500",
+    unit: "ks",
+    description: "Počet rýb chytených na vybranom revíri",
+    placeholder: "napr. 20"
+  },
+  bait_catch_count: {
+    icon: Target,
+    label: "Počet rýb na konkrétnu nástrahu",
+    color: "text-rose-500",
+    unit: "ks",
+    description: "Počet rýb chytených na vybranú nástrahu",
+    placeholder: "napr. 15"
+  },
+  night_trips_count: {
+    icon: Star,
+    label: "Počet nočných výprav",
+    color: "text-slate-500",
+    unit: "výprav",
+    description: "Počet výprav s rybárčením v noci (22:00 - 05:00)",
+    placeholder: "napr. 10"
   },
   species_variety: {
     icon: Star,
@@ -75,7 +124,7 @@ const goalTypeConfig = {
 // Form Schema
 const editGoalSchema = z.object({
   seasonId: z.string().min(1, "Musíš vybrať sezónu"),
-  goalType: z.enum(['total_weight', 'fish_count', 'trips_count', 'biggest_fish', 'species_variety'], {
+  goalType: z.enum(['total_weight', 'fish_count', 'trips_count', 'biggest_fish', 'personal_best', 'min_size_catch_count', 'min_weight_catch_count', 'spot_catch_count', 'bait_catch_count', 'night_trips_count', 'species_variety'], {
     required_error: "Musíš vybrať typ cieľa"
   }),
   targetValue: z.string().min(1, "Cieľová hodnota je povinná").refine((val) => {
@@ -102,7 +151,7 @@ interface SeasonGoal {
   id: string;
   userId: string;
   seasonId: string;
-  goalType: 'total_weight' | 'fish_count' | 'trips_count' | 'biggest_fish' | 'species_variety';
+  goalType: 'total_weight' | 'fish_count' | 'trips_count' | 'biggest_fish' | 'personal_best' | 'min_size_catch_count' | 'min_weight_catch_count' | 'spot_catch_count' | 'bait_catch_count' | 'night_trips_count' | 'species_variety';
   targetValue: string;
   currentValue: string;
   unit: string;
@@ -335,51 +384,40 @@ export default function SeasonalGoalsEdit() {
                     )}
                   />
 
-                  {/* Goal Type Selection */}
+                  {/* Goal Type — read-only after creation */}
                   <FormField
                     control={form.control}
                     name="goalType"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Typ cieľa</FormLabel>
-                        <FormDescription>
-                          Vyber typ cieľa, ktorý chceš sledovať
+                        <FormDescription className="flex items-center gap-1">
+                          <Lock className="w-3 h-3" />
+                          Typ cieľa nie je možné zmeniť po vytvorení
                         </FormDescription>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                          {Object.entries(goalTypeConfig).map(([key, config]) => {
-                            const IconComponent = config.icon;
-                            const isSelected = field.value === key;
-                            
-                            return (
-                              <Card 
-                                key={key}
-                                className={`cursor-pointer transition-all hover:shadow-md ${
-                                  isSelected ? 'ring-2 ring-primary border-primary' : ''
-                                }`}
-                                onClick={() => {
-                                  field.onChange(key);
-                                  setSelectedGoalType(key);
-                                }}
-                                data-testid={`goal-type-${key}`}
-                              >
-                                <CardContent className="p-4">
-                                  <div className="flex items-start gap-3">
-                                    <IconComponent className={`w-6 h-6 ${config.color} flex-shrink-0 mt-0.5`} />
-                                    <div className="min-w-0 flex-1">
-                                      <h3 className="font-medium text-foreground">{config.label}</h3>
-                                      <p className="text-sm text-muted-foreground mt-1">
-                                        {config.description}
-                                      </p>
-                                      <Badge variant="secondary" className="mt-2 text-xs">
-                                        Jednotka: {config.unit}
-                                      </Badge>
-                                    </div>
+                        {field.value && goalTypeConfig[field.value as keyof typeof goalTypeConfig] && (() => {
+                          const config = goalTypeConfig[field.value as keyof typeof goalTypeConfig];
+                          const IconComponent = config.icon;
+                          return (
+                            <Card className="ring-2 ring-primary border-primary mt-2 opacity-80">
+                              <CardContent className="p-4">
+                                <div className="flex items-start gap-3">
+                                  <IconComponent className={`w-6 h-6 ${config.color} flex-shrink-0 mt-0.5`} />
+                                  <div className="min-w-0 flex-1">
+                                    <h3 className="font-medium text-foreground">{config.label}</h3>
+                                    <p className="text-sm text-muted-foreground mt-1">
+                                      {config.description}
+                                    </p>
+                                    <Badge variant="secondary" className="mt-2 text-xs">
+                                      Jednotka: {config.unit}
+                                    </Badge>
                                   </div>
-                                </CardContent>
-                              </Card>
-                            );
-                          })}
-                        </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          );
+                        })()}
+                        <input type="hidden" {...field} />
                         <FormMessage />
                       </FormItem>
                     )}
