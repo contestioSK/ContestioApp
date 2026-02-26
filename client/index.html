@@ -36,23 +36,6 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Contestio" />
     
-    <!--
-      DEV: Suppress Vite HMR WebSocket error in Replit environment.
-      Root cause: @vite/client fallback creates wss://localhost:undefined (invalid URL) →
-      unhandledrejection → @replit/vite-plugin-runtime-error-modal sends error to Vite server →
-      server's custom logger calls process.exit(1) → crash.
-      Fix: non-module inline script runs BEFORE plugin module scripts, intercepts event first.
-    -->
-    <script>
-      window.addEventListener('unhandledrejection', function(e) {
-        var msg = e.reason && (e.reason.message || String(e.reason));
-        if (msg && (msg.indexOf('localhost:undefined') !== -1 || msg.indexOf("Failed to construct 'WebSocket'") !== -1)) {
-          e.preventDefault();
-          e.stopImmediatePropagation();
-        }
-      });
-    </script>
-
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

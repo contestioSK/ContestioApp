@@ -21,23 +21,23 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { lazy, Suspense, useState, useCallback, useEffect, useRef } from "react";
 import DiaryLayout from "@/components/DiaryLayout";
+import CatchFormDialog from "@/components/diary/CatchFormDialog";
 import FishingActionCard from "@/components/diary/FishingActionCard";
 import SeasonOverviewCard from "@/components/diary/SeasonOverviewCard";
+import { SimplePhotoSlider } from "@/components/diary/SimplePhotoSlider";
+import { PhotoLightbox } from "@/components/diary/PhotoLightbox";
+import { CatchDetailSheet } from "@/components/diary/CatchDetailSheet";
 import { LocationSearchField } from "@/components/LocationSearchField";
 import { TacticalIcon } from "@/components/ui/tactical-icon";
 import { BookOpen } from "lucide-react";
 import { getFishTypeLabel, getFishTypeOptions } from "@/utils/fishTypeMapping";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import type { DiaryCatch, DiaryTrip } from "@shared/schema";
 import type { DateRange } from "react-day-picker";
-
-const CatchFormDialog = lazy(() => import("@/components/diary/CatchFormDialog"));
-const CatchDetailSheet = lazy(() => import("@/components/diary/CatchDetailSheet").then(m => ({ default: m.CatchDetailSheet })));
-const PhotoLightbox = lazy(() => import("@/components/diary/PhotoLightbox").then(m => ({ default: m.PhotoLightbox })));
 
 // Function to get fish variant based on fish type - mapped to Contestio palette
 const getFishVariant = (fishType?: string): "amber" | "emerald" | "purple" | "cyan" | "rose" | "orange" | "blue" => {
@@ -1042,39 +1042,35 @@ export default function DiaryIndex() {
 
         {/* Detail Panel */}
         {selectedCatch && (
-          <Suspense fallback={null}>
-            <CatchDetailSheet
-              catchData={selectedCatch}
-              onClose={() => setSelectedCatch(null)}
-              onEdit={(catch_) => {
-                openEditDialog(catch_);
-                setSelectedCatch(null);
-              }}
-              onDelete={(catch_) => {
-                openDeleteDialog(catch_.id);
-                setSelectedCatch(null);
-              }}
-              onOpenFullPage={(catchId) => {
-                setSelectedCatch(null);
-                setLocation(`/diary/catches/${catchId}`);
-              }}
-              onOpenLightbox={(photos, index) => {
-                setLightboxState({ photos, currentIndex: index });
-              }}
-            />
-          </Suspense>
+          <CatchDetailSheet
+            catchData={selectedCatch}
+            onClose={() => setSelectedCatch(null)}
+            onEdit={(catch_) => {
+              openEditDialog(catch_);
+              setSelectedCatch(null);
+            }}
+            onDelete={(catch_) => {
+              openDeleteDialog(catch_.id);
+              setSelectedCatch(null);
+            }}
+            onOpenFullPage={(catchId) => {
+              setSelectedCatch(null);
+              setLocation(`/diary/catches/${catchId}`);
+            }}
+            onOpenLightbox={(photos, index) => {
+              setLightboxState({ photos, currentIndex: index });
+            }}
+          />
         )}
 
         {/* Photo Lightbox - Portal renders to document.body */}
         {lightboxState && (
-          <Suspense fallback={null}>
-            <PhotoLightbox
-              photos={lightboxState.photos}
-              currentIndex={lightboxState.currentIndex}
-              onClose={() => setLightboxState(null)}
-              onNavigate={(newIndex) => setLightboxState(prev => prev ? { ...prev, currentIndex: newIndex } : null)}
-            />
-          </Suspense>
+          <PhotoLightbox
+            photos={lightboxState.photos}
+            currentIndex={lightboxState.currentIndex}
+            onClose={() => setLightboxState(null)}
+            onNavigate={(newIndex) => setLightboxState(prev => prev ? { ...prev, currentIndex: newIndex } : null)}
+          />
         )}
 
         {/* Delete Confirmation Dialog */}
@@ -1099,20 +1095,16 @@ export default function DiaryIndex() {
           </AlertDialogContent>
         </AlertDialog>
 
-        {/* Create/Edit Catch Dialog — lazy loaded only when opened */}
-        {(isCreateCatchOpen || !!editingCatch) && (
-          <Suspense fallback={null}>
-            <CatchFormDialog
-              isOpen={true}
-              onClose={closeCreateCatchDialog}
-              editingCatch={editingCatch}
-              onSuccess={() => {
-                queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
-                queryClient.invalidateQueries({ queryKey: ["/api/diary/catch-limits"] });
-              }}
-            />
-          </Suspense>
-        )}
+        {/* Create/Edit Catch Dialog */}
+        <CatchFormDialog
+          isOpen={isCreateCatchOpen || !!editingCatch}
+          onClose={closeCreateCatchDialog}
+          editingCatch={editingCatch}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
+            queryClient.invalidateQueries({ queryKey: ["/api/diary/catch-limits"] });
+          }}
+        />
 
         {/* Quick Start Fishing Dialog */}
         <Dialog open={isStartFishingOpen} onOpenChange={setIsStartFishingOpen}>
