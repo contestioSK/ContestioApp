@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { UserModeProvider } from "@/contexts/UserModeContext";
+import { WebSocketProvider } from "@/providers/WebSocketProvider";
 import TopNavigationShell from "@/components/navigation/TopNavigationShell";
 import NotFound from "@/pages/not-found";
 import RoleSelection from "@/pages/role-selection";
@@ -342,7 +343,9 @@ function App() {
         <UserModeProvider>
           <TooltipProvider>
             <Toaster />
-            <AuthenticatedContent />
+            <WebSocketProvider>
+              <AuthenticatedContent />
+            </WebSocketProvider>
           </TooltipProvider>
         </UserModeProvider>
       </ThemeProvider>
