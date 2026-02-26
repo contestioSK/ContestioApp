@@ -130,6 +130,16 @@ type UserBrandWithFlavors = {
   flavors: Array<{ id: number; name: string; diameter: string | null }>;
 };
 
+type ManufacturerWithFlavors = {
+  id: number;
+  name: string;
+  flavors: Array<{ id: number; name: string; productLine: string; productLineId: number | null }>;
+};
+
+// Stable empty arrays outside component to prevent useEffect dep changes on every render
+const EMPTY_MANUFACTURERS: ManufacturerWithFlavors[] = [];
+const EMPTY_USER_BRANDS: UserBrandWithFlavors[] = [];
+
 type RecentBaitItem = {
   source: string | null;
   brandId: number | null;
@@ -199,19 +209,16 @@ export default function CatchFormDialog({
   const maxPhotos = isPremium ? 99 : 1; // Premium: unlimited (99), Free: 1
 
   // Fetch global bait manufacturers with flavors for combobox
-  type ManufacturerWithFlavors = {
-    id: number;
-    name: string;
-    flavors: Array<{ id: number; name: string; productLine: string; productLineId: number | null }>;
-  };
-  const { data: manufacturers = [] } = useQuery<ManufacturerWithFlavors[]>({
+  // NOTE: use stable EMPTY_MANUFACTURERS constant (not inline []) to avoid useEffect dep loop
+  const { data: manufacturers = EMPTY_MANUFACTURERS } = useQuery<ManufacturerWithFlavors[]>({
     queryKey: ["/api/baits/manufacturers/search"],
     enabled: !!user && isOpen,
     staleTime: 5 * 60 * 1000,
   });
 
   // Fetch user's own bait brands
-  const { data: userBrands = [] } = useQuery<UserBrandWithFlavors[]>({
+  // NOTE: use stable EMPTY_USER_BRANDS constant (not inline []) to avoid useEffect dep loop
+  const { data: userBrands = EMPTY_USER_BRANDS } = useQuery<UserBrandWithFlavors[]>({
     queryKey: ["/api/diary/baits/brands"],
     enabled: !!user && isOpen,
     staleTime: 60 * 1000,
@@ -561,7 +568,7 @@ export default function CatchFormDialog({
         setFlavorSearch("");
       }
     } else {
-      setExistingPhotos([]);
+      setExistingPhotos(prev => prev.length === 0 ? prev : []);
       setSelectedTripId(activeBattle?.tripId);
       clearBaitSelection();
       setBrandSearch("");
@@ -576,7 +583,8 @@ export default function CatchFormDialog({
         verified: false,
       });
     }
-  }, [editingCatch, form, activeBattle, manufacturers, userBrands]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editingCatch, activeBattle, manufacturers, userBrands]);
 
   // Toggle favorite bait mutation
   const toggleFavoriteMutation = useMutation({
