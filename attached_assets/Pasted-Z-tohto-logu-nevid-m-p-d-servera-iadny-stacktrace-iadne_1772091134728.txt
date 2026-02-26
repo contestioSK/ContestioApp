@@ -1,0 +1,151 @@
+Z tohto logu nevidím pád servera (žiadny stacktrace, žiadne “process exited”), ale vidím niečo, čo ti ho veľmi ľahko vie položiť:
+
+🚨 Red flag: WebSocket reconnect loop
+
+Toto sa opakuje:
+
+[WS] New WebSocket connection established
+
+authenticated
+
+disconnected
+
+a znova… viackrát za pár sekúnd
+
+To vyzerá ako:
+
+frontend otvára WS opakovane (napr. hook sa spúšťa pri každom renderi / v dvoch komponentoch / bez cleanupu), alebo
+
+v dev režime (React 18 + StrictMode) sa efekt spúšťa 2× a tvoj WS kód nie je idempotentný, alebo
+
+máš reconnect logiku, ktorá otvára nový socket aj keď starý ešte nebol korektne zavretý.
+
+Výsledok: desiatky socketov, memory leak, event loop tlak → “tichý pád”.
+
+1) Najprv si vypýtaj “prečo sa zavrel” (server-side log)
+
+Teraz loguješ len “disconnected”. To je málo.
+
+V server WS časti doplň:
+
+ws.on("close", (code, reason) => {
+  console.log(`[WS] closed code=${code} reason=${reason?.toString() || ""}`);
+});
+
+ws.on("error", (err) => {
+  console.error("[WS] error", err);
+});
+
+A pri “disconnect” loguj aj počet aktívnych spojení na usera (aj keby len dočasne).
+
+2) Fix na 90% príčin: WS na fronte musí byť singleton + cleanup
+
+Typická chyba: new WebSocket(...) v komponente/hooku bez stabilných deps alebo bez return () => ws.close().
+
+Sprav to takto (ochrana aj proti StrictMode):
+
+// useDiarySocket.ts
+import { useEffect, useRef } from "react";
+
+export function useDiarySocket(url: string, onMessage: (ev: MessageEvent) => void) {
+  const wsRef = useRef<WebSocket | null>(null);
+  const startedRef = useRef(false);
+
+  useEffect(() => {
+    // React 18 StrictMode: mount -> unmount -> mount (dev)
+    // Tento guard zabráni duplikácii.
+    if (startedRef.current) return;
+    startedRef.current = true;
+
+    const ws = new WebSocket(url);
+    wsRef.current = ws;
+
+    ws.onmessage = onMessage;
+    ws.onopen = () => console.log("[WS] open");
+    ws.onerror = (e) => console.log("[WS] error", e);
+    ws.onclose = (e) => console.log("[WS] close", e.code, e.reason);
+
+    return () => {
+      startedRef.current = false;     // dôležité pre ďalší mount
+      wsRef.current = null;
+      try { ws.close(1000, "component unmount"); } catch {}
+    };
+    // ⚠️ deps MUSIA byť stabilné (url + onMessage nech sú memoizované!)
+  }, [url, onMessage]);
+}
+
+A kľúčové: onMessage musí byť useCallback, nie inline funkcia (inak sa hook re-spustí).
+
+Ak WS používaš na viacerých miestach aplikácie, zabaľ to do Provideru a socket vytvor len raz.
+
+3) Server-side poistka: nedovoľ 5 socketov na jedného usera
+
+Aj keď to opravíš na FE, je rozumné mať “airbag”.
+
+Na serveri si drž mapu userId -> ws a keď príde nový socket pre toho istého usera:
+
+zavri starý
+
+nechaj len posledný
+
+Pseudo:
+
+const activeByUser = new Map<string, WebSocket>();
+
+function bindUserSocket(userId: string, ws: WebSocket) {
+  const prev = activeByUser.get(userId);
+  if (prev && prev.readyState === prev.OPEN) {
+    try { prev.close(1000, "replaced by new connection"); } catch {}
+  }
+  activeByUser.set(userId, ws);
+
+  ws.on("close", () => {
+    if (activeByUser.get(userId) === ws) activeByUser.delete(userId);
+  });
+}
+
+Týmto si zabiješ najhorší leak aj pri bugnutom FE.
+
+4) Aby sme chytili “tichý pád”: povinné global handlers
+
+Aj keď si to už možno pridával, over, že to máš úplne na začiatku server/index.ts:
+
+process.on("unhandledRejection", (reason) => {
+  console.error("[FATAL] unhandledRejection", reason);
+});
+
+process.on("uncaughtException", (err) => {
+  console.error("[FATAL] uncaughtException", err);
+});
+
+A dočasne (na 5 min) pridaj monitor pamäte:
+
+setInterval(() => {
+  const m = process.memoryUsage();
+  console.log("[MEM]", {
+    rss: Math.round(m.rss / 1024 / 1024) + "MB",
+    heapUsed: Math.round(m.heapUsed / 1024 / 1024) + "MB",
+  });
+}, 10000);
+
+Ak to zrazu vyletí a potom ticho skončí → OOM.
+
+Prečo si myslím, že toto je ono
+
+Lebo log, ktorý si poslal, neukazuje pád. Ukazuje WS churn. To je presne typ problému, ktorý:
+
+vytvára tlak (CPU + RAM),
+
+potom host/server “ticho” reštartuje,
+
+a ty vidíš len WS 1006.
+
+Ďalší krok odo mňa
+
+Pošli mi 2 veci (bez toho budem strieľať naslepo):
+
+kód klienta/hooku kde sa vytvára WebSocket (1 súbor)
+
+server WS handler (časť kde “New WebSocket connection established” loguje)
+
+Ja ti poviem presne, kde je loop (deps, StrictMode, multiple mounts, reconnect bug) a dám ti konkrétny fix do tvojho kódu.
