@@ -120,18 +120,29 @@ export class PhotoJobQueue extends EventEmitter {
       const baseFilename = path.parse(job.originalFilename).name;
       let originalUrl: string | undefined;
 
-      // Upload sanitized (EXIF-stripped) original to Firebase for persistence.
-      // job.originalPath always points to the sanitized JPEG produced by the upload
-      // endpoint — never a raw file with GPS metadata.
+      // Upload original to Firebase first for persistence (if Firebase is configured)
       if (isFirebaseConfigured()) {
         try {
-          // Always JPEG — sanitizeToFile() guarantees this regardless of original format
-          const originalStoragePath = `diary_photos/${job.userId}/${job.photoId}/sanitized-original.jpg`;
-          const result = await uploadToFirebase(job.originalPath, originalStoragePath, 'image/jpeg');
+          const originalExt = path.extname(job.originalFilename).toLowerCase() || '.jpg';
+          const originalStoragePath = `diary_photos/${job.userId}/${job.photoId}/original${originalExt}`;
+          
+          // Detect content type based on extension
+          const contentTypeMap: Record<string, string> = {
+            '.jpg': 'image/jpeg',
+            '.jpeg': 'image/jpeg',
+            '.png': 'image/png',
+            '.gif': 'image/gif',
+            '.webp': 'image/webp',
+            '.heic': 'image/heic',
+            '.heif': 'image/heif',
+          };
+          const contentType = contentTypeMap[originalExt] || 'image/jpeg';
+          
+          const result = await uploadToFirebase(job.originalPath, originalStoragePath, contentType);
           originalUrl = result.publicUrl;
-          console.log(`[PhotoQueue] Sanitized original uploaded to Firebase: ${originalStoragePath}`);
+          console.log(`[PhotoQueue] Original uploaded to Firebase: ${originalStoragePath}`);
         } catch (error) {
-          console.warn(`[PhotoQueue] Failed to upload sanitized original to Firebase, continuing with variants:`, error);
+          console.warn(`[PhotoQueue] Failed to upload original to Firebase, continuing with variants:`, error);
         }
       }
 
