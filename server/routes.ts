@@ -52,7 +52,7 @@ import multer from "multer";
 import path from "path";
 import fs, { existsSync } from "fs";
 import { promises as fsPromises } from "fs";
-import { ImageService, type ProcessedImageResult } from "./image-service";
+import { ImageService } from "./image-service";
 import QRCode from "qrcode";
 import Stripe from "stripe";
 import { cache, CacheKeys, CacheTTL } from "./cache";
@@ -407,7 +407,9 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     });
     
     console.log('[PhotoQueue] Background photo processing initialized');
-  })();
+  })().catch(err => {
+    console.error("[PhotoQueue] Initialization failed:", err);
+  });
 
   // Get all connected user IDs
   function getConnectedUsers(): string[] {
@@ -1173,9 +1175,19 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         return res.status(400).json({ message: "Nebola nahraná žiadna fotografia" });
       }
 
-      let imageUrl = "";
-      let imageMetadata: ProcessedImageResult | null = null;
+      // Step 1: Sanitize — strip EXIF/GPS before any processing or storage
+      const sanitizedPath = `${req.file.path}-sanitized.jpg`;
+      try {
+        await ImageService.sanitizeToFile(req.file.path, sanitizedPath);
+        await fsPromises.unlink(req.file.path);
+      } catch (sanitizeErr) {
+        console.error("[AVATAR] Sanitize failed:", sanitizeErr);
+        try { await fsPromises.unlink(req.file.path); } catch {}
+        return res.status(400).json({ message: "Neplatný obrázkový súbor." });
+      }
 
+      // Step 2: Process variants from sanitized file
+      let imageUrl = "";
       try {
         const userDir = path.join("uploads", "users", userId);
         if (!fs.existsSync(userDir)) {
@@ -1183,61 +1195,42 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         }
 
         const timestamp = Date.now();
-        const ext = path.extname(req.file.originalname).toLowerCase() || '.jpg';
         const outputBasePath = path.join(userDir, `profile-${timestamp}`);
-        
-        imageMetadata = await ImageService.processImage(
-          req.file.path,
+
+        const imageMetadata = await ImageService.processImage(
+          sanitizedPath,
           outputBasePath,
           `profile-${timestamp}`,
           undefined, undefined, undefined,
           `user_avatars/${userId}`
         );
-        
+
         const bestVariant = ImageService.getBestVariantForWidth(imageMetadata.variants, 320, 'webp') ||
                             ImageService.getBestVariantForWidth(imageMetadata.variants, 320, 'jpeg') ||
                             imageMetadata.variants[0];
-        
+
         if (bestVariant?.url) {
           imageUrl = bestVariant.url;
-          await ImageService.cleanupTempFile(req.file.path);
         } else {
-          const localFilename = `profile-${timestamp}${ext}`;
+          // Firebase unavailable — save the sanitized file locally (never raw)
+          const localFilename = `profile-${timestamp}.jpg`;
           const localPath = path.join(userDir, localFilename);
-          fs.copyFileSync(req.file.path, localPath);
+          fs.copyFileSync(sanitizedPath, localPath);
           imageUrl = `/uploads/users/${userId}/${localFilename}`;
-          await ImageService.cleanupTempFile(req.file.path);
-          console.log(`[AVATAR] Firebase unavailable, saved locally: ${imageUrl}`);
+          console.log(`[AVATAR] Firebase unavailable, saved sanitized file locally: ${imageUrl}`);
         }
-        
+        await ImageService.cleanupTempFile(sanitizedPath);
+
         const updatedUser = await storage.updateUserProfile(userId, {
           profileImageUrl: imageUrl
         });
-        
+
         const { password: _, verificationToken: __, verificationTokenExpires: ___, ...safeUser } = updatedUser;
         res.json(safeUser);
       } catch (error) {
-        console.error("Error processing profile image:", error);
-        const ext = path.extname(req.file.originalname).toLowerCase() || '.jpg';
-        const localFilename = `profile-fallback-${Date.now()}${ext}`;
-        const userDir = path.join("uploads", "users", userId);
-        if (!fs.existsSync(userDir)) {
-          fs.mkdirSync(userDir, { recursive: true });
-        }
-        try {
-          fs.copyFileSync(req.file.path, path.join(userDir, localFilename));
-          imageUrl = `/uploads/users/${userId}/${localFilename}`;
-        } catch {
-          imageUrl = `/uploads/${req.file.filename}`;
-        }
-        await ImageService.cleanupTempFile(req.file.path);
-        
-        const updatedUser = await storage.updateUserProfile(userId, {
-          profileImageUrl: imageUrl
-        });
-        
-        const { password: _, verificationToken: __, verificationTokenExpires: ___, ...safeUser } = updatedUser;
-        res.json(safeUser);
+        console.error("[AVATAR] Processing failed:", error);
+        try { await ImageService.cleanupTempFile(sanitizedPath); } catch {}
+        return res.status(400).json({ message: "Nepodarilo sa spracovať profilovú fotku. Skúste iný súbor." });
       }
     } catch (error) {
       console.error("[AUTH] Error uploading profile image:", error);
@@ -7020,11 +7013,23 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       }
 
       const userId = getUserId(req);
-      let coverImageUrl = `/uploads/${req.file.filename}`;
+
+      // Sanitize first — strip EXIF/GPS before any processing
+      const sanitizedPath = `${req.file.path}-sanitized.jpg`;
+      try {
+        await ImageService.sanitizeToFile(req.file.path, sanitizedPath);
+        await fsPromises.unlink(req.file.path);
+      } catch (sanitizeErr) {
+        console.error("[TripCover] Sanitize failed:", sanitizeErr);
+        try { await fsPromises.unlink(req.file.path); } catch {}
+        return res.status(400).json({ message: "Neplatný obrázkový súbor." });
+      }
+
+      let coverImageUrl: string | null = null;
       try {
         const photoId = `trip-cover-${Date.now()}`;
         const imageMetadata = await ImageService.processImage(
-          req.file.path,
+          sanitizedPath,
           path.join('uploads', 'trip-covers', photoId),
           photoId,
           undefined, undefined, undefined,
@@ -7033,10 +7038,12 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         const bestVariant = ImageService.getBestVariantForWidth(imageMetadata.variants, 800, 'webp') ||
                             ImageService.getBestVariantForWidth(imageMetadata.variants, 800, 'jpeg') ||
                             imageMetadata.variants[0];
-        coverImageUrl = bestVariant?.url || coverImageUrl;
-        await ImageService.cleanupTempFile(req.file.path);
+        coverImageUrl = bestVariant?.url ?? null;
+        await ImageService.cleanupTempFile(sanitizedPath);
       } catch (error) {
-        console.error("Error processing trip cover image:", error);
+        console.error("[TripCover] Processing failed:", error);
+        try { await ImageService.cleanupTempFile(sanitizedPath); } catch {}
+        return res.status(400).json({ message: "Nepodarilo sa spracovať obrázok výletu. Skúste iný súbor." });
       }
       res.json({ coverImageUrl });
     } catch (error) {
@@ -7709,10 +7716,22 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       if (req.files && Array.isArray(req.files)) {
         for (const file of req.files as any[]) {
           const photoId = `photo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-          let photoUrl = `/uploads/${file.filename}`;
+
+          // Sanitize first — strip EXIF/GPS
+          const sanitizedPath = `${file.path}-sanitized.jpg`;
+          try {
+            await ImageService.sanitizeToFile(file.path, sanitizedPath);
+            await fsPromises.unlink(file.path);
+          } catch (sanitizeErr) {
+            console.warn(`[HistoricalImport] Sanitize failed for ${file.originalname}, skipping photo`);
+            try { await fsPromises.unlink(file.path); } catch {}
+            continue; // skip this photo — don't add raw URL
+          }
+
+          let photoUrl: string | null = null;
           try {
             const imageMetadata = await ImageService.processImage(
-              file.path,
+              sanitizedPath,
               path.join('uploads', 'historical', photoId),
               photoId,
               undefined, undefined, undefined,
@@ -7721,16 +7740,21 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
             const bestVariant = ImageService.getBestVariantForWidth(imageMetadata.variants, 800, 'webp') ||
                                 ImageService.getBestVariantForWidth(imageMetadata.variants, 800, 'jpeg') ||
                                 imageMetadata.variants[0];
-            photoUrl = bestVariant?.url || photoUrl;
-            await ImageService.cleanupTempFile(file.path);
+            photoUrl = bestVariant?.url ?? null;
+            await ImageService.cleanupTempFile(sanitizedPath);
           } catch (error) {
-            console.error("Error processing historical catch photo:", error);
+            console.error(`[HistoricalImport] Processing failed for ${file.originalname}:`, error);
+            try { await ImageService.cleanupTempFile(sanitizedPath); } catch {}
+            continue; // skip failed photo — don't add raw URL
           }
-          photos.push({
-            id: photoId,
-            url: photoUrl,
-            status: 'ready' as const
-          });
+
+          if (photoUrl) {
+            photos.push({
+              id: photoId,
+              url: photoUrl,
+              status: 'ready' as const
+            });
+          }
         }
       }
       
