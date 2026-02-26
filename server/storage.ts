@@ -76,12 +76,9 @@ import {
   type PromoCode,
   type InsertPromoCode,
   type PromoCodeUsage,
-  competitionSetupTokens,
-  type CompetitionSetupToken,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, not, sql, ne, count, gt, gte, lt, lte, inArray, isNotNull } from "drizzle-orm";
-import { randomBytes, createHash } from "crypto";
 
 export interface IStorage {
   // User operations (required for Replit Auth)
@@ -402,10 +399,6 @@ export interface IStorage {
   togglePromoCodeStatus(id: number): Promise<PromoCode>;
   applyFreeDaysToAllUsers(days: number, description: string): Promise<{ affectedUsers: number }>;
   getPromoCodeStats(id: number): Promise<{ totalUsages: number; usages: PromoCodeUsage[] }>;
-
-  // Competition setup token operations (T002 — stateful single-use tokens)
-  createCompetitionSetupToken(registrationId: string): Promise<string>;
-  validateAndConsumeSetupToken(token: string, registrationId: string): Promise<'valid' | 'expired' | 'used' | 'invalid'>;
 }
 
 // Comprehensive sanitizer for competition data
@@ -4627,64 +4620,6 @@ export class DatabaseStorage implements IStorage {
       email: row.email || '',
       appliedAt: row.appliedAt as Date,
     }));
-  }
-
-  // ─── Competition setup tokens (T002) ─────────────────────────────────────────
-
-  /**
-   * Vygeneruje stateful single-use token pre setup wizard.
-   * Uloží SHA-256 hash — nikdy plaintext.
-   * Vráti plaintext token pre zaslanie emailom / vrátenie v response.
-   */
-  async createCompetitionSetupToken(registrationId: string): Promise<string> {
-    const plaintext = randomBytes(32).toString('hex'); // 256 bits of entropy
-    const tokenHash = createHash('sha256').update(plaintext).digest('hex');
-    const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000); // 48 hours
-
-    await db.insert(competitionSetupTokens).values({
-      tokenHash,
-      registrationId,
-      expiresAt,
-    });
-
-    return plaintext;
-  }
-
-  /**
-   * Overí token a atómicky ho označí ako použitý.
-   * Vráti: 'valid' | 'expired' | 'used' | 'invalid'
-   *
-   * 'valid' znamená, že token bol úspešne overený A spotrebovaný (usedAt nastavený).
-   * Ďalší pokus s rovnakým tokenom vráti 'used'.
-   */
-  async validateAndConsumeSetupToken(
-    token: string,
-    registrationId: string
-  ): Promise<'valid' | 'expired' | 'used' | 'invalid'> {
-    const tokenHash = createHash('sha256').update(token).digest('hex');
-
-    const [record] = await db
-      .select()
-      .from(competitionSetupTokens)
-      .where(
-        and(
-          eq(competitionSetupTokens.tokenHash, tokenHash),
-          eq(competitionSetupTokens.registrationId, registrationId)
-        )
-      )
-      .limit(1);
-
-    if (!record) return 'invalid';
-    if (record.usedAt !== null) return 'used';
-    if (record.expiresAt < new Date()) return 'expired';
-
-    // Consume the token atomically
-    await db
-      .update(competitionSetupTokens)
-      .set({ usedAt: new Date() })
-      .where(eq(competitionSetupTokens.id, record.id));
-
-    return 'valid';
   }
 }
 
