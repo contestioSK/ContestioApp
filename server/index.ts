@@ -13,6 +13,18 @@ import path from "path";
 import { seedFishingAreas } from "../db/seed-fishing-areas";
 
 // Global error handlers — must be first, before any async code
+// Intercept process.exit to capture stack trace (find WHERE it's called from)
+const _realExit = process.exit.bind(process);
+(process as any).exit = (code?: number) => {
+  process.stderr.write(`[EXIT-INTERCEPT] process.exit(${code}) called\n`);
+  const stack = new Error().stack;
+  process.stderr.write(`[EXIT-INTERCEPT] Call stack:\n${stack}\n`);
+  _realExit(code as number);
+};
+// Synchronous exit handler — guaranteed to flush before process terminates
+process.on("exit", (code) => {
+  process.stderr.write(`[EXIT] Process exiting with code ${code}\n`);
+});
 // In Node.js 15+, unhandled rejections = automatic process.exit(1) (silent crash)
 process.on("unhandledRejection", (reason) => {
   console.error("[FATAL] unhandledRejection:", reason);
