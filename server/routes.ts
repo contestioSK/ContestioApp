@@ -2,11 +2,10 @@ import express, { type Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { randomUUID, createHmac } from "crypto";
-import { assertCompetitionOrganizer, assertTeamCaptainOrOrganizer } from "./middleware/auth-helpers";
 import { storage } from "./storage";
 import { db } from "./db";
 import { eq, and, gt, desc, or, inArray, sql, isNotNull } from "drizzle-orm";
-import { diaryBattles, diaryCatches, users, baitManufacturers, baitProductLines, baitFlavors, userArsenalBaits, userBadges, fishingAreas, friendships, equipmentManufacturers, equipmentCategories, equipmentProducts, userArsenalEquipment, insertUserArsenalEquipmentSchema, userBaitBrands, userBaitFlavors, insertUserBaitBrandSchema, insertUserBaitFlavorSchema, processedStripeEvents } from "@shared/schema";
+import { diaryBattles, diaryCatches, users, baitManufacturers, baitProductLines, baitFlavors, userArsenalBaits, userBadges, fishingAreas, friendships, equipmentManufacturers, equipmentCategories, equipmentProducts, userArsenalEquipment, insertUserArsenalEquipmentSchema, userBaitBrands, userBaitFlavors, insertUserBaitBrandSchema, insertUserBaitFlavorSchema } from "@shared/schema";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { hashPassword, validatePassword, generateVerificationToken, generateTokenExpiration } from "./utils/auth";
 import { emailService } from "./utils/email";
@@ -119,24 +118,14 @@ const upload = multer({
     fileSize: 5 * 1024 * 1024, // 5MB limit
   },
   fileFilter: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const mime = file.mimetype.toLowerCase();
-
-    // Block SVG explicitly — can contain arbitrary JavaScript
-    if (ext === '.svg' || mime === 'image/svg+xml') {
-      return cb(new Error("SVG súbory nie sú povolené z bezpečnostných dôvodov"));
-    }
-
-    const allowedExtensions = /\.(jpeg|jpg|png|gif|heic|heif)$/;
-    const allowedMimetypes = /^image\/(jpeg|png|gif|heic|heif)$/;
-
-    const extOk = allowedExtensions.test(ext);
-    const mimeOk = allowedMimetypes.test(mime);
-
-    if (extOk && mimeOk) {
+    const allowedTypes = /jpeg|jpg|png|gif/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    
+    if (mimetype && extname) {
       return cb(null, true);
     } else {
-      cb(new Error("Povolené sú len obrázkové súbory (JPEG, PNG, GIF, HEIC)"));
+      cb(new Error("Povolené sú len obrázkové súbory (JPEG, PNG, GIF)"));
     }
   },
 });
@@ -2450,183 +2439,215 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 
-    // SECURITY: In production, silently ignore test-mode events (livemode=false)
-    // Stripe would retry if we return an error, so we return 200 OK
-    if (process.env.NODE_ENV === 'production' && !event.livemode) {
-      console.warn(`[Stripe Webhook] Ignoring test-mode event ${event.id} in production`);
-      return res.json({ received: true, skipped: 'test_mode' });
+    // Handle the checkout.session.completed event
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object as Stripe.Checkout.Session;
+      
+      // Check if this is a subscription checkout (diary premium)
+      if (session.mode === 'subscription' && session.metadata?.product === 'diary_premium') {
+        const userId = session.metadata?.userId;
+        const billingInterval = session.metadata?.billingInterval;
+        const subscriptionId = session.subscription as string;
+        
+        if (!userId) {
+          console.error('[Stripe Webhook] Missing userId in subscription session:', session.id);
+          return res.status(400).send('Missing userId');
+        }
+
+        console.log(`[Stripe Webhook] Subscription checkout completed for user ${userId}, interval: ${billingInterval}`);
+
+        try {
+          // Get subscription details from Stripe
+          const subscription = await stripe.subscriptions.retrieve(subscriptionId) as any;
+          
+          // Update user subscription status
+          await storage.createOrUpdateSubscription({
+            userId: userId,
+            product: 'diary_premium',
+            status: 'active',
+            stripeSubscriptionId: subscriptionId,
+            stripeCustomerId: session.customer as string,
+            billingInterval: billingInterval as 'monthly' | 'yearly',
+            currentPeriodEnd: new Date((subscription.current_period_end as number) * 1000),
+            cancelAtPeriodEnd: subscription.cancel_at_period_end
+          });
+
+          // Update user's premium status
+          await db.update(users).set({
+            isPremium: true,
+            userTier: 'PREMIUM',
+            premiumExpiresAt: new Date((subscription.current_period_end as number) * 1000)
+          }).where(eq(users.id, userId));
+
+          console.log(`[Stripe Webhook] User ${userId} subscription activated successfully`);
+        } catch (error) {
+          console.error('[Stripe Webhook] Error processing subscription:', error);
+          return res.status(500).send('Error processing subscription webhook');
+        }
+      } 
+      // Handle competition payment (one-time)
+      else if (session.mode === 'payment') {
+        const competitionId = session.metadata?.competitionId;
+        const planTier = session.metadata?.planTier;
+        
+        if (!competitionId || !planTier) {
+          console.error('[Stripe Webhook] Missing metadata in session:', session.id);
+          return res.status(400).send('Missing metadata');
+        }
+
+        console.log(`[Stripe Webhook] Payment completed for competition ${competitionId}, plan: ${planTier}`);
+
+        try {
+          // Get competition for email
+          const existingCompetition = await storage.getCompetition(competitionId);
+          
+          // Update competition status and payment - set to 'registration' so organizer can invite teams
+          const updatedCompetition = await storage.updateCompetition(competitionId, {
+            planTier: planTier as any,
+            paymentStatus: 'paid',
+            status: 'registration'
+          });
+          
+          // Broadcast update
+          broadcast({ 
+            type: 'competition_updated', 
+            competitionId: competitionId, 
+            payload: updatedCompetition 
+          });
+
+          // Send payment confirmation email
+          const contactEmail = updatedCompetition?.contactEmail || existingCompetition?.contactEmail;
+          if (contactEmail) {
+            const planNames: Record<string, string> = {
+              'basic': 'Basic',
+              'pro': 'Pro',
+              'premium': 'Premium',
+              'enterprise': 'Enterprise'
+            };
+            const planDisplayName = planNames[planTier] || planTier;
+            const competitionName = updatedCompetition?.name || existingCompetition?.name || 'Súťaž';
+            const appOrigin = process.env.APP_ORIGIN || 
+              (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : 
+              (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` : 
+              'https://contestio.sk'));
+            const dashboardUrl = `${appOrigin}/organizer/competition/${competitionId}`;
+            
+            emailService.sendPaymentConfirmationEmail(
+              contactEmail,
+              competitionName,
+              planDisplayName,
+              dashboardUrl
+            ).then(success => {
+              if (success) {
+                console.log(`[Email] Payment confirmation sent to ${contactEmail}`);
+              } else {
+                console.error(`[Email] Failed to send payment confirmation to ${contactEmail}`);
+              }
+            }).catch(err => {
+              console.error('[Email] Error sending payment confirmation:', err);
+            });
+          }
+
+          console.log(`[Stripe Webhook] Competition ${competitionId} updated successfully`);
+        } catch (error) {
+          console.error('[Stripe Webhook] Error updating competition:', error);
+          return res.status(500).send('Error processing webhook');
+        }
+      }
     }
 
-    // IDEMPOTENCY: Wrap all processing in a DB transaction that starts by
-    // inserting the event ID. If the ID already exists (PK conflict), the catch
-    // block returns 200 OK immediately — preventing any double-processing.
-    try {
-      await db.transaction(async (tx) => {
-        // This INSERT will throw on PK conflict if event was already processed
-        await tx.insert(processedStripeEvents).values({
-          eventId: event.id,
-          eventType: event.type,
-          livemode: event.livemode,
-        });
+    // Handle subscription updates (renewal, cancellation, etc.)
+    if (event.type === 'customer.subscription.updated') {
+      const subscription = event.data.object as any;
+      const userId = subscription.metadata?.userId;
+      
+      if (userId && subscription.metadata?.product === 'diary_premium') {
+        console.log(`[Stripe Webhook] Subscription updated for user ${userId}, status: ${subscription.status}`);
+        
+        try {
+          const status = subscription.status === 'active' ? 'active' 
+            : subscription.status === 'past_due' ? 'past_due' 
+            : subscription.status === 'canceled' ? 'canceled' 
+            : 'none';
 
-        // ── Process event inside the same transaction ──────────────────────────
+          await storage.createOrUpdateSubscription({
+            userId: userId,
+            product: 'diary_premium',
+            status: status,
+            stripeSubscriptionId: subscription.id,
+            currentPeriodEnd: new Date((subscription.current_period_end as number) * 1000),
+            cancelAtPeriodEnd: subscription.cancel_at_period_end
+          });
 
-        if (event.type === 'checkout.session.completed') {
-          const session = event.data.object as Stripe.Checkout.Session;
+          // Update user's premium status
+          const isPremium = status === 'active';
+          await db.update(users).set({
+            isPremium: isPremium,
+            userTier: isPremium ? 'PREMIUM' : 'FREE',
+            premiumExpiresAt: isPremium ? new Date((subscription.current_period_end as number) * 1000) : null
+          }).where(eq(users.id, userId));
 
-          if (session.mode === 'subscription' && session.metadata?.product === 'diary_premium') {
-            const userId = session.metadata?.userId;
-            const billingInterval = session.metadata?.billingInterval;
-            const subscriptionId = session.subscription as string;
-
-            if (!userId) {
-              console.error('[Stripe Webhook] Missing userId in subscription session:', session.id);
-              throw new Error('Missing userId');
-            }
-
-            console.log(`[Stripe Webhook] Subscription checkout completed for user ${userId}, interval: ${billingInterval}`);
-
-            const subscription = await stripe.subscriptions.retrieve(subscriptionId) as any;
-
-            await storage.createOrUpdateSubscription({
-              userId,
-              product: 'diary_premium',
-              status: 'active',
-              stripeSubscriptionId: subscriptionId,
-              stripeCustomerId: session.customer as string,
-              billingInterval: billingInterval as 'monthly' | 'yearly',
-              currentPeriodEnd: new Date((subscription.current_period_end as number) * 1000),
-              cancelAtPeriodEnd: subscription.cancel_at_period_end,
-            });
-
-            await tx.update(users).set({
-              isPremium: true,
-              userTier: 'PREMIUM',
-              premiumExpiresAt: new Date((subscription.current_period_end as number) * 1000),
-            }).where(eq(users.id, userId));
-
-            console.log(`[Stripe Webhook] User ${userId} subscription activated successfully`);
-          } else if (session.mode === 'payment') {
-            const competitionId = session.metadata?.competitionId;
-            const planTier = session.metadata?.planTier;
-
-            if (!competitionId || !planTier) {
-              console.error('[Stripe Webhook] Missing metadata in session:', session.id);
-              throw new Error('Missing metadata');
-            }
-
-            console.log(`[Stripe Webhook] Payment completed for competition ${competitionId}, plan: ${planTier}`);
-
-            const existingCompetition = await storage.getCompetition(competitionId);
-            const updatedCompetition = await storage.updateCompetition(competitionId, {
-              planTier: planTier as any,
-              paymentStatus: 'paid',
-              status: 'registration',
-            });
-
-            broadcast({ type: 'competition_updated', competitionId, payload: updatedCompetition });
-
-            const contactEmail = updatedCompetition?.contactEmail || existingCompetition?.contactEmail;
-            if (contactEmail) {
-              const planNames: Record<string, string> = { basic: 'Basic', pro: 'Pro', premium: 'Premium', enterprise: 'Enterprise' };
-              const planDisplayName = planNames[planTier] || planTier;
-              const competitionName = updatedCompetition?.name || existingCompetition?.name || 'Súťaž';
-              const appOrigin = process.env.APP_ORIGIN ||
-                (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` :
-                (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` :
-                'https://contestio.sk'));
-              const dashboardUrl = `${appOrigin}/organizer/competition/${competitionId}`;
-              emailService.sendPaymentConfirmationEmail(contactEmail, competitionName, planDisplayName, dashboardUrl)
-                .then(ok => ok
-                  ? console.log(`[Email] Payment confirmation sent to ${contactEmail}`)
-                  : console.error(`[Email] Failed to send payment confirmation to ${contactEmail}`))
-                .catch(err => console.error('[Email] Error sending payment confirmation:', err));
-            }
-
-            console.log(`[Stripe Webhook] Competition ${competitionId} updated successfully`);
-          }
+          console.log(`[Stripe Webhook] User ${userId} subscription updated to ${status}`);
+        } catch (error) {
+          console.error('[Stripe Webhook] Error updating subscription:', error);
         }
-
-        if (event.type === 'customer.subscription.updated') {
-          const subscription = event.data.object as any;
-          const userId = subscription.metadata?.userId;
-
-          if (userId && subscription.metadata?.product === 'diary_premium') {
-            console.log(`[Stripe Webhook] Subscription updated for user ${userId}, status: ${subscription.status}`);
-
-            const status = subscription.status === 'active' ? 'active'
-              : subscription.status === 'past_due' ? 'past_due'
-              : subscription.status === 'canceled' ? 'canceled'
-              : 'none';
-
-            await storage.createOrUpdateSubscription({
-              userId,
-              product: 'diary_premium',
-              status,
-              stripeSubscriptionId: subscription.id,
-              currentPeriodEnd: new Date((subscription.current_period_end as number) * 1000),
-              cancelAtPeriodEnd: subscription.cancel_at_period_end,
-            });
-
-            const isPremium = status === 'active';
-            await tx.update(users).set({
-              isPremium,
-              userTier: isPremium ? 'PREMIUM' : 'FREE',
-              premiumExpiresAt: isPremium ? new Date((subscription.current_period_end as number) * 1000) : null,
-            }).where(eq(users.id, userId));
-
-            console.log(`[Stripe Webhook] User ${userId} subscription updated to ${status}`);
-          }
-        }
-
-        if (event.type === 'customer.subscription.deleted') {
-          const subscription = event.data.object as any;
-          const userId = subscription.metadata?.userId;
-
-          if (userId && subscription.metadata?.product === 'diary_premium') {
-            console.log(`[Stripe Webhook] Subscription deleted for user ${userId}`);
-
-            await storage.createOrUpdateSubscription({
-              userId,
-              product: 'diary_premium',
-              status: 'canceled',
-              stripeSubscriptionId: subscription.id,
-              cancelAtPeriodEnd: false,
-            });
-
-            await tx.update(users).set({
-              isPremium: false,
-              userTier: 'FREE',
-              premiumExpiresAt: null,
-            }).where(eq(users.id, userId));
-
-            console.log(`[Stripe Webhook] User ${userId} subscription canceled and downgraded to FREE`);
-          }
-        }
-
-        if (event.type === 'invoice.payment_failed') {
-          const invoice = event.data.object as any;
-          const subscriptionId = invoice.subscription as string;
-
-          if (subscriptionId) {
-            const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-            const userId = subscription.metadata?.userId;
-
-            if (userId && subscription.metadata?.product === 'diary_premium') {
-              console.log(`[Stripe Webhook] Payment failed for user ${userId}`);
-              await storage.createOrUpdateSubscription({ userId, product: 'diary_premium', status: 'past_due' });
-            }
-          }
-        }
-      });
-    } catch (err: any) {
-      // PK conflict = already processed — return 200 so Stripe doesn't retry
-      if (err?.code === '23505' || err?.message?.includes('duplicate key')) {
-        console.log(`[Stripe Webhook] Duplicate event ${event.id} — already processed, ignoring`);
-        return res.json({ received: true, skipped: 'duplicate' });
       }
-      console.error('[Stripe Webhook] Error processing webhook event:', err);
-      return res.status(500).send('Error processing webhook');
+    }
+
+    // Handle subscription deletion
+    if (event.type === 'customer.subscription.deleted') {
+      const subscription = event.data.object as any;
+      const userId = subscription.metadata?.userId;
+      
+      if (userId && subscription.metadata?.product === 'diary_premium') {
+        console.log(`[Stripe Webhook] Subscription deleted for user ${userId}`);
+        
+        try {
+          await storage.createOrUpdateSubscription({
+            userId: userId,
+            product: 'diary_premium',
+            status: 'canceled',
+            stripeSubscriptionId: subscription.id,
+            cancelAtPeriodEnd: false
+          });
+
+          // Downgrade user to free tier
+          await db.update(users).set({
+            isPremium: false,
+            userTier: 'FREE',
+            premiumExpiresAt: null
+          }).where(eq(users.id, userId));
+
+          console.log(`[Stripe Webhook] User ${userId} subscription canceled and downgraded to FREE`);
+        } catch (error) {
+          console.error('[Stripe Webhook] Error canceling subscription:', error);
+        }
+      }
+    }
+
+    // Handle invoice payment failure
+    if (event.type === 'invoice.payment_failed') {
+      const invoice = event.data.object as any;
+      const subscriptionId = invoice.subscription as string;
+      
+      if (subscriptionId) {
+        try {
+          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+          const userId = subscription.metadata?.userId;
+          
+          if (userId && subscription.metadata?.product === 'diary_premium') {
+            console.log(`[Stripe Webhook] Payment failed for user ${userId}`);
+            
+            await storage.createOrUpdateSubscription({
+              userId: userId,
+              product: 'diary_premium',
+              status: 'past_due'
+            });
+          }
+        } catch (error) {
+          console.error('[Stripe Webhook] Error handling payment failure:', error);
+        }
+      }
     }
 
     res.json({ received: true });
@@ -3421,15 +3442,24 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     try {
       const userId = getUserId(req);
       const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'organizer' && user?.role !== 'admin') {
+        return res.status(403).json({ message: "Len organizátor môže odstrániť člena tímu" });
+      }
 
-      // Dual-layer auth: captain of this team OR organizer of the competition (with audit log + reason)
-      const auth = await assertTeamCaptainOrOrganizer(userId, req.params.teamId, res, user ?? null, {
-        auditAction: 'REMOVE_MEMBER',
-        auditReason: req.body?.reason,
-      });
-      if (!auth) return;
+      const team = await storage.getTeam(req.params.teamId);
+      if (!team) {
+        return res.status(404).json({ message: "Tím nebol nájdený" });
+      }
 
-      const { team } = auth;
+      const competition = await storage.getCompetition(team.competitionId);
+      if (!competition) {
+        return res.status(404).json({ message: "Súťaž nebola nájdená" });
+      }
+
+      if (user?.role === 'organizer' && competition.organizerId !== userId) {
+        return res.status(403).json({ message: "Môžeš spravovať len tímy vo vlastných súťažiach" });
+      }
 
       const member = team.members?.find(m => m.id === req.params.memberId);
       if (!member) {
@@ -3440,7 +3470,6 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         return res.status(400).json({ message: "Tím musí mať aspoň jedného člena" });
       }
 
-      // If removing captain, promote next member automatically
       if (member.role === 'captain' && team.members && team.members.length > 1) {
         const nextMember = team.members.find(m => m.id !== req.params.memberId);
         if (nextMember) {
@@ -3468,15 +3497,24 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     try {
       const userId = getUserId(req);
       const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'organizer' && user?.role !== 'admin') {
+        return res.status(403).json({ message: "Len organizátor môže zmeniť rolu člena tímu" });
+      }
 
-      // Dual-layer auth: captain of this team OR organizer of the competition (with audit log + reason)
-      const auth = await assertTeamCaptainOrOrganizer(userId, req.params.teamId, res, user ?? null, {
-        auditAction: 'CHANGE_ROLE',
-        auditReason: req.body?.reason,
-      });
-      if (!auth) return;
+      const team = await storage.getTeam(req.params.teamId);
+      if (!team) {
+        return res.status(404).json({ message: "Tím nebol nájdený" });
+      }
 
-      const { team } = auth;
+      const competition = await storage.getCompetition(team.competitionId);
+      if (!competition) {
+        return res.status(404).json({ message: "Súťaž nebola nájdená" });
+      }
+
+      if (user?.role === 'organizer' && competition.organizerId !== userId) {
+        return res.status(403).json({ message: "Môžeš spravovať len tímy vo vlastných súťažiach" });
+      }
 
       const member = team.members?.find(m => m.id === req.params.memberId);
       if (!member) {
@@ -3488,7 +3526,6 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         return res.status(400).json({ message: "Neplatná rola" });
       }
 
-      // Ensure only one captain per team
       if (role === 'captain') {
         const currentCaptain = team.members?.find(m => m.role === 'captain');
         if (currentCaptain) {
@@ -5404,8 +5441,8 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       
       const registration = await storage.createCompetitionRegistration(registrationData);
       
-      // Generate stateful single-use setup token (SHA-256 hashed, 48h expiry, stored in DB)
-      const setupToken = await storage.createCompetitionSetupToken(registration.id);
+      // Generate setup token for secure setup wizard access
+      const setupToken = generateSetupToken(registration.id);
       
       // Send confirmation email to organizer
       const appOrigin = process.env.APP_ORIGIN || `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`;
@@ -5540,23 +5577,12 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       }
       
       // For unauthenticated users OR if authenticated user is not owner/admin:
-      // Require valid stateful single-use setup token (DB-backed, SHA-256 hashed, 48h expiry)
+      // Require valid setup token (HMAC-based, generated at registration creation)
       if (!authorized) {
         const { setupToken } = req.body;
-        if (!setupToken) {
-          return res.status(403).json({ message: "Chýba overovací token" });
+        if (!setupToken || !verifySetupToken(id, setupToken)) {
+          return res.status(403).json({ message: "Invalid or missing setup token" });
         }
-        const tokenResult = await storage.validateAndConsumeSetupToken(setupToken, id);
-        if (tokenResult === 'expired') {
-          return res.status(403).json({ message: "Odkaz na nastavenie vypršal (platný 48 hodín). Kontaktujte support pre nový odkaz." });
-        }
-        if (tokenResult === 'used') {
-          return res.status(403).json({ message: "Tento odkaz bol už použitý. Prihláste sa na úpravu nastavení." });
-        }
-        if (tokenResult === 'invalid') {
-          return res.status(403).json({ message: "Neplatný alebo poškodený odkaz." });
-        }
-        // tokenResult === 'valid' — token consumed atomically
         authorized = true;
       }
       
