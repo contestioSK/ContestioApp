@@ -12,6 +12,16 @@ import fs from "fs";
 import path from "path";
 import { seedFishingAreas } from "../db/seed-fishing-areas";
 
+// Global error handlers — must be first, before any async code
+// In Node.js 15+, unhandled rejections = automatic process.exit(1) (silent crash)
+process.on("unhandledRejection", (reason) => {
+  console.error("[FATAL] unhandledRejection:", reason);
+});
+process.on("uncaughtException", (err) => {
+  console.error("[FATAL] uncaughtException:", err);
+  process.exit(1);
+});
+
 const app = express();
 
 // Security: Helmet middleware for security headers
@@ -651,9 +661,9 @@ async function startPhotoCleanupScheduler() {
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
-
+    console.error("[Express] Unhandled error:", err);
     res.status(status).json({ message });
-    throw err;
+    // No rethrow — rethrowing after res.json() destroys the socket and causes silent crashes
   });
 
   // importantly only setup vite in development and after
@@ -685,15 +695,19 @@ async function startPhotoCleanupScheduler() {
     console.error('[Server] Error seeding fishing areas:', error);
   }
   
-  // Start background schedulers
-  startAnnouncementScheduler();
-  startBattleScheduler(broadcastToUsers);
-  startBattleNotificationScheduler();
-  startRefereeCleanupScheduler();
-  startCompetitionReminderScheduler();
-  startDayBeforeCompetitionScheduler();
-  startCompetitionAutoFinishScheduler();
-  startPhotoCleanupScheduler();
+  // Start background schedulers — each wrapped in safeAsync to prevent silent crashes
+  function safeAsync(name: string, fn: () => Promise<void>): void {
+    fn().catch((e) => console.error(`[SCHEDULER:${name}] startup failed:`, e));
+  }
+
+  safeAsync("Announcement", () => startAnnouncementScheduler());
+  safeAsync("Battle", () => startBattleScheduler(broadcastToUsers));
+  safeAsync("BattleNotification", () => startBattleNotificationScheduler());
+  safeAsync("RefereeCleanup", () => startRefereeCleanupScheduler());
+  safeAsync("CompetitionReminder", () => startCompetitionReminderScheduler());
+  safeAsync("DayBefore", () => startDayBeforeCompetitionScheduler());
+  safeAsync("AutoFinish", () => startCompetitionAutoFinishScheduler());
+  safeAsync("PhotoCleanup", () => startPhotoCleanupScheduler());
 
   server.listen({
     port,
@@ -702,4 +716,7 @@ async function startPhotoCleanupScheduler() {
   }, () => {
     log(`serving on port ${port}`);
   });
-})();
+})().catch(err => {
+  console.error("[FATAL] Server startup failed:", err);
+  process.exit(1);
+});
