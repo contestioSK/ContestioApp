@@ -192,6 +192,9 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
   }
   
   const clients = new Map<WebSocket, ClientConnection>();
+
+  // One socket per user — kick old socket when same user reconnects
+  const activeSocketByUser = new Map<string, WebSocket>();
   
   // Roles allowed to use WebSocket (viewers use polling + cache instead)
   const WS_ALLOWED_ROLES = ['referee', 'organizer', 'admin'];
@@ -241,6 +244,15 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
             connection.userId = userSession.id;
             connection.userRole = userRole;
             connection.sessionId = sessionId;
+
+            // Kick previous socket for same user (handles stale connections from reconnect loops)
+            const existingWs = activeSocketByUser.get(userSession.id);
+            if (existingWs && existingWs !== ws && existingWs.readyState === WebSocket.OPEN) {
+              console.log(`[WS] Closing stale socket for user ${userSession.id}`);
+              try { existingWs.close(1000, 'replaced by new connection'); } catch {}
+            }
+            activeSocketByUser.set(userSession.id, ws);
+
             console.log(`[WS] User ${userSession.email} (role: ${userRole}) authenticated on WebSocket`);
             
             // Send authentication success
@@ -274,16 +286,21 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       }
     });
     
-    ws.on('close', () => {
-      const connection = clients.get(ws);
-      if (connection?.userId) {
-        console.log(`[WS] User ${connection.userId} disconnected from WebSocket`);
+    ws.on('close', (code, reason) => {
+      const conn = clients.get(ws);
+      console.log(`[WS] closed code=${code} reason="${reason?.toString() || ''}" user=${conn?.userId || 'unauthenticated'}`);
+      if (conn?.userId && activeSocketByUser.get(conn.userId) === ws) {
+        activeSocketByUser.delete(conn.userId);
       }
       clients.delete(ws);
     });
     
     ws.on('error', (error) => {
       console.error('[WS] WebSocket error:', error);
+      const conn = clients.get(ws);
+      if (conn?.userId && activeSocketByUser.get(conn.userId) === ws) {
+        activeSocketByUser.delete(conn.userId);
+      }
       clients.delete(ws);
     });
   });
