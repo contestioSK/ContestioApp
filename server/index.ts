@@ -13,23 +13,27 @@ import path from "path";
 import { seedFishingAreas } from "../db/seed-fishing-areas";
 
 // Global error handlers — must be first, before any async code
-// Intercept process.exit to capture stack trace (find WHERE it's called from)
-const _realExit = process.exit.bind(process);
-(process as any).exit = (code?: number) => {
-  process.stderr.write(`[EXIT-INTERCEPT] process.exit(${code}) called\n`);
-  const stack = new Error().stack;
-  process.stderr.write(`[EXIT-INTERCEPT] Call stack:\n${stack}\n`);
-  _realExit(code as number);
-};
 // Synchronous exit handler — guaranteed to flush before process terminates
 process.on("exit", (code) => {
-  process.stderr.write(`[EXIT] Process exiting with code ${code}\n`);
+  const m = process.memoryUsage();
+  process.stderr.write(`[EXIT] Process exiting with code ${code} | RSS: ${Math.round(m.rss/1024/1024)}MB Heap: ${Math.round(m.heapUsed/1024/1024)}/${Math.round(m.heapTotal/1024/1024)}MB\n`);
 });
+
+// Memory monitor — log every 15s to track growth before OOM
+setInterval(() => {
+  const m = process.memoryUsage();
+  process.stderr.write(`[MEM] RSS: ${Math.round(m.rss/1024/1024)}MB Heap: ${Math.round(m.heapUsed/1024/1024)}/${Math.round(m.heapTotal/1024/1024)}MB Ext: ${Math.round(m.external/1024/1024)}MB\n`);
+}, 15000).unref();
 // In Node.js 15+, unhandled rejections = automatic process.exit(1) (silent crash)
 process.on("unhandledRejection", (reason) => {
   console.error("[FATAL] unhandledRejection:", reason);
 });
-process.on("uncaughtException", (err) => {
+process.on("uncaughtException", (err: any) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error("[WARN] Port already in use, retrying in 2s...");
+    setTimeout(() => process.exit(1), 2000);
+    return;
+  }
   console.error("[FATAL] uncaughtException:", err);
   process.exit(1);
 });
@@ -183,10 +187,6 @@ async function startAnnouncementScheduler() {
     }
   }
   
-  // Run immediately on startup
-  await checkForUnnotifiedAnnouncements();
-  
-  // Then run every 60 seconds
   setInterval(checkForUnnotifiedAnnouncements, SCHEDULE_INTERVAL);
   log('[SCHEDULER] Announcement notification scheduler started (60s intervals)');
 }
@@ -264,10 +264,6 @@ async function startBattleScheduler(broadcastToUsers: (userIds: string[], data: 
     }
   }
   
-  // Run immediately on startup
-  await checkAndFinishExpiredBattles();
-  
-  // Then run every 60 seconds
   setInterval(checkAndFinishExpiredBattles, SCHEDULE_INTERVAL);
   log('[SCHEDULER] Battle auto-finish scheduler started (60s intervals)');
 }
@@ -310,10 +306,6 @@ async function startRefereeCleanupScheduler() {
     }
   }
   
-  // Run immediately on startup
-  await cleanupExpiredReferees();
-  
-  // Then run every hour
   setInterval(cleanupExpiredReferees, SCHEDULE_INTERVAL);
   log('[SCHEDULER] Referee status cleanup scheduler started (60min intervals)');
 }
@@ -392,10 +384,6 @@ async function startBattleNotificationScheduler() {
     }
   }
   
-  // Run immediately on startup
-  await checkBattleNotifications();
-  
-  // Then run every 60 seconds
   setInterval(checkBattleNotifications, SCHEDULE_INTERVAL);
   log('[SCHEDULER] Battle notification scheduler started (60s intervals)');
 }
@@ -453,10 +441,6 @@ async function startCompetitionReminderScheduler() {
     }
   }
   
-  // Run immediately on startup
-  await checkCompetitionReminders();
-  
-  // Then run every hour
   setInterval(checkCompetitionReminders, REMINDER_INTERVAL);
   log('[SCHEDULER] Competition reminder scheduler started (60min intervals)');
 }
@@ -517,10 +501,6 @@ async function startDayBeforeCompetitionScheduler() {
     }
   }
   
-  // Run immediately on startup
-  await checkDayBeforeEmails();
-  
-  // Then run every hour
   setInterval(checkDayBeforeEmails, SCHEDULER_INTERVAL);
   log('[SCHEDULER] Day-before competition scheduler started (60min intervals)');
 }
@@ -550,10 +530,6 @@ async function startCompetitionAutoFinishScheduler() {
     }
   }
   
-  // Run immediately on startup
-  await checkAndFinishExpiredCompetitions();
-  
-  // Then run every 5 minutes
   setInterval(checkAndFinishExpiredCompetitions, SCHEDULER_INTERVAL);
   log('[SCHEDULER] Competition auto-finish scheduler started (5min intervals)');
 }
@@ -700,11 +676,13 @@ async function startPhotoCleanupScheduler() {
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || '5000', 10);
   
-  // Seed fishing areas if needed (idempotent - safe to run every startup)
-  try {
-    await seedFishingAreas();
-  } catch (error) {
-    console.error('[Server] Error seeding fishing areas:', error);
+  // Seed fishing areas only in development (data already in production DB)
+  if (process.env.NODE_ENV !== 'production') {
+    try {
+      await seedFishingAreas();
+    } catch (error) {
+      console.error('[Server] Error seeding fishing areas:', error);
+    }
   }
   
   // Start background schedulers — each wrapped in safeAsync to prevent silent crashes
