@@ -1,0 +1,146 @@
+Toto, čo si sem poslal, je konečne konkrétne – a áno: z toho je veľmi pravdepodobné, že “tichý pád servera” ti spôsobujú unhandled rejections + pamäťové špičky zo Sharpu. Obe veci sú reálne, bežné, a obe sa dajú opraviť rýchlo.
+
+Nižšie máš môj verdikt + presný postup opráv (prioritizované podľa ROI).
+
+Verdikt: kde je koreň problému
+1) Unhandled promises v scheduleroch = tichý kill ✅ kritické
+
+Ak máš v server/index.ts spúšťanie async jobov bez .catch() (alebo bez try/catch vo vnútri async ticku), stačí jeden výpadok DB/Firebase/FS a server skončí.
+
+Aj keď dnes Node nemusí vždy defaultne exit(1) pri unhandled rejection, v praxi to v hostingoch (a pri niektorých nastaveniach) vyzerá presne takto: WS disconnect 1006, žiadny log, reštart.
+
+2) Sharp Promise.all na veľké fotky = OOM spike ✅ kritické
+
+Ak robíš naraz 6–8 variantov paralelne (a ešte to kombinuješ s HEIC decode), vieš si vystreliť RAM do stoviek MB až GB. To je klasický “tichý pád” (OOM kill).
+
+3) RAW fallbacky do /uploads = privacy + bezpečnostný dlh ✅ vysoká priorita
+
+To, že vám ostali 3 raw fallbacky, je problém. Možno “len cover/legacy import/avatar”, ale presne takto sa vracajú späť EXIF/GPS leaky a “uploads ako verejný bucket”.
+
+Fix plán (najlepšia jedna varianta, nie 10 možností)
+A) Urob server “nepadateľný ticho” (15 min, obrovský ROI)
+
+1) Global handlers (najvyššia návratnosť):
+Do server entrypointu (hneď na začiatok, ešte pred initom):
+
+process.on("unhandledRejection", (reason) => {
+  console.error("[FATAL] unhandledRejection", reason);
+});
+
+process.on("uncaughtException", (err) => {
+  console.error("[FATAL] uncaughtException", err);
+});
+
+2) Každý scheduler spúšťaj cez wrapper
+Nie someAsyncJob() len tak. Sprav helper:
+
+function safeAsync(name: string, fn: () => Promise<void>) {
+  fn().catch((e) => console.error(`[SCHEDULER:${name}]`, e));
+}
+
+A namiesto:
+
+setInterval(async () => { await cleanup(); }, 300000);
+
+daj:
+
+setInterval(() => safeAsync("cleanup", cleanup), 300000);
+
+3) Zruš “throw err” v Express error handleri
+Toto je presne tá vec, ktorá môže zabiť sockety aj po tom, čo odpovieš.
+V error handleri: zaloguj, odpovedz, a nevyhadzuj.
+
+B) Zníž pamäťové špičky pri generovaní variantov (30–60 min, huge ROI)
+
+Najhoršie je Promise.all(variantPromises) na veľkých obrázkoch.
+
+Fix: limit paralelizmus (napr. 2) + reuse pipeline.
+
+Najlacnejšie:
+
+použij p-limit (alebo vlastný limiter) a generuj varianty postupne/po dvoch
+
+Pseudo:
+
+import pLimit from "p-limit";
+const limit = pLimit(2);
+
+await Promise.all(
+  variants.map(v => limit(() => generateVariant(v)))
+);
+
+Dôležité: Sharp pipeline je “lazy” ale dekódovanie vie byť brutálne. Pri HEIC je to ešte horšie.
+
+Tiež:
+
+Ak sanitizuješ do JPEG, tak ďalšie varianty generuj už z toho JPEG (nie z raw HEIC).
+
+Zníž max dimension pri sanitize (2048) – pri reálnych shares to stačí.
+
+C) Definitívne odstráň RAW fallbacky (1–2h, high ROI)
+
+Tieto 3 body, čo si vypísal, sú presne miesta, kde sa vám to môže “vrátiť”:
+
+1) POST /api/diary/trips/upload-cover
+
+Nesmie existovať fallback coverImageUrl = /uploads/...
+
+Sprav rovnaký pattern ako v denníku po fixe:
+
+multer temp → sanitizeToFile() → uložiť sanitized → vrátiť len sanitized URL
+
+ak sanitize fail → 400/415 a nič neukladať
+
+2) POST /api/diary/catches/import
+
+Aj keď je “historické”, je to batch import – a práve to vie zabiť RAM.
+
+Tu musí byť:
+
+limit paralelizmu (spracuj po 1–2)
+
+žiadne raw photoUrl=/uploads/...
+
+pri chybe failed alebo preskočiť záznam s reportom, nie raw link
+
+3) POST /api/auth/profile/avatar
+
+“dvojitý fallback” na raw temp path je zlo.
+
+Avatar má byť vždy:
+
+sanitized + resized (napr. 256/512)
+
+ak fail → chyba, žiadna URL
+
+Ešte jedna tvrdá poznámka (UX + bezpečnosť)
+
+Ak máte uploads/ kedysi staticky servované, tak aj keď dnes “uploads middleware je hotový”, skontroluj, či:
+
+nejde náhodou stále cez nejaký reverse proxy path
+
+alebo či to nie je dostupné v dev environmentoch
+
+Chcem jednu vec: “uploads/ middleware hotový (lines 153–164)” – to môže znamenať len “blokujem route”, ale ak je to statický folder mimo Expressu, stále to môže tiecť.
+
+Čo by som spravil ako ďalší krok (ak chceš rýchlo vyhrať)
+
+Pridať global handlers + safeAsync wrapper (hneď).
+
+Odstrániť throw err z Express error handlera.
+
+Zlimitovať paralelizmus variantov v ImageService (p-limit=2).
+
+Upratať 3 raw fallback endpointy (žiadne /uploads URL nikde).
+
+Pri importe pridať “batch limiter” (inak si to zhodíš znovu).
+
+Ak mi sem dáš konkrétny výrez tých častí:
+
+server/index.ts okolo schedulerov (tých ~8 async volaní)
+
+image-service.ts okolo variant Promise.all
+
+tie 3 endpointy (cover/import/avatar)
+
+… tak ti poviem presne, čo prepísať riadok po riadku, aby to bolo čisté a bez regresií.
