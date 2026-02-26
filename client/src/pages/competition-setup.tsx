@@ -157,7 +157,7 @@ export default function CompetitionSetup() {
         location: registration.location || "",
         startDate: startDateStr,
         endDate: endDateStr,
-        startTime: "",
+        startTime: registration.startDate ? new Date(registration.startDate).toISOString().slice(11, 16) : "",
         contact: registration.contactPhone || registration.contactEmail || "",
         rules: registration.rules || "",
         scoringType: (registration.scoringType as "total" | "avg3" | "avg5") || "total",
@@ -248,7 +248,7 @@ export default function CompetitionSetup() {
 
       const updatePayload = {
         location: formData.location || null,
-        startDate: formData.startDate ? new Date(formData.startDate).toISOString() : null,
+        startDate: formData.startDate ? new Date(`${formData.startDate}T${formData.startTime || '00:00'}:00`).toISOString() : null,
         endDate: formData.endDate ? new Date(formData.endDate).toISOString() : null,
         contactPhone: formData.contact || null,
         registrationFee: formData.entryFee || null,
@@ -464,6 +464,11 @@ export default function CompetitionSetup() {
                               <SelectItem value="3">3 — Trojica</SelectItem>
                               <SelectItem value="4">4 — Štvorka</SelectItem>
                               <SelectItem value="5">5 — Pätica</SelectItem>
+                              <SelectItem value="6">6 — Šestica</SelectItem>
+                              <SelectItem value="7">7 — Sedmica</SelectItem>
+                              <SelectItem value="8">8 — Osmička</SelectItem>
+                              <SelectItem value="9">9 — Devätka</SelectItem>
+                              <SelectItem value="10">10 — Desiatka</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
