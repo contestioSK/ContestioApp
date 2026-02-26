@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from "react";
+import { useState } from "react";
 import { useAuthInit } from "@/hooks/useAuthInit";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useFishingTimeGuard } from "@/hooks/useFishingTimeGuard";
@@ -12,7 +12,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-
+import CatchFormDialog from "@/components/diary/CatchFormDialog";
+import { PremiumUpsellModal } from "@/components/PremiumUpsellModal";
 import { queryClient } from "@/lib/queryClient";
 import { 
   BookOpen, 
@@ -36,9 +37,6 @@ import {
 import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 import contestioLogo from "@assets/contestio logo_1760283270014.png";
 import contestioLogoDark from "@assets/contestio_logo_black_1766308180088.png";
-
-const CatchFormDialog = lazy(() => import("@/components/diary/CatchFormDialog"));
-const PremiumUpsellModal = lazy(() => import("@/components/PremiumUpsellModal").then(m => ({ default: m.PremiumUpsellModal })));
 
 type CatchLimits = {
   canCreate: boolean;
@@ -587,38 +585,30 @@ export default function DiaryLayout({ children, fullBleed = false }: DiaryLayout
           </TooltipProvider>
         )}
 
-        {/* Global Catch Creation Dialog — lazy loaded only when opened */}
-        {isCreateCatchOpen && (
-          <Suspense fallback={null}>
-            <CatchFormDialog
-              isOpen={true}
-              onClose={() => setIsCreateCatchOpen(false)}
-              editingCatch={null}
-              onSuccess={() => {
-                queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
-                queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/recent"] });
-                queryClient.invalidateQueries({ queryKey: ["/api/diary/catch-limits"] });
-                queryClient.invalidateQueries({ queryKey: ["/api/diary/trips"] });
-                queryClient.invalidateQueries({ queryKey: ["/api/diary/dashboard"] });
-                queryClient.invalidateQueries({ queryKey: ["/api/diary/stats"] });
-              }}
-            />
-          </Suspense>
-        )}
+        {/* Global Catch Creation Dialog */}
+        <CatchFormDialog
+          isOpen={isCreateCatchOpen}
+          onClose={() => setIsCreateCatchOpen(false)}
+          editingCatch={null}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
+            queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/recent"] });
+            queryClient.invalidateQueries({ queryKey: ["/api/diary/catch-limits"] });
+            queryClient.invalidateQueries({ queryKey: ["/api/diary/trips"] });
+            queryClient.invalidateQueries({ queryKey: ["/api/diary/dashboard"] });
+            queryClient.invalidateQueries({ queryKey: ["/api/diary/stats"] });
+          }}
+        />
 
-        {/* Premium Upsell Modal — lazy loaded only when opened */}
-        {isPremiumModalOpen && (
-          <Suspense fallback={null}>
-            <PremiumUpsellModal
-              isOpen={true}
-              onClose={() => {
-                setIsPremiumModalOpen(false);
-                setPremiumTrigger(undefined);
-              }}
-              trigger={premiumTrigger}
-            />
-          </Suspense>
-        )}
+        {/* Premium Upsell Modal */}
+        <PremiumUpsellModal
+          isOpen={isPremiumModalOpen}
+          onClose={() => {
+            setIsPremiumModalOpen(false);
+            setPremiumTrigger(undefined);
+          }}
+          trigger={premiumTrigger}
+        />
       </div>
     </div>
   );

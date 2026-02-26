@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { useWebSocket } from "@/hooks/useWebSocket";
@@ -61,10 +61,10 @@ import { getFishTypeLabel, getFishTypeOptions } from "@/utils/fishTypeMapping";
 import DiaryLayout from "@/components/DiaryLayout";
 import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 import { SimplePhotoSlider } from "@/components/diary/SimplePhotoSlider";
-const PhotoLightbox = lazy(() => import("@/components/diary/PhotoLightbox").then(m => ({ default: m.PhotoLightbox })));
-const CatchDetailSheet = lazy(() => import("@/components/diary/CatchDetailSheet").then(m => ({ default: m.CatchDetailSheet })));
-const CatchFormDialog = lazy(() => import("@/components/diary/CatchFormDialog"));
-const HistoricalCatchFormDialog = lazy(() => import("@/components/diary/HistoricalCatchFormDialog"));
+import { PhotoLightbox } from "@/components/diary/PhotoLightbox";
+import { CatchDetailSheet } from "@/components/diary/CatchDetailSheet";
+import CatchFormDialog from "@/components/diary/CatchFormDialog";
+import HistoricalCatchFormDialog from "@/components/diary/HistoricalCatchFormDialog";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { History, Clock } from "lucide-react";
@@ -615,31 +615,23 @@ export default function DiaryCatches() {
             </div>
           </header>
 
-          {(isCreateDialogOpen || !!editingCatch) && (
-            <Suspense fallback={null}>
-              <CatchFormDialog
-                isOpen={isCreateDialogOpen || !!editingCatch}
-                onClose={closeDialog}
-                editingCatch={editingCatch}
-                onSuccess={() => {
-                  queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
-                  queryClient.invalidateQueries({ queryKey: ["/api/diary/catch-limits"] });
-                }}
-              />
-            </Suspense>
-          )}
+          <CatchFormDialog
+            isOpen={isCreateDialogOpen || !!editingCatch}
+            onClose={closeDialog}
+            editingCatch={editingCatch}
+            onSuccess={() => {
+              queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
+              queryClient.invalidateQueries({ queryKey: ["/api/diary/catch-limits"] });
+            }}
+          />
 
-          {isHistoricalDialogOpen && (
-            <Suspense fallback={null}>
-              <HistoricalCatchFormDialog
-                isOpen={isHistoricalDialogOpen}
-                onClose={() => setIsHistoricalDialogOpen(false)}
-                onSuccess={() => {
-                  queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
-                }}
-              />
-            </Suspense>
-          )}
+          <HistoricalCatchFormDialog
+            isOpen={isHistoricalDialogOpen}
+            onClose={() => setIsHistoricalDialogOpen(false)}
+            onSuccess={() => {
+              queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
+            }}
+          />
 
           {/* Tabs: Aktuálne / Historické - historical tab only visible if preference enabled */}
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "current" | "historical")} className="w-full">
@@ -1448,39 +1440,35 @@ export default function DiaryCatches() {
 
           {/* Detail Panel - Editorial Design */}
           {selectedCatch && (
-            <Suspense fallback={null}>
-              <CatchDetailSheet
-                catchData={selectedCatch}
-                onClose={() => setSelectedCatch(null)}
-                onEdit={(catch_) => {
-                  setEditingCatch(catch_);
-                  setSelectedCatch(null);
-                }}
-                onDelete={(catch_) => {
-                  setDeletingCatch(catch_);
-                  setSelectedCatch(null);
-                }}
-                onOpenFullPage={(catchId) => {
-                  setSelectedCatch(null);
-                  setLocation(`/diary/catches/${catchId}`);
-                }}
-                onOpenLightbox={(photos, index) => {
-                  setLightboxState({ photos, currentIndex: index });
-                }}
-              />
-            </Suspense>
+            <CatchDetailSheet
+              catchData={selectedCatch}
+              onClose={() => setSelectedCatch(null)}
+              onEdit={(catch_) => {
+                setEditingCatch(catch_);
+                setSelectedCatch(null);
+              }}
+              onDelete={(catch_) => {
+                setDeletingCatch(catch_);
+                setSelectedCatch(null);
+              }}
+              onOpenFullPage={(catchId) => {
+                setSelectedCatch(null);
+                setLocation(`/diary/catches/${catchId}`);
+              }}
+              onOpenLightbox={(photos, index) => {
+                setLightboxState({ photos, currentIndex: index });
+              }}
+            />
           )}
 
           {/* Photo Lightbox - Portal renders to document.body */}
           {lightboxState && (
-            <Suspense fallback={null}>
-              <PhotoLightbox
-                photos={lightboxState.photos}
-                currentIndex={lightboxState.currentIndex}
-                onClose={() => setLightboxState(null)}
-                onNavigate={(newIndex) => setLightboxState(prev => prev ? { ...prev, currentIndex: newIndex } : null)}
-              />
-            </Suspense>
+            <PhotoLightbox
+              photos={lightboxState.photos}
+              currentIndex={lightboxState.currentIndex}
+              onClose={() => setLightboxState(null)}
+              onNavigate={(newIndex) => setLightboxState(prev => prev ? { ...prev, currentIndex: newIndex } : null)}
+            />
           )}
 
           {/* Delete Confirmation Dialog */}

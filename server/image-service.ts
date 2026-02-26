@@ -3,7 +3,6 @@ import path from "path";
 import fs from "fs/promises";
 import { existsSync } from "fs";
 import { uploadBufferToFirebase, isFirebaseConfigured } from "./firebase-storage";
-import pLimit from "p-limit";
 
 export interface ImageVariant {
   width: number;
@@ -79,10 +78,7 @@ export class ImageService {
       .toBuffer();
     const placeholder = `data:image/jpeg;base64,${placeholderBuffer.toString('base64')}`;
 
-    // Generate variants with a concurrency limit to prevent OOM spikes.
-    // Sharp decode (especially HEIC) can spike 50–100 MB per operation.
-    // With 6 variants unthrottled = 300–600 MB peak. Limit to 2 concurrent.
-    const limit = pLimit(2);
+    // Generate variants for each size and format in parallel
     const variantPromises: Promise<ImageVariant | null>[] = [];
 
     for (const targetWidth of SIZES) {
@@ -91,7 +87,7 @@ export class ImageService {
 
       for (const format of FORMATS) {
         variantPromises.push(
-          limit(async () => {
+          (async () => {
             const filename = `${baseFilename}-${targetWidth}w.${format}`;
             const contentType = format === 'webp' ? 'image/webp' : 'image/jpeg';
 
@@ -152,12 +148,12 @@ export class ImageService {
               console.warn(`Failed to process ${format} variant at ${targetWidth}w:`, error);
               return null;
             }
-          })
+          })()
         );
       }
     }
 
-    // Promise.all with p-limit — runs all but throttled to 2 concurrent Sharp operations
+    // Wait for all variants to be generated in parallel
     const variantResults = await Promise.all(variantPromises);
     variants.push(...variantResults.filter((v): v is ImageVariant => v !== null));
 
@@ -206,35 +202,6 @@ export class ImageService {
 
     // Return the smallest suitable variant
     return suitableVariants[0];
-  }
-
-  /**
-   * Sanitize an image file in-place: auto-orient from EXIF, strip ALL metadata
-   * (including GPS), re-encode to high-quality JPEG. Always produces JPEG output
-   * regardless of input format (HEIC, PNG, GIF → JPEG). Sharp decode failure
-   * throws — acts as implicit magic-bytes validation.
-   *
-   * This MUST be called before any file is saved to disk or served to the client.
-   */
-  static async sanitizeToFile(inputPath: string, outputPath: string): Promise<void> {
-    // Read metadata first to check dimensions
-    const metadata = await sharp(inputPath).metadata();
-
-    // Cap at 2048px — prevents HEIC/large RAW files from eating RAM in downstream processImage()
-    const MAX = 2048;
-    const needsResize =
-      (metadata.width && metadata.width > MAX) ||
-      (metadata.height && metadata.height > MAX);
-
-    const pipeline = sharp(inputPath)
-      .rotate()             // auto-orient from EXIF orientation tag
-      .withMetadata(false); // strip ALL EXIF/IPTC/XMP — especially GPS coordinates
-
-    if (needsResize) {
-      pipeline.resize(MAX, MAX, { fit: 'inside', withoutEnlargement: true });
-    }
-
-    await pipeline.jpeg({ quality: 90, mozjpeg: true }).toFile(outputPath);
   }
 
   static detectUrlBase(outputDir: string): string {
