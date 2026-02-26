@@ -18,24 +18,15 @@ const STRATEGY_PREFIX = "replitauth";
 function resolveStrategyHost(hostname: string): string {
   const domains = process.env.REPLIT_DOMAINS!.split(",").map(d => d.trim());
   
-  // Log for debugging
-  console.log(`[AUTH] Resolving hostname: ${hostname}`);
-  console.log(`[AUTH] Available domains:`, domains);
-  
-  // Check if hostname matches any registered domain
   const matchedDomain = domains.find(domain => 
     hostname === domain || hostname.endsWith(`.${domain}`)
   );
   
   if (matchedDomain) {
-    console.log(`[AUTH] Matched domain: ${matchedDomain}`);
     return `${STRATEGY_PREFIX}:${matchedDomain}`;
   }
   
-  // Fallback to first domain if no match found
-  const fallbackDomain = domains[0];
-  console.log(`[AUTH] No match found, using fallback domain: ${fallbackDomain}`);
-  return `${STRATEGY_PREFIX}:${fallbackDomain}`;
+  return `${STRATEGY_PREFIX}:${domains[0]}`;
 }
 
 const getOidcConfig = memoize(
@@ -158,8 +149,6 @@ export async function setupAuth(app: Express) {
 
   app.get("/api/login", (req, res, next) => {
     const strategyName = resolveStrategyHost(req.hostname);
-    console.log(`[AUTH] Login using strategy: ${strategyName}`);
-    
     passport.authenticate(strategyName, {
       prompt: "login consent",
       scope: ["openid", "email", "profile", "offline_access"],
@@ -168,8 +157,6 @@ export async function setupAuth(app: Express) {
 
   app.get("/api/callback", (req, res, next) => {
     const strategyName = resolveStrategyHost(req.hostname);
-    console.log(`[AUTH] Callback using strategy: ${strategyName}`);
-    
     passport.authenticate(strategyName, {
       successReturnToOrRedirect: "/diary",
       failureRedirect: "/api/login",
@@ -191,32 +178,25 @@ export async function setupAuth(app: Express) {
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
   const user = req.user as any;
 
-  console.log('[isAuthenticated] Check - isAuthenticated():', req.isAuthenticated(), 'user:', user ? 'exists' : 'null');
-
   // Check if user is authenticated
   if (!req.isAuthenticated()) {
-    console.log('[isAuthenticated] FAIL - Not authenticated');
     return res.status(401).json({ message: "Unauthorized" });
   }
 
   // If user doesn't have expires_at, it's the new auth system (email/password)
-  // Just verify they're authenticated and continue
   if (!user.expires_at) {
-    console.log('[isAuthenticated] SUCCESS - New auth system (no expires_at)');
     return next();
   }
 
   // For Replit OAuth users, check token expiration
   const now = Math.floor(Date.now() / 1000);
   if (now <= user.expires_at) {
-    console.log('[isAuthenticated] SUCCESS - OAuth token valid');
     return next();
   }
 
   // Token expired, try to refresh
   const refreshToken = user.refresh_token;
   if (!refreshToken) {
-    console.log('[isAuthenticated] FAIL - Token expired, no refresh token');
     res.status(401).json({ message: "Unauthorized" });
     return;
   }
@@ -225,10 +205,9 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
     const config = await getOidcConfig();
     const tokenResponse = await client.refreshTokenGrant(config, refreshToken);
     updateUserSession(user, tokenResponse);
-    console.log('[isAuthenticated] SUCCESS - Token refreshed');
     return next();
   } catch (error) {
-    console.log('[isAuthenticated] FAIL - Token refresh failed:', error);
+    console.error('[AUTH] Token refresh failed:', error);
     res.status(401).json({ message: "Unauthorized" });
     return;
   }

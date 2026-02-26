@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { useParams, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { useWebSocket } from "@/hooks/useWebSocket";
@@ -10,8 +10,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Trophy, Plus, AlertCircle, Clock, Fish, CheckCircle2, Medal, Flag, BarChart3, TrendingUp, Award, QrCode, Swords, X, ChevronLeft, ChevronRight, ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
 import { QRShareDialog } from "@/components/QRShareDialog";
-import { CatchDetailSheet } from "@/components/diary/CatchDetailSheet";
-import { PhotoLightbox } from "@/components/diary/PhotoLightbox";
+const CatchDetailSheet = lazy(() => import("@/components/diary/CatchDetailSheet").then(m => ({ default: m.CatchDetailSheet })));
+const PhotoLightbox = lazy(() => import("@/components/diary/PhotoLightbox").then(m => ({ default: m.PhotoLightbox })));
 import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 import { format, formatDistanceToNow } from "date-fns";
 import { sk } from "date-fns/locale";
@@ -19,7 +19,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import DiaryLayout from "@/components/DiaryLayout";
-import CatchFormDialog from "@/components/diary/CatchFormDialog";
+const CatchFormDialog = lazy(() => import("@/components/diary/CatchFormDialog"));
 import { BattleVictoryModal, type BattleVictoryStats } from "@/components/diary/BattleVictoryModal";
 import type { DiaryBattle, DiaryCatch, DiaryTrip } from "@shared/schema";
 import { getFishTypeLabel } from "@/utils/fishTypeMapping";
@@ -906,16 +906,17 @@ export default function BattleDetail() {
         </div>
 
       {/* Catch Form Dialog */}
-      <CatchFormDialog
-        isOpen={isAddCatchDialogOpen}
-        onClose={() => setIsAddCatchDialogOpen(false)}
-        editingCatch={null}
-        battleId={id}
-        onSuccess={() => {
-          // Invalidate catches query to refresh the feed
-          // This is handled automatically by CatchFormDialog
-        }}
-      />
+      {isAddCatchDialogOpen && (
+        <Suspense fallback={null}>
+          <CatchFormDialog
+            isOpen={isAddCatchDialogOpen}
+            onClose={() => setIsAddCatchDialogOpen(false)}
+            editingCatch={null}
+            battleId={id}
+            onSuccess={() => {}}
+          />
+        </Suspense>
+      )}
 
       {/* End Battle Confirmation Dialog */}
       <AlertDialog open={showEndBattleDialog} onOpenChange={setShowEndBattleDialog}>
@@ -943,21 +944,27 @@ export default function BattleDetail() {
       </AlertDialog>
 
       {/* Catch Detail Side Panel */}
-      <CatchDetailSheet
-        catchData={selectedCatch}
-        onClose={() => setSelectedCatch(null)}
-        onOpenFullPage={(catchId) => setLocation(`/diary/catches/${catchId}`)}
-        onOpenLightbox={(photos, index) => setLightboxState({ photos, currentIndex: index })}
-      />
+      {selectedCatch && (
+        <Suspense fallback={null}>
+          <CatchDetailSheet
+            catchData={selectedCatch}
+            onClose={() => setSelectedCatch(null)}
+            onOpenFullPage={(catchId) => setLocation(`/diary/catches/${catchId}`)}
+            onOpenLightbox={(photos, index) => setLightboxState({ photos, currentIndex: index })}
+          />
+        </Suspense>
+      )}
 
       {/* Photo Lightbox - Portal renders to document.body */}
       {lightboxState && (
-        <PhotoLightbox
-          photos={lightboxState.photos}
-          currentIndex={lightboxState.currentIndex}
-          onClose={() => setLightboxState(null)}
-          onNavigate={(newIndex) => setLightboxState(prev => prev ? { ...prev, currentIndex: newIndex } : null)}
-        />
+        <Suspense fallback={null}>
+          <PhotoLightbox
+            photos={lightboxState.photos}
+            currentIndex={lightboxState.currentIndex}
+            onClose={() => setLightboxState(null)}
+            onNavigate={(newIndex) => setLightboxState(prev => prev ? { ...prev, currentIndex: newIndex } : null)}
+          />
+        </Suspense>
       )}
     </DiaryLayout>
   );
