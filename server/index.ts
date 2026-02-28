@@ -6,8 +6,7 @@ import { NotificationService } from "./notification-service";
 import { emailService } from "./utils/email";
 import helmet from "helmet";
 import cors from "cors";
-// Rate limiting is handled per-endpoint in routes.ts (after auth middleware)
-import { sanitizeInput } from "./middleware/input-sanitization";
+import { authenticatedApiLimiter } from "./middleware/rate-limiting";
 import fs from "fs";
 import path from "path";
 import { seedFishingAreas } from "../db/seed-fishing-areas";
@@ -82,18 +81,18 @@ app.use(cors({
   credentials: true,
 }));
 
+// T002: Hard fail if SESSION_SECRET is missing in production
+if (process.env.NODE_ENV === 'production' && !process.env.SESSION_SECRET) {
+  console.error('[SECURITY] SESSION_SECRET is not set in production. Refusing to start.');
+  process.exit(1);
+}
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Security: Input sanitization (removes XSS attempts from all request bodies)
-app.use(sanitizeInput);
-
-// Rate limiting is handled per-endpoint in routes.ts:
-// - Auth endpoints: 20 req/15min (brute force protection)
-// - Password reset: 5 req/hour
-// - Catches: 150/min per user
-// - Battles: 60/hour per user
-// - Public endpoints: 100 req/15min
+// T004: Soft global rate limiter for all authenticated API traffic (2000 req/15min per userId)
+// Endpoint-specific harder limits are applied in routes.ts for write operations
+app.use('/api', authenticatedApiLimiter);
 
 app.use((req, res, next) => {
   const start = Date.now();
