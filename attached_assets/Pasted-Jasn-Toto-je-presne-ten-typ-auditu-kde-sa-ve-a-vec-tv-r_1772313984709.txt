@@ -1,0 +1,105 @@
+Jasné. Toto je presne ten typ „auditu“, kde sa veľa vecí tvári múdro, ale rozhoduje kontext endpointov. Moje hodnotenie:
+
+1) „POST /api/competitions/:id/teams bez loginu“ – môže byť bug, ale môže to byť aj feature
+
+Replit to označil ako high severity, ale to platí iba vtedy, ak:
+
+vytvorenie tímu má byť len pre prihlásených, alebo
+
+endpoint je verejný bez tokenu / bez jednorazového linku / bez rate limitu / bez anti-spam ochrany.
+
+Pri rybárskych súťažiach je úplne bežné, že registrácia tímu je bez loginu (ľudia nechcú účty). Vtedy je to OK, ale musí to byť kontrolované:
+
+Minimum pre “public registration”
+
+Povinný setup token / unikátna registrácia URL (single-use alebo aspoň expirácia + rate limit)
+
+Rate limit per IP + per competitionId
+
+Server-side validácia + deduplikácia (email/telefón/meno tímu – čokoľvek máte)
+
+Ideálne jednoduchý honeypot field (lacné, účinné)
+
+Takže: táto „kritická chyba“ je reálna iba vtedy, ak je to endpoint na internú správu tímov, nie registrácia.
+
+👉 Rozhodujúca otázka (a tu neuhýbaj):
+Prečo vlastne chceš, aby vytvorenie tímu vyžadovalo login?
+Ak je odpoveď „lebo bezpečnosť“, tak to je ego-safety. Reálne ti stačí token + limiter + audit.
+
+2) Globálny rate limiter pre prihlásených – áno, ale opatrne
+
+„300 requestov/15 min per userId“ je číslo od boku. Ty máš:
+
+polling,
+
+WS,
+
+dashboardy,
+
+invalidácie query.
+
+Globálny limiter je dobrý nápad, ale musí byť:
+
+per-route tierovaný (read-heavy vs write),
+
+burst-friendly (krátky spike OK),
+
+logovaný (aby si videl, čo reálne škrtíš).
+
+Najlepší kompromis pre MVP:
+
+global soft limiter (napr. 2000/15min user) + tvrdé limity na write endpointy (create/update/delete)
+
+plus per-IP limiter na verejné endpointy (registrácie)
+
+3) SESSION_SECRET “soft warning” – toto je legit problém
+
+Ak v produkcii server beží bez SESSION_SECRET, tak je to čistá chyba konfigurácie, ktorá môže rozbiť session bezpečnosť.
+Tu súhlasím: v produkcii hard fail (process exit) a hotovo.
+
+4) „Manuálne auth checky vnútri handlera“ – nie je diera, je to technický dlh
+
+Replit to označil ako “stredné”, ja to dávam ako nízke:
+
+ak sa to robí konzistentne a testuje, je to OK,
+
+riziko je skôr budúci refaktor, nie okamžitý exploit.
+
+Toto oprav až keď budeš upratovať routes.
+
+5) Sanitization middleware “na všetkých requestoch” – pozor na falošný pocit bezpečia
+
+Toto je presne ten bod, kde sa audity rady chvália. Regex „čistenie“ inputu často:
+
+nič reálne nerieši (React escapuje),
+
+môže poškodiť dáta (poznámky, názvy),
+
+nedáva ochranu proti HTML injection tam, kde renderuješ dangerouslySetInnerHTML (ak niekde je).
+
+Ak ten middleware stále máte: buď ho zruš, alebo ho obmedz na konkrétne polia a konkrétne use-casy.
+
+Moje odporúčanie: čo spraviť teraz (najlepšie ROI)
+
+Ujasniť účel /api/competitions/:id/teams
+
+Ak je to registrácia bez loginu → nechaj bez loginu, ale pridaj:
+
+rate limit (IP + competitionId)
+
+setup token / registration token (už ste riešili)
+
+honeypot
+
+Ak je to interný endpoint → pridaj isAuthenticated + kontrolu roly (captain/organizer).
+
+Hard fail na SESSION_SECRET v produkcii (hotovo za pár minút, vysoký efekt)
+
+Globálny limiter len “soft” + tvrdé limity na write
+(ak to prestrelíš, zabiješ UX a budeš riešiť “prečo mi appka nejde”)
+
+Ak mi pošleš (skopíruješ) konkrétny handler pre POST /api/competitions/:id/teams (len tú časť z routes.ts), poviem ti úplne presne:
+
+či je to reálna diera alebo len zle označená feature,
+
+a aký je najlepší minimálny patch bez toho, aby si si zabil registrácie.
