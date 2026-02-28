@@ -120,29 +120,15 @@ export class PhotoJobQueue extends EventEmitter {
       const baseFilename = path.parse(job.originalFilename).name;
       let originalUrl: string | undefined;
 
-      // Upload original to Firebase first for persistence (if Firebase is configured)
+      // Upload sanitized original to Firebase (originalPath is always a sanitized JPEG — no raw/EXIF)
       if (isFirebaseConfigured()) {
         try {
-          const originalExt = path.extname(job.originalFilename).toLowerCase() || '.jpg';
-          const originalStoragePath = `diary_photos/${job.userId}/${job.photoId}/original${originalExt}`;
-          
-          // Detect content type based on extension
-          const contentTypeMap: Record<string, string> = {
-            '.jpg': 'image/jpeg',
-            '.jpeg': 'image/jpeg',
-            '.png': 'image/png',
-            '.gif': 'image/gif',
-            '.webp': 'image/webp',
-            '.heic': 'image/heic',
-            '.heif': 'image/heif',
-          };
-          const contentType = contentTypeMap[originalExt] || 'image/jpeg';
-          
-          const result = await uploadToFirebase(job.originalPath, originalStoragePath, contentType);
+          const originalStoragePath = `diary_photos/${job.userId}/${job.photoId}/sanitized-original.jpg`;
+          const result = await uploadToFirebase(job.originalPath, originalStoragePath, 'image/jpeg');
           originalUrl = result.publicUrl;
-          console.log(`[PhotoQueue] Original uploaded to Firebase: ${originalStoragePath}`);
+          console.log(`[PhotoQueue] Sanitized original uploaded to Firebase: ${originalStoragePath}`);
         } catch (error) {
-          console.warn(`[PhotoQueue] Failed to upload original to Firebase, continuing with variants:`, error);
+          console.warn(`[PhotoQueue] Failed to upload sanitized original to Firebase, continuing with variants:`, error);
         }
       }
 
