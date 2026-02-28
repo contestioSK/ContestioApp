@@ -6757,57 +6757,68 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         return res.status(500).json({ message: "Priečinok pre fotografie neexistuje" });
       }
 
-      // Quickly save photos and return immediately - processing happens in background
+      // Sanitize each photo (EXIF strip) before serving URL — processing happens in background
       const photos = [];
       const failedPhotos = [];
       
       for (const file of req.files as any[]) {
         const photoId = randomUUID();
         const baseFilename = `${photoId}`;
-        const originalFilename = `${baseFilename}-original${path.extname(file.originalname)}`;
-        const originalPath = path.join(diaryPhotosDir, originalFilename);
+        // Always produce a .jpg — sanitizeToFile re-encodes as JPEG regardless of input format
+        const sanitizedFilename = `${baseFilename}-original.jpg`;
+        const sanitizedPath = path.join(diaryPhotosDir, sanitizedFilename);
         
-        console.log(`[PhotoUpload] Processing file: ${file.originalname} (${file.size} bytes), temp: ${file.path}`);
+        console.log(`[PhotoUpload] Sanitizing file: ${file.originalname} (${file.size} bytes), temp: ${file.path}`);
         
-        // Check if source file exists
+        // Check if source temp file exists
         if (!existsSync(file.path)) {
-          console.error(`[PhotoUpload] Source file doesn't exist: ${file.path}`);
+          console.error(`[PhotoUpload] Source temp file doesn't exist: ${file.path}`);
           failedPhotos.push(file.originalname);
           continue;
         }
         
-        // Move uploaded file to permanent location with retry logic
-        const moveSuccess = await safeFileMoveWithRetry(file.path, originalPath);
-        
-        if (!moveSuccess) {
-          console.error(`[PhotoUpload] Failed to move file after all retries: ${file.path} -> ${originalPath}`);
+        // Sanitize: strip EXIF, auto-rotate, re-encode as JPEG
+        // sanitizeToFile throws on decode failure (corrupt/unsupported file)
+        try {
+          await ImageService.sanitizeToFile(file.path, sanitizedPath);
+        } catch (sanitizeError: any) {
+          console.error(`[PhotoUpload] Sanitization failed for ${file.originalname}:`, sanitizeError.message);
+          // Clean up temp file
+          try { await fsPromises.unlink(file.path); } catch {}
           failedPhotos.push(file.originalname);
           continue;
         }
         
-        // Final verification - ensure file exists at destination
-        if (!existsSync(originalPath)) {
-          console.error(`[PhotoUpload] File doesn't exist at destination after move: ${originalPath}`);
+        // Delete RAW temp AFTER successful sanitization (confirmed by sanitizeToFile's own size check)
+        try {
+          await fsPromises.unlink(file.path);
+        } catch (unlinkError) {
+          console.warn(`[PhotoUpload] Could not delete temp file ${file.path}:`, unlinkError);
+          // Non-fatal — temp will be cleaned up by OS eventually
+        }
+        
+        // Final verification
+        if (!existsSync(sanitizedPath)) {
+          console.error(`[PhotoUpload] Sanitized file missing at: ${sanitizedPath}`);
           failedPhotos.push(file.originalname);
           continue;
         }
         
-        const destStats = await fsPromises.stat(originalPath);
-        console.log(`[PhotoUpload] File saved successfully: ${originalPath} (${destStats.size} bytes)`);
+        const destStats = await fsPromises.stat(sanitizedPath);
+        console.log(`[PhotoUpload] Sanitized successfully: ${sanitizedPath} (${destStats.size} bytes)`);
         
-        const originalUrl = `/attached_assets/diary_photos/${userId}/${originalFilename}`;
+        const sanitizedUrl = `/attached_assets/diary_photos/${userId}/${sanitizedFilename}`;
         
         photos.push({
           id: photoId,
-          url: originalUrl, // Return original immediately
+          url: sanitizedUrl,
           status: 'processing' as const,
-          originalUrl,
-          processingStartedAt: new Date().toISOString(), // Track when processing started
-          // Store processing info for later queuing
+          originalUrl: sanitizedUrl, // originalUrl now always points to sanitized file
+          processingStartedAt: new Date().toISOString(),
           _processingInfo: {
             userId,
-            originalPath,
-            originalFilename: file.originalname,
+            originalPath: sanitizedPath, // queue works from sanitized file
+            originalFilename: sanitizedFilename,
             outputBasePath: path.join(diaryPhotosDir, baseFilename)
           }
         });

@@ -171,6 +171,36 @@ export class ImageService {
     };
   }
 
+  /**
+   * Sanitize an image file: strip ALL EXIF metadata (incl. GPS), auto-rotate,
+   * and re-encode as JPEG. RAW temp is NOT deleted here — caller is responsible.
+   * Throws on decode failure (invalid/corrupt file) so caller can return 415.
+   */
+  static async sanitizeToFile(inputPath: string, outputPath: string): Promise<void> {
+    let outputWritten = false;
+    try {
+      await sharp(inputPath)
+        .rotate()
+        .withMetadata(false)
+        .jpeg({ quality: 90, mozjpeg: true })
+        .toFile(outputPath);
+
+      outputWritten = true;
+
+      // Verify output is a real file with content
+      const stats = await fs.stat(outputPath);
+      if (stats.size === 0) {
+        throw new Error('Sanitized output file is empty');
+      }
+    } catch (error) {
+      // If output was partially written, clean it up
+      if (outputWritten) {
+        try { await fs.unlink(outputPath); } catch {}
+      }
+      throw error;
+    }
+  }
+
   static async cleanupTempFile(filePath: string): Promise<void> {
     try {
       await fs.unlink(filePath);
