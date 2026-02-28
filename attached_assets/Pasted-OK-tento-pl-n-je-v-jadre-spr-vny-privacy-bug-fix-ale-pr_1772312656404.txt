@@ -1,0 +1,131 @@
+OK, tento plán je v jadre správny (privacy bug fix), ale presne takto sa appky “rozbijú” na druhotných detailoch. Keď si to ideš robiť druhýkrát, urob to bezpečne a postupne, aby si zase neskončil pri restore.
+
+Nižšie máš môj tvrdý review toho plánu – čo schvaľujem, čo je riziko, a čo musíš spraviť, aby to nespadlo.
+
+Verdikt k 4 bodom (áno, smer je správny)
+
+✅ Sanitize pred uložením + nikdy neposielať raw URL = správny fix.
+✅ Queue uploaduje už sanitizovaný originál = správne.
+✅ Reaper nesmie fallbackovať na originalUrl = absolútne správne.
+
+Teraz tie miny.
+
+Najväčšie riziká, ktoré ti to môžu rozbiť
+1) sanitizeToFile() nesmie byť “black hole” bez kontroly chýb
+
+Ak Sharp hodí error (nepodporovaný súbor, poškodený HEIC, gif), a ty:
+
+nezachytíš to,
+
+alebo nevyčistíš temp súbor,
+
+alebo nevrátiš správny status,
+tak skončíš s memory leak / disk leak / unhandled rejection.
+
+Must-have v sanitize:
+
+try/catch
+
+vždy cleanup temp súboru v finally (alebo jasne po úspechu)
+
+limit pixelov (Sharp má ochranu, ale môžeš naraziť)
+
+Poznámka: Sharp + GIF: ak príde animovaný GIF a ty ho preženieš do JPEG, spravíš len 1 frame. To nemusí vadiť, ale nesmie to spadnúť. Ak to nechceš riešiť, zakáž GIF pre diary (alebo aspoň animované).
+
+2) Upload endpoint: “delete RAW temp” až po úspešnej sanitizácii
+
+Najčastejší bug: zmažeš temp skôr, sanitizácia zlyhá, a potom nemáš nič – alebo horšie, začne to padať.
+
+Tok musí byť:
+
+Multer uloží temp
+
+sanitize -> output path
+
+over output existuje + má size > 0
+
+až potom unlink temp
+
+response klientovi
+
+A pri chybe: vráť 400/415, nie 500 (nevalidný file je user error).
+
+3) PhotoJobQueue: pozor na predpoklady o príponách a názvoch
+
+Ak dnes queue očakáva photoId-original.<ext>, a ty to zmeníš na sanitized-original.jpg, musíš:
+
+upraviť všetky miesta, kde sa skladá path
+
+upraviť DB update objekt (originalUrl)
+
+upraviť cleanup logiku a lokálne fallbacky
+
+Inak skončíš na “file not found” a uviaznuté processing joby.
+
+4) Reaper: “failed” je dobré, ale musí byť konzistentné
+
+Keď reaper označí fotku failed, musí to urobiť tak, aby:
+
+UI sa nelepilo na processing
+
+DB update neprepisoval url na niečo neexistujúce
+
+WS event (ak ho posielaš) nesmie triggerovať refresh loop
+
+Najbezpečnejšie je: status="failed" a nechať url tak ako je (alebo ho zmazať), ale nikdy nenastaviť url na original.
+
+Kritická vec: táto zmena ti zmení UX (a to je OK, ale musíš o tom vedieť)
+
+Predtým: užívateľ videl “originál hneď”.
+Teraz: uvidí “sanitized-original.jpg” hneď.
+
+To je v pohode – len si postráž:
+
+aby sanitize nerobil obrovský blok (ideálne rýchly re-encode, nie 6 variantov)
+
+aby si nespôsobil 3–5s “freeze” na upload requeste pri HEIC
+
+Ak chceš byť pragmatik: sanitize = rýchly JPEG re-encode, variants stále v queue. To je OK.
+
+Ako to spraviť tak, aby si to už nezrútil
+Postup v 2 krokoch (najvyššie ROI)
+
+Krok A – len upload endpoint + sanitizeToFile
+
+nechaj queue zatiaľ tak
+
+len zaruč, že čo ukladáš na disk a vraciaš klientovi, je už bez EXIF
+
+tým hneď zrušíš privacy leak, aj keby queue padala
+
+Krok B – až potom uprav queue upload a reaper
+
+keď A funguje, B už len zarovná systém
+
+Toto je najlepší “blast radius control”.
+
+Kontrolný checklist po implementácii (bez toho to nepúšťaj)
+
+Upload HEIC z iPhonu → uloží sa, nič nepadne, fotka sa zobrazí.
+
+Upload PNG → uloží sa, zobrazí sa.
+
+Upload “fake jpg” (prejmenovaný súbor) → endpoint vráti 415/400, server nespadne.
+
+Zabi queue (simuluj exception v ImageService) → reaper po 5 min nastaví failed, UI ukáže failed, žiadne raw URL.
+
+Skús grep v DB a v response payload: nesmie existovať /uploads/ URL pri diary fotkách.
+
+Jedna tvrdá poznámka k tomu, čo replit píše
+
+“HEIC, PNG, GIF — všetko skončí ako JPEG, žiadne výnimky.”
+
+Toto je marketingová veta, nie garancia. V realite:
+
+GIF (najmä animovaný) je problém,
+
+niektoré HEIC sú corrupt,
+
+občas sa ti objaví súbor s MIME image/heic, ale obsah je niečo iné.
+
+Preto potrebuješ robustný error handling, inak ti to zase zhodí proces.
