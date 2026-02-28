@@ -3260,7 +3260,7 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
-  app.post('/api/competitions/:id/teams', upload.fields([
+  app.post('/api/competitions/:id/teams', publicEndpointLimiter, upload.fields([
     { name: 'teamPhoto', maxCount: 1 },
     { name: 'memberPhoto_0', maxCount: 1 },
     { name: 'memberPhoto_1', maxCount: 1 },
@@ -3296,6 +3296,17 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       const competition = await storage.getCompetition(req.params.id);
       if (!competition) {
         return res.status(404).json({ message: "Competition not found" });
+      }
+
+      // Only allow team registration when competition is in registration phase
+      if (competition.status !== 'registration') {
+        return res.status(400).json({ 
+          message: competition.status === 'finished' 
+            ? "Táto súťaž je ukončená." 
+            : competition.status === 'live'
+            ? "Súťaž už prebieha, registrácia je uzavretá."
+            : "Registrácia tímov ešte nie je otvorená."
+        });
       }
 
       const maxMembers = competition.teamSize ?? 1;
