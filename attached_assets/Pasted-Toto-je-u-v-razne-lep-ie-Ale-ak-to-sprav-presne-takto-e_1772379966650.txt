@@ -1,0 +1,118 @@
+Toto je už výrazne lepšie. Ale ak to spravíš presne takto, ešte stále si necháš 2 zásadné diery: tiché zlyhanie bez dôvodu a rozbitie UX pri reálnych chybách. Uprav to ešte o pár “nudných” detailov a máš robustný systém.
+
+1) “Žiadny 503 nikdy” je prehnané (a niekedy zlé)
+
+Ak Firebase (alebo storage) spadne úplne, ty teraz “všetko uložíš bez fotiek” a UI dá toast. Super… kým to nie je kritický flow.
+
+Realita: existujú prípady, kde je správne request zastaviť, lebo bez obrázka vznikne záznam, ktorý nedáva zmysel (alebo vyrobí právny/organizačný konflikt).
+
+Najčastejší kandidát: competition logo pri vytvorení súťaže, ak je logo povinné pre verejný listing.
+Ale ak u vás povinné nie je, OK.
+
+Odporúčanie: nechaj možnosť “hard-fail” ako feature flag v optoch, aj keď default bude optional.
+
+mode: 'optional' | 'hardFail' | 'softRequired'
+A “hardFail” použiješ len tam, kde na tom trvá biznis logika.
+
+2) URL validácia startsWith('https://') je príliš slabá
+
+Áno, zastaví lokálne /uploads/.... Ale pustí ti aj:
+
+https://evil.com/... (ak by sa niekde podarilo podhodiť URL)
+
+alebo úplne inú doménu
+
+Správne pravidlo: whitelist pôvodu.
+
+povoliť len tvoj Firebase bucket host / CDN host
+
+ideálne validovať cez new URL(url).hostname a porovnať s whitelistom
+
+Príklad:
+
+firebasestorage.googleapis.com
+
+storage.googleapis.com
+
+alebo tvoj custom CDN host
+
+3) Chýba ti “INVALID_FILE” a “TOO_LARGE” — bez toho nevie UI povedať pravdu
+
+Teraz máš len UPLOAD_FAILED | PROCESSING_FAILED. To je málo.
+
+Používateľ potrebuje vedieť:
+
+“Nepodporovaný formát” (napr. SVG)
+
+“Súbor je príliš veľký”
+
+“Fotka je poškodená / nedá sa otvoriť”
+
+“Sieť/úložisko dočasne nedostupné”
+
+Minimálna sada errorov:
+
+INVALID_FILE_TYPE
+
+FILE_TOO_LARGE
+
+DECODE_FAILED (sharp)
+
+UPLOAD_FAILED
+
+Tým pádom vieš dať presný toast, nie generické “nepodarilo sa”.
+
+4) “photoUploadFailed: true” je fajn, ale pri viacerých fotkách to nestačí
+
+Na team/members uploaduješ viac súborov. Potrebuješ povedať, ktoré zlyhali.
+
+Odporúčanie:
+
+uploadIssues: Array<{ field: string; error: UploadError }>
+napr. memberPhoto_3 failol, ostatné ok.
+
+5) Soft-required pre referee catch: musíš to uzamknúť pravidlami v dátach
+
+Ak catch môže byť bez fotky, musí existovať stav, ktorý to v pravidlách zohľadní. Inak si otvoríš nekonečné hádky.
+
+Minimálne pridaj:
+
+evidenceStatus: 'ok' | 'missing_photo' | 'rejected' | 'pending'
+a UI + admin/referee workflow s tým ráta.
+
+Samotné photoUrl: null je príliš implicitné.
+
+6) Nezabudni na cleanup aj pri “multi-file” scenároch
+
+Píšeš “vždy cleanupTempFile”. Super, ale prakticky:
+
+musí bežať per-file v slučke
+
+aj keď jeden failne, ostatné sa musia upratať
+
+Tu sa často robia memory/disk leaky.
+
+Ako by som to uzavrel (najlepšia finálna verzia)
+UploadResult
+type UploadError =
+  | "INVALID_FILE_TYPE"
+  | "FILE_TOO_LARGE"
+  | "DECODE_FAILED"
+  | "UPLOAD_FAILED";
+
+type UploadResult =
+  | { ok: true; url: string }
+  | { ok: false; url: null; error: UploadError };
+Helper policy
+
+mode: 'optional' | 'softRequired' | 'hardFail' (default optional)
+
+allowedHosts: string[] whitelist
+
+valid URL = https + hostname in whitelist
+
+Response
+
+single file: avatarUpload: UploadResult
+
+multi: memberUploads: Record<string, UploadResult> alebo uploadIssues[]
