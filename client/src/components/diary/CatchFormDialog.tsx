@@ -433,11 +433,12 @@ export default function CatchFormDialog({
   }, [selectedBrandName, selectedFlavorName, selectedDiameter, baitSource]);
 
   // Auto-set tripId when active battle exists
+  const activeBattleTripId = activeBattle?.tripId;
   useEffect(() => {
-    if (isOpen && !editingCatch && activeBattle) {
-      setSelectedTripId(activeBattle.tripId);
+    if (isOpen && !editingCatch && activeBattleTripId) {
+      setSelectedTripId(activeBattleTripId);
     }
-  }, [isOpen, editingCatch, activeBattle]);
+  }, [isOpen, editingCatch?.id, activeBattleTripId]);
 
   // Update form when editing catch changes
   useEffect(() => {
@@ -576,7 +577,8 @@ export default function CatchFormDialog({
         verified: false,
       });
     }
-  }, [editingCatch, form, activeBattle, manufacturers, userBrands]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editingCatch?.id, isOpen]);
 
   // Toggle favorite bait mutation
   const toggleFavoriteMutation = useMutation({
