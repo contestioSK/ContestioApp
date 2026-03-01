@@ -5,7 +5,8 @@ import { randomUUID, createHmac } from "crypto";
 import { storage } from "./storage";
 import { db } from "./db";
 import { eq, and, gt, desc, or, inArray, sql, isNotNull } from "drizzle-orm";
-import { diaryBattles, diaryCatches, users, baitManufacturers, baitProductLines, baitFlavors, userArsenalBaits, userBadges, fishingAreas, friendships, equipmentManufacturers, equipmentCategories, equipmentProducts, userArsenalEquipment, insertUserArsenalEquipmentSchema, userBaitBrands, userBaitFlavors, insertUserBaitBrandSchema, insertUserBaitFlavorSchema } from "@shared/schema";
+import { diaryBattles, diaryCatches, diaryTrips, users, baitManufacturers, baitProductLines, baitFlavors, userArsenalBaits, userBadges, fishingAreas, friendships, equipmentManufacturers, equipmentCategories, equipmentProducts, userArsenalEquipment, insertUserArsenalEquipmentSchema, userBaitBrands, userBaitFlavors, insertUserBaitBrandSchema, insertUserBaitFlavorSchema } from "@shared/schema";
+import { deleteFromFirebase, isFirebaseConfigured } from "./firebase-storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { hashPassword, validatePassword, generateVerificationToken, generateTokenExpiration } from "./utils/auth";
 import { emailService } from "./utils/email";
@@ -6993,6 +6994,46 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
     }
   });
 
+  // Helper: extract Firebase storagePath from a public URL
+  function firebasePathFromUrl(url: string): string | null {
+    try {
+      const u = new URL(url);
+      if (
+        u.hostname === 'storage.googleapis.com' ||
+        u.hostname === 'firebasestorage.googleapis.com'
+      ) {
+        // storage.googleapis.com/{bucket}/{storagePath}
+        const parts = u.pathname.split('/').slice(2); // drop leading '' and bucket
+        return parts.join('/');
+      }
+    } catch {}
+    return null;
+  }
+
+  // Helper: delete all Firebase photo files for a list of catch photo arrays
+  async function cleanupFirebasePhotos(
+    photosArrays: Array<Array<{url: string; originalUrl?: string; variants?: Array<{url: string}>}> | null | undefined>
+  ) {
+    if (!isFirebaseConfigured()) return;
+    const urls = new Set<string>();
+    for (const photos of photosArrays) {
+      if (!photos) continue;
+      for (const photo of photos) {
+        if (photo.url) urls.add(photo.url);
+        if (photo.originalUrl) urls.add(photo.originalUrl);
+        for (const v of photo.variants || []) {
+          if (v.url) urls.add(v.url);
+        }
+      }
+    }
+    await Promise.allSettled(
+      [...urls].map(url => {
+        const p = firebasePathFromUrl(url);
+        return p ? deleteFromFirebase(p) : Promise.resolve();
+      })
+    );
+  }
+
   app.delete('/api/diary/trips/:id', isAuthenticated, async (req: any, res) => {
     try {
       const userId = getUserId(req);
@@ -7003,11 +7044,26 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       if (!trip) {
         return res.status(404).json({ message: "Trip not found" });
       }
-      
+
+      // Collect all catch photos + trip cover before deletion for Firebase cleanup
+      const catches = await db
+        .select({ photos: diaryCatches.photos })
+        .from(diaryCatches)
+        .where(eq(diaryCatches.tripId, tripId));
+
       await storage.deleteDiaryTrip(tripId, userId);
       
       // Update seasonal goals progress after trip deletion
       await storage.updateAllUserGoalsProgress(userId);
+
+      // Clean up Firebase files in background (non-blocking)
+      const photosArrays = catches.map(c => c.photos as any);
+      if (trip.coverImageUrl) {
+        photosArrays.push([{ url: trip.coverImageUrl }] as any);
+      }
+      cleanupFirebasePhotos(photosArrays).catch(err =>
+        console.error('[CLEANUP] Firebase trip photo cleanup failed:', err)
+      );
       
       res.json({ message: "Trip deleted successfully" });
     } catch (error) {
@@ -7857,6 +7913,13 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
           console.error('[BG] Error updating goals progress:', error);
         });
       }, 0);
+
+      // Clean up Firebase photos in background
+      if (catch_.photos && (catch_.photos as any[]).length > 0) {
+        cleanupFirebasePhotos([catch_.photos as any]).catch(err =>
+          console.error('[CLEANUP] Firebase catch photo cleanup failed:', err)
+        );
+      }
       
       res.json({ message: "Catch deleted successfully" });
     } catch (error) {
