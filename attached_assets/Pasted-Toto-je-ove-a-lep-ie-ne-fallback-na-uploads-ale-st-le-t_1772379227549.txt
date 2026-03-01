@@ -1,0 +1,85 @@
+Toto je oveľa lepšie než “fallback na /uploads”, ale stále tam vidím 2 slabé miesta, ktoré ti v produkcii spravia bordel v dátach a supporte.
+
+1) “optional → vráti null” je OK len vtedy, keď to UI prizná používateľovi
+
+Ak endpoint zlyhá pri fotke a ty potichu vrátiš null, používateľ si bude myslieť, že fotku pridal. O týždeň: “kde je moja fotka?”
+
+Minimálny fix: nech helper vracia aj stav:
+
+ok: true, url
+
+ok: false, reason: 'upload_failed' (a url null)
+
+A backend to pošle do response ako napr. photoUploadStatus. UI môže ukázať toast:
+“Fotka sa nepodarila nahrať. Záznam je uložený, pridaj fotku neskôr.”
+
+Bez toho je to tichá strata dát.
+
+2) Zle zvolená “required” klasifikácia (aspoň 2 položky)
+Avatar ako required? Nesúhlasím.
+
+Avatar je typicky “nice-to-have”. Keď spravíš avatar required, zbytočne blokuješ profil update kvôli fotke. To je zlý tradeoff.
+
+Správne:
+
+Avatar: optional (ak failne, profil sa uloží bez zmeny avatara + toast)
+
+Sponsor logo ako required? Závisí.
+
+Ak sponzor bez loga nedáva zmysel v UI, tak ok. Ale ak sponzor sa dá vytvoriť aj bez loga (a logo doplníš neskôr), tak to má byť optional.
+
+Rozhodovací test:
+
+“Vie užívateľ pokračovať v práci aj bez loga?”
+Ak áno → optional + jasná hláška.
+
+3) Catch foto (rozhodca) ako optional — tu si ujasni pravidlá hry
+
+Pre súťažné catch-e môže byť fotka dôkaz. Ak ju dovolíš vynechať, otvoríš si dvere pre konflikty (“rozhodca zadal úlovok bez fotky”).
+
+Ak chcete mať férový systém, máš 2 čisté režimy:
+
+Hard rule: rozhodcovský catch vyžaduje fotku → required=true
+
+Soft rule: dovolíš bez fotky, ale catch dostane stav unverified / needs_photo a v UI sa označí
+
+“optional bez následkov” je najhoršie.
+
+4) Jedna technická pasca: processImage nesmie vracať “best URL” bez kontroly liveliness
+
+Ak Firebase upload failne, a ty to pri optional prehltneš, musíš mať istotu, že:
+
+processImage() nevráti lokálny URL fallback
+
+ani nevráti “dočasný” path
+
+Inak si zase potichu vrátil /uploads problém v inom kabáte.
+
+Podmienka, ktorú mu daj:
+
+helper nikdy nesmie vrátiť URL, ktorá nezačína na https://...firebase... (alebo iný tvoj stable CDN origin).
+Ak nie → považuj za fail.
+
+Moja finálna verzia návrhu (jednoduchá, ale správna)
+
+helper processAndUploadImage(...) nech vracia:
+
+type UploadResult =
+  | { ok: true; url: string }
+  | { ok: false; url: null; error: "UPLOAD_FAILED" | "INVALID_FILE" | "PROCESSING_FAILED" };
+
+calling code:
+
+ak required a ok:false → 503 + message
+
+ak optional a ok:false → 200/201, ale v payload photoUpload: { ok:false, error:"UPLOAD_FAILED" }
+
+A toto priamo v UI zobraziť.
+
+Upravená klasifikácia (čo by som zmenil hneď)
+
+Avatar: optional
+
+Sponsor logo: skôr optional (ak nie je zásadne required pre flow)
+
+Catch foto (referee): required alebo soft rule s flagom, nie “optional a hotovo”
