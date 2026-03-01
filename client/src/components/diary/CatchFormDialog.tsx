@@ -769,45 +769,21 @@ export default function CatchFormDialog({
       // Online mode - instant save with background photo upload
 
       if (editingCatch) {
-        // EDITING MODE: Use old flow with photo upload first
-        let newPhotos: Array<PhotoObject> = [];
-
-        if (selectedPhotos.length > 0) {
-          try {
-            const formData = new FormData();
-            selectedPhotos.forEach((photo) => {
-              formData.append("photos", photo);
-            });
-
-            const uploadResponse = await fetch("/api/diary/photos/upload", {
-              method: "POST",
-              body: formData,
-              credentials: "include",
-            });
-
-            if (!uploadResponse.ok) {
-              throw new Error("Failed to upload photos");
-            }
-
-            const uploadResult = await uploadResponse.json();
-            newPhotos = uploadResult.photos || [];
-          } catch (error) {
-            console.error("Photo upload error:", error);
-            toast({
-              title: "❌ Chyba pri nahrávaní fotografií",
-              description: "Úlovok bude aktualizovaný bez nových fotografií",
-              variant: "destructive",
-            });
-          }
-        }
-
-        const allPhotos = [...existingPhotos, ...newPhotos];
-        const finalData =
-          allPhotos.length > 0
-            ? { ...processedData, photos: allPhotos }
+        // EDITING MODE: Instant save with background photo upload (same as new catch)
+        const immediateData =
+          existingPhotos.length > 0
+            ? { ...processedData, photos: existingPhotos }
             : processedData;
 
-        updateCatchMutation.mutate(finalData);
+        const photosToUpload = [...selectedPhotos];
+
+        updateCatchMutation.mutate(immediateData, {
+          onSuccess: () => {
+            if (photosToUpload.length > 0) {
+              uploadPhotosInBackground(editingCatch.id, photosToUpload);
+            }
+          },
+        });
       } else {
         // NEW CATCH MODE: Instant save with background photo upload
 

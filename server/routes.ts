@@ -6934,6 +6934,11 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       
       // Update seasonal goals progress after trip creation
       await storage.updateAllUserGoalsProgress(userId);
+
+      // Check badges after trip creation (fishing_fanatic counts unique days at water)
+      checkAndAwardBadges(userId).catch(err =>
+        console.error('[BADGES] Error checking badges after trip create:', err)
+      );
       
       res.status(201).json(newTrip);
     } catch (error) {
@@ -7453,9 +7458,13 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       });
       progress.fishing_fanatic = uniqueTripDays.size;
       
-      // predator_threat: Count predator fish (stuka, zubac, sumec)
-      const predatorTypes = ['stuka', 'zubac', 'sumec', 'zubac_zubatovity'];
-      progress.predator_threat = userCatches.filter(c => predatorTypes.includes(c.fishType)).length;
+      // predator_threat: Count predator fish — normalize fishType before comparison
+      const normalizeFishType = (s: string) => s.toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9_]/g, '_');
+      const predatorNorm = ['stuka', 'zubac', 'sumec', 'zubac_zubatovity', 'bolen', 'okovanka'];
+      progress.predator_threat = userCatches.filter(c =>
+        c.fishType && predatorNorm.some(p => normalizeFishType(c.fishType).includes(p))
+      ).length;
       
       // big_mama_hunter: Biggest carp weight
       const carpTypes = ['kapor_supinac', 'kapor_lysec'];
@@ -7978,10 +7987,12 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       }).filter(Boolean));
       progress.fishing_fanatic = uniqueDays.size;
       
-      // predator_threat: Count predator fish (Šťuka, Zubáč, Sumec)
-      const predatorTypes = ['šťuka', 'stuka', 'zubáč', 'zubac', 'sumec'];
-      progress.predator_threat = userCatches.filter(c => 
-        predatorTypes.some(p => c.fishType?.toLowerCase().includes(p))
+      // predator_threat: Count predator fish — normalize to avoid diacritics mismatch
+      const normalizeFT = (s: string) => s.toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9_]/g, '_');
+      const predatorNormTypes = ['stuka', 'zubac', 'sumec', 'zubac_zubatovity', 'bolen', 'okovanka'];
+      progress.predator_threat = userCatches.filter(c =>
+        c.fishType && predatorNormTypes.some(p => normalizeFT(c.fishType).includes(p))
       ).length;
       
       // big_mama_hunter: Max weight of carp in kg
@@ -9287,6 +9298,17 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       
       const friendship = await storage.sendFriendRequest(userId, recipientId);
       res.status(201).json(friendship);
+
+      // Send push + WebSocket notification to recipient (non-blocking)
+      storage.getUser(userId).then(sender => {
+        if (sender) {
+          const senderName = [sender.firstName, sender.lastName].filter(Boolean).join(' ')
+            || sender.email || 'Niekto';
+          notificationService.notifyFriendRequest(userId, senderName, recipientId).catch(err =>
+            console.error('[FRIENDS] Notification error:', err)
+          );
+        }
+      }).catch(() => {});
     } catch (error: any) {
       console.error('[FRIENDS] Error sending friend request:', error);
       res.status(400).json({ message: error.message || 'Chyba pri odoslaní žiadosti' });

@@ -104,9 +104,9 @@ export function CatchDetailSheet({
                 </div>
                 <div className="text-right">
                   <p className="font-semibold text-foreground text-sm">
-                    {(catchData as any).spotName || (catchData as any).tripLocation || catchData.spot || 'Neuvedené'}
+                    {catchData.location || catchData.spot || 'Neuvedené'}
                   </p>
-                  {catchData.spot && (catchData as any).spotName && (
+                  {catchData.location && catchData.spot && catchData.location !== catchData.spot && (
                     <p className="text-xs text-muted-foreground">{catchData.spot}</p>
                   )}
                 </div>
