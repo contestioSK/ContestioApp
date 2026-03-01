@@ -807,7 +807,7 @@ export const insertCompetitionSchema = createInsertSchema(competitions).omit({
       const num = typeof val === 'string' ? parseInt(val, 10) : val;
       return isNaN(num as number) ? 1 : num;
     },
-    z.number().int().min(1).max(10).optional()
+    z.number().int().min(1).max(5).optional()
   ),
   maxTeams: optionalIntegerField,
   maxReferees: optionalIntegerField,

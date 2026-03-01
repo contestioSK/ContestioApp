@@ -108,7 +108,7 @@ const step2Schema = z.object({
   minWeight: z.coerce.number().min(1).max(15).default(2),
   bigFishThreshold: z.coerce.number().min(1).max(50).default(10),
   resultBlocking: z.enum(["none", "12h", "24h"]).default("none"),
-  teamSize: z.coerce.number().min(1, "Minimálne 1 člen").max(10, "Maximálne 10 členov").default(1),
+  teamSize: z.coerce.number().min(1, "Minimálne 1 člen").max(5, "Maximálne 5 členov").default(1),
   firstPlacePrize: z.string().optional(),
   secondPlacePrize: z.string().optional(),
   thirdPlacePrize: z.string().optional(),
