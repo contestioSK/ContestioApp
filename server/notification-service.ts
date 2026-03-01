@@ -772,4 +772,41 @@ export class NotificationService {
       console.error('[NotificationService] Error sending battle finished notification:', error);
     }
   }
+
+  // Notify user about incoming friend request
+  async notifyFriendRequest(
+    fromUserId: string,
+    fromUserName: string,
+    toUserId: string
+  ): Promise<void> {
+    try {
+      // WebSocket (if recipient is connected)
+      if (this.broadcaster) {
+        this.broadcaster.broadcastToUsers([toUserId], {
+          type: 'friend_request',
+          fromUserId,
+          fromUserName,
+          timestamp: new Date()
+        });
+      }
+
+      // Push notification
+      await this.sendPushNotifications([toUserId], {
+        title: '👋 Nová žiadosť o priateľstvo',
+        body: `${fromUserName} ťa pozval(a) medzi priateľov`,
+        icon: '/favicon.ico',
+        tag: `friend-request-${fromUserId}`,
+        url: '/diary',
+        data: {
+          type: 'friend_request',
+          fromUserId,
+          fromUserName
+        }
+      });
+
+      console.log(`[NotificationService] Friend request notification sent from ${fromUserId} to ${toUserId}`);
+    } catch (error) {
+      console.error('[NotificationService] Error sending friend request notification:', error);
+    }
+  }
 }
