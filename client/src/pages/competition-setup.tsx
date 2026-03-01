@@ -51,7 +51,7 @@ const basicsSchema = z.object({
   scoringType: z.enum(["total", "avg3", "avg5"]).default("total"),
   minWeight: z.number().min(0).max(100).default(2),
   entryFee: z.string().min(1, "Zadajte výšku štartovného"),
-  teamSize: z.number().min(1, "Minimálne 1 člen").max(10, "Maximálne 10 členov").default(1),
+  teamSize: z.number().min(1, "Minimálne 1 člen").max(5, "Maximálne 5 členov").default(1),
   firstPlacePrize: z.string().optional(),
   secondPlacePrize: z.string().optional(),
   thirdPlacePrize: z.string().optional(),
