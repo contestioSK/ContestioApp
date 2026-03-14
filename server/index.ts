@@ -10,6 +10,7 @@ import { authenticatedApiLimiter } from "./middleware/rate-limiting";
 import fs from "fs";
 import path from "path";
 import { seedFishingAreas } from "../db/seed-fishing-areas";
+import { seedAdminUsers } from "../db/seed-admin-users";
 
 const app = express();
 
@@ -682,6 +683,13 @@ async function startPhotoCleanupScheduler() {
     await seedFishingAreas();
   } catch (error) {
     console.error('[Server] Error seeding fishing areas:', error);
+  }
+
+  // Seed admin users if needed (idempotent - safe to run every startup)
+  try {
+    await seedAdminUsers();
+  } catch (error) {
+    console.error('[Server] Error seeding admin users:', error);
   }
   
   // Start background schedulers
