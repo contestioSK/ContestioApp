@@ -24,10 +24,11 @@ interface PremiumUpsellModalProps {
   trigger?: string;
 }
 
-const MONTHLY_PRICE = 5.90;
-const YEARLY_PRICE = 59.90;
-const YEARLY_MONTHLY_EQUIVALENT = 4.99;
-const YEARLY_SAVINGS = 11;
+const MONTHLY_PRICE = 7.00;
+const MONTHLY_ORIGINAL_PRICE = 9.00;
+const YEARLY_PRICE = 60.00;
+const YEARLY_MONTHLY_EQUIVALENT = 5.00;
+const YEARLY_SAVINGS = 24;
 
 export function PremiumUpsellModal({ isOpen, onClose, trigger }: PremiumUpsellModalProps) {
   const [promoCode, setPromoCode] = useState("");
@@ -123,6 +124,11 @@ export function PremiumUpsellModal({ isOpen, onClose, trigger }: PremiumUpsellMo
               <DialogTitle className="text-2xl font-bold text-center bg-gradient-to-r from-amber-200 via-amber-400 to-amber-200 bg-clip-text text-transparent">
                 Lovte bez obmedzení s Contestio Premium
               </DialogTitle>
+              <div className="flex justify-center mt-3">
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-red-500/10 text-red-400 border border-red-500/30">
+                  🔴 ZĽAVA PRE PRVÝCH 500 RYBÁROV
+                </span>
+              </div>
               {trigger && (
                 <p className="text-slate-400 text-center text-sm mt-2">
                   Pre túto funkciu potrebujete Premium
@@ -159,7 +165,10 @@ export function PremiumUpsellModal({ isOpen, onClose, trigger }: PremiumUpsellMo
                     <p className="text-2xl font-mono font-medium text-[#F97316]">{discountedMonthly.toFixed(2)} €</p>
                   </>
                 ) : (
-                  <p className="text-2xl font-mono font-medium text-[#F97316]">{MONTHLY_PRICE.toFixed(2)} €</p>
+                  <>
+                    <p className="text-sm text-slate-500 line-through">{MONTHLY_ORIGINAL_PRICE.toFixed(2)} €</p>
+                    <p className="text-2xl font-mono font-medium text-[#F97316]">{MONTHLY_PRICE.toFixed(2)} €</p>
+                  </>
                 )}
                 <p className="text-xs text-slate-500 mt-1">Flexibilné zrušenie</p>
                 <Button 
