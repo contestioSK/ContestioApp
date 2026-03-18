@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Check, X, Star, Crown, Zap, Building, BookOpen, Sparkles, Trophy, BookHeart, ChevronDown, Loader2 } from "lucide-react";
+import { Check, X, Star, Crown, Zap, Building, BookOpen, Sparkles, Trophy, BookHeart, ChevronDown, Loader2, Lock } from "lucide-react";
 import { TacticalIcon, TacticalIconInline } from "@/components/ui/tactical-icon";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
@@ -173,22 +173,21 @@ export default function Pricing() {
     price: "0",
     currency: "€",
     period: "",
-    description: "Vyskúšajte základné funkcie zadarmo",
+    description: "Ideálne na vyskúšanie appky.",
     icon: BookOpen,
     color: "from-gray-500 to-gray-600",
-    cta: "Používať zadarmo",
+    cta: "Začať zadarmo",
     features: [
-      "✅ Neobmedzené výpravy (posledné 3 prístupné)",
-      "✅ Kapacita 50 úlovkov",
-      "✅ 1 fotografia na úlovok",
-      "✅ Prijímanie výziev v Battle"
+      "Kapacita 50 úlovkov",
+      "1 fotografia na úlovok",
+      "Prijímanie výziev v Battle",
+      "História výprav (posledné 3)"
     ],
-    missingFeatures: [
-      "❌ Ukladanie GPS lokalít",
-      "❌ Vytváranie vlastných Súbojov",
-      "❌ Predpoveď počasia a aktivity",
-      "❌ Neobmedzená história výprav",
-      "❌ Neobmedzené fotografie k úlovkom"
+    lockedFeatures: [
+      "Ukladanie tajných GPS lokalít",
+      "Tvorba vlastných Battles",
+      "Neobmedzená história a fotky",
+      "Predpoveď počasia a tlaku"
     ]
   };
 
@@ -201,21 +200,18 @@ export default function Pricing() {
     yearlyOriginalPrice: "84,00",
     yearlySavings: "24 €",
     currency: "€",
-    description: "Všetky funkcie bez obmedzení",
+    description: "Všetky funkcie bez obmedzení. Ovládni rebríčky.",
     icon: Sparkles,
     color: "from-teal-500 to-teal-600",
-    cta: "Upgradovať na Premium",
+    cta: "Získať Premium",
     features: [
-      "✅ **Neobmedzené výpravy**",
-      "✅ **Neobmedzené úlovky**",
-      "📸 **Neobmedzené fotografie k úlovkom**",
-      "📊 Pokročilé štatistiky a grafy",
-      "🎯 Sezónne ciele s progress tracking",
-      "⚔️ Fishing Battle (súťaž s priateľmi)",
-      "📴 Offline režim so synchronizáciou",
-      "🌤️ Predpoveď počasia a tlak",
-      "🗺️ Interaktívne mapy lokalít",
-      "📍 Ukladanie lokalít (GPS)"
+      "Neobmedzené výpravy a úlovky",
+      "Neobmedzené fotografie",
+      "Pokročilé štatistiky a grafy",
+      "Tvorba vlastných Fishing Battles",
+      "Interaktívne mapy a ukladanie GPS",
+      "Predpoveď počasia a tlaku",
+      "Offline režim pri vode"
     ]
   };
 
@@ -490,20 +486,20 @@ export default function Pricing() {
             </div>
 
             {/* Billing Toggle */}
-            <div className="flex flex-col items-center justify-center gap-6 mb-10">
-              <div className="flex items-center justify-center gap-6">
-                <button
-                  onClick={() => setIsYearly(false)}
-                  className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${
-                    !isYearly
-                      ? 'bg-teal-500 text-white shadow-lg'
-                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                  }`}
-                  data-testid="button-billing-monthly"
-                >
-                  Mesačne
-                </button>
-                <span className="text-muted-foreground font-medium">/</span>
+            <div className="flex items-center justify-center gap-4 mb-10">
+              <button
+                onClick={() => setIsYearly(false)}
+                className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${
+                  !isYearly
+                    ? 'bg-teal-500 text-white shadow-lg'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                }`}
+                data-testid="button-billing-monthly"
+              >
+                Mesačne
+              </button>
+              <span className="text-muted-foreground font-medium">/</span>
+              <div className="flex items-center gap-2">
                 <button
                   onClick={() => setIsYearly(true)}
                   className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${
@@ -515,12 +511,10 @@ export default function Pricing() {
                 >
                   Ročne
                 </button>
-              </div>
-              {isYearly && (
-                <Badge className="bg-gradient-to-r from-green-500 to-teal-500 text-white px-6 py-3 text-lg font-bold shadow-xl">
-                  💰 Ušetríš {diaryPremiumPlan.yearlySavings}
+                <Badge className="bg-green-500/15 text-green-400 border border-green-500/30 px-2 py-0.5 text-xs font-bold">
+                  Ušetríš {diaryPremiumPlan.yearlySavings}
                 </Badge>
-              )}
+              </div>
             </div>
 
             {/* Diary Pricing Cards - 2 cards only */}
@@ -557,21 +551,23 @@ export default function Pricing() {
                   <CardContent className="flex flex-col flex-grow">
                     <ul className="space-y-3 mb-4 flex-grow">
                       {diaryFreePlan.features.map((feature, index) => (
-                        <li key={index} className="flex items-start">
+                        <li key={index} className="flex items-start gap-3">
+                          <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
                           <span className="text-sm text-foreground leading-relaxed">
-                            {renderFeatureText(feature)}
+                            {feature}
                           </span>
                         </li>
                       ))}
                     </ul>
 
                     <div className="border-t border-border pt-4 mb-6">
-                      <p className="text-xs text-muted-foreground mb-3 font-medium uppercase tracking-wide">Chýba vo Free</p>
+                      <p className="text-xs text-muted-foreground mb-3 font-medium uppercase tracking-wide">Odomkni v Premium:</p>
                       <ul className="space-y-2">
-                        {diaryFreePlan.missingFeatures.map((feature, index) => (
-                          <li key={index} className="flex items-start">
-                            <span className="text-sm text-slate-500 leading-relaxed opacity-70">
-                              {renderFeatureText(feature)}
+                        {diaryFreePlan.lockedFeatures.map((feature, index) => (
+                          <li key={index} className="flex items-start gap-3">
+                            <Lock className="w-4 h-4 text-slate-500 mt-0.5 flex-shrink-0" />
+                            <span className="text-sm text-slate-500 leading-relaxed">
+                              {feature}
                             </span>
                           </li>
                         ))}
@@ -580,7 +576,8 @@ export default function Pricing() {
 
                     <Button
                       onClick={() => handleDiaryPlanSelect('free')}
-                      className="w-full py-6 text-lg font-semibold transition-all duration-200 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white"
+                      variant="outline"
+                      className="w-full py-6 text-lg font-semibold transition-all duration-200"
                       data-testid="button-select-diary-free"
                     >
                       {diaryFreePlan.cta}
@@ -612,12 +609,15 @@ export default function Pricing() {
                     
                     <div className="mb-4">
                       {!isYearly && (
-                        <div className="text-lg text-muted-foreground line-through mb-0.5">
-                          {diaryPremiumPlan.monthlyOriginalPrice} {diaryPremiumPlan.currency} / mesiac
+                        <div className="flex items-center justify-center gap-2 mb-0.5">
+                          <span className="text-base text-muted-foreground line-through">
+                            {diaryPremiumPlan.monthlyOriginalPrice} {diaryPremiumPlan.currency} / mesiac
+                          </span>
+                          <span className="text-xs text-orange-400 font-medium">Uvádzacia cena</span>
                         </div>
                       )}
                       {isYearly && (
-                        <div className="text-lg text-muted-foreground line-through mb-0.5">
+                        <div className="text-base text-muted-foreground line-through mb-0.5">
                           {diaryPremiumPlan.yearlyOriginalPrice} {diaryPremiumPlan.currency} / rok
                         </div>
                       )}
@@ -640,10 +640,10 @@ export default function Pricing() {
                   <CardContent className="flex flex-col flex-grow">
                     <ul className="space-y-3 mb-8 flex-grow">
                       {diaryPremiumPlan.features.map((feature, index) => (
-                        <li key={index} className="flex items-start">
-                          <Check className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                        <li key={index} className="flex items-start gap-3">
+                          <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
                           <span className="text-sm text-foreground leading-relaxed">
-                            {renderFeatureText(feature)}
+                            {feature}
                           </span>
                         </li>
                       ))}
@@ -652,7 +652,7 @@ export default function Pricing() {
                     <Button
                       onClick={() => handleDiaryPlanSelect(isYearly ? 'premium-yearly' : 'premium-monthly')}
                       disabled={subscribeMutation.isPending}
-                      className="w-full py-6 text-lg font-semibold transition-all duration-200 bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white shadow-lg hover:shadow-xl ring-2 ring-teal-200 disabled:opacity-70"
+                      className="w-full py-6 text-lg font-semibold transition-all duration-200 bg-teal-500 hover:bg-teal-600 text-white shadow-lg hover:shadow-xl disabled:opacity-70"
                       data-testid="button-select-diary-premium"
                     >
                       {subscribeMutation.isPending ? (
@@ -675,24 +675,23 @@ export default function Pricing() {
         <div className="mt-20 text-center">
           <div className="bg-muted/30 rounded-2xl p-8 md:p-12">
             <h3 className="text-2xl font-bold text-foreground mb-4">
-              Máte otázky o cenníkoch?
+              Nevieš, ktorý plán si vybrať?
             </h3>
             <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-              Náš tím ti rád pomôže vybrať správne riešenie pre tvoje potreby. 
-              Kontaktujte nás a prediskutujeme možnosti.
+              Napíš nám. Radi ti pomôžeme s výberom, vysvetlíme funkcie a zodpovieme všetky tvoje otázky, aby si mohol riešiť len to podstatné – ryby.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 variant="outline" 
                 size="lg"
-                onClick={() => window.location.href = 'mailto:info@contestio.sk?subject=Otázka o cenníkoch'}
+                onClick={() => window.location.href = 'mailto:info@contestio.sk?subject=Otázka o cenníku'}
                 data-testid="button-contact-pricing"
               >
-                Kontaktovať nás
+                Napísať tímu
               </Button>
-              <Link href="/about-us">
-                <Button variant="ghost" size="lg" data-testid="button-learn-more">
-                  Dozvedieť sa viac
+              <Link href="/faq">
+                <Button variant="ghost" size="lg" data-testid="button-faq">
+                  Časté otázky
                 </Button>
               </Link>
             </div>
