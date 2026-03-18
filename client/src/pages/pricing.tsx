@@ -195,9 +195,11 @@ export default function Pricing() {
   const diaryPremiumPlan = {
     id: "premium",
     name: "PREMIUM",
-    monthlyPrice: "5,90",
-    yearlyPrice: "59,90",
-    yearlySavings: "15%",
+    monthlyPrice: "7,00",
+    monthlyOriginalPrice: "9,00",
+    yearlyPrice: "60,00",
+    yearlyOriginalPrice: "84,00",
+    yearlySavings: "24 €",
     currency: "€",
     description: "Všetky funkcie bez obmedzení",
     icon: Sparkles,
@@ -480,6 +482,13 @@ export default function Pricing() {
 
           {/* Diary Tab */}
           <TabsContent value="diary">
+            {/* Scarcity Badge */}
+            <div className="flex justify-center mb-6">
+              <Badge className="bg-red-500/10 text-red-400 border border-red-500/30 px-4 py-2 text-sm font-bold shadow-lg">
+                🔴 ZĽAVA PRE PRVÝCH 500 RYBÁROV
+              </Badge>
+            </div>
+
             {/* Billing Toggle */}
             <div className="flex flex-col items-center justify-center gap-6 mb-10">
               <div className="flex items-center justify-center gap-6">
@@ -509,7 +518,7 @@ export default function Pricing() {
               </div>
               {isYearly && (
                 <Badge className="bg-gradient-to-r from-green-500 to-teal-500 text-white px-6 py-3 text-lg font-bold shadow-xl">
-                  💰 Ušetríte {diaryPremiumPlan.yearlySavings}
+                  💰 Ušetríš {diaryPremiumPlan.yearlySavings}
                 </Badge>
               )}
             </div>
@@ -602,6 +611,16 @@ export default function Pricing() {
                     </h3>
                     
                     <div className="mb-4">
+                      {!isYearly && (
+                        <div className="text-lg text-muted-foreground line-through mb-0.5">
+                          {diaryPremiumPlan.monthlyOriginalPrice} {diaryPremiumPlan.currency} / mesiac
+                        </div>
+                      )}
+                      {isYearly && (
+                        <div className="text-lg text-muted-foreground line-through mb-0.5">
+                          {diaryPremiumPlan.yearlyOriginalPrice} {diaryPremiumPlan.currency} / rok
+                        </div>
+                      )}
                       <span className="text-4xl font-bold text-foreground transition-all duration-300">
                         {isYearly ? diaryPremiumPlan.yearlyPrice : diaryPremiumPlan.monthlyPrice}
                       </span>
@@ -612,7 +631,7 @@ export default function Pricing() {
                     
                     <p className="text-sm text-muted-foreground">
                       {isYearly 
-                        ? `Ušetríte ${diaryPremiumPlan.yearlySavings} oproti mesačnej platbe`
+                        ? `Ušetríš ${diaryPremiumPlan.yearlySavings} oproti mesačnému plánu`
                         : diaryPremiumPlan.description
                       }
                     </p>
