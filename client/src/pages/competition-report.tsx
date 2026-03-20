@@ -135,6 +135,10 @@ export default function CompetitionReport() {
 
   const isLive = competition?.status === "live";
 
+  const hasTop5Contest = competition?.sideCompetitions?.includes("best-5-fish") ?? false;
+  const hasTop3Contest = competition?.sideCompetitions?.includes("best-3-fish") ?? false;
+  const topN = hasTop5Contest ? 5 : 3;
+
   const { data: teams, isLoading: teamsLoading } = useQuery<(Team & { members?: any[] })[]>({
     queryKey: ["/api/competitions", id, "teams"],
     enabled: !!id,
@@ -261,7 +265,7 @@ export default function CompetitionReport() {
       .map((t, i) => ({ ...t, rank: i + 1 }));
   }, [teams, catches]);
 
-  const teamTop3AverageData = useMemo(() => {
+  const teamTopNAverageData = useMemo(() => {
     if (!teams || !catches) return [];
     const approvedTeams = teams.filter((t) => t.status === "approved");
     return approvedTeams
@@ -269,20 +273,20 @@ export default function CompetitionReport() {
         const teamCatches = catches
           .filter((c) => c.teamId === team.id)
           .sort((a, b) => safeWeight(b.weight) - safeWeight(a.weight));
-        const top3 = teamCatches.slice(0, 3);
-        const avg = top3.length > 0
-          ? top3.reduce((sum, c) => sum + safeWeight(c.weight), 0) / top3.length
+        const topN_catches = teamCatches.slice(0, topN);
+        const avg = topN_catches.length > 0
+          ? topN_catches.reduce((sum, c) => sum + safeWeight(c.weight), 0) / topN_catches.length
           : 0;
         return {
           teamName: team.name || "—",
           averageWeight: parseFloat(avg.toFixed(2)),
-          fishCount: top3.length,
-          maxFish: 3,
+          fishCount: topN_catches.length,
+          maxFish: topN,
         };
       })
       .filter((t) => t.fishCount > 0)
       .sort((a, b) => b.averageWeight - a.averageWeight);
-  }, [teams, catches]);
+  }, [teams, catches, topN]);
 
   const sectorStats = useMemo(() => {
     if (!catches || !teams) return [];
@@ -661,9 +665,9 @@ export default function CompetitionReport() {
 
               {/* Left: Váhový priemer TOP 3 tímov */}
               <TeamAverageTable
-                data={teamTop3AverageData.slice(0, 3)}
-                title="Váhový priemer top 3 úlovkov"
-                description="Tímy seradené podľa priemernej váhy ich 3 najťažších úlovkov"
+                data={teamTopNAverageData.slice(0, topN)}
+                title={`Váhový priemer top ${topN} úlovkov`}
+                description={`Tímy seradené podľa priemernej váhy ich ${topN} najťažších úlovkov`}
               />
 
               {/* Right: Komentár k preteku */}
