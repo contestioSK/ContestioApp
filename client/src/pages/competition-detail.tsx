@@ -60,9 +60,9 @@ const StatusBadge = ({ status }: { status: string }) => {
   }
   if (status === 'ended' || status === 'completed' || status === 'finished') {
     return (
-      <div className="flex items-center gap-2 bg-muted/50 border border-border text-muted-foreground px-3 py-1 rounded-full">
-        <div className="w-2 h-2 bg-muted-foreground rounded-full" />
-        <span className="text-xs font-bold uppercase tracking-widest">PRETEK UKONČENÝ</span>
+      <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 text-red-500 px-3 py-1 rounded-full">
+        <div className="w-1.5 h-1.5 bg-red-500 rounded-full" />
+        <span className="text-xs font-bold uppercase tracking-widest">Ukončené</span>
       </div>
     );
   }
@@ -671,6 +671,13 @@ export default function CompetitionDetail() {
       
       {/* 1. ATMOSPHERIC HEADER */}
       <header className="relative overflow-hidden border-b border-border/50 bg-card/80 backdrop-blur-xl header-glow">
+        {/* Dot pattern background */}
+        <div
+          className="absolute inset-0 pointer-events-none opacity-50"
+          style={{ backgroundImage: 'radial-gradient(rgba(20, 184, 166, 0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }}
+        />
+        {/* Teal glow — top right */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/10 rounded-full blur-[80px] -mr-20 -mt-20 pointer-events-none" />
         {/* Blur Background */}
         {competition.imageUrl && (
           <div className="absolute inset-0 opacity-15 pointer-events-none">
@@ -1071,33 +1078,37 @@ export default function CompetitionDetail() {
       {!isRegistration && (
         <div className="max-w-7xl mx-auto px-4 md:px-6 -mt-4 md:-mt-6 relative z-20">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
-            <div className="relative overflow-hidden bg-card border border-border rounded-xl p-2.5 md:p-5 flex flex-col items-start md:items-center text-left md:text-center hover:border-cyan-500/30 transition-all group">
-              <Fish size={32} strokeWidth={1.5} className="absolute right-1 bottom-1 text-cyan-500 opacity-[0.15] md:hidden" />
-              <div className="hidden md:block p-3 bg-cyan-500/10 rounded-xl text-cyan-500 mb-3 group-hover:scale-110 transition-transform"><Fish size={22} /></div>
-              <div className="text-[9px] md:text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-0.5 md:mb-0 md:order-2 md:mt-1">Úlovky spolu</div>
-              <div className="text-2xl md:text-3xl font-mono font-medium text-[#F97316] md:order-1">{liveStats.totalFish} <span className="text-xs md:text-sm font-normal text-muted-foreground">ks</span></div>
+            <div className="relative overflow-hidden bg-card border border-border rounded-xl p-4 md:p-5 flex flex-col justify-between hover:border-cyan-500/30 transition-all">
+              <div className="flex justify-between items-start mb-3">
+                <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Úlovky spolu</span>
+                <Fish size={16} strokeWidth={1.75} className="text-cyan-500/50" />
+              </div>
+              <div className="text-2xl md:text-3xl font-mono font-medium text-[#F97316]">{liveStats.totalFish} <span className="text-xs font-normal text-muted-foreground">ks</span></div>
             </div>
-            <div className="relative overflow-hidden bg-card border border-border rounded-xl p-2.5 md:p-5 flex flex-col items-start md:items-center text-left md:text-center hover:border-emerald-500/30 transition-all group">
-              <Activity size={32} strokeWidth={1.5} className="absolute right-1 bottom-1 text-emerald-500 opacity-[0.15] md:hidden" />
-              <div className="hidden md:block p-3 bg-emerald-500/10 rounded-xl text-emerald-500 mb-3 group-hover:scale-110 transition-transform"><Activity size={22} /></div>
-              <div className="text-[9px] md:text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-0.5 md:mb-0 md:order-2 md:mt-1">Celková váha</div>
-              <div className="text-2xl md:text-3xl font-mono font-medium text-[#F97316] md:order-1">{liveStats.totalWeight.toFixed(1)} <span className="text-xs md:text-sm font-normal text-muted-foreground">kg</span></div>
+            <div className="relative overflow-hidden bg-card border border-border rounded-xl p-4 md:p-5 flex flex-col justify-between hover:border-emerald-500/30 transition-all">
+              <div className="flex justify-between items-start mb-3">
+                <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Celková váha</span>
+                <Activity size={16} strokeWidth={1.75} className="text-emerald-500/50" />
+              </div>
+              <div className="text-2xl md:text-3xl font-mono font-medium text-[#F97316]">{liveStats.totalWeight.toFixed(1)} <span className="text-xs font-normal text-muted-foreground">kg</span></div>
             </div>
             <div 
-              className={`relative overflow-hidden bg-card border border-border rounded-xl p-2.5 md:p-5 flex flex-col items-start md:items-center text-left md:text-center transition-all group ${biggestCatchObj ? 'cursor-pointer hover:border-amber-500/30' : ''}`}
+              className={`relative overflow-hidden bg-card border border-border rounded-xl p-4 md:p-5 flex flex-col justify-between transition-all hover:border-amber-500/30 ${biggestCatchObj ? 'cursor-pointer' : ''}`}
               onClick={() => biggestCatchObj && setEntityModal({ view: 'catch', team: null, catch_: biggestCatchObj, previousView: null })}
             >
-              <Trophy size={32} strokeWidth={1.5} className="absolute right-1 bottom-1 text-amber-500 opacity-[0.15] md:hidden" />
-              <div className="hidden md:block p-3 bg-amber-500/10 rounded-xl text-amber-500 mb-3 group-hover:scale-110 transition-transform"><Trophy size={22} /></div>
-              <div className="text-[9px] md:text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-0.5 md:mb-0 md:order-2 md:mt-1">Najväčšia ryba</div>
-              <div className="text-2xl md:text-3xl font-mono font-medium text-[#F97316] md:order-1">{liveStats.biggestFish.toFixed(1)} <span className="text-xs md:text-sm font-normal text-muted-foreground">kg</span></div>
-              {biggestCatchObj && <div className="text-[8px] md:text-[9px] text-amber-500/70 mt-0.5 md:mt-1 md:order-3">Klikni pre detail</div>}
+              <div className="flex justify-between items-start mb-3">
+                <span className="text-[10px] text-amber-500 uppercase font-bold tracking-widest">Najväčšia ryba</span>
+                <Trophy size={16} strokeWidth={1.75} className="text-amber-500/50" />
+              </div>
+              <div className="text-2xl md:text-3xl font-mono font-medium text-[#F97316]">{liveStats.biggestFish.toFixed(1)} <span className="text-xs font-normal text-muted-foreground">kg</span></div>
+              {biggestCatchObj && <div className="text-[9px] text-amber-500/60 mt-1">Klikni pre detail</div>}
             </div>
-            <div className="relative overflow-hidden bg-card border border-border rounded-xl p-2.5 md:p-5 flex flex-col items-start md:items-center text-left md:text-center hover:border-purple-500/30 transition-all group">
-              <TrendingUp size={32} strokeWidth={1.5} className="absolute right-1 bottom-1 text-purple-500 opacity-[0.15] md:hidden" />
-              <div className="hidden md:block p-3 bg-purple-500/10 rounded-xl text-purple-500 mb-3 group-hover:scale-110 transition-transform"><TrendingUp size={22} /></div>
-              <div className="text-[9px] md:text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-0.5 md:mb-0 md:order-2 md:mt-1">Priemerná váha</div>
-              <div className="text-2xl md:text-3xl font-mono font-medium text-[#F97316] md:order-1">{liveStats.avgWeight.toFixed(1)} <span className="text-xs md:text-sm font-normal text-muted-foreground">kg</span></div>
+            <div className="relative overflow-hidden bg-card border border-border rounded-xl p-4 md:p-5 flex flex-col justify-between hover:border-purple-500/30 transition-all">
+              <div className="flex justify-between items-start mb-3">
+                <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Priemer / ks</span>
+                <TrendingUp size={16} strokeWidth={1.75} className="text-purple-500/50" />
+              </div>
+              <div className="text-2xl md:text-3xl font-mono font-medium text-[#F97316]">{liveStats.avgWeight.toFixed(1)} <span className="text-xs font-normal text-muted-foreground">kg</span></div>
             </div>
           </div>
         </div>
@@ -1266,28 +1277,57 @@ export default function CompetitionDetail() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border/50">
-                      {visibleLeaderboard.map((team) => (
-                        <tr key={team.id} className="hover:bg-muted/20 transition-colors">
-                          <td className="px-3 md:px-6 py-3 md:py-4 font-mono font-bold text-muted-foreground">
-                            {team.rank}.
-                          </td>
-                          <td className="px-3 md:px-6 py-3 md:py-4">
-                            <button
-                              className="font-bold text-foreground hover:text-cyan-500 transition-colors text-left text-sm md:text-base flex items-center gap-1.5"
-                              onClick={() => {
-                                navigate(`/team/${team.id}`);
-                              }}
+                      {(() => {
+                        const maxWeight = Math.max(...visibleLeaderboard.map(t => t.weight), 1);
+                        return visibleLeaderboard.map((team) => {
+                          const isWinner = team.rank === 1;
+                          const barPct = Math.round((team.weight / maxWeight) * 100);
+                          return (
+                            <tr
+                              key={team.id}
+                              className={`transition-colors ${isWinner ? 'bg-orange-500/5 hover:bg-orange-500/10' : 'hover:bg-muted/20'}`}
                             >
-                              <TeamFlag country={team.country} size="xs" />{team.name}
-                            </button>
-                          </td>
-                          <td className="hidden md:table-cell px-6 py-4 text-center text-muted-foreground">
-                            <Link href={`/competition/${id}/sector/${team.sector}`} className="hover:text-orange-500 transition-colors">{team.sector}</Link>
-                          </td>
-                          <td className="hidden md:table-cell px-6 py-4 text-right text-muted-foreground font-mono">{team.fish}</td>
-                          <td className="px-3 md:px-6 py-3 md:py-4 text-right font-mono font-medium text-[#F97316] text-base">{team.weight.toFixed(1)}</td>
-                        </tr>
-                      ))}
+                              <td className="px-3 md:px-6 py-3 md:py-4">
+                                {isWinner ? (
+                                  <div className="w-7 h-7 rounded bg-[#F97316] text-white font-bold flex items-center justify-center text-sm shadow-[0_0_12px_rgba(249,115,22,0.4)]">1</div>
+                                ) : (
+                                  <span className="font-mono font-bold text-muted-foreground">{team.rank}.</span>
+                                )}
+                              </td>
+                              <td className="px-3 md:px-6 py-3 md:py-4">
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <button
+                                    className={`font-bold transition-colors text-left text-sm md:text-base flex items-center gap-1.5 ${isWinner ? 'text-white hover:text-[#F97316]' : 'text-foreground hover:text-cyan-500'}`}
+                                    onClick={() => navigate(`/team/${team.id}`)}
+                                  >
+                                    <TeamFlag country={team.country} size="xs" />{team.name}
+                                  </button>
+                                  {isWinner && isEnded && (
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#F97316]/20 text-[#F97316] text-[9px] uppercase tracking-widest rounded font-bold">
+                                      <Crown size={10} />Víťaz
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="hidden md:table-cell px-6 py-4 text-center text-muted-foreground">
+                                <Link href={`/competition/${id}/sector/${team.sector}`} className="hover:text-orange-500 transition-colors">{team.sector}</Link>
+                              </td>
+                              <td className="hidden md:table-cell px-6 py-4 text-right text-muted-foreground font-mono">{team.fish}</td>
+                              <td className="px-3 md:px-6 py-3 md:py-4 text-right">
+                                <div className="flex flex-col items-end">
+                                  <span className={`font-mono font-medium text-base ${isWinner ? 'text-[#F97316]' : 'text-[#F97316]'}`}>{team.weight.toFixed(1)} <span className="text-xs text-muted-foreground font-sans">kg</span></span>
+                                  <div className="w-20 h-0.5 bg-white/5 rounded-full mt-1 overflow-hidden">
+                                    <div
+                                      className={`h-full rounded-full ${isWinner ? 'bg-[#F97316]' : 'bg-teal-500'}`}
+                                      style={{ width: `${barPct}%` }}
+                                    />
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        });
+                      })()}
                       {teamsLoading && sortedLeaderboard.length === 0 && (
                         <tr>
                           <td colSpan={5} className="px-3 md:px-6 py-8 text-center text-muted-foreground">
@@ -1347,9 +1387,12 @@ export default function CompetitionDetail() {
             {/* --- RIGHT COLUMN: FEED & INFO (4/12) --- */}
             <div className="lg:col-span-4 space-y-6">
               
-              {/* COMMENTATOR TEASER */}
-              <div className="bg-card border border-blue-500/20 rounded-xl p-6 relative overflow-hidden group hover:border-blue-500/40 transition-all blue-glow-card">
-                <div className="absolute top-0 right-0 w-40 h-40 bg-blue-500/10 blur-3xl rounded-full group-hover:bg-blue-500/15 transition-colors pointer-events-none"></div>
+              {/* ANALYTICS TEASER */}
+              <div className="bg-card border border-teal-500/20 rounded-xl p-6 relative overflow-hidden group hover:border-teal-500/40 transition-all">
+                <div className="absolute top-0 right-0 w-40 h-40 bg-teal-500/5 blur-3xl rounded-full group-hover:bg-teal-500/10 transition-colors pointer-events-none" />
+                <div className="absolute -right-4 -top-4 text-teal-500/5 pointer-events-none">
+                  <BarChart3 size={80} />
+                </div>
                 <div className="relative z-10">
                   <div className="flex items-center gap-2 mb-3 text-amber-500">
                     <Mic size={14} className="animate-pulse" />
@@ -1360,13 +1403,13 @@ export default function CompetitionDetail() {
                   </p>
                   <button 
                     onClick={() => setShowStatsOverlay(true)}
-                    className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-blue-600/20 transition-all flex flex-col items-center justify-center gap-1 hover:shadow-blue-600/30"
+                    className="w-full bg-teal-500/10 hover:bg-teal-500/20 text-teal-400 border border-teal-500/30 py-3.5 rounded-xl font-bold transition-all flex flex-col items-center justify-center gap-1"
                   >
                     <span className="flex items-center gap-2">
-                      <PieChart size={16} />
+                      <BarChart3 size={16} />
                       Kde a kedy berú
                     </span>
-                    <span className="text-[10px] font-normal text-blue-200">Analýza úlovkov a štatistík súťaže</span>
+                    <span className="text-[10px] font-normal text-teal-400/70">Analýza úlovkov a štatistík súťaže</span>
                   </button>
                 </div>
               </div>
@@ -1374,47 +1417,52 @@ export default function CompetitionDetail() {
               {/* LIVE FEED */}
               <div className="bg-card border border-border rounded-xl overflow-hidden flex flex-col max-h-[600px]">
                 <div className="px-3 py-2.5 border-b border-border bg-muted/30 flex items-center justify-between sticky top-0 z-10">
-                  <h3 className="font-bold text-foreground text-sm uppercase tracking-wider">Posledné úlovky</h3>
+                  <h3 className="font-bold text-foreground text-sm flex items-center gap-2">
+                    <Clock size={14} className="text-muted-foreground" />
+                    Časová os úlovkov
+                  </h3>
                   <div className="flex items-center gap-2">
                     <button 
                       onClick={() => navigate(`/competition/${id}/catches`)}
-                      className="text-[10px] text-cyan-500 font-bold uppercase hover:underline"
+                      className="text-[10px] text-teal-500 font-bold uppercase hover:underline tracking-widest"
                     >
-                      Všetky úlovky
+                      Archív
                     </button>
                     <span className={`flex items-center gap-1.5 text-[10px] font-bold uppercase px-2 py-1 rounded-full ${isLive ? 'text-emerald-500 bg-emerald-500/10' : 'text-muted-foreground bg-muted'}`}>
                       {isLive ? 'Live' : 'Archív'}
                     </span>
                   </div>
                 </div>
-                <div className="p-3 space-y-1 overflow-y-auto">
+                <div className="p-2 flex flex-col gap-1 overflow-y-auto">
                   {liveFeed.map((item) => (
                     <div 
                       key={item.id}
                       role="button"
                       tabIndex={0}
-                      className={`flex items-center gap-2 px-2.5 py-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer ${item.action === 'big_fish' ? 'bg-amber-500/5 border border-amber-500/20' : 'bg-muted/20'}`}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer ${item.action === 'big_fish' ? 'bg-amber-500/5 border border-amber-500/10' : ''}`}
                       onClick={() => setEntityModal({ view: 'catch', team: null, catch_: item.catchObj, previousView: null })}
                       onKeyDown={(e) => { if (e.key === 'Enter') setEntityModal({ view: 'catch', team: null, catch_: item.catchObj, previousView: null }); }}
                     >
                       {item.action === 'big_fish' ? (
-                        <Crown size={14} className="text-amber-500 shrink-0" />
+                        <div className="w-2 h-2 rounded-full bg-[#F97316] shadow-[0_0_8px_rgba(249,115,22,0.8)] shrink-0" />
                       ) : (
-                        <span title={item.fishType === 'mirror' ? 'Lysec' : 'Šupináč'}>
-                          <Fish size={14} strokeWidth={1.75} className={`shrink-0 ${item.fishType === 'mirror' ? 'text-purple-500' : 'text-cyan-500'}`} />
-                        </span>
+                        <div className="w-2 h-2 rounded-full bg-teal-500 shrink-0" />
                       )}
-                      <span 
-                        className="text-xs font-bold text-foreground truncate max-w-[120px] flex items-center gap-1 hover:underline cursor-pointer"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (item.catchObj.teamId) navigate(`/team/${item.catchObj.teamId}`);
-                        }}
-                      >
-                        <TeamFlag country={item.teamCountry} size="xs" />{item.team}
-                      </span>
-                      <span className="text-foreground font-mono font-medium text-sm ml-auto">{item.weight.toFixed(1)} kg</span>
-                      <span className="text-[10px] text-muted-foreground font-mono shrink-0">{item.time}</span>
+                      <div className="flex-1 min-w-0">
+                        <div
+                          className={`text-sm font-medium truncate ${item.action === 'big_fish' ? 'text-[#F97316]' : 'text-foreground'}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (item.catchObj.teamId) navigate(`/team/${item.catchObj.teamId}`);
+                          }}
+                        >
+                          <span className="flex items-center gap-1"><TeamFlag country={item.teamCountry} size="xs" />{item.team}</span>
+                        </div>
+                        <div className="text-[10px] text-muted-foreground">
+                          {item.action === 'big_fish' ? 'Najväčší úlovok' : item.fishType === 'mirror' ? 'Lysec' : 'Kapor'} • {item.time}
+                        </div>
+                      </div>
+                      <span className={`font-mono font-bold text-sm shrink-0 ${item.action === 'big_fish' ? 'text-[#F97316]' : 'text-foreground'}`}>{item.weight.toFixed(1)} <span className="text-xs text-muted-foreground font-sans">kg</span></span>
                     </div>
                   ))}
                   {liveFeed.length === 0 && (
@@ -1434,18 +1482,21 @@ export default function CompetitionDetail() {
               </div>
 
               {/* RULES BUTTON */}
-              <div>
-                <button 
-                  onClick={() => setShowRulesOverlay(true)}
-                  className="w-full p-4 rounded-xl bg-card border border-border hover:border-cyan-500/30 hover:bg-muted/20 transition-all text-left group"
-                >
-                  <div className="p-2 bg-cyan-500/10 rounded-lg w-fit mb-2 group-hover:scale-110 transition-transform">
-                    <FileText size={18} strokeWidth={1.75} className="text-cyan-500" />
+              <button 
+                onClick={() => setShowRulesOverlay(true)}
+                className="w-full bg-card border border-border hover:border-muted-foreground/40 rounded-xl p-4 flex items-center justify-between transition-all group"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-muted-foreground group-hover:text-foreground transition-colors flex-shrink-0">
+                    <FileText size={18} strokeWidth={1.75} />
                   </div>
-                  <div className="text-sm font-bold text-foreground">Pravidlá preteku</div>
-                  <div className="text-[10px] text-muted-foreground">Čo platí na tomto preteku</div>
-                </button>
-              </div>
+                  <div className="text-left">
+                    <div className="text-sm font-bold text-foreground">Pravidlá preteku</div>
+                    <div className="text-xs text-muted-foreground">Dokument s propozíciami</div>
+                  </div>
+                </div>
+                <ChevronRight size={16} className="text-muted-foreground/50 group-hover:text-muted-foreground transition-colors flex-shrink-0" />
+              </button>
 
             </div>
           </div>
