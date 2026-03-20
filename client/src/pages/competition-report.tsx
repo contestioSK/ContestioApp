@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import {
-  ChevronLeft, PieChart, MapPin, BarChart3,
+  ChevronLeft, PieChart, BarChart3,
   LayoutList, Activity, Target, Trophy, Mic,
 } from "lucide-react";
 import StatsDashboard from "@/components/stats-dashboard";
@@ -179,10 +179,13 @@ export default function CompetitionReport() {
     const top5 = sortedByWeight.slice(0, 5);
     const top5Avg = top5.reduce((sum, c) => sum + safeWeight(c.weight), 0) / Math.max(top5.length, 1);
 
+    const top3 = sortedByWeight.slice(0, 3);
+    const top3Avg = top3.reduce((sum, c) => sum + safeWeight(c.weight), 0) / Math.max(top3.length, 1);
+
     const scalyCount = catches.filter((c) => c.fishType === "scaly").length;
     const scalyPct = catches.length > 0 ? Math.round((scalyCount / catches.length) * 100) : 0;
 
-    return { weightDistribution, maxInTier, top5Avg, scalyPct, biggestFishCatch };
+    return { weightDistribution, maxInTier, top5Avg, top3, top3Avg, scalyPct, biggestFishCatch };
   }, [catches]);
 
   // 2-hour activity buckets (weight sum)
@@ -629,43 +632,43 @@ export default function CompetitionReport() {
               </div>
             </div>
 
-            {/* --- BOTTOM 2-COL: SEKTOROVÁ DOMINANCIA + AI BRÍFING --- */}
+            {/* --- BOTTOM 2-COL: VÁHOVÝ PRIEMER TOP 3 + KOMENTÁR --- */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4">
 
-              {/* Left: Sektorová dominancia */}
+              {/* Left: Váhový priemer TOP 3 */}
               <div className="bg-card border border-border/50 rounded-xl p-6">
-                <h3 className="font-bold text-lg text-foreground mb-6 flex items-center gap-2">
-                  <MapPin size={18} className="text-orange-400" />
-                  Sektorová dominancia
+                <h3 className="font-bold text-lg text-foreground mb-2 flex items-center gap-2">
+                  <Target size={18} className="text-amber-400" />
+                  Váhový priemer TOP 3
                 </h3>
-                {sectorStats.length > 0 ? (
-                  <div className="space-y-5">
-                    {sectorStats.map((s, idx) => (
-                      <div key={idx}>
-                        <div className="flex justify-between text-sm mb-1.5">
-                          <Link
-                            href={`/competition/${id}/sector/${s.sector}`}
-                            className="font-bold text-foreground hover:text-[#F97316] transition-colors"
-                          >
-                            {s.name}
-                          </Link>
-                          <span className="font-mono text-[#F97316]">
-                            {s.weight.toFixed(1)} kg
+                <p className="text-xs text-muted-foreground mb-5">Priemerná váha troch najťažších úlovkov preteku</p>
+
+                {overviewStats && overviewStats.top3.length > 0 ? (
+                  <>
+                    <div className="flex items-end gap-1.5 mb-6">
+                      <span className="text-5xl font-mono font-bold text-foreground">
+                        {overviewStats.top3Avg.toFixed(2)}
+                      </span>
+                      <span className="text-base font-medium text-amber-400 mb-1">kg</span>
+                    </div>
+                    <div className="space-y-3">
+                      {overviewStats.top3.map((c, i) => (
+                        <div key={i} className="flex items-center gap-3">
+                          <span className="w-6 h-6 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-[11px] font-bold text-amber-400 shrink-0">
+                            {i + 1}
+                          </span>
+                          <span className="flex-1 text-sm text-foreground truncate">
+                            {c.team?.name || "—"}
+                          </span>
+                          <span className="font-mono font-bold text-[#F97316] text-sm">
+                            {safeWeight(c.weight).toFixed(1)} kg
                           </span>
                         </div>
-                        <div className="h-2 bg-muted rounded-full overflow-hidden border border-border/20">
-                          <div
-                            className="h-full bg-orange-500 rounded-full"
-                            style={{
-                              width: `${(s.weight / (sectorStats[0]?.weight || 1)) * 100}%`,
-                            }}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  </>
                 ) : (
-                  <p className="text-muted-foreground text-sm">Sektory ešte nie sú rozdelené.</p>
+                  <p className="text-muted-foreground text-sm">Žiadne úlovky zatiaľ.</p>
                 )}
               </div>
 
