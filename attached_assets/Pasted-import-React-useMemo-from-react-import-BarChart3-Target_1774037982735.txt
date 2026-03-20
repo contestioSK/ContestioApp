@@ -1,0 +1,258 @@
+import React, { useMemo } from 'react';
+import { 
+  BarChart3, Target, PieChart, Clock, MapPin, Zap, Flame, Activity, Trophy
+} from 'lucide-react';
+
+// --- ROZŠÍRENÉ FAKE DÁTA ---
+const mockCatches = [
+  { id: 1, weight: 14.5, fishType: 'scaly', submittedAt: '2025-06-15T06:30:00Z', team: { name: 'Kapráči Nitra', sector: 'A' } },
+  { id: 2, weight: 8.2,  fishType: 'mirror', submittedAt: '2025-06-15T08:15:00Z', team: { name: 'Žilina Anglers', sector: 'B' } },
+  { id: 3, weight: 21.4, fishType: 'scaly', submittedAt: '2025-06-15T09:45:00Z', team: { name: 'Kapráči Nitra', sector: 'A' } },
+  { id: 4, weight: 11.0, fishType: 'scaly', submittedAt: '2025-06-15T11:20:00Z', team: { name: 'Košice Carp', sector: 'C' } },
+  { id: 5, weight: 26.4, fishType: 'mirror', submittedAt: '2025-06-15T14:10:00Z', team: { name: 'Žilina Anglers', sector: 'B' } }, 
+  { id: 6, weight: 9.8,  fishType: 'scaly', submittedAt: '2025-06-15T16:05:00Z', team: { name: 'Dr. Baits SK', sector: 'A' } },
+  { id: 7, weight: 15.1, fishType: 'mirror', submittedAt: '2025-06-15T16:30:00Z', team: { name: 'Košice Carp', sector: 'C' } },
+  { id: 8, weight: 19.5, fishType: 'scaly', submittedAt: '2025-06-15T16:45:00Z', team: { name: 'Kapráči Nitra', sector: 'A' } },
+  { id: 9, weight: 12.2, fishType: 'scaly', submittedAt: '2025-06-15T22:10:00Z', team: { name: 'Žilina Anglers', sector: 'B' } },
+  { id: 10, weight: 17.8, fishType: 'mirror', submittedAt: '2025-06-16T02:15:00Z', team: { name: 'Dr. Baits SK', sector: 'A' } },
+  { id: 11, weight: 23.1, fishType: 'scaly', submittedAt: '2025-06-16T04:15:00Z', team: { name: 'Košice Carp', sector: 'C' } }, 
+  { id: 12, weight: 10.5, fishType: 'mirror', submittedAt: '2025-06-16T05:30:00Z', team: { name: 'Kapráči Nitra', sector: 'A' } },
+];
+
+const DistributionRow = ({ label, count, maxCount, colorClass, bgClass }) => {
+  const percentage = count > 0 ? (count / maxCount) * 100 : 0;
+  return (
+    <div className="flex items-center gap-3 text-sm">
+      <span className="w-16 font-mono text-slate-400 text-xs">{label}</span>
+      <div className="flex-1 h-5 bg-[#0B1120] rounded-md overflow-hidden relative border border-white/5">
+        <div 
+          className={`absolute top-0 left-0 h-full rounded-md transition-all duration-1000 ${bgClass}`} 
+          style={{ width: `${percentage}%` }}
+        />
+      </div>
+      <span className={`w-8 text-right font-bold ${count > 0 ? colorClass : 'text-slate-600'}`}>
+        {count}
+      </span>
+    </div>
+  );
+};
+
+export default function App() {
+  
+  const stats = useMemo(() => {
+    if (mockCatches.length === 0) return null;
+
+    // 1. Váhová pyramída
+    const weightDistribution = { under10: 0, tier10to15: 0, tier15to20: 0, tier20to25: 0, over25: 0 };
+    let biggestFish = mockCatches[0];
+    
+    mockCatches.forEach(c => {
+      if (c.weight > biggestFish.weight) biggestFish = c;
+      const w = c.weight;
+      if (w < 10) weightDistribution.under10++;
+      else if (w >= 10 && w < 15) weightDistribution.tier10to15++;
+      else if (w >= 15 && w < 20) weightDistribution.tier15to20++;
+      else if (w >= 20 && w < 25) weightDistribution.tier20to25++;
+      else if (w >= 25) weightDistribution.over25++;
+    });
+
+    const maxCatchesInTier = Math.max(
+      weightDistribution.tier10to15, weightDistribution.tier15to20, weightDistribution.tier20to25, weightDistribution.over25
+    ) || 1;
+
+    // 2. TOP 5 Priemer
+    const sortedWeights = [...mockCatches].sort((a, b) => b.weight - a.weight);
+    const top5Avg = sortedWeights.slice(0, 5).reduce((sum, c) => sum + c.weight, 0) / 5;
+
+    // 3. Typ rýb
+    const scalyCount = mockCatches.filter(c => c.fishType === 'scaly').length;
+    const scalyPct = Math.round((scalyCount / mockCatches.length) * 100);
+
+    return { weightDistribution, maxCatchesInTier, top5Avg, scalyPct, biggestFish };
+  }, []);
+
+  const sectorData = useMemo(() => {
+    const sectors = {};
+    mockCatches.forEach(c => {
+      if (!sectors[c.team.sector]) sectors[c.team.sector] = { weight: 0, fish: 0 };
+      sectors[c.team.sector].weight += c.weight;
+      sectors[c.team.sector].fish += 1;
+    });
+    return Object.entries(sectors).map(([name, data]) => ({ name: `Sektor ${name}`, ...data })).sort((a, b) => b.weight - a.weight);
+  }, []);
+
+  // --- GRAF DATA ---
+  const chartPoints = [
+    { time: '06:00', val: 14.5 }, { time: '08:00', val: 8.2 }, { time: '10:00', val: 21.4 }, { time: '12:00', val: 11.0 }, 
+    { time: '14:00', val: 26.4 }, { time: '16:00', val: 24.9 }, { time: '18:00', val: 9.5 }, { time: '20:00', val: 12.4 },
+    { time: '22:00', val: 12.2 }, { time: '00:00', val: 8.5 }
+  ];
+  const maxVal = Math.max(...chartPoints.map(p => p.val));
+  const generateSvgPoints = () => {
+    const width = 1000, height = 200, step = width / (chartPoints.length - 1);
+    let path = `M 0 ${height - (chartPoints[0].val / maxVal) * height}`;
+    for (let i = 1; i < chartPoints.length; i++) {
+      const xP = (i - 1) * step, yP = height - (chartPoints[i - 1].val / maxVal) * height;
+      const xC = i * step, yC = height - (chartPoints[i].val / maxVal) * height;
+      path += ` C ${xP + (xC - xP) / 2} ${yP}, ${xP + (xC - xP) / 2} ${yC}, ${xC} ${yC}`;
+    }
+    return path;
+  };
+  const svgPath = generateSvgPoints();
+
+  return (
+    <div className="min-h-screen bg-[#0B1120] text-slate-300 p-4 md:p-8 font-sans">
+      <div className="max-w-[1200px] mx-auto space-y-6">
+        
+        <header className="mb-8">
+          <div className="flex items-center gap-3 text-teal-500 mb-2">
+            <Activity size={20} />
+            <span className="text-sm font-bold uppercase tracking-widest text-teal-400">Tactical Intelligence</span>
+          </div>
+          <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">Green Pearl Cup 2025</h1>
+        </header>
+
+        {/* --- 4 HLAVNÉ KARTY --- */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          
+          {/* 1. VÁHOVÁ PYRAMÍDA */}
+          <div className="bg-[#151E2E] border border-white/5 rounded-2xl p-5 hover:border-white/10 transition-colors">
+            <div className="flex items-center gap-3 mb-4 text-rose-400">
+              <BarChart3 size={18} />
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Váhová pyramída</span>
+            </div>
+            <div className="space-y-2.5">
+              <DistributionRow label="25+ kg" count={stats.weightDistribution.over25} maxCount={stats.maxCatchesInTier} colorClass="text-purple-400" bgClass="bg-purple-500" />
+              <DistributionRow label="20-25 kg" count={stats.weightDistribution.tier20to25} maxCount={stats.maxCatchesInTier} colorClass="text-rose-400" bgClass="bg-rose-500" />
+              <DistributionRow label="15-20 kg" count={stats.weightDistribution.tier15to20} maxCount={stats.maxCatchesInTier} colorClass="text-amber-400" bgClass="bg-amber-500" />
+              <DistributionRow label="10-15 kg" count={stats.weightDistribution.tier10to15} maxCount={stats.maxCatchesInTier} colorClass="text-emerald-400" bgClass="bg-emerald-500" />
+            </div>
+          </div>
+
+          {/* 2. TOP 5 PRIEMER */}
+          <div className="bg-[#151E2E] border border-white/5 rounded-2xl p-5 hover:border-white/10 transition-colors">
+            <div className="flex items-center gap-3 mb-4 text-amber-400">
+              <Target size={18} />
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Priemer TOP 5</span>
+            </div>
+            <div className="flex items-end gap-2 mt-4">
+              <span className="text-4xl font-mono font-bold text-white">{stats.top5Avg.toFixed(2)}</span>
+              <span className="text-sm text-slate-500 mb-1">kg</span>
+            </div>
+            <p className="text-[10px] text-slate-500 mt-2 uppercase tracking-wide">Kľúčový parameter k víťazstvu</p>
+          </div>
+
+          {/* 3. ZLOŽENIE OBSÁDKY */}
+          <div className="bg-[#151E2E] border border-white/5 rounded-2xl p-5 hover:border-white/10 transition-colors">
+            <div className="flex items-center gap-3 mb-4 text-blue-400">
+              <PieChart size={18} />
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Druhové zastúpenie</span>
+            </div>
+            <div className="flex justify-between items-end mt-4">
+              <div>
+                <span className="text-2xl font-mono font-bold text-white">{stats.scalyPct}%</span>
+                <span className="block text-[10px] text-slate-500 uppercase">Šupináč</span>
+              </div>
+              <div className="text-right">
+                <span className="text-2xl font-mono font-bold text-white">{100 - stats.scalyPct}%</span>
+                <span className="block text-[10px] text-slate-500 uppercase">Lysec</span>
+              </div>
+            </div>
+            <div className="w-full h-1.5 bg-white/5 rounded-full mt-3 overflow-hidden flex">
+              <div className="h-full bg-blue-500" style={{ width: `${stats.scalyPct}%` }}></div>
+              <div className="h-full bg-teal-500" style={{ width: `${100 - stats.scalyPct}%` }}></div>
+            </div>
+          </div>
+
+          {/* 4. NAJŤAŽŠIA RYBA (BIG FISH) - NAHRADENÉ OKNO */}
+          <div className="bg-gradient-to-br from-[#1E293B] to-[#0B1120] border border-teal-500/30 rounded-2xl p-5 relative overflow-hidden group shadow-2xl shadow-teal-500/5">
+            <Trophy className="absolute -right-2 -bottom-2 w-20 h-20 text-teal-500/10 group-hover:scale-110 transition-transform" />
+            <div className="flex items-center gap-3 mb-4 text-teal-400">
+              <Trophy size={18} />
+              <span className="text-xs font-bold uppercase tracking-wider text-teal-400">Najťažšia ryba</span>
+            </div>
+            <div className="mt-2">
+              <div className="flex items-end gap-2">
+                <span className="text-4xl font-mono font-bold text-white">{stats.biggestFish.weight.toFixed(1)}</span>
+                <span className="text-sm font-medium text-teal-400 mb-1">kg</span>
+              </div>
+              <div className="mt-3">
+                <span className="text-[11px] block text-slate-400 uppercase tracking-tighter">Lovec / Tím</span>
+                <span className="text-sm font-bold text-white truncate block">{stats.biggestFish.team.name}</span>
+                <span className="text-[10px] text-teal-500/80 font-mono">Sektor {stats.biggestFish.team.sector}</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        {/* --- HODINOVÝ GRAF AKTIVITY --- */}
+        <div className="bg-[#151E2E] border border-white/5 rounded-2xl p-6">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h3 className="font-bold text-lg text-white flex items-center gap-2">
+                <Activity size={18} className="text-teal-400" /> Časová os aktivity
+              </h3>
+              <p className="text-sm text-slate-500 mt-1">Sila záberov v kg prepočítaná na časové úseky</p>
+            </div>
+          </div>
+          
+          <div className="relative h-[250px] w-full">
+            <svg viewBox="0 0 1000 200" preserveAspectRatio="none" className="absolute inset-0 w-full h-full overflow-visible">
+              <defs>
+                <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#14B8A6" stopOpacity="0.2" />
+                  <stop offset="100%" stopColor="#14B8A6" stopOpacity="0" />
+                </linearGradient>
+              </defs>
+              <path d={`${svgPath} L 1000 200 L 0 200 Z`} fill="url(#g1)" />
+              <path d={svgPath} fill="none" stroke="#14B8A6" strokeWidth="3" />
+              {chartPoints.map((p, i) => (
+                <circle key={i} cx={i * (1000/9)} cy={200 - (p.val/maxVal)*200} r="4" fill="#0B1120" stroke="#14B8A6" strokeWidth="2" />
+              ))}
+            </svg>
+            <div className="absolute bottom-[-30px] w-full flex justify-between text-[10px] text-slate-500 font-mono">
+              {chartPoints.map((p, i) => <span key={i}>{p.time}</span>)}
+            </div>
+          </div>
+        </div>
+
+        {/* --- SEKTORY A AI ANALÝZA --- */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-6">
+          <div className="bg-[#151E2E] border border-white/5 rounded-2xl p-6">
+            <h3 className="font-bold text-lg text-white mb-6 flex items-center gap-2">
+              <MapPin size={18} className="text-orange-400" /> Sektorová dominancia
+            </h3>
+            <div className="space-y-5">
+              {sectorData.map((s, idx) => (
+                <div key={idx}>
+                  <div className="flex justify-between text-sm mb-1.5">
+                    <span className="font-bold">{s.name}</span>
+                    <span className="font-mono text-orange-400">{s.weight.toFixed(1)} kg</span>
+                  </div>
+                  <div className="h-2 bg-[#0B1120] rounded-full overflow-hidden border border-white/5">
+                    <div className="h-full bg-orange-500" style={{ width: `${(s.weight / sectorData[0].weight) * 100}%` }}></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-[#151E2E] border border-white/5 rounded-2xl p-6">
+            <h3 className="font-bold text-lg text-white mb-4 flex items-center gap-2">
+              <Zap size={18} className="text-purple-400" /> AI Taktický Brífing
+            </h3>
+            <div className="space-y-4 text-sm leading-relaxed text-slate-400">
+              <p>Aktuálne najväčšia ryba preteku (<strong className="text-white">{stats.biggestFish.weight} kg</strong>) bola ulovená v sektore {stats.biggestFish.team.sector}, čo potvrdzuje, že hlbšia časť jazera drží väčšie kusy.</p>
+              <p>Zaujímavý je vysoký podiel šupináčov ({stats.scalyPct}%), čo naznačuje, že ryby sú v silnom pohybe. Odporúčame zvýšiť atraktivitu kŕmneho miesta partiklom.</p>
+              <div className="bg-teal-500/10 border-l-2 border-teal-500 p-3 rounded text-teal-100/80 italic">
+                "Udržujte tempo. Priemerná váha TOP 5 je vysoko nad štandardom jazera. Víťazstvo bude o trpezlivosti pri selekcii rýb pod 10kg."
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}

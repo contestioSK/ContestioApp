@@ -2,13 +2,11 @@ import { useState, useMemo } from "react";
 import { useParams, useLocation, Link } from "wouter";
 import { TeamFlag } from "@/components/team-flag";
 import { useQuery } from "@tanstack/react-query";
-import { formatDistanceToNow } from "date-fns";
-import { sk } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import {
-  ChevronLeft, PieChart, Mic, Clock, MapPin, BarChart3,
-  LayoutList, Fish, TrendingUp, Activity,
+  ChevronLeft, PieChart, Clock, MapPin, BarChart3,
+  LayoutList, Activity, Target, Trophy, Zap,
 } from "lucide-react";
 import StatsDashboard from "@/components/stats-dashboard";
 import { useVisibilityAwarePolling, POLLING_INTERVALS, STALE_TIMES } from "@/hooks/usePolling";
@@ -16,121 +14,32 @@ import type { Competition, Team, Catch } from "@shared/schema";
 
 // ---- INLINE HELPER COMPONENTS ----
 
-const HorizontalBarChart = ({
-  data,
-  competitionId,
+const DistributionRow = ({
+  label,
+  count,
+  maxCount,
+  colorClass,
+  bgClass,
 }: {
-  data: { name: string; weight: number; color: string; sector?: string }[];
-  competitionId?: string;
+  label: string;
+  count: number;
+  maxCount: number;
+  colorClass: string;
+  bgClass: string;
 }) => {
-  const max = Math.max(...data.map((d) => d.weight), 1);
+  const percentage = count > 0 ? (count / maxCount) * 100 : 0;
   return (
-    <div className="space-y-4">
-      {data.map((d, i) => (
-        <div key={i}>
-          <div className="flex justify-between text-xs mb-1">
-            {competitionId && d.sector ? (
-              <Link href={`/competition/${competitionId}/sector/${d.sector}`}>
-                <span className="text-foreground font-bold hover:text-[#F97316] transition-colors cursor-pointer">
-                  {d.name}
-                </span>
-              </Link>
-            ) : (
-              <span className="text-foreground font-bold">{d.name}</span>
-            )}
-            <span className="text-muted-foreground">{d.weight.toFixed(1)} kg</span>
-          </div>
-          <div className="h-3 bg-muted rounded-full overflow-hidden">
-            <div
-              className={`h-full ${d.color}`}
-              style={{ width: `${(d.weight / max) * 100}%` }}
-            />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-};
-
-const HOUR_COLORS = [
-  "#3B82F6","#3B82F6","#2563EB","#2563EB","#1D4ED8","#3B82F6",
-  "#2563EB","#3B82F6","#06B6D4","#22D3EE","#06B6D4","#14B8A6",
-  "#F59E0B","#10B981","#22C55E","#84CC16","#A3E635","#EAB308",
-  "#F59E0B","#F97316","#EA580C","#F97316","#3B82F6","#3B82F6",
-];
-
-const HourlyBarChart = ({
-  data,
-}: {
-  data: { hour: string; val: number }[];
-}) => {
-  const max = Math.max(...data.map((d) => d.val), 1);
-  const yTicks: number[] = [];
-  for (let i = 0; i <= max; i += Math.max(1, Math.ceil(max / 5))) {
-    yTicks.push(i);
-  }
-  if (yTicks[yTicks.length - 1] < max) yTicks.push(max);
-
-  return (
-    <div className="overflow-x-auto -mx-2 px-2">
-      <div className="flex min-w-[600px]" style={{ minHeight: "220px" }}>
-        <div className="flex flex-col justify-between pr-2 pb-6 text-[10px] text-muted-foreground font-mono items-end shrink-0 w-8">
-          {[...yTicks].reverse().map((t, i) => (
-            <span key={i}>{t}</span>
-          ))}
-        </div>
-        <div className="flex-1 relative">
-          <div className="absolute inset-0 bottom-6 flex flex-col justify-between pointer-events-none">
-            {[...yTicks].reverse().map((_, i) => (
-              <div key={i} className="border-t border-dashed border-border/40 w-full" />
-            ))}
-          </div>
-          <div
-            className="flex items-end h-full gap-[2px] relative z-10 pb-6"
-            style={{ height: "220px" }}
-          >
-            {data.map((d, i) => {
-              const barHeight = max > 0 ? (d.val / max) * 100 : 0;
-              return (
-                <div
-                  key={i}
-                  className="flex flex-col items-center flex-1 h-full justify-end group"
-                >
-                  <div className="relative w-full h-full flex items-end">
-                    {d.val > 0 && (
-                      <div
-                        className="w-full rounded-t-sm transition-all duration-500 hover:opacity-80"
-                        style={{
-                          height: `${barHeight}%`,
-                          backgroundColor: HOUR_COLORS[i % 24],
-                          minHeight: d.val > 0 ? "4px" : "0px",
-                        }}
-                      />
-                    )}
-                    {d.val > 0 && (
-                      <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-popover text-popover-foreground text-[10px] py-0.5 px-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 border border-border font-mono">
-                        {d.val}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          <div className="flex gap-[2px]">
-            {data.map((d, i) => (
-              <div key={i} className="flex-1 text-center">
-                <span className="text-[8px] sm:text-[9px] text-muted-foreground font-mono leading-none">
-                  {d.hour}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
+    <div className="flex items-center gap-3 text-sm">
+      <span className="w-16 font-mono text-muted-foreground text-xs">{label}</span>
+      <div className="flex-1 h-5 bg-background rounded-md overflow-hidden relative border border-border/30">
+        <div
+          className={`absolute top-0 left-0 h-full rounded-md transition-all duration-1000 ${bgClass}`}
+          style={{ width: `${percentage}%` }}
+        />
       </div>
-      <div className="text-[10px] text-muted-foreground font-mono pl-8 -mt-1 italic">
-        Počet úlovkov
-      </div>
+      <span className={`w-6 text-right font-bold text-sm ${count > 0 ? colorClass : "text-muted-foreground/40"}`}>
+        {count}
+      </span>
     </div>
   );
 };
@@ -209,13 +118,6 @@ const safeWeight = (w: unknown): number => {
   return Number.isFinite(n) ? n : 0;
 };
 
-const safeTimestamp = (ts: unknown): number => {
-  if (!ts) return 0;
-  const d = new Date(ts as string);
-  const t = d.getTime();
-  return Number.isFinite(t) ? t : 0;
-};
-
 // ---- MAIN PAGE ----
 
 export default function CompetitionReport() {
@@ -247,6 +149,76 @@ export default function CompetitionReport() {
     refetchInterval: isLive ? livePollingInterval : false,
     staleTime: isLive ? STALE_TIMES.LIVE : STALE_TIMES.STATIC,
   });
+
+  // ---- DATA FOR OVERVIEW TAB ----
+
+  const overviewStats = useMemo(() => {
+    if (!catches || catches.length === 0) return null;
+
+    const weightDistribution = { under10: 0, tier10to15: 0, tier15to20: 0, tier20to25: 0, over25: 0 };
+    let biggestFishCatch = catches[0];
+
+    catches.forEach((c) => {
+      const w = safeWeight(c.weight);
+      if (w > safeWeight(biggestFishCatch.weight)) biggestFishCatch = c;
+      if (w < 10) weightDistribution.under10++;
+      else if (w < 15) weightDistribution.tier10to15++;
+      else if (w < 20) weightDistribution.tier15to20++;
+      else if (w < 25) weightDistribution.tier20to25++;
+      else weightDistribution.over25++;
+    });
+
+    const maxInTier = Math.max(
+      weightDistribution.tier10to15,
+      weightDistribution.tier15to20,
+      weightDistribution.tier20to25,
+      weightDistribution.over25,
+    ) || 1;
+
+    const sortedByWeight = [...catches].sort((a, b) => safeWeight(b.weight) - safeWeight(a.weight));
+    const top5 = sortedByWeight.slice(0, 5);
+    const top5Avg = top5.reduce((sum, c) => sum + safeWeight(c.weight), 0) / Math.max(top5.length, 1);
+
+    const scalyCount = catches.filter((c) => c.fishType === "scaly").length;
+    const scalyPct = catches.length > 0 ? Math.round((scalyCount / catches.length) * 100) : 0;
+
+    return { weightDistribution, maxInTier, top5Avg, scalyPct, biggestFishCatch };
+  }, [catches]);
+
+  // 2-hour activity buckets (weight sum)
+  const activityChart = useMemo(() => {
+    const slots = ["06", "08", "10", "12", "14", "16", "18", "20", "22", "00", "02", "04"];
+    const weights: Record<string, number> = {};
+    slots.forEach((s) => (weights[s] = 0));
+    if (catches) {
+      catches.forEach((c) => {
+        if (!c.submittedAt) return;
+        const hour = new Date(c.submittedAt).getHours();
+        const bucket = Math.floor(hour / 2) * 2;
+        const key = String(bucket).padStart(2, "0");
+        if (weights[key] !== undefined) weights[key] += safeWeight(c.weight);
+      });
+    }
+    return slots.map((s) => ({ time: `${s}:00`, val: weights[s] }));
+  }, [catches]);
+
+  const { svgPath, svgMaxVal } = useMemo(() => {
+    const maxVal = Math.max(...activityChart.map((p) => p.val), 1);
+    const width = 1000;
+    const height = 200;
+    const step = width / (activityChart.length - 1);
+    let path = `M 0 ${height - (activityChart[0].val / maxVal) * height}`;
+    for (let i = 1; i < activityChart.length; i++) {
+      const xP = (i - 1) * step;
+      const yP = height - (activityChart[i - 1].val / maxVal) * height;
+      const xC = i * step;
+      const yC = height - (activityChart[i].val / maxVal) * height;
+      path += ` C ${xP + (xC - xP) / 2} ${yP}, ${xP + (xC - xP) / 2} ${yC}, ${xC} ${yC}`;
+    }
+    return { svgPath: path, svgMaxVal: maxVal };
+  }, [activityChart]);
+
+  // ---- DATA FOR OTHER TABS ----
 
   const liveStats = useMemo(() => {
     if (!catches || catches.length === 0)
@@ -290,25 +262,13 @@ export default function CompetitionReport() {
     const sectors = Array.from(
       new Set(teams.filter((t) => t.sector).map((t) => t.sector))
     ).filter(Boolean) as string[];
-    const sectorColors = [
-      "bg-cyan-500",
-      "bg-purple-500",
-      "bg-emerald-500",
-      "bg-amber-500",
-      "bg-rose-500",
-    ];
     return sectors
-      .map((sector, i) => {
+      .map((sector) => {
         const sectorTeamIds = teams.filter((t) => t.sector === sector).map((t) => t.id);
         const weight = catches
           .filter((c) => sectorTeamIds.includes(c.teamId || ""))
           .reduce((sum, c) => sum + safeWeight(c.weight), 0);
-        return {
-          name: `Sektor ${sector}`,
-          sector,
-          weight,
-          color: sectorColors[i % sectorColors.length],
-        };
+        return { name: `Sektor ${sector}`, sector, weight };
       })
       .sort((a, b) => b.weight - a.weight);
   }, [catches, teams]);
@@ -335,10 +295,7 @@ export default function CompetitionReport() {
 
   const getCommentary = useMemo(() => {
     return (type: "short" | "full") => {
-      if (
-        competition?.status === "registration" ||
-        competition?.status === "setup"
-      ) {
+      if (competition?.status === "registration" || competition?.status === "setup") {
         return "Pretek nám ešte nezačal.";
       }
       const hasAnyCatches = (liveStats.totalFish ?? 0) > 0;
@@ -408,7 +365,7 @@ export default function CompetitionReport() {
     <div className="min-h-screen bg-background text-foreground pb-24">
 
       {/* PAGE HEADER */}
-      <div className="border-b border-border/50 bg-background sticky top-0 z-10 backdrop-blur-sm bg-background/90">
+      <div className="border-b border-border/50 sticky top-0 z-10 backdrop-blur-sm bg-background/90">
         <div className="max-w-5xl mx-auto px-4 md:px-6 py-4">
           <button
             onClick={() => navigate(`/competition/${id}`)}
@@ -471,90 +428,291 @@ export default function CompetitionReport() {
       {/* PAGE CONTENT */}
       <div className="max-w-5xl mx-auto px-4 md:px-6 py-8">
 
-        {/* TAB 1: OVERVIEW */}
+        {/* ===== TAB 1: OVERVIEW ===== */}
         {statsTab === "overview" && (
-          <div className="space-y-8">
-            {/* Commentator Block */}
-            <div className="bg-blue-500/10 border border-blue-500/20 p-4 md:p-6 rounded-xl flex gap-4 items-start">
-              <div className="shrink-0 w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center text-blue-400 mt-1">
-                <Mic size={20} />
+          <div className="space-y-6">
+
+            {/* --- 4 STAT CARDS --- */}
+            {overviewStats ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+
+                {/* 1. Váhová pyramída */}
+                <div className="bg-card border border-border/50 rounded-xl p-5 hover:border-border transition-colors">
+                  <div className="flex items-center gap-2 mb-4">
+                    <BarChart3 size={16} className="text-rose-400" />
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                      Váhová pyramída
+                    </span>
+                  </div>
+                  <div className="space-y-2.5">
+                    <DistributionRow
+                      label="25+ kg"
+                      count={overviewStats.weightDistribution.over25}
+                      maxCount={overviewStats.maxInTier}
+                      colorClass="text-purple-400"
+                      bgClass="bg-purple-500"
+                    />
+                    <DistributionRow
+                      label="20–25 kg"
+                      count={overviewStats.weightDistribution.tier20to25}
+                      maxCount={overviewStats.maxInTier}
+                      colorClass="text-rose-400"
+                      bgClass="bg-rose-500"
+                    />
+                    <DistributionRow
+                      label="15–20 kg"
+                      count={overviewStats.weightDistribution.tier15to20}
+                      maxCount={overviewStats.maxInTier}
+                      colorClass="text-amber-400"
+                      bgClass="bg-amber-500"
+                    />
+                    <DistributionRow
+                      label="10–15 kg"
+                      count={overviewStats.weightDistribution.tier10to15}
+                      maxCount={overviewStats.maxInTier}
+                      colorClass="text-emerald-400"
+                      bgClass="bg-emerald-500"
+                    />
+                  </div>
+                </div>
+
+                {/* 2. Priemer TOP 5 */}
+                <div className="bg-card border border-border/50 rounded-xl p-5 hover:border-border transition-colors">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Target size={16} className="text-amber-400" />
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                      Priemer TOP 5
+                    </span>
+                  </div>
+                  <div className="flex items-end gap-1.5 mt-4">
+                    <span className="text-4xl font-mono font-bold text-foreground">
+                      {overviewStats.top5Avg.toFixed(2)}
+                    </span>
+                    <span className="text-sm text-muted-foreground mb-1">kg</span>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-2 uppercase tracking-wide">
+                    Kľúčový parameter k víťazstvu
+                  </p>
+                </div>
+
+                {/* 3. Druhové zastúpenie */}
+                <div className="bg-card border border-border/50 rounded-xl p-5 hover:border-border transition-colors">
+                  <div className="flex items-center gap-2 mb-4">
+                    <PieChart size={16} className="text-blue-400" />
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                      Druhové zastúpenie
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-end mt-4">
+                    <div>
+                      <span className="text-2xl font-mono font-bold text-foreground">
+                        {overviewStats.scalyPct}%
+                      </span>
+                      <span className="block text-[10px] text-muted-foreground uppercase mt-0.5">
+                        Šupináč
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-2xl font-mono font-bold text-foreground">
+                        {100 - overviewStats.scalyPct}%
+                      </span>
+                      <span className="block text-[10px] text-muted-foreground uppercase mt-0.5">
+                        Lysec
+                      </span>
+                    </div>
+                  </div>
+                  <div className="w-full h-1.5 bg-muted rounded-full mt-3 overflow-hidden flex">
+                    <div
+                      className="h-full bg-blue-500"
+                      style={{ width: `${overviewStats.scalyPct}%` }}
+                    />
+                    <div
+                      className="h-full bg-teal-500"
+                      style={{ width: `${100 - overviewStats.scalyPct}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* 4. Najtažšia ryba */}
+                <div className="bg-card border border-teal-500/30 rounded-xl p-5 relative overflow-hidden group">
+                  <Trophy className="absolute -right-2 -bottom-2 w-20 h-20 text-teal-500/10 group-hover:scale-110 transition-transform" />
+                  <div className="flex items-center gap-2 mb-4">
+                    <Trophy size={16} className="text-teal-400" />
+                    <span className="text-xs font-bold uppercase tracking-wider text-teal-400">
+                      Najtažšia ryba
+                    </span>
+                  </div>
+                  <div className="mt-2">
+                    <div className="flex items-end gap-1.5">
+                      <span className="text-4xl font-mono font-bold text-foreground">
+                        {safeWeight(overviewStats.biggestFishCatch.weight).toFixed(1)}
+                      </span>
+                      <span className="text-sm font-medium text-teal-400 mb-1">kg</span>
+                    </div>
+                    <div className="mt-3">
+                      <span className="text-[10px] block text-muted-foreground uppercase tracking-tight">
+                        Lovec / Tím
+                      </span>
+                      <span className="text-sm font-bold text-foreground truncate block">
+                        {overviewStats.biggestFishCatch.team?.name || "—"}
+                      </span>
+                      {overviewStats.biggestFishCatch.team?.sector && (
+                        <span className="text-[10px] text-teal-500/80 font-mono">
+                          Sektor {overviewStats.biggestFishCatch.team.sector}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div>
-                <h4 className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-2">
-                  Komentár k preteku
-                </h4>
-                <p className="text-foreground text-lg md:text-xl font-medium leading-relaxed">
-                  "{getCommentary("full")}"
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="bg-card border border-border/50 rounded-xl p-5 text-center text-muted-foreground text-sm">
+                    Žiadne dáta
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* --- SVG AREA CHART --- */}
+            <div className="bg-card border border-border/50 rounded-xl p-6">
+              <div className="mb-6">
+                <h3 className="font-bold text-lg text-foreground flex items-center gap-2">
+                  <Activity size={18} className="text-teal-400" />
+                  Časová os aktivity
+                </h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Sila záberov v kg prepočítaná na časové úseky
                 </p>
               </div>
-            </div>
 
-            {/* Hourly Chart */}
-            <div className="bg-card p-4 sm:p-6 rounded-xl border border-border overflow-hidden">
-              <h3 className="text-lg font-bold text-foreground mb-1 flex items-center gap-2">
-                <Clock size={18} strokeWidth={1.75} className="text-muted-foreground" />
-                Úlovky podľa hodín
-              </h3>
-              <p className="text-xs text-muted-foreground mb-4 sm:mb-6">
-                Rozdelenie úlovkov podľa hodín dňa. Klikni na stĺpec pre detail.
-              </p>
-              <HourlyBarChart data={hourlyActivity} />
-            </div>
-
-            {/* Sector Bar Chart */}
-            <div className="bg-card p-6 rounded-xl border border-border">
-              <h3 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2">
-                <MapPin size={18} strokeWidth={1.75} className="text-muted-foreground" />
-                Kde ryby berú najviac
-              </h3>
-              <HorizontalBarChart data={sectorStats} competitionId={id} />
-              {sectorStats.length > 0 && (
-                <p className="text-xs text-muted-foreground mt-6 leading-relaxed bg-muted/30 p-3 rounded-lg">
-                  {sectorStats[0]?.name} vedie s váhou{" "}
-                  {sectorStats[0]?.weight.toFixed(1)} kg.
-                </p>
-              )}
-            </div>
-
-            {/* 4 stat cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-card p-4 rounded-xl text-center border border-border">
-                <div className="text-[10px] text-muted-foreground uppercase font-bold mb-1 tracking-wider">
-                  Priemerná váha úlovku
-                </div>
-                <div className="text-2xl font-mono font-medium text-[#F97316]">
-                  {liveStats.avgWeight.toFixed(1)} kg
+              <div className="relative h-[250px] w-full">
+                <svg
+                  viewBox="0 0 1000 200"
+                  preserveAspectRatio="none"
+                  className="absolute inset-0 w-full h-full overflow-visible"
+                >
+                  <defs>
+                    <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#14B8A6" stopOpacity="0.2" />
+                      <stop offset="100%" stopColor="#14B8A6" stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
+                  <path
+                    d={`${svgPath} L 1000 200 L 0 200 Z`}
+                    fill="url(#areaGrad)"
+                  />
+                  <path
+                    d={svgPath}
+                    fill="none"
+                    stroke="#14B8A6"
+                    strokeWidth="3"
+                  />
+                  {activityChart.map((p, i) => (
+                    <circle
+                      key={i}
+                      cx={i * (1000 / (activityChart.length - 1))}
+                      cy={200 - (p.val / svgMaxVal) * 200}
+                      r="5"
+                      fill="hsl(var(--background))"
+                      stroke="#14B8A6"
+                      strokeWidth="2.5"
+                    />
+                  ))}
+                </svg>
+                <div className="absolute bottom-[-28px] w-full flex justify-between text-[10px] text-muted-foreground font-mono px-0">
+                  {activityChart.map((p, i) => (
+                    <span key={i}>{p.time}</span>
+                  ))}
                 </div>
               </div>
-              <div className="bg-card p-4 rounded-xl text-center border border-border">
-                <div className="text-[10px] text-muted-foreground uppercase font-bold mb-1 tracking-wider">
-                  Počet úlovkov
-                </div>
-                <div className="text-2xl font-mono font-medium text-[#F97316]">
-                  {liveStats.totalFish}
-                </div>
+            </div>
+
+            {/* --- BOTTOM 2-COL: SEKTOROVÁ DOMINANCIA + AI BRÍFING --- */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4">
+
+              {/* Left: Sektorová dominancia */}
+              <div className="bg-card border border-border/50 rounded-xl p-6">
+                <h3 className="font-bold text-lg text-foreground mb-6 flex items-center gap-2">
+                  <MapPin size={18} className="text-orange-400" />
+                  Sektorová dominancia
+                </h3>
+                {sectorStats.length > 0 ? (
+                  <div className="space-y-5">
+                    {sectorStats.map((s, idx) => (
+                      <div key={idx}>
+                        <div className="flex justify-between text-sm mb-1.5">
+                          <Link
+                            href={`/competition/${id}/sector/${s.sector}`}
+                            className="font-bold text-foreground hover:text-[#F97316] transition-colors"
+                          >
+                            {s.name}
+                          </Link>
+                          <span className="font-mono text-[#F97316]">
+                            {s.weight.toFixed(1)} kg
+                          </span>
+                        </div>
+                        <div className="h-2 bg-muted rounded-full overflow-hidden border border-border/20">
+                          <div
+                            className="h-full bg-orange-500 rounded-full"
+                            style={{
+                              width: `${(s.weight / (sectorStats[0]?.weight || 1)) * 100}%`,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-sm">Sektory ešte nie sú rozdelené.</p>
+                )}
               </div>
-              <div className="bg-card p-4 rounded-xl text-center border border-border">
-                <div className="text-[10px] text-muted-foreground uppercase font-bold mb-1 tracking-wider">
-                  TOP ryba preteku
-                </div>
-                <div className="text-2xl font-mono font-medium text-[#F97316]">
-                  {liveStats.biggestFish.toFixed(1)} kg
-                </div>
-              </div>
-              <div className="bg-card p-4 rounded-xl text-center border border-border">
-                <div className="text-[10px] text-muted-foreground uppercase font-bold mb-1 tracking-wider">
-                  Celková váha
-                </div>
-                <div className="text-2xl font-mono font-medium text-[#F97316]">
-                  {liveStats.totalWeight.toFixed(1)} kg
+
+              {/* Right: AI Taktický Brífing */}
+              <div className="bg-card border border-border/50 rounded-xl p-6">
+                <h3 className="font-bold text-lg text-foreground mb-4 flex items-center gap-2">
+                  <Zap size={18} className="text-purple-400" />
+                  AI Taktický Brífing
+                </h3>
+                <div className="space-y-4 text-sm leading-relaxed text-muted-foreground">
+                  {overviewStats ? (
+                    <>
+                      <p>
+                        Aktuálne najväčšia ryba preteku (
+                        <strong className="text-foreground">
+                          {safeWeight(overviewStats.biggestFishCatch.weight).toFixed(1)} kg
+                        </strong>
+                        )
+                        {overviewStats.biggestFishCatch.team?.sector
+                          ? ` bola ulovená v sektore ${overviewStats.biggestFishCatch.team.sector}, čo potvrdzuje, že hlbšia časť jazera drží väčšie kusy.`
+                          : " patrí medzi najlepšie úlovky preteku."}
+                      </p>
+                      {overviewStats.scalyPct > 0 && (
+                        <p>
+                          Zaujímavý je{" "}
+                          {overviewStats.scalyPct > 50 ? "vysoký" : "rovnomerný"} podiel šupináčov (
+                          <strong className="text-foreground">{overviewStats.scalyPct}%</strong>
+                          ), čo naznačuje, že ryby sú{" "}
+                          {overviewStats.scalyPct > 50 ? "v silnom pohybe" : "aktívne vo viacerých pásmach"}.
+                        </p>
+                      )}
+                      <div className="bg-teal-500/10 border-l-2 border-teal-500 p-3 rounded-r-lg text-teal-100/80 italic text-sm leading-relaxed">
+                        "{getCommentary("full")}"
+                      </div>
+                    </>
+                  ) : (
+                    <p className="italic">
+                      Zatiaľ nepadol žiadny úlovok. Analýza bude dostupná po prvom overenom úlovku.
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* TAB 2: SECTORS */}
+        {/* ===== TAB 2: SECTORS ===== */}
         {statsTab === "sectors" && (
           <div className="space-y-6">
             <h3 className="text-foreground font-bold text-lg mb-4">Poradie v sektoroch</h3>
@@ -576,7 +734,7 @@ export default function CompetitionReport() {
           </div>
         )}
 
-        {/* TAB 3: ANALYTICS */}
+        {/* ===== TAB 3: ANALYTICS ===== */}
         {statsTab === "analytics" && id && (
           <div className="space-y-6">
             <StatsDashboard competitionId={id} />
