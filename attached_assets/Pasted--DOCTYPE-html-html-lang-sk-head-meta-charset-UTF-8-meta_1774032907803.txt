@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contestio | Green Pearl Cup Detail</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            base: '#0B1120',      /* Hlboká modro-čierna pozadia */
+                            surface: '#151E2E',   /* Karty a panely */
+                            surfaceLight: '#1E293B', /* Hover stavy */
+                            orange: '#F97316',    /* Primárny CTA a Víťaz */
+                            teal: '#14B8A6',      /* Sekundárne dáta a štatistiky */
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['Roboto Mono', 'monospace'], /* Pre presné dáta */
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto+Mono:wght@500;700&display=swap');
+        
+        body { font-family: 'Inter', sans-serif; }
+        .data-number { font-family: 'Roboto Mono', monospace; }
+        
+        /* Subtílny glow pre víťaza */
+        .winner-glow {
+            box-shadow: 0 0 30px rgba(249, 115, 22, 0.1);
+            border-color: rgba(249, 115, 22, 0.4);
+        }
+
+        /* Vzor na pozadí hlavičky (simulácia topografie/vody) */
+        .header-pattern {
+            background-image: radial-gradient(rgba(20, 184, 166, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        
+        /* Custom scrollbar pre čistotu */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0B1120; }
+        ::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #334155; }
+    </style>
+</head>
+<body class="bg-brand-base text-slate-300 min-h-screen">
+
+    <!-- Top Navigation Bar (Zjednodušený pre kontext) -->
+    <nav class="w-full border-b border-white/5 bg-brand-base flex items-center justify-between px-6 h-16 sticky top-0 z-50">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded bg-brand-orange flex items-center justify-center text-white font-black text-lg">C</div>
+            <div class="font-bold text-white tracking-widest uppercase text-sm">Contestio</div>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="bg-brand-surface border border-white/10 rounded-full px-4 py-1.5 flex items-center gap-2 text-sm w-64">
+                <i class="fas fa-search text-slate-500"></i>
+                <input type="text" placeholder="Hľadať v denníku..." class="bg-transparent border-none outline-none text-white w-full text-xs">
+            </div>
+            <button class="w-8 h-8 rounded-full bg-brand-surface hover:bg-brand-surfaceLight flex items-center justify-center transition">
+                <i class="fas fa-bell text-slate-400"></i>
+            </button>
+            <div class="w-8 h-8 rounded-full bg-brand-teal/20 border border-brand-teal/50 flex items-center justify-center text-brand-teal font-bold text-xs">
+                JB
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="max-w-[1400px] mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- ĽAVÝ STĹPEC (Hlavný obsah - Šírka 8/12) -->
+        <div class="lg:col-span-8 flex flex-col gap-6">
+
+            <!-- 1. EVENT HEADER -->
+            <div class="bg-brand-surface rounded-2xl border border-white/5 overflow-hidden relative">
+                <!-- Vizuálne pozadie pre prémiový pocit -->
+                <div class="absolute inset-0 header-pattern opacity-50"></div>
+                <div class="absolute top-0 right-0 w-64 h-64 bg-brand-teal/10 rounded-full blur-[80px] -mr-20 -mt-20"></div>
+
+                <div class="relative p-8 z-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+                    <div>
+                        <div class="flex items-center gap-3 mb-4">
+                            <!-- Status Pill - Jasná červená pre ukončené, už žiadne mätúce šedé bubliny -->
+                            <span class="px-2.5 py-1 bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-bold uppercase tracking-widest rounded-full flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> Ukončené
+                            </span>
+                            <span class="text-xs font-mono text-slate-500">ID: GPC-2025</span>
+                        </div>
+                        
+                        <div class="flex items-center gap-4 mb-2">
+                            <div class="w-12 h-12 rounded-lg bg-brand-base border border-white/10 p-1 flex items-center justify-center bg-white/5">
+                                <!-- Placeholder pre logo sponzora (Dr. Baits) -->
+                                <span class="text-[10px] font-bold text-slate-400 text-center leading-tight">Dr.<br>Baits</span>
+                            </div>
+                            <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight">Green Pearl Cup</h1>
+                        </div>
+                        
+                        <div class="flex items-center gap-4 text-sm text-slate-400 mt-4">
+                            <span class="flex items-center gap-1.5"><i class="fas fa-map-marker-alt text-brand-teal/70"></i> Zemplínska Šírava</span>
+                            <span class="w-1 h-1 rounded-full bg-slate-600"></span>
+                            <span class="flex items-center gap-1.5"><i class="fas fa-users text-slate-500"></i> 7 tímov na štarte</span>
+                            <span class="w-1 h-1 rounded-full bg-slate-600"></span>
+                            <span class="flex items-center gap-1.5"><i class="fas fa-calendar text-slate-500"></i> 12. - 15. Jún 2025</span>
+                        </div>
+                    </div>
+
+                    <!-- Akcie (Upratané a jasné) -->
+                    <div class="flex gap-2">
+                        <button class="w-10 h-10 rounded-lg bg-brand-base border border-white/10 hover:border-white/30 hover:text-white flex items-center justify-center transition-all text-slate-400 group">
+                            <i class="far fa-heart group-hover:text-red-500 transition-colors"></i>
+                        </button>
+                        <button class="w-10 h-10 rounded-lg bg-brand-base border border-white/10 hover:border-white/30 hover:text-white flex items-center justify-center transition-all text-slate-400">
+                            <i class="fas fa-share-nodes"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. ŠTATISTIKY PRETEKU (Kompaktné, jednotné, SaaS style) -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <!-- Karta 1 -->
+                <div class="bg-brand-surface p-5 rounded-xl border border-white/5 flex flex-col justify-between">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-[10px] text-slate-400 uppercase tracking-widest font-semibold">Spolu ks</span>
+                        <i class="fas fa-fish text-brand-teal/50"></i>
+                    </div>
+                    <div class="text-3xl font-bold text-white data-number">82</div>
+                </div>
+                
+                <!-- Karta 2 -->
+                <div class="bg-brand-surface p-5 rounded-xl border border-white/5 flex flex-col justify-between">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-[10px] text-slate-400 uppercase tracking-widest font-semibold">Celková váha</span>
+                        <i class="fas fa-weight-hanging text-brand-teal/50"></i>
+                    </div>
+                    <div class="flex items-baseline gap-1">
+                        <div class="text-3xl font-bold text-white data-number">805.2</div>
+                        <span class="text-sm text-slate-500">kg</span>
+                    </div>
+                </div>
+
+                <!-- Karta 3 (Akcentovaná na najväčšiu rybu - Affordance opravená) -->
+                <a href="#" class="bg-brand-surface p-5 rounded-xl border border-white/5 hover:border-brand-orange/30 group transition-all flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-16 h-16 bg-brand-orange/5 rounded-bl-full transition-colors group-hover:bg-brand-orange/10"></div>
+                    <div class="flex justify-between items-start mb-4 relative z-10">
+                        <span class="text-[10px] text-brand-orange uppercase tracking-widest font-bold flex items-center gap-1">
+                            Najväčšia ryba <i class="fas fa-arrow-right text-[8px] opacity-0 group-hover:opacity-100 transition-opacity -mt-0.5"></i>
+                        </span>
+                        <i class="fas fa-trophy text-brand-orange/50"></i>
+                    </div>
+                    <div class="flex items-baseline gap-1 relative z-10">
+                        <div class="text-3xl font-bold text-white data-number">32.4</div>
+                        <span class="text-sm text-slate-500">kg</span>
+                    </div>
+                </a>
+
+                <!-- Karta 4 -->
+                <div class="bg-brand-surface p-5 rounded-xl border border-white/5 flex flex-col justify-between">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-[10px] text-slate-400 uppercase tracking-widest font-semibold">Priemer / ks</span>
+                        <i class="fas fa-chart-line text-brand-teal/50"></i>
+                    </div>
+                    <div class="flex items-baseline gap-1">
+                        <div class="text-3xl font-bold text-white data-number">9.8</div>
+                        <span class="text-sm text-slate-500">kg</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. KONEČNÉ PORADIE (Leaderboard - Čisté a analytické) -->
+            <div class="bg-brand-surface rounded-2xl border border-white/5 overflow-hidden flex flex-col flex-1">
+                
+                <div class="px-6 py-5 border-b border-white/5 flex justify-between items-center bg-brand-surfaceLight/30">
+                    <h2 class="text-white font-bold text-lg flex items-center gap-2">
+                        <i class="fas fa-list-ol text-brand-orange"></i> Konečné poradie preteku
+                    </h2>
+                    <span class="text-xs text-slate-400 font-mono">7 tímov celkovo</span>
+                </div>
+
+                <!-- Samotná tabuľka poradí -->
+                <div class="flex-1 w-full overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="text-[10px] uppercase tracking-widest text-slate-500 border-b border-white/5">
+                                <th class="px-6 py-4 font-semibold w-16 text-center">Poz</th>
+                                <th class="px-6 py-4 font-semibold">Tím</th>
+                                <th class="px-6 py-4 font-semibold text-center">Sektor</th>
+                                <th class="px-6 py-4 font-semibold text-center">Počet (ks)</th>
+                                <th class="px-6 py-4 font-semibold text-right">Celková váha</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm">
+                            <!-- VÍŤAZ (Rank 1 - Amber zvýraznenie namiesto pódia) -->
+                            <tr class="border-b border-white/5 bg-brand-orange/5 hover:bg-brand-orange/10 transition-colors relative">
+                                <td class="px-6 py-4 text-center">
+                                    <div class="w-8 h-8 rounded bg-brand-orange text-white font-bold flex items-center justify-center mx-auto shadow-[0_0_15px_rgba(249,115,22,0.4)]">1</div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-6 h-4 bg-white/10 rounded flex items-center justify-center overflow-hidden"><img src="https://flagcdn.com/w20/sk.png" alt="SK" class="w-full h-full object-cover"></div>
+                                        <span class="font-bold text-white text-base">Kapráči Nitra</span>
+                                        <span class="px-2 py-0.5 bg-brand-orange/20 text-brand-orange text-[9px] uppercase tracking-widest rounded ml-2 font-bold"><i class="fas fa-crown mr-1"></i> Víťaz</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-center text-slate-400">A</td>
+                                <td class="px-6 py-4 text-center text-slate-300 data-number">12</td>
+                                <td class="px-6 py-4 text-right">
+                                    <div class="flex flex-col items-end">
+                                        <span class="font-bold text-brand-orange text-lg data-number">126.7 <span class="text-xs text-brand-orange/70 font-sans">kg</span></span>
+                                        <!-- Vizuálny bar prevahy -->
+                                        <div class="w-24 h-1 bg-white/5 rounded-full mt-1 overflow-hidden"><div class="h-full bg-brand-orange w-full"></div></div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Rank 2 -->
+                            <tr class="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                                <td class="px-6 py-4 text-center"><span class="text-slate-400 font-bold data-number">2</span></td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-6 h-4 bg-white/10 rounded flex items-center justify-center overflow-hidden"><img src="https://flagcdn.com/w20/sk.png" alt="SK" class="w-full h-full object-cover"></div>
+                                        <span class="font-semibold text-slate-200">Žilina Anglers</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-center text-slate-400">A</td>
+                                <td class="px-6 py-4 text-center text-slate-400 data-number">13</td>
+                                <td class="px-6 py-4 text-right">
+                                    <div class="flex flex-col items-end">
+                                        <span class="font-semibold text-white data-number">126.0 <span class="text-xs text-slate-500 font-sans">kg</span></span>
+                                        <div class="w-24 h-1 bg-white/5 rounded-full mt-1 overflow-hidden"><div class="h-full bg-brand-teal w-[99%]"></div></div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Rank 3 -->
+                            <tr class="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                                <td class="px-6 py-4 text-center"><span class="text-slate-400 font-bold data-number">3</span></td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-6 h-4 bg-white/10 rounded flex items-center justify-center overflow-hidden"><img src="https://flagcdn.com/w20/sk.png" alt="SK" class="w-full h-full object-cover"></div>
+                                        <span class="font-semibold text-slate-200">Košice Carp Club</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-center text-slate-400">A</td>
+                                <td class="px-6 py-4 text-center text-slate-400 data-number">12</td>
+                                <td class="px-6 py-4 text-right">
+                                    <div class="flex flex-col items-end">
+                                        <span class="font-semibold text-white data-number">123.0 <span class="text-xs text-slate-500 font-sans">kg</span></span>
+                                        <div class="w-24 h-1 bg-white/5 rounded-full mt-1 overflow-hidden"><div class="h-full bg-brand-teal w-[97%]"></div></div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Rank 4 (Bežné riadky, preč s oranžovo-červenou farbou pre kg) -->
+                            <tr class="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                                <td class="px-6 py-4 text-center text-slate-500 data-number">4</td>
+                                <td class="px-6 py-4"><span class="text-slate-300">Dr. Baits SK</span></td>
+                                <td class="px-6 py-4 text-center text-slate-500">B</td>
+                                <td class="px-6 py-4 text-center text-slate-500 data-number">11</td>
+                                <td class="px-6 py-4 text-right text-slate-300 font-medium data-number">113.9 <span class="text-xs text-slate-500 font-sans">kg</span></td>
+                            </tr>
+                            <!-- Rank 5 -->
+                            <tr class="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                                <td class="px-6 py-4 text-center text-slate-500 data-number">5</td>
+                                <td class="px-6 py-4"><span class="text-slate-300">Rybári Trenčín</span></td>
+                                <td class="px-6 py-4 text-center text-slate-500">C</td>
+                                <td class="px-6 py-4 text-center text-slate-500 data-number">13</td>
+                                <td class="px-6 py-4 text-right text-slate-300 font-medium data-number">111.0 <span class="text-xs text-slate-500 font-sans">kg</span></td>
+                            </tr>
+                             <!-- Rank 6 -->
+                             <tr class="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                                <td class="px-6 py-4 text-center text-slate-500 data-number">6</td>
+                                <td class="px-6 py-4"><span class="text-slate-300">Lovec Lín</span></td>
+                                <td class="px-6 py-4 text-center text-slate-500">B</td>
+                                <td class="px-6 py-4 text-center text-slate-500 data-number">11</td>
+                                <td class="px-6 py-4 text-right text-slate-300 font-medium data-number">107.6 <span class="text-xs text-slate-500 font-sans">kg</span></td>
+                            </tr>
+                             <!-- Rank 7 -->
+                             <tr class="hover:bg-white/[0.02] transition-colors">
+                                <td class="px-6 py-4 text-center text-slate-500 data-number">7</td>
+                                <td class="px-6 py-4"><span class="text-slate-300">Prešov Fishers</span></td>
+                                <td class="px-6 py-4 text-center text-slate-500">B</td>
+                                <td class="px-6 py-4 text-center text-slate-500 data-number">10</td>
+                                <td class="px-6 py-4 text-right text-slate-300 font-medium data-number">97.3 <span class="text-xs text-slate-500 font-sans">kg</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- PRAVÝ STĹPEC (Sidebar - Šírka 4/12) -->
+        <div class="lg:col-span-4 flex flex-col gap-6">
+
+            <!-- Analytika Tlačidlo (Nahradilo to obrovské modré) -->
+            <div class="bg-gradient-to-br from-brand-surfaceLight to-brand-surface border border-brand-teal/20 rounded-2xl p-6 text-center shadow-lg relative overflow-hidden">
+                <div class="absolute -right-4 -top-4 text-brand-teal/5 text-6xl"><i class="fas fa-chart-pie"></i></div>
+                <h3 class="text-white font-bold mb-2 relative z-10 flex items-center justify-center gap-2">
+                    <i class="fas fa-bolt text-brand-orange"></i> Štatistiky a Analýza
+                </h3>
+                <p class="text-xs text-slate-400 mb-5 relative z-10 leading-relaxed">Pozrite si heatmapy úlovkov, najlepšie časy záberov a vplyv tlaku na tento pretek.</p>
+                <button class="w-full bg-brand-teal/10 hover:bg-brand-teal/20 text-brand-teal border border-brand-teal/30 py-3 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2 relative z-10">
+                    Otvoriť report preteku <i class="fas fa-arrow-right text-xs"></i>
+                </button>
+            </div>
+
+            <!-- Posledné Úlovky Feed (Čistejší dizajn, upravená gramatika) -->
+            <div class="bg-brand-surface rounded-2xl border border-white/5 flex flex-col h-[400px]">
+                <div class="p-5 border-b border-white/5 flex justify-between items-center bg-brand-surfaceLight/20">
+                    <h3 class="text-white font-bold text-sm flex items-center gap-2">
+                        <i class="fas fa-history text-slate-400"></i> Časová os úlovkov
+                    </h3>
+                    <a href="#" class="text-[10px] uppercase tracking-widest text-brand-teal font-bold hover:text-white transition">Archív</a>
+                </div>
+                
+                <div class="flex-1 overflow-y-auto p-2">
+                    <div class="flex flex-col gap-1">
+                        <!-- Feed Item 1 -->
+                        <div class="flex items-center justify-between p-3 rounded-lg hover:bg-white/5 transition cursor-pointer group">
+                            <div class="flex items-center gap-3">
+                                <div class="w-2 h-2 rounded-full bg-brand-teal"></div>
+                                <div>
+                                    <div class="text-sm text-slate-200 font-medium group-hover:text-white transition">Rybári Trenčín</div>
+                                    <!-- GRAMATIKA OPRAVENÁ: pred 6 mesiacmi -->
+                                    <div class="text-[10px] text-slate-500">Kapor • Pred 6 mesiacmi</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-bold text-white data-number">2.6 <span class="text-xs text-slate-500 font-sans">kg</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Feed Item 2 -->
+                        <div class="flex items-center justify-between p-3 rounded-lg hover:bg-white/5 transition cursor-pointer group">
+                            <div class="flex items-center gap-3">
+                                <div class="w-2 h-2 rounded-full bg-brand-orange shadow-[0_0_8px_rgba(249,115,22,0.8)]"></div>
+                                <div>
+                                    <div class="text-sm text-brand-orange font-medium">Žilina Anglers</div>
+                                    <div class="text-[10px] text-slate-500">Najväčší úlovok dňa</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-bold text-brand-orange data-number">32.4 <span class="text-xs text-brand-orange/70 font-sans">kg</span></div>
+                            </div>
+                        </div>
+
+                         <!-- Feed Item 3 -->
+                         <div class="flex items-center justify-between p-3 rounded-lg hover:bg-white/5 transition cursor-pointer group">
+                            <div class="flex items-center gap-3">
+                                <div class="w-2 h-2 rounded-full bg-slate-600"></div>
+                                <div>
+                                    <div class="text-sm text-slate-300 font-medium group-hover:text-white transition">Lovec Lín</div>
+                                    <div class="text-[10px] text-slate-500">Amur • Pred 6 mesiacmi</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-bold text-slate-300 data-number">3.5 <span class="text-xs text-slate-500 font-sans">kg</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Feed Item 4 -->
+                        <div class="flex items-center justify-between p-3 rounded-lg hover:bg-white/5 transition cursor-pointer group">
+                            <div class="flex items-center gap-3">
+                                <div class="w-2 h-2 rounded-full bg-slate-600"></div>
+                                <div>
+                                    <div class="text-sm text-slate-300 font-medium group-hover:text-white transition">Dr. Baits SK</div>
+                                    <div class="text-[10px] text-slate-500">Kapor • Pred 6 mesiacmi</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-bold text-slate-300 data-number">1.9 <span class="text-xs text-slate-500 font-sans">kg</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pravidlá preteku (Čistá karta) -->
+            <a href="#" class="bg-brand-surface rounded-xl border border-white/5 p-5 flex items-center justify-between hover:border-slate-500 transition group">
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-lg bg-brand-surfaceLight flex items-center justify-center text-slate-400 group-hover:text-white transition">
+                        <i class="fas fa-file-contract"></i>
+                    </div>
+                    <div>
+                        <div class="text-sm font-bold text-white mb-0.5">Pravidlá preteku</div>
+                        <div class="text-xs text-slate-500">Dokument s propozíciami</div>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-right text-slate-600 group-hover:text-slate-400 transition"></i>
+            </a>
+
+        </div>
+    </main>
+</body>
+</html>
