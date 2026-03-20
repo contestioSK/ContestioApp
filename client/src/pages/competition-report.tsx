@@ -661,7 +661,7 @@ export default function CompetitionReport() {
 
               {/* Left: Váhový priemer TOP 3 tímov */}
               <TeamAverageTable
-                data={teamTop3AverageData}
+                data={teamTop3AverageData.slice(0, 3)}
                 title="Váhový priemer top 3 úlovkov"
                 description="Tímy seradené podľa priemernej váhy ich 3 najťažších úlovkov"
               />
