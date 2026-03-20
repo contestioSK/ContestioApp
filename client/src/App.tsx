@@ -21,6 +21,7 @@ import AdminUserProfile from "@/pages/admin-user-profile";
 import RefereeInterface from "@/pages/referee-interface";
 import RegisterCompetition from "@/pages/register-competition";
 import CompetitionSetup from "@/pages/competition-setup";
+import CompetitionReport from "@/pages/competition-report";
 import RegisterTeam from "@/pages/register-team";
 import AboutUs from "@/pages/about-us";
 import Pricing from "@/pages/pricing";
@@ -152,6 +153,7 @@ function Router() {
       <Route path="/categories/finished" component={FinishedPage} />
       <Route path="/competition/:id" component={CompetitionDetail} />
       <Route path="/competition/:id/catches" component={CompetitionCatches} />
+      <Route path="/competition/:id/report" component={CompetitionReport} />
       <Route path="/competition/:competitionId/sector/:sector" component={SectorDetail} />
       <Route path="/team/:teamId" component={TeamDetail} />
       <Route path="/admin/users/:userId">

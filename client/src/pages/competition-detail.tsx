@@ -20,8 +20,8 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { 
   Trophy, Users, MapPin, Clock, Fish, TrendingUp, Activity, 
   ChevronRight, Target, Crown, Share2, AlertCircle, Timer, 
-  BarChart3, X, PieChart, ChevronDown, ChevronUp, Mic, 
-  Heart, QrCode, ChevronLeft, LayoutList, UserPlus, Trash2, FileText,
+  BarChart3, X, ChevronDown, ChevronUp,
+  Heart, QrCode, ChevronLeft, UserPlus, Trash2, FileText,
   Zap, Calendar
 } from "lucide-react";
 import StatsDashboard from "@/components/stats-dashboard";
@@ -274,7 +274,6 @@ export default function CompetitionDetail() {
   const { toast } = useToast();
   const [isRegistrationDialogOpen, setIsRegistrationDialogOpen] = useState(false);
   const { isAuthenticated, isLoading: authLoading, user } = useAuth();
-  const [showStatsOverlay, setShowStatsOverlay] = useState(false);
   const [showRulesOverlay, setShowRulesOverlay] = useState(false);
   const [showMyTeamOverlay, setShowMyTeamOverlay] = useState(false);
   const [entityModal, setEntityModal] = useState<{
@@ -284,7 +283,6 @@ export default function CompetitionDetail() {
     previousView?: 'catch' | 'catches-list' | null;
   }>({ view: null, team: null, catch_: null, previousView: null });
   const [leaderboardExpanded, setLeaderboardExpanded] = useState(false);
-  const [statsTab, setStatsTab] = useState<'overview' | 'sectors' | 'analytics'>('overview');
   
   // Favorite competitions
   const { data: favoriteCompetitions } = useFavoriteCompetitions();
@@ -794,7 +792,7 @@ export default function CompetitionDetail() {
                   Pozrite si heatmapy úlovkov, najlepšie časy záberov a vplyv tlaku na tento pretek.
                 </p>
                 <button
-                  onClick={() => setShowStatsOverlay(true)}
+                  onClick={() => navigate(`/competition/${id}/report`)}
                   className="w-full bg-transparent border border-teal-500/60 hover:bg-teal-500/10 text-teal-400 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all"
                 >
                   Otvoriť report preteku →
@@ -1361,152 +1359,6 @@ export default function CompetitionDetail() {
           </div>
         )}
       </main>
-
-      {/* --- STATS OVERLAY (MODAL) WITH TABS --- */}
-      {showStatsOverlay && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8"
-          onKeyDown={(e) => e.key === 'Escape' && setShowStatsOverlay(false)}
-          tabIndex={-1}
-          ref={(el) => el?.focus()}
-        >
-          <div 
-            className="absolute inset-0 bg-background/90 backdrop-blur-md"
-            onClick={() => setShowStatsOverlay(false)}
-          ></div>
-
-          <div className="relative z-10 bg-card border border-blue-500/20 w-full max-w-5xl max-h-[90vh] rounded-xl overflow-hidden flex flex-col shadow-2xl blue-glow-card">
-            
-            {/* Modal Header */}
-            <div className="p-6 md:p-8 border-b border-border flex flex-col md:flex-row md:items-center justify-between gap-4 bg-muted/30">
-              <div>
-                <h2 className="text-xl md:text-2xl font-bold text-foreground flex items-center gap-3">
-                  <PieChart className="text-blue-500" />
-                  Ako ryby berú počas preteku
-                </h2>
-                <p className="text-muted-foreground text-sm mt-1">Dáta priamo z vody</p>
-              </div>
-              
-              {/* TABS SWITCHER */}
-              <div className="flex p-1 bg-muted/50 rounded-xl border border-border">
-                <button 
-                  onClick={() => setStatsTab('overview')}
-                  className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${statsTab === 'overview' ? 'bg-blue-600 text-white shadow-lg' : 'text-muted-foreground hover:text-foreground'}`}
-                >
-                  Prehľad
-                </button>
-                <button 
-                  onClick={() => setStatsTab('sectors')}
-                  className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${statsTab === 'sectors' ? 'bg-blue-600 text-white shadow-lg' : 'text-muted-foreground hover:text-foreground'}`}
-                >
-                  <LayoutList size={14} /> Sektory
-                </button>
-                <button 
-                  onClick={() => setStatsTab('analytics')}
-                  className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${statsTab === 'analytics' ? 'bg-blue-600 text-white shadow-lg' : 'text-muted-foreground hover:text-foreground'}`}
-                >
-                  <BarChart3 size={14} /> Detailné štatistiky
-                </button>
-              </div>
-
-              <button 
-                onClick={() => setShowStatsOverlay(false)}
-                className="absolute top-4 right-4 md:static p-3 bg-muted/50 hover:bg-muted rounded-full transition-colors text-foreground"
-              >
-                <X size={24} />
-              </button>
-            </div>
-
-            {/* Modal Content */}
-            <div className="flex-1 overflow-y-auto p-6 md:p-8 bg-background">
-              
-              {/* TAB 1: OVERVIEW */}
-              {statsTab === 'overview' && (
-                <div className="space-y-8">
-                  {/* Full Commentator Block */}
-                  <div className="bg-blue-500/10 border border-blue-500/20 p-4 md:p-6 rounded-xl flex gap-4 items-start">
-                    <div className="shrink-0 w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center text-blue-400 mt-1">
-                      <Mic size={20} />
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-2">Komentár k preteku</h4>
-                      <p className="text-foreground text-lg md:text-xl font-medium leading-relaxed">
-                        "{getCommentary('full')}"
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="bg-card p-4 sm:p-6 rounded-xl border border-border overflow-hidden">
-                    <h3 className="text-lg font-bold text-foreground mb-1 flex items-center gap-2">
-                      <Clock size={18} strokeWidth={1.75} className="text-muted-foreground" />
-                      Úlovky podľa hodín
-                    </h3>
-                    <p className="text-xs text-muted-foreground mb-4 sm:mb-6">Rozdelenie úlovkov podľa hodín dňa. Klikni na stĺpec pre detail.</p>
-                    <HourlyBarChart data={hourlyActivity} />
-                  </div>
-
-                  <div className="bg-card p-6 rounded-xl border border-border">
-                    <h3 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2">
-                      <MapPin size={18} strokeWidth={1.75} className="text-muted-foreground" />
-                      Kde ryby berú najviac
-                    </h3>
-                    <HorizontalBarChart data={sectorStats} competitionId={id} />
-                    {sectorStats.length > 0 && (
-                      <p className="text-xs text-muted-foreground mt-6 leading-relaxed bg-muted/30 p-3 rounded-lg">
-                        {sectorStats[0]?.name} vedie s váhou {sectorStats[0]?.weight.toFixed(1)} kg.
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="bg-card p-4 rounded-xl text-center border border-border">
-                      <div className="text-[10px] text-muted-foreground uppercase font-bold mb-1 tracking-wider">Priemerná váha úlovku</div>
-                      <div className="text-2xl font-mono font-medium text-[#F97316]">{liveStats.avgWeight.toFixed(1)} kg</div>
-                    </div>
-                    <div className="bg-card p-4 rounded-xl text-center border border-border">
-                      <div className="text-[10px] text-muted-foreground uppercase font-bold mb-1 tracking-wider">Počet úlovkov</div>
-                      <div className="text-2xl font-mono font-medium text-[#F97316]">{liveStats.totalFish}</div>
-                    </div>
-                    <div className="bg-card p-4 rounded-xl text-center border border-border">
-                      <div className="text-[10px] text-muted-foreground uppercase font-bold mb-1 tracking-wider">TOP ryba preteku</div>
-                      <div className="text-2xl font-mono font-medium text-[#F97316]">{liveStats.biggestFish.toFixed(1)} kg</div>
-                    </div>
-                    <div className="bg-card p-4 rounded-xl text-center border border-border">
-                      <div className="text-[10px] text-muted-foreground uppercase font-bold mb-1 tracking-wider">Celková váha</div>
-                      <div className="text-2xl font-mono font-medium text-[#F97316]">{liveStats.totalWeight.toFixed(1)} kg</div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* TAB 2: SECTORS */}
-              {statsTab === 'sectors' && (
-                <div className="space-y-6">
-                  <h3 className="text-foreground font-bold text-lg mb-4">Poradie v sektoroch</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {uniqueSectors.map(sector => (
-                      <SectorTable key={sector} sector={sector} leaderboard={sortedLeaderboard} competitionId={id!} />
-                    ))}
-                    {uniqueSectors.length === 0 && (
-                      <div className="col-span-full text-center text-muted-foreground py-8">
-                        Sektory ešte nie sú rozdelené
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* TAB 3: ANALYTICS */}
-              {statsTab === 'analytics' && id && (
-                <div className="space-y-6">
-                  <StatsDashboard competitionId={id} />
-                </div>
-              )}
-
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* --- RULES OVERLAY (MODAL) --- */}
       {showRulesOverlay && (
