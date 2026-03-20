@@ -22,14 +22,8 @@ import {
   ChevronRight, Target, Crown, Share2, AlertCircle, Timer, 
   BarChart3, X, PieChart, ChevronDown, ChevronUp, Mic, 
   Heart, QrCode, ChevronLeft, LayoutList, UserPlus, Trash2, FileText,
-  MoreVertical, Link2
+  Zap, Calendar
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import StatsDashboard from "@/components/stats-dashboard";
 import type { Competition, Team, Catch } from "@shared/schema";
 import { useFavoriteCompetitions, useToggleFavoriteCompetition } from "@/hooks/useFavorites";
@@ -669,252 +663,147 @@ export default function CompetitionDetail() {
   return (
     <div className="min-h-screen bg-background text-foreground pb-24">
       
-      {/* 1. ATMOSPHERIC HEADER */}
-      <header className="relative overflow-hidden border-b border-border/50 bg-card/80 backdrop-blur-xl header-glow">
-        {/* Dot pattern background */}
-        <div
-          className="absolute inset-0 pointer-events-none opacity-50"
-          style={{ backgroundImage: 'radial-gradient(rgba(20, 184, 166, 0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }}
-        />
-        {/* Teal glow — top right */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/10 rounded-full blur-[80px] -mr-20 -mt-20 pointer-events-none" />
-        {/* Blur Background */}
-        {competition.imageUrl && (
-          <div className="absolute inset-0 opacity-15 pointer-events-none">
-            <img src={competition.imageUrl} className="w-full h-full object-cover blur-3xl scale-125" alt="" />
-          </div>
-        )}
-        <div className="absolute inset-0 bg-gradient-to-b from-card/40 via-card/60 to-background"></div>
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-orange-500/30 to-transparent"></div>
+      {/* 1. TOP ROW: Competition Info Card + Analytics Card */}
+      <section className="border-b border-border/50 bg-background">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 space-y-4">
+          {/* Back nav */}
+          <button
+            onClick={() => window.history.back()}
+            className="flex items-center gap-1 text-muted-foreground hover:text-foreground text-sm font-medium transition-colors"
+          >
+            <ChevronLeft size={16} /> Späť
+          </button>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6 pt-6 pb-6">
-          {/* MOBILE: Nav Row with Back + Overflow */}
-          <div className="md:hidden flex justify-between items-center mb-4">
-            <button 
-              onClick={() => window.history.back()} 
-              className="flex items-center gap-1 text-muted-foreground hover:text-foreground text-sm font-medium transition-colors"
-            >
-              <ChevronLeft size={16} /> Späť
-            </button>
-            
-            {/* Mobile Overflow Menu */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="p-2 text-muted-foreground hover:text-foreground transition-colors" title="Viac akcií">
-                  <MoreVertical size={20} />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-52">
-                {isAuthenticated && (
-                  <DropdownMenuItem 
-                    onClick={handleToggleFavorite}
-                    disabled={isAdding || isRemoving}
-                    className="gap-2"
-                  >
-                    <Heart size={16} className={isFavorite ? 'fill-current text-red-500' : ''} />
-                    {isFavorite ? 'Odstrániť z obľúbených' : 'Pridať k obľúbeným'}
-                  </DropdownMenuItem>
-                )}
-                {isRegistration && (
-                  <QRShareDialog 
-                    type="competition" 
-                    id={id || ""} 
-                    name={competition.name}
-                    trigger={
-                      <button className="flex w-full items-center gap-2 px-2 py-1.5 text-sm rounded-sm hover:bg-accent cursor-default">
-                        <QrCode size={16} />
-                        QR kód registrácie
-                      </button>
-                    }
-                  />
-                )}
-                <DropdownMenuItem 
-                  onClick={() => {
-                    if (navigator.share) {
-                      navigator.share({ title: competition.name, url: window.location.href });
-                    } else {
-                      navigator.clipboard.writeText(window.location.href);
-                      toast({ title: "Odkaz skopírovaný", description: "Odkaz na súťaž bol skopírovaný do schránky" });
-                    }
-                  }}
-                  className="gap-2"
-                >
-                  <Share2 size={16} />
-                  Zdieľať súťaž
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => {
-                    navigator.clipboard.writeText(window.location.href);
-                    toast({ title: "Odkaz skopírovaný", description: "Odkaz na súťaž bol skopírovaný do schránky" });
-                  }}
-                  className="gap-2"
-                >
-                  <Link2 size={16} />
-                  Kopírovať odkaz
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+          {/* 2-col cards */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
 
-          {/* DESKTOP: Nav Row */}
-          <div className="hidden md:flex justify-between items-center mb-6">
-            <button 
-              onClick={() => window.history.back()} 
-              className="flex items-center gap-1 text-muted-foreground hover:text-foreground text-sm font-medium transition-colors"
-            >
-              <ChevronLeft size={16} /> Späť
-            </button>
-          </div>
-
-          {/* MOBILE: Identity Section (status → name → meta) - ends with border */}
-          <div className="md:hidden space-y-2 pb-3 border-b border-border">
-            <div className="flex items-center gap-3">
-              <StatusBadge status={competition.status} />
-              {competition.endDate && competition.status === 'live' && (
-                <span className="text-xs text-muted-foreground font-mono flex items-center gap-1">
-                  <Clock size={12} /> {getRemainingTime(competition.endDate)}
-                </span>
-              )}
-            </div>
-            
-            <div className="flex items-center gap-3">
-              {competition.imageUrl && (
-                <div className="w-10 h-10 bg-background/50 rounded-full p-1.5 backdrop-blur-sm border border-border shrink-0">
-                  <img src={competition.imageUrl} alt="Logo" className="w-full h-full object-contain opacity-90" />
+            {/* LEFT: Competition Info Card */}
+            <div className="lg:col-span-8 bg-card border border-border rounded-xl p-5 relative overflow-hidden">
+              <div className="absolute inset-0 pointer-events-none opacity-40" style={{ backgroundImage: 'radial-gradient(rgba(20, 184, 166, 0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+              <div className="absolute top-0 right-0 w-48 h-48 bg-teal-500/8 rounded-full blur-[60px] -mr-16 -mt-16 pointer-events-none" />
+              <div className="relative z-10">
+                {/* Status row */}
+                <div className="flex items-center gap-3 mb-3">
+                  <StatusBadge status={competition.status} />
+                  {competition.endDate && competition.status === 'live' && (
+                    <span className="text-xs text-muted-foreground font-mono flex items-center gap-1">
+                      <Clock size={12} /> Do konca: {getRemainingTime(competition.endDate)}
+                    </span>
+                  )}
                 </div>
-              )}
-              <h1 className="text-2xl font-black text-foreground tracking-tight leading-none">
-                {competition.name}
-              </h1>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1"><MapPin size={12} className="text-cyan-500" /> {competition.location}</span>
-              <span className="flex items-center gap-1"><Users size={12} className="text-emerald-500" /> {teams?.filter(t => t.status === 'approved').length || 0} tímov</span>
-            </div>
-          </div>
-
-          {/* DESKTOP: Header Content */}
-          <div className="hidden md:flex md:flex-row md:items-start justify-between gap-6">
-            <div>
-              <div className="flex items-center gap-3 mb-3">
-                <StatusBadge status={competition.status} />
-                {competition.endDate && competition.status === 'live' && (
-                  <span className="text-xs text-muted-foreground font-mono flex items-center gap-1">
-                    <Clock size={12} /> Do konca lovu zostáva {getRemainingTime(competition.endDate)}
-                  </span>
-                )}
-              </div>
-              
-              <div className="flex items-center gap-4 mb-2">
-                {competition.imageUrl && (
-                  <div className="w-16 h-16 bg-background/50 rounded-full p-2 backdrop-blur-sm border border-border shrink-0">
-                    <img src={competition.imageUrl} alt="Logo" className="w-full h-full object-contain opacity-90" />
+                {/* Logo + Title */}
+                <div className="flex items-center gap-3 mb-4">
+                  {competition.imageUrl && (
+                    <div className="w-12 h-12 md:w-14 md:h-14 bg-background/60 rounded-lg p-2 border border-border shrink-0">
+                      <img src={competition.imageUrl} alt="Logo" className="w-full h-full object-contain" />
+                    </div>
+                  )}
+                  <h1 className="text-2xl md:text-4xl font-black text-foreground tracking-tight leading-none">
+                    {competition.name}
+                  </h1>
+                </div>
+                {/* Metadata + Actions */}
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+                    <span className="flex items-center gap-1.5"><MapPin size={13} className="text-cyan-500" />{competition.location}</span>
+                    <span className="text-border/60">•</span>
+                    <span className="flex items-center gap-1.5"><Users size={13} className="text-emerald-500" />{teams?.filter(t => t.status === 'approved').length || 0} tímov na štarte</span>
+                    {competition.startDate && (
+                      <>
+                        <span className="text-border/60">•</span>
+                        <span className="flex items-center gap-1.5">
+                          <Calendar size={13} className="text-purple-500" />
+                          {new Date(competition.startDate).toLocaleDateString('sk-SK', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          {competition.endDate && ` – ${new Date(competition.endDate).toLocaleDateString('sk-SK', { day: 'numeric', month: 'short', year: 'numeric' })}`}
+                        </span>
+                      </>
+                    )}
                   </div>
-                )}
-                <h1 className="text-5xl font-black text-foreground tracking-tight leading-none">
-                  {competition.name}
-                </h1>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground pl-1">
-                <span className="flex items-center gap-1.5"><MapPin size={14} className="text-cyan-500" /> {competition.location}</span>
-                <span className="flex items-center gap-1.5"><Users size={14} className="text-emerald-500" /> Na štarte: {teams?.filter(t => t.status === 'approved').length || 0} tímov</span>
-              </div>
-            </div>
-
-            {/* Desktop Action Buttons */}
-            <div className="flex gap-3">
-              <div className="flex gap-2 mr-2">
-                {isAuthenticated && (
-                  <button 
-                    onClick={handleToggleFavorite}
-                    disabled={isAdding || isRemoving}
-                    className={`bg-card/50 hover:bg-card text-muted-foreground hover:text-red-500 p-3 rounded-xl border border-border transition-colors ${isFavorite ? 'text-red-500 bg-red-500/10' : ''}`} 
-                    title="Pridať k obľúbeným"
-                  >
-                    <Heart size={20} className={isFavorite ? 'fill-current' : ''} />
-                  </button>
-                )}
-                {isRegistration && (
-                  <QRShareDialog 
-                    type="competition" 
-                    id={id || ""} 
-                    name={competition.name}
-                    trigger={
-                      <button className="bg-card/50 hover:bg-card text-muted-foreground hover:text-foreground p-3 rounded-xl border border-border transition-colors" title="Registrácia cez QR kód">
-                        <QrCode size={20} />
+                  <div className="flex items-center gap-2 shrink-0">
+                    {isAuthenticated && (
+                      <button
+                        onClick={handleToggleFavorite}
+                        disabled={isAdding || isRemoving}
+                        className={`p-2.5 rounded-xl border transition-all ${isFavorite ? 'text-red-500 bg-red-500/10 border-red-500/30' : 'text-muted-foreground hover:text-red-500 bg-card/50 hover:bg-muted border-border'}`}
+                        title="Pridať k obľúbeným"
+                      >
+                        <Heart size={18} className={isFavorite ? 'fill-current' : ''} />
                       </button>
-                    }
-                  />
-                )}
-                <button 
-                  className="bg-card/50 hover:bg-card text-muted-foreground hover:text-foreground p-3 rounded-xl border border-border transition-colors" 
-                  title="Zdieľať"
-                  onClick={() => {
-                    if (navigator.share) {
-                      navigator.share({ title: competition.name, url: window.location.href });
-                    } else {
-                      navigator.clipboard.writeText(window.location.href);
-                      toast({ title: "Odkaz skopírovaný", description: "Odkaz na súťaž bol skopírovaný do schránky" });
-                    }
-                  }}
+                    )}
+                    {isRegistration && (
+                      <QRShareDialog
+                        type="competition"
+                        id={id || ""}
+                        name={competition.name}
+                        trigger={
+                          <button className="p-2.5 rounded-xl border border-border text-muted-foreground hover:text-foreground bg-card/50 hover:bg-muted transition-all" title="QR kód">
+                            <QrCode size={18} />
+                          </button>
+                        }
+                      />
+                    )}
+                    <button
+                      className="p-2.5 rounded-xl border border-border text-muted-foreground hover:text-foreground bg-card/50 hover:bg-muted transition-all"
+                      title="Zdieľať"
+                      onClick={() => {
+                        if (navigator.share) {
+                          navigator.share({ title: competition.name, url: window.location.href });
+                        } else {
+                          navigator.clipboard.writeText(window.location.href);
+                          toast({ title: "Odkaz skopírovaný", description: "Odkaz na súťaž bol skopírovaný do schránky" });
+                        }
+                      }}
+                    >
+                      <Share2 size={18} />
+                    </button>
+                    {userTeam && (
+                      <button
+                        onClick={() => setShowMyTeamOverlay(true)}
+                        className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl font-bold shadow-lg shadow-blue-900/20 flex items-center gap-2 transition-all text-sm"
+                      >
+                        <Users size={16} />
+                        <span className="hidden sm:inline">Môj tím</span>
+                      </button>
+                    )}
+                    {isRegistration && !userTeam && (
+                      <button
+                        onClick={openRegistration}
+                        className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-xl font-bold shadow-lg shadow-emerald-900/20 flex items-center gap-2 transition-all text-sm"
+                      >
+                        <UserPlus size={16} />
+                        <span className="hidden sm:inline">{isAuthenticated ? 'Registrovať tím' : 'Prihlásiť sa'}</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* RIGHT: Analytics Card */}
+            <div className="lg:col-span-4 bg-card border border-teal-500/20 rounded-xl p-5 relative overflow-hidden group hover:border-teal-500/40 transition-all">
+              <div className="absolute top-0 right-0 w-40 h-40 bg-teal-500/5 blur-3xl rounded-full group-hover:bg-teal-500/10 transition-colors pointer-events-none" />
+              <div className="absolute -right-4 -top-4 text-teal-500/5 pointer-events-none">
+                <BarChart3 size={80} />
+              </div>
+              <div className="relative z-10 h-full flex flex-col">
+                <div className="flex items-center gap-2 mb-2">
+                  <Zap size={16} className="text-amber-500" />
+                  <span className="font-bold text-foreground">Štatistiky a Analýza</span>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4 flex-1">
+                  Pozrite si heatmapy úlovkov, najlepšie časy záberov a vplyv tlaku na tento pretek.
+                </p>
+                <button
+                  onClick={() => setShowStatsOverlay(true)}
+                  className="w-full bg-transparent border border-teal-500/60 hover:bg-teal-500/10 text-teal-400 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all"
                 >
-                  <Share2 size={20} />
+                  Otvoriť report preteku →
                 </button>
               </div>
-
-              {/* My Team Button - show when user has a team */}
-              {userTeam && (
-                <button 
-                  onClick={() => setShowMyTeamOverlay(true)}
-                  className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-blue-900/20 flex items-center gap-2 transition-all hover:scale-105"
-                >
-                  <Users size={20} />
-                  <span>Môj tím</span>
-                </button>
-              )}
-
-              {/* Registration Button - show only during registration when user doesn't have a team */}
-              {isRegistration && !userTeam && (
-                <button 
-                  onClick={openRegistration}
-                  className="bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-emerald-900/20 flex items-center gap-2 transition-all hover:scale-105"
-                >
-                  <UserPlus size={20} />
-                  <span>{isAuthenticated ? 'Registrovať tím' : 'Prihlásiť sa a registrovať'}</span>
-                </button>
-              )}
             </div>
           </div>
         </div>
-      </header>
-
-      {/* MOBILE CTA - Samostatná sekcia mimo header */}
-      {(userTeam || (isRegistration && !userTeam)) && (
-        <div className="md:hidden max-w-7xl mx-auto px-4 py-3">
-          <div className="flex gap-3">
-            {userTeam && (
-              <button 
-                onClick={() => setShowMyTeamOverlay(true)}
-                className="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-2.5 rounded-xl font-bold shadow-lg shadow-blue-900/20 flex items-center justify-center gap-2 transition-all"
-              >
-                <Users size={18} />
-                <span>Môj tím</span>
-              </button>
-            )}
-            {isRegistration && !userTeam && (
-              <button 
-                onClick={openRegistration}
-                className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl font-bold shadow-lg shadow-emerald-900/20 flex items-center justify-center gap-2 transition-all"
-              >
-                <UserPlus size={18} />
-                <span>{isAuthenticated ? 'Registrovať tím' : 'Prihlásiť sa a registrovať'}</span>
-              </button>
-            )}
-          </div>
-        </div>
-      )}
+      </section>
 
       {/* Registration Dialog - rendered outside header for mobile access */}
       <Dialog open={isRegistrationDialogOpen} onOpenChange={setIsRegistrationDialogOpen}>
@@ -1074,45 +963,6 @@ export default function CompetitionDetail() {
         </DialogContent>
       </Dialog>
 
-      {/* 2. STATS CARDS GRID (2x2 mobile, 4 cols desktop) - overlaps header */}
-      {!isRegistration && (
-        <div className="max-w-7xl mx-auto px-4 md:px-6 -mt-4 md:-mt-6 relative z-20">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
-            <div className="relative overflow-hidden bg-card border border-border rounded-xl p-4 md:p-5 flex flex-col justify-between hover:border-cyan-500/30 transition-all">
-              <div className="flex justify-between items-start mb-3">
-                <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Úlovky spolu</span>
-                <Fish size={16} strokeWidth={1.75} className="text-cyan-500/50" />
-              </div>
-              <div className="text-2xl md:text-3xl font-mono font-medium text-[#F97316]">{liveStats.totalFish} <span className="text-xs font-normal text-muted-foreground">ks</span></div>
-            </div>
-            <div className="relative overflow-hidden bg-card border border-border rounded-xl p-4 md:p-5 flex flex-col justify-between hover:border-emerald-500/30 transition-all">
-              <div className="flex justify-between items-start mb-3">
-                <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Celková váha</span>
-                <Activity size={16} strokeWidth={1.75} className="text-emerald-500/50" />
-              </div>
-              <div className="text-2xl md:text-3xl font-mono font-medium text-[#F97316]">{liveStats.totalWeight.toFixed(1)} <span className="text-xs font-normal text-muted-foreground">kg</span></div>
-            </div>
-            <div 
-              className={`relative overflow-hidden bg-card border border-border rounded-xl p-4 md:p-5 flex flex-col justify-between transition-all hover:border-amber-500/30 ${biggestCatchObj ? 'cursor-pointer' : ''}`}
-              onClick={() => biggestCatchObj && setEntityModal({ view: 'catch', team: null, catch_: biggestCatchObj, previousView: null })}
-            >
-              <div className="flex justify-between items-start mb-3">
-                <span className="text-[10px] text-amber-500 uppercase font-bold tracking-widest">Najväčšia ryba</span>
-                <Trophy size={16} strokeWidth={1.75} className="text-amber-500/50" />
-              </div>
-              <div className="text-2xl md:text-3xl font-mono font-medium text-[#F97316]">{liveStats.biggestFish.toFixed(1)} <span className="text-xs font-normal text-muted-foreground">kg</span></div>
-              {biggestCatchObj && <div className="text-[9px] text-amber-500/60 mt-1">Klikni pre detail</div>}
-            </div>
-            <div className="relative overflow-hidden bg-card border border-border rounded-xl p-4 md:p-5 flex flex-col justify-between hover:border-purple-500/30 transition-all">
-              <div className="flex justify-between items-start mb-3">
-                <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Priemer / ks</span>
-                <TrendingUp size={16} strokeWidth={1.75} className="text-purple-500/50" />
-              </div>
-              <div className="text-2xl md:text-3xl font-mono font-medium text-[#F97316]">{liveStats.avgWeight.toFixed(1)} <span className="text-xs font-normal text-muted-foreground">kg</span></div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* 3. MAIN CONTENT GRID */}
       <main className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-8">
@@ -1135,8 +985,44 @@ export default function CompetitionDetail() {
           /* LIVE MATCH CENTER MODE */
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            {/* --- LEFT COLUMN: LEADERBOARD & PODIUM (8/12) --- */}
-            <div className="lg:col-span-8 space-y-8">
+            {/* --- LEFT COLUMN: STATS + LEADERBOARD & PODIUM (8/12) --- */}
+            <div className="lg:col-span-8 space-y-6">
+
+              {/* STATS CARDS GRID */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
+                <div className="relative overflow-hidden bg-card border border-border rounded-xl p-4 flex flex-col justify-between hover:border-cyan-500/30 transition-all">
+                  <div className="flex justify-between items-start mb-3">
+                    <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Úlovky spolu</span>
+                    <Fish size={15} strokeWidth={1.75} className="text-cyan-500/50" />
+                  </div>
+                  <div className="text-2xl md:text-3xl font-mono font-medium text-[#F97316]">{liveStats.totalFish} <span className="text-xs font-normal text-muted-foreground">ks</span></div>
+                </div>
+                <div className="relative overflow-hidden bg-card border border-border rounded-xl p-4 flex flex-col justify-between hover:border-emerald-500/30 transition-all">
+                  <div className="flex justify-between items-start mb-3">
+                    <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Celková váha</span>
+                    <Activity size={15} strokeWidth={1.75} className="text-emerald-500/50" />
+                  </div>
+                  <div className="text-2xl md:text-3xl font-mono font-medium text-[#F97316]">{liveStats.totalWeight.toFixed(1)} <span className="text-xs font-normal text-muted-foreground">kg</span></div>
+                </div>
+                <div
+                  className={`relative overflow-hidden bg-card border border-border rounded-xl p-4 flex flex-col justify-between transition-all hover:border-amber-500/30 ${biggestCatchObj ? 'cursor-pointer' : ''}`}
+                  onClick={() => biggestCatchObj && setEntityModal({ view: 'catch', team: null, catch_: biggestCatchObj, previousView: null })}
+                >
+                  <div className="flex justify-between items-start mb-3">
+                    <span className="text-[10px] text-amber-500 uppercase font-bold tracking-widest">Najväčšia ryba</span>
+                    <Trophy size={15} strokeWidth={1.75} className="text-amber-500/50" />
+                  </div>
+                  <div className="text-2xl md:text-3xl font-mono font-medium text-[#F97316]">{liveStats.biggestFish.toFixed(1)} <span className="text-xs font-normal text-muted-foreground">kg</span></div>
+                  {biggestCatchObj && <div className="text-[9px] text-amber-500/60 mt-1">Klikni pre detail</div>}
+                </div>
+                <div className="relative overflow-hidden bg-card border border-border rounded-xl p-4 flex flex-col justify-between hover:border-purple-500/30 transition-all">
+                  <div className="flex justify-between items-start mb-3">
+                    <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Priemer / ks</span>
+                    <TrendingUp size={15} strokeWidth={1.75} className="text-purple-500/50" />
+                  </div>
+                  <div className="text-2xl md:text-3xl font-mono font-medium text-[#F97316]">{liveStats.avgWeight.toFixed(1)} <span className="text-xs font-normal text-muted-foreground">kg</span></div>
+                </div>
+              </div>
 
               <div className="flex justify-between items-center px-1">
                 <h3 className="font-bold text-foreground flex items-center gap-2">
@@ -1387,33 +1273,6 @@ export default function CompetitionDetail() {
             {/* --- RIGHT COLUMN: FEED & INFO (4/12) --- */}
             <div className="lg:col-span-4 space-y-6">
               
-              {/* ANALYTICS TEASER */}
-              <div className="bg-card border border-teal-500/20 rounded-xl p-6 relative overflow-hidden group hover:border-teal-500/40 transition-all">
-                <div className="absolute top-0 right-0 w-40 h-40 bg-teal-500/5 blur-3xl rounded-full group-hover:bg-teal-500/10 transition-colors pointer-events-none" />
-                <div className="absolute -right-4 -top-4 text-teal-500/5 pointer-events-none">
-                  <BarChart3 size={80} />
-                </div>
-                <div className="relative z-10">
-                  <div className="flex items-center gap-2 mb-3 text-amber-500">
-                    <Mic size={14} className="animate-pulse" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest">Správy od vody</span>
-                  </div>
-                  <p className="text-foreground font-bold text-lg leading-tight mb-6">
-                    "{getCommentary('short')}"
-                  </p>
-                  <button 
-                    onClick={() => setShowStatsOverlay(true)}
-                    className="w-full bg-teal-500/10 hover:bg-teal-500/20 text-teal-400 border border-teal-500/30 py-3.5 rounded-xl font-bold transition-all flex flex-col items-center justify-center gap-1"
-                  >
-                    <span className="flex items-center gap-2">
-                      <BarChart3 size={16} />
-                      Kde a kedy berú
-                    </span>
-                    <span className="text-[10px] font-normal text-teal-400/70">Analýza úlovkov a štatistík súťaže</span>
-                  </button>
-                </div>
-              </div>
-
               {/* LIVE FEED */}
               <div className="bg-card border border-border rounded-xl overflow-hidden flex flex-col max-h-[600px]">
                 <div className="px-3 py-2.5 border-b border-border bg-muted/30 flex items-center justify-between sticky top-0 z-10">
