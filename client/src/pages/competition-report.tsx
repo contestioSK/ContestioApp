@@ -9,6 +9,7 @@ import {
   LayoutList, Activity, Target, Trophy, Mic,
 } from "lucide-react";
 import StatsDashboard from "@/components/stats-dashboard";
+import { TeamAverageTable } from "@/components/stats-dashboard/charts/team-average-table";
 import { useVisibilityAwarePolling, POLLING_INTERVALS, STALE_TIMES } from "@/hooks/usePolling";
 import type { Competition, Team, Catch } from "@shared/schema";
 
@@ -258,6 +259,29 @@ export default function CompetitionReport() {
         return (a.name || "").localeCompare(b.name || "", "sk");
       })
       .map((t, i) => ({ ...t, rank: i + 1 }));
+  }, [teams, catches]);
+
+  const teamTop3AverageData = useMemo(() => {
+    if (!teams || !catches) return [];
+    const approvedTeams = teams.filter((t) => t.status === "approved");
+    return approvedTeams
+      .map((team) => {
+        const teamCatches = catches
+          .filter((c) => c.teamId === team.id)
+          .sort((a, b) => safeWeight(b.weight) - safeWeight(a.weight));
+        const top3 = teamCatches.slice(0, 3);
+        const avg = top3.length > 0
+          ? top3.reduce((sum, c) => sum + safeWeight(c.weight), 0) / top3.length
+          : 0;
+        return {
+          teamName: team.name || "—",
+          averageWeight: parseFloat(avg.toFixed(2)),
+          fishCount: top3.length,
+          maxFish: 3,
+        };
+      })
+      .filter((t) => t.fishCount > 0)
+      .sort((a, b) => b.averageWeight - a.averageWeight);
   }, [teams, catches]);
 
   const sectorStats = useMemo(() => {
@@ -635,42 +659,12 @@ export default function CompetitionReport() {
             {/* --- BOTTOM 2-COL: VÁHOVÝ PRIEMER TOP 3 + KOMENTÁR --- */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4">
 
-              {/* Left: Váhový priemer TOP 3 */}
-              <div className="bg-card border border-border/50 rounded-xl p-6">
-                <h3 className="font-bold text-lg text-foreground mb-2 flex items-center gap-2">
-                  <Target size={18} className="text-amber-400" />
-                  Váhový priemer TOP 3
-                </h3>
-                <p className="text-xs text-muted-foreground mb-5">Priemerná váha troch najťažších úlovkov preteku</p>
-
-                {overviewStats && overviewStats.top3.length > 0 ? (
-                  <>
-                    <div className="flex items-end gap-1.5 mb-6">
-                      <span className="text-5xl font-mono font-bold text-foreground">
-                        {overviewStats.top3Avg.toFixed(2)}
-                      </span>
-                      <span className="text-base font-medium text-amber-400 mb-1">kg</span>
-                    </div>
-                    <div className="space-y-3">
-                      {overviewStats.top3.map((c, i) => (
-                        <div key={i} className="flex items-center gap-3">
-                          <span className="w-6 h-6 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-[11px] font-bold text-amber-400 shrink-0">
-                            {i + 1}
-                          </span>
-                          <span className="flex-1 text-sm text-foreground truncate">
-                            {c.team?.name || "—"}
-                          </span>
-                          <span className="font-mono font-bold text-[#F97316] text-sm">
-                            {safeWeight(c.weight).toFixed(1)} kg
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                ) : (
-                  <p className="text-muted-foreground text-sm">Žiadne úlovky zatiaľ.</p>
-                )}
-              </div>
+              {/* Left: Váhový priemer TOP 3 tímov */}
+              <TeamAverageTable
+                data={teamTop3AverageData}
+                title="Váhový priemer top 3 úlovkov"
+                description="Tímy seradené podľa priemernej váhy ich 3 najťažších úlovkov"
+              />
 
               {/* Right: Komentár k preteku */}
               <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-6 flex gap-4 items-start">
