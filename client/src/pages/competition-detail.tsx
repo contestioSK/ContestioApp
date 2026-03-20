@@ -661,8 +661,28 @@ export default function CompetitionDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-24">
-      
+    <div className="min-h-screen bg-background text-foreground pb-24 relative overflow-hidden">
+
+      {/* TOPOGRAPHIC CONTOUR LINES — bottom 50% background decoration */}
+      <div className="absolute bottom-0 left-0 right-0 h-1/2 pointer-events-none select-none" aria-hidden="true">
+        <svg
+          viewBox="0 0 1440 800"
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-full h-full"
+          preserveAspectRatio="xMidYMid slice"
+        >
+          <g fill="none" stroke="#14b8a6" strokeWidth="1.2">
+            <path d="M -80 760 C 120 720 320 760 540 730 C 760 700 960 750 1160 720 C 1320 698 1420 720 1520 740" opacity="0.18" />
+            <path d="M -80 670 C 160 630 380 665 600 635 C 820 605 1020 645 1220 615 C 1360 595 1450 618 1520 635" opacity="0.15" />
+            <path d="M -80 580 C 200 545 420 575 640 545 C 860 515 1060 558 1260 525 C 1390 508 1460 528 1520 545" opacity="0.13" />
+            <path d="M -80 500 C 180 465 400 495 640 462 C 860 430 1060 472 1260 442 C 1390 424 1460 448 1520 465" opacity="0.11" />
+            <path d="M 40 420 C 240 385 460 412 680 382 C 900 352 1100 390 1300 362 C 1420 344 1520 368 1520 368" opacity="0.09" />
+            <path d="M -80 335 C 160 305 400 328 640 300 C 860 272 1080 308 1300 282 C 1420 266 1520 286 1520 286" opacity="0.07" />
+            <path d="M 100 255 C 320 228 560 250 800 224 C 1020 198 1220 230 1440 208" opacity="0.05" />
+          </g>
+        </svg>
+      </div>
+
       {/* 1. TOP ROW: Competition Info Card + Analytics Card */}
       <section className="border-b border-border/50 bg-background">
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 space-y-4">
