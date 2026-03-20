@@ -606,6 +606,21 @@ export default function CompetitionReport() {
               </div>
             )}
 
+            {/* --- KOMENTÁR K PRETEKU (full width, nad grafom) --- */}
+            <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-6 flex gap-4 items-start">
+              <div className="shrink-0 w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center text-blue-400 mt-1">
+                <Mic size={20} />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-2">
+                  Komentár k preteku
+                </h4>
+                <p className="text-foreground text-lg md:text-xl font-medium leading-relaxed">
+                  "{getCommentary("full")}"
+                </p>
+              </div>
+            </div>
+
             {/* --- SVG AREA CHART --- */}
             <div className="bg-card border border-border/50 rounded-xl p-6">
               <div className="mb-6">
@@ -660,31 +675,12 @@ export default function CompetitionReport() {
               </div>
             </div>
 
-            {/* --- BOTTOM 2-COL: VÁHOVÝ PRIEMER TOP 3 + KOMENTÁR --- */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4">
-
-              {/* Left: Váhový priemer TOP 3 tímov */}
-              <TeamAverageTable
-                data={teamTopNAverageData.slice(0, topN)}
-                title={`Váhový priemer top ${topN} úlovkov`}
-                description={`Tímy seradené podľa priemernej váhy ich ${topN} najťažších úlovkov`}
-              />
-
-              {/* Right: Komentár k preteku */}
-              <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-6 flex gap-4 items-start">
-                <div className="shrink-0 w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center text-blue-400 mt-1">
-                  <Mic size={20} />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-2">
-                    Komentár k preteku
-                  </h4>
-                  <p className="text-foreground text-lg md:text-xl font-medium leading-relaxed">
-                    "{getCommentary("full")}"
-                  </p>
-                </div>
-              </div>
-            </div>
+            {/* --- VÁHOVÝ PRIEMER TOP N --- */}
+            <TeamAverageTable
+              data={teamTopNAverageData.slice(0, topN)}
+              title={`Váhový priemer top ${topN} úlovkov`}
+              description={`Tímy seradené podľa priemernej váhy ich ${topN} najťažších úlovkov`}
+            />
           </div>
         )}
 
