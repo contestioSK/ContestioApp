@@ -5,8 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import {
-  ChevronLeft, PieChart, Clock, MapPin, BarChart3,
-  LayoutList, Activity, Target, Trophy, Zap,
+  ChevronLeft, PieChart, MapPin, BarChart3,
+  LayoutList, Activity, Target, Trophy, Mic,
 } from "lucide-react";
 import StatsDashboard from "@/components/stats-dashboard";
 import { useVisibilityAwarePolling, POLLING_INTERVALS, STALE_TIMES } from "@/hooks/usePolling";
@@ -669,43 +669,18 @@ export default function CompetitionReport() {
                 )}
               </div>
 
-              {/* Right: AI Taktický Brífing */}
-              <div className="bg-card border border-border/50 rounded-xl p-6">
-                <h3 className="font-bold text-lg text-foreground mb-4 flex items-center gap-2">
-                  <Zap size={18} className="text-purple-400" />
-                  AI Taktický Brífing
-                </h3>
-                <div className="space-y-4 text-sm leading-relaxed text-muted-foreground">
-                  {overviewStats ? (
-                    <>
-                      <p>
-                        Aktuálne najväčšia ryba preteku (
-                        <strong className="text-foreground">
-                          {safeWeight(overviewStats.biggestFishCatch.weight).toFixed(1)} kg
-                        </strong>
-                        )
-                        {overviewStats.biggestFishCatch.team?.sector
-                          ? ` bola ulovená v sektore ${overviewStats.biggestFishCatch.team.sector}, čo potvrdzuje, že hlbšia časť jazera drží väčšie kusy.`
-                          : " patrí medzi najlepšie úlovky preteku."}
-                      </p>
-                      {overviewStats.scalyPct > 0 && (
-                        <p>
-                          Zaujímavý je{" "}
-                          {overviewStats.scalyPct > 50 ? "vysoký" : "rovnomerný"} podiel šupináčov (
-                          <strong className="text-foreground">{overviewStats.scalyPct}%</strong>
-                          ), čo naznačuje, že ryby sú{" "}
-                          {overviewStats.scalyPct > 50 ? "v silnom pohybe" : "aktívne vo viacerých pásmach"}.
-                        </p>
-                      )}
-                      <div className="bg-teal-500/10 border-l-2 border-teal-500 p-3 rounded-r-lg text-teal-100/80 italic text-sm leading-relaxed">
-                        "{getCommentary("full")}"
-                      </div>
-                    </>
-                  ) : (
-                    <p className="italic">
-                      Zatiaľ nepadol žiadny úlovok. Analýza bude dostupná po prvom overenom úlovku.
-                    </p>
-                  )}
+              {/* Right: Komentár k preteku */}
+              <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-6 flex gap-4 items-start">
+                <div className="shrink-0 w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center text-blue-400 mt-1">
+                  <Mic size={20} />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-2">
+                    Komentár k preteku
+                  </h4>
+                  <p className="text-foreground text-lg md:text-xl font-medium leading-relaxed">
+                    "{getCommentary("full")}"
+                  </p>
                 </div>
               </div>
             </div>
