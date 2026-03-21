@@ -1,4 +1,5 @@
 import { useParams, useLocation, Link } from "wouter";
+import waterRaysBg from "@assets/water-rays-bg.png";
 import { TeamFlag } from "@/components/team-flag";
 import { useEffect, useState, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
@@ -679,6 +680,17 @@ export default function CompetitionDetail() {
             {/* LEFT: Competition Info Card */}
             <div className="lg:col-span-8 bg-card border border-border rounded-xl p-5 relative overflow-hidden">
               <div className="absolute inset-0 pointer-events-none opacity-40" style={{ backgroundImage: 'radial-gradient(rgba(20, 184, 166, 0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+              {/* Water rays */}
+              <div
+                className="absolute inset-0 opacity-40 pointer-events-none"
+                style={{
+                  backgroundImage: `url(${waterRaysBg})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center left',
+                  transform: 'scaleX(-1)',
+                }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-[#0F172A] via-[#0F172A]/70 to-transparent pointer-events-none" />
               <div className="absolute top-0 right-0 w-48 h-48 bg-teal-500/8 rounded-full blur-[60px] -mr-16 -mt-16 pointer-events-none" />
               <div className="relative z-10">
                 {/* Share button — top right absolute */}
