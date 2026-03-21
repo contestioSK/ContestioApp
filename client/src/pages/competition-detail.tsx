@@ -686,7 +686,7 @@ export default function CompetitionDetail() {
                 style={{
                   backgroundImage: `url(${waterRaysBg})`,
                   backgroundSize: 'cover',
-                  backgroundPosition: 'center left',
+                  backgroundPosition: 'top left',
                   transform: 'scaleX(-1)',
                 }}
               />
