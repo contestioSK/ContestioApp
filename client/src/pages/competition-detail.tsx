@@ -283,6 +283,7 @@ export default function CompetitionDetail() {
     previousView?: 'catch' | 'catches-list' | null;
   }>({ view: null, team: null, catch_: null, previousView: null });
   const [leaderboardExpanded, setLeaderboardExpanded] = useState(false);
+  const [mobileSideTab, setMobileSideTab] = useState<"feed" | "stats">("feed");
   
   // Favorite competitions
   const { data: favoriteCompetitions } = useFavoriteCompetitions();
@@ -777,8 +778,8 @@ export default function CompetitionDetail() {
               </div>
             </div>
 
-            {/* RIGHT: Analytics Card */}
-            <div className="lg:col-span-4 bg-card border border-teal-500/20 rounded-xl p-5 relative overflow-hidden group hover:border-teal-500/40 transition-all">
+            {/* RIGHT: Analytics Card — hidden on mobile (shown in sidebar tab instead) */}
+            <div className="hidden lg:block lg:col-span-4 bg-card border border-teal-500/20 rounded-xl p-5 relative overflow-hidden group hover:border-teal-500/40 transition-all">
               <div className="absolute top-0 right-0 w-40 h-40 bg-teal-500/5 blur-3xl rounded-full group-hover:bg-teal-500/10 transition-colors pointer-events-none" />
               <div className="absolute -right-4 -top-4 text-teal-500/5 pointer-events-none">
                 <BarChart3 size={80} />
@@ -1270,9 +1271,35 @@ export default function CompetitionDetail() {
 
             {/* --- RIGHT COLUMN: FEED & INFO (4/12) --- */}
             <div className="lg:col-span-4 space-y-6 order-first lg:order-last">
-              
+
+              {/* Mobile Tab Switcher — only visible on mobile */}
+              <div className="lg:hidden flex bg-muted rounded-xl p-1 gap-1">
+                <button
+                  onClick={() => setMobileSideTab("feed")}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-bold transition-all ${
+                    mobileSideTab === "feed"
+                      ? "bg-card text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Clock size={14} />
+                  Live feed
+                </button>
+                <button
+                  onClick={() => setMobileSideTab("stats")}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-bold transition-all ${
+                    mobileSideTab === "stats"
+                      ? "bg-card text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <BarChart3 size={14} />
+                  Štatistiky
+                </button>
+              </div>
+
               {/* LIVE FEED */}
-              <div className="bg-card border border-border rounded-xl overflow-hidden flex flex-col max-h-[280px] lg:max-h-[600px]">
+              <div className={`${mobileSideTab === "stats" ? "hidden lg:flex" : "flex"} bg-card border border-border rounded-xl overflow-hidden flex-col max-h-[280px] lg:max-h-[600px]`}>
                 <div className="px-3 py-2.5 border-b border-border bg-muted/30 flex items-center justify-between sticky top-0 z-10">
                   <h3 className="font-bold text-foreground text-sm flex items-center gap-2">
                     <Clock size={14} className="text-muted-foreground" />
@@ -1337,6 +1364,31 @@ export default function CompetitionDetail() {
                   )}
                 </div>
               </div>
+
+              {/* Mobile Analytics Card — only visible on mobile when stats tab is active */}
+              {mobileSideTab === "stats" && (
+                <div className="lg:hidden bg-card border border-teal-500/20 rounded-xl p-5 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/5 blur-3xl rounded-full pointer-events-none" />
+                  <div className="absolute -right-4 -top-4 text-teal-500/5 pointer-events-none">
+                    <BarChart3 size={64} />
+                  </div>
+                  <div className="relative z-10 flex flex-col gap-3">
+                    <div className="flex items-center gap-2">
+                      <Zap size={16} className="text-amber-500" />
+                      <span className="font-bold text-foreground">Štatistiky a Analýza</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Pozrite si heatmapy úlovkov, najlepšie časy záberov a vplyv tlaku na tento pretek.
+                    </p>
+                    <button
+                      onClick={() => navigate(`/competition/${id}/report`)}
+                      className="w-full bg-transparent border border-teal-500/60 hover:bg-teal-500/10 text-teal-400 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all"
+                    >
+                      Otvoriť report preteku →
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* RULES BUTTON */}
               <button 
