@@ -694,20 +694,32 @@ export default function CompetitionDetail() {
               <div className="absolute top-0 right-0 w-48 h-48 bg-teal-500/8 rounded-full blur-[60px] -mr-16 -mt-16 pointer-events-none" />
               <div className="relative z-10">
                 {/* Share button — top right absolute */}
-                <button
-                  className="absolute top-0 right-0 p-2 rounded-xl border border-border text-muted-foreground hover:text-foreground bg-card/50 hover:bg-muted transition-all"
-                  title="Zdieľať"
-                  onClick={() => {
-                    if (navigator.share) {
-                      navigator.share({ title: competition.name, url: window.location.href });
-                    } else {
-                      navigator.clipboard.writeText(window.location.href);
-                      toast({ title: "Odkaz skopírovaný", description: "Odkaz na súťaž bol skopírovaný do schránky" });
-                    }
-                  }}
-                >
-                  <Share2 size={16} />
-                </button>
+                <div className="absolute top-0 right-0 flex items-center gap-1">
+                  {isAuthenticated && (
+                    <button
+                      onClick={handleToggleFavorite}
+                      disabled={isAdding || isRemoving}
+                      className={`p-2 rounded-xl border transition-all ${isFavorite ? 'text-red-500 bg-red-500/10 border-red-500/30' : 'text-muted-foreground hover:text-red-500 bg-card/50 hover:bg-muted border-border'}`}
+                      title="Pridať k obľúbeným"
+                    >
+                      <Heart size={16} className={isFavorite ? 'fill-current' : ''} />
+                    </button>
+                  )}
+                  <button
+                    className="p-2 rounded-xl border border-border text-muted-foreground hover:text-foreground bg-card/50 hover:bg-muted transition-all"
+                    title="Zdieľať"
+                    onClick={() => {
+                      if (navigator.share) {
+                        navigator.share({ title: competition.name, url: window.location.href });
+                      } else {
+                        navigator.clipboard.writeText(window.location.href);
+                        toast({ title: "Odkaz skopírovaný", description: "Odkaz na súťaž bol skopírovaný do schránky" });
+                      }
+                    }}
+                  >
+                    <Share2 size={16} />
+                  </button>
+                </div>
                 {/* Status row */}
                 <div className="flex items-center gap-3 mb-3">
                   <StatusBadge status={competition.status} />
@@ -746,16 +758,6 @@ export default function CompetitionDetail() {
                     )}
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    {isAuthenticated && (
-                      <button
-                        onClick={handleToggleFavorite}
-                        disabled={isAdding || isRemoving}
-                        className={`p-2.5 rounded-xl border transition-all ${isFavorite ? 'text-red-500 bg-red-500/10 border-red-500/30' : 'text-muted-foreground hover:text-red-500 bg-card/50 hover:bg-muted border-border'}`}
-                        title="Pridať k obľúbeným"
-                      >
-                        <Heart size={18} className={isFavorite ? 'fill-current' : ''} />
-                      </button>
-                    )}
                     {isRegistration && (
                       <QRShareDialog
                         type="competition"
