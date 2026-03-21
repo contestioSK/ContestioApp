@@ -696,7 +696,7 @@ export default function CompetitionDetail() {
                       <img src={competition.imageUrl} alt="Logo" className="w-full h-full object-contain" />
                     </div>
                   )}
-                  <h1 className="text-2xl md:text-4xl font-black text-foreground tracking-tight leading-none">
+                  <h1 className="text-xl sm:text-2xl md:text-4xl font-black text-foreground tracking-tight leading-none line-clamp-2">
                     {competition.name}
                   </h1>
                 </div>
@@ -1269,10 +1269,10 @@ export default function CompetitionDetail() {
             </div>
 
             {/* --- RIGHT COLUMN: FEED & INFO (4/12) --- */}
-            <div className="lg:col-span-4 space-y-6">
+            <div className="lg:col-span-4 space-y-6 order-first lg:order-last">
               
               {/* LIVE FEED */}
-              <div className="bg-card border border-border rounded-xl overflow-hidden flex flex-col max-h-[600px]">
+              <div className="bg-card border border-border rounded-xl overflow-hidden flex flex-col max-h-[280px] lg:max-h-[600px]">
                 <div className="px-3 py-2.5 border-b border-border bg-muted/30 flex items-center justify-between sticky top-0 z-10">
                   <h3 className="font-bold text-foreground text-sm flex items-center gap-2">
                     <Clock size={14} className="text-muted-foreground" />
