@@ -998,18 +998,7 @@ export default function CompetitionDetail() {
           </div>
         ) : (
           /* LIVE MATCH CENTER MODE */
-          <>
-            {competition.sideCompetitions && competition.sideCompetitions.length > 0 && (
-              <div className="mb-6">
-                <SideCompetitionStatsBar
-                  catches={catches || []}
-                  teams={teams || []}
-                  competition={competition}
-                  isLoading={catchesLoading}
-                />
-              </div>
-            )}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
             {/* --- LEFT COLUMN: STATS + LEADERBOARD & PODIUM (8/12) --- */}
             <div className="lg:col-span-8 space-y-6">
@@ -1172,6 +1161,19 @@ export default function CompetitionDetail() {
                       <div className="text-xs text-muted-foreground font-mono">{sortedLeaderboard[2]?.fish ?? 0} rýb</div>
                     </div>
                   </div>
+                </div>
+              )}
+
+              {/* DOPLNKOVÉ SÚŤAŽE */}
+              {competition.sideCompetitions && competition.sideCompetitions.length > 0 && (
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2 px-1">Doplnkové súťaže</p>
+                  <SideCompetitionStatsBar
+                    catches={catches || []}
+                    teams={teams || []}
+                    competition={competition}
+                    isLoading={catchesLoading}
+                  />
                 </div>
               )}
 
@@ -1439,7 +1441,6 @@ export default function CompetitionDetail() {
 
             </div>
           </div>
-          </>
         )}
       </main>
 
