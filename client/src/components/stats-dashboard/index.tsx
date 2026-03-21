@@ -3,7 +3,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import { BarChart3, TrendingUp, Award, Fish, Target, Trophy, Activity } from "lucide-react";
 import { TacticalIcon } from "@/components/ui/tactical-icon";
-import { useQuery } from "@tanstack/react-query";
 
 // Chart components
 import { TimelineWeightChart } from "./charts/timeline-weight-chart";
@@ -11,21 +10,15 @@ import { TimelineCountChart } from "./charts/timeline-count-chart";
 import { WeightCategoryChart } from "./charts/weight-category-chart";
 import { TopFishChart } from "./charts/top-fish-chart";
 import { TeamAverageChart } from "./charts/team-average-chart";
-import { TeamAverageTable } from "./charts/team-average-table";
-import { FishTypeDistributionChart } from "./charts/fish-type-distribution-chart";
 import { SectorWeightTimelineChart } from "./charts/sector-weight-timeline-chart";
 import { SectorCountTimelineChart } from "./charts/sector-count-timeline-chart";
 import { SectorFishTypeChart } from "./charts/sector-fish-type-chart";
 import { SectorAverageWeightChart } from "./charts/sector-average-weight-chart";
 import { SectorActivityChart } from "./charts/sector-activity-chart";
 import { SectorPerformanceChart } from "./charts/sector-performance-chart";
-import { HourlyDistributionChart } from "./charts/hourly-distribution-chart";
 
 // Hook
 import { useCompetitionStats } from "./hooks/use-competition-stats";
-
-// Types
-import type { Competition } from "@shared/schema";
 
 interface StatsDashboardProps {
   competitionId: string;
@@ -33,16 +26,6 @@ interface StatsDashboardProps {
 
 export default function StatsDashboard({ competitionId }: StatsDashboardProps) {
   const { data: stats, isLoading, error } = useCompetitionStats(competitionId, true);
-  
-  // Get competition details for side competitions info
-  const { data: competition } = useQuery<Competition>({
-    queryKey: ["/api/competitions", competitionId],
-    enabled: !!competitionId,
-  });
-  
-  // Check which special contests are enabled
-  const hasTop3Contest = competition?.sideCompetitions?.includes("best-3-fish") ?? false;
-  const hasTop5Contest = competition?.sideCompetitions?.includes("best-5-fish") ?? false;
   
   if (isLoading) {
     return (
@@ -109,36 +92,7 @@ export default function StatsDashboard({ competitionId }: StatsDashboardProps) {
             <TimelineCountChart data={stats.timeline} />
             
             <WeightCategoryChart data={stats.weightCategories} />
-            <FishTypeDistributionChart data={stats.fishTypeDistribution} />
-            
-            {/* Conditionally show team average tables based on side competitions */}
-            {hasTop5Contest && (
-              <TeamAverageTable 
-                data={stats.teamTop5Average} 
-                title="Váhový priemer top 5 úlovkov"
-                description="Tímy seradené podľa priemernej váhy ich 5 najťažších úlovkov"
-                competitionId={competitionId}
-              />
-            )}
-            
-            {hasTop3Contest && (
-              <TeamAverageTable 
-                data={stats.teamTop3Average} 
-                title="Váhový priemer top 3 úlovkov"
-                description="Tímy seradené podľa priemernej váhy ich 3 najťažších úlovkov"
-                competitionId={competitionId}
-              />
-            )}
-            
-            {/* Show original top fish chart if no special contests are enabled */}
-            {!hasTop5Contest && !hasTop3Contest && (
-              <TopFishChart data={stats.topFish} />
-            )}
-            
-            {/* Hodinový graf na celú šírku - umiestnený úplne dole */}
-            <div className="lg:col-span-2">
-              <HourlyDistributionChart data={stats.hourlyDistribution || []} />
-            </div>
+            <TopFishChart data={stats.topFish} />
           </div>
         </TabsContent>
 
