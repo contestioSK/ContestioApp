@@ -668,7 +668,7 @@ export default function CompetitionDetail() {
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 space-y-4">
           {/* Back nav */}
           <button
-            onClick={() => window.history.back()}
+            onClick={() => navigate("/competitions")}
             className="flex items-center gap-1 text-muted-foreground hover:text-foreground text-sm font-medium transition-colors"
           >
             <ChevronLeft size={16} /> Späť
