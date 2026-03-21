@@ -29,6 +29,7 @@ import StatsDashboard from "@/components/stats-dashboard";
 import type { Competition, Team, Catch } from "@shared/schema";
 import { useFavoriteCompetitions, useToggleFavoriteCompetition } from "@/hooks/useFavorites";
 import { QRShareDialog } from "@/components/QRShareDialog";
+import SideCompetitionStatsBar from "@/components/side-competition-stats-bar";
 import { useVisibilityAwarePolling, POLLING_INTERVALS, STALE_TIMES } from "@/hooks/usePolling";
 
 // --- INLINE COMPONENTS ---
@@ -997,7 +998,18 @@ export default function CompetitionDetail() {
           </div>
         ) : (
           /* LIVE MATCH CENTER MODE */
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <>
+            {competition.sideCompetitions && competition.sideCompetitions.length > 0 && (
+              <div className="mb-6">
+                <SideCompetitionStatsBar
+                  catches={catches || []}
+                  teams={teams || []}
+                  competition={competition}
+                  isLoading={catchesLoading}
+                />
+              </div>
+            )}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
             {/* --- LEFT COLUMN: STATS + LEADERBOARD & PODIUM (8/12) --- */}
             <div className="lg:col-span-8 space-y-6">
@@ -1427,6 +1439,7 @@ export default function CompetitionDetail() {
 
             </div>
           </div>
+          </>
         )}
       </main>
 
