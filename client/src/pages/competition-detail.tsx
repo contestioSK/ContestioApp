@@ -681,6 +681,21 @@ export default function CompetitionDetail() {
               <div className="absolute inset-0 pointer-events-none opacity-40" style={{ backgroundImage: 'radial-gradient(rgba(20, 184, 166, 0.06) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
               <div className="absolute top-0 right-0 w-48 h-48 bg-teal-500/8 rounded-full blur-[60px] -mr-16 -mt-16 pointer-events-none" />
               <div className="relative z-10">
+                {/* Share button — top right absolute */}
+                <button
+                  className="absolute top-0 right-0 p-2 rounded-xl border border-border text-muted-foreground hover:text-foreground bg-card/50 hover:bg-muted transition-all"
+                  title="Zdieľať"
+                  onClick={() => {
+                    if (navigator.share) {
+                      navigator.share({ title: competition.name, url: window.location.href });
+                    } else {
+                      navigator.clipboard.writeText(window.location.href);
+                      toast({ title: "Odkaz skopírovaný", description: "Odkaz na súťaž bol skopírovaný do schránky" });
+                    }
+                  }}
+                >
+                  <Share2 size={16} />
+                </button>
                 {/* Status row */}
                 <div className="flex items-center gap-3 mb-3">
                   <StatusBadge status={competition.status} />
@@ -741,20 +756,6 @@ export default function CompetitionDetail() {
                         }
                       />
                     )}
-                    <button
-                      className="p-2.5 rounded-xl border border-border text-muted-foreground hover:text-foreground bg-card/50 hover:bg-muted transition-all"
-                      title="Zdieľať"
-                      onClick={() => {
-                        if (navigator.share) {
-                          navigator.share({ title: competition.name, url: window.location.href });
-                        } else {
-                          navigator.clipboard.writeText(window.location.href);
-                          toast({ title: "Odkaz skopírovaný", description: "Odkaz na súťaž bol skopírovaný do schránky" });
-                        }
-                      }}
-                    >
-                      <Share2 size={18} />
-                    </button>
                     {userTeam && (
                       <button
                         onClick={() => setShowMyTeamOverlay(true)}
@@ -778,8 +779,8 @@ export default function CompetitionDetail() {
               </div>
             </div>
 
-            {/* RIGHT: Analytics Card */}
-            <div className="lg:col-span-4 bg-card border border-teal-500/20 rounded-xl p-5 relative overflow-hidden group hover:border-teal-500/40 transition-all">
+            {/* RIGHT: Analytics Card — hidden on mobile (accessible via sidebar Štatistiky tab) */}
+            <div className="hidden lg:block lg:col-span-4 bg-card border border-teal-500/20 rounded-xl p-5 relative overflow-hidden group hover:border-teal-500/40 transition-all">
               <div className="absolute top-0 right-0 w-40 h-40 bg-teal-500/5 blur-3xl rounded-full group-hover:bg-teal-500/10 transition-colors pointer-events-none" />
               <div className="absolute -right-4 -top-4 text-teal-500/5 pointer-events-none">
                 <BarChart3 size={80} />
@@ -1267,6 +1268,23 @@ export default function CompetitionDetail() {
                   </div>
                 )}
               </div>
+
+              {/* RULES BUTTON */}
+              <button 
+                onClick={() => setShowRulesOverlay(true)}
+                className="w-full bg-card border border-border hover:border-muted-foreground/40 rounded-xl p-4 flex items-center justify-between transition-all group mt-2"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-muted-foreground group-hover:text-foreground transition-colors flex-shrink-0">
+                    <FileText size={18} strokeWidth={1.75} />
+                  </div>
+                  <div className="text-left">
+                    <div className="text-sm font-bold text-foreground">Pravidlá preteku</div>
+                    <div className="text-xs text-muted-foreground">Dokument s propozíciami</div>
+                  </div>
+                </div>
+                <ChevronRight size={16} className="text-muted-foreground/50 group-hover:text-muted-foreground transition-colors flex-shrink-0" />
+              </button>
             </div>
 
             {/* --- RIGHT COLUMN: FEED & INFO (4/12) --- */}
@@ -1390,22 +1408,6 @@ export default function CompetitionDetail() {
                 </div>
               )}
 
-              {/* RULES BUTTON */}
-              <button 
-                onClick={() => setShowRulesOverlay(true)}
-                className="w-full bg-card border border-border hover:border-muted-foreground/40 rounded-xl p-4 flex items-center justify-between transition-all group"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-muted-foreground group-hover:text-foreground transition-colors flex-shrink-0">
-                    <FileText size={18} strokeWidth={1.75} />
-                  </div>
-                  <div className="text-left">
-                    <div className="text-sm font-bold text-foreground">Pravidlá preteku</div>
-                    <div className="text-xs text-muted-foreground">Dokument s propozíciami</div>
-                  </div>
-                </div>
-                <ChevronRight size={16} className="text-muted-foreground/50 group-hover:text-muted-foreground transition-colors flex-shrink-0" />
-              </button>
 
             </div>
           </div>
