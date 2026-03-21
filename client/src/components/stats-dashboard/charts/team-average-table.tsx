@@ -10,14 +10,16 @@ interface TeamAverageTableProps {
   title: string;
   description: string;
   competitionId?: string;
+  displayCount?: number;
 }
 
-export function TeamAverageTable({ data, title, description, competitionId }: TeamAverageTableProps) {
+export function TeamAverageTable({ data, title, description, competitionId, displayCount }: TeamAverageTableProps) {
   const [showAllTeams, setShowAllTeams] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<TeamTopAverageData | null>(null);
 
-  const displayedTeams = data.slice(0, 10);
-  const hasMoreTeams = data.length > 10;
+  const limit = displayCount ?? 10;
+  const displayedTeams = data.slice(0, limit);
+  const hasMoreTeams = data.length > limit;
 
   // This is a table component, not a chart
   return (
@@ -73,7 +75,7 @@ export function TeamAverageTable({ data, title, description, competitionId }: Te
                 onClick={() => setShowAllTeams(true)}
               >
                 <Eye className="w-4 h-4 mr-2" />
-                Zobraziť všetky tímy ({data.length} celkem)
+                Zobraziť celú tabuľku ({data.length} tímov)
               </Button>
             </div>
           )}
