@@ -682,7 +682,8 @@ export default function CompetitionReport() {
 
             {/* --- VÁHOVÝ PRIEMER TOP N --- */}
             <TeamAverageTable
-              data={teamTopNAverageData.slice(0, topN)}
+              data={teamTopNAverageData}
+              displayCount={topN}
               title={`Váhový priemer top ${topN} úlovkov`}
               description={`Tímy seradené podľa priemernej váhy ich ${topN} najťažších úlovkov`}
             />
