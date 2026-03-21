@@ -1321,7 +1321,7 @@ export default function CompetitionDetail() {
                 <div className="px-3 py-2.5 border-b border-border bg-muted/30 flex items-center justify-between sticky top-0 z-10">
                   <h3 className="font-bold text-foreground text-sm flex items-center gap-2">
                     <Clock size={14} className="text-muted-foreground" />
-                    Časová os úlovkov
+                    Posledné úlovky
                   </h3>
                   <div className="flex items-center gap-2">
                     <button 
