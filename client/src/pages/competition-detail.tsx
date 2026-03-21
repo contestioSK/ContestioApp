@@ -29,7 +29,6 @@ import StatsDashboard from "@/components/stats-dashboard";
 import type { Competition, Team, Catch } from "@shared/schema";
 import { useFavoriteCompetitions, useToggleFavoriteCompetition } from "@/hooks/useFavorites";
 import { QRShareDialog } from "@/components/QRShareDialog";
-import SideCompetitionStatsBar from "@/components/side-competition-stats-bar";
 import { useVisibilityAwarePolling, POLLING_INTERVALS, STALE_TIMES } from "@/hooks/usePolling";
 
 // --- INLINE COMPONENTS ---
@@ -1161,19 +1160,6 @@ export default function CompetitionDetail() {
                       <div className="text-xs text-muted-foreground font-mono">{sortedLeaderboard[2]?.fish ?? 0} rýb</div>
                     </div>
                   </div>
-                </div>
-              )}
-
-              {/* DOPLNKOVÉ SÚŤAŽE */}
-              {competition.sideCompetitions && competition.sideCompetitions.length > 0 && (
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2 px-1">Doplnkové súťaže</p>
-                  <SideCompetitionStatsBar
-                    catches={catches || []}
-                    teams={teams || []}
-                    competition={competition}
-                    isLoading={catchesLoading}
-                  />
                 </div>
               )}
 

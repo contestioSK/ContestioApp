@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import StatsDashboard from "@/components/stats-dashboard";
 import { TeamAverageTable } from "@/components/stats-dashboard/charts/team-average-table";
+import SideCompetitionStatsBar from "@/components/side-competition-stats-bar";
 import { useVisibilityAwarePolling, POLLING_INTERVALS, STALE_TIMES } from "@/hooks/usePolling";
 import type { Competition, Team, Catch } from "@shared/schema";
 
@@ -462,6 +463,16 @@ export default function CompetitionReport() {
         {/* ===== TAB 1: OVERVIEW ===== */}
         {statsTab === "overview" && (
           <div className="space-y-6">
+
+            {/* --- DOPLNKOVÉ SÚŤAŽE --- */}
+            {competition?.sideCompetitions && competition.sideCompetitions.length > 0 && (
+              <SideCompetitionStatsBar
+                catches={catches || []}
+                teams={teams || []}
+                competition={competition}
+                isLoading={catchesLoading}
+              />
+            )}
 
             {/* --- 4 STAT CARDS --- */}
             {overviewStats ? (
