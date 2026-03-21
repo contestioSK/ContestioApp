@@ -1324,15 +1324,17 @@ export default function CompetitionDetail() {
                     Posledné úlovky
                   </h3>
                   <div className="flex items-center gap-2">
+                    {isLive && (
+                      <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase px-2 py-1 rounded-full text-emerald-500 bg-emerald-500/10">
+                        Live
+                      </span>
+                    )}
                     <button 
                       onClick={() => navigate(`/competition/${id}/catches`)}
                       className="text-[10px] text-teal-500 font-bold uppercase hover:underline tracking-widest"
                     >
-                      Archív
+                      Všetky úlovky
                     </button>
-                    <span className={`flex items-center gap-1.5 text-[10px] font-bold uppercase px-2 py-1 rounded-full ${isLive ? 'text-emerald-500 bg-emerald-500/10' : 'text-muted-foreground bg-muted'}`}>
-                      {isLive ? 'Live' : 'Archív'}
-                    </span>
                   </div>
                 </div>
                 <div className="p-2 flex flex-col gap-1 overflow-y-auto">
