@@ -634,10 +634,11 @@ export default function CompetitionReport() {
               </div>
 
               <div className="relative h-[250px] w-full">
+                {/* Area + line path — preserveAspectRatio="none" is fine for paths */}
                 <svg
                   viewBox="0 0 1000 200"
                   preserveAspectRatio="none"
-                  className="absolute inset-0 w-full h-full overflow-visible"
+                  className="absolute inset-0 w-full h-full"
                 >
                   <defs>
                     <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
@@ -655,18 +656,20 @@ export default function CompetitionReport() {
                     stroke="#14B8A6"
                     strokeWidth="3"
                   />
-                  {activityChart.map((p, i) => (
-                    <circle
-                      key={i}
-                      cx={i * (1000 / (activityChart.length - 1))}
-                      cy={200 - (p.val / svgMaxVal) * 200}
-                      r="5"
-                      fill="hsl(var(--background))"
-                      stroke="#14B8A6"
-                      strokeWidth="2.5"
-                    />
-                  ))}
                 </svg>
+
+                {/* Data point circles rendered as HTML divs — always perfectly round */}
+                {activityChart.map((p, i) => (
+                  <div
+                    key={i}
+                    className="absolute w-[10px] h-[10px] rounded-full border-2 border-teal-400 bg-background -translate-x-1/2 -translate-y-1/2"
+                    style={{
+                      left: `${(i / (activityChart.length - 1)) * 100}%`,
+                      top: `${(1 - p.val / svgMaxVal) * 100}%`,
+                    }}
+                  />
+                ))}
+
                 <div className="absolute bottom-[-28px] w-full flex justify-between text-[10px] text-muted-foreground font-mono px-0">
                   {activityChart.map((p, i) => (
                     <span key={i}>{p.time}</span>
