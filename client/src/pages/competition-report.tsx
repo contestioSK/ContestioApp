@@ -672,7 +672,9 @@ export default function CompetitionReport() {
 
                 <div className="absolute bottom-[-28px] w-full flex justify-between text-[10px] text-muted-foreground font-mono px-0">
                   {activityChart.map((p, i) => (
-                    <span key={i}>{p.time}</span>
+                    <span key={i} className={i % 2 !== 0 ? "invisible sm:visible" : ""}>
+                      {p.time}
+                    </span>
                   ))}
                 </div>
               </div>
