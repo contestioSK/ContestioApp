@@ -622,7 +622,7 @@ export default function CompetitionReport() {
             </div>
 
             {/* --- SVG AREA CHART --- */}
-            <div className="bg-card border border-border/50 rounded-xl p-6">
+            <div className="bg-card border border-border/50 rounded-xl p-6 pb-14">
               <div className="mb-6">
                 <h3 className="font-bold text-lg text-foreground flex items-center gap-2">
                   <Activity size={18} className="text-teal-400" />
