@@ -778,8 +778,8 @@ export default function CompetitionDetail() {
               </div>
             </div>
 
-            {/* RIGHT: Analytics Card — hidden on mobile (shown in sidebar tab instead) */}
-            <div className="hidden lg:block lg:col-span-4 bg-card border border-teal-500/20 rounded-xl p-5 relative overflow-hidden group hover:border-teal-500/40 transition-all">
+            {/* RIGHT: Analytics Card */}
+            <div className="lg:col-span-4 bg-card border border-teal-500/20 rounded-xl p-5 relative overflow-hidden group hover:border-teal-500/40 transition-all">
               <div className="absolute top-0 right-0 w-40 h-40 bg-teal-500/5 blur-3xl rounded-full group-hover:bg-teal-500/10 transition-colors pointer-events-none" />
               <div className="absolute -right-4 -top-4 text-teal-500/5 pointer-events-none">
                 <BarChart3 size={80} />
