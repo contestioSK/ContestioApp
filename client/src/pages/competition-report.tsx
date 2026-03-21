@@ -465,7 +465,7 @@ export default function CompetitionReport() {
 
             {/* --- 4 STAT CARDS --- */}
             {overviewStats ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
 
                 {/* 1. Váhová pyramída */}
                 <div className="bg-card border border-border/50 rounded-xl p-5 hover:border-border transition-colors">
@@ -597,7 +597,7 @@ export default function CompetitionReport() {
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[...Array(4)].map((_, i) => (
                   <div key={i} className="bg-card border border-border/50 rounded-xl p-5 text-center text-muted-foreground text-sm">
                     Žiadne dáta
