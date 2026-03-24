@@ -125,7 +125,7 @@ const createGoalSchema = z.object({
     required_error: "Musíš vybrať typ cieľa"
   }),
   targetValue: z.string().min(1, "Cieľová hodnota je povinná").refine((val) => {
-    const num = parseFloat(val);
+    const num = parseFloat(val.replace(',', '.'));
     return !isNaN(num) && num > 0;
   }, "Musí byť kladné číslo"),
   targetLength: z.string().optional(),
@@ -241,7 +241,7 @@ export default function SeasonalGoalsCreate() {
       const goalData = {
         seasonId: data.seasonId,
         goalType: data.goalType,
-        targetValue: data.targetValue,
+        targetValue: data.targetValue.replace(',', '.'),
         title: data.title,
         description: data.description,
         isMainGoal: data.isMainGoal,
