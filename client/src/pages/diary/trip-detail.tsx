@@ -75,7 +75,7 @@ export default function TripDetail() {
 
   // Fetch all catches for this trip
   const { data: allCatches = [] } = useQuery<DiaryCatch[]>({
-    queryKey: ["/api/diary/catches", "all"],
+    queryKey: ["/api/diary/catches/all"],
     enabled: !!id
   });
 
