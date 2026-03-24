@@ -912,7 +912,7 @@ export function createCatchValidationSchema(competition: Competition) {
   
   return insertCatchSchema.extend({
     weight: z.string().transform((val) => {
-      const weight = parseFloat(val);
+      const weight = parseFloat(val.replace(',', '.'));
       if (isNaN(weight)) {
         throw new Error("Neplatná váha");
       }
@@ -1040,7 +1040,7 @@ export const insertDiaryCatchSchema = createInsertSchema(diaryCatches).omit({
 }).extend({
   capturedAt: z.string().or(z.date()).transform((val) => new Date(val)),
   weight: z.string().or(z.number()).transform((val) => {
-    const weight = typeof val === 'string' ? parseFloat(val) : val;
+    const weight = typeof val === 'string' ? parseFloat(val.replace(',', '.')) : val;
     if (isNaN(weight) || weight < 0) {
       throw new Error("Neplatná váha");
     }
