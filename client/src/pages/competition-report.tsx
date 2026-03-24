@@ -95,7 +95,7 @@ const SectorTable = ({
                 </Link>
               </td>
               <td className="px-4 py-2 text-right text-foreground font-bold">
-                {t.weight.toFixed(1)}
+                {t.weight.toFixed(3)}
               </td>
             </tr>
           ))}
@@ -280,7 +280,7 @@ export default function CompetitionReport() {
           : 0;
         return {
           teamName: team.name || "—",
-          averageWeight: parseFloat(avg.toFixed(2)),
+          averageWeight: parseFloat(avg.toFixed(3)),
           fishCount: topN_catches.length,
           maxFish: topN,
         };
@@ -355,7 +355,7 @@ export default function CompetitionReport() {
       if (type === "short") return timeComment || "Sledujte vývoj preteku.";
       let fullComment = "";
       if (topSector && topSector.weight > 0) {
-        fullComment = `Najviac záberov je v ${topSector.name.toLowerCase()} s celkovou váhou ${topSector.weight.toFixed(1)} kg. `;
+        fullComment = `Najviac záberov je v ${topSector.name.toLowerCase()} s celkovou váhou ${topSector.weight.toFixed(3)} kg. `;
       }
       if (peakHour.hour && peakHour.val > 0) {
         fullComment += `Najaktívnejšie obdobie je okolo ${peakHour.hour}.`;
@@ -528,7 +528,7 @@ export default function CompetitionReport() {
                   </div>
                   <div className="flex items-end gap-1.5 mt-4">
                     <span className="text-4xl font-mono font-bold text-foreground">
-                      {overviewStats.top5Avg.toFixed(2)}
+                      {overviewStats.top5Avg.toFixed(3)}
                     </span>
                     <span className="text-sm text-muted-foreground mb-1">kg</span>
                   </div>
@@ -587,7 +587,7 @@ export default function CompetitionReport() {
                   <div className="mt-2">
                     <div className="flex items-end gap-1.5">
                       <span className="text-4xl font-mono font-bold text-foreground">
-                        {safeWeight(overviewStats.biggestFishCatch.weight).toFixed(1)}
+                        {safeWeight(overviewStats.biggestFishCatch.weight).toFixed(3)}
                       </span>
                       <span className="text-sm font-medium text-teal-400 mb-1">kg</span>
                     </div>

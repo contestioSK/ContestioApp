@@ -152,7 +152,7 @@ export default function SideCompetitionExport({
             <div className="flex items-center justify-between mb-2">
               <span className="text-white/80 text-sm">Váha</span>
               <span className="text-yellow-400 font-bold text-xl">
-                {parseFloat(winningCatch.weight).toFixed(2)} kg
+                {parseFloat(winningCatch.weight).toFixed(3)} kg
               </span>
             </div>
             <div className="flex items-center justify-between mb-2">
