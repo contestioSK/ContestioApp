@@ -76,7 +76,7 @@ export default function SeasonOverviewCard({
               <div className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-2 md:p-3 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer">
                 <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-0.5 md:mb-1 uppercase font-bold tracking-wider">Naj Ryba</p>
                 <div className="flex items-baseline gap-1">
-                  <span className="font-mono font-medium text-[#F97316] text-base md:text-lg" data-testid="text-season-max-weight">{maxWeight.toFixed(1)}</span>
+                  <span className="font-mono font-medium text-[#F97316] text-base md:text-lg" data-testid="text-season-max-weight">{maxWeight.toFixed(2)}</span>
                   <span className="text-xs text-slate-400 dark:text-slate-500">kg</span>
                 </div>
               </div>
@@ -85,7 +85,7 @@ export default function SeasonOverviewCard({
             <div className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-2 md:p-3">
               <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-0.5 md:mb-1 uppercase font-bold tracking-wider">Naj Ryba</p>
               <div className="flex items-baseline gap-1">
-                <span className="font-mono font-medium text-[#F97316] text-base md:text-lg" data-testid="text-season-max-weight">{maxWeight.toFixed(1)}</span>
+                <span className="font-mono font-medium text-[#F97316] text-base md:text-lg" data-testid="text-season-max-weight">{maxWeight.toFixed(2)}</span>
                 <span className="text-xs text-slate-400 dark:text-slate-500">kg</span>
               </div>
             </div>

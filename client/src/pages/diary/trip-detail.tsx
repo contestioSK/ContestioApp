@@ -431,7 +431,7 @@ export default function TripDetail() {
                               <div className="space-y-1">
                                 <div className="flex items-center justify-between">
                                   <span className="text-sm text-muted-foreground">Váha:</span>
-                                  <span className="font-mono font-medium text-lg text-[#F97316]">{parseFloat(catch_.weight).toFixed(1)} kg</span>
+                                  <span className="font-mono font-medium text-lg text-[#F97316]">{parseFloat(catch_.weight).toFixed(2)} kg</span>
                                 </div>
                                 {catch_.lengthCm && (
                                   <div className="flex items-center justify-between">
@@ -486,7 +486,7 @@ export default function TripDetail() {
                             <div className="space-y-1">
                               <div className="flex items-center justify-between">
                                 <span className="text-sm text-muted-foreground">Váha:</span>
-                                <span className="font-semibold text-lg">{parseFloat(catch_.weight).toFixed(1)} kg</span>
+                                <span className="font-semibold text-lg">{parseFloat(catch_.weight).toFixed(2)} kg</span>
                               </div>
                               {catch_.lengthCm && (
                                 <div className="flex items-center justify-between">
@@ -531,7 +531,7 @@ export default function TripDetail() {
                               <span className="font-medium truncate">{getFishTypeLabel(catch_.fishType)}</span>
                             </div>
                             <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                              <span className="font-semibold text-foreground">{parseFloat(catch_.weight).toFixed(1)} kg</span>
+                              <span className="font-semibold text-foreground">{parseFloat(catch_.weight).toFixed(2)} kg</span>
                               {catch_.lengthCm && <span>{catch_.lengthCm} cm</span>}
                               <span>{format(new Date(catch_.capturedAt), "HH:mm", { locale: sk })}</span>
                             </div>
@@ -571,7 +571,7 @@ export default function TripDetail() {
                                 </div>
                               </TableCell>
                               <TableCell className="text-right font-semibold">
-                                {parseFloat(catch_.weight).toFixed(1)} kg
+                                {parseFloat(catch_.weight).toFixed(2)} kg
                               </TableCell>
                               <TableCell className="text-right">
                                 {catch_.lengthCm ? `${catch_.lengthCm} cm` : "—"}
@@ -624,7 +624,7 @@ export default function TripDetail() {
                 <TacticalIcon icon={Weight} variant="indigo" size="sm" showLabel={false} />
                 <div className="flex-1">
                   <div className="text-xs md:text-sm text-muted-foreground mb-1">Celková váha</div>
-                  <div className="text-xl md:text-2xl font-mono font-medium text-[#F97316]" data-testid="text-total-weight">{totalWeight.toFixed(1)} kg</div>
+                  <div className="text-xl md:text-2xl font-mono font-medium text-[#F97316]" data-testid="text-total-weight">{totalWeight.toFixed(2)} kg</div>
                 </div>
               </div>
             </CardContent>
@@ -637,7 +637,7 @@ export default function TripDetail() {
                 <div className="flex-1">
                   <div className="text-xs md:text-sm text-muted-foreground mb-1">Najväčší úlovok</div>
                   <div className="text-xl md:text-2xl font-mono font-medium text-[#F97316]" data-testid="text-biggest-catch">
-                    {biggestCatch ? `${parseFloat(biggestCatch.weight).toFixed(1)} kg` : "—"}
+                    {biggestCatch ? `${parseFloat(biggestCatch.weight).toFixed(2)} kg` : "—"}
                   </div>
                   {biggestCatch && (
                     <div className="text-[10px] text-muted-foreground">{getFishTypeLabel(biggestCatch.fishType)}</div>
@@ -653,7 +653,7 @@ export default function TripDetail() {
                 <TacticalIcon icon={Scale} variant="purple" size="sm" showLabel={false} />
                 <div className="flex-1">
                   <div className="text-xs md:text-sm text-muted-foreground mb-1">Priemerná váha</div>
-                  <div className="text-xl md:text-2xl font-mono font-medium text-[#F97316]">{averageWeight.toFixed(1)} kg</div>
+                  <div className="text-xl md:text-2xl font-mono font-medium text-[#F97316]">{averageWeight.toFixed(2)} kg</div>
                 </div>
               </div>
             </CardContent>
@@ -969,12 +969,12 @@ export default function TripDetail() {
                   </div>
                 </div>
                 <div className="bg-slate-800/50 rounded-xl p-6 text-center">
-                  <div className="text-4xl font-bold text-white mb-2">{totalWeight.toFixed(1)} kg</div>
+                  <div className="text-4xl font-bold text-white mb-2">{totalWeight.toFixed(2)} kg</div>
                   <div className="text-slate-400 text-lg">Celková váha</div>
                 </div>
                 <div className="bg-slate-800/50 rounded-xl p-6 text-center">
                   <div className="text-4xl font-bold text-white mb-2">
-                    {biggestCatch ? parseFloat(biggestCatch.weight).toFixed(1) : "0"} kg
+                    {biggestCatch ? parseFloat(biggestCatch.weight).toFixed(2) : "0"} kg
                   </div>
                   <div className="text-slate-400 text-lg">Najväčší úlovok</div>
                 </div>
@@ -1014,7 +1014,7 @@ export default function TripDetail() {
                               {getFishTypeLabel(catch_.fishType)}
                             </div>
                             <div className="text-3xl font-bold text-white">
-                              {parseFloat(catch_.weight).toFixed(1)} kg
+                              {parseFloat(catch_.weight).toFixed(2)} kg
                             </div>
                             {catch_.lengthCm && (
                               <div className="text-slate-400 mt-1">

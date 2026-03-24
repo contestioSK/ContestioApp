@@ -445,8 +445,8 @@ export default function BattleEdit() {
                         <FormControl>
                           <Input 
                             type="number" 
-                            step="0.1" 
-                            placeholder="napr. 0.5" 
+                            step="0.01" 
+                            placeholder="napr. 0.50" 
                             {...field}
                             onChange={(e) => field.onChange(e.target.value === "" ? undefined : e.target.value.replace(',', '.'))}
                             value={field.value ?? ""}

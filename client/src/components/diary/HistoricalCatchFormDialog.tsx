@@ -350,9 +350,9 @@ export default function HistoricalCatchFormDialog({ isOpen, onClose, onSuccess }
                     <Input 
                       {...field} 
                       type="number" 
-                      step="0.1" 
-                      min="0.1"
-                      placeholder="0.0" 
+                      step="0.01" 
+                      min="0.01"
+                      placeholder="0.00" 
                       className="bg-slate-800 border-slate-600 text-white"
                       data-testid="input-historical-weight"
                     />
