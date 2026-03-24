@@ -1327,6 +1327,7 @@ export default function CatchFormDialog({
                             data-testid="input-weight"
                             className="font-bold text-lg pr-10 bg-slate-800/80 border-border/50 text-foreground"
                             {...field}
+                            onChange={(e) => field.onChange(e.target.value.replace(',', '.'))}
                           />
                           <Scale className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" strokeWidth={1.75} />
                         </div>
