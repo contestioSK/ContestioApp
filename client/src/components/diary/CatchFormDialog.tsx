@@ -363,10 +363,18 @@ export default function CatchFormDialog({
     ? activeBattles.find((b) => b.id === battleId)
     : activeBattles[0]; // Use first active battle if any
 
-  // State for tripId (will be auto-set if active battle exists)
+  // State for tripId (will be auto-set if active battle or active trip exists)
   const [selectedTripId, setSelectedTripId] = useState<string | undefined>(
     undefined,
   );
+
+  // Find most recent active trip (endDate >= now)
+  const activeTrip = useMemo(() => {
+    const now = new Date();
+    return trips
+      .filter(t => new Date(t.endDate) >= now)
+      .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime())[0];
+  }, [trips]);
 
   // State for badge celebration modal
   const [badgeQueue, setBadgeQueue] = useState<
@@ -432,13 +440,17 @@ export default function CatchFormDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedBrandName, selectedFlavorName, selectedDiameter, baitSource]);
 
-  // Auto-set tripId when active battle exists
+  // Auto-set tripId when active battle or active trip exists
   const activeBattleTripId = activeBattle?.tripId;
   useEffect(() => {
-    if (isOpen && !editingCatch && activeBattleTripId) {
-      setSelectedTripId(activeBattleTripId);
+    if (isOpen && !editingCatch) {
+      if (activeBattleTripId) {
+        setSelectedTripId(activeBattleTripId);
+      } else if (activeTrip) {
+        setSelectedTripId(activeTrip.id);
+      }
     }
-  }, [isOpen, editingCatch?.id, activeBattleTripId]);
+  }, [isOpen, editingCatch?.id, activeBattleTripId, activeTrip?.id]);
 
   // Update form when editing catch changes
   useEffect(() => {
@@ -563,7 +575,7 @@ export default function CatchFormDialog({
       }
     } else {
       setExistingPhotos([]);
-      setSelectedTripId(activeBattle?.tripId);
+      setSelectedTripId(activeBattle?.tripId || activeTrip?.id);
       clearBaitSelection();
       setBrandSearch("");
       form.reset({
@@ -573,7 +585,7 @@ export default function CatchFormDialog({
         bait: "",
         nickname: "",
         notes: "",
-        spot: "",
+        spot: activeTrip?.location || "",
         verified: false,
       });
     }
