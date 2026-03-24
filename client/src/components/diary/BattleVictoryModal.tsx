@@ -129,7 +129,7 @@ export function BattleVictoryModal({ stats, onClose }: BattleVictoryModalProps) 
         await navigator.share({
           files: [file],
           title: `🏆 Vyhral som ${stats.battleName}!`,
-          text: `Práve som vyhral fishing battle "${stats.battleName}" s ${stats.fishCount} rybami a celkovou váhou ${stats.totalWeight.toFixed(1)} kg!`
+          text: `Práve som vyhral fishing battle "${stats.battleName}" s ${stats.fishCount} rybami a celkovou váhou ${stats.totalWeight.toFixed(2)} kg!`
         });
       } else {
         const url = URL.createObjectURL(blob);
@@ -212,7 +212,7 @@ export function BattleVictoryModal({ stats, onClose }: BattleVictoryModalProps) 
                   {stats.bigFishWeight ? (
                     <>
                       <div className="text-4xl font-black text-white italic tracking-tighter drop-shadow-lg leading-none">
-                        {stats.bigFishWeight.toFixed(1)}
+                        {stats.bigFishWeight.toFixed(2)}
                         <span className="text-base text-slate-400 ml-1">kg</span>
                       </div>
                       <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mt-1">
@@ -239,7 +239,7 @@ export function BattleVictoryModal({ stats, onClose }: BattleVictoryModalProps) 
                 <Weight className="w-4 h-4 text-muted-foreground" strokeWidth={1.75} /> Celkovo
               </div>
               <div className="text-lg font-mono font-medium text-[#F97316]">
-                {stats.totalWeight.toFixed(1)} <span className="text-xs font-sans text-slate-600">kg</span>
+                {stats.totalWeight.toFixed(2)} <span className="text-xs font-sans text-slate-600">kg</span>
               </div>
             </div>
 
