@@ -775,7 +775,7 @@ export default function BattleCreate() {
                         step="0.1"
                         placeholder="napr. 0.5"
                         value={formValues.minWeightKg || ""}
-                        onChange={(e) => form.setValue("minWeightKg", e.target.value ? parseFloat(e.target.value) : undefined)}
+                        onChange={(e) => form.setValue("minWeightKg", e.target.value ? parseFloat(e.target.value.replace(',', '.')) : undefined)}
                         className="bg-card/50 dark:bg-slate-900/50 border-border dark:border-slate-800 rounded-xl"
                       />
                       <p className="text-[10px] text-muted-foreground ml-1">Úlovky pod túto hmotnosť nebudú započítané</p>
