@@ -1,19 +1,26 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Play, Plus } from "lucide-react";
+import { Play, Plus, StopCircle, MapPin } from "lucide-react";
 import waterRaysBg from "@assets/water-rays-bg.png";
 import carpImage from "@assets/Gemini_Generated_Image_kur5qpkur5qpkur5-Photoroom_1769878046486.png";
+import type { DiaryTrip } from "@shared/schema";
 
 interface FishingActionCardProps {
   onStartFishing: () => void;
   onAddCatch: () => void;
   canAddCatch?: boolean;
+  activeTrip?: DiaryTrip;
+  onEndTrip?: () => void;
+  isEndingTrip?: boolean;
 }
 
 export default function FishingActionCard({ 
   onStartFishing, 
   onAddCatch, 
-  canAddCatch = true 
+  canAddCatch = true,
+  activeTrip,
+  onEndTrip,
+  isEndingTrip = false,
 }: FishingActionCardProps) {
   return (
     <Card className="relative overflow-hidden h-full border border-slate-700 shadow-lg" style={{ backgroundColor: '#0B1C2F' }}>
@@ -38,28 +45,60 @@ export default function FishingActionCard({
         </div>
         
         <div className="relative z-10 max-w-lg">
-          <div className="inline-flex items-center gap-2 bg-black/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-medium text-slate-300 mb-3 md:mb-4 border border-white/10">
-            <Plus size={12} />
-            <span>Rýchle akcie</span>
-          </div>
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2 md:mb-3 leading-tight">
-            Čo ideš dnes robiť?
-          </h2>
-          <p className="text-slate-300 font-medium text-base md:text-lg">
-            Začni rybačku alebo si rýchlo zapíš úlovok.
-            <span className="hidden md:inline"><br />Contestio sa postará o zvyšok.</span>
-          </p>
+          {activeTrip ? (
+            <>
+              <div className="inline-flex items-center gap-2 bg-green-500/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-medium text-green-400 mb-3 md:mb-4 border border-green-500/30">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                <span>Výprava prebieha</span>
+              </div>
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2 md:mb-3 leading-tight">
+                {activeTrip.name}
+              </h2>
+              {activeTrip.location && (
+                <p className="text-slate-300 font-medium text-base md:text-lg flex items-center gap-1.5">
+                  <MapPin className="w-4 h-4 text-slate-400" strokeWidth={1.75} />
+                  {activeTrip.location}
+                </p>
+              )}
+            </>
+          ) : (
+            <>
+              <div className="inline-flex items-center gap-2 bg-black/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-medium text-slate-300 mb-3 md:mb-4 border border-white/10">
+                <Plus size={12} />
+                <span>Rýchle akcie</span>
+              </div>
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2 md:mb-3 leading-tight">
+                Čo ideš dnes robiť?
+              </h2>
+              <p className="text-slate-300 font-medium text-base md:text-lg">
+                Začni rybačku alebo si rýchlo zapíš úlovok.
+                <span className="hidden md:inline"><br />Contestio sa postará o zvyšok.</span>
+              </p>
+            </>
+          )}
         </div>
         
         <div className="relative z-10 flex flex-wrap gap-3 md:gap-4 mt-6 md:mt-8">
-          <Button
-            onClick={onStartFishing}
-            className="bg-[#F97316] hover:bg-[#EA580C] text-white font-bold px-5 md:px-6 py-3 md:py-3.5 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 h-auto text-sm md:text-base"
-            data-testid="cta-start-fishing"
-          >
-            <Play className="w-4 h-4 md:w-5 md:h-5 mr-2" strokeWidth={1.75} />
-            <span>Začať rybačku</span>
-          </Button>
+          {activeTrip ? (
+            <Button
+              onClick={onEndTrip}
+              disabled={isEndingTrip}
+              className="bg-red-600 hover:bg-red-700 text-white font-bold px-5 md:px-6 py-3 md:py-3.5 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 h-auto text-sm md:text-base"
+              data-testid="cta-end-trip"
+            >
+              <StopCircle className="w-4 h-4 md:w-5 md:h-5 mr-2" strokeWidth={1.75} />
+              <span>{isEndingTrip ? "Ukončujem..." : "Ukončiť výpravu"}</span>
+            </Button>
+          ) : (
+            <Button
+              onClick={onStartFishing}
+              className="bg-[#F97316] hover:bg-[#EA580C] text-white font-bold px-5 md:px-6 py-3 md:py-3.5 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 h-auto text-sm md:text-base"
+              data-testid="cta-start-fishing"
+            >
+              <Play className="w-4 h-4 md:w-5 md:h-5 mr-2" strokeWidth={1.75} />
+              <span>Začať rybačku</span>
+            </Button>
+          )}
           <Button
             onClick={onAddCatch}
             disabled={!canAddCatch}

@@ -32,7 +32,7 @@ import { LocationSearchField } from "@/components/LocationSearchField";
 import { TacticalIcon } from "@/components/ui/tactical-icon";
 import { BookOpen } from "lucide-react";
 import { getFishTypeLabel, getFishTypeOptions } from "@/utils/fishTypeMapping";
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { format } from "date-fns";
 import { sk } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -218,6 +218,36 @@ export default function DiaryIndex() {
   const { data: trips = [] } = useQuery<DiaryTrip[]>({
     queryKey: ["/api/diary/trips"],
     enabled: !!user
+  });
+
+  // Find most recent active trip (endDate >= now)
+  const activeTrip = useMemo(() => {
+    const now = new Date();
+    return trips
+      .filter(t => new Date(t.endDate) >= now)
+      .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime())[0];
+  }, [trips]);
+
+  // End active trip mutation
+  const endTripMutation = useMutation({
+    mutationFn: async (tripId: string) => {
+      await apiRequest("PATCH", `/api/diary/trips/${tripId}/end`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/diary/trips"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/diary/catches/all"] });
+      toast({
+        title: "Výprava ukončená",
+        description: "Výprava bola úspešne uzavretá.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Chyba",
+        description: "Nepodarilo sa ukončiť výpravu.",
+        variant: "destructive",
+      });
+    }
   });
 
   // Check freemium limits
@@ -554,6 +584,9 @@ export default function DiaryIndex() {
               onStartFishing={() => setIsStartFishingOpen(true)}
               onAddCatch={() => setIsCreateCatchOpen(true)}
               canAddCatch={!limits || limits.canCreate}
+              activeTrip={activeTrip}
+              onEndTrip={() => activeTrip && endTripMutation.mutate(activeTrip.id)}
+              isEndingTrip={endTripMutation.isPending}
             />
           </div>
           
