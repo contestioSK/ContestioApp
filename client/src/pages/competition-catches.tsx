@@ -118,7 +118,7 @@ function CatchRow({
 
       <div className="text-right shrink-0">
         <div className={`font-mono font-medium text-base ${isBigFish ? 'text-amber-500' : 'text-[#F97316]'}`}>
-          {weight.toFixed(2)}
+          {weight.toFixed(3)}
         </div>
         <div className="text-[11px] text-muted-foreground">
           {getRelativeTime(data.submittedAt)}
@@ -167,7 +167,7 @@ function CatchDetailModal({
         <div className="p-5 space-y-5">
           <div className="flex items-baseline gap-2">
             <span className={`text-5xl font-black italic tracking-tighter tabular-nums ${isBigFish ? 'text-amber-500' : 'text-foreground'}`}>
-              {weight.toFixed(2)}
+              {weight.toFixed(3)}
             </span>
             <span className="text-xl font-bold text-muted-foreground">kg</span>
           </div>
@@ -550,7 +550,7 @@ export default function CompetitionCatches() {
                 <div className="mb-3">
                   <div className="flex items-baseline gap-2">
                     <h2 className="text-5xl font-black italic text-foreground tracking-tighter tabular-nums leading-none">
-                      {safeWeight(heroCatch.weight).toFixed(2)}
+                      {safeWeight(heroCatch.weight).toFixed(3)}
                     </h2>
                     <span className="text-xl font-bold text-muted-foreground">kg</span>
                   </div>

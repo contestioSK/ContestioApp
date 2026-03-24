@@ -346,7 +346,7 @@ function CatchSubmissionFormComponent({ selectedCompetition, selectedCompetition
               // Format weight display: show kg equivalent for larger values
               const formatWeightDisplay = (grams: number) => {
                 if (grams >= 1000) {
-                  return `${(grams / 1000).toFixed(2)} kg`;
+                  return `${(grams / 1000).toFixed(3)} kg`;
                 }
                 return `${grams} g`;
               };
@@ -998,7 +998,7 @@ export default function RefereeInterface() {
                 {pendingCatches.map((catch_) => (
                   <div key={catch_.id} className="flex items-center justify-between text-sm" data-testid={`pending-catch-${catch_.id}`}>
                     <span className="text-foreground">
-                      <span className="font-mono font-medium text-[#F97316]">{catch_.weight >= 1000 ? `${(catch_.weight / 1000).toFixed(2)} kg` : `${catch_.weight} g`}</span> - {catch_.fishType === 'scaly' ? 'Šupináč' : 'Lysec'}
+                      <span className="font-mono font-medium text-[#F97316]">{catch_.weight >= 1000 ? `${(catch_.weight / 1000).toFixed(3)} kg` : `${catch_.weight} g`}</span> - {catch_.fishType === 'scaly' ? 'Šupináč' : 'Lysec'}
                       {catch_.hasPhoto && catch_.photoMissing && (
                         <span className="text-red-500 ml-2 text-xs">(foto chýba)</span>
                       )}
