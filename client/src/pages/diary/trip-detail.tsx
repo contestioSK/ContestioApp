@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { format, isPast, isToday } from "date-fns";
+import { format } from "date-fns";
 import { sk } from "date-fns/locale";
 import { ArrowLeft, MapPin, Calendar as CalendarIcon, Fish, Weight, Trophy, FileText, Medal, Ruler, Target, Cloud, Thermometer, Wind, Gauge, XCircle, Download, Grid3x3, MoreHorizontal, Share2, ChevronRight, ZoomIn, Scale, PieChart, Anchor } from "lucide-react";
 import { PhotoLightbox } from "@/components/diary/PhotoLightbox";
@@ -274,7 +274,7 @@ export default function TripDetail() {
                 {isExporting ? "Generujem vizuál…" : "Vytvoriť vizuál"}
               </Button>
 
-              {trip && !isPast(new Date(trip.endDate)) && !isToday(new Date(trip.endDate)) && (
+              {trip && new Date(trip.endDate) >= new Date() && (
                 <Button
                   variant="ghost"
                   onClick={() => setShowEndTripDialog(true)}
@@ -305,7 +305,7 @@ export default function TripDetail() {
                   <Share2 className="w-4 h-4 mr-2" />
                   {isExporting ? "Generujem vizuál…" : "Vytvoriť vizuál"}
                 </DropdownMenuItem>
-                {trip && !isPast(new Date(trip.endDate)) && !isToday(new Date(trip.endDate)) && (
+                {trip && new Date(trip.endDate) >= new Date() && (
                   <>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem 
@@ -333,7 +333,7 @@ export default function TripDetail() {
                     <h1 className="text-3xl md:text-4xl lg:text-5xl font-black italic text-foreground tracking-tight" data-testid="text-trip-name">
                       {trip.name}
                     </h1>
-                    {(isPast(new Date(trip.endDate)) || isToday(new Date(trip.endDate))) ? (
+                    {new Date(trip.endDate) < new Date() ? (
                       <Badge variant="secondary" className="text-xs border border-border/50">
                         Ukončená
                       </Badge>
