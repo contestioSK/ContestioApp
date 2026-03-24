@@ -772,8 +772,8 @@ export default function BattleCreate() {
                       <Input
                         type="number"
                         min="0"
-                        step="0.1"
-                        placeholder="napr. 0.5"
+                        step="0.01"
+                        placeholder="napr. 0.50"
                         value={formValues.minWeightKg || ""}
                         onChange={(e) => form.setValue("minWeightKg", e.target.value ? parseFloat(e.target.value.replace(',', '.')) : undefined)}
                         className="bg-card/50 dark:bg-slate-900/50 border-border dark:border-slate-800 rounded-xl"

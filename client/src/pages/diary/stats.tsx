@@ -289,7 +289,7 @@ export default function DiaryStats() {
                     <div className="flex-1">
                       <div className="text-xs md:text-sm text-muted-foreground mb-1">Najväčšia ryba</div>
                       <div className="text-xl md:text-2xl font-mono font-medium text-[#F97316]">
-                        {personalRecords.heaviestCatch ? parseFloat(personalRecords.heaviestCatch.weight).toFixed(1) : basicStats.biggestCatch.toFixed(1)} kg
+                        {personalRecords.heaviestCatch ? parseFloat(personalRecords.heaviestCatch.weight).toFixed(2) : basicStats.biggestCatch.toFixed(2)} kg
                       </div>
                     </div>
                   </div>
@@ -346,7 +346,7 @@ export default function DiaryStats() {
                       <Calendar size={14} /> {heroCatch.date} · {heroCatch.location}
                     </p>
                     <h2 className="text-6xl md:text-7xl font-black text-white tracking-tighter leading-none mb-2">
-                      {heroCatch.weight.toFixed(1)}<span className="text-3xl text-white/70 font-bold ml-1">kg</span>
+                      {heroCatch.weight.toFixed(2)}<span className="text-3xl text-white/70 font-bold ml-1">kg</span>
                     </h2>
                     <p className="text-amber-500 font-bold text-xl uppercase tracking-wide">{heroCatch.species}</p>
                   </div>
@@ -446,10 +446,10 @@ export default function DiaryStats() {
                                   <span className="font-mono font-medium text-[#F97316]">{bait.catchCount}</span> úlovkov
                                 </span>
                                 <span className="text-xs text-muted-foreground">
-                                  Ø <span className="font-mono font-medium text-[#F97316]">{bait.averageWeight.toFixed(1)}</span> kg
+                                  Ø <span className="font-mono font-medium text-[#F97316]">{bait.averageWeight.toFixed(2)}</span> kg
                                 </span>
                                 <span className="text-xs text-muted-foreground">
-                                  PB <span className="font-mono font-medium text-[#F97316]">{bait.maxWeight.toFixed(1)}</span> kg
+                                  PB <span className="font-mono font-medium text-[#F97316]">{bait.maxWeight.toFixed(2)}</span> kg
                                 </span>
                               </div>
                               <div className="mt-2 h-1.5 rounded-full bg-muted overflow-hidden">
@@ -468,15 +468,15 @@ export default function DiaryStats() {
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
                               <div className="p-3 rounded-lg bg-muted/30">
                                 <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Celková váha</div>
-                                <div className="text-sm font-mono font-medium text-[#F97316]">{bait.totalWeight.toFixed(1)} kg</div>
+                                <div className="text-sm font-mono font-medium text-[#F97316]">{bait.totalWeight.toFixed(2)} kg</div>
                               </div>
                               <div className="p-3 rounded-lg bg-muted/30">
                                 <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Priemerná váha</div>
-                                <div className="text-sm font-mono font-medium text-[#F97316]">{bait.averageWeight.toFixed(1)} kg</div>
+                                <div className="text-sm font-mono font-medium text-[#F97316]">{bait.averageWeight.toFixed(2)} kg</div>
                               </div>
                               <div className="p-3 rounded-lg bg-muted/30">
                                 <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">PB úlovok</div>
-                                <div className="text-sm font-mono font-medium text-[#F97316]">{bait.maxWeight.toFixed(1)} kg</div>
+                                <div className="text-sm font-mono font-medium text-[#F97316]">{bait.maxWeight.toFixed(2)} kg</div>
                                 {bait.maxWeightFish && (
                                   <div className="text-[10px] text-muted-foreground mt-0.5">{getFishTypeLabel(bait.maxWeightFish)}</div>
                                 )}
@@ -539,7 +539,7 @@ export default function DiaryStats() {
                                       {c.nickname && <span className="text-xs text-muted-foreground italic">„{c.nickname}"</span>}
                                     </div>
                                     <div className="flex items-center gap-3">
-                                      <span className="text-sm font-mono font-medium text-[#F97316]">{c.weight.toFixed(1)} kg</span>
+                                      <span className="text-sm font-mono font-medium text-[#F97316]">{c.weight.toFixed(2)} kg</span>
                                       <span className="text-[10px] text-muted-foreground">
                                         {new Date(c.capturedAt).toLocaleDateString('sk-SK', { day: 'numeric', month: 'short' })}
                                       </span>
@@ -663,7 +663,7 @@ export default function DiaryStats() {
                       <div className="w-2 h-2 rounded-full bg-amber-500 mt-2 flex-shrink-0" />
                       <div>
                         <p className="font-medium text-foreground text-sm">Osobný rekord</p>
-                        <p className="text-xs text-muted-foreground"><span className="font-mono font-medium text-[#F97316]">{parseFloat(personalRecords.heaviestCatch.weight).toFixed(1)} kg</span> - {getFishTypeLabel(personalRecords.heaviestCatch.fishType)}</p>
+                        <p className="text-xs text-muted-foreground"><span className="font-mono font-medium text-[#F97316]">{parseFloat(personalRecords.heaviestCatch.weight).toFixed(2)} kg</span> - {getFishTypeLabel(personalRecords.heaviestCatch.fishType)}</p>
                       </div>
                     </li>
                   )}
@@ -672,7 +672,7 @@ export default function DiaryStats() {
                       <div className="w-2 h-2 rounded-full bg-emerald-500 mt-2 flex-shrink-0" />
                       <div>
                         <p className="font-medium text-foreground text-sm">Najlepšia výprava</p>
-                        <p className="text-xs text-muted-foreground"><span className="font-mono font-medium text-[#F97316]">{personalRecords.bestTrip.catchCount}</span> úlovkov, <span className="font-mono font-medium text-[#F97316]">{personalRecords.bestTrip.totalWeight.toFixed(1)} kg</span></p>
+                        <p className="text-xs text-muted-foreground"><span className="font-mono font-medium text-[#F97316]">{personalRecords.bestTrip.catchCount}</span> úlovkov, <span className="font-mono font-medium text-[#F97316]">{personalRecords.bestTrip.totalWeight.toFixed(2)} kg</span></p>
                       </div>
                     </li>
                   )}

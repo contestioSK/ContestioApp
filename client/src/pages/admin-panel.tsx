@@ -3563,8 +3563,8 @@ export default function AdminPanel() {
                                         <FormControl>
                                           <Input 
                                             type="number" 
-                                            step="0.1" 
-                                            placeholder="2.0" 
+                                            step="0.01" 
+                                            placeholder="2.00" 
                                             {...field}
                                             onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
                                             data-testid="input-min-weight" 
@@ -4333,8 +4333,8 @@ export default function AdminPanel() {
                                         <FormControl>
                                           <Input 
                                             type="number" 
-                                            step="0.1" 
-                                            placeholder="2.0" 
+                                            step="0.01" 
+                                            placeholder="2.00" 
                                             {...field}
                                             onChange={(e) => field.onChange(e.target.valueAsNumber || 0)}
                                             data-testid="input-edit-min-weight" 

@@ -435,7 +435,7 @@ export default function SeasonalGoalsEdit() {
                           <FormControl>
                             <Input 
                               type="number" 
-                              step="0.1"
+                              step="0.01"
                               placeholder={selectedConfig?.placeholder || "Zadajte hodnotu"}
                               data-testid="input-target-value"
                               {...field} 

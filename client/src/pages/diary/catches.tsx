@@ -737,7 +737,7 @@ export default function DiaryCatches() {
                         <TacticalIcon icon={Trophy} variant="amber" size="sm" showLabel={false} />
                         <div className="flex-1">
                           <div className="text-xs md:text-sm text-muted-foreground mb-1">Najväčšia ryba</div>
-                          <div className="text-xl md:text-2xl font-mono font-medium text-[#F97316]" data-testid="text-total-biggest">{biggestFish.toFixed(1)} kg</div>
+                          <div className="text-xl md:text-2xl font-mono font-medium text-[#F97316]" data-testid="text-total-biggest">{biggestFish.toFixed(2)} kg</div>
                         </div>
                       </div>
                     </CardContent>
@@ -749,7 +749,7 @@ export default function DiaryCatches() {
                         <TacticalIcon icon={Weight} variant="indigo" size="sm" showLabel={false} />
                         <div className="flex-1">
                           <div className="text-xs md:text-sm text-muted-foreground mb-1">Celková váha</div>
-                          <div className="text-xl md:text-2xl font-mono font-medium text-[#F97316]" data-testid="text-total-weight">{totalWeight.toFixed(1)} kg</div>
+                          <div className="text-xl md:text-2xl font-mono font-medium text-[#F97316]" data-testid="text-total-weight">{totalWeight.toFixed(2)} kg</div>
                         </div>
                       </div>
                     </CardContent>
@@ -951,7 +951,7 @@ export default function DiaryCatches() {
                   value={minWeight}
                   onChange={(e) => setMinWeight(e.target.value)}
                   className="w-24 bg-muted dark:bg-slate-700/50 border text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-slate-400"
-                  step="0.1"
+                  step="0.01"
                   min="0"
                   data-testid="input-min-weight"
                 />
@@ -961,7 +961,7 @@ export default function DiaryCatches() {
                   value={maxWeight}
                   onChange={(e) => setMaxWeight(e.target.value)}
                   className="w-24 bg-muted dark:bg-slate-700/50 border text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-slate-400"
-                  step="0.1"
+                  step="0.01"
                   min="0"
                   data-testid="input-max-weight"
                 />
@@ -1157,7 +1157,7 @@ export default function DiaryCatches() {
                       value={minWeight}
                       onChange={(e) => setMinWeight(e.target.value)}
                       className="flex-1 bg-muted dark:bg-slate-700/50 border text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-slate-400"
-                      step="0.1"
+                      step="0.01"
                       min="0"
                     />
                     <Input
@@ -1166,7 +1166,7 @@ export default function DiaryCatches() {
                       value={maxWeight}
                       onChange={(e) => setMaxWeight(e.target.value)}
                       className="flex-1 bg-muted dark:bg-slate-700/50 border text-foreground dark:text-white placeholder:text-muted-foreground dark:placeholder:text-slate-400"
-                      step="0.1"
+                      step="0.01"
                       min="0"
                     />
                   </div>
