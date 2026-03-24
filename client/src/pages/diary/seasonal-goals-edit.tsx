@@ -128,7 +128,7 @@ const editGoalSchema = z.object({
     required_error: "Musíš vybrať typ cieľa"
   }),
   targetValue: z.string().min(1, "Cieľová hodnota je povinná").refine((val) => {
-    const num = parseFloat(val);
+    const num = parseFloat(val.replace(',', '.'));
     return !isNaN(num) && num > 0;
   }, "Musí byť kladné číslo"),
   title: z.string().min(1, "Názov je povinný").max(100, "Názov môže mať maximálne 100 znakov"),
@@ -229,6 +229,7 @@ export default function SeasonalGoalsEdit() {
       const goalConfig = goalTypeConfig[data.goalType];
       const goalData = {
         ...data,
+        targetValue: data.targetValue.replace(',', '.'),
         unit: goalConfig.unit,
         currentValue: goal?.currentValue || "0" // Keep current progress
       };

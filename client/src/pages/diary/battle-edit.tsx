@@ -448,7 +448,7 @@ export default function BattleEdit() {
                             step="0.1" 
                             placeholder="napr. 0.5" 
                             {...field}
-                            onChange={(e) => field.onChange(e.target.value === "" ? undefined : e.target.value)}
+                            onChange={(e) => field.onChange(e.target.value === "" ? undefined : e.target.value.replace(',', '.'))}
                             value={field.value ?? ""}
                             data-testid="input-min-weight"
                           />

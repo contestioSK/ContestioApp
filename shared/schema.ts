@@ -1340,7 +1340,7 @@ export const insertSeasonGoalSchema = createInsertSchema(seasonGoals).omit({
     baitName: z.string().optional(),
   }).optional(),
 }).refine((data) => {
-  const targetValue = parseFloat(data.targetValue);
+  const targetValue = parseFloat(String(data.targetValue).replace(',', '.'));
   return targetValue > 0;
 }, {
   message: "Cieľová hodnota musí byť väčšia ako 0",
@@ -1372,7 +1372,7 @@ export const updateSeasonGoalSchema = createInsertSchema(seasonGoals).omit({
   }).optional(),
 }).refine((data) => {
   if (data.targetValue !== undefined) {
-    const targetValue = parseFloat(data.targetValue);
+    const targetValue = parseFloat(String(data.targetValue).replace(',', '.'));
     return targetValue > 0;
   }
   return true;
