@@ -58,7 +58,7 @@ const CatchGridItem = ({ data, onClick }: { data: Catch; onClick: (c: Catch) => 
   <button
     onClick={() => onClick(data)}
     className="group relative w-full aspect-[4/3] bg-card rounded-xl overflow-hidden border border-border cursor-pointer hover:border-[#F97316]/50 transition-all hover:shadow-[0_0_20px_rgba(249,115,22,0.15)] text-left focus:outline-none focus:ring-2 focus:ring-[#F97316] focus:ring-offset-2 focus:ring-offset-background"
-    aria-label={`Zobraziť detail úlovku: ${Number(data.weight || 0).toFixed(2)} kg`}
+    aria-label={`Zobraziť detail úlovku: ${Number(data.weight || 0).toFixed(3)} kg`}
   >
     {data.photoUrl ? (
       <img
@@ -79,7 +79,7 @@ const CatchGridItem = ({ data, onClick }: { data: Catch; onClick: (c: Catch) => 
     <div className="absolute top-3 left-3 z-10">
       <span className="bg-[#F97316] text-white text-xs font-black px-2 py-0.5 rounded shadow-lg flex items-center gap-1">
         <Scale size={10} />
-        {Number(data.weight).toFixed(2)}
+        {Number(data.weight).toFixed(3)}
       </span>
     </div>
 
@@ -288,10 +288,10 @@ export default function TeamDetail() {
       <div className="container mx-auto px-4 py-8">
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-          <StatCard label="Celková váha" value={totalWeight.toFixed(2)} unit="kg" icon={Scale} />
+          <StatCard label="Celková váha" value={totalWeight.toFixed(3)} unit="kg" icon={Scale} />
           <StatCard label="Počet rýb" value={catchCount} unit="ks" icon={Fish} />
-          <StatCard label="Priemer" value={averageWeight.toFixed(2)} unit="kg" icon={Ruler} />
-          <StatCard label="Big Fish" value={biggestCatch ? Number(biggestCatch.weight).toFixed(2) : "-"} unit="kg" icon={Trophy} />
+          <StatCard label="Priemer" value={averageWeight.toFixed(3)} unit="kg" icon={Ruler} />
+          <StatCard label="Big Fish" value={biggestCatch ? Number(biggestCatch.weight).toFixed(3) : "-"} unit="kg" icon={Trophy} />
         </div>
 
         <div className="grid lg:grid-cols-3 gap-10">
@@ -459,7 +459,7 @@ export default function TeamDetail() {
                 {selectedPhoto && (
                   <div>
                     <div className="text-3xl font-black italic uppercase tracking-tighter drop-shadow-md">
-                      {Number(selectedPhoto.weight).toFixed(2)} kg
+                      {Number(selectedPhoto.weight).toFixed(3)} kg
                     </div>
                     <div className="flex items-center gap-3 text-sm font-bold text-slate-300 mt-1">
                       <span className="bg-[#F97316] text-white px-2 py-0.5 rounded text-[10px] uppercase shadow-sm">
