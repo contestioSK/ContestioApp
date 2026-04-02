@@ -62,7 +62,11 @@ export function calculateBasicStats(
     ? Math.max(...catches.map(c => parseFloat(c.weight))) 
     : 0;
   const totalTrips = trips.length;
-  const activeTripCount = trips.filter(t => new Date(t.endDate) >= new Date()).length;
+  const activeTripCount = trips.filter(t => {
+    const end = new Date(t.endDate);
+    end.setHours(23, 59, 59, 999);
+    return end >= new Date();
+  }).length;
   const successRate = totalTrips > 0 ? totalCatches / totalTrips : 0;
 
   return {
