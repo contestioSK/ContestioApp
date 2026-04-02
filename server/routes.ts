@@ -7694,8 +7694,11 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
       }
       
       // Server controls angler.userId, tripId (auto-assigned), battleId (auto-assigned), and verified status
+      // Auto-fill spot from trip.location if catch arrives without spot but has an active trip
+      const autoSpot = (!req.body.spot && trip) ? trip.location : req.body.spot;
       const catchData = {
         ...req.body,
+        spot: autoSpot,
         tripId: tripId || undefined, // Use auto-assigned tripId or undefined if no active trip
         battleId: battleId || undefined, // Use auto-assigned battleId or undefined if no active battle
         angler: {
