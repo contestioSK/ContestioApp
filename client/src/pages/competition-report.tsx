@@ -439,7 +439,7 @@ export default function CompetitionReport() {
                   <div className="flex items-center gap-2 mb-3">
                     <Medal size={16} className="text-amber-400" />
                     <span className="text-xs font-bold uppercase tracking-wider text-amber-400">
-                      Priemer TOP 3 úlovkov
+                      Váhový priemer TOP 3 úlovkov
                     </span>
                   </div>
                   <div className="flex items-end gap-1.5 mb-4">
