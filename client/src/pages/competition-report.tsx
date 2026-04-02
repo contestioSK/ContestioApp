@@ -449,21 +449,24 @@ export default function CompetitionReport() {
                     <span className="text-sm text-amber-400 mb-1">kg</span>
                   </div>
                   <div className="space-y-2">
-                    {overviewStats.top3.map((c: any, i: number) => (
-                      <div key={i} className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className={`font-mono font-bold text-xs w-5 shrink-0 ${i === 0 ? 'text-amber-400' : i === 1 ? 'text-slate-400' : 'text-orange-700'}`}>
-                            #{i + 1}
-                          </span>
-                          <span className="text-xs text-foreground truncate">
-                            {(c.team as any)?.name || "—"}
+                    {overviewStats.top3.map((c, i) => {
+                      const catchTeam = (teams || []).find((t) => t.id === c.teamId);
+                      return (
+                        <div key={i} className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className={`font-mono font-bold text-xs w-5 shrink-0 ${i === 0 ? 'text-amber-400' : i === 1 ? 'text-slate-400' : 'text-orange-700'}`}>
+                              #{i + 1}
+                            </span>
+                            <span className="text-xs text-foreground truncate">
+                              {catchTeam?.name || "—"}
+                            </span>
+                          </div>
+                          <span className="font-mono font-medium text-xs text-[#F97316] shrink-0 ml-2">
+                            {safeWeight(c.weight).toFixed(3)} kg
                           </span>
                         </div>
-                        <span className="font-mono font-medium text-xs text-[#F97316] shrink-0 ml-2">
-                          {safeWeight(c.weight).toFixed(3)} kg
-                        </span>
-                      </div>
-                    ))}
+                      );
+                    })}
                     {overviewStats.top3.length === 0 && (
                       <p className="text-xs text-muted-foreground">Žiadne úlovky</p>
                     )}

@@ -590,7 +590,7 @@ export default function CatchFormDialog({
       });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editingCatch?.id, isOpen, activeTrip?.location]);
+  }, [editingCatch?.id, isOpen]);
 
   // Toggle favorite bait mutation
   const toggleFavoriteMutation = useMutation({
