@@ -509,7 +509,9 @@ export default function DiaryTrips() {
       : sortedTrips;
     
     filteredTrips.forEach((trip) => {
-      if (new Date(trip.endDate) >= now) {
+      const tripEnd = new Date(trip.endDate);
+      tripEnd.setHours(23, 59, 59, 999);
+      if (tripEnd >= now) {
         active.push(trip);
       } else {
         finished.push(trip);
@@ -662,7 +664,13 @@ export default function DiaryTrips() {
                       <Calendar
                         mode="single"
                         selected={field.value}
-                        onSelect={field.onChange}
+                        onSelect={(date) => {
+                          if (date) {
+                            const endOfDay = new Date(date);
+                            endOfDay.setHours(23, 59, 59, 999);
+                            field.onChange(endOfDay);
+                          }
+                        }}
                         disabled={(date) => date < new Date("1900-01-01")}
                         initialFocus
                       />
