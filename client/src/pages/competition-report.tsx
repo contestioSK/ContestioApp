@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import {
   ChevronLeft, PieChart, BarChart3,
-  LayoutList, Activity, Target, Trophy, Mic,
+  LayoutList, Activity, Target, Trophy, Mic, Medal,
 } from "lucide-react";
 import StatsDashboard from "@/components/stats-dashboard";
 import { TeamAverageTable } from "@/components/stats-dashboard/charts/team-average-table";
@@ -15,36 +15,6 @@ import { useVisibilityAwarePolling, POLLING_INTERVALS, STALE_TIMES } from "@/hoo
 import type { Competition, Team, Catch } from "@shared/schema";
 
 // ---- INLINE HELPER COMPONENTS ----
-
-const DistributionRow = ({
-  label,
-  count,
-  maxCount,
-  colorClass,
-  bgClass,
-}: {
-  label: string;
-  count: number;
-  maxCount: number;
-  colorClass: string;
-  bgClass: string;
-}) => {
-  const percentage = count > 0 ? (count / maxCount) * 100 : 0;
-  return (
-    <div className="flex items-center gap-3 text-sm">
-      <span className="w-16 font-mono text-muted-foreground text-xs">{label}</span>
-      <div className="flex-1 h-5 bg-background rounded-md overflow-hidden relative border border-border/30">
-        <div
-          className={`absolute top-0 left-0 h-full rounded-md transition-all duration-1000 ${bgClass}`}
-          style={{ width: `${percentage}%` }}
-        />
-      </div>
-      <span className={`w-6 text-right font-bold text-sm ${count > 0 ? colorClass : "text-muted-foreground/40"}`}>
-        {count}
-      </span>
-    </div>
-  );
-};
 
 const SectorTable = ({
   sector,
@@ -161,25 +131,10 @@ export default function CompetitionReport() {
   const overviewStats = useMemo(() => {
     if (!catches || catches.length === 0) return null;
 
-    const weightDistribution = { under10: 0, tier10to15: 0, tier15to20: 0, tier20to25: 0, over25: 0 };
     let biggestFishCatch = catches[0];
-
     catches.forEach((c) => {
-      const w = safeWeight(c.weight);
-      if (w > safeWeight(biggestFishCatch.weight)) biggestFishCatch = c;
-      if (w < 10) weightDistribution.under10++;
-      else if (w < 15) weightDistribution.tier10to15++;
-      else if (w < 20) weightDistribution.tier15to20++;
-      else if (w < 25) weightDistribution.tier20to25++;
-      else weightDistribution.over25++;
+      if (safeWeight(c.weight) > safeWeight(biggestFishCatch.weight)) biggestFishCatch = c;
     });
-
-    const maxInTier = Math.max(
-      weightDistribution.tier10to15,
-      weightDistribution.tier15to20,
-      weightDistribution.tier20to25,
-      weightDistribution.over25,
-    ) || 1;
 
     const sortedByWeight = [...catches].sort((a, b) => safeWeight(b.weight) - safeWeight(a.weight));
     const top5 = sortedByWeight.slice(0, 5);
@@ -191,7 +146,7 @@ export default function CompetitionReport() {
     const scalyCount = catches.filter((c) => c.fishType === "scaly").length;
     const scalyPct = catches.length > 0 ? Math.round((scalyCount / catches.length) * 100) : 0;
 
-    return { weightDistribution, maxInTier, top5Avg, top3, top3Avg, scalyPct, biggestFishCatch };
+    return { top5Avg, top3, top3Avg, scalyPct, biggestFishCatch };
   }, [catches]);
 
   // 2-hour activity buckets (weight sum)
@@ -478,43 +433,40 @@ export default function CompetitionReport() {
             {overviewStats ? (
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
 
-                {/* 1. Váhová pyramída */}
-                <div className="bg-card border border-border/50 rounded-xl p-5 hover:border-border transition-colors">
-                  <div className="flex items-center gap-2 mb-4">
-                    <BarChart3 size={16} className="text-rose-400" />
-                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                      Váhová pyramída
+                {/* 1. Váhový priemer TOP 3 úlovkov */}
+                <div className="bg-card border border-amber-500/20 rounded-xl p-5 hover:border-amber-500/40 transition-colors relative overflow-hidden">
+                  <Medal className="absolute -right-2 -bottom-2 w-16 h-16 text-amber-500/8" />
+                  <div className="flex items-center gap-2 mb-3">
+                    <Medal size={16} className="text-amber-400" />
+                    <span className="text-xs font-bold uppercase tracking-wider text-amber-400">
+                      Priemer TOP 3 úlovkov
                     </span>
                   </div>
-                  <div className="space-y-2.5">
-                    <DistributionRow
-                      label="25+ kg"
-                      count={overviewStats.weightDistribution.over25}
-                      maxCount={overviewStats.maxInTier}
-                      colorClass="text-purple-400"
-                      bgClass="bg-purple-500"
-                    />
-                    <DistributionRow
-                      label="20–25 kg"
-                      count={overviewStats.weightDistribution.tier20to25}
-                      maxCount={overviewStats.maxInTier}
-                      colorClass="text-rose-400"
-                      bgClass="bg-rose-500"
-                    />
-                    <DistributionRow
-                      label="15–20 kg"
-                      count={overviewStats.weightDistribution.tier15to20}
-                      maxCount={overviewStats.maxInTier}
-                      colorClass="text-amber-400"
-                      bgClass="bg-amber-500"
-                    />
-                    <DistributionRow
-                      label="10–15 kg"
-                      count={overviewStats.weightDistribution.tier10to15}
-                      maxCount={overviewStats.maxInTier}
-                      colorClass="text-emerald-400"
-                      bgClass="bg-emerald-500"
-                    />
+                  <div className="flex items-end gap-1.5 mb-4">
+                    <span className="text-4xl font-mono font-bold text-foreground">
+                      {overviewStats.top3Avg.toFixed(3)}
+                    </span>
+                    <span className="text-sm text-amber-400 mb-1">kg</span>
+                  </div>
+                  <div className="space-y-2">
+                    {overviewStats.top3.map((c: any, i: number) => (
+                      <div key={i} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className={`font-mono font-bold text-xs w-5 shrink-0 ${i === 0 ? 'text-amber-400' : i === 1 ? 'text-slate-400' : 'text-orange-700'}`}>
+                            #{i + 1}
+                          </span>
+                          <span className="text-xs text-foreground truncate">
+                            {(c.team as any)?.name || "—"}
+                          </span>
+                        </div>
+                        <span className="font-mono font-medium text-xs text-[#F97316] shrink-0 ml-2">
+                          {safeWeight(c.weight).toFixed(3)} kg
+                        </span>
+                      </div>
+                    ))}
+                    {overviewStats.top3.length === 0 && (
+                      <p className="text-xs text-muted-foreground">Žiadne úlovky</p>
+                    )}
                   </div>
                 </div>
 
