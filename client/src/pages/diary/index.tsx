@@ -220,11 +220,15 @@ export default function DiaryIndex() {
     enabled: !!user
   });
 
-  // Find most recent active trip (endDate >= now)
+  // Find most recent active trip (endDate >= now, comparing end of day)
   const activeTrip = useMemo(() => {
     const now = new Date();
     return trips
-      .filter(t => new Date(t.endDate) >= now)
+      .filter(t => {
+        const end = new Date(t.endDate);
+        end.setHours(23, 59, 59, 999);
+        return end >= now;
+      })
       .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime())[0];
   }, [trips]);
 

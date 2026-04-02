@@ -274,7 +274,7 @@ export default function TripDetail() {
                 {isExporting ? "Generujem vizuál…" : "Vytvoriť vizuál"}
               </Button>
 
-              {trip && new Date(trip.endDate) >= new Date() && (
+              {trip && (() => { const e = new Date(trip.endDate); e.setHours(23,59,59,999); return e >= new Date(); })() && (
                 <Button
                   variant="ghost"
                   onClick={() => setShowEndTripDialog(true)}
@@ -305,7 +305,7 @@ export default function TripDetail() {
                   <Share2 className="w-4 h-4 mr-2" />
                   {isExporting ? "Generujem vizuál…" : "Vytvoriť vizuál"}
                 </DropdownMenuItem>
-                {trip && new Date(trip.endDate) >= new Date() && (
+                {trip && (() => { const e = new Date(trip.endDate); e.setHours(23,59,59,999); return e >= new Date(); })() && (
                   <>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem 
@@ -333,7 +333,7 @@ export default function TripDetail() {
                     <h1 className="text-3xl md:text-4xl lg:text-5xl font-black italic text-foreground tracking-tight" data-testid="text-trip-name">
                       {trip.name}
                     </h1>
-                    {new Date(trip.endDate) < new Date() ? (
+                    {(() => { const e = new Date(trip.endDate); e.setHours(23,59,59,999); return e < new Date(); })() ? (
                       <Badge variant="secondary" className="text-xs border border-border/50">
                         Ukončená
                       </Badge>
