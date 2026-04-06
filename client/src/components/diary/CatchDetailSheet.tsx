@@ -23,7 +23,7 @@ export interface CatchDetailSheetProps {
   onDelete?: (catch_: DiaryCatch) => void;
   onOpenFullPage: (catchId: string) => void;
   onOpenLightbox: (photos: string[], index: number) => void;
-  onRetryPhoto?: (catchId: string, photoId: string, file: File) => void;
+  onRetryPhoto?: (catchId: string, photoId: string, file: File) => Promise<boolean> | void;
 }
 
 export function CatchDetailSheet({

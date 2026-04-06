@@ -554,7 +554,7 @@ export default function DiaryIndex() {
     setIsCreateCatchOpen(true);
   };
 
-  const handleRetryPhoto = async (catchId: string, photoId: string, newFile: File) => {
+  const handleRetryPhoto = async (catchId: string, photoId: string, newFile: File): Promise<boolean> => {
     try {
       const formData = new FormData();
       formData.append('photos', newFile);
@@ -574,31 +574,48 @@ export default function DiaryIndex() {
       const newPhoto = newPhotos?.[0];
       if (!newPhoto) throw new Error('Žiadna fotka v odpovedi');
 
-      const catchPhotos: any[] = selectedCatch?.photos || [];
+      // Fetch current catch photos from server (not from mutable selectedCatch state)
+      // This avoids race conditions if the sheet was closed or another catch selected
+      const catchRes = await fetch(`/api/diary/catches/${catchId}`, { credentials: 'include' });
+      const catchData = catchRes.ok ? await catchRes.json() : null;
+      const catchPhotos: any[] = catchData?.photos || [];
 
-      const updatedPhotos = catchPhotos.map((p: any) => {
+      // If the target photo is not found in the catch, it may have been removed already
+      const hasPhoto = catchPhotos.some((p: any) => {
         const pid = typeof p === 'string' ? p : String(p.id);
-        if (pid === String(photoId)) {
-          const { _processingInfo: _, ...clean } = newPhoto;
-          return clean;
-        }
-        return p;
+        return pid === String(photoId);
       });
+
+      const updatedPhotos = hasPhoto
+        ? catchPhotos.map((p: any) => {
+            const pid = typeof p === 'string' ? p : String(p.id);
+            if (pid === String(photoId)) {
+              const { _processingInfo: _, ...clean } = newPhoto;
+              return clean;
+            }
+            return p;
+          })
+        : [...catchPhotos, (() => { const { _processingInfo: _, ...clean } = newPhoto; return clean; })()];
 
       await apiRequest('PUT', `/api/diary/catches/${catchId}`, { photos: updatedPhotos });
       queryClient.invalidateQueries({ queryKey: ['/api/diary/catches/all'] });
 
-      if (selectedCatch && selectedCatch.id === catchId) {
-        setSelectedCatch((prev: any) => prev ? { ...prev, photos: updatedPhotos } : prev);
-      }
+      setSelectedCatch((prev: any) => {
+        if (prev && prev.id === catchId) {
+          return { ...prev, photos: updatedPhotos };
+        }
+        return prev;
+      });
 
       toast({ title: 'Fotka nahradená', description: 'Nová fotografia bola úspešne nahratá.' });
+      return true;
     } catch (err: any) {
       toast({
         title: 'Chyba pri nahrávaní',
         description: err?.message || 'Nepodarilo sa nahrať novú fotku. Skúste to znova.',
         variant: 'destructive',
       });
+      return false;
     }
   };
 
