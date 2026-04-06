@@ -154,18 +154,40 @@ export class PhotoJobQueue extends EventEmitter {
         console.warn(`[PhotoQueue] No variants created for ${job.photoId}, keeping original`);
       }
 
+      // Guard: only accept HTTPS URLs — local paths must never reach the DB
+      const bestUrl = bestVariant?.url;
+      const resolvedUrl =
+        bestUrl?.startsWith('https://') ? bestUrl :
+        originalUrl?.startsWith('https://') ? originalUrl :
+        null;
+
+      if (!resolvedUrl) {
+        console.error('[IMAGE_UPLOAD_FAILED]', {
+          photoId: job.photoId,
+          userId: job.userId,
+          reason: 'No HTTPS URL produced — all Firebase uploads failed',
+          bestVariantUrl: bestUrl,
+          originalUrl,
+        });
+      }
+
       return {
         photoId: job.photoId,
         catchId: job.catchId,
-        status: 'ready',
-        // Prefer best variant URL; fall back to Firebase original URL (never empty string)
-        url: bestVariant?.url || originalUrl || '',
+        status: resolvedUrl ? 'ready' : 'failed',
+        url: resolvedUrl || '',
         originalUrl,
         variants: imageMetadata.variants,
-        placeholder: imageMetadata.placeholder
+        placeholder: imageMetadata.placeholder,
+        error: resolvedUrl ? undefined : 'Firebase upload produced no valid HTTPS URL'
       };
-    } catch (error) {
-      console.error(`[PhotoQueue] Processing failed for job ${job.id}:`, error);
+    } catch (error: any) {
+      console.error('[IMAGE_UPLOAD_FAILED]', {
+        photoId: job.photoId,
+        userId: job.userId,
+        jobId: job.id,
+        reason: error?.message || 'Unknown error',
+      });
       // Don't delete original on failure - it can be used as fallback
       throw error;
     }

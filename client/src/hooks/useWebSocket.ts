@@ -218,6 +218,22 @@ export function useWebSocket(onMessage?: (data: WebSocketMessage) => void) {
               });
               break;
               
+            // Diary photo processing result
+            case 'diary_photo_processed':
+              console.log(`[WS] Photo processed: ${data.photoId}, status: ${data.status}`);
+              queryClient.invalidateQueries({ queryKey: ['/api/diary/catches'] });
+              queryClient.invalidateQueries({ queryKey: ['/api/diary/trips'] });
+              if (data.status === 'failed') {
+                toast({
+                  title: "Fotka sa nepodarila spracovať",
+                  description: "Skúste fotografiu nahrať znova.",
+                  variant: "destructive",
+                  duration: 6000,
+                });
+              }
+              if (onMessage) onMessage(data);
+              break;
+
             default:
               console.log(`WebSocket: Unhandled event type: ${data.type}`);
               break;

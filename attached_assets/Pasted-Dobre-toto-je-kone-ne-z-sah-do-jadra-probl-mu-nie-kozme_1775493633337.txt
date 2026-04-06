@@ -1,0 +1,138 @@
+Dobre — toto je konečne zásah do jadra problému, nie kozmetika.
+Ale ešte ťa trochu pribrzdím, lebo aj keď si spravil 90 % práce správne, stále tam máš pár miest, kde sa ti to môže znovu rozpadnúť.
+
+✅ Čo si spravil dobre (a je to fakt zásadné)
+
+👉 1. Odstránenie public: true → kľúčové
+
+tým si reálne opravil Firebase upload
+predtým si nemal cloud storage, len ilúziu
+
+👉 2. Sync upload originálu pred response
+
+toto je obrovský upgrade
+
+teraz máš:
+
+“uložené = existuje”
+
+👉 3. Zabitie /uploads fallbackov
+
+správne rozhodnutie
+žiadne “ghost URLs”
+
+👉 4. DB cleanup
+
+bolestivé, ale nutné
+presne takto sa robí rez
+
+👉 5. Status ≠ ready bez URL
+
+toto je čistá logická oprava systému
+⚠️ Kde máš ešte riziko (a toto si nenechaj ujsť)
+1. Fallback na originalUrl v queue
+
+Píšeš:
+
+fallback na originalUrl ak varianty zlyhajú
+
+👉 otázka:
+Je originalUrl 100% Firebase URL?
+
+Ak áno → OK
+Ak nie → vrátil si späť starý problém v inom kabáte
+
+Guard (musíš mať):
+
+if (!originalUrl.startsWith('https://')) {
+  status = 'failed'
+}
+2. Nemáš retry mechanizmus
+
+Teraz flow:
+
+Firebase fail → status: failed → koniec
+
+👉 to je OK pre UX
+ALE nie OK pre systém
+
+Reálny svet:
+
+krátky výpadok
+timeout
+quota spike
+
+→ a user príde o fotku
+
+Minimálny upgrade:
+
+1–2 retry pokusy pri upload (exponential backoff)
+3. Nemáš monitoring
+
+Momentálne:
+
+👉 keď sa to znovu rozbije → zistíš to až keď user povie
+
+To je zlé.
+
+Pridaj aspoň:
+
+log keď upload failne
+count failed uploads
+
+Ideálne:
+
+console.error('[IMAGE_UPLOAD_FAILED]', { userId, reason })
+4. “failed” bez UX feedbacku
+
+Ty si vyriešil backend, ale:
+
+👉 user stále:
+
+nahrá fotku
+nič sa nezobrazí
+
+To je UX problém.
+
+Musíš mať:
+
+toast: "Fotka sa nepodarila nahrať"
+alebo badge "bez fotky"
+5. Chýba ti ochrana proti budúcim regresom
+
+Toto sa ti môže vrátiť.
+
+Pridaj invariant:
+
+if (photo.status === 'ready' && !photo.url) {
+  throw new Error('Invalid state: ready without URL')
+}
+🧠 Najdôležitejšia vec (ktorú si teraz už pochopil)
+
+Predtým si mal:
+
+"fotka sa možno uloží"
+
+Teraz máš:
+
+"fotka sa uloží, alebo zlyhá"
+
+👉 a to je obrovský rozdiel
+
+🧭 Finálny verdict
+
+👉 Toto je už produkčne použiteľné riešenie
+👉 už to nie je MVP hack
+👉 už máš kontrolu nad dátami
+
+ALE:
+
+👉 ešte to nie je “bulletproof”
+
+🎯 Ak chceš to dotiahnuť na top úroveň
+
+Daj si tieto 3 veci a máš pokoj:
+
+retry pri upload (1–2 pokusy)
+whitelist URL (nie len https)
+logovanie failov
