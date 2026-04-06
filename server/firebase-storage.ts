@@ -30,26 +30,40 @@ export interface UploadResult {
   storagePath: string;
 }
 
-export async function uploadToFirebase(
-  localFilePath: string,
-  destinationPath: string,
-  contentType?: string
-): Promise<UploadResult> {
-  if (!bucket) {
-    throw new Error('Firebase Storage not configured');
+/**
+ * Retry helper with exponential backoff.
+ * Attempts: 1s delay → 2s delay → final failure.
+ */
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  maxAttempts: number = 3,
+  label: string = ''
+): Promise<T> {
+  let lastError: any;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await fn();
+    } catch (err: any) {
+      lastError = err;
+      if (attempt < maxAttempts) {
+        const delayMs = 1000 * Math.pow(2, attempt - 1);
+        console.warn(
+          `[Firebase] Upload attempt ${attempt}/${maxAttempts} failed for "${label}", retrying in ${delayMs}ms:`,
+          err?.message
+        );
+        await new Promise(r => setTimeout(r, delayMs));
+      }
+    }
   }
-
-  await bucket.upload(localFilePath, {
-    destination: destinationPath,
-    metadata: {
-      contentType: contentType || 'image/jpeg',
-      cacheControl: 'public, max-age=31536000',
-    },
+  console.error('[IMAGE_UPLOAD_FAILED]', {
+    label,
+    reason: lastError?.message || 'Unknown error',
+    attempts: maxAttempts,
   });
+  throw lastError;
+}
 
-  const file = bucket.file(destinationPath);
-  
-  // Try to make public, but continue if bucket uses uniform access control
+async function makePublicSafe(file: any, destinationPath: string): Promise<void> {
   try {
     await file.makePublic();
   } catch (error: any) {
@@ -59,6 +73,31 @@ export async function uploadToFirebase(
       console.warn(`[Firebase] makePublic failed for ${destinationPath}:`, error?.message);
     }
   }
+}
+
+export async function uploadToFirebase(
+  localFilePath: string,
+  destinationPath: string,
+  contentType?: string
+): Promise<UploadResult> {
+  if (!bucket) {
+    throw new Error('Firebase Storage not configured');
+  }
+
+  await withRetry(
+    () => bucket.upload(localFilePath, {
+      destination: destinationPath,
+      metadata: {
+        contentType: contentType || 'image/jpeg',
+        cacheControl: 'public, max-age=31536000',
+      },
+    }),
+    3,
+    destinationPath
+  );
+
+  const file = bucket.file(destinationPath);
+  await makePublicSafe(file, destinationPath);
 
   const publicUrl = `https://storage.googleapis.com/${bucket.name}/${destinationPath}`;
 
@@ -78,24 +117,19 @@ export async function uploadBufferToFirebase(
   }
 
   const file = bucket.file(destinationPath);
-  
-  await file.save(buffer, {
-    metadata: {
-      contentType,
-      cacheControl: 'public, max-age=31536000',
-    },
-  });
 
-  // Try to make public, but continue if bucket uses uniform access control
-  try {
-    await file.makePublic();
-  } catch (error: any) {
-    if (error?.code === 403 || error?.message?.includes('uniform bucket-level access')) {
-      console.log(`[Firebase] Bucket uses uniform access - skipping makePublic for ${destinationPath}`);
-    } else {
-      console.warn(`[Firebase] makePublic failed for ${destinationPath}:`, error?.message);
-    }
-  }
+  await withRetry(
+    () => file.save(buffer, {
+      metadata: {
+        contentType,
+        cacheControl: 'public, max-age=31536000',
+      },
+    }),
+    3,
+    destinationPath
+  );
+
+  await makePublicSafe(file, destinationPath);
 
   const publicUrl = `https://storage.googleapis.com/${bucket.name}/${destinationPath}`;
 
