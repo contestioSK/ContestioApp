@@ -1,0 +1,296 @@
+Dobre. Toto je už konečne seriózna robota. Ale teraz ťa trošku zabrzdím, lebo tu je presne ten moment, kde si väčšina ľudí povie „hotovo“ — a práve tu sa robia chyby.
+
+✅ Čo máš teraz naozaj dobré
+
+Toto nie je pochvala, toto je konštatovanie:
+
+máš retry → znížil si náhodné fails
+máš guardy → zastavil si nekonzistentné dáta
+máš UX feedback → user už nie je slepý
+máš logovanie → vieš debugovať
+
+👉 toto už nie je MVP hack, toto je systém
+
+⚠️ Ale teraz realita — kde si stále zraniteľný
+1. Retry ≠ spoľahlivosť
+
+3 pokusy (1s → 2s) znie pekne, ale:
+
+👉 čo keď:
+
+Firebase má výpadok 10–30 sekúnd
+alebo rate limit spike
+
+→ stále failneš
+
+Realita:
+Retry rieši náhodu, nie systémový problém
+
+👉 Ty nemáš:
+
+queue retry neskôr
+ani reprocess
+
+Dôsledok:
+fotka = lost forever
+
+2. “failed” je slepá ulička
+
+Teraz flow:
+
+upload fail → status: failed
+toast → koniec
+
+👉 čo spraví user?
+
+nič
+alebo odíde
+
+To je slabé.
+
+Chýba ti:
+👉 možnosť “retry upload” z UI
+
+Bez toho:
+
+máš technicky správny systém
+ale UX je slabý
+3. WebSocket toast je len symptom fix
+
+Toast je fajn, ale:
+
+👉 máš stále závislosť na WS
+
+čo keď:
+
+WS spadne (a ty už vieš, že padá)
+user reloadne
+user otvorí appku neskôr
+
+→ toast nikdy neuvidí
+
+Chýba ti:
+👉 UI stav podľa DB, nie podľa eventu
+
+4. Nemáš ochranu proti tichému degradovaniu
+
+Ty síce loguješ:
+
+[IMAGE_UPLOAD_FAILED]
+
+Ale:
+
+👉 kto to sleduje?
+
+Ak:
+
+začne failovať 30 % uploadov
+
+→ ty to nezistíš
+
+Minimum čo potrebuješ:
+
+count failed uploads / min
+alebo aspoň alert threshold
+5. Najväčší problém — mentálny
+
+Tu ťa zastavím najviac.
+
+Ty riešiš:
+
+“aby sa to nepokazilo”
+
+Ale mal by si riešiť:
+
+“čo keď sa to pokazí?”
+
+To je rozdiel medzi:
+
+dev mindset
+produkčný mindset
+🎯 Čo by som spravil ja (jedna vec, vysoký ROI)
+
+Nechcem ti dávať 10 nápadov. Toto je ten jeden:
+
+👉 Pridaj manuálny retry upload tlačidlo
+
+Prečo?
+
+nulová infra náročnosť
+okamžitý UX upgrade
+eliminuješ “lost forever” scenár
+🔥 Real talk
+
+To čo si spravil:
+
+👉 odstránil si najväčší trust killer v appke
+
+(lebo broken fotky = instant strata dôvery)
+
+Ale:
+
+👉 ešte si nepostavil resilient systém
+
+🧭 Verdikt
+technicky: ✔️ veľmi dobré
+produkčne: ⚠️ ešte nie úplne safe
+UX: ⚠️ stále slabé miesto pri failoch
+Posledná otázka na teba (tá podstatná)
+
+👉 Čo sa má stať, keď upload failne?
+
+Vyber si jednu:
+
+user to musí retry manuálne
+systém to retryne neskôr automaticky
+fotka je stratená
+
+Ak odpovieš „3“, klameš si — to je presne ten typ veci, kvôli ktorej ľudia appku opustia.
+
+Ak chceš, ďalší krok viem spraviť s tebou:
+
+👉 navrhnem ti minimal viable retry UX, ktorý ti zlepší retention bez zložitej infra.
+
+To je teraz najväčší ROI krok.
+
+1
+
+Dobre. To je správna voľba. Ale teraz to sprav poriadne — nie polovičato.
+
+Manuálny retry nie je „tlačidlo navyše“. Je to záchranná brzda pre dôveru používateľa.
+
+🎯 Cieľ (jasne definovaný)
+
+Keď upload zlyhá:
+
+👉 user NESMIE:
+
+stratiť fotku
+byť zmätený
+odísť z appky
+
+👉 user MUSÍ:
+
+vidieť čo sa stalo
+mať kontrolu
+vedieť to opraviť na 1 klik
+🔥 Najlepší možný návrh (bez zbytočného balastu)
+1. UI stav — žiadne kompromisy
+
+Pri status: 'failed':
+
+zobraz náhľad fotky (ak ho máš)
+overlay:
+❌ „Nepodarilo sa nahrať“
+tlačidlo: „Skúsiť znova“
+
+👉 NIE spinner
+👉 NIE prázdne miesto
+👉 NIE len toast
+
+To je zásadná chyba, ktorú robí väčšina appiek.
+
+2. Kľúčový problém, ktorý musíš vyriešiť
+
+👉 Ty už NEMÁŠ pôvodný súbor
+
+(lebo ho mažeš po sanitize — správne z pohľadu security)
+
+Takže máš 2 možnosti:
+
+❌ Zlá cesta (ľudia ju robia automaticky)
+
+Retry = „pošli request znova“
+
+→ FAIL, lebo:
+
+file už neexistuje
+user musí znova vyberať
+
+UX katastrofa
+
+✅ Správna cesta
+
+👉 drž si file reference v pamäti (frontend)
+
+napr.:
+
+type PendingPhoto = {
+  id: string
+  file: File
+  previewUrl: string
+  status: 'processing' | 'failed'
+}
+3. Retry flow (presne)
+
+Keď klikne „Skúsiť znova“:
+
+vezmeš uložený file
+znovu zavoláš upload endpoint
+prepneš status → processing
+čakáš WS / response
+
+👉 bez ďalšieho výberu súboru
+
+4. Edge case, ktorý nesmieš ignorovať
+
+👉 user refreshne stránku
+
+→ file v pamäti je preč
+
+Riešenie:
+
+fallback:
+„Fotku sa nepodarilo nahrať. Prosím, vyber ju znova.“
+
+👉 nič komplikovanejšie netreba
+
+5. Backend — nič nemeníš (a to je pointa)
+
+To je krása tohto riešenia:
+
+👉 backend máš OK
+👉 retry riešiš 100 % na FE
+
+⚠️ Kritická chyba, ktorej sa vyhni
+
+Neurob toto:
+
+„retry = znova spracuj existujúcu DB fotku“
+
+To je nezmysel, lebo:
+
+nemáš source file
+máš len URL (ktorá môže byť null)
+📉 ROI pohľad (to čo ťa má zaujímať)
+
+Bez retry:
+
+user stratí fotku → frustrácia → odchod
+
+S retry:
+
+user klikne → fixne → pokračuje
+
+👉 rozdiel medzi:
+
+„buggy app“
+„spoľahlivý nástroj“
+🧠 Tvrdá pravda
+
+Ty teraz neriešiš technický problém.
+
+👉 riešiš dôveru
+
+A dôvera sa rozbije:
+
+nie keď appka padne
+ale keď user príde o obsah
+🎯 Verdikt
+
+Toto je:
+
+👉 najvyšší ROI feature, ktorú teraz môžeš spraviť
+
+malý effort
+obrovský dopad
