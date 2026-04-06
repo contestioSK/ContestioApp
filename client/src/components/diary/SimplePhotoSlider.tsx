@@ -14,7 +14,7 @@ type PhotoObject = {
 interface SimplePhotoSliderProps {
   photos: (string | PhotoObject)[];
   onPhotoClick: (photo: string, index: number) => void;
-  onRetryPhoto?: (photoId: string, file: File) => void;
+  onRetryPhoto?: (photoId: string, file: File) => Promise<boolean> | void;
 }
 
 export function SimplePhotoSlider({ photos, onPhotoClick, onRetryPhoto }: SimplePhotoSliderProps) {
@@ -80,12 +80,27 @@ export function SimplePhotoSlider({ photos, onPhotoClick, onRetryPhoto }: Simple
     fileInputRefs.current[photoId]?.click();
   }, []);
 
-  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>, photoId: string) => {
+  const handleFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>, photoId: string) => {
     const file = e.target.files?.[0];
     if (!file || !onRetryPhoto) return;
-    setRetryingIds(prev => new Set(prev).add(photoId));
-    onRetryPhoto(photoId, file);
     e.target.value = '';
+    setRetryingIds(prev => new Set(prev).add(photoId));
+    try {
+      const result = await onRetryPhoto(photoId, file);
+      if (result === false) {
+        setRetryingIds(prev => {
+          const next = new Set(prev);
+          next.delete(photoId);
+          return next;
+        });
+      }
+    } catch {
+      setRetryingIds(prev => {
+        const next = new Set(prev);
+        next.delete(photoId);
+        return next;
+      });
+    }
   }, [onRetryPhoto]);
 
   if (photos.length === 0) return null;
