@@ -158,7 +158,8 @@ export class PhotoJobQueue extends EventEmitter {
         photoId: job.photoId,
         catchId: job.catchId,
         status: 'ready',
-        url: bestVariant?.url || '',
+        // Prefer best variant URL; fall back to Firebase original URL (never empty string)
+        url: bestVariant?.url || originalUrl || '',
         originalUrl,
         variants: imageMetadata.variants,
         placeholder: imageMetadata.placeholder

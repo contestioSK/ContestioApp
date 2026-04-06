@@ -1,0 +1,81 @@
+Potrebujem od teba hĺbkový debugging a analýzu problému so systémom fotiek v aplikácii.
+
+Kontext:
+Vyvíjam aplikáciu Contestio (rybársky denník + súťaže). Nedávno sme refaktorovali upload pipeline kvôli bezpečnosti (EXIF strip, odstránenie /uploads fallbackov, prechod na Firebase ako jediné trvalé úložisko).
+
+Zmeny, ktoré prebehli:
+
+- Zavedená sanitizeToFile() → Sharp .rotate() + .withMetadata(false) + konverzia na JPEG
+- Odstránený fallback na /uploads (lokálne súbory sa už nesmú používať ako finálne URL)
+- Všetky fotky majú ísť cez ImageService.processImage() → Firebase
+- Reaper bol upravený: už nesmie nastavovať url = originalUrl, ale status: 'failed'
+- Upload endpoint teraz vracia iba sanitizované súbory
+
+Problém:
+Pri reálnom testovaní:
+
+- Úlovky sa načítajú správne
+- Fotky sú broken (nenačítajú sa)
+- Predtým fungovali (pred refaktorom)
+- Po redeploy sú staršie fotky nedostupné
+
+Toto je kritický problém – fotka sa nesmie nikdy "stratiť" po tom, čo bola raz uložená.
+
+Tvoja úloha:
+Nechcem návrhy. Chcem presnú diagnostiku.
+
+1. Skontroluj celý flow fotky:
+   upload → sanitize → processImage → Firebase → DB → frontend render
+
+2. Identifikuj všetky miesta, kde môže vzniknúť broken image:
+   
+   - zlá URL v DB (napr. /uploads)
+   - Firebase upload zlyhal, ale URL sa aj tak uložila
+   - rozdiel medzi url vs originalUrl vs variants
+   - frontend očakáva inú štruktúru než backend vracia
+
+3. Over konkrétne:
+   
+   - či sa do DB ukladajú iba Firebase URL (žiadne /uploads)
+   - či processImage() vždy vracia validnú URL alebo null
+   - či existuje situácia, kde sa uloží catch bez validnej fotky, ale UI očakáva že existuje
+   - či PhotoJobQueue alebo upload flow nemení URL po uložení
+
+4. Skontroluj kompatibilitu:
+   
+   - staré dáta (pred refaktorom) vs nové dáta
+   - či frontend vie spracovať obe štruktúry
+
+5. Skontroluj frontend:
+   
+   - ktorý field sa reálne používa (url? variants? originalUrl?)
+   - čo sa stane keď je null alebo undefined
+   - či existuje fallback alebo sa rovno renderuje broken <img>
+
+6. Výstup:
+   Chcem konkrétny zoznam problémov vo formáte:
+
+PROBLÉM:
+(priama príčina)
+
+KDE:
+(súbor + riadok alebo časť flow)
+
+PREČO:
+(prečo sa to deje)
+
+DÔKAZ:
+(čo v kóde to potvrdzuje)
+
+FIX:
+(konkrétny zásah – nie všeobecná rada)
+
+Dôležité:
+
+- Nerob žiadne zmeny v kóde bez toho, aby si najprv identifikoval presnú príčinu
+- Nehľadaj hypotézy – over kód
+- Zaujímajú ma reálne bugy, nie "možné scenáre"
+
+Cieľ:
+Nájsť presný bod, kde sa rozpadá garancia:
+"uložená fotka = vždy dostupná fotka"
