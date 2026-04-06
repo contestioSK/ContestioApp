@@ -555,6 +555,8 @@ export default function DiaryIndex() {
   };
 
   const handleRetryPhoto = async (catchId: string, photoId: string, newFile: File): Promise<boolean> => {
+    type StoredPhoto = { id: string | number; url: string; originalUrl?: string; status?: string; variants?: unknown[]; _processingInfo?: unknown };
+
     try {
       const formData = new FormData();
       formData.append('photos', newFile);
@@ -570,37 +572,36 @@ export default function DiaryIndex() {
         throw new Error('Upload zlyhal');
       }
 
-      const { photos: newPhotos } = await uploadRes.json();
-      const newPhoto = newPhotos?.[0];
+      const uploadJson = await uploadRes.json() as { photos?: StoredPhoto[] };
+      const newPhoto = uploadJson.photos?.[0];
       if (!newPhoto) throw new Error('Žiadna fotka v odpovedi');
 
-      // Fetch current catch photos from server (not from mutable selectedCatch state)
-      // This avoids race conditions if the sheet was closed or another catch selected
+      // Fetch current catch photos strictly from server to avoid mutable state race conditions
       const catchRes = await fetch(`/api/diary/catches/${catchId}`, { credentials: 'include' });
-      const catchData = catchRes.ok ? await catchRes.json() : null;
-      const catchPhotos: any[] = catchData?.photos || [];
+      if (!catchRes.ok) {
+        throw new Error('Nepodarilo sa načítať dáta úlovku pred aktualizáciou');
+      }
+      const catchServerData = await catchRes.json() as { photos?: StoredPhoto[] };
+      const catchPhotos: StoredPhoto[] = Array.isArray(catchServerData.photos) ? catchServerData.photos : [];
 
-      // If the target photo is not found in the catch, it may have been removed already
-      const hasPhoto = catchPhotos.some((p: any) => {
-        const pid = typeof p === 'string' ? p : String(p.id);
-        return pid === String(photoId);
-      });
+      // Abort if catch has no photos at all — something unexpected happened
+      if (catchPhotos.length === 0) {
+        throw new Error('Úlovok nemá žiadne fotografie — aktualizácia zrušená');
+      }
 
-      const updatedPhotos = hasPhoto
-        ? catchPhotos.map((p: any) => {
-            const pid = typeof p === 'string' ? p : String(p.id);
-            if (pid === String(photoId)) {
-              const { _processingInfo: _, ...clean } = newPhoto;
-              return clean;
-            }
-            return p;
-          })
-        : [...catchPhotos, (() => { const { _processingInfo: _, ...clean } = newPhoto; return clean; })()];
+      // Replace the failed photo by id; if not found, reject rather than blindly append
+      const targetIndex = catchPhotos.findIndex((p) => String(p.id) === String(photoId));
+      if (targetIndex === -1) {
+        throw new Error('Fotografia na nahradenie sa v úlovku nenašla');
+      }
+
+      const { _processingInfo: _pi, ...cleanNewPhoto } = newPhoto;
+      const updatedPhotos: StoredPhoto[] = catchPhotos.map((p, i) => (i === targetIndex ? cleanNewPhoto : p));
 
       await apiRequest('PUT', `/api/diary/catches/${catchId}`, { photos: updatedPhotos });
       queryClient.invalidateQueries({ queryKey: ['/api/diary/catches/all'] });
 
-      setSelectedCatch((prev: any) => {
+      setSelectedCatch((prev: DiaryCatch) => {
         if (prev && prev.id === catchId) {
           return { ...prev, photos: updatedPhotos };
         }
@@ -609,10 +610,11 @@ export default function DiaryIndex() {
 
       toast({ title: 'Fotka nahradená', description: 'Nová fotografia bola úspešne nahratá.' });
       return true;
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Nepodarilo sa nahrať novú fotku. Skúste to znova.';
       toast({
         title: 'Chyba pri nahrávaní',
-        description: err?.message || 'Nepodarilo sa nahrať novú fotku. Skúste to znova.',
+        description: message,
         variant: 'destructive',
       });
       return false;
