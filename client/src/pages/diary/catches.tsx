@@ -247,6 +247,52 @@ export default function DiaryCatches() {
     }
   });
 
+  const handleRetryPhoto = async (catchId: string, photoId: string, newFile: File): Promise<boolean> => {
+    type StoredPhoto = { id: string | number; url: string; originalUrl?: string; status?: string; variants?: unknown[] };
+    type UploadedPhoto = StoredPhoto & { _processingInfo?: Record<string, unknown> };
+
+    try {
+      const formData = new FormData();
+      formData.append('photos', newFile);
+      formData.append('catchId', catchId);
+
+      const uploadRes = await fetch('/api/diary/photos/upload', { method: 'POST', body: formData, credentials: 'include' });
+      if (!uploadRes.ok) throw new Error('Upload zlyhal');
+
+      const uploadJson = await uploadRes.json() as { photos?: UploadedPhoto[] };
+      const newPhoto = uploadJson.photos?.[0];
+      if (!newPhoto) throw new Error('Žiadna fotka v odpovedi');
+
+      const catchRes = await fetch(`/api/diary/catches/${catchId}`, { credentials: 'include' });
+      if (!catchRes.ok) throw new Error('Nepodarilo sa načítať dáta úlovku pred aktualizáciou');
+
+      const catchServerData = await catchRes.json() as { photos?: StoredPhoto[] };
+      const catchPhotos: StoredPhoto[] = Array.isArray(catchServerData.photos) ? catchServerData.photos : [];
+      const hasFailedPhoto = catchPhotos.some((p) => String(p.id) === String(photoId));
+      if (!hasFailedPhoto) throw new Error('Fotografia na nahradenie sa v úlovku nenašla');
+
+      const photosWithoutFailed: StoredPhoto[] = catchPhotos.filter((p) => String(p.id) !== String(photoId));
+      await apiRequest('PUT', `/api/diary/catches/${catchId}`, { photos: photosWithoutFailed });
+      await apiRequest('PATCH', `/api/diary/catches/${catchId}/photos`, { photos: [newPhoto] });
+
+      queryClient.invalidateQueries({ queryKey: ['/api/diary/catches/all'] });
+      setSelectedCatch((prev) => {
+        if (prev && prev.id === catchId) {
+          const { _processingInfo: _pi, ...cleanNew } = newPhoto;
+          return { ...prev, photos: [...photosWithoutFailed, cleanNew] };
+        }
+        return prev;
+      });
+
+      toast({ title: 'Fotka nahradená', description: 'Nová fotografia bola úspešne nahratá.' });
+      return true;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Nepodarilo sa nahrať novú fotku. Skúste to znova.';
+      toast({ title: 'Chyba pri nahrávaní', description: message, variant: 'destructive' });
+      return false;
+    }
+  };
+
   const closeDialog = () => {
     setIsCreateDialogOpen(false);
     setEditingCatch(null);
@@ -1458,6 +1504,7 @@ export default function DiaryCatches() {
               onOpenLightbox={(photos, index) => {
                 setLightboxState({ photos, currentIndex: index });
               }}
+              onRetryPhoto={handleRetryPhoto}
             />
           )}
 
