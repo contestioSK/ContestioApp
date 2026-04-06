@@ -555,9 +555,11 @@ export default function DiaryIndex() {
   };
 
   const handleRetryPhoto = async (catchId: string, photoId: string, newFile: File): Promise<boolean> => {
-    type StoredPhoto = { id: string | number; url: string; originalUrl?: string; status?: string; variants?: unknown[]; _processingInfo?: unknown };
+    type StoredPhoto = { id: string | number; url: string; originalUrl?: string; status?: string; variants?: unknown[] };
+    type UploadedPhoto = StoredPhoto & { _processingInfo?: Record<string, unknown> };
 
     try {
+      // Step 1: Upload the new file to Firebase
       const formData = new FormData();
       formData.append('photos', newFile);
       formData.append('catchId', catchId);
@@ -572,11 +574,11 @@ export default function DiaryIndex() {
         throw new Error('Upload zlyhal');
       }
 
-      const uploadJson = await uploadRes.json() as { photos?: StoredPhoto[] };
+      const uploadJson = await uploadRes.json() as { photos?: UploadedPhoto[] };
       const newPhoto = uploadJson.photos?.[0];
       if (!newPhoto) throw new Error('Žiadna fotka v odpovedi');
 
-      // Fetch current catch photos strictly from server to avoid mutable state race conditions
+      // Step 2: Fetch current catch photos from server (strict — abort on any failure)
       const catchRes = await fetch(`/api/diary/catches/${catchId}`, { credentials: 'include' });
       if (!catchRes.ok) {
         throw new Error('Nepodarilo sa načítať dáta úlovku pred aktualizáciou');
@@ -584,26 +586,25 @@ export default function DiaryIndex() {
       const catchServerData = await catchRes.json() as { photos?: StoredPhoto[] };
       const catchPhotos: StoredPhoto[] = Array.isArray(catchServerData.photos) ? catchServerData.photos : [];
 
-      // Abort if catch has no photos at all — something unexpected happened
-      if (catchPhotos.length === 0) {
-        throw new Error('Úlovok nemá žiadne fotografie — aktualizácia zrušená');
-      }
-
-      // Replace the failed photo by id; if not found, reject rather than blindly append
-      const targetIndex = catchPhotos.findIndex((p) => String(p.id) === String(photoId));
-      if (targetIndex === -1) {
+      // Abort if the target photo is not in the catch (already removed or not found)
+      const hasFailedPhoto = catchPhotos.some((p) => String(p.id) === String(photoId));
+      if (!hasFailedPhoto) {
         throw new Error('Fotografia na nahradenie sa v úlovku nenašla');
       }
 
-      const { _processingInfo: _pi, ...cleanNewPhoto } = newPhoto;
-      const updatedPhotos: StoredPhoto[] = catchPhotos.map((p, i) => (i === targetIndex ? cleanNewPhoto : p));
+      // Step 3: Remove the failed photo via PUT (preserves all other photos)
+      const photosWithoutFailed: StoredPhoto[] = catchPhotos.filter((p) => String(p.id) !== String(photoId));
+      await apiRequest('PUT', `/api/diary/catches/${catchId}`, { photos: photosWithoutFailed });
 
-      await apiRequest('PUT', `/api/diary/catches/${catchId}`, { photos: updatedPhotos });
+      // Step 4: Add the new photo via PATCH — this queues the background variant processing job
+      await apiRequest('PATCH', `/api/diary/catches/${catchId}/photos`, { photos: [newPhoto] });
+
       queryClient.invalidateQueries({ queryKey: ['/api/diary/catches/all'] });
 
       setSelectedCatch((prev: DiaryCatch) => {
         if (prev && prev.id === catchId) {
-          return { ...prev, photos: updatedPhotos };
+          const { _processingInfo: _pi, ...cleanNew } = newPhoto;
+          return { ...prev, photos: [...photosWithoutFailed, cleanNew] };
         }
         return prev;
       });
