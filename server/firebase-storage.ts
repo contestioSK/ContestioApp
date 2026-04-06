@@ -45,7 +45,6 @@ export async function uploadToFirebase(
       contentType: contentType || 'image/jpeg',
       cacheControl: 'public, max-age=31536000',
     },
-    public: true,
   });
 
   const file = bucket.file(destinationPath);
@@ -85,7 +84,6 @@ export async function uploadBufferToFirebase(
       contentType,
       cacheControl: 'public, max-age=31536000',
     },
-    public: true,
   });
 
   // Try to make public, but continue if bucket uses uniform access control
