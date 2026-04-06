@@ -509,6 +509,10 @@ export default function DiaryTrips() {
       : sortedTrips;
     
     filteredTrips.forEach((trip) => {
+      if (trip.status === 'completed') {
+        finished.push(trip);
+        return;
+      }
       const tripEnd = new Date(trip.endDate);
       tripEnd.setHours(23, 59, 59, 999);
       if (tripEnd >= now) {
