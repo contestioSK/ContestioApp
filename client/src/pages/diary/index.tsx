@@ -554,6 +554,54 @@ export default function DiaryIndex() {
     setIsCreateCatchOpen(true);
   };
 
+  const handleRetryPhoto = async (catchId: string, photoId: string, newFile: File) => {
+    try {
+      const formData = new FormData();
+      formData.append('photos', newFile);
+      formData.append('catchId', catchId);
+
+      const uploadRes = await fetch('/api/diary/photos/upload', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+
+      if (!uploadRes.ok) {
+        throw new Error('Upload zlyhal');
+      }
+
+      const { photos: newPhotos } = await uploadRes.json();
+      const newPhoto = newPhotos?.[0];
+      if (!newPhoto) throw new Error('Žiadna fotka v odpovedi');
+
+      const catchPhotos: any[] = selectedCatch?.photos || [];
+
+      const updatedPhotos = catchPhotos.map((p: any) => {
+        const pid = typeof p === 'string' ? p : String(p.id);
+        if (pid === String(photoId)) {
+          const { _processingInfo: _, ...clean } = newPhoto;
+          return clean;
+        }
+        return p;
+      });
+
+      await apiRequest('PUT', `/api/diary/catches/${catchId}`, { photos: updatedPhotos });
+      queryClient.invalidateQueries({ queryKey: ['/api/diary/catches/all'] });
+
+      if (selectedCatch && selectedCatch.id === catchId) {
+        setSelectedCatch((prev: any) => prev ? { ...prev, photos: updatedPhotos } : prev);
+      }
+
+      toast({ title: 'Fotka nahradená', description: 'Nová fotografia bola úspešne nahratá.' });
+    } catch (err: any) {
+      toast({
+        title: 'Chyba pri nahrávaní',
+        description: err?.message || 'Nepodarilo sa nahrať novú fotku. Skúste to znova.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   return (
     <DiaryLayout>
       <div className="space-y-6">
@@ -1098,6 +1146,7 @@ export default function DiaryIndex() {
             onOpenLightbox={(photos, index) => {
               setLightboxState({ photos, currentIndex: index });
             }}
+            onRetryPhoto={handleRetryPhoto}
           />
         )}
 

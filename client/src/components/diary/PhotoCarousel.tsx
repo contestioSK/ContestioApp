@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import useEmblaCarousel from "embla-carousel-react";
-import { ChevronLeft, ChevronRight, Fish, Loader2, AlertCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Fish, Loader2, AlertCircle, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type PhotoObject = {
@@ -16,14 +16,16 @@ type PhotoObject = {
 interface PhotoCarouselProps {
   photos: (string | PhotoObject)[];
   onPhotoClick: (photo: string, index: number) => void;
+  onRetryPhoto?: (photoId: string, file: File) => void;
 }
 
-export function PhotoCarousel({ photos, onPhotoClick }: PhotoCarouselProps) {
+export function PhotoCarousel({ photos, onPhotoClick, onRetryPhoto }: PhotoCarouselProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false });
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [retryingIds, setRetryingIds] = useState<Set<string>>(new Set());
   const isDraggingRef = useRef(false);
+  const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
-  // Track user-initiated drag (not arrow navigation)
   const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
   
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
@@ -35,7 +37,6 @@ export function PhotoCarousel({ photos, onPhotoClick }: PhotoCarouselProps) {
     if (pointerStartRef.current) {
       const dx = Math.abs(e.clientX - pointerStartRef.current.x);
       const dy = Math.abs(e.clientY - pointerStartRef.current.y);
-      // Mark as dragging if moved more than 10px
       if (dx > 10 || dy > 10) {
         isDraggingRef.current = true;
       }
@@ -49,11 +50,9 @@ export function PhotoCarousel({ photos, onPhotoClick }: PhotoCarouselProps) {
   
   const handleClick = useCallback((e: React.MouseEvent, photoUrl: string, index: number, status: string | null) => {
     e.stopPropagation();
-    // Only open lightbox if it was a click, not a drag
-    if (!isDraggingRef.current && status !== 'processing') {
+    if (!isDraggingRef.current && status !== 'processing' && status !== 'failed') {
       onPhotoClick(photoUrl, index);
     }
-    // Reset for next interaction
     pointerStartRef.current = null;
     isDraggingRef.current = false;
   }, [onPhotoClick]);
@@ -78,6 +77,20 @@ export function PhotoCarousel({ photos, onPhotoClick }: PhotoCarouselProps) {
     emblaApi.scrollTo(0);
     setSelectedIndex(0);
   }, [photos, emblaApi]);
+
+  useEffect(() => {
+    if (retryingIds.size === 0) return;
+    setRetryingIds(prev => {
+      const next = new Set(prev);
+      for (const id of prev) {
+        const photo = photos.find(p => typeof p !== 'string' && String(p.id) === String(id));
+        if (!photo || typeof photo === 'string' || photo.status !== 'failed') {
+          next.delete(id);
+        }
+      }
+      return next;
+    });
+  }, [photos]);
 
   const scrollPrev = useCallback(() => {
     if (emblaApi) emblaApi.scrollPrev();
@@ -108,6 +121,19 @@ export function PhotoCarousel({ photos, onPhotoClick }: PhotoCarouselProps) {
     return photo.status || null;
   };
 
+  const handleRetryClick = useCallback((e: React.MouseEvent, photoId: string) => {
+    e.stopPropagation();
+    fileInputRefs.current[photoId]?.click();
+  }, []);
+
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>, photoId: string) => {
+    const file = e.target.files?.[0];
+    if (!file || !onRetryPhoto) return;
+    setRetryingIds(prev => new Set(prev).add(photoId));
+    onRetryPhoto(photoId, file);
+    e.target.value = '';
+  }, [onRetryPhoto]);
+
   if (photos.length === 0) return null;
 
   return (
@@ -117,6 +143,8 @@ export function PhotoCarousel({ photos, onPhotoClick }: PhotoCarouselProps) {
           {photos.map((photo, index) => {
             const photoUrl = getPhotoUrl(photo);
             const status = getPhotoStatus(photo);
+            const photoId = typeof photo === 'string' ? String(index) : String(photo.id);
+            const isRetrying = retryingIds.has(photoId);
             
             return (
               <div key={typeof photo === 'string' ? index : photo.id} className="flex-[0_0_100%] min-w-0 relative">
@@ -138,20 +166,49 @@ export function PhotoCarousel({ photos, onPhotoClick }: PhotoCarouselProps) {
                     <Fish className="w-16 h-16 text-muted-foreground/30" />
                   </div>
                 )}
-                {status === 'processing' && photoUrl && (
+                {status === 'processing' && photoUrl && !isRetrying && (
                   <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
                     <Loader2 className="w-3 h-3 animate-spin" />
                     <span>Optimalizujem...</span>
                   </div>
                 )}
-                {status === 'processing' && !photoUrl && (
+                {status === 'processing' && !photoUrl && !isRetrying && (
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                     <Loader2 className="w-8 h-8 text-white animate-spin" />
                   </div>
                 )}
-                {status === 'failed' && (
-                  <div className="absolute inset-0 bg-red-500/50 flex items-center justify-center">
-                    <AlertCircle className="w-8 h-8 text-white" />
+                {isRetrying && (
+                  <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center gap-2">
+                    <Loader2 className="w-8 h-8 text-white animate-spin" />
+                    <span className="text-white text-sm">Nahrávam...</span>
+                  </div>
+                )}
+                {status === 'failed' && !isRetrying && (
+                  <div
+                    className="absolute inset-0 bg-slate-900/90 flex flex-col items-center justify-center gap-3"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <AlertCircle className="w-8 h-8 text-red-400" />
+                    <p className="text-white text-sm font-medium">Nepodarilo sa nahrať</p>
+                    {onRetryPhoto && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={(e) => handleRetryClick(e, photoId)}
+                          className="flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+                        >
+                          <RefreshCw className="w-4 h-4" />
+                          Nahradiť
+                        </button>
+                        <input
+                          ref={el => { fileInputRefs.current[photoId] = el; }}
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleFileChange(e, photoId)}
+                        />
+                      </>
+                    )}
                   </div>
                 )}
               </div>

@@ -23,6 +23,7 @@ export interface CatchDetailSheetProps {
   onDelete?: (catch_: DiaryCatch) => void;
   onOpenFullPage: (catchId: string) => void;
   onOpenLightbox: (photos: string[], index: number) => void;
+  onRetryPhoto?: (catchId: string, photoId: string, file: File) => void;
 }
 
 export function CatchDetailSheet({
@@ -32,6 +33,7 @@ export function CatchDetailSheet({
   onDelete,
   onOpenFullPage,
   onOpenLightbox,
+  onRetryPhoto,
 }: CatchDetailSheetProps) {
   if (!catchData) return null;
 
@@ -41,6 +43,10 @@ export function CatchDetailSheet({
     );
     onOpenLightbox(photoUrls, index);
   };
+
+  const handleRetryPhoto = onRetryPhoto
+    ? (photoId: string, file: File) => onRetryPhoto(catchData.id, photoId, file)
+    : undefined;
 
   return (
     <Sheet open onOpenChange={onClose}>
@@ -62,6 +68,7 @@ export function CatchDetailSheet({
               <SimplePhotoSlider 
                 photos={catchData.photos} 
                 onPhotoClick={handlePhotoClick}
+                onRetryPhoto={handleRetryPhoto}
               />
             ) : (
               <div className="w-full min-h-48 bg-gradient-to-b from-slate-800 to-slate-900 flex items-center justify-center">

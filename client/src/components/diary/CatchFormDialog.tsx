@@ -72,6 +72,8 @@ import {
   Scale,
   CloudRain,
   Plus,
+  AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 
 import {
@@ -1110,27 +1112,59 @@ export default function CatchFormDialog({
                       Existujúce fotografie:
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {existingPhotos.map((photo, index) => (
-                        <div key={photo.id} className="relative group">
-                          <img
-                            src={photo.url || photo.originalUrl}
-                            alt={`Existujúca fotografia ${index + 1}`}
-                            className="w-20 h-20 object-cover rounded-lg border"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setExistingPhotos((prev) =>
-                                prev.filter((_, i) => i !== index),
-                              );
-                            }}
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                            data-testid={`button-remove-photo-${index}`}
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </div>
-                      ))}
+                      {existingPhotos.map((photo, index) => {
+                        const isFailed = photo.status === 'failed';
+                        const retryInputId = `retry-photo-${photo.id}`;
+                        return (
+                          <div key={photo.id} className="relative group w-20 h-20">
+                            {isFailed ? (
+                              <div className="w-20 h-20 rounded-lg border border-red-500/50 bg-slate-800 flex flex-col items-center justify-center gap-1">
+                                <AlertCircle className="w-5 h-5 text-red-400" />
+                                <label
+                                  htmlFor={retryInputId}
+                                  className="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 text-white text-[10px] font-medium px-2 py-1 rounded cursor-pointer transition-colors"
+                                >
+                                  <RefreshCw className="w-3 h-3" />
+                                  Nahradiť
+                                </label>
+                                <input
+                                  id={retryInputId}
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+                                    setExistingPhotos((prev) =>
+                                      prev.filter((_, i) => i !== index),
+                                    );
+                                    setSelectedPhotos((prev) => [...prev, file]);
+                                    e.target.value = '';
+                                  }}
+                                />
+                              </div>
+                            ) : (
+                              <img
+                                src={photo.url || photo.originalUrl}
+                                alt={`Existujúca fotografia ${index + 1}`}
+                                className="w-20 h-20 object-cover rounded-lg border"
+                              />
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setExistingPhotos((prev) =>
+                                  prev.filter((_, i) => i !== index),
+                                );
+                              }}
+                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                              data-testid={`button-remove-photo-${index}`}
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
