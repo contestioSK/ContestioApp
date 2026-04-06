@@ -1,5 +1,5 @@
-import { useState, useCallback } from "react";
-import { ChevronLeft, ChevronRight, Fish, Loader2, AlertCircle } from "lucide-react";
+import { useState, useCallback, useEffect, useRef } from "react";
+import { ChevronLeft, ChevronRight, Fish, Loader2, AlertCircle, RefreshCw } from "lucide-react";
 
 type PhotoObject = {
   id: number | string;
@@ -14,10 +14,27 @@ type PhotoObject = {
 interface SimplePhotoSliderProps {
   photos: (string | PhotoObject)[];
   onPhotoClick: (photo: string, index: number) => void;
+  onRetryPhoto?: (photoId: string, file: File) => void;
 }
 
-export function SimplePhotoSlider({ photos, onPhotoClick }: SimplePhotoSliderProps) {
+export function SimplePhotoSlider({ photos, onPhotoClick, onRetryPhoto }: SimplePhotoSliderProps) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [retryingIds, setRetryingIds] = useState<Set<string>>(new Set());
+  const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+
+  useEffect(() => {
+    if (retryingIds.size === 0) return;
+    setRetryingIds(prev => {
+      const next = new Set(prev);
+      for (const id of prev) {
+        const photo = photos.find(p => typeof p !== 'string' && String(p.id) === String(id));
+        if (!photo || typeof photo === 'string' || photo.status !== 'failed') {
+          next.delete(id);
+        }
+      }
+      return next;
+    });
+  }, [photos]);
 
   const getPhotoUrl = (photo: string | PhotoObject): string => {
     if (typeof photo === 'string') return photo;
@@ -53,10 +70,23 @@ export function SimplePhotoSlider({ photos, onPhotoClick }: SimplePhotoSliderPro
     const photoUrl = getPhotoUrl(currentPhoto);
     const status = getPhotoStatus(currentPhoto);
     
-    if (photoUrl && status !== 'processing') {
+    if (photoUrl && status !== 'processing' && status !== 'failed') {
       onPhotoClick(photoUrl, activeIndex);
     }
   }, [photos, activeIndex, onPhotoClick]);
+
+  const handleRetryClick = useCallback((e: React.MouseEvent, photoId: string) => {
+    e.stopPropagation();
+    fileInputRefs.current[photoId]?.click();
+  }, []);
+
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>, photoId: string) => {
+    const file = e.target.files?.[0];
+    if (!file || !onRetryPhoto) return;
+    setRetryingIds(prev => new Set(prev).add(photoId));
+    onRetryPhoto(photoId, file);
+    e.target.value = '';
+  }, [onRetryPhoto]);
 
   if (photos.length === 0) return null;
 
@@ -69,6 +99,8 @@ export function SimplePhotoSlider({ photos, onPhotoClick }: SimplePhotoSliderPro
         {photos.map((photo, idx) => {
           const photoUrl = getPhotoUrl(photo);
           const status = getPhotoStatus(photo);
+          const photoId = typeof photo === 'string' ? String(idx) : String(photo.id);
+          const isRetrying = retryingIds.has(photoId);
           
           return (
             <div
@@ -90,20 +122,49 @@ export function SimplePhotoSlider({ photos, onPhotoClick }: SimplePhotoSliderPro
                   <Fish className="w-16 h-16 text-muted-foreground/30" />
                 </div>
               )}
-              {status === 'processing' && photoUrl && (
+              {status === 'processing' && photoUrl && !isRetrying && (
                 <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1 z-20">
                   <Loader2 className="w-3 h-3 animate-spin" />
                   <span>Optimalizujem...</span>
                 </div>
               )}
-              {status === 'processing' && !photoUrl && (
+              {status === 'processing' && !photoUrl && !isRetrying && (
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
                   <Loader2 className="w-8 h-8 text-white animate-spin" />
                 </div>
               )}
-              {status === 'failed' && (
-                <div className="absolute inset-0 bg-red-500/50 flex items-center justify-center z-20">
-                  <AlertCircle className="w-8 h-8 text-white" />
+              {isRetrying && (
+                <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center z-20 gap-2">
+                  <Loader2 className="w-8 h-8 text-white animate-spin" />
+                  <span className="text-white text-sm">Nahrávam...</span>
+                </div>
+              )}
+              {status === 'failed' && !isRetrying && (
+                <div
+                  className="absolute inset-0 bg-slate-900/90 flex flex-col items-center justify-center z-20 gap-3"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <AlertCircle className="w-8 h-8 text-red-400" />
+                  <p className="text-white text-sm font-medium">Nepodarilo sa nahrať</p>
+                  {onRetryPhoto && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={(e) => handleRetryClick(e, photoId)}
+                        className="flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+                      >
+                        <RefreshCw className="w-4 h-4" />
+                        Nahradiť
+                      </button>
+                      <input
+                        ref={el => { fileInputRefs.current[photoId] = el; }}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => handleFileChange(e, photoId)}
+                      />
+                    </>
+                  )}
                 </div>
               )}
             </div>
