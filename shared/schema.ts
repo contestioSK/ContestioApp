@@ -399,6 +399,7 @@ export const diaryTrips = pgTable("diary_trips", {
   name: varchar("name", { length: 255 }).notNull(),
   startDate: timestamp("start_date").notNull(),
   endDate: timestamp("end_date").notNull(),
+  status: varchar("status").notNull().default("active"), // "active", "completed"
   location: text("location").notNull(),
   notes: text("notes"),
   participants: jsonb("participants").$type<Array<{ userId?: string; name: string }>>().default([]), // Array of participants

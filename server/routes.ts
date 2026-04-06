@@ -7115,11 +7115,11 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         return res.status(404).json({ message: "Trip not found" });
       }
       
-      // Set end date to today
+      // Set end date to today and mark as completed
       const today = new Date();
       today.setHours(23, 59, 59, 999); // Set to end of day
       
-      const updatedTrip = await storage.updateDiaryTrip(tripId, { endDate: today }, userId);
+      const updatedTrip = await storage.updateDiaryTrip(tripId, { endDate: today, status: 'completed' }, userId);
       
       // Update seasonal goals progress after trip end
       await storage.updateAllUserGoalsProgress(userId);
