@@ -220,11 +220,12 @@ export default function DiaryIndex() {
     enabled: !!user
   });
 
-  // Find most recent active trip (endDate >= now, comparing end of day)
+  // Find most recent active trip: endDate >= now AND status is not 'completed'
   const activeTrip = useMemo(() => {
     const now = new Date();
     return trips
       .filter(t => {
+        if (t.status === 'completed') return false;
         const end = new Date(t.endDate);
         end.setHours(23, 59, 59, 999);
         return end >= now;
