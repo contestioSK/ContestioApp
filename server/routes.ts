@@ -343,16 +343,33 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
             // Update the specific photo
             const updatedPhotos = photos.map((photo: any) => {
               if (typeof photo === 'object' && photo.id === result.photoId) {
+                // Use result.url only if it's a confirmed HTTPS Firebase URL
+                const newUrl = (result.url && result.url.startsWith('https://'))
+                  ? result.url
+                  : photo.url;
+
+                let finalStatus = result.status;
+                let finalError = result.error;
+
+                // Invariant: status 'ready' requires an HTTPS URL
+                if (finalStatus === 'ready' && (!newUrl || !newUrl.startsWith('https://'))) {
+                  console.error('[IMAGE_UPLOAD_FAILED]', {
+                    photoId: result.photoId,
+                    reason: 'ready status without HTTPS URL — forcing to failed',
+                    url: newUrl,
+                  });
+                  finalStatus = 'failed';
+                  finalError = 'Invalid state: ready without HTTPS URL';
+                }
+
                 return {
                   ...photo,
-                  status: result.status,
-                  // Use result.url only if it's a non-empty string (Firebase URL).
-                  // Empty string is falsy — keep photo.url (Firebase original uploaded synchronously).
-                  url: (result.url && result.url.length > 0) ? result.url : photo.url,
+                  status: finalStatus,
+                  url: newUrl,
                   originalUrl: result.originalUrl || photo.originalUrl,
                   variants: result.variants || photo.variants,
                   placeholder: result.placeholder || photo.placeholder,
-                  error: result.error
+                  error: finalError
                 };
               }
               return photo;
