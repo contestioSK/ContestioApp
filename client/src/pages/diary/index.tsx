@@ -970,9 +970,9 @@ export default function DiaryIndex() {
                 data-testid={`catch-card-${catch_.id || index}`}
               >
                 {/* Photo */}
-                {catch_.photos && catch_.photos.length > 0 ? (
+                {catch_.photos && catch_.photos.length > 0 && (catch_.photos[0]?.url || catch_.photos[0]?.originalUrl) ? (
                   <img
-                    src={catch_.photos[0].url || catch_.photos[0]}
+                    src={catch_.photos[0]?.url || catch_.photos[0]?.originalUrl}
                     alt={catch_.fishType ? getFishTypeLabel(catch_.fishType) : 'Úlovok'}
                     loading="lazy"
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"

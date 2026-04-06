@@ -6,7 +6,7 @@ import { storage } from "./storage";
 import { db } from "./db";
 import { eq, and, gt, desc, or, inArray, sql, isNotNull } from "drizzle-orm";
 import { diaryBattles, diaryCatches, diaryTrips, users, baitManufacturers, baitProductLines, baitFlavors, userArsenalBaits, userBadges, fishingAreas, friendships, equipmentManufacturers, equipmentCategories, equipmentProducts, userArsenalEquipment, insertUserArsenalEquipmentSchema, userBaitBrands, userBaitFlavors, insertUserBaitBrandSchema, insertUserBaitFlavorSchema } from "@shared/schema";
-import { deleteFromFirebase, isFirebaseConfigured } from "./firebase-storage";
+import { deleteFromFirebase, isFirebaseConfigured, uploadToFirebase } from "./firebase-storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { hashPassword, validatePassword, generateVerificationToken, generateTokenExpiration } from "./utils/auth";
 import { emailService } from "./utils/email";
@@ -346,7 +346,9 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
                 return {
                   ...photo,
                   status: result.status,
-                  url: result.url || photo.url,
+                  // Use result.url only if it's a non-empty string (Firebase URL).
+                  // Empty string is falsy — keep photo.url (Firebase original uploaded synchronously).
+                  url: (result.url && result.url.length > 0) ? result.url : photo.url,
                   originalUrl: result.originalUrl || photo.originalUrl,
                   variants: result.variants || photo.variants,
                   placeholder: result.placeholder || photo.placeholder,
@@ -3949,11 +3951,12 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
           const bestVariant = ImageService.getBestVariantForWidth(imageMetadata.variants, 800, 'webp') ||
                               ImageService.getBestVariantForWidth(imageMetadata.variants, 800, 'jpeg') ||
                               imageMetadata.variants[0];
-          photoUrl = bestVariant?.url || `/uploads/${req.file.filename}`;
+          photoUrl = bestVariant?.url || null;
           await ImageService.cleanupTempFile(req.file.path);
         } catch (error) {
           console.error("Error processing catch photo:", error);
-          photoUrl = `/uploads/${req.file.filename}`;
+          try { await ImageService.cleanupTempFile(req.file.path); } catch {}
+          photoUrl = null;
         }
       }
 
@@ -6819,17 +6822,29 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         const destStats = await fsPromises.stat(sanitizedPath);
         console.log(`[PhotoUpload] Sanitized successfully: ${sanitizedPath} (${destStats.size} bytes)`);
         
-        const sanitizedUrl = `/attached_assets/diary_photos/${userId}/${sanitizedFilename}`;
-        
+        // Synchronously upload sanitized original to Firebase before returning response.
+        // This guarantees the URL in DB survives redeployments (no local path dependency).
+        let immediateUrl = `/attached_assets/diary_photos/${userId}/${sanitizedFilename}`; // local fallback
+        if (isFirebaseConfigured()) {
+          try {
+            const firebaseOriginalPath = `diary_photos/${userId}/${photoId}/sanitized-original.jpg`;
+            const fbResult = await uploadToFirebase(sanitizedPath, firebaseOriginalPath, 'image/jpeg');
+            immediateUrl = fbResult.publicUrl;
+            console.log(`[PhotoUpload] Original uploaded to Firebase: ${firebaseOriginalPath}`);
+          } catch (fbError: any) {
+            console.warn(`[PhotoUpload] Firebase sync upload failed, using local fallback:`, fbError?.message);
+          }
+        }
+
         photos.push({
           id: photoId,
-          url: sanitizedUrl,
+          url: immediateUrl,
           status: 'processing' as const,
-          originalUrl: sanitizedUrl, // originalUrl now always points to sanitized file
+          originalUrl: immediateUrl,
           processingStartedAt: new Date().toISOString(),
           _processingInfo: {
             userId,
-            originalPath: sanitizedPath, // queue works from sanitized file
+            originalPath: sanitizedPath,
             originalFilename: sanitizedFilename,
             outputBasePath: path.join(diaryPhotosDir, baseFilename)
           }
@@ -7799,11 +7814,11 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
         });
       }
       
-      const photos: Array<{ id: string; url: string; status: 'ready' }> = [];
+      const photos: Array<{ id: string; url: string; status: 'ready' | 'failed' }> = [];
       if (req.files && Array.isArray(req.files)) {
         for (const file of req.files as any[]) {
           const photoId = `photo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-          let photoUrl = `/uploads/${file.filename}`;
+          let photoUrl: string | null = null;
           try {
             const imageMetadata = await ImageService.processImage(
               file.path,
@@ -7815,16 +7830,18 @@ export async function registerRoutes(app: Express): Promise<{ server: Server; br
             const bestVariant = ImageService.getBestVariantForWidth(imageMetadata.variants, 800, 'webp') ||
                                 ImageService.getBestVariantForWidth(imageMetadata.variants, 800, 'jpeg') ||
                                 imageMetadata.variants[0];
-            photoUrl = bestVariant?.url || photoUrl;
+            photoUrl = bestVariant?.url || null;
             await ImageService.cleanupTempFile(file.path);
           } catch (error) {
             console.error("Error processing historical catch photo:", error);
+            try { await ImageService.cleanupTempFile(file.path); } catch {}
           }
-          photos.push({
-            id: photoId,
-            url: photoUrl,
-            status: 'ready' as const
-          });
+          // Only push photo if we have a valid Firebase URL — no local fallbacks
+          if (photoUrl) {
+            photos.push({ id: photoId, url: photoUrl, status: 'ready' as const });
+          } else {
+            photos.push({ id: photoId, url: '', status: 'failed' as const });
+          }
         }
       }
       
