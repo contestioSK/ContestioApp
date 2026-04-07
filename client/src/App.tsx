@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, Redirect } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -95,10 +95,8 @@ function Router() {
     }
     
     const exemptRoutes = ["/onboarding", "/auth/login", "/auth/register", "/auth/verify-email", "/auth/reset-password", "/auth/forgot-password", "/reset-password", "/pricing", "/about-us", "/faq", "/contact", "/terms", "/privacy", "/register", "/select-role"];
-    const exemptPrefixes = ["/competition/", "/team/", "/categories/"];
     
-    const isExempt = exemptRoutes.includes(location) || 
-                     exemptPrefixes.some(prefix => location.startsWith(prefix));
+    const isExempt = exemptRoutes.includes(location);
     
     if (isExempt) return;
     
@@ -114,7 +112,7 @@ function Router() {
 
   return (
     <Switch>
-      <Route path="/" component={user ? Home : Landing} />
+      <Route path="/">{user ? <Redirect to="/diary" /> : <Landing />}</Route>
       <Route path="/register" component={Register} />
       
       {/* Public shared catch page - no authentication required */}
@@ -130,32 +128,22 @@ function Router() {
       <Route path="/onboarding" component={Onboarding} />
       <Route path="/select-role" component={RoleSelection} />
       
-      <Route path="/register-competition">
-        {() => {
-          const params = new URLSearchParams(window.location.search);
-          const plan = params.get('plan');
-          window.location.href = plan ? `/organizer/create?plan=${plan}` : '/organizer/create';
-          return null;
-        }}
-      </Route>
-      <Route path="/competition/:id/setup" component={CompetitionSetup} />
-      <Route path="/register-team" component={RegisterTeam} />
       <Route path="/about-us" component={AboutUs} />
       <Route path="/pricing" component={Pricing} />
       <Route path="/faq" component={FAQ} />
       <Route path="/contact" component={Contact} />
       <Route path="/terms" component={Terms} />
       <Route path="/privacy" component={Privacy} />
-      <Route path="/competitions" component={CompetitionsPage} />
-      <Route path="/categories/registration-open" component={RegistrationOpenPage} />
-      <Route path="/categories/upcoming" component={UpcomingPage} />
-      <Route path="/categories/live" component={LivePage} />
-      <Route path="/categories/finished" component={FinishedPage} />
-      <Route path="/competition/:id" component={CompetitionDetail} />
-      <Route path="/competition/:id/catches" component={CompetitionCatches} />
-      <Route path="/competition/:id/report" component={CompetitionReport} />
-      <Route path="/competition/:competitionId/sector/:sector" component={SectorDetail} />
-      <Route path="/team/:teamId" component={TeamDetail} />
+
+      {/* Competition routes disabled — redirect to diary */}
+      <Route path="/competitions"><Redirect to="/diary" /></Route>
+      <Route path="/categories/:rest*"><Redirect to="/diary" /></Route>
+      <Route path="/competition/:rest*"><Redirect to="/diary" /></Route>
+      <Route path="/team/:rest*"><Redirect to="/diary" /></Route>
+      <Route path="/register-competition"><Redirect to="/diary" /></Route>
+      <Route path="/register-team"><Redirect to="/diary" /></Route>
+      <Route path="/referee-interface"><Redirect to="/diary" /></Route>
+      <Route path="/organizer/:rest*"><Redirect to="/diary" /></Route>
       <Route path="/admin/users/:userId">
         <ProtectedRoute roles={["admin"]}>
           <UserDetail />
@@ -174,32 +162,6 @@ function Router() {
       <Route path="/admin-panel">
         <ProtectedRoute roles={["admin"]}>
           <AdminPanel />
-        </ProtectedRoute>
-      </Route>
-      <Route path="/referee-interface" component={RefereeInterface} />
-      <Route path="/organizer">
-        <ProtectedRoute redirectTo="/auth/login">
-          <OrganizerDashboard />
-        </ProtectedRoute>
-      </Route>
-      <Route path="/organizer/competitions">
-        <ProtectedRoute redirectTo="/auth/login">
-          <OrganizerCompetitions />
-        </ProtectedRoute>
-      </Route>
-      <Route path="/organizer/create">
-        <ProtectedRoute redirectTo="/auth/login">
-          <OrganizerCreateCompetition />
-        </ProtectedRoute>
-      </Route>
-      <Route path="/organizer/competition/:id">
-        <ProtectedRoute redirectTo="/auth/login">
-          <OrganizerCompetitionManage />
-        </ProtectedRoute>
-      </Route>
-      <Route path="/organizer/competition/:id/checkout">
-        <ProtectedRoute redirectTo="/auth/login">
-          <OrganizerCompetitionCheckout />
         </ProtectedRoute>
       </Route>
       <Route path="/notification-preferences">

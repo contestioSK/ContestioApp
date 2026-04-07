@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, type ChangeEvent } from "react";
+import { FEATURES } from "@/lib/features";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -297,13 +298,13 @@ export default function Profile() {
   // Fetch competition history
   const { data: competitionHistory = [], isLoading: isHistoryLoading } = useQuery<CompetitionHistoryItem[]>({
     queryKey: ["/api/me/competition-history"],
-    enabled: !!user,
+    enabled: FEATURES.competitions && !!user,
   });
 
   // Fetch competition catches for import
   const { data: competitionCatches = [], isLoading: isCatchesLoading } = useQuery<CompetitionCatchItem[]>({
     queryKey: ["/api/me/competition-catches"],
-    enabled: !!user,
+    enabled: FEATURES.competitions && !!user,
   });
 
   // State for import dialog

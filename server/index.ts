@@ -4,6 +4,7 @@ import { setupVite, serveStatic, log } from "./vite";
 import { storage } from "./storage";
 import { NotificationService } from "./notification-service";
 import { emailService } from "./utils/email";
+import { FEATURES } from "./features";
 import helmet from "helmet";
 import cors from "cors";
 import { authenticatedApiLimiter } from "./middleware/rate-limiting";
@@ -696,11 +697,18 @@ async function startPhotoCleanupScheduler() {
   startAnnouncementScheduler();
   startBattleScheduler(broadcastToUsers);
   startBattleNotificationScheduler();
-  startRefereeCleanupScheduler();
-  startCompetitionReminderScheduler();
-  startDayBeforeCompetitionScheduler();
-  startCompetitionAutoFinishScheduler();
   startPhotoCleanupScheduler();
+
+  // Competition-only schedulers — only start when competitions are enabled
+  if (FEATURES.competitions) {
+    startRefereeCleanupScheduler();
+    startCompetitionReminderScheduler();
+    startDayBeforeCompetitionScheduler();
+    startCompetitionAutoFinishScheduler();
+    log('[SCHEDULER] Competition schedulers started');
+  } else {
+    log('[SCHEDULER] Competition schedulers SKIPPED (FEATURES.competitions = false)');
+  }
 
   server.listen({
     port,

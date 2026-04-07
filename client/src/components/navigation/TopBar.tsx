@@ -1,12 +1,10 @@
 import { useState } from "react";
-import { Link, useLocation } from "wouter";
+import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/contexts/ThemeContext";
-import { useUserMode } from "@/contexts/UserModeContext";
 import { Button } from "@/components/ui/button";
 import { Menu, Search } from "lucide-react";
 import NotificationsDropdown from "./NotificationsDropdown";
-import RoleSwitcher from "./RoleSwitcher";
 import UserMenu from "./UserMenu";
 import MobileMenu from "./MobileMenu";
 import DiarySearch from "./DiarySearch";
@@ -16,22 +14,12 @@ import contestioLogoDark from "@assets/contestio_logo_black_1766308180088.png";
 export default function TopBar() {
   const { user } = useAuth();
   const { theme } = useTheme();
-  const { activeMode, hasMultipleRoles } = useUserMode();
   const [, setLocation] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
   const handleLogoClick = () => {
-    switch (activeMode) {
-      case 'referee':
-        setLocation('/referee-interface');
-        break;
-      case 'organizer':
-        setLocation('/organizer');
-        break;
-      default:
-        setLocation('/diary');
-    }
+    setLocation('/diary');
   };
 
   if (!user) return null;
@@ -88,12 +76,6 @@ export default function TopBar() {
             {/* Notifications */}
             <NotificationsDropdown />
 
-            {/* Role Switcher (only if has multiple roles) */}
-            {hasMultipleRoles && (
-              <div className="hidden md:block">
-                <RoleSwitcher />
-              </div>
-            )}
 
             {/* User Menu */}
             <UserMenu />

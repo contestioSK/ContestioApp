@@ -121,7 +121,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
         </SheetHeader>
 
         <div className="overflow-y-auto flex-1 bg-slate-50/50 dark:bg-slate-950">
-          {hasMultipleRoles && (
+          {false && (
             <div className="px-4 pt-2 pb-2">
               <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 pl-1">
                 Režim aplikácie
@@ -364,29 +364,6 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
           </div>
         </div>
 
-        <div className="p-3 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shrink-0">
-          <button
-            onClick={() => handleNavigation('/categories/live')}
-            className="relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 p-[1px] shadow-lg shadow-emerald-500/20 group transition-all hover:shadow-emerald-500/30 hover:scale-[1.01]"
-          >
-            <div className="relative flex items-center gap-3 bg-white dark:bg-slate-950/90 rounded-[11px] p-2.5 transition-colors group-hover:bg-opacity-90">
-              <div className="h-9 w-9 rounded-lg bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400 animate-pulse">
-                <Trophy className="h-5 w-5" />
-              </div>
-              <div className="flex-1 text-left">
-                <span className="block text-sm font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">Oficiálne súťaže</span>
-                <span className="text-[10px] text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                  </span>
-                  Práve prebieha
-                </span>
-              </div>
-              <ChevronRight className="h-5 w-5 text-slate-300 dark:text-slate-600 group-hover:text-emerald-500 transition-colors" />
-            </div>
-          </button>
-        </div>
       </SheetContent>
     </Sheet>
   );
