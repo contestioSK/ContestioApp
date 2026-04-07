@@ -351,7 +351,7 @@ export default function Landing() {
             Nenechávaj úspech na náhodu.
           </h2>
           <p className="text-slate-300 mb-10 max-w-xl mx-auto text-lg">
-            Začni sledovať každý úlovok ako profesionál. Zdarma, hneď, bez výhovoriek.
+            Pridaj sa do Contestio tímu, vyskúšaj si denník a ulož si svoje spomienky na jednom mieste.
           </p>
           <Link href="/api/auth/login">
             <div className="inline-block bg-teal-500 text-[#050810] px-12 py-5 rounded-2xl font-black text-xl hover:bg-white hover:text-black transition-all shadow-[0_0_40px_rgba(20,184,166,0.3)] hover:scale-105 cursor-pointer">
