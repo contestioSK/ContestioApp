@@ -218,31 +218,30 @@ export default function Landing() {
                     <div className="flex items-center justify-center pt-[60px]">
                       <div className="w-2 h-2 bg-[#10b981] rounded-full shadow-[0px_0px_10px_0px_rgba(16,185,129,0.5)] mr-2" />
                       <span className="text-white text-sm font-semibold tracking-[0.35px]" style={{ fontFamily: "'Inter', sans-serif" }}>
-                        Live Výsledky
+                        Môj denník
                       </span>
                     </div>
 
-                    {/* Total Volume */}
+                    {/* Total catches */}
                     <div className="text-center mt-8">
                       <p className="text-[#71717a] text-[10px] uppercase tracking-[1px]" style={{ fontFamily: "'Inter', sans-serif" }}>
-                        Total Volume
+                        Celkový úlovok
                       </p>
                       <p className="text-white text-[48px] font-medium tracking-[-2.4px] mt-1" style={{ fontFamily: "'Geist', sans-serif" }}>
-                        $8,245.32
+                        148 kg
                       </p>
                       <div className="flex items-center justify-center gap-2 mt-2">
                         <span className="bg-[rgba(16,185,129,0.1)] border border-[rgba(16,185,129,0.2)] rounded px-2 py-1 text-[#10b981] text-[10px] font-semibold">
-                          +12.4%
+                          +8 tento mesiac
                         </span>
-                        <span className="text-[#71717a] text-xs">this week</span>
                       </div>
                     </div>
 
-                    {/* Active Nodes Section */}
+                    {/* Recent catches */}
                     <div className="absolute bottom-0 left-0 right-0 bg-[rgba(24,24,27,0.6)] backdrop-blur-[6px] border-t border-white/5 rounded-t-[32px] pt-4 px-6 pb-6">
                       <div className="flex items-center justify-between mb-4">
                         <span className="text-[#71717a] text-[10px] uppercase tracking-[0.5px] font-bold" style={{ fontFamily: "'Inter', sans-serif" }}>
-                          Active Nodes
+                          Posledné úlovky
                         </span>
                         <div className="flex gap-1">
                           <div className="w-1 h-1 bg-[#52525b] rounded-full" />
@@ -250,13 +249,13 @@ export default function Landing() {
                         </div>
                       </div>
 
-                      {/* Team Cards */}
+                      {/* Catch Cards */}
                       <div className="space-y-3">
                         {[
-                          { name: 'Tím Alfa', catches: '12 úlovkov', weight: '245 kg' },
-                          { name: 'Rybári SK', catches: '9 úlovkov', weight: '198 kg' },
-                          { name: 'Kapráři CZ', catches: '9 úlovkov', weight: '8 úlovkov' },
-                        ].map((team, i) => (
+                          { species: 'Kapor obyčajný', location: 'Hrušovská zdrž', weight: '6.45 kg' },
+                          { species: 'Šťuka severná', location: 'Dunaj – km 47', weight: '3.20 kg' },
+                          { species: 'Zubáč veľkoústy', location: 'Oravská priehrada', weight: '4.10 kg' },
+                        ].map((catch_, i) => (
                           <div 
                             key={i}
                             className="p-3 rounded-xl h-[56px]"
@@ -265,15 +264,15 @@ export default function Landing() {
                             <div className="flex items-center justify-between">
                               <div>
                                 <span className="text-white text-xs font-semibold" style={{ fontFamily: "'Inter', sans-serif" }}>
-                                  {team.name}
+                                  {catch_.species}
                                 </span>
-                                <span className="text-white/40 text-xs ml-1">{team.catches}</span>
+                                <span className="text-white/40 text-xs ml-1">{catch_.location}</span>
                               </div>
                               <ChevronRight className="w-4 h-4 text-white/40" />
                             </div>
                             <div className="flex items-center gap-2 mt-1">
                               <div className="w-1 h-1 bg-[#10b981] rounded-full" />
-                              <span className="text-[#10b981] text-[10px] font-medium">{team.weight}</span>
+                              <span className="text-[#10b981] text-[10px] font-medium">{catch_.weight}</span>
                             </div>
                           </div>
                         ))}
@@ -364,7 +363,7 @@ export default function Landing() {
             <div>
               <img src={contestioLogo} alt="Contestio" className="h-8 mb-4" />
               <p className="text-white/50 text-sm leading-relaxed">
-                Moderná platforma pre rybárske súťaže a osobný denník.
+                Tvoj digitálny rybársky denník. Vždy po ruke.
               </p>
             </div>
 
