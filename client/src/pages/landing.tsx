@@ -36,7 +36,7 @@ export default function Landing() {
           <div className="hidden lg:flex items-center gap-6 px-6 py-3 rounded-full border border-white/10 bg-gradient-to-r from-[#08101a]/80 via-[#0e2331]/60 to-[#08121c]/80 backdrop-blur-[12px]">
             {navItems.map((item) => (
               <Link key={item.href} href={item.href}>
-                <span className="text-white text-sm font-normal cursor-pointer hover:opacity-80 transition-opacity whitespace-nowrap" style={{ fontFamily: "'ABeeZee', sans-serif" }}>
+                <span className="text-white text-sm font-normal cursor-pointer hover:opacity-80 transition-opacity whitespace-nowrap">
                   {item.label}
                 </span>
               </Link>
@@ -47,14 +47,14 @@ export default function Landing() {
           <div className="hidden lg:flex items-center gap-3">
             <Link href="/auth/login">
               <div className="bg-[#fb923c] px-5 py-2.5 rounded-full flex items-center justify-center cursor-pointer hover:bg-[#f97316] transition-colors">
-                <span className="text-[#08101b] text-sm font-medium" style={{ fontFamily: "'ABeeZee', sans-serif" }}>
+                <span className="text-[#08101b] text-sm font-medium">
                   Prihlásiť sa
                 </span>
               </div>
             </Link>
             <Link href="/auth/register">
               <div className="backdrop-blur-[12px] border border-white/10 px-5 py-2.5 rounded-full flex items-center justify-center cursor-pointer hover:bg-white/5 transition-colors">
-                <span className="text-white text-sm font-normal whitespace-nowrap" style={{ fontFamily: "'ABeeZee', sans-serif" }}>
+                <span className="text-white text-sm font-normal whitespace-nowrap">
                   Zaregistrovať sa
                 </span>
               </div>
