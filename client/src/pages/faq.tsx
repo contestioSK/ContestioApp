@@ -59,7 +59,7 @@ export default function FAQ() {
         },
         {
           question: "Aký je rozdiel medzi FREE a PREMIUM?",
-          answer: "FREE verzia ti ponúka neobmedzené výpravy (s prístupom k posledným 3), kapacitu 50 úlovkov, 1 fotografiu na úlovok a môžeš prijímať battle výzvy. PREMIUM ti odomkne neobmedzenú históriu výprav, neobmedzené úlovky a fotografie, pokročilé štatistiky a grafy, ukladanie GPS lokalít, predpoveď počasia, offline režim so synchronizáciou a možnosť vytvárať vlastné battle súboje. Cena je 5,90 €/mesiac alebo 59,90 €/rok."
+          answer: "FREE verzia ti ponúka neobmedzené výpravy (s prístupom k posledným 3), kapacitu 50 úlovkov, 1 fotografiu na úlovok a môžeš prijímať battle výzvy. PREMIUM ti odomkne neobmedzenú históriu výprav, neobmedzené úlovky a fotografie, pokročilé štatistiky a grafy, ukladanie GPS lokalít, predpoveď počasia, offline režim so synchronizáciou a možnosť vytvárať vlastné battle súboje. Cena je 7,00 €/mesiac alebo 60,00 €/rok."
         }
       ]
     },
