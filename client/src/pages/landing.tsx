@@ -1,38 +1,18 @@
-import { Menu, X, ChevronRight } from "lucide-react";
-import { Link } from "wouter";
 import { useState } from "react";
+import { Link } from "wouter";
+import {
+  Menu, X, ChevronRight,
+  Fish, Calendar, CloudRain, Check, AlertCircle, Activity,
+  Map as MapIcon, Target, Users,
+} from "lucide-react";
 
 import contestioLogo from "@assets/figma/logo.png";
-import starsBackground from "@assets/figma/stars_background.png";
-import featureDennik from "@assets/figma/feature_dennik.png";
 
-function GradientOrb1() {
-  return (
-    <div 
-      className="w-full h-full rounded-[50%]"
-      style={{ 
-        backgroundColor: '#102A38',
-        filter: 'blur(207px)',
-      }}
-    />
-  );
-}
-
-function GradientOrb2() {
-  return (
-    <div 
-      className="w-full h-full rounded-[50%]"
-      style={{ 
-        background: 'linear-gradient(90deg, #19ADFF 0%, #2E769E 100%)',
-        filter: 'blur(207px)',
-      }}
-    />
-  );
-}
+const topoPattern = `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M54.627 0l.83.83v58.34l-.83.83H.83l-.83-.83V.83L.83 0h53.797zm-1.889 1.889H2.718v54.334h50.02V1.889zM19.125 15.688a2.625 2.625 0 110-5.25 2.625 2.625 0 010 5.25zm0-1.5a1.125 1.125 0 100-2.25 1.125 1.125 0 000 2.25zm19.125 21.375a2.625 2.625 0 110-5.25 2.625 2.625 0 010 5.25zm0-1.5a1.125 1.125 0 100-2.25 1.125 1.125 0 000 2.25z' fill='%2314B8A6' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E")`;
 
 export default function Landing() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
+
   const navItems = [
     { href: "/about-us", label: "O nás" },
     { href: "/faq", label: "FAQ" },
@@ -41,51 +21,12 @@ export default function Landing() {
   ];
 
   return (
-    <div className="bg-[#08101a] min-h-screen relative overflow-x-hidden">
-      
-      {/* Background Effects - scale factor: min(1, 100vw/1440px) */}
-      {/* Orb1: X=192.2, Y=-181.42, W=948.31, H=571.27 */}
-      <div 
-        className="absolute pointer-events-none"
-        style={{ 
-          top: 'calc(-181px * min(1, 100vw / 1440px))',
-          left: 'calc(192px * min(1, 100vw / 1440px))',
-          width: 'calc(948px * min(1, 100vw / 1440px))', 
-          height: 'calc(571px * min(1, 100vw / 1440px))' 
-        }}
-      >
-        <GradientOrb1 />
-      </div>
-      {/* Orb2: X=385.27, Y=297.88, W=948.31, H=303.95 */}
-      <div 
-        className="absolute pointer-events-none"
-        style={{ 
-          top: 'calc(298px * min(1, 100vw / 1440px))',
-          left: 'calc(385px * min(1, 100vw / 1440px))',
-          width: 'calc(948px * min(1, 100vw / 1440px))', 
-          height: 'calc(304px * min(1, 100vw / 1440px))' 
-        }}
-      >
-        <GradientOrb2 />
-      </div>
-      {/* Stars background: 95% width, aspect ratio preserved */}
-      <div 
-        className="absolute mix-blend-screen pointer-events-none"
-        style={{
-          top: '-17px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '95%',
-          aspectRatio: '1834 / 1200'
-        }}
-      >
-        <img src={starsBackground} alt="" className="w-full h-full object-cover" />
-      </div>
+    <div className="bg-[#050810] min-h-screen text-slate-300 overflow-x-hidden">
 
       {/* Navigation */}
       <nav className="relative z-50 px-4 md:px-20 pt-[45px]">
         <div className="max-w-[1440px] mx-auto flex items-center justify-between">
-          
+
           {/* Logo */}
           <Link href="/">
             <img src={contestioLogo} alt="Contestio" className="h-[37px] w-auto" />
@@ -101,7 +42,7 @@ export default function Landing() {
               </Link>
             ))}
           </div>
-          
+
           {/* CTA Buttons */}
           <div className="hidden lg:flex items-center gap-3">
             <Link href="/auth/login">
@@ -121,7 +62,7 @@ export default function Landing() {
           </div>
 
           {/* Mobile Menu Button */}
-          <button 
+          <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="lg:hidden text-white p-2"
           >
@@ -135,7 +76,7 @@ export default function Landing() {
             <div className="space-y-3">
               {navItems.map((item) => (
                 <Link key={item.href} href={item.href}>
-                  <div 
+                  <div
                     className="px-4 py-3 text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
@@ -160,197 +101,260 @@ export default function Landing() {
         )}
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative z-10 px-4 md:px-20 pt-[67px]">
-        <div className="max-w-[1440px] mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-            
-            {/* Left Column - Text */}
-            <div className="flex flex-col gap-[37px] max-w-[791px]">
-              <div className="flex flex-col gap-[23px]" style={{ fontFamily: "'Manrope', sans-serif" }}>
-                <div className="flex flex-col gap-4 tracking-[-4.8px]">
-                  <div className="flex gap-5 items-center text-[52px] md:text-[82px] leading-[96px]">
-                    <span className="bg-gradient-to-b from-white via-white to-white/50 bg-clip-text text-transparent opacity-60">
-                      Rybársky
-                    </span>
-                    <span className="text-white">
-                      Denník
-                    </span>
-                  </div>
-                  <p className="text-[32px] md:text-[52px] leading-[96px] text-white font-medium">
-                    Každý úlovok. Navždy zachovaný.
-                  </p>
-                </div>
-                <p className="text-xl text-white leading-8 max-w-[728px] font-medium">
-                  Zaznamenaj úlovky, sleduj štatistiky a objavuj nové lokality. Tvoj digitálny rybársky denník vždy po ruke.
-                </p>
-              </div>
+      {/* 1. HERO SECTION */}
+      <section className="relative min-h-[90vh] flex items-center pt-16 pb-24 border-b border-white/5">
+        <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1506598822606-2580ec19b0de?q=80&w=2940&auto=format&fit=crop')] bg-cover bg-center" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#050810]/80 via-[#050810]/50 to-[#050810]" />
+        </div>
 
-              {/* CTA Buttons */}
-              <div className="flex flex-wrap gap-5">
-                <Link href="/auth/login">
-                  <div className="bg-[#fb923c] px-[10px] py-[17px] rounded-[28px] w-[195px] flex items-center justify-center cursor-pointer hover:bg-[#f97316] transition-colors">
-                    <span className="text-[#08101b] text-base font-normal text-center" style={{ fontFamily: "'ABeeZee', sans-serif" }}>
-                      Začať zadarmo
-                    </span>
-                  </div>
-                </Link>
-                <Link href="/pricing">
-                  <div className="backdrop-blur-[12px] border border-white/8 h-[50px] rounded-full w-[195px] flex items-center justify-center cursor-pointer hover:bg-white/5 transition-colors">
-                    <span className="text-white text-base font-normal text-center" style={{ fontFamily: "'ABeeZee', sans-serif" }}>
-                      Zobraziť cenník
-                    </span>
-                  </div>
-                </Link>
-              </div>
+        <div className="max-w-7xl mx-auto px-6 relative z-10 w-full grid lg:grid-cols-2 gap-16 items-center">
+          <div>
+            <div className="inline-flex items-center gap-2 bg-teal-500/10 border border-teal-500/20 px-4 py-2 rounded-full text-xs font-black text-teal-400 mb-8 uppercase tracking-widest backdrop-blur-md">
+              <Activity size={14} /> MVP Denník v1.0
             </div>
 
-            {/* Right Column - Phone Mockup */}
-            <div className="flex justify-center lg:justify-end">
-              <div 
-                className="relative w-[280px] md:w-[330px] h-[560px] md:h-[661px]"
-                style={{ transform: 'rotate(1.44deg) skewX(-22.42deg) scaleY(0.92)' }}
-              >
-                <div className="bg-[#09090b] border-[12px] border-[#27272a] rounded-[56px] w-full h-full overflow-hidden shadow-[30px_110px_163px_0px_rgba(0,0,0,0.92)]">
-                  <div className="absolute inset-[1px] bg-gradient-to-b from-[#18181b] to-black rounded-[44px] overflow-hidden">
-                    
-                    {/* Phone Header */}
-                    <div className="flex items-center justify-center pt-[60px]">
-                      <div className="w-2 h-2 bg-[#10b981] rounded-full shadow-[0px_0px_10px_0px_rgba(16,185,129,0.5)] mr-2" />
-                      <span className="text-white text-sm font-semibold tracking-[0.35px]" style={{ fontFamily: "'Inter', sans-serif" }}>
-                        Môj denník
-                      </span>
-                    </div>
+            <h1 className="text-5xl md:text-7xl font-black text-white mb-6 tracking-tighter leading-[1.05]">
+              Maj úlovky <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-600">pod kontrolou.</span>
+            </h1>
 
-                    {/* Total catches */}
-                    <div className="text-center mt-8">
-                      <p className="text-[#71717a] text-[10px] uppercase tracking-[1px]" style={{ fontFamily: "'Inter', sans-serif" }}>
-                        Celkový úlovok
-                      </p>
-                      <p className="text-white text-[48px] font-medium tracking-[-2.4px] mt-1" style={{ fontFamily: "'Geist', sans-serif" }}>
-                        148 kg
-                      </p>
-                      <div className="flex items-center justify-center gap-2 mt-2">
-                        <span className="bg-[rgba(16,185,129,0.1)] border border-[rgba(16,185,129,0.2)] rounded px-2 py-1 text-[#10b981] text-[10px] font-semibold">
-                          +8 tento mesiac
-                        </span>
-                      </div>
-                    </div>
+            <p className="text-lg md:text-xl text-slate-300/80 mb-10 leading-relaxed max-w-lg font-medium">
+              Zabudni na stratené fotky a zabudnuté tlaky vzduchu. Contestio je analytický denník, ktorý premení tvoje pocity pri vode na tvrdé dáta.
+            </p>
 
-                    {/* Recent catches */}
-                    <div className="absolute bottom-0 left-0 right-0 bg-[rgba(24,24,27,0.6)] backdrop-blur-[6px] border-t border-white/5 rounded-t-[32px] pt-4 px-6 pb-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <span className="text-[#71717a] text-[10px] uppercase tracking-[0.5px] font-bold" style={{ fontFamily: "'Inter', sans-serif" }}>
-                          Posledné úlovky
-                        </span>
-                        <div className="flex gap-1">
-                          <div className="w-1 h-1 bg-[#52525b] rounded-full" />
-                          <div className="w-1 h-1 bg-[#3f3f46] rounded-full" />
-                        </div>
-                      </div>
-
-                      {/* Catch Cards */}
-                      <div className="space-y-3">
-                        {[
-                          { species: 'Kapor obyčajný', location: 'Hrušovská zdrž', weight: '6.45 kg' },
-                          { species: 'Šťuka severná', location: 'Dunaj – km 47', weight: '3.20 kg' },
-                          { species: 'Zubáč veľkoústy', location: 'Oravská priehrada', weight: '4.10 kg' },
-                        ].map((catch_, i) => (
-                          <div 
-                            key={i}
-                            className="p-3 rounded-xl h-[56px]"
-                            style={{ background: 'linear-gradient(169deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%)' }}
-                          >
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <span className="text-white text-xs font-semibold" style={{ fontFamily: "'Inter', sans-serif" }}>
-                                  {catch_.species}
-                                </span>
-                                <span className="text-white/40 text-xs ml-1">{catch_.location}</span>
-                              </div>
-                              <ChevronRight className="w-4 h-4 text-white/40" />
-                            </div>
-                            <div className="flex items-center gap-2 mt-1">
-                              <div className="w-1 h-1 bg-[#10b981] rounded-full" />
-                              <span className="text-[#10b981] text-[10px] font-medium">{catch_.weight}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Link href="/auth/login">
+                <div className="bg-teal-500 text-[#050810] px-8 py-4 rounded-xl font-black text-lg hover:bg-teal-400 hover:-translate-y-1 transition-all flex items-center justify-center gap-2 shadow-[0_0_30px_rgba(20,184,166,0.3)] cursor-pointer">
+                  Vytvoriť účet <ChevronRight size={20} />
                 </div>
-              </div>
+              </Link>
             </div>
           </div>
 
-          {/* Stats */}
-          <div className="flex gap-4 mt-8 text-white">
-            <div className="flex flex-col gap-4 w-[196px]">
-              <p className="text-base font-light leading-8" style={{ fontFamily: "'Manrope', sans-serif" }}>
-                Počet aktívnych rybárov
-              </p>
-              <p className="text-[32px] font-medium tracking-[-2px] leading-[96px]" style={{ fontFamily: "'Manrope', sans-serif" }}>
-                1 200+
-              </p>
-            </div>
-            <div className="flex flex-col gap-4 w-[196px]">
-              <p className="text-base font-light leading-8" style={{ fontFamily: "'Manrope', sans-serif" }}>
-                Zaznamenaných úlovkov
-              </p>
-              <p className="text-[32px] font-medium tracking-[-2px] leading-[96px]" style={{ fontFamily: "'Manrope', sans-serif" }}>
-                10 000+
-              </p>
+          {/* App Mockup Card */}
+          <div className="relative hidden lg:block">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-teal-500/20 blur-[100px] rounded-full pointer-events-none" />
+            <div className="relative bg-[#0A101C]/80 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl p-6 rotate-[-2deg] hover:rotate-0 transition-transform duration-500">
+              <div className="flex justify-between items-center border-b border-white/5 pb-4 mb-4">
+                <div className="font-bold text-white flex items-center gap-2">
+                  <MapIcon size={16} className="text-teal-500" /> Posledná výprava
+                </div>
+                <div className="text-xs bg-teal-500/20 text-teal-400 px-2 py-1 rounded">Aktívne</div>
+              </div>
+              <div className="space-y-4">
+                <div className="h-32 bg-white/5 rounded-xl border border-white/5 flex items-end p-4">
+                  <div className="w-full flex items-end justify-between gap-2 opacity-50">
+                    {[40, 70, 45, 90, 60, 100].map((h, i) => (
+                      <div key={i} className="w-full bg-gradient-to-t from-teal-500/40 to-transparent rounded-t-sm" style={{ height: `${h}px` }} />
+                    ))}
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <div className="flex-1 bg-white/5 rounded-xl p-4 border border-white/5">
+                    <div className="text-xs text-slate-500 mb-1">Naj. nástraha</div>
+                    <div className="text-sm font-bold text-white">Krill 20mm</div>
+                  </div>
+                  <div className="flex-1 bg-white/5 rounded-xl p-4 border border-white/5">
+                    <div className="text-xs text-slate-500 mb-1">Tlak vzduchu</div>
+                    <div className="text-sm font-bold text-white">1012 hPa</div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Gradient Fade */}
-      <div className="absolute top-[938px] left-0 right-0 h-[203px] bg-gradient-to-b from-transparent to-[#08101a] pointer-events-none" />
+      {/* 2. PAIN SECTION */}
+      <section className="py-24 relative bg-[#030508] overflow-hidden">
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-rose-600/10 blur-[150px] rounded-full pointer-events-none" />
 
-
-      {/* Features Section */}
-      <section id="features" className="relative z-10 px-4 md:px-16 py-[120px]">
-        <div className="max-w-[1440px] mx-auto">
-          
-          {/* Section Header */}
-          <div className="text-center mb-16">
-            <h2 className="text-[42px] md:text-[52px] font-medium text-white tracking-[-2px] leading-tight" style={{ fontFamily: "'Manrope', sans-serif" }}>
-              Viac Než Len Aplikácia.<span className="text-white/50"> Tvoj</span><br />
-              <span className="text-white/50">Partner Pri Vode.</span>
+        <div className="max-w-7xl mx-auto px-6 relative z-10 flex flex-col md:flex-row gap-16 items-center">
+          <div className="w-full md:w-1/2">
+            <AlertCircle size={40} className="text-rose-500 mb-6" />
+            <h2 className="text-3xl md:text-5xl font-black text-white mb-6 tracking-tight">
+              Chytíš rybu... <br />
+              <span className="text-rose-500">a o týždeň nevieš nič.</span>
             </h2>
-            <p className="text-white/60 text-lg max-w-2xl mx-auto mt-6">
-              Inteligentný denník pre každého rybára. Zaznamenaj úlovky, sleduj progres a objav predpoveď aktivitu rýb.
+            <p className="text-slate-400 text-lg mb-8 leading-relaxed">
+              Nepamätáš si, na čo brala. Fotky máš rozhádzané v mobile medzi screenshotmi memeečok. Nečítaš vodu, len dúfaš.
+            </p>
+            <div className="inline-flex border border-rose-500/30 bg-rose-500/10 text-rose-400 px-5 py-3 rounded-xl font-bold uppercase tracking-wider text-sm shadow-[0_0_20px_rgba(244,63,94,0.1)]">
+              Stále začínaš od nuly.
+            </div>
+          </div>
+
+          <div className="w-full md:w-1/2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {[
+              { title: "Stratené detaily", desc: "Zabudnuté montáže a lokácie." },
+              { title: "Chaos v galérii", desc: "Kedy a kde sa to chytilo?" },
+              { title: "Slepé spoliehanie", desc: "Hádanie počasia z okna." },
+              { title: "Žiadny posun", desc: "Rovnaké chyby, menšie ryby." },
+            ].map((item, i) => (
+              <div key={i} className="bg-[#0A101C] p-6 rounded-2xl border border-white/5 hover:border-rose-500/30 transition-colors">
+                <X size={20} className="text-rose-500 mb-4" />
+                <h4 className="text-white font-bold mb-1">{item.title}</h4>
+                <p className="text-xs text-slate-500">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 3. FEATURES SECTION */}
+      <section className="py-32 relative bg-[#09111C]">
+        <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: topoPattern }} />
+        <div className="absolute left-1/2 top-0 -translate-x-1/2 w-[800px] h-full bg-gradient-to-b from-teal-500/5 via-teal-500/10 to-transparent pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl md:text-6xl font-black text-white mb-6 tracking-tight">
+              Konečne v tom máš <span className="text-teal-400">systém.</span>
+            </h2>
+            <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+              Vymeň hádanie za tvrdé dáta. Každá výprava ťa posúva o level vyššie.
             </p>
           </div>
 
-          {/* Feature Cards */}
-          <div className="space-y-8">
-
-            {/* Inteligentný Denník */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-              <div className="rounded-[26px] overflow-hidden h-[400px] lg:h-[500px]">
-                <img src={featureDennik} alt="Inteligentný Denník" className="w-full h-full object-cover" />
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="bg-[#050810]/80 backdrop-blur-xl border border-teal-500/20 p-8 rounded-[2rem] hover:-translate-y-2 transition-transform duration-300 shadow-[0_10px_40px_rgba(20,184,166,0.1)]">
+              <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-400 mb-8 border border-teal-500/20">
+                <Fish size={28} />
               </div>
-              <div className="flex flex-col gap-6 p-8">
-                <h3 className="text-[28px] md:text-[32px] font-semibold text-white tracking-[-0.9px]" style={{ fontFamily: "'Manrope', sans-serif" }}>
-                  Inteligentný Denník
-                </h3>
-                <p className="text-white/80 text-lg leading-relaxed">
-                  Vytvor si osobný rybársky denník s GPS lokalitami, fotografiami úlovkov a pokročilými štatistikami. Sleduj svoj progres, súťaž s priateľmi v Fishing Battle a využívaj predpoveď počasia pre maximálny úspech.
-                </p>
-                <Link href="/auth/login">
-                  <div className="bg-[#fb923c] px-[10px] py-[17px] rounded-[28px] w-fit min-w-[165px] flex items-center justify-center cursor-pointer hover:bg-[#f97316] transition-colors">
-                    <span className="text-[#08101b] text-base font-normal text-center" style={{ fontFamily: "'ABeeZee', sans-serif" }}>
-                      Začať zadarmo
-                    </span>
-                  </div>
-                </Link>
-              </div>
+              <h3 className="text-2xl font-bold text-white mb-4">Karta Úlovku</h3>
+              <p className="text-slate-400 mb-6 text-sm leading-relaxed">
+                Žiadne poloprázdne zápisníky. Pridaj fotku, váhu, nástrahu a lokáciu do 15 sekúnd. Tvoje dáta sú v bezpečí cloudu.
+              </p>
+              <ul className="space-y-3 border-t border-white/5 pt-6">
+                <li className="flex gap-2 items-center text-xs text-slate-300"><Check size={14} className="text-teal-500 flex-shrink-0" /> Fotky & Miery</li>
+                <li className="flex gap-2 items-center text-xs text-slate-300"><Check size={14} className="text-teal-500 flex-shrink-0" /> Presné podmienky</li>
+              </ul>
             </div>
 
+            <div className="bg-[#050810]/80 backdrop-blur-xl border border-white/5 p-8 rounded-[2rem] hover:-translate-y-2 transition-transform duration-300 hover:border-teal-500/20">
+              <div className="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-400 mb-8 border border-blue-500/20">
+                <Calendar size={28} />
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-4">História výprav</h3>
+              <p className="text-slate-400 mb-6 text-sm leading-relaxed">
+                Pripravuješ sa na známu vodu? Pozri si svoje predošlé výpravy. Presne vieš, na aký tlak rýby reagovali pred rokom.
+              </p>
+              <ul className="space-y-3 border-t border-white/5 pt-6">
+                <li className="flex gap-2 items-center text-xs text-slate-300"><Check size={14} className="text-blue-500 flex-shrink-0" /> Časové osi lovu</li>
+                <li className="flex gap-2 items-center text-xs text-slate-300"><Check size={14} className="text-blue-500 flex-shrink-0" /> Sledovanie trendov</li>
+              </ul>
+            </div>
+
+            <div className="bg-[#050810]/80 backdrop-blur-xl border border-white/5 p-8 rounded-[2rem] hover:-translate-y-2 transition-transform duration-300 hover:border-teal-500/20">
+              <div className="w-14 h-14 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-400 mb-8 border border-indigo-500/20">
+                <CloudRain size={28} />
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-4">Počasie & Checky</h3>
+              <p className="text-slate-400 mb-6 text-sm leading-relaxed">
+                Plánuj dopredu. Sleduj tlakové níže, fázy mesiaca a vytvor si checklist, aby si na brehu nezistil, že nemáš zarážky.
+              </p>
+              <ul className="space-y-3 border-t border-white/5 pt-6">
+                <li className="flex gap-2 items-center text-xs text-slate-300"><Check size={14} className="text-indigo-500 flex-shrink-0" /> 7-dňová predpoveď</li>
+                <li className="flex gap-2 items-center text-xs text-slate-300"><Check size={14} className="text-indigo-500 flex-shrink-0" /> Gear checklist</li>
+              </ul>
+            </div>
           </div>
+        </div>
+      </section>
+
+      {/* 4. FISHING BATTLE SECTION */}
+      <section className="relative py-32 bg-[#050810] overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-orange-600 to-red-600 transform -skew-y-3 scale-110 origin-top-left opacity-[0.85] z-0" />
+        <div className="absolute inset-0 z-0 opacity-10 mix-blend-multiply" style={{ backgroundImage: 'url("https://www.transparenttextures.com/patterns/carbon-fibre.png")' }} />
+
+        <div className="max-w-7xl mx-auto px-6 relative z-10 grid lg:grid-cols-2 gap-16 items-center">
+          <div className="text-white">
+            <div className="inline-block bg-black/30 backdrop-blur-md px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest text-orange-200 border border-white/20 mb-6">
+              <Users size={14} className="inline mr-2" /> Fishing Battle
+            </div>
+            <h2 className="text-5xl md:text-7xl font-black mb-6 leading-none tracking-tighter drop-shadow-xl">
+              Vsaď sa<br /> s kamarátom.
+            </h2>
+            <p className="text-orange-50 text-xl font-medium mb-10 max-w-md drop-shadow-md">
+              Vytvor Fishing Battle priamo v denníku. Všetci pridávajú úlovky z brehu a systém v reálnom čase prepočíta, kto vyhráva. Žiadne tabuľky, len čistý adrenalín medzi priateľmi.
+            </p>
+            <div className="bg-black/20 backdrop-blur-sm p-6 rounded-2xl border border-white/10 flex flex-col gap-4 w-fit">
+              <div className="font-bold uppercase tracking-wider text-sm opacity-80 border-b border-white/10 pb-2">Režimy Fishing Battle</div>
+              <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 font-black text-sm">
+                <div>1. Najťažšia ryba</div>
+                <div>2. Celková váha</div>
+                <div>3. Počet rýb</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Leaderboard Mockup */}
+          <div className="relative">
+            <div className="absolute inset-0 bg-black/40 blur-[50px] rounded-full" />
+            <div className="relative bg-[#0A101C]/90 backdrop-blur-xl border-2 border-white/10 rounded-[2rem] p-8 shadow-2xl transform rotate-3">
+              <div className="flex justify-between items-center mb-8 border-b border-white/10 pb-4">
+                <h3 className="font-black text-white text-xl">Kaprárska výzva 🎣</h3>
+                <div className="flex gap-1">
+                  <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="bg-gradient-to-r from-orange-500/20 to-transparent border border-orange-500/30 p-5 rounded-2xl flex justify-between items-center">
+                  <div className="flex items-center gap-4">
+                    <span className="text-3xl font-black text-orange-400">1</span>
+                    <div>
+                      <div className="font-bold text-white text-lg">Marek (Ty)</div>
+                      <div className="text-xs text-orange-300">Posledný úlovok pred 2h</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-black text-2xl text-white">6.45<span className="text-sm text-slate-400"> kg</span></div>
+                  </div>
+                </div>
+
+                <div className="bg-white/5 border border-white/5 p-5 rounded-2xl flex justify-between items-center opacity-80">
+                  <div className="flex items-center gap-4">
+                    <span className="text-3xl font-black text-slate-500">2</span>
+                    <div className="font-bold text-white text-lg">Jano</div>
+                  </div>
+                  <div className="font-black text-xl text-white">4.20<span className="text-sm text-slate-500"> kg</span></div>
+                </div>
+
+                <div className="bg-white/5 border border-white/5 p-5 rounded-2xl flex justify-between items-center opacity-60">
+                  <div className="flex items-center gap-4">
+                    <span className="text-3xl font-black text-slate-600">3</span>
+                    <div className="font-bold text-slate-300 text-lg">Peto</div>
+                  </div>
+                  <div className="font-black text-xl text-slate-300">2.80<span className="text-sm text-slate-600"> kg</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. FINAL CTA SECTION */}
+      <section className="relative py-32 border-t border-white/5 flex items-center justify-center min-h-[60vh]">
+        <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1544390041-399a099a9a2a?q=80&w=2940&auto=format&fit=crop')] bg-cover bg-center opacity-40" />
+          <div className="absolute inset-0 bg-[#050810]/80 backdrop-blur-[2px]" />
+        </div>
+
+        <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
+          <Target size={48} className="text-teal-500 mx-auto mb-8" />
+          <h2 className="text-4xl md:text-6xl font-black text-white mb-6 tracking-tight">
+            Nenechávaj úspech na náhodu.
+          </h2>
+          <p className="text-slate-300 mb-10 max-w-xl mx-auto text-lg">
+            Pridaj sa do Contestio MVP. Získaš systém zadarmo a pomôžeš nám formovať budúcnosť aplikácie.
+          </p>
+          <Link href="/auth/login">
+            <div className="inline-block bg-teal-500 text-[#050810] px-12 py-5 rounded-2xl font-black text-xl hover:bg-white hover:text-black transition-all shadow-[0_0_40px_rgba(20,184,166,0.3)] hover:scale-105 cursor-pointer">
+              Získať účet zdarma
+            </div>
+          </Link>
         </div>
       </section>
 
@@ -358,7 +362,7 @@ export default function Landing() {
       <footer className="relative z-10 px-4 md:px-16 py-16 border-t border-white/10">
         <div className="max-w-[1440px] mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
-            
+
             {/* Logo */}
             <div>
               <img src={contestioLogo} alt="Contestio" className="h-8 mb-4" />
@@ -403,7 +407,7 @@ export default function Landing() {
             <p className="text-white/40 text-sm">Copyright © C.NTESTIO</p>
             <div className="flex items-center gap-6">
               <Link href="/terms"><span className="text-white/40 hover:text-white text-sm cursor-pointer transition-colors">Terms of Service</span></Link>
-              <button 
+              <button
                 onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                 className="flex items-center gap-2 text-white/40 hover:text-white text-sm transition-colors"
               >
@@ -420,4 +424,3 @@ export default function Landing() {
     </div>
   );
 }
-
