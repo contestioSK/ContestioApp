@@ -372,57 +372,6 @@ export default function DiaryLayout({ children, fullBleed = false }: DiaryLayout
                 );
               })}
 
-              {/* Section Divider - OFICIÁLNE SÚŤAŽE */}
-              <div className="pt-4 pb-2">
-                <div className="px-3 mb-2">
-                  <div className="h-px bg-gradient-to-r from-transparent via-emerald-600 dark:via-emerald-500/50 to-transparent"></div>
-                </div>
-                <div className="px-3 flex items-center gap-1.5">
-                  <TacticalIconInline icon={Trophy} variant="emerald" size="sm" />
-                  <p className="text-xs font-bold text-emerald-600 dark:text-emerald-500 uppercase tracking-wider">
-                    Oficiálne Súťaže
-                  </p>
-                </div>
-              </div>
-
-              {/* Competition Section */}
-              {competitionNavigationItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = isActivePath(item.href);
-                
-                return (
-                  <Tooltip key={item.href}>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={() => {
-                          setLocation(item.href);
-                          window.scrollTo(0, 0);
-                        }}
-                        className={`
-                          w-full flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-all
-                          border-2
-                          ${isActive 
-                            ? 'bg-emerald-600/20 dark:bg-emerald-600/25 text-emerald-700 dark:text-emerald-400 border-emerald-500 dark:border-emerald-500/50' 
-                            : 'text-emerald-800 dark:text-sidebar-foreground bg-emerald-100 dark:bg-emerald-500/5 border-emerald-500 dark:border-emerald-500/30 hover:bg-emerald-200 dark:hover:bg-emerald-500/20 hover:border-emerald-600 dark:hover:border-emerald-500/50'
-                          }
-                        `}
-                        data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
-                      >
-                        <TacticalIconInline icon={Icon} variant="emerald" size="md" className="mr-3 flex-shrink-0" />
-                        <span className="font-medium text-sm flex items-center gap-2">
-                          {item.label}
-                          <Badge className="bg-emerald-600 text-white hover:bg-emerald-700 text-[10px] px-1.5 py-0">
-                            LIVE
-                          </Badge>
-                        </span>
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="right" className="bg-popover text-popover-foreground border shadow-md">
-                      <p>{item.description}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                );
-              })}
             </TooltipProvider>
           </nav>
 
@@ -534,24 +483,6 @@ export default function DiaryLayout({ children, fullBleed = false }: DiaryLayout
               <span className="text-[10px] font-medium truncate">Štatistiky</span>
             </button>
 
-            {/* Súťaže - napravo */}
-            <button
-              onClick={() => {
-                setLocation("/competitions");
-                window.scrollTo(0, 0);
-              }}
-              className={`
-                flex flex-col items-center justify-center py-2 flex-1 min-w-0 transition-colors
-                ${location === "/competitions"
-                  ? 'text-emerald-400 bg-emerald-500/20' 
-                  : 'text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10'
-                }
-              `}
-              data-testid="mobile-nav-sutaze"
-            >
-              <Trophy className="h-5 w-5 flex-shrink-0" />
-              <span className="text-[10px] font-medium truncate">Súťaže</span>
-            </button>
           </div>
         </div>
 
