@@ -2,7 +2,7 @@ import NavigationHeader from "@/components/navigation-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TacticalIcon, TacticalIconVariant } from "@/components/ui/tactical-icon";
-import { ChevronDown, Crown, Trophy, BookOpen, KeyRound, Wrench, ArrowLeft, LucideIcon } from "lucide-react";
+import { ChevronDown, BookOpen, KeyRound, Wrench, ArrowLeft, LucideIcon } from "lucide-react";
 import { useState } from "react";
 
 interface FAQItem {
@@ -31,58 +31,6 @@ export default function FAQ() {
   };
 
   const faqSections: FAQSection[] = [
-    {
-      title: "Organizátori",
-      icon: Crown,
-      variant: "blue",
-      description: "Ako registrovať a spravovať súťaže, tímy a rozhodcov",
-      items: [
-        {
-          question: "Ako zaregistrujem súťaž?",
-          answer: "Registrácia súťaže je jednoduchá. Stačí kliknúť na 'Registrovať súťaž' v menu, vyplniť potrebné údaje ako názov súťaže, dátum, miesto konania, kontaktné údaje a vybrať si vhodný cenový balík. Po odoslaní formulára tvoja požiadavka prejde schvaľovacím procesom."
-        },
-        {
-          question: "Koľko tímov môžem prihlásiť?",
-          answer: "Počet tímov závisí od tvojho zvoleného balíka. Basic balík umožňuje maximálne 10 tímov, zatiaľ čo Pro, Premium a Enterprise balíky nemajú obmedzenie počtu tímov. Môžeš si kedykoľvek upgradovať na vyšší balík podľa potrieb tvojej súťaže."
-        },
-        {
-          question: "Koľko rozhodcov môžem mať?",
-          answer: "Basic balík podporuje až 2 rozhodcov, Pro balík až 5 rozhodcov, zatiaľ čo Premium a Enterprise balíky umožňujú neobmedzený počet rozhodcov. Každý rozhodca má vlastné prihlásenie a môže zapisovať úlovky nezávisle."
-        },
-        {
-          question: "Môžem pridávať sponzorov a ceny?",
-          answer: "Áno! Funkcia sponzorov je dostupná od Pro balíka vyššie. Môžeš pridávať logá sponzorov, popis ich príspevkov a ceny ktoré poskytujú. Sponzori sa zobrazia na stránke súťaže a v prezentáciách výsledkov."
-        },
-        {
-          question: "Ako funguje Enterprise balík?",
-          answer: "Enterprise balík je určený pre veľké organizácie a obsahuje všetky funkcie plus white-label riešenie, API prístup, interaktívne mapy, podporu pre viacero súťaží pod jednou organizáciou a dedikovanú podporu nášho tímu. Cena sa stanovuje individuálne podľa potrieb."
-        }
-      ]
-    },
-    {
-      title: "Súťažiaci",
-      icon: Trophy,
-      variant: "emerald",
-      description: "Prihlásenie do súťaží, záznam úlovkov a sledovanie výsledkov",
-      items: [
-        {
-          question: "Ako sa prihlásim do súťaže?",
-          answer: "Prihlásenie prebieha cez našu aplikáciu alebo webovú stránku. Vyber si súťaž, zaregistruj svoj tím, vyplň údaje všetkých členov a uhraď registračný poplatok ak je požadovaný. Po schválení od organizátora budeš oficiálne zaregistrovaný."
-        },
-        {
-          question: "Ako sa zaznamenáva úlovok?",
-          answer: "Úlovky zaznamenávajú rozhodcovia priamo cez mobilnú aplikáciu. Rozhodca otvorí tvoj tím v aplikácii, zadá váhu ryby, pridá fotografiu a potvrdí záznam. Údaje sa okamžite synchronizujú a zobrazia v live rebríčku."
-        },
-        {
-          question: "Ako môžem sledovať priebežné výsledky?",
-          answer: "Priebežné výsledky sú dostupné v reálnom čase na webovej stránke súťaže. Stačí otvoriť stránku súťaže v prehliadači a budeš vidieť aktuálny rebríček, fotografie úlovkov a pokrok všetkých tímov. Výsledky sa aktualizujú automaticky."
-        },
-        {
-          question: "Sú výsledky dostupné po skončení súťaže?",
-          answer: "Áno, všetky výsledky zostávajú trvalo dostupné aj po skončení súťaže. Môžeš si pozrieť finálne poradie, všetky úlovky s fotografiami, štatistiky a ďalšie podrobnosti. Organizátor môže výsledky tiež exportovať do PDF alebo Excel formátu."
-        }
-      ]
-    },
     {
       title: "Rybársky denník",
       icon: BookOpen,
@@ -119,19 +67,15 @@ export default function FAQ() {
       title: "Registrácia a účty",
       icon: KeyRound,
       variant: "orange",
-      description: "Vytvorenie účtu, prihlásenie a správa tímu",
+      description: "Vytvorenie účtu, prihlásenie a nastavenie profilu",
       items: [
         {
           question: "Musím mať účet, aby som používal Contestio?",
-          answer: "Áno. Registrácia je nutná pre vedenie rybárskeho denníka aj pre účasť v súťažiach."
+          answer: "Áno. Registrácia je nutná pre vedenie rybárskeho denníka."
         },
         {
           question: "Ako sa môžem registrovať?",
           answer: "Máš dve možnosti: rýchla registrácia cez Google účet alebo klasická registrácia cez e-mail a heslo."
-        },
-        {
-          question: "Je možné spravovať tím viacerými ľuďmi?",
-          answer: "Áno, tímový kapitán môže pridať členov a rozdeliť im prístup."
         },
         {
           question: "Čo ak zabudnem heslo?",
@@ -155,11 +99,7 @@ export default function FAQ() {
         },
         {
           question: "Potrebujem internet, aby som používal Contestio?",
-          answer: "Na prístup k súťažiam a live výsledkom internet potrebuješ, ale zápis do rybárskeho denníka je možný aj offline (synchronizácia prebehne po pripojení)."
-        },
-        {
-          question: "Môžem integrovať výsledky na vlastný web?",
-          answer: "Áno! Enterprise balík obsahuje API prístup, ktorý umožňuje integráciu live výsledkov priamo na tvoj web alebo aplikáciu. Môžeš zobrazovať rebríčky, štatistiky a ďalšie údaje v reálnom čase na vlastnej doméne s tvojím designom."
+          answer: "Väčšina funkcií vyžaduje pripojenie, ale zápis do rybárskeho denníka je možný aj offline (synchronizácia prebehne po pripojení)."
         }
       ]
     }
