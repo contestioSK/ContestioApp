@@ -1,0 +1,160 @@
+⚠️ Verdikt k plánu od Replitu
+
+👉 Strategicky: správne rozhodnutie
+👉 Technicky: polovičné riešenie (a potenciálny problém)
+
+❌ HLAVNÝ PROBLÉM (ktorý prehliadaš)
+
+Toto NIE JE oddelenie produktu.
+Toto je len:
+
+👉 feature toggle cez UI
+
+Čo to znamená v praxi:
+backend súťaží stále beží
+endpointy stále existujú
+logika stále existuje
+DB stále obsahuje súťaže
+
+👉 len si ich „schoval“
+
+Prečo je to problém:
+Technický dlh
+každá zmena v auth / user / fotkách / payments
+musíš myslieť: „nepokazím tým competitions?“
+Bugy sa budú objavovať potichu
+niečo rozbije competitions
+nevšimneš si to → o rok zapneš → rozpadnuté
+Mentálny chaos
+appka nie je jasne definovaná
+je to „denník + niečo vypnuté“
+👉 Realita: máš 2 produkty
+
+Nie 1 appku.
+
+Produkt A:
+
+👉 Fishing Diary
+
+Produkt B:
+
+👉 Fishing Competitions
+
+🔥 SPRÁVNY PRÍSTUP (ak chceš robiť veci poriadne)
+
+Nie:
+
+❌ "vypneme routes"
+
+Ale:
+
+✅ „modulárne oddelenie“
+🔧 MINIMÁLNE, čo musíš spraviť (bez prepisu appky)
+1. Feature flag (tvrdý gate)
+
+Nie UI hack.
+
+const FEATURES = {
+  competitions: false
+}
+2. Backend ochrana
+
+👉 toto je kritické
+
+Každý competition endpoint:
+
+if (!FEATURES.competitions) {
+  return res.status(404).end()
+}
+
+👉 prečo?
+
+Lebo teraz:
+
+endpointy sú stále dostupné
+hocikto ich môže volať
+testy / boty / useri ich trafia
+3. Navigácia = OK (to máš dobre)
+skryť menu ✔
+redirect ✔
+
+To je len UI vrstva → správne.
+
+4. Landing page – tu buď tvrdý
+
+Toto nie je kozmetika.
+
+👉 musí byť:
+
+100% diary messaging
+0 zmienka o súťažiach
+5. Pricing – kritický moment
+
+Tu robíš positioning.
+
+👉 ak tam necháš čo i len náznak súťaží:
+
+rozbiješ fokus
+znížiš konverziu
+⚠️ Najväčší UX fail, ktorý ti hrozí
+
+👉 user uvidí niečo ako:
+
+API response obsahuje competition data
+alebo staré UI komponenty
+
+👉 a povie si:
+
+„čo to je za polotovar?“
+
+🔥 Čo si spravil dobre (aby som bol férový)
+
+✔ redirect strategy
+✔ navigation cleanup
+✔ landing rewrite
+✔ pricing split
+
+👉 toto je správny smer
+
+❗ ALE chýba ti jedna vec (zásadná)
+👉 „produktová identita“
+
+Ty stále rozmýšľaš:
+
+„appka má 2 časti“
+
+❌ NIE
+
+👉 teraz má:
+
+👉 JEDEN PRODUKT
+
+Rybársky denník
+
+🧠 Brutálne dôležitý mentálny shift
+
+Nie:
+
+„vypol som competitions“
+
+Ale:
+
+👉 „competitions NEEXISTUJÚ“
+
+🎯 Finálny verdikt
+
+👉 Tento plán je:
+
+70 % správny
+30 % rizikový
+🚀 Moje odporúčanie (bez kompromisov)
+
+Ak to chceš spraviť poriadne:
+
+MUST:
+feature flag v kóde
+backend blokovanie
+čistý diary positioning
+NICE TO HAVE (ale silné):
+oddeliť do modulov (foldery / services)
+pripraviť "re-enable plan"
