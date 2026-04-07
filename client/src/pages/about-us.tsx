@@ -1,6 +1,6 @@
 import NavigationHeader from "@/components/navigation-header";
 import { Card, CardContent } from "@/components/ui/card";
-import { Users, Target, Eye, Award, Trophy, BookOpen, User } from "lucide-react";
+import { Award, BookOpen, User, BarChart2, Map, Swords } from "lucide-react";
 import { TacticalIcon } from "@/components/ui/tactical-icon";
 
 export default function AboutUs() {
@@ -21,22 +21,9 @@ export default function AboutUs() {
         {/* Main Content */}
         <div className="mb-8">
           <p className="text-base md:text-lg leading-relaxed text-foreground text-center max-w-3xl mx-auto">
-            Contestio je moderná digitálna platforma, ktorá mení spôsob, akým sa organizujú, sledujú a prežívajú rybárske súťaže na Slovensku. Naším cieľom je priniesť do športového rybárstva prehľadnosť, profesionalitu a jedinečný zážitok v reálnom čase – pre organizátorov, tímy aj fanúšikov.
+            Contestio je digitálny rybársky denník, ktorý mení spôsob, akým rybári zaznamenávajú, analyzujú a prežívajú svoje výpravy. Naším cieľom je priniesť do rybárstva dáta, prehľadnosť a motiváciu – pre každého, kto chce byť pri vode lepší.
           </p>
         </div>
-
-        {/* Súťaže Section */}
-        <Card className="mb-6">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <TacticalIcon icon={Trophy} variant="amber" size="sm" showLabel={false} />
-              <h2 className="text-xl md:text-2xl font-bold text-foreground">Súťaže</h2>
-            </div>
-            <p className="text-base leading-relaxed text-muted-foreground">
-              Organizátorom ponúkame profesionálny systém, ktorý pokrýva celé podujatie – od online registrácie tímov, cez správu rozhodcov a sektorov, až po živé výsledky s prehľadnými tabuľkami, mapami a fotografiami úlovkov. Rozhodcovia získavajú rýchle a spoľahlivé nástroje na zapisovanie priamo z brehu. Fanúšikovia môžu sledovať dianie v reálnom čase – kdekoľvek sú.
-            </p>
-          </CardContent>
-        </Card>
 
         {/* Rybársky denník Section */}
         <Card className="mb-6">
@@ -46,7 +33,7 @@ export default function AboutUs() {
               <h2 className="text-xl md:text-2xl font-bold text-foreground">Rybársky denník</h2>
             </div>
             <p className="text-base leading-relaxed mb-3 text-muted-foreground">
-              Contestio však nie je len o súťažiach. Vytvorili sme aj Rybársky denník, určený pre každého vášnivého rybára. Ten ti umožní:
+              Contestio ti umožní:
             </p>
             <ul className="space-y-1.5 text-sm text-muted-foreground mb-5">
               <li className="flex items-start">
@@ -94,42 +81,42 @@ export default function AboutUs() {
           </h2>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-            <Card className="text-center" data-testid="card-organizers">
-              <CardContent className="p-5">
-                <TacticalIcon icon={Users} variant="orange" size="sm" showLabel={false} className="mx-auto mb-3" />
-                <h3 className="font-semibold text-foreground mb-2 text-sm">Organizátori</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Získajú profesionálny systém bez zbytočnej administratívy.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center" data-testid="card-teams">
-              <CardContent className="p-5">
-                <TacticalIcon icon={Target} variant="purple" size="sm" showLabel={false} className="mx-auto mb-3" />
-                <h3 className="font-semibold text-foreground mb-2 text-sm">Tímy</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Majú férovú a prehľadnú súťaž s okamžitým zobrazením výsledkov.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center" data-testid="card-fans">
-              <CardContent className="p-5">
-                <TacticalIcon icon={Eye} variant="blue" size="sm" showLabel={false} className="mx-auto mb-3" />
-                <h3 className="font-semibold text-foreground mb-2 text-sm">Fanúšikovia</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Sledujú úlovky a rebríčky v reálnom čase.
-                </p>
-              </CardContent>
-            </Card>
-
             <Card className="text-center" data-testid="card-individuals">
               <CardContent className="p-5">
                 <TacticalIcon icon={User} variant="slate" size="sm" showLabel={false} className="mx-auto mb-3" />
-                <h3 className="font-semibold text-foreground mb-2 text-sm">Jednotlivci</h3>
+                <h3 className="font-semibold text-foreground mb-2 text-sm">Rybár</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Uchovávajú si rybárske spomienky, plnia si ciele a plánujú ďalšie úspechy.
+                  Uchováva spomienky, plní si ciele a plánuje ďalšie úspechy.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center" data-testid="card-diary">
+              <CardContent className="p-5">
+                <TacticalIcon icon={BookOpen} variant="blue" size="sm" showLabel={false} className="mx-auto mb-3" />
+                <h3 className="font-semibold text-foreground mb-2 text-sm">Denník</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Každý úlovok zaznamenaný presne — fotka, váha, nástraha, podmienky.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center" data-testid="card-stats">
+              <CardContent className="p-5">
+                <TacticalIcon icon={BarChart2} variant="purple" size="sm" showLabel={false} className="mx-auto mb-3" />
+                <h3 className="font-semibold text-foreground mb-2 text-sm">Štatistiky</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Tvrdé dáta namiesto pocitov. Vieš, čo funguje a kedy.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center" data-testid="card-battle">
+              <CardContent className="p-5">
+                <TacticalIcon icon={Swords} variant="orange" size="sm" showLabel={false} className="mx-auto mb-3" />
+                <h3 className="font-semibold text-foreground mb-2 text-sm">Fishing Battle</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Vyzvi kamošov na súboj. Tabuľka neklame.
                 </p>
               </CardContent>
             </Card>
@@ -141,7 +128,7 @@ export default function AboutUs() {
           <CardContent className="p-6">
             <TacticalIcon icon={Award} variant="amber" size="sm" showLabel={false} className="mx-auto mb-4" />
             <p className="text-base md:text-lg font-semibold text-foreground max-w-3xl mx-auto leading-relaxed" data-testid="text-tagline">
-              Contestio stavia na vášni pre rybárstvo, inováciách a komunite. Sme tu preto, aby sme slovenským rybárom – súťažiacim aj rekreačným – dali nový rozmer zážitku pri vode.
+              Contestio stavia na vášni pre rybárstvo, inováciách a komunite. Sme tu preto, aby sme slovenským rybárom dali nový rozmer zážitku pri vode.
             </p>
           </CardContent>
         </Card>
