@@ -102,7 +102,7 @@ export default function Landing() {
       </nav>
 
       {/* 1. HERO SECTION */}
-      <section className="relative min-h-[90vh] flex items-center pt-16 pb-24 border-b border-white/5">
+      <section className="relative flex items-center pt-12 pb-16 border-b border-white/5">
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1506598822606-2580ec19b0de?q=80&w=2940&auto=format&fit=crop')] bg-cover bg-center" />
           <div className="absolute inset-0 bg-gradient-to-b from-[#050810]/80 via-[#050810]/50 to-[#050810]" />
